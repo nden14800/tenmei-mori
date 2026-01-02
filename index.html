@@ -1778,7 +1778,7 @@
             showView('article-detail');
         }
 
-        // --- 認証系 (UI制御のみ変更、ロジックはモック) ---
+         // タブ切り替え（既存のままですが確認のため記載）
         function toggleAuthTab(tab) {
             const loginForm = document.getElementById('form-login');
             const regForm = document.getElementById('form-register');
@@ -1802,32 +1802,69 @@
             }
         }
 
-        function sendAuthCodeMock() {
-            // 本来はAPI通信
-            alert('認証コード「123456」を送信しました（モック）');
+        // 認証コード送信 (実際のAPIを叩くように修正)
+        async function sendAuthCode() {
+            // 現在どちらのタブが開いているか判定してメールアドレスを取得
+            const isLoginOpen = !document.getElementById('form-login').classList.contains('hidden');
+            const emailInputId = isLoginOpen ? 'login-email' : 'reg-email';
+            const email = document.getElementById(emailInputId).value;
+
+            if(!email) return alert("メールアドレスを入力してください");
+
+            // 送信処理
+            try {
+                const res = await fetch(`${API_BASE}/api/auth/send`, { 
+                    method: 'POST', 
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({ email }) 
+                });
+                
+                const data = await res.json();
+                
+                if(res.ok && data.success) {
+                    alert(`${email} に認証コードを送信しました。\nメールを確認してください。`);
+                } else {
+                    alert(`送信エラー: ${data.error || '不明なエラー'}`);
+                }
+            } catch(e) {
+                console.error(e);
+                alert("通信エラー: サーバーに接続できませんでした。");
+            }
         }
 
-        function performLogin() {
+        // ログイン実行 (実際のAPIを叩くように修正)
+        async function performLogin() {
             const email = document.getElementById('login-email').value;
             const pass = document.getElementById('login-password').value;
             const code = document.getElementById('login-code').value;
 
             if(!email || !pass || !code) return alert("全ての項目を入力してください");
             
-            // モック認証
-            if(code === '123456') {
-                const user = { 
-                    email: email, 
-                    username: email.split('@')[0], // 簡易的に生成
-                    token: "mock_token_" + Date.now() 
-                };
-                loginSuccess(user);
-            } else {
-                alert("認証コードが違います");
+            try {
+                // パスワード認証とコード認証を同時に行うエンドポイントを想定
+                // Cloudflare側の実装に合わせてエンドポイントパス(/api/auth/login等)は適宜調整してください
+                const res = await fetch(`${API_BASE}/api/auth/login`, {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({ email, password: pass, code })
+                });
+
+                const data = await res.json();
+
+                if(res.ok && data.success) {
+                    // data.user に { email, username, token } が含まれている想定
+                    loginSuccess(data.user);
+                } else {
+                    alert(`ログイン失敗: ${data.error || '入力情報が正しくありません'}`);
+                }
+            } catch(e) {
+                console.error(e);
+                alert("通信エラー: ログインできませんでした。");
             }
         }
 
-        function performRegister() {
+        // 新規登録実行 (実際のAPIを叩くように修正)
+        async function performRegister() {
             const name = document.getElementById('reg-username').value;
             const email = document.getElementById('reg-email').value;
             const pass = document.getElementById('reg-password').value;
@@ -1835,27 +1872,41 @@
 
             if(!name || !email || !pass || !code) return alert("全ての項目を入力してください");
 
-            if(code === '123456') {
-                const user = { 
-                    email: email, 
-                    username: name,
-                    token: "mock_token_" + Date.now() 
-                };
-                loginSuccess(user);
-            } else {
-                alert("認証コードが違います");
+            try {
+                const res = await fetch(`${API_BASE}/api/auth/register`, {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({ 
+                        email, 
+                        password: pass, 
+                        username: name,
+                        code 
+                    })
+                });
+
+                const data = await res.json();
+
+                if(res.ok && data.success) {
+                    loginSuccess(data.user);
+                } else {
+                    alert(`登録失敗: ${data.error || '登録できませんでした'}`);
+                }
+            } catch(e) {
+                console.error(e);
+                alert("通信エラー: 登録処理に失敗しました。");
             }
         }
 
+        // ログイン成功時の処理
         function loginSuccess(user) {
             currentState.user = user;
             localStorage.setItem('omikuji_user', JSON.stringify(user));
             updateAuthUI();
             
-            // お気に入りをローカルからサーバーへ同期（簡易実装）
-            // syncFavoritesToServer(); 
+            // サーバーからお気に入りを取得して同期
+            loadFavorites(); 
             
-            alert(`ようこそ、${user.username} 様！\nログインしました。`);
+            alert(`ようこそ、${user.username || user.email} 様！\nログインしました。`);
             showView('home');
         }
 
