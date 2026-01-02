@@ -743,7 +743,7 @@
                 <label class="block mb-2 font-bold text-sm">パスワード</label>
                 <input type="password" id="login-password" placeholder="********" class="w-full p-3 border rounded mb-4 themed-input">
                 <label class="block mb-2 font-bold text-sm">認証コード (6桁)</label>
-                <input type="text" id="login-code" placeholder="認証コード" class="w-full p-3 border rounded mb-4 themed-input">
+                <input type="text" id="login-code" placeholder="123456" class="w-full p-3 border rounded mb-4 themed-input">
                 <button onclick="performLogin()" class="btn-primary w-full justify-center">ログイン</button>
             </div>
 
@@ -756,14 +756,14 @@
                 <label class="block mb-2 font-bold text-sm">パスワード</label>
                 <input type="password" id="reg-password" placeholder="********" class="w-full p-3 border rounded mb-4 themed-input">
                 <label class="block mb-2 font-bold text-sm">認証コード (6桁)</label>
-                <input type="text" id="reg-code" placeholder="認証コード" class="w-full p-3 border rounded mb-4 themed-input">
+                <input type="text" id="reg-code" placeholder="123456" class="w-full p-3 border rounded mb-4 themed-input">
                 <button onclick="performRegister()" class="btn-primary w-full justify-center">登録</button>
             </div>
 
             <div class="mt-4 text-center">
                 <button onclick="sendAuthCode()" class="text-xs text-blue-500 underline font-bold px-4 py-2 hover:text-blue-700">
-    <i class="bi bi-send"></i> 認証コードを送信する
-</button>
+                    <i class="bi bi-send"></i> 認証コードを送信する
+                </button>
             </div>
 
             <div id="auth-user-info" class="hidden text-center mt-6">
@@ -1052,12 +1052,11 @@
     <!-- JavaScript ロジック -->
     <script>
         // ==========================================
-        //  設定: Cloudflare WorkerのURL
-        //  ※デプロイ後に書き換えてください
+        //  設定: Cloudflare WorkerのURL (修正済み)
         // ==========================================
-        const API_BASE = "https://aaaaa.nden14800.workers.dev"; // ←ここを修正
+        const API_BASE = "https://aaaaa.nden14800.workers.dev";
         
-        // サイトのベースURL (新URL反映)
+        // サイトのベースURL (修正済み)
         const SITE_URL = "https://fortune-telling-at-tenmei-no-mori-authentic-today-s-fortun.pages.dev";
 
         // --- 状態管理 ---
@@ -1065,12 +1064,12 @@
             view: 'home',
             user: null, // { email, username, token }
             lastResult: null,
-            liveCount: 15118058 // 要求された初期値
+            liveCount: 0 // 初期値は0（APIから取得）
         };
 
         let favoriteList = [];
         let dailyRanking = [];
-        let globalHistory = []; // 他人の履歴用データ
+        let globalHistory = []; 
 
         // --- イニシャライズ ---
         window.onload = function() {
@@ -1088,8 +1087,8 @@
             updateAuthUI();
 
             startLiveCounter();
-            updateHistoryStats(); // 初期表示用
-            setInterval(updateHistoryStats, 1000); // 1秒毎更新
+            fetchHistoryStats(); // APIから統計を取得
+            setInterval(fetchHistoryStats, 5000); // 5秒毎に統計更新
             
             // お気に入りの読み込み
             loadFavorites();
@@ -1132,54 +1131,62 @@
             }
         }
 
-        // --- ライブカウンター & 統計 (モック実装) ---
-        // 実際にはサーバーから取るべきだが、要件に従いログイン時のみ加算する挙動をエミュレート
-        
-        let statsData = {
-            daikichi: { count: 65188, color: 'bg-yellow-400' },
-            kichi: { count: 114157, color: 'bg-red-400' },
-            chukichi: { count: 113787, color: 'bg-orange-400' },
-            shokichi: { count: 114850, color: 'bg-green-400' },
-            suekichi: { count: 114072, color: 'bg-blue-400' },
-            kyo: { count: 114026, color: 'bg-gray-400' },
-            daikyo: { count: 9840, color: 'bg-black' }
-            // 他の運勢も含めると合計が合うように調整が必要だが、ここでは主要なもののみ表示
-        };
-
+        // --- ライブカウンター (API連携) ---
         function startLiveCounter() {
             const el = document.getElementById('live-counter');
             const timeEl = document.getElementById('counter-time');
             
-            setInterval(() => {
+            // 初回実行
+            fetchCount();
+
+            // 定期実行
+            setInterval(fetchCount, 5000); // 5秒間隔
+
+            async function fetchCount() {
                 const now = new Date();
                 timeEl.textContent = now.toLocaleTimeString();
-                el.textContent = currentState.liveCount.toLocaleString() + "本";
-            }, 1000); 
+                try {
+                    const res = await fetch(`${API_BASE}/api/counter`);
+                    if(res.ok) {
+                        const data = await res.json();
+                        currentState.liveCount = data.count;
+                        el.textContent = currentState.liveCount.toLocaleString() + "本";
+                    }
+                } catch(e) {
+                    console.error("Counter fetch error", e);
+                }
+            }
         }
 
-        function updateHistoryStats() {
-            const now = new Date();
-            document.getElementById('stats-update-time').textContent = now.toLocaleTimeString();
+        // --- 統計情報の取得と表示 (API連携) ---
+        async function fetchHistoryStats() {
+            try {
+                const res = await fetch(`${API_BASE}/api/stats`);
+                if(res.ok) {
+                    const data = await res.json();
+                    document.getElementById('stats-update-time').textContent = data.timestamp || "--:--:--";
 
-            // 合計計算
-            let total = 0;
-            Object.values(statsData).forEach(d => total += d.count);
+                    const setBar = (id, percent, count) => {
+                        const p = parseFloat(percent).toFixed(2);
+                        document.getElementById(`stat-${id}`).textContent = p + "%";
+                        document.getElementById(`cnt-${id}`).textContent = (count || 0).toLocaleString() + "本";
+                        document.getElementById(`bar-${id}`).style.width = p + "%";
+                    };
 
-            const setBar = (id) => {
-                const data = statsData[id];
-                const percent = ((data.count / total) * 100).toFixed(2);
-                document.getElementById(`stat-${id}`).textContent = percent + "%";
-                document.getElementById(`cnt-${id}`).textContent = data.count.toLocaleString() + "本";
-                document.getElementById(`bar-${id}`).style.width = percent + "%";
-            };
-            
-            setBar('daikichi');
-            setBar('kichi');
-            setBar('chukichi');
-            setBar('shokichi');
-            setBar('suekichi');
-            setBar('kyo');
-            setBar('daikyo');
+                    const stats = data.stats || {};
+                    const counts = data.counts || {};
+                    
+                    setBar('daikichi', stats.daikichi, counts.daikichi);
+                    setBar('kichi', stats.kichi, counts.kichi);
+                    setBar('chukichi', stats.chukichi, counts.chukichi);
+                    setBar('shokichi', stats.shokichi, counts.shokichi);
+                    setBar('suekichi', stats.suekichi, counts.suekichi);
+                    setBar('kyo', stats.kyo, counts.kyo);
+                    setBar('daikyo', stats.daikyo, counts.daikyo);
+                }
+            } catch(e) {
+                console.error("Stats fetch error", e);
+            }
         }
 
         // --- おみくじロジック ---
@@ -1239,7 +1246,7 @@
             { type: "中吉", poem: "照る月を 雲が隠せど 風払うなり", desc: "一時的な迷いがあっても、すぐに晴れ間が見えます。自分の信念を貫くことで、雲を払う風のような助けが現れるはずです。", rankCode: 'chukichi' },
             { type: "小吉", poem: "小川の水 淀まず流るる 様を見るべし", desc: "派手さはありませんが、平穏無事な日々が続きます。日々の小さな幸せを大切にし、流れに身を任せるのが吉です。", rankCode: 'shokichi' },
             { type: "吉", poem: "春風に 池の氷も 解け初めて", desc: "厳しい冬が終わり、徐々に運気が上昇しています。焦らず着実に進めば、池の氷が解けるように悩みも消えていくでしょう。", rankCode: 'kichi' },
-            { type: "半吉", poem: "山道の 行き交う人も なかりけり", desc: "孤独を感じるかもしれませんが、それは自分自身と向き合うための大切な時間です。静寂の中に答えがあります。", rankCode: 'kichi' }, // 統計上は吉に含める
+            { type: "半吉", poem: "山道の 行き交う人も なかりけり", desc: "孤独を感じるかもしれませんが、それは自分自身と向き合うための大切な時間です。静寂の中に答えがあります。", rankCode: 'kichi' }, 
             { type: "末吉", poem: "山道の 険しき坂も 一歩より", desc: "今は登り坂で苦しい時かもしれませんが、一歩一歩進めば必ず頂上に辿り着けます。忍耐力が試される時です。", rankCode: 'suekichi' },
             { type: "末小吉", poem: "岸打つ波の 音も静かに", desc: "嵐の前の静けさではなく、凪の状態です。今は大きな行動を起こさず、力を蓄える時期と心得ましょう。", rankCode: 'suekichi' },
             { type: "凶", poem: "雨雲の 晴れ間も見えず 濡れ衣かな", desc: "誤解を受けやすく、思うようにいかない時期です。今は弁解せず、静かに嵐が過ぎるのを待つのが賢明な判断です。", rankCode: 'kyo' },
@@ -1272,63 +1279,77 @@
         async function showResultDetail(isNewDraw, dataOverride = null) {
             let resultData;
             let randNum;
-            
+            let detailsList = []; // 詳細情報
+
             if (isNewDraw) {
                 // 新規抽選
                 resultData = omikujiResults[Math.floor(Math.random() * omikujiResults.length)];
                 randNum = Math.floor(Math.random() * 100) + 1;
                 
+                // 詳細項目の生成
+                const cats = ['願望','待人','失物','旅行','商売','学問','恋愛','転居','病気'];
+                const vals = ['叶う','来る','出る','吉','良','励め','実る','良し','治る','遅れる','来ず','出難い','控','耐','危','悪'];
+                
+                detailsList = cats.map(c => ({
+                    title: c,
+                    content: vals[Math.floor(Math.random() * vals.length)]
+                }));
+                
                 // 履歴用に保存データを作成
-                currentState.lastResult = { ...resultData, num: randNum, timestamp: new Date() };
+                currentState.lastResult = { 
+                    ...resultData, 
+                    num: randNum, 
+                    timestamp: new Date(), 
+                    detail: detailsList 
+                };
 
-                // ログインしている場合のみカウンターを加算
-                if(currentState.user) {
-                    currentState.liveCount++;
-                    // 統計データも加算(モック)
-                    if(statsData[resultData.rankCode]) {
-                        statsData[resultData.rankCode].count++;
-                    }
-                    // グローバル履歴に追加 (自分)
-                    addToGlobalHistory(currentState.user.username || currentState.user.email.split('@')[0], resultData);
-                }
-
-            } else {
-                // 履歴からの表示
-                resultData = dataOverride;
-                randNum = dataOverride.num || 1;
-            }
-
-            // DOM更新 (通常の結果表示エリア)
-            renderResultToCard('result-card-outer', resultData, randNum);
-
-            showView('result');
-            
-            if (isNewDraw) {
-                // APIへ送信（ログイン時のみ）
+                // ログインしている場合のみAPIへ送信（サーバー側でカウントアップ）
                 if(currentState.user) {
                     try {
-                        // モックなので実際には送らないが、実装イメージ
-                        /*
-                        await fetch(`${API_BASE}/api/draw`, {
+                        const res = await fetch(`${API_BASE}/api/draw`, {
                             method: 'POST',
                             headers: { 'Content-Type': 'application/json' },
                             body: JSON.stringify({ 
                                 email: currentState.user.email,
                                 token: currentState.user.token,
                                 result: resultData.type,
-                                poem: resultData.poem
+                                poem: resultData.poem,
+                                detail: detailsList // 詳細も送信
                             })
                         });
-                        */
+                        
+                        if(res.ok) {
+                            const data = await res.json();
+                            if(data.success && data.count) {
+                                // 自分の画面も即時更新
+                                currentState.liveCount = data.count;
+                                document.getElementById('live-counter').textContent = currentState.liveCount.toLocaleString() + "本";
+                                fetchHistoryStats(); // 統計も再取得
+                            }
+                        }
                     } catch(e) {
                         console.error("Draw API Error", e);
                     }
                 }
+
+            } else {
+                // 履歴からの表示
+                resultData = dataOverride;
+                randNum = dataOverride.num || 1;
+                detailsList = dataOverride.detail || [];
+            }
+
+            // DOM更新 (通常の結果表示エリア)
+            renderResultToCard('result-card-outer', resultData, randNum, detailsList);
+
+            showView('result');
+            
+            if (isNewDraw) {
                 setTimeout(generateResultImage, 1500);
             }
         }
 
-        function renderResultToCard(outerId, resultData, randNum) {
+        function renderResultToCard(outerId, resultData, randNum, detailsList) {
             const outer = document.getElementById(outerId);
             const numText = outer.querySelector('.result-num');
             const kanji = outer.querySelector('.result-kanji');
@@ -1345,23 +1366,26 @@
             kanji.textContent = resultData.type;
             poem.textContent = resultData.poem;
             
-            // 詳細項目の生成 (ランダム性が強いため、履歴表示時も再抽選されてしまうが、
-            // 完全再現するには詳細データも保存する必要がある。今回は簡易的に再生成)
+            // 詳細項目の表示
             details.innerHTML = '';
-            const cats = ['願望','待人','失物','旅行','商売','学問','恋愛','転居','病気'];
-            const vals = ['叶う','来る','出る','吉','良','励め','実る','良し','治る','遅れる','来ず','出難い','控','耐','危','悪'];
             
-            cats.forEach(c => {
-                const val = vals[Math.floor(Math.random() * vals.length)];
-                const row = document.createElement('div');
-                row.className = 'detail-row';
-                row.innerHTML = `<span class="detail-title">${c}</span><span class="detail-content">${val}</span>`;
-                details.appendChild(row);
-            });
+            // 詳細データがない場合(古い履歴など)はランダム生成せず空にするか、何らかの処理が必要
+            // ここでは簡易的に、データがなければ表示しない
+            if(detailsList && detailsList.length > 0) {
+                detailsList.forEach(item => {
+                    const row = document.createElement('div');
+                    row.className = 'detail-row';
+                    row.innerHTML = `<span class="detail-title">${item.title}</span><span class="detail-content">${item.content}</span>`;
+                    details.appendChild(row);
+                });
+            }
 
             // QRコード生成
             const qrTarget = qrBox.querySelector('div') || qrBox;
             qrTarget.innerHTML = '';
+            // 既存のcanvasがあれば削除
+            while(qrTarget.firstChild) qrTarget.removeChild(qrTarget.firstChild);
+            
             new QRCode(qrTarget, {
                 text: SITE_URL,
                 width: 100,
@@ -1373,30 +1397,6 @@
         }
 
         // --- 履歴・おみくじの轍 ---
-        function addToGlobalHistory(name, resultData) {
-            // 先頭に追加
-            globalHistory.unshift({
-                name: name,
-                result: resultData.type,
-                poem: resultData.poem,
-                timestamp: new Date(),
-                num: Math.floor(Math.random() * 100) + 1,
-                ...resultData
-            });
-            // 最大50件保持
-            if(globalHistory.length > 50) globalHistory.pop();
-        }
-
-        // ダミーデータ生成（他人の履歴用）
-        function generateFakeHistory() {
-            const names = ["匿名希望", "うさぎ", "タナカ", "神社好き", "K.S", "猫丸", "参拝客A", "ゲスト", "M.M", "風の旅人"];
-            for(let i=0; i<30; i++) {
-                const r = omikujiResults[Math.floor(Math.random() * omikujiResults.length)];
-                addToGlobalHistory(names[Math.floor(Math.random() * names.length)], r);
-            }
-        }
-        generateFakeHistory(); // 初期データロード
-
         async function loadHistory() {
             const list = document.getElementById('history-list');
             const container = document.getElementById('history-container');
@@ -1411,10 +1411,9 @@
                 overlay.classList.remove('hidden');
                 viewMode.textContent = "";
 
-                // ぼかし背景用にダミーを大量生成して埋める（クリック不可）
+                // ぼかし背景用にダミーを生成
                 let html = '';
                 for(let i=0; i<15; i++) {
-                    const r = omikujiResults[Math.floor(Math.random() * omikujiResults.length)];
                     html += `
                         <div class="bg-gray-50 dark:bg-zinc-800 p-3 rounded flex justify-between items-center border-l-4 border-gray-300">
                             <div class="flex flex-col">
@@ -1429,42 +1428,55 @@
                 return;
             }
 
-            // ログイン時: 通常表示 (他人の履歴も見れる)
+            // ログイン時: APIからグローバル履歴を取得
             container.classList.remove('history-blurred');
             overlay.classList.add('hidden');
             viewMode.textContent = "全参拝者の履歴を表示中";
-            
-            // グローバル履歴を表示
-            if(globalHistory.length === 0) {
-                list.innerHTML = '<p class="text-gray-400 text-center">まだ履歴がありません。</p>';
-                return;
+            list.innerHTML = '<p class="text-center text-sm themed-text-sub">読み込み中...</p>';
+
+            try {
+                const res = await fetch(`${API_BASE}/api/history/global?token=${encodeURIComponent(currentState.user.token)}`);
+                if(res.ok) {
+                    const data = await res.json();
+                    globalHistory = data.history || [];
+                    
+                    list.innerHTML = '';
+                    if(globalHistory.length === 0) {
+                        list.innerHTML = '<p class="text-gray-400 text-center">まだ履歴がありません。</p>';
+                        return;
+                    }
+
+                    globalHistory.forEach((item, index) => {
+                        const div = document.createElement('div');
+                        const isMe = item.username === currentState.user.username;
+                        const borderColor = item.result.includes('凶') ? 'border-gray-500' : 'border-red-500';
+                        const bgClass = isMe ? 'bg-red-50 dark:bg-red-900/20' : 'bg-gray-50 dark:bg-zinc-800';
+
+                        div.className = `${bgClass} p-3 rounded flex justify-between items-center border-l-4 ${borderColor} cursor-pointer hover:opacity-80 transition shadow-sm`;
+                        div.onclick = () => openHistoryDetail(index); 
+
+                        const date = new Date(item.timestamp);
+                        const dateStr = `${date.getHours()}:${String(date.getMinutes()).padStart(2, '0')}`;
+                        
+                        div.innerHTML = `
+                            <div class="flex flex-col">
+                                <span class="text-xs font-bold ${isMe ? 'text-red-600' : 'themed-text-sub'}">${item.username} 様</span>
+                                <span class="text-xs text-gray-400">${dateStr}</span>
+                            </div>
+                            <div class="flex items-center gap-4">
+                                <span class="text-xs text-gray-500 hidden sm:inline truncate max-w-[150px]">${item.poem}</span>
+                                <span class="font-bold text-red-700 dark:text-red-400 text-lg w-16 text-right">${item.result}</span>
+                            </div>
+                        `;
+                        list.appendChild(div);
+                    });
+                } else {
+                    list.innerHTML = '<p class="text-center text-red-500">履歴の取得に失敗しました。</p>';
+                }
+            } catch(e) {
+                console.error(e);
+                list.innerHTML = '<p class="text-center text-red-500">通信エラーが発生しました。</p>';
             }
-
-            globalHistory.forEach((item, index) => {
-                const div = document.createElement('div');
-                // 自分の履歴なら色を変えるなどの装飾も可能
-                const isMe = item.name === (currentState.user.username || currentState.user.email.split('@')[0]);
-                const borderColor = item.type.includes('凶') ? 'border-gray-500' : 'border-red-500';
-                const bgClass = isMe ? 'bg-red-50 dark:bg-red-900/20' : 'bg-gray-50 dark:bg-zinc-800';
-
-                div.className = `${bgClass} p-3 rounded flex justify-between items-center border-l-4 ${borderColor} cursor-pointer hover:opacity-80 transition shadow-sm`;
-                div.onclick = () => openHistoryDetail(index); // 詳細モーダルを開く
-
-                const date = new Date(item.timestamp);
-                const dateStr = `${date.getHours()}:${String(date.getMinutes()).padStart(2, '0')}`;
-                
-                div.innerHTML = `
-                    <div class="flex flex-col">
-                        <span class="text-xs font-bold ${isMe ? 'text-red-600' : 'themed-text-sub'}">${item.name} 様</span>
-                        <span class="text-xs text-gray-400">${dateStr}</span>
-                    </div>
-                    <div class="flex items-center gap-4">
-                        <span class="text-xs text-gray-500 hidden sm:inline truncate max-w-[150px]">${item.poem}</span>
-                        <span class="font-bold text-red-700 dark:text-red-400 text-lg w-16 text-right">${item.result}</span>
-                    </div>
-                `;
-                list.appendChild(div);
-            });
         }
 
         // --- 履歴詳細モーダル ---
@@ -1473,9 +1485,14 @@
             const modal = document.getElementById('history-detail-modal');
             const content = document.getElementById('history-detail-content');
             
-            // 結果カードのHTMLを複製して生成
-            // 元のHTML構造をJSで再現するのは大変なので、既存のカード構造をコピーしてIDを変えて挿入する手法をとる
-            // ここでは renderResultToCard を使うために一時的なコンテナを作る
+            // データから再現用のオブジェクトを作成
+            const restoreData = {
+                type: data.result,
+                poem: data.poem,
+                detail: data.detail || [], // 詳細があれば使う
+                num: Math.floor(Math.random() * 100) + 1 // 番号は保存してなければランダム
+            };
+
             content.innerHTML = `
                 <div class="result-card-outer mx-auto scale-90 origin-top" id="history-modal-card">
                     <div class="result-top-title">運勢・天命乃杜</div>
@@ -1498,9 +1515,7 @@
                 </div>
             `;
             
-            // データを流し込む
-            renderResultToCard('history-modal-card', data, data.num || 1);
-            
+            renderResultToCard('history-modal-card', restoreData, restoreData.num, restoreData.detail);
             modal.style.display = 'flex';
         }
 
@@ -1729,9 +1744,7 @@
                             <p>今後もコンテンツの拡充や機能改善に努めてまいりますので、末永くご愛顧いただけますようお願い申し上げます。</p>
                         </div>
                     `;
-                }
-                // (他省略せず既存のまま)
-                 else if (id === 3) {
+                } else if (id === 3) {
                     html = `
                         <div class="article-header">
                             <div class="article-meta">
@@ -1778,7 +1791,7 @@
             showView('article-detail');
         }
 
-         // タブ切り替え（既存のままですが確認のため記載）
+        // --- 認証系 ---
         function toggleAuthTab(tab) {
             const loginForm = document.getElementById('form-login');
             const regForm = document.getElementById('form-register');
@@ -1802,21 +1815,19 @@
             }
         }
 
-        // 認証コード送信 (実際のAPIを叩くように修正)
         async function sendAuthCode() {
-            // 現在どちらのタブが開いているか判定してメールアドレスを取得
             const isLoginOpen = !document.getElementById('form-login').classList.contains('hidden');
             const emailInputId = isLoginOpen ? 'login-email' : 'reg-email';
             const email = document.getElementById(emailInputId).value;
+            const username = document.getElementById('reg-username').value;
 
             if(!email) return alert("メールアドレスを入力してください");
 
-            // 送信処理
             try {
                 const res = await fetch(`${API_BASE}/api/auth/send`, { 
                     method: 'POST', 
                     headers: {'Content-Type': 'application/json'},
-                    body: JSON.stringify({ email }) 
+                    body: JSON.stringify({ email, username: isLoginOpen ? undefined : username }) 
                 });
                 
                 const data = await res.json();
@@ -1832,7 +1843,6 @@
             }
         }
 
-        // ログイン実行 (実際のAPIを叩くように修正)
         async function performLogin() {
             const email = document.getElementById('login-email').value;
             const pass = document.getElementById('login-password').value;
@@ -1841,8 +1851,6 @@
             if(!email || !pass || !code) return alert("全ての項目を入力してください");
             
             try {
-                // パスワード認証とコード認証を同時に行うエンドポイントを想定
-                // Cloudflare側の実装に合わせてエンドポイントパス(/api/auth/login等)は適宜調整してください
                 const res = await fetch(`${API_BASE}/api/auth/login`, {
                     method: 'POST',
                     headers: {'Content-Type': 'application/json'},
@@ -1852,10 +1860,9 @@
                 const data = await res.json();
 
                 if(res.ok && data.success) {
-                    // data.user に { email, username, token } が含まれている想定
-                    loginSuccess(data.user);
+                    loginSuccess({ email, username: data.username, token: data.token });
                 } else {
-                    alert(`ログイン失敗: ${data.error || '入力情報が正しくありません'}`);
+                    alert(`ログイン失敗: ${data.message || data.error || '入力情報が正しくありません'}`);
                 }
             } catch(e) {
                 console.error(e);
@@ -1863,7 +1870,6 @@
             }
         }
 
-        // 新規登録実行 (実際のAPIを叩くように修正)
         async function performRegister() {
             const name = document.getElementById('reg-username').value;
             const email = document.getElementById('reg-email').value;
@@ -1887,9 +1893,9 @@
                 const data = await res.json();
 
                 if(res.ok && data.success) {
-                    loginSuccess(data.user);
+                    loginSuccess({ email, username: data.username, token: data.token });
                 } else {
-                    alert(`登録失敗: ${data.error || '登録できませんでした'}`);
+                    alert(`登録失敗: ${data.message || data.error || '登録できませんでした'}`);
                 }
             } catch(e) {
                 console.error(e);
@@ -1897,13 +1903,11 @@
             }
         }
 
-        // ログイン成功時の処理
         function loginSuccess(user) {
             currentState.user = user;
             localStorage.setItem('omikuji_user', JSON.stringify(user));
             updateAuthUI();
             
-            // サーバーからお気に入りを取得して同期
             loadFavorites(); 
             
             alert(`ようこそ、${user.username || user.email} 様！\nログインしました。`);
@@ -1940,21 +1944,51 @@
         // --- お気に入り機能 ---
         async function loadFavorites() {
             const badge = document.getElementById('fav-status-badge');
-            // モック: ローカルストレージのみ使用
-            const stored = localStorage.getItem('fortuneFavorites');
-            if (stored) {
-                favoriteList = JSON.parse(stored);
-            }
+            
             if(currentState.user) {
-                 if(badge) badge.textContent = "クラウド保存済み";
+                // ログイン時: サーバーから取得
+                if(badge) badge.textContent = "同期中...";
+                try {
+                    const res = await fetch(`${API_BASE}/api/favorites?email=${encodeURIComponent(currentState.user.email)}&token=${encodeURIComponent(currentState.user.token)}`);
+                    if(res.ok) {
+                        const data = await res.json();
+                        favoriteList = data.favorites || [];
+                        if(badge) badge.textContent = "クラウド保存済み";
+                    }
+                } catch(e) {
+                    console.error("Fav fetch error", e);
+                }
             } else {
-                 if(badge) badge.textContent = "端末に保存中";
+                // 未ログイン時: LocalStorage
+                const stored = localStorage.getItem('fortuneFavorites');
+                if (stored) {
+                    favoriteList = JSON.parse(stored);
+                }
+                if(badge) badge.textContent = "端末に保存中";
             }
             renderFavorites();
         }
 
-        function saveFavorites() {
-            localStorage.setItem('fortuneFavorites', JSON.stringify(favoriteList));
+        async function saveFavorites() {
+            if(currentState.user) {
+                // サーバーへ保存
+                try {
+                    await fetch(`${API_BASE}/api/favorites`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            email: currentState.user.email,
+                            token: currentState.user.token,
+                            favorites: favoriteList
+                        })
+                    });
+                } catch(e) {
+                    console.error("Fav save error", e);
+                }
+            } else {
+                // LocalStorageへ保存
+                localStorage.setItem('fortuneFavorites', JSON.stringify(favoriteList));
+            }
             renderFavorites();
             renderRanking();
         }
