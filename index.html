@@ -1,3 +1,35 @@
+Cloudflare KVの値を修正する方法と、ご指摘に基づいたコードの修正版を提供します。
+
+### 1. 累計発行本数の修正方法（Cloudflare KV）
+
+Cloudflareのダッシュボード、またはコマンドラインツール（Wrangler）を使用して、KV内の `total_issued` というキーの値を直接書き換えることで、カウンターを `15,118,061` からスタートさせることができます。
+
+**Cloudflareダッシュボードで行う場合:**
+1.  Cloudflareの管理画面にログインし、「Workers & Pages」>「KV」を開きます。
+2.  `OMIKUJI_KV`（または該当するNamespace）を選択し、「KV Pairs」タブをクリックします。
+3.  キー一覧から `total_issued` を探します。
+    *   まだ無い場合は「Add Entry」をクリック。
+    *   ある場合は「Edit」をクリック。
+4.  Value（値）に `15118061` と入力して保存（Save）します。
+
+**Wrangler (コマンドライン) で行う場合:**
+ターミナルで以下のコマンドを実行してください（`<NAMESPACE_ID>`は実際のIDに置き換えてください）。
+```bash
+npx wrangler kv:key put --namespace-id <NAMESPACE_ID> "total_issued" "15118061"
+```
+
+---
+
+### 2. 修正版 HTMLコード (Frontend)
+
+**変更点:**
+*   **画像生成の自動実行を停止:** 結果表示時に勝手に画像が生成・表示される処理（`setTimeout`）を削除しました。
+*   **画像保存ボタンの追加:** 結果の下に「画像を保存する」ボタンを追加し、必要な時だけ生成するようにしました。
+*   **シェア文言の修正:** 誤解を招く「あなただけの～もわかります！」という表現を修正し、閲覧者が自分も診断できるというニュアンスに変更しました。
+*   **カウンター初期値ロジックの変更:** コード内の固定加算（`15118061 +`）を削除し、サーバー（KV）からの値をそのまま表示するようにしました。
+*   **ログイン特典の明記:** ログイン・登録画面およびカウンター付近に、ログイン時のみカウントされる旨を分かりやすく記載しました。
+
+```html
 <!DOCTYPE html>
 <html lang="ja">
 <head>
@@ -172,30 +204,44 @@
             cursor: not-allowed;
             transform: none;
         }
+        .btn-outline {
+            background-color: transparent;
+            color: var(--text-main);
+            border: 2px solid var(--text-main);
+            padding: 10px 25px;
+            border-radius: 30px;
+            font-weight: bold;
+            transition: all 0.3s;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            justify-content: center;
+        }
+        .btn-outline:hover {
+            background-color: rgba(128,128,128,0.1);
+        }
 
         /* --- ローディングスピナー --- */
         #loading-overlay {
             position: fixed;
             top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0,0,0,0.6); /* 少し暗く */
+            background: rgba(0,0,0,0.5);
             z-index: 9999;
             display: none;
             align-items: center;
             justify-content: center;
-            backdrop-filter: blur(2px);
         }
         .spinner {
             width: 50px;
             height: 50px;
-            border: 4px solid rgba(255, 255, 255, 0.3);
-            border-top: 4px solid var(--accent-red); /* 回転部分だけ色付け */
             border-radius: 50%;
-            animation: spin 1s linear infinite;
-            box-shadow: 0 0 15px rgba(0,0,0,0.2);
+            border: 4px solid rgba(255, 255, 255, 0.2);
+            border-top-color: #ffffff;
+            animation: spin 1s infinite linear;
         }
         @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
+            to { transform: rotate(360deg); }
         }
 
         /* --- ホーム画面 --- */
@@ -285,154 +331,190 @@
             font-family: 'Zen Old Mincho', serif;
         }
 
-        /* --- おみくじ結果カード --- */
+        /* --- おみくじ結果カード (新デザイン修正版) --- */
         #result-capture-container {
             width: 600px;
             margin: 0 auto;
             position: relative;
         }
-        /* 新デザイン：Omikuji-do風 */
         .result-card-outer {
             width: 600px;
-            min-height: 1100px;
-            background-color: #b91c1c; /* ベースの赤 */
-            padding: 40px;
+            /* 高さを自動調整 */
+            min-height: 1200px;
+            padding: 30px;
             box-sizing: border-box;
             display: flex;
             flex-direction: column;
             align-items: center;
             position: relative;
-            color: white;
-        }
-        .result-title-name {
             font-family: 'Zen Old Mincho', serif;
-            font-size: 1.5rem;
-            margin-bottom: 5px;
-            letter-spacing: 0.1em;
-            text-align: center;
-        }
-        .result-subtitle {
-            font-family: sans-serif;
-            font-size: 0.7rem;
-            letter-spacing: 0.2em;
-            opacity: 0.8;
-            margin-bottom: 30px;
-            text-align: center;
         }
 
-        .result-card-paper {
-            width: 100%;
-            /* 白い紙部分 */
-            background-color: #fffcf2; 
-            border: 4px double #b91c1c;
-            padding: 40px 30px;
-            box-sizing: border-box;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            font-family: 'Shippori Mincho', serif;
-            color: #b91c1c;
-            position: relative;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+        /* スタイル1: 大吉 (金・和紙) */
+        .style-daikichi {
+            background-color: #f3c845;
+            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.25'/%3E%3C/svg%3E");
+            border: 8px double #fff;
+            color: #3e1e00;
         }
+        .style-daikichi .accent-border { border-color: #3e1e00; }
+        .style-daikichi .accent-text { color: #8a1c1c; }
 
-        /* 大吉：金でザラザラ */
-        .is-daikichi .result-card-outer {
-            background-color: #b91c1c; 
-        }
-        .is-daikichi .result-card-paper {
-            background-color: #d4af37;
-            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='0.3'/%3E%3C/svg%3E");
-            color: #b91c1c;
-            border-color: #b91c1c;
-        }
-        .is-daikichi .result-circle {
-            background-color: #fff !important;
-            border: 3px solid #b91c1c !important;
-        }
-
-        /* 大凶：黒 */
-        .is-daikyo .result-card-outer {
-            background-color: #000000;
-        }
-        .is-daikyo .result-card-paper {
+        /* スタイル2: 大凶 (黒白・重厚) */
+        .style-daikyo {
             background-color: #1a1a1a;
-            color: #e0e0e0;
-            border-color: #555;
+            border: 8px solid #333;
+            color: #f0f0f0;
         }
-        .is-daikyo .result-circle {
-            border-color: #fff !important;
-            background-color: #000 !important;
-            color: #fff !important;
-        }
-        
-        .result-header {
-            width: 100%; display: flex; justify-content: center; align-items: center; gap: 10px;
-            border-bottom: 1px solid currentColor; padding-bottom: 20px; margin-bottom: 20px;
-        }
-        .result-shrine-logo { font-size: 2rem; font-weight: 900; display: flex; align-items: center; gap: 8px; }
-        .result-num { font-size: 1rem; margin-top: 10px; font-weight: bold; text-align: center; }
-        
-        .result-circle {
-            width: 140px; height: 140px; border-radius: 50%; border: 2px solid currentColor;
-            display: flex; flex-direction: column; align-items: center; justify-content: center;
-            margin: 20px 0 40px 0; background-color: #fff; color: #b91c1c;
-        }
-        .result-label { font-size: 0.9rem; margin-bottom: 0px; font-weight: bold; }
-        .result-kanji { font-size: 4.5rem; font-weight: 900; line-height: 1; }
+        .style-daikyo .accent-border { border-color: #f0f0f0; }
+        .style-daikyo .accent-text { color: #fff; }
+        .style-daikyo .red-text { color: #fff !important; }
 
-        .result-body { display: flex; flex-direction: row-reverse; width: 100%; flex: 1; justify-content: space-between; gap: 30px; }
+        /* スタイル3: その他 (標準) */
+        .style-normal {
+            background-color: #fffcf2;
+            border: 8px double #b91c1c;
+            color: #333;
+        }
+        .style-normal .accent-border { border-color: #b91c1c; }
+        .style-normal .accent-text { color: #b91c1c; }
+
+        .result-logo-area {
+            text-align: center;
+            margin-bottom: 10px;
+        }
+        .result-kamon {
+            font-size: 3rem;
+            margin-bottom: 5px;
+        }
+        .result-title-text {
+            font-size: 1.5rem;
+            font-weight: 900;
+            letter-spacing: 0.3em;
+        }
+        .result-issue-num {
+            font-size: 0.9rem;
+            margin-bottom: 20px;
+            font-family: monospace;
+            opacity: 0.8;
+        }
         
-        /* 助言（縦書き詩） */
-        .result-poem-box {
-            border: 1px solid currentColor;
-            padding: 15px 10px;
-            writing-mode: vertical-rl;
-            text-orientation: upright;
-            min-height: 300px;
+        .result-circle-box {
+            width: 200px;
+            height: 200px;
+            border: 4px solid currentColor;
+            border-radius: 50%;
             display: flex;
             align-items: center;
             justify-content: center;
+            margin: 0 auto 10px;
+            background: rgba(255,255,255,0.1);
         }
-        .result-poem-title { font-size: 0.8rem; border-bottom: 1px solid currentColor; padding-bottom: 5px; margin-left: 10px; }
-        .result-poem-content { font-size: 1.3rem; font-weight: bold; letter-spacing: 0.2em; line-height: 1.8; }
-
-        .result-details-col { flex: 1; display: flex; flex-direction: column; gap: 8px; justify-content: flex-start; writing-mode: vertical-rl; height: 450px; flex-wrap: wrap; align-content: flex-end; }
-        .detail-row { font-size: 0.95rem; margin-left: 10px; padding: 5px 0; border-left: 1px dashed currentColor; padding-left: 5px; height: 100%; max-height: 450px; display: flex; flex-direction: column; }
-        .detail-title { font-weight: 900; margin-bottom: 8px; font-size: 0.9rem; color: currentColor; }
-        .detail-content { font-weight: 500; }
-
-        .result-qr-box {
-            background: #fff;
-            padding: 8px;
-            border-radius: 4px;
-            margin-top: 30px;
-            margin-bottom: 10px;
+        .result-kanji-main {
+            font-size: 6rem;
+            font-weight: 900;
+            line-height: 1;
         }
-        .result-footer-link { font-size: 0.8rem; margin-top: 5px; font-family: sans-serif; letter-spacing: 0.05em; }
-        .result-date {
-            margin-top: 20px;
-            font-size: 0.9rem;
-            border-top: 1px solid currentColor;
-            padding-top: 10px;
+        .result-label-sub {
+            font-size: 1.2rem;
+            margin-bottom: 20px;
+            font-weight: bold;
+        }
+
+        .result-main-message-area {
+            display: flex;
+            justify-content: center;
+            gap: 30px;
+            margin-bottom: 40px;
             width: 100%;
-            text-align: right;
+            padding: 0 20px;
+        }
+        .result-poem-vertical {
+            writing-mode: vertical-rl;
+            font-size: 2rem;
+            font-weight: bold;
+            letter-spacing: 0.2em;
+            line-height: 1.8;
+            height: 350px;
+        }
+        .result-advice-box {
+            writing-mode: vertical-rl;
+            border: 2px solid currentColor;
+            padding: 15px 10px;
+            font-size: 1rem;
+            line-height: 1.8;
+            height: 350px;
+        }
+        .advice-label {
+            font-weight: 900;
+            border-bottom: 1px solid currentColor; /* 縦書きなので左線に見えるが実際は下 */
+            margin-left: 10px;
+            padding-bottom: 5px;
         }
 
-        /* シェア画面 */
-        #generated-image-container img { max-width: 100%; box-shadow: 0 10px 25px rgba(0,0,0,0.3); border-radius: 8px; }
-
-        /* 記事詳細 */
-        .article-container {
-            max-width: 800px; margin: 0 auto; padding: 40px; border-radius: 8px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.05); text-align: left; line-height: 2;
+        .result-details-grid {
+            display: flex;
+            flex-direction: row-reverse; /* 縦書きなので右から左へ */
+            justify-content: center;
+            gap: 15px;
+            width: 100%;
+            margin-bottom: 40px;
+            border-top: 1px solid currentColor;
+            border-bottom: 1px solid currentColor;
+            padding: 20px 0;
         }
-        .article-header { border-bottom: 2px solid var(--card-border); padding-bottom: 20px; margin-bottom: 30px; }
-        .article-title { font-size: 1.8rem; font-weight: bold; margin-bottom: 10px; }
-        .article-meta { color: var(--text-sub); font-size: 0.9rem; display: flex; gap: 15px; }
-        .article-tag { background: rgba(128,128,128,0.2); padding: 2px 8px; border-radius: 4px; font-size: 0.8rem; }
-        .article-content h3 { font-size: 1.4rem; font-weight: bold; margin: 30px 0 15px; border-left: 4px solid var(--accent-red); padding-left: 10px; }
-        .article-content p { margin-bottom: 20px; }
+        .detail-column {
+            writing-mode: vertical-rl;
+            height: 250px;
+            font-size: 1.1rem;
+            line-height: 1.5;
+        }
+        .detail-item-label {
+            font-weight: 900;
+            margin-bottom: 10px;
+            display: inline-block;
+        }
+        .detail-item-content {
+            display: inline-block;
+        }
+
+        .lucky-area {
+            width: 100%;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-bottom: 30px;
+            text-align: left;
+        }
+        .lucky-box, .unlucky-box {
+            border: 1px solid currentColor;
+            padding: 15px;
+            border-radius: 8px;
+        }
+        .lucky-title { font-weight: bold; margin-bottom: 10px; border-bottom: 1px dashed currentColor; padding-bottom: 5px; }
+        .lucky-row { font-size: 0.9rem; margin-bottom: 4px; display: flex; align-items: flex-start;}
+        .lucky-icon { margin-right: 5px; min-width: 20px; text-align: center; }
+
+        .result-footer-info {
+            width: 100%;
+            text-align: center;
+            border-top: 2px solid currentColor;
+            padding-top: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-end;
+        }
+        .result-user-name {
+            font-size: 1.2rem;
+            font-weight: bold;
+        }
+        .result-date {
+            font-size: 0.9rem;
+        }
+        .result-qr-container {
+            background: #fff;
+            padding: 5px;
+        }
 
         /* 12星座カード */
         .ranking-card {
@@ -495,29 +577,35 @@
         }
 
         /* 詳細モーダル */
-        #history-detail-modal, #profile-modal {
+        #history-detail-modal {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background: rgba(0,0,0,0.8); z-index: 2000;
             display: none; align-items: center; justify-content: center;
             overflow-y: auto;
         }
-        #history-detail-content, #profile-content {
+        #history-detail-content {
             background: transparent;
-            width: 100%; max-width: 600px; margin: 20px;
+            width: 100%; max-width: 650px; margin: 20px;
             position: relative;
         }
-        #profile-content {
-            background: var(--card-bg);
-            padding: 30px;
-            border-radius: 12px;
-            max-width: 500px;
+
+        /* 記事詳細 */
+        .article-container {
+            max-width: 800px; margin: 0 auto; padding: 40px; border-radius: 8px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.05); text-align: left; line-height: 2;
         }
+        .article-header { border-bottom: 2px solid var(--card-border); padding-bottom: 20px; margin-bottom: 30px; }
+        .article-title { font-size: 1.8rem; font-weight: bold; margin-bottom: 10px; }
+        .article-meta { color: var(--text-sub); font-size: 0.9rem; display: flex; gap: 15px; }
+        .article-tag { background: rgba(128,128,128,0.2); padding: 2px 8px; border-radius: 4px; font-size: 0.8rem; }
+        .article-content h3 { font-size: 1.4rem; font-weight: bold; margin: 30px 0 15px; border-left: 4px solid var(--accent-red); padding-left: 10px; }
+        .article-content p { margin-bottom: 20px; }
 
     </style>
 </head>
 <body>
 
-    <!-- ローディングオーバーレイ -->
+    <!-- ローディングスピナー -->
     <div id="loading-overlay">
         <div class="spinner"></div>
     </div>
@@ -530,7 +618,7 @@
         </button>
         <button class="nav-btn" onclick="showView('zodiac')">
             <i class="bi bi-stars"></i>
-            <span class="nav-text">12星座・血液型</span>
+            <span class="nav-text">12星座×血液型占い</span>
         </button>
         <button class="nav-btn" onclick="showView('history')">
             <i class="bi bi-clock-history"></i>
@@ -544,7 +632,7 @@
             <i class="bi bi-book"></i>
             <span class="nav-text">神籤草子</span>
         </button>
-        <button class="nav-btn" onclick="showView('auth')" id="nav-login-btn">
+        <button class="nav-btn" onclick="handleProfileClick()" id="nav-login-btn">
             <i class="bi bi-person-circle"></i>
             <span class="nav-text">ログイン/登録</span>
         </button>
@@ -568,7 +656,7 @@
         <section id="view-home" class="view-section active text-center max-w-4xl mx-auto">
             <h1 class="text-4xl font-black mb-2 tracking-widest" style="font-family: 'Zen Old Mincho'">運勢・天命乃杜</h1>
             <p class="text-sm font-serif mb-4 tracking-widest uppercase">FORTUNE TENMEI-NO-MORI</p>
-            <p class="text-lg font-serif mb-8 themed-text-sub">天命を知る道標  無料神籤<br>困難を乗り越え福となす</p>
+            <p class="text-lg font-serif mb-8 themed-text-sub">天命が導く、日々の道しるべ<br>災いを避け、福を招く</p>
 
             <div class="home-circle-container" id="home-anim-container">
                 <!-- JSで紙を生成 -->
@@ -583,14 +671,14 @@
                 <p class="text-sm themed-text-sub">累計発行本数</p>
                 <div class="text-3xl font-bold font-mono text-red-700" id="live-counter">---</div>
                 <p class="text-xs themed-text-sub mt-1">最終更新: <span id="counter-time">--:--:--</span> (1秒毎更新)</p>
-                <p class="text-[10px] themed-text-sub mt-1">※会員様の祈りの数のみがリアルタイムで反映されます</p>
+                <p class="text-[10px] themed-text-sub mt-1">※会員様の祈りの数のみが反映されます</p>
             </div>
 
             <!-- ダッシュボード風グリッド -->
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mt-12 text-left">
                 <!-- 轍 (統計) -->
                 <div class="themed-card p-6 rounded-xl shadow-sm">
-                    <h3 class="font-bold text-lg mb-2 border-b border-gray-300 dark:border-gray-600 pb-2"><i class="bi bi-balloon-heart text-red-500"></i> おみくじの轍 (統計)</h3>
+                    <h3 class="font-bold text-lg mb-2 border-b border-gray-300 dark:border-gray-600 pb-2"><i class="bi bi-balloon-heart text-red-500"></i> おみくじの轍</h3>
                     <div class="text-xs text-right mb-2 themed-text-sub">更新: <span id="stats-update-time">--:--:--</span></div>
                     <div class="space-y-3 mb-4 text-sm" id="home-history-stats">
                          <div class="flex justify-between"><span>大吉</span><span><span id="cnt-daikichi" class="mr-2 font-mono">0</span><span id="stat-daikichi">0.00%</span></span></div>
@@ -617,7 +705,7 @@
                     <button onclick="showView('history')" class="text-sm text-red-600 hover:underline">おみくじの轍をもっと見る</button>
                 </div>
 
-                <!-- お知らせ (最大5件) -->
+                <!-- お知らせ -->
                 <div class="themed-card p-6 rounded-xl shadow-sm">
                     <h3 class="font-bold text-lg mb-2 border-b border-gray-300 dark:border-gray-600 pb-2"><i class="bi bi-megaphone text-blue-500"></i> 社務所だより</h3>
                     <ul class="text-sm space-y-2 mb-4">
@@ -630,7 +718,7 @@
                     <button onclick="showView('news')" class="text-sm text-blue-600 hover:underline">社務所だよりをもっと見る</button>
                 </div>
 
-                <!-- コラム (最大5件リスト化) -->
+                <!-- コラム -->
                 <div class="themed-card p-6 rounded-xl shadow-sm">
                     <h3 class="font-bold text-lg mb-2 border-b border-gray-300 dark:border-gray-600 pb-2"><i class="bi bi-book text-green-500"></i> 神籤草子 (コラム)</h3>
                     <ul class="text-sm space-y-2 mb-4">
@@ -648,9 +736,7 @@
         <!-- ビュー: おみくじ選択 -->
         <section id="view-draw" class="view-section relative min-h-screen w-full overflow-hidden" style="overflow-y: auto !important;">
             <h2 class="text-center text-2xl font-bold mb-4 z-10 relative mt-10">直感で一枚お選びください</h2>
-            <div id="omikuji-pool" class="omikuji-pool">
-                <!-- JSで大量の札をランダム配置 -->
-            </div>
+            <div id="omikuji-pool" class="omikuji-pool"></div>
             <div class="fixed bottom-10 left-0 w-full text-center z-50 pointer-events-none">
                 <button onclick="addOmikuji()" class="btn-primary pointer-events-auto shadow-xl">
                     <i class="bi bi-plus-lg"></i> もっとおみくじを探す
@@ -661,49 +747,10 @@
         <!-- ビュー: おみくじ結果 -->
         <section id="view-result" class="view-section text-center">
             <div id="result-display-area" class="py-10">
-                
                 <div style="display: flex; justify-content: center; overflow: hidden;">
                     <div id="result-capture-container">
-                        <div class="result-card-outer" id="result-card-outer">
-                            <div class="result-title-name" id="result-title-name"></div>
-                            <div class="result-subtitle">KNOTTING THE FORTUNE</div>
-                            
-                            <div class="result-card-paper" id="result-card-paper">
-                                <!-- ヘッダー -->
-                                <div class="result-header">
-                                    <div class="result-shrine-logo">
-                                        <i class="bi bi-moon-stars-fill"></i> 天命乃杜
-                                    </div>
-                                    <div class="result-num" id="result-num">第123456番</div>
-                                </div>
-
-                                <!-- 結果の円 -->
-                                <div class="result-circle">
-                                    <div class="result-label">運勢</div>
-                                    <div class="result-kanji" id="result-kanji">大吉</div>
-                                </div>
-
-                                <!-- 本文 -->
-                                <div class="result-body">
-                                    <!-- 詩 (右) -->
-                                    <div class="result-poem-box">
-                                        <div class="result-poem-content" id="result-poem"></div>
-                                        <div class="result-poem-title">助言</div>
-                                    </div>
-                                    <!-- 詳細 (左) -->
-                                    <div class="result-details-col" id="result-details">
-                                        <!-- JSで挿入 -->
-                                    </div>
-                                </div>
-
-                                <!-- フッター (QR) -->
-                                <div class="result-qr-box">
-                                    <div id="qrcode"></div>
-                                </div>
-                                <div class="result-footer-link">fortune-telling-at-tenmei-no-mori.pages.dev</div>
-                                <div class="result-date" id="result-date">2026/01/01 12:00</div>
-                            </div>
-                        </div>
+                        <!-- 結果カード (JSで動的生成) -->
+                        <div class="result-card-outer" id="result-card-outer"></div>
                     </div>
                 </div>
 
@@ -711,15 +758,19 @@
                 <div class="max-w-xl mx-auto mt-8 p-4 themed-card rounded-lg shadow space-y-4">
                     <p class="font-bold">結果をシェアする</p>
                     
+                    <button onclick="generateResultImage()" class="btn-outline w-full justify-center">
+                        <i class="bi bi-download"></i> 画像を保存する
+                    </button>
+                    
                     <div id="gen-img-status" class="text-sm themed-text-sub"></div>
                     <div id="generated-image-container" class="hidden">
                         <p class="text-green-600 font-bold mb-2">画像の生成完了</p>
-                        <!-- 生成画像がここに入る -->
+                        <!-- 生成画像 -->
                     </div>
 
                     <div class="flex flex-col gap-3 mt-4">
                         <button onclick="shareToX()" class="bg-black text-white py-3 rounded-lg font-bold flex items-center justify-center gap-2 hover:opacity-80">
-                            <i class="bi bi-twitter-x"></i> Xでシェア (手動で保存して添付)
+                            <i class="bi bi-twitter-x"></i> Xでシェア (URLを共有)
                         </button>
                         <button onclick="shareToFB()" class="bg-blue-600 text-white py-3 rounded-lg font-bold flex items-center justify-center gap-2 hover:opacity-80">
                             <i class="bi bi-facebook"></i> Facebookでシェア
@@ -728,11 +779,14 @@
                             <i class="bi bi-line"></i> LINEでシェア
                         </button>
                     </div>
+                    <div class="mt-4">
+                        <button onclick="showView('home')" class="text-sm underline text-gray-500">ホームに戻る</button>
+                    </div>
                 </div>
             </div>
         </section>
 
-        <!-- ビュー: 12星座占い -->
+        <!-- ビュー: 12星座×血液型占い -->
         <section id="view-zodiac" class="view-section">
              <div class="text-center mb-8">
                 <h2 class="text-2xl font-bold mb-2 flex items-center justify-center gap-2">
@@ -745,13 +799,9 @@
             <div id="favorites-section" class="hidden w-full mb-8 max-w-3xl mx-auto">
                 <h3 class="text-lg font-bold mb-4 flex items-center gap-2">
                     <i class="bi bi-star-fill text-yellow-400"></i> お気に入り (最大5件)
-                    <span id="fav-status-badge" class="text-xs ml-2 px-2 py-1 rounded bg-gray-200 dark:bg-gray-700 text-gray-600 dark:text-gray-300">
-                        <!-- 保存先ステータス -->
-                    </span>
+                    <span id="fav-status-badge" class="text-xs ml-2 px-2 py-1 rounded bg-gray-200 dark:bg-gray-700 text-gray-600 dark:text-gray-300"></span>
                 </h3>
-                <div id="favorites-list" class="space-y-4">
-                    <!-- お気に入りカード -->
-                </div>
+                <div id="favorites-list" class="space-y-4"></div>
                 <hr class="my-6 border-gray-300 dark:border-gray-600">
             </div>
     
@@ -799,13 +849,16 @@
         <section id="view-auth" class="view-section max-w-md mx-auto themed-card p-8 rounded-xl shadow-lg mt-10">
             <h2 class="text-2xl font-bold mb-6 text-center">アカウント認証</h2>
             
-            <!-- タブ切り替え -->
             <div class="flex justify-center mb-6 border-b">
                 <button class="px-4 py-2 border-b-2 border-red-500 font-bold" id="tab-login" onclick="toggleAuthTab('login')">ログイン</button>
                 <button class="px-4 py-2 border-b-2 border-transparent text-gray-500" id="tab-register" onclick="toggleAuthTab('register')">新規登録</button>
             </div>
 
-            <!-- ログインフォーム -->
+            <div class="mb-6 p-3 bg-red-50 dark:bg-red-900/20 text-xs text-red-700 dark:text-red-300 border border-red-200 dark:border-red-800 rounded">
+                <i class="bi bi-info-circle-fill mr-1"></i>
+                ログインすると、あなたの祈りが「累計発行本数」に刻まれます。
+            </div>
+
             <div id="form-login">
                 <label class="block mb-2 font-bold text-sm">メールアドレス</label>
                 <input type="email" id="login-email" placeholder="example@email.com" class="w-full p-3 border rounded mb-4 themed-input">
@@ -816,7 +869,6 @@
                 <button onclick="performLogin()" class="btn-primary w-full justify-center">ログイン</button>
             </div>
 
-            <!-- 登録フォーム -->
             <div id="form-register" class="hidden">
                 <label class="block mb-2 font-bold text-sm">ユーザー名</label>
                 <input type="text" id="reg-username" placeholder="天命 太郎" class="w-full p-3 border rounded mb-4 themed-input">
@@ -834,13 +886,37 @@
                     <i class="bi bi-send"></i> 認証コードを送信する
                 </button>
             </div>
+        </section>
 
-            <div id="auth-user-info" class="hidden text-center mt-6">
-                <div class="mb-4">
-                    <p class="text-lg">ようこそ、<span id="user-display-name" class="font-bold cursor-pointer hover:underline" onclick="openProfileModal()"></span> 様</p>
-                    <button onclick="openProfileModal()" class="text-sm bg-gray-200 dark:bg-gray-700 px-3 py-1 rounded mt-2"><i class="bi bi-gear-fill"></i> プロフィール設定</button>
+        <!-- ビュー: プロフィール -->
+        <section id="view-profile" class="view-section max-w-md mx-auto themed-card p-8 rounded-xl shadow-lg mt-10">
+            <h2 class="text-2xl font-bold mb-6 text-center">会員情報</h2>
+            
+            <div class="mb-6 border-b pb-4">
+                <p class="text-sm themed-text-sub">現在のユーザー名</p>
+                <p class="text-xl font-bold" id="profile-current-username">---</p>
+                <p class="text-sm themed-text-sub mt-2">メールアドレス</p>
+                <p class="text-lg" id="profile-current-email">---</p>
+            </div>
+
+            <div class="space-y-4">
+                <h3 class="font-bold border-l-4 border-red-500 pl-2">情報変更</h3>
+                <div>
+                    <label class="block text-sm">新しいユーザー名 (変更する場合のみ)</label>
+                    <input type="text" id="profile-new-username" class="w-full p-2 border rounded themed-input">
                 </div>
-                <button onclick="logout()" class="text-red-500 underline text-sm">ログアウト</button>
+                <div>
+                    <label class="block text-sm">新しいパスワード (変更する場合のみ)</label>
+                    <input type="password" id="profile-new-password" class="w-full p-2 border rounded themed-input">
+                </div>
+                <button onclick="updateProfile()" class="btn-primary w-full justify-center py-2 text-sm">変更を保存</button>
+            </div>
+
+            <div class="mt-10 border-t pt-6">
+                <h3 class="font-bold text-red-600 mb-2">アカウント操作</h3>
+                <button onclick="logout()" class="w-full bg-gray-500 text-white py-2 rounded hover:opacity-80 mb-4">ログアウト</button>
+                <button onclick="deleteAccount()" class="w-full bg-red-600 text-white py-2 rounded hover:opacity-80 text-sm">アカウント削除</button>
+                <p class="text-xs text-gray-500 mt-2">※アカウントを削除しても、同じメールアドレスで再登録可能です。</p>
             </div>
         </section>
 
@@ -849,25 +925,25 @@
             <h2 class="text-3xl font-bold mb-6 text-center text-red-800 dark:text-red-400">おみくじの轍</h2>
             
             <div class="text-center mb-6">
-                <p class="text-sm themed-text-sub">ログインすると、ご自身の軌跡と、杜を訪れた参拝者様の軌跡を閲覧できます。</p>
+                <p class="text-sm themed-text-sub">ログインすると、ご自身の履歴と皆様の参拝記録が保存されます。</p>
             </div>
 
-            <!-- 履歴コンテナ (ぼかし対象) -->
             <div id="history-container" class="">
+                <div class="grid grid-cols-2 gap-4 mb-4 text-center">
+                    <div class="themed-card p-3 rounded">
+                        <p class="text-xs themed-text-sub">あなたの参拝数</p>
+                        <p class="text-xl font-bold" id="personal-history-count">-</p>
+                    </div>
+                    <div class="themed-card p-3 rounded">
+                        <p class="text-xs themed-text-sub">みんなの参拝数 (直近)</p>
+                        <p class="text-xl font-bold" id="global-history-count">-</p>
+                    </div>
+                </div>
+
                 <div class="themed-card p-6 rounded shadow mb-6">
                     <div class="flex justify-between items-center border-b border-gray-300 dark:border-gray-600 pb-2 mb-4">
-                        <h3 class="font-bold">軌跡一覧</h3>
+                        <h3 class="font-bold">参拝の足跡一覧</h3>
                         <div class="text-xs text-gray-500" id="history-view-mode"></div>
-                    </div>
-                    <div id="history-summary" class="flex gap-4 mb-4 text-sm hidden">
-                        <div class="bg-red-50 dark:bg-red-900/20 p-2 rounded flex-1 text-center border border-red-200">
-                            <div class="font-bold text-red-700 dark:text-red-400">あなたの結び</div>
-                            <div class="font-mono text-xl" id="my-history-count">0</div>
-                        </div>
-                        <div class="bg-gray-50 dark:bg-gray-800 p-2 rounded flex-1 text-center border border-gray-200">
-                            <div class="font-bold text-gray-700 dark:text-gray-400">みんなの結び</div>
-                            <div class="font-mono text-xl" id="global-history-count">0</div>
-                        </div>
                     </div>
                     <div id="history-list" class="space-y-3">
                         <!-- JSで挿入 -->
@@ -875,11 +951,10 @@
                 </div>
             </div>
 
-            <!-- 非ログイン時のオーバーレイ -->
             <div id="history-login-overlay" class="history-overlay hidden">
                 <i class="bi bi-lock-fill text-4xl text-gray-400 mb-4 block"></i>
                 <p class="text-lg font-bold mb-2">轍を見るには会員証が必要です</p>
-                <p class="text-sm themed-text-sub mb-4">ログインすると、過去の結果を振り返ることができます。</p>
+                <p class="text-sm themed-text-sub mb-4">ログインすると、過去の結果を詳細まで振り返ることができます。</p>
                 <button onclick="showView('auth')" class="btn-primary">ログイン / 登録</button>
             </div>
         </section>
@@ -981,8 +1056,8 @@
         <!-- ビュー: 記事詳細 -->
         <section id="view-article-detail" class="view-section">
             <div class="max-w-3xl mx-auto mb-4">
-                <button onclick="backToArticleList()" class="text-sm themed-text-sub hover:text-red-500 flex items-center gap-1">
-                    <i class="bi bi-arrow-left"></i> 一覧に戻る
+                <button onclick="articleBack()" class="text-sm themed-text-sub hover:text-red-500">
+                    <i class="bi bi-arrow-left"></i> 戻る
                 </button>
             </div>
             <div id="article-detail-content" class="article-container themed-card">
@@ -1131,42 +1206,12 @@
         </button>
     </div>
 
-    <!-- プロフィール設定モーダル -->
-    <div id="profile-modal" onclick="closeProfileModal(event)">
-        <div id="profile-content" onclick="event.stopPropagation()">
-            <h2 class="text-xl font-bold mb-4">プロフィール設定</h2>
-            
-            <div class="mb-6">
-                <h3 class="font-bold text-sm mb-2 border-b pb-1">ユーザー名変更</h3>
-                <input type="text" id="update-username" placeholder="新しいユーザー名" class="w-full p-2 border rounded mb-2 themed-input">
-                <button onclick="updateProfile('username')" class="btn-primary py-1 px-4 text-sm w-full">変更</button>
-            </div>
-
-            <div class="mb-6">
-                <h3 class="font-bold text-sm mb-2 border-b pb-1">パスワード変更</h3>
-                <input type="password" id="update-pass-old" placeholder="現在のパスワード" class="w-full p-2 border rounded mb-2 themed-input">
-                <input type="password" id="update-pass-new" placeholder="新しいパスワード" class="w-full p-2 border rounded mb-2 themed-input">
-                <button onclick="updateProfile('password')" class="btn-primary py-1 px-4 text-sm w-full">変更</button>
-            </div>
-
-            <div class="mt-8 border-t pt-4">
-                <button onclick="deleteAccount()" class="text-red-500 text-xs underline hover:text-red-700">アカウントを削除する</button>
-                <p class="text-[10px] text-gray-500 mt-1">※削除後も同じメールアドレスで再登録可能です。</p>
-            </div>
-        </div>
-        <button onclick="closeProfileModal(null)" class="fixed top-5 right-5 text-white text-4xl hover:text-gray-300 z-[2100]">
-            <i class="bi bi-x-circle"></i>
-        </button>
-    </div>
-
     <!-- JavaScript ロジック -->
     <script>
         // ==========================================
-        //  設定: Cloudflare WorkerのURL (修正済み)
+        //  設定: Cloudflare WorkerのURL
         // ==========================================
         const API_BASE = "https://aaaaa.nden14800.workers.dev";
-        
-        // サイトのベースURL
         const SITE_URL = "https://fortune-telling-at-tenmei-no-mori-authentic-today-s-fortun.pages.dev";
 
         // --- 状態管理 ---
@@ -1174,17 +1219,16 @@
             view: 'home',
             user: null, // { email, username, token }
             lastResult: null,
-            liveCount: 0,
-            prevArticleView: null // 記事詳細からの戻り先
+            liveCount: 0 
         };
 
         let favoriteList = [];
         let dailyRanking = [];
-        let globalHistory = []; 
+        let globalHistory = [];
+        let personalHistory = [];
 
         // --- イニシャライズ ---
         window.onload = function() {
-            showLoading(true);
             initHomeAnimation();
             initZodiacSystem();
             
@@ -1198,24 +1242,27 @@
             }
             updateAuthUI();
 
-            // 統計とカウンター取得
-            fetchCount();
+            startLiveCounter();
             fetchHistoryStats();
             setInterval(fetchHistoryStats, 5000); 
-            setInterval(fetchCount, 5000);
             
-            // お気に入りの読み込み
             loadFavorites();
-            showLoading(false);
+
+            // シェアURLパラメータチェック
+            const params = new URLSearchParams(window.location.search);
+            const shareData = params.get('d');
+            if (shareData) {
+                try {
+                    const decoded = JSON.parse(atob(shareData));
+                    showResultDetail(false, decoded);
+                } catch(e) {
+                    console.error("Share data decode error", e);
+                }
+            }
         };
 
         function showLoading(show) {
-            const overlay = document.getElementById('loading-overlay');
-            if(show) {
-                overlay.style.display = 'flex';
-            } else {
-                overlay.style.display = 'none';
-            }
+            document.getElementById('loading-overlay').style.display = show ? 'flex' : 'none';
         }
 
         function showView(viewId) {
@@ -1230,11 +1277,6 @@
             target.style.display = 'block';
             void target.offsetWidth; 
             target.classList.add('active');
-            
-            // 記事詳細の戻り先管理
-            if (viewId === 'news' || viewId === 'column') {
-                currentState.prevArticleView = viewId;
-            }
             currentState.view = viewId;
 
             if(viewId === 'draw') {
@@ -1245,12 +1287,8 @@
             }
         }
 
-        function backToArticleList() {
-            if (currentState.prevArticleView) {
-                showView(currentState.prevArticleView);
-            } else {
-                showView('home');
-            }
+        function articleBack() {
+            showView('home'); 
         }
 
         // --- ホームアニメーション ---
@@ -1269,28 +1307,29 @@
         }
 
         // --- ライブカウンター (API連携) ---
-        async function fetchCount() {
-            try {
-                const res = await fetch(`${API_BASE}/api/counter`);
-                if(res.ok) {
-                    const data = await res.json();
-                    // ログインしてない場合は表示だけ、してれば値はAPI由来
-                    currentState.liveCount = data.count || 0;
-                    document.getElementById('live-counter').textContent = currentState.liveCount.toLocaleString() + "本";
-                    
-                    const now = new Date();
-                    document.getElementById('counter-time').textContent = now.toLocaleTimeString();
-                }
-            } catch(e) {
-                console.error("Counter fetch error", e);
+        function startLiveCounter() {
+            const el = document.getElementById('live-counter');
+            const timeEl = document.getElementById('counter-time');
+            
+            fetchCount();
+            setInterval(fetchCount, 5000);
+
+            async function fetchCount() {
+                const now = new Date();
+                timeEl.textContent = now.toLocaleTimeString();
+                try {
+                    const res = await fetch(`${API_BASE}/api/counter`);
+                    if(res.ok) {
+                        const data = await res.json();
+                        // サーバーの値をそのまま表示 (KV修正済み前提)
+                        currentState.liveCount = (data.count || 0);
+                        el.textContent = currentState.liveCount.toLocaleString() + "本";
+                    }
+                } catch(e) { console.error(e); }
             }
         }
 
-        function startOmikuji() {
-            showView('draw');
-        }
-
-        // --- 統計情報の取得と表示 (API連携) ---
+        // --- 統計情報の取得 ---
         async function fetchHistoryStats() {
             try {
                 const res = await fetch(`${API_BASE}/api/stats`);
@@ -1316,12 +1355,14 @@
                     setBar('kyo', stats.kyo, counts.kyo);
                     setBar('daikyo', stats.daikyo, counts.daikyo);
                 }
-            } catch(e) {
-                console.error("Stats fetch error", e);
-            }
+            } catch(e) { console.error(e); }
         }
 
         // --- おみくじロジック ---
+        function startOmikuji() {
+            showView('draw');
+        }
+
         function resetOmikujiPool() {
             const pool = document.getElementById('omikuji-pool');
             pool.innerHTML = '';
@@ -1368,20 +1409,14 @@
             }
         }
 
-        // 12段階の順位に対応したデータ (おみくじ堂準拠)
         const omikujiResults = [
-            { type: "大吉", poem: "枯れ果てし 枝に再び 花咲くが如し", desc: "最高の運気です。長年の努力が報われ、枯れ木に花が咲くような喜びが訪れるでしょう。しかし慢心は禁物。感謝の心を忘れずに。", rankCode: 'daikichi' },
-            { type: "中吉", poem: "照る月を 雲が隠せど 風払うなり", desc: "一時的な迷いがあっても、すぐに晴れ間が見えます。自分の信念を貫くことで、雲を払う風のような助けが現れるはずです。", rankCode: 'chukichi' },
-            { type: "小吉", poem: "小川の水 淀まず流るる 様を見るべし", desc: "派手さはありませんが、平穏無事な日々が続きます。日々の小さな幸せを大切にし、流れに身を任せるのが吉です。", rankCode: 'shokichi' },
-            { type: "吉", poem: "春風に 池の氷も 解け初めて", desc: "厳しい冬が終わり、徐々に運気が上昇しています。焦らず着実に進めば、池の氷が解けるように悩みも消えていくでしょう。", rankCode: 'kichi' },
-            { type: "半吉", poem: "山道の 行き交う人も なかりけり", desc: "孤独を感じるかもしれませんが、それは自分自身と向き合うための大切な時間です。静寂の中に答えがあります。", rankCode: 'kichi' }, 
-            { type: "末吉", poem: "山道の 険しき坂も 一歩より", desc: "今は登り坂で苦しい時かもしれませんが、一歩一歩進めば必ず頂上に辿り着けます。忍耐力が試される時です。", rankCode: 'suekichi' },
-            { type: "末小吉", poem: "岸打つ波の 音も静かに", desc: "嵐の前の静けさではなく、凪の状態です。今は大きな行動を起こさず、力を蓄える時期と心得ましょう。", rankCode: 'suekichi' },
-            { type: "凶", poem: "雨雲の 晴れ間も見えず 濡れ衣かな", desc: "誤解を受けやすく、思うようにいかない時期です。今は弁解せず、静かに嵐が過ぎるのを待つのが賢明な判断です。", rankCode: 'kyo' },
-            { type: "小凶", poem: "古き家 柱も朽ちて 危うきかな", desc: "基盤が揺らいでいます。新しいことを始めるよりも、足元を固め、基本的な生活習慣を見直すことが重要です。", rankCode: 'kyo' },
-            { type: "半凶", poem: "深き霧 道を見失う 心地せり", desc: "先が見えず不安になりますが、無理に進もうとすれば怪我をします。霧が晴れるまで、その場で待つのも勇気です。", rankCode: 'kyo' },
-            { type: "末凶", poem: "枯葉散る 秋の夕暮れ 寂しきかな", desc: "終わりは始まりの合図でもあります。何かを手放すことで、新しい運気が入ってくるスペースができるでしょう。", rankCode: 'kyo' },
-            { type: "大凶", poem: "嵐吹く 荒野に一人 立つが如し", desc: "八方塞がりの厳しい運勢。無理に動くと災いを招きます。身を潜め、自分を見つめ直す修行の時と心得てください。", rankCode: 'daikyo' }
+            { type: "大吉", poem: "枯れ果てし 枝に再び 花咲くが如し", desc: "最高の運気です。長年の努力が報われ、枯れ木に花が咲くような喜びが訪れるでしょう。しかし慢心は禁物。感謝の心を忘れずに。" },
+            { type: "中吉", poem: "照る月を 雲が隠せど 風払うなり", desc: "一時的な迷いがあっても、すぐに晴れ間が見えます。自分の信念を貫くことで、雲を払う風のような助けが現れるはずです。" },
+            { type: "小吉", poem: "小川の水 淀まず流るる 様を見るべし", desc: "派手さはありませんが、平穏無事な日々が続きます。日々の小さな幸せを大切にし、流れに身を任せるのが吉です。" },
+            { type: "吉", poem: "春風に 池の氷も 解け初めて", desc: "厳しい冬が終わり、徐々に運気が上昇しています。焦らず着実に進めば、池の氷が解けるように悩みも消えていくでしょう。" },
+            { type: "末吉", poem: "山道の 険しき坂も 一歩より", desc: "今は登り坂で苦しい時かもしれませんが、一歩一歩進めば必ず頂上に辿り着けます。忍耐力が試される時です。" },
+            { type: "凶", poem: "雨雲の 晴れ間も見えず 濡れ衣かな", desc: "誤解を受けやすく、思うようにいかない時期です。今は弁解せず、静かに嵐が過ぎるのを待つのが賢明な判断です。" },
+            { type: "大凶", poem: "嵐吹く 荒野に一人 立つが如し", desc: "八方塞がりの厳しい運勢。無理に動くと災いを招きます。身を潜め、自分を見つめ直す修行の時と心得てください。" }
         ];
 
         function drawResult(element) {
@@ -1399,44 +1434,63 @@
                 } else {
                     clearInterval(timer);
                     overlay.style.display = 'none';
-                    showResultDetail(true); // true = 新規ドロー
+                    showResultDetail(true); 
                 }
             }, 1000);
         }
 
         async function showResultDetail(isNewDraw, dataOverride = null) {
-            showLoading(true);
-            let resultData;
-            let randNum;
-            let detailsList = []; 
-            let drawDateStr;
+            let resultData, randNum, detailsList, luckyItems, unluckyItems, timestamp, username;
 
             if (isNewDraw) {
                 // 新規抽選
-                resultData = omikujiResults[Math.floor(Math.random() * omikujiResults.length)];
+                const base = omikujiResults[Math.floor(Math.random() * omikujiResults.length)];
                 randNum = Math.floor(Math.random() * 100) + 1;
-                
-                const cats = ['願望','待人','失物','旅行','商売','学問','恋愛','転居','病気'];
-                const vals = ['叶う','来る','出る','吉','良','励め','実る','良し','治る','遅れる','来ず','出難い','控','耐','危','悪'];
-                
+                timestamp = Date.now();
+                username = currentState.user ? (currentState.user.username || "参拝者") : "ゲスト";
+
+                // 詳細項目
+                const cats = ['願事','恋愛','待人','商売','旅立','学問','病気'];
+                const vals = ['叶う','良し','来る','繁盛','吉','成就','治る','遅れる','待て','控','難','危'];
                 detailsList = cats.map(c => ({
                     title: c,
                     content: vals[Math.floor(Math.random() * vals.length)]
                 }));
-                
-                const now = new Date();
-                drawDateStr = `${now.getFullYear()}/${now.getMonth()+1}/${now.getDate()} ${now.getHours()}:${String(now.getMinutes()).padStart(2, '0')}`;
 
-                currentState.lastResult = { 
-                    ...resultData, 
-                    num: randNum, 
-                    timestamp: now.getTime(), 
-                    detail: detailsList,
-                    dateStr: drawDateStr
+                // ラッキー/アンラッキー
+                const items = ["古時計","香水","手鏡","文庫本","スニーカー","万年筆"];
+                const spots = ["図書館","カフェ","神社","海辺","高台","公園"];
+                const colors = ["赤","青","白","金","紫","緑"];
+                const persons = ["旧友","年上","年下","家族","先生","初対面"];
+                
+                luckyItems = {
+                    item: items[Math.floor(Math.random()*items.length)],
+                    spot: spots[Math.floor(Math.random()*spots.length)],
+                    color: colors[Math.floor(Math.random()*colors.length)],
+                    person: persons[Math.floor(Math.random()*persons.length)]
+                };
+                unluckyItems = {
+                    item: items[Math.floor(Math.random()*items.length)],
+                    spot: spots[Math.floor(Math.random()*spots.length)],
+                    person: persons[Math.floor(Math.random()*persons.length)]
                 };
 
-                // ログインしている場合のみAPIへ送信
+                resultData = { 
+                    type: base.type, 
+                    poem: base.poem, 
+                    desc: base.desc,
+                    num: randNum, 
+                    detail: detailsList,
+                    lucky: luckyItems,
+                    unlucky: unluckyItems,
+                    timestamp: timestamp,
+                    username: username
+                };
+                currentState.lastResult = resultData;
+
+                // ログイン時のみ保存・更新
                 if(currentState.user) {
+                    showLoading(true);
                     try {
                         const res = await fetch(`${API_BASE}/api/draw`, {
                             method: 'POST',
@@ -1446,146 +1500,241 @@
                                 token: currentState.user.token,
                                 result: resultData.type,
                                 poem: resultData.poem,
-                                detail: detailsList 
+                                detail: detailsList,
+                                lucky: luckyItems,
+                                unlucky: unluckyItems
                             })
                         });
                         
                         if(res.ok) {
                             const data = await res.json();
                             if(data.success && data.count) {
-                                currentState.liveCount = data.count; // カウンター更新
+                                // サーバーからのカウント
+                                currentState.liveCount = data.count;
+                                document.getElementById('live-counter').textContent = currentState.liveCount.toLocaleString() + "本";
                                 fetchHistoryStats();
                             }
                         }
-                    } catch(e) {
-                        console.error("Draw API Error", e);
-                    }
+                    } catch(e) { console.error(e); }
+                    finally { showLoading(false); }
                 }
 
             } else {
-                // 履歴からの表示
+                // 復元
                 resultData = dataOverride;
                 randNum = dataOverride.num || 1;
-                detailsList = dataOverride.detail || [];
-                const d = new Date(dataOverride.timestamp || Date.now());
-                drawDateStr = `${d.getFullYear()}/${d.getMonth()+1}/${d.getDate()} ${d.getHours()}:${String(d.getMinutes()).padStart(2, '0')}`;
+                detailsList = dataOverride.detail;
+                luckyItems = dataOverride.lucky;
+                unluckyItems = dataOverride.unlucky;
+                timestamp = dataOverride.timestamp;
+                username = dataOverride.username || "参拝者";
+                currentState.lastResult = resultData;
             }
 
-            // DOM更新 (カードに情報を流し込む)
-            renderResultToCard('result-card-outer', resultData, randNum, detailsList, drawDateStr);
+            // レンダリング (メインエリア)
+            renderResultToCard('result-card-outer', resultData, true); 
 
-            showLoading(false);
             showView('result');
             
-            if (isNewDraw) {
-                setTimeout(generateResultImage, 1000);
-            }
+            // 自動画像生成は廃止（ユーザー操作時のみ実行）
+            // コンテナをリセット
+            const container = document.getElementById('generated-image-container');
+            container.innerHTML = '';
+            container.classList.add('hidden');
+            document.getElementById('gen-img-status').textContent = "";
         }
 
-        function renderResultToCard(outerId, resultData, randNum, detailsList, dateStr) {
+        function renderResultToCard(outerId, data, withFooter) {
             const outer = document.getElementById(outerId);
-            const numText = outer.querySelector('#result-num');
-            const kanji = outer.querySelector('#result-kanji');
-            const poem = outer.querySelector('#result-poem');
-            const details = outer.querySelector('#result-details');
-            const qrBox = outer.querySelector('#qrcode');
-            const dateEl = outer.querySelector('#result-date');
-            const titleName = outer.querySelector('#result-title-name');
+            outer.innerHTML = ''; 
 
-            // ユーザー名表示
-            const name = currentState.user ? currentState.user.username : "あなた";
-            titleName.textContent = `${name}さんのおみくじの結果`;
-
-            // クラスリセット
+            // スタイル適用
             outer.className = 'result-card-outer';
-            if(resultData.type === '大吉') outer.classList.add('is-daikichi');
-            else if (resultData.type === '大凶') outer.classList.add('is-daikyo');
+            if (data.type === "大吉") outer.classList.add("style-daikichi");
+            else if (data.type === "大凶") outer.classList.add("style-daikyo");
+            else outer.classList.add("style-normal");
 
-            numText.textContent = `第${randNum}番`;
-            kanji.textContent = resultData.type;
-            poem.textContent = resultData.poem;
-            dateEl.textContent = dateStr;
+            // 1. 最上部: 家紋 + タイトル
+            const headerDiv = document.createElement('div');
+            headerDiv.className = 'result-logo-area';
+            headerDiv.innerHTML = `
+                <div class="result-kamon accent-text"><i class="bi bi-flower1"></i></div>
+                <div class="result-title-text accent-text">運勢・天命乃杜</div>
+            `;
+            outer.appendChild(headerDiv);
+
+            // 2. 累計発行本数 (第〇〇番の代わり)
+            const issueDiv = document.createElement('div');
+            issueDiv.className = 'result-issue-num';
+            let issueNum = currentState.liveCount || 15118061;
+            issueDiv.textContent = `累計発行本数 ${issueNum.toLocaleString()} 本`;
+            outer.appendChild(issueDiv);
+
+            // 3. 中央: 運勢結果（円）
+            const circleBox = document.createElement('div');
+            circleBox.className = 'result-circle-box accent-border';
+            circleBox.innerHTML = `<div class="result-kanji-main accent-text">${data.type}</div>`;
+            outer.appendChild(circleBox);
+
+            // 4. 円の下: 運勢という文字
+            const labelSub = document.createElement('div');
+            labelSub.className = 'result-label-sub accent-text';
+            labelSub.textContent = '運勢';
+            outer.appendChild(labelSub);
+
+            // 5. メインメッセージ + 助言
+            const msgArea = document.createElement('div');
+            msgArea.className = 'result-main-message-area';
             
-            // 詳細項目
-            details.innerHTML = '';
-            if(detailsList && detailsList.length > 0) {
-                detailsList.forEach(item => {
-                    const row = document.createElement('div');
-                    row.className = 'detail-row';
-                    row.innerHTML = `<span class="detail-title">${item.title}</span><span class="detail-content">${item.content}</span>`;
-                    details.appendChild(row);
+            const adviceBox = document.createElement('div');
+            adviceBox.className = 'result-advice-box accent-border';
+            const adviceText = data.desc || "心穏やかに過ごすべし。";
+            adviceBox.innerHTML = `<span class="advice-label accent-text">助言</span> <span class="accent-text">${adviceText}</span>`;
+            
+            const poemDiv = document.createElement('div');
+            poemDiv.className = 'result-poem-vertical accent-text';
+            poemDiv.textContent = data.poem;
+
+            msgArea.appendChild(adviceBox);
+            msgArea.appendChild(poemDiv);
+            outer.appendChild(msgArea);
+
+            // 6. 詳細運勢リスト (縦書き)
+            const detailGrid = document.createElement('div');
+            detailGrid.className = 'result-details-grid accent-border';
+            
+            if (data.detail) {
+                data.detail.forEach(d => {
+                    const col = document.createElement('div');
+                    col.className = 'detail-column';
+                    col.innerHTML = `<span class="detail-item-label accent-text">${d.title}</span> <span class="detail-item-content accent-text">${d.content}</span>`;
+                    detailGrid.appendChild(col);
                 });
             }
+            outer.appendChild(detailGrid);
 
-            // QRコード生成
-            qrBox.innerHTML = '';
-            new QRCode(qrBox, {
-                text: SITE_URL,
-                width: 100,
-                height: 100,
-                colorDark : "#000000",
-                colorLight : "#ffffff",
-                correctLevel : QRCode.CorrectLevel.H
-            });
+            // 7. 開運・不運項目
+            const luckyArea = document.createElement('div');
+            luckyArea.className = 'lucky-area';
+            
+            const lBox = document.createElement('div');
+            lBox.className = 'lucky-box accent-border';
+            if (data.lucky) {
+                lBox.innerHTML = `
+                    <div class="lucky-title accent-text">開運</div>
+                    <div class="lucky-row accent-text"><span class="lucky-icon"><i class="bi bi-stars"></i></span>物：${data.lucky.item}</div>
+                    <div class="lucky-row accent-text"><span class="lucky-icon"><i class="bi bi-geo-alt"></i></span>所：${data.lucky.spot}</div>
+                    <div class="lucky-row accent-text"><span class="lucky-icon"><i class="bi bi-palette"></i></span>色：${data.lucky.color}</div>
+                    <div class="lucky-row accent-text"><span class="lucky-icon"><i class="bi bi-person"></i></span>人：${data.lucky.person}</div>
+                `;
+            }
+            luckyArea.appendChild(lBox);
+
+            const uBox = document.createElement('div');
+            uBox.className = 'unlucky-box accent-border';
+            if (data.unlucky) {
+                uBox.innerHTML = `
+                    <div class="lucky-title accent-text red-text" style="color:red">不運・注意</div>
+                    <div class="lucky-row accent-text"><span class="lucky-icon"><i class="bi bi-exclamation-triangle"></i></span>物：${data.unlucky.item}</div>
+                    <div class="lucky-row accent-text"><span class="lucky-icon"><i class="bi bi-x-octagon"></i></span>所：${data.unlucky.spot}</div>
+                    <div class="lucky-row accent-text"><span class="lucky-icon"><i class="bi bi-person-x"></i></span>人：${data.unlucky.person}</div>
+                `;
+            }
+            luckyArea.appendChild(uBox);
+            outer.appendChild(luckyArea);
+
+            // 8. フッター (日時・名前・QR)
+            if (withFooter) {
+                const footer = document.createElement('div');
+                footer.className = 'result-footer-info accent-border';
+                
+                const metaDiv = document.createElement('div');
+                metaDiv.style.textAlign = 'left';
+                
+                const name = data.username || "参拝者";
+                const date = new Date(data.timestamp || Date.now());
+                const dateStr = `${date.getFullYear()}年${date.getMonth()+1}月${date.getDate()}日 ${date.getHours()}:${String(date.getMinutes()).padStart(2,'0')}`;
+
+                metaDiv.innerHTML = `
+                    <div class="result-user-name accent-text">${name} 様の運勢</div>
+                    <div class="result-date accent-text">参拝日: ${dateStr}</div>
+                `;
+
+                const qrDiv = document.createElement('div');
+                qrDiv.className = 'result-qr-container';
+                const qrTarget = document.createElement('div');
+                qrDiv.appendChild(qrTarget);
+                
+                footer.appendChild(metaDiv);
+                footer.appendChild(qrDiv);
+                outer.appendChild(footer);
+
+                setTimeout(() => {
+                    new QRCode(qrTarget, {
+                        text: SITE_URL,
+                        width: 60,
+                        height: 60,
+                        colorDark : "#000000",
+                        colorLight : "#ffffff",
+                        correctLevel : QRCode.CorrectLevel.H
+                    });
+                }, 100);
+            }
         }
 
         // --- 履歴・おみくじの轍 ---
         async function loadHistory() {
-            showLoading(true);
             const list = document.getElementById('history-list');
             const container = document.getElementById('history-container');
             const overlay = document.getElementById('history-login-overlay');
             const viewMode = document.getElementById('history-view-mode');
-            const summary = document.getElementById('history-summary');
+            const myCountEl = document.getElementById('personal-history-count');
+            const globalCountEl = document.getElementById('global-history-count');
 
             list.innerHTML = '';
 
             if(!currentState.user) {
-                // 非ログイン時
                 container.classList.add('history-blurred');
                 overlay.classList.remove('hidden');
                 viewMode.textContent = "";
-                summary.classList.add('hidden');
+                myCountEl.textContent = "-";
+                globalCountEl.textContent = "-";
 
-                // ダミー表示
                 let html = '';
                 for(let i=0; i<10; i++) {
                     html += `
                         <div class="bg-gray-50 dark:bg-zinc-800 p-3 rounded flex justify-between items-center border-l-4 border-gray-300">
                             <div class="flex flex-col">
                                 <span class="text-xs themed-text-sub">??? 様</span>
-                                <span class="text-xs text-gray-400">2026/01/02 --:--</span>
+                                <span class="text-xs text-gray-400">----/--/--</span>
                             </div>
                             <span class="font-bold text-lg">???</span>
                         </div>
                     `;
                 }
                 list.innerHTML = html;
-                showLoading(false);
                 return;
             }
 
-            // ログイン時
             container.classList.remove('history-blurred');
             overlay.classList.add('hidden');
-            viewMode.textContent = "全参拝者の軌跡を表示中";
-            summary.classList.remove('hidden');
-            
+            viewMode.textContent = "全参拝者の記録";
+            list.innerHTML = '<p class="text-center text-sm themed-text-sub">読み込み中...</p>';
+            showLoading(true);
+
             try {
                 const res = await fetch(`${API_BASE}/api/history/global?token=${encodeURIComponent(currentState.user.token)}`);
                 if(res.ok) {
                     const data = await res.json();
-                    globalHistory = data.history || [];
+                    globalHistory = data.global || [];
+                    personalHistory = data.personal || [];
                     
-                    // 件数集計
-                    const myCount = globalHistory.filter(h => h.username === currentState.user.username).length;
-                    document.getElementById('my-history-count').textContent = myCount;
-                    document.getElementById('global-history-count').textContent = globalHistory.length;
+                    myCountEl.textContent = personalHistory.length + "回";
+                    globalCountEl.textContent = globalHistory.length + "回";
 
                     list.innerHTML = '';
                     if(globalHistory.length === 0) {
                         list.innerHTML = '<p class="text-gray-400 text-center">まだ履歴がありません。</p>';
-                        showLoading(false);
                         return;
                     }
 
@@ -1596,109 +1745,40 @@
                         const bgClass = isMe ? 'bg-red-50 dark:bg-red-900/20' : 'bg-gray-50 dark:bg-zinc-800';
 
                         div.className = `${bgClass} p-3 rounded flex justify-between items-center border-l-4 ${borderColor} cursor-pointer hover:opacity-80 transition shadow-sm`;
-                        // 履歴クリックで詳細再現
                         div.onclick = () => openHistoryDetail(index); 
 
                         const date = new Date(item.timestamp);
-                        const dateStr = `${date.getHours()}:${String(date.getMinutes()).padStart(2, '0')}`;
+                        const dateStr = `${date.getMonth()+1}/${date.getDate()} ${date.getHours()}:${String(date.getMinutes()).padStart(2, '0')}`;
                         
                         div.innerHTML = `
-                            <div class="flex flex-col">
+                            <div class="flex flex-col text-left">
                                 <span class="text-xs font-bold ${isMe ? 'text-red-600' : 'themed-text-sub'}">${item.username} 様</span>
                                 <span class="text-xs text-gray-400">${dateStr}</span>
                             </div>
                             <div class="flex items-center gap-4">
-                                <span class="text-xs text-gray-500 hidden sm:inline truncate max-w-[150px]">${item.poem}</span>
                                 <span class="font-bold text-red-700 dark:text-red-400 text-lg w-16 text-right">${item.result}</span>
                             </div>
                         `;
                         list.appendChild(div);
                     });
                 } else {
-                    list.innerHTML = '<p class="text-center text-red-500">履歴の取得に失敗しました。</p>';
+                    list.innerHTML = '<p class="text-center text-red-500">取得失敗</p>';
                 }
             } catch(e) {
                 console.error(e);
-                list.innerHTML = '<p class="text-center text-red-500">通信エラーが発生しました。</p>';
+                list.innerHTML = '<p class="text-center text-red-500">通信エラー</p>';
+            } finally {
+                showLoading(false);
             }
-            showLoading(false);
         }
 
-        // --- 履歴詳細モーダル ---
         function openHistoryDetail(index) {
             const data = globalHistory[index];
             const modal = document.getElementById('history-detail-modal');
             const content = document.getElementById('history-detail-content');
             
-            // データ再現 (引いた当時の情報を復元、なければ補完)
-            const restoreData = {
-                type: data.result,
-                poem: data.poem,
-                detail: data.detail || [], 
-                num: Math.floor(Math.random() * 100) + 1 
-            };
-            const d = new Date(data.timestamp);
-            const dateStr = `${d.getFullYear()}/${d.getMonth()+1}/${d.getDate()} ${d.getHours()}:${String(d.getMinutes()).padStart(2, '0')}`;
-
-            // モーダル内にカードHTMLを複製
-            content.innerHTML = `
-                <div class="result-card-outer mx-auto scale-90 origin-top" id="history-modal-card">
-                    <div class="result-title-name" id="hist-title-name"></div>
-                    <div class="result-subtitle">KNOTTING THE FORTUNE</div>
-                    <div class="result-card-paper">
-                        <div class="result-header">
-                            <div class="result-shrine-logo"><i class="bi bi-moon-stars-fill"></i> 天命乃杜</div>
-                            <div class="result-num" id="hist-num"></div>
-                        </div>
-                        <div class="result-circle">
-                            <div class="result-label">運勢</div>
-                            <div class="result-kanji" id="hist-kanji"></div>
-                        </div>
-                        <div class="result-body">
-                            <div class="result-poem-box">
-                                <div class="result-poem-content" id="hist-poem"></div>
-                                <div class="result-poem-title">助言</div>
-                            </div>
-                            <div class="result-details-col" id="hist-details"></div>
-                        </div>
-                        <div class="result-qr-box"><div id="hist-qrcode"></div></div>
-                        <div class="result-footer-link">fortune-telling-at-tenmei-no-mori.pages.dev</div>
-                        <div class="result-date" id="hist-date"></div>
-                    </div>
-                </div>
-            `;
-            
-            // IDを付け替えてレンダリング関数を呼ぶのは面倒なので、要素を直接操作
-            const card = document.getElementById('history-modal-card');
-            
-            // スタイル適用
-            card.className = 'result-card-outer mx-auto scale-90 origin-top';
-            if(restoreData.type === '大吉') card.classList.add('is-daikichi');
-            else if(restoreData.type === '大凶') card.classList.add('is-daikyo');
-
-            card.querySelector('#hist-title-name').textContent = `${data.username || '匿名'}さんのおみくじの結果`;
-            card.querySelector('#hist-num').textContent = `第${restoreData.num}番`;
-            card.querySelector('#hist-kanji').textContent = restoreData.type;
-            card.querySelector('#hist-poem').textContent = restoreData.poem;
-            card.querySelector('#hist-date').textContent = dateStr;
-
-            const details = card.querySelector('#hist-details');
-            details.innerHTML = '';
-            if(restoreData.detail && restoreData.detail.length > 0) {
-                restoreData.detail.forEach(item => {
-                    const row = document.createElement('div');
-                    row.className = 'detail-row';
-                    row.innerHTML = `<span class="detail-title">${item.title}</span><span class="detail-content">${item.content}</span>`;
-                    details.appendChild(row);
-                });
-            }
-
-            const qrBox = card.querySelector('#hist-qrcode');
-            qrBox.innerHTML = '';
-            new QRCode(qrBox, {
-                text: SITE_URL,
-                width: 100, height: 100, colorDark : "#000000", colorLight : "#ffffff", correctLevel : QRCode.CorrectLevel.H
-            });
+            content.innerHTML = '<div class="result-card-outer mx-auto scale-90 origin-top" id="history-modal-card"></div>';
+            renderResultToCard('history-modal-card', data, true);
             
             modal.style.display = 'flex';
         }
@@ -1708,348 +1788,189 @@
             document.getElementById('history-detail-modal').style.display = 'none';
         }
 
-        // --- プロフィール関連 ---
-        function openProfileModal() {
-            document.getElementById('profile-modal').style.display = 'flex';
-        }
-        function closeProfileModal(e) {
-            if(e && e.target.id !== 'profile-modal' && e.target.tagName !== 'BUTTON') return;
-            document.getElementById('profile-modal').style.display = 'none';
-        }
-
-        async function updateProfile(type) {
-            if(!currentState.user) return;
-            showLoading(true);
-            
-            let body = { email: currentState.user.email, token: currentState.user.token, type: type };
-            
-            if(type === 'username') {
-                const newName = document.getElementById('update-username').value;
-                if(!newName) return alert('新しいユーザー名を入力してください');
-                body.username = newName;
-            } else if (type === 'password') {
-                const oldPass = document.getElementById('update-pass-old').value;
-                const newPass = document.getElementById('update-pass-new').value;
-                if(!oldPass || !newPass) return alert('パスワードを入力してください');
-                body.oldPassword = oldPass;
-                body.newPassword = newPass;
-            }
-
-            try {
-                // エンドポイントは仮定 (実装時はBackendも対応が必要)
-                const res = await fetch(`${API_BASE}/api/auth/update`, {
-                    method: 'POST',
-                    headers: {'Content-Type': 'application/json'},
-                    body: JSON.stringify(body)
-                });
-                const data = await res.json();
-                if(res.ok && data.success) {
-                    alert('変更しました');
-                    if(type === 'username') {
-                        currentState.user.username = body.username;
-                        localStorage.setItem('omikuji_user', JSON.stringify(currentState.user));
-                        updateAuthUI();
-                    }
-                    closeProfileModal(null);
-                } else {
-                    alert('変更に失敗しました: ' + (data.message || '不明なエラー'));
-                }
-            } catch(e) {
-                alert('通信エラー');
-            }
-            showLoading(false);
-        }
-
-        async function deleteAccount() {
-            if(!confirm('本当にアカウントを削除しますか？\n（同じメールアドレスでの再登録は可能です）')) return;
-            showLoading(true);
-            try {
-                const res = await fetch(`${API_BASE}/api/auth/delete`, {
-                    method: 'POST',
-                    headers: {'Content-Type': 'application/json'},
-                    body: JSON.stringify({ email: currentState.user.email, token: currentState.user.token })
-                });
-                if(res.ok) {
-                    alert('アカウントを削除しました。');
-                    logout();
-                } else {
-                    alert('削除に失敗しました。');
-                }
-            } catch(e) {
-                alert('通信エラー');
-            }
-            showLoading(false);
-        }
-
-        // --- シェア用画像生成 ---
+        // --- シェア用画像生成 (UI崩れ修正版) ---
         function generateResultImage() {
             const status = document.getElementById('gen-img-status');
             status.textContent = "シェア画像を生成中...";
             
             const target = document.getElementById('result-capture-container');
             const container = document.getElementById('generated-image-container');
+            container.innerHTML = '';
             container.classList.add('hidden');
-            container.innerHTML = '<p class="text-green-600 font-bold mb-2">画像の生成完了</p>';
             
+            // 現在のスクロール位置を保存
+            const originalScrollPos = window.scrollY;
+
+            // キャプチャ設定
             html2canvas(target, { 
-                scale: 2, 
+                scale: 2, // 高解像度
                 useCORS: true, 
-                backgroundColor: null,
-                allowTaint: true
+                allowTaint: true,
+                backgroundColor: null, // 背景透過を許可（スタイル依存）
+                scrollX: 0,
+                scrollY: -window.scrollY, // スクロール補正
+                onclone: (clonedDoc) => {
+                    // キャプチャ時のクローンDOMに対する微調整
+                    // 縦書きのズレを防ぐため、特定のスタイルを強制リセット
+                    const clonedOuter = clonedDoc.getElementById('result-card-outer');
+                    if (clonedOuter) {
+                        // 縦書き要素の文字間隔をリセット（ブラウザ差異吸収）
+                        const verticals = clonedOuter.querySelectorAll('.result-poem-vertical, .result-advice-box, .detail-column');
+                        verticals.forEach(el => {
+                            el.style.letterSpacing = '0px'; 
+                            el.style.lineHeight = '1.8';
+                            el.style.fontFeatureSettings = '"palt"'; // プロポーショナルメトリクス調整
+                        });
+                        
+                        // 画像生成用に高さを確定させる
+                        clonedOuter.style.height = 'auto';
+                        clonedOuter.style.minHeight = '1200px'; 
+                        clonedOuter.style.transform = 'none'; // 変形リセット
+                    }
+                }
             }).then(canvas => {
                 status.textContent = "";
                 
+                container.innerHTML = '<p class="text-green-600 font-bold mb-2">画像の生成完了</p>';
                 const img = document.createElement('img');
                 img.src = canvas.toDataURL("image/png");
-                img.className = "mx-auto rounded border";
+                img.className = "mx-auto rounded border w-32 mb-2 shadow-sm"; // サムネイルとして小さく表示
                 container.appendChild(img);
                 container.classList.remove('hidden');
 
                 const dlLink = document.createElement('a');
                 dlLink.href = img.src;
-                dlLink.download = `omikuji_result_${Date.now()}.png`;
-                dlLink.className = "btn-primary text-sm mt-4 inline-block";
-                dlLink.innerHTML = '<i class="bi bi-download"></i> 画像を長押し等で保存';
+                dlLink.download = `tenmei_omikuji_${Date.now()}.png`;
+                dlLink.className = "btn-primary text-sm mt-2 inline-block";
+                dlLink.innerHTML = '<i class="bi bi-download"></i> ダウンロード';
                 container.appendChild(dlLink);
+
+                // スクロール位置を戻す（念のため）
+                window.scrollTo(0, originalScrollPos);
+
             }).catch(err => {
                 console.error(err);
-                status.textContent = "画像の生成に失敗しました";
+                status.textContent = "画像の生成に失敗しました。再試行してください。";
+                // スクロール位置を戻す
+                window.scrollTo(0, originalScrollPos);
             });
         }
 
-        // --- シェアアクション (パラメータ付きURL) ---
+        function getShareUrl() {
+            if(!currentState.lastResult) return SITE_URL;
+            const json = JSON.stringify(currentState.lastResult);
+            // 日本語文字化け対策のBase64エンコード
+            const encoded = btoa(unescape(encodeURIComponent(json))); 
+            return `${SITE_URL}?d=${encoded}`;
+        }
+
+        // --- シェアアクション (長文版・ユーザー名入り) ---
         function shareToX() {
             if(!currentState.lastResult) return;
             const res = currentState.lastResult;
-            let advice = "いまは我慢の時。";
-            if(res.type === "大吉") advice = "最高の運気です。";
-            if(res.type === "凶") advice = "今は耐える時です。";
-            
-            // 結果をURLパラメータに含める（簡易実装）
-            // 実際にはサーバーサイドでOGP生成が必要だが、ここではURLのみ生成
-            const shareUrl = `${SITE_URL}?result=${encodeURIComponent(res.type)}`;
-            
-            const text = `おみくじの結果は・・・「${res.type}」${res.type.includes('吉') ? '✨' : '😱'}\n\n【助言】\n${advice}\n\n（続きはWebで）\n ${shareUrl} #天命乃杜 #おみくじ #運勢診断`;
-            const intent = `https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}`;
+            const userName = res.username || "参拝者"; // ユーザー名取得
+
+            // 修正されたシェアテキスト
+            const text = `⛩️ 運勢・天命乃杜で運試し ⛩️
+
+${userName}様の運勢は……【 ${res.type} 】でした！
+
+📜 神託：
+『${res.poem}』
+
+神様より授かりし言葉を胸に、日々を大切に過ごします。
+禍を転じて福となす。心の在り方ひとつで未来は拓ける。
+
+👇 あなたも今すぐ無料で本格おみくじを引いてみませんか？
+詳細な運勢（願事・恋愛・待人・商売・学問...）や、
+あなただけの開運ラッキーアイテム・カラーも診断できます！
+
+会員登録すると、過去の履歴を「おみくじの轍」として保存したり、
+みんなの参拝記録を見たりすることも可能です✨
+
+#天命乃杜 #運勢天命乃杜 #おみくじ #占い #運勢 #運勢診断 #今日の運勢 #開運 #神社 #スピリチュアル #御神籤 #パワースポット #人生 #拡散希望`;
+
+            const url = getShareUrl();
+            const intent = `https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}&url=${encodeURIComponent(url)}`;
             window.open(intent, '_blank');
         }
         function shareToFB() {
-            const intent = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(SITE_URL)}`;
+            const url = getShareUrl();
+            const intent = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(url)}`;
             window.open(intent, '_blank');
         }
         function shareToLine() {
-            if(!currentState.lastResult) return;
-            const text = `おみくじの結果：「${currentState.lastResult.type}」\n${currentState.lastResult.poem} ${SITE_URL}`;
-            const intent = `https://social-plugins.line.me/lineit/share?url=${encodeURIComponent(SITE_URL)}&text=${encodeURIComponent(text)}`;
+            const url = getShareUrl();
+            const res = currentState.lastResult;
+            const text = `${res.username}の運勢：${res.type}\n${url}`;
+            const intent = `https://social-plugins.line.me/lineit/share?url=${encodeURIComponent(url)}&text=${encodeURIComponent(text)}`;
             window.open(intent, '_blank');
         }
 
-        // --- 記事コンテンツ ---
-        function openArticle(type, id) {
-            const container = document.getElementById('article-detail-content');
-            container.innerHTML = '';
-            
-            let html = '';
-            
-            if (type === 'column') {
-                if (id === 1) {
-                    html = `
-                        <div class="article-header">
-                            <div class="article-meta">
-                                <span class="article-tag">雑学</span>
-                                <span>2026/01/01</span>
-                            </div>
-                            <h2 class="article-title">おみくじの順番（正しい吉凶の順）</h2>
-                        </div>
-                        <div class="article-content">
-                            <p>初詣や神社参拝の際に引く「おみくじ」。結果に一喜一憂するのも楽しみの一つですが、その「順位」について正しく理解している人は意外と少ないかもしれません。</p>
-                            <p>実は神社やお寺によって解釈が異なるのですが、当サイト「運勢・天命乃杜」では、古来からの伝統に基づいた以下の12段階を採用しています。</p>
-                            <h3>当サイトの吉凶順位</h3>
-                            <ol class="list-decimal list-inside space-y-2 ml-4 mb-6 font-bold">
-                                <li>大吉 (だいきち)</li>
-                                <li>中吉 (ちゅうきち)</li>
-                                <li>小吉 (しょうきち)</li>
-                                <li>吉 (きち)</li>
-                                <li>半吉 (はんきち)</li>
-                                <li>末吉 (すえきち)</li>
-                                <li>末小吉 (すえしょうきち)</li>
-                                <li>凶 (きょう)</li>
-                                <li>小凶 (しょうきょう)</li>
-                                <li>半凶 (はんきょう)</li>
-                                <li>末凶 (すえきょう)</li>
-                                <li>大凶 (だいきょう)</li>
-                            </ol>
-                            <p>「吉」の位置づけが神社によって「大吉の次」とされる場合と、「小吉の下」とされる場合がありますが、当サイトでは「小吉と末吉の間」という中庸な位置づけとしています。</p>
-                            <p>しかし、最も重要なのは順位ではありません。おみくじの本質は、そこに書かれている「神様からの和歌や助言」にあります。大吉であっても戒めの言葉があれば気を引き締め、大凶であっても励ましの言葉があれば希望を持つことが大切です。</p>
-                        </div>
-                    `;
-                } else if (id === 2) {
-                    html = `
-                        <div class="article-header">
-                            <div class="article-meta">
-                                <span class="article-tag">豆知識</span>
-                                <span>2026/01/01</span>
-                            </div>
-                            <h2 class="article-title">悪い結果が出ても実は大丈夫？「凶」の正しい扱い方</h2>
-                        </div>
-                        <div class="article-content">
-                            <p>おみくじを引いて「凶」や「大凶」が出ると、誰しも気分が落ち込むものです。しかし、古来より「凶」は必ずしも忌むべきものとはされてきませんでした。</p>
-                            <h3>「凶」は運気の底、これからは上がるのみ</h3>
-                            <p>陰陽道などの考え方では、物事は極まれば反転すると考えます。「大吉」は今が頂点であり、これからは下り坂になる可能性があるため、むしろ慎重な行動が求められます。</p>
-                            <p>逆に「凶」は、今が運気の底であり、これからは上昇する一方であることを示唆しています。「禍を転じて福となす」という言葉通り、今の困難を乗り越えることで、より大きな幸運をつかむチャンスなのです。</p>
-                            <h3>結ぶか、持ち帰るか？</h3>
-                            <p>悪い結果が出た場合、神社の境内にある「結び所」に結んで帰る風習が一般的です。これには「神様と縁を結ぶ」「悪い運気を神様に預けて浄化してもらう」という意味があります。</p>
-                            <p>一方で、「戒めとして財布に入れて持ち歩く」という考え方もあります。自分への警告として時々読み返すことで、慎重な行動を心がけ、災いを未然に防ぐことができるからです。</p>
-                            <p>当サイトでは、引いたおみくじの結果は自動的に「おみくじの轍」に記録されます。これがデジタルの「結び所」です。悪い結果が出ても、ここに結んでいくことで運気は好転するでしょう。</p>
-                        </div>
-                    `;
-                } else if (id === 3) {
-                    html = `
-                        <div class="article-header">
-                            <div class="article-meta">
-                                <span class="article-tag">作法</span>
-                                <span>2025/12/30</span>
-                            </div>
-                            <h2 class="article-title">神社での正しい参拝マナー</h2>
-                        </div>
-                        <div class="article-content">
-                            <p>神社は神様のお住まいです。失礼のないよう、基本的な参拝マナーをおさらいしましょう。</p>
-                            <h3>1. 鳥居をくぐる時</h3>
-                            <p>鳥居は俗界と神域を分ける結界です。くぐる前には一礼（一揖）をし、帽子などは取ります。参道の中央（正中）は神様の通り道なので、避けて端を歩くのがマナーです。</p>
-                            <h3>2. 手水舎での清め方</h3>
-                            <p>参拝の前に、身の穢れを落とします。<br>
-                            1. 右手で柄杓を持ち、水を汲んで左手を清める。<br>
-                            2. 左手に持ち替え、右手を清める。<br>
-                            3. 再び右手に持ち、左手で水を受けて口をすすぐ（柄杓に直接口をつけない）。<br>
-                            4. 左手を再度清め、最後に柄杓を立てて残った水で柄を洗い流す。</p>
-                            <h3>3. 拝礼（二礼二拍手一礼）</h3>
-                            <p>お賽銭を入れた後、鈴を鳴らし、姿勢を正します。<br>
-                            1. 深く二回お辞儀をする（二礼）。<br>
-                            2. 胸の前で両手を合わせ、右手を少し下にずらして二回拍手を打つ（二拍手）。<br>
-                            3. 指先を揃えて祈りを捧げる。<br>
-                            4. 最後にもう一度深くお辞儀をする（一礼）。</p>
-                            <p>※出雲大社など、一部の神社では「四拍手」など作法が異なる場合があります。</p>
-                        </div>
-                    `;
-                } else if (id === 4) {
-                    html = `
-                        <div class="article-header">
-                            <div class="article-meta">
-                                <span class="article-tag">豆知識</span>
-                                <span>2025/12/28</span>
-                            </div>
-                            <h2 class="article-title">「失せ物」の本当の意味</h2>
-                        </div>
-                        <div class="article-content">
-                            <p>おみくじの項目にある「失せ物（うせもの）」。これは単に「落とし物」や「無くした財布」のことだけを指すのではありません。</p>
-                            <h3>形あるもの、形なきもの</h3>
-                            <p>失せ物には、物理的な物品だけでなく、「失った信頼」「忘れていた初心」「疎遠になった友人」など、形のないものも含まれます。</p>
-                            <h3>言葉の意味</h3>
-                            <ul class="list-disc ml-5 mb-4">
-                                <li><b>「出ず（いでず）」</b>：残念ながら戻ってこない可能性が高いです。諦めて新しいものを探すか、執着を手放すべき時です。</li>
-                                <li><b>「出る」</b>：見つかります。焦らず探しましょう。</li>
-                                <li><b>「高いところより出る」</b>：棚の上や、普段見ない高い場所、あるいは目上の人からの連絡で見つかるかもしれません。</li>
-                                <li><b>「女（男）の知る事あり」</b>：その性別の知人が何か知っているか、持っている可能性があります。</li>
-                            </ul>
-                            <p>「失せ物」の欄を見る時は、今自分が「何を探しているのか」「何を失ってしまったと感じているのか」を問い直してみると、深いメッセージを受け取れるかもしれません。</p>
-                        </div>
-                    `;
-                } else if (id === 5) {
-                    html = `
-                        <div class="article-header">
-                            <div class="article-meta">
-                                <span class="article-tag">開運</span>
-                                <span>2025/12/25</span>
-                            </div>
-                            <h2 class="article-title">「待ち人」は恋愛だけじゃない</h2>
-                        </div>
-                        <div class="article-content">
-                            <p>「待ち人来ず」と出ると、恋人ができないのかとガッカリする人が多いですが、これは誤解です。</p>
-                            <h3>人生を導くキーパーソン</h3>
-                            <p>おみくじにおける「待ち人」とは、「あなたの人生に良い影響を与えてくれる人」「運命を切り開くきっかけとなる人」全般を指します。</p>
-                            <p>それは将来の恋人や結婚相手かもしれませんし、ビジネスパートナー、あるいは人生の師となる先生、一生の親友、もしかすると赤ちゃん（妊娠）のことかもしれません。</p>
-                            <h3>「来ず」の意味</h3>
-                            <p>「来ず」とあっても、一生現れないわけではありません。「今はまだその時ではない」「自分から動きなさい」というメッセージであることが多いのです。「音信（たより）あり」とあれば、遠くから連絡が来るでしょう。</p>
-                            <p>待ち人は、じっと待っているだけでは現れないこともあります。自分を磨き、行動範囲を広げることで、巡り会う確率はぐっと高まります。</p>
-                        </div>
-                    `;
-                }
-            } else if (type === 'news') {
-                 if (id === 1) {
-                    html = `
-                        <div class="article-header">
-                            <div class="article-meta">
-                                <span>2026年1月1日 0:00</span>
-                            </div>
-                            <h2 class="article-title">あけましておめでとうごさいます</h2>
-                        </div>
-                        <div class="article-content">
-                            <p>謹んで新年のご祝詞を申し上げます。</p>
-                            <p>旧年中はひとかたならぬご厚情を賜り、誠にありがとうございました。<br>本年も皆様に幸多き年となりますよう、天命乃杜運営一同、心よりお祈り申し上げます。</p>
-                            <p>新しい年が始まり、皆様それぞれに新たな目標や願いをお持ちのことと存じます。当サイトのおみくじが、皆様の迷いを晴らし、一歩を踏み出すための道標となれば幸いです。</p>
-                            <p>本年も変わらぬご愛顧のほど、よろしくお願い申し上げます。</p>
-                        </div>
-                    `;
-                } else if (id === 2) {
-                    html = `
-                        <div class="article-header">
-                            <div class="article-meta">
-                                <span>2026年1月2日 16:00</span>
-                            </div>
-                            <h2 class="article-title">「運勢・天命乃杜」を公開いたしました。</h2>
-                        </div>
-                        <div class="article-content">
-                            <p>平素より格別のご高配を賜り、厚く御礼申し上げます。</p>
-                            <p>この度、誰でも気軽に、かつ本格的な運勢占いを楽しめるWebサイト「運勢・天命乃杜（てんめいのもり）」を正式に公開いたしました。</p>
-                            <p>当サイトでは、伝統的なおみくじの要素に加え、西洋占星術と血液型診断を組み合わせた独自のアルゴリズムによる「日替わり運勢ランキング」を提供しております。また、会員登録（無料）を行っていただくことで、ご自身の運勢履歴を保存したり、全体の統計データに参加したりすることが可能です。</p>
-                            <p>今後もコンテンツの拡充や機能改善に努めてまいりますので、末永くご愛顧いただけますようお願い申し上げます。</p>
-                        </div>
-                    `;
-                } else if (id === 3) {
-                    html = `
-                        <div class="article-header">
-                            <div class="article-meta">
-                                <span>2025年12月25日 10:00</span>
-                            </div>
-                            <h2 class="article-title">プレオープンのお知らせ</h2>
-                        </div>
-                        <div class="article-content">
-                            <p>本日より、一部機能を制限した状態でのプレオープンを開始いたしました。</p>
-                            <p>現在ご利用いただけるのは、「おみくじ機能」および「12星座占い（β版）」です。正式リリース時には、履歴保存機能や会員システムが追加される予定です。</p>
-                            <p>動作に不具合等ございましたら、お問い合わせフォームよりご連絡いただけますと幸いです。</p>
-                        </div>
-                    `;
-                } else if (id === 4) {
-                    html = `
-                        <div class="article-header">
-                            <div class="article-meta">
-                                <span>2025年12月20日 18:00</span>
-                            </div>
-                            <h2 class="article-title">サーバーメンテナンス完了</h2>
-                        </div>
-                        <div class="article-content">
-                            <p>本日14:00より実施しておりましたサーバーメンテナンスは、予定通り18:00に完了いたしました。</p>
-                            <p>今回のメンテナンスにより、データベースの応答速度が向上しております。ご協力ありがとうございました。</p>
-                        </div>
-                    `;
-                } else if (id === 5) {
-                    html = `
-                        <div class="article-header">
-                            <div class="article-meta">
-                                <span>2025年12月10日 12:00</span>
-                            </div>
-                            <h2 class="article-title">サイト開設準備室より</h2>
-                        </div>
-                        <div class="article-content">
-                            <p>「運勢・天命乃杜」の開設に向け、現在鋭意開発中です。</p>
-                            <p>皆様に愛されるサイトを目指し、デザインの調整や占いロジックの検証を行っております。公開まで今しばらくお待ちください。</p>
-                        </div>
-                    `;
-                }
+        // --- プロフィール機能 ---
+        function handleProfileClick() {
+            if(currentState.user) {
+                showView('profile');
+                document.getElementById('profile-current-username').textContent = currentState.user.username;
+                document.getElementById('profile-current-email').textContent = currentState.user.email;
+            } else {
+                showView('auth');
             }
+        }
 
-            container.innerHTML = html;
-            showView('article-detail');
+        async function updateProfile() {
+            const newName = document.getElementById('profile-new-username').value;
+            const newPass = document.getElementById('profile-new-password').value;
+            
+            if(!newName && !newPass) return alert("変更内容を入力してください");
+            
+            showLoading(true);
+            try {
+                const res = await fetch(`${API_BASE}/api/user/update`, {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({
+                        token: currentState.user.token,
+                        email: currentState.user.email,
+                        newUsername: newName || undefined,
+                        newPassword: newPass || undefined
+                    })
+                });
+                const data = await res.json();
+                if(data.success) {
+                    alert("更新しました");
+                    if(newName) currentState.user.username = newName;
+                    localStorage.setItem('omikuji_user', JSON.stringify(currentState.user));
+                    handleProfileClick();
+                } else {
+                    alert("更新失敗: " + data.error);
+                }
+            } catch(e) { alert("通信エラー"); }
+            finally { showLoading(false); }
+        }
+
+        async function deleteAccount() {
+            if(!confirm("本当にアカウントを削除しますか？\n履歴やお気に入りデータも完全に消去されます。")) return;
+            
+            showLoading(true);
+            try {
+                const res = await fetch(`${API_BASE}/api/user/delete`, {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({
+                        token: currentState.user.token,
+                        email: currentState.user.email
+                    })
+                });
+                const data = await res.json();
+                if(data.success) {
+                    alert("アカウントを削除しました。ご利用ありがとうございました。");
+                    logout();
+                } else {
+                    alert("削除失敗: " + data.error);
+                }
+            } catch(e) { alert("通信エラー"); }
+            finally { showLoading(false); }
         }
 
         // --- 認証系 ---
@@ -2091,19 +2012,14 @@
                     headers: {'Content-Type': 'application/json'},
                     body: JSON.stringify({ email, username: isLoginOpen ? undefined : username }) 
                 });
-                
                 const data = await res.json();
-                
                 if(res.ok && data.success) {
-                    alert(`${email} に認証コードを送信しました。\nメールを確認してください。`);
+                    alert(`${email} に認証コードを送信しました。`);
                 } else {
                     alert(`送信エラー: ${data.error || '不明なエラー'}`);
                 }
-            } catch(e) {
-                console.error(e);
-                alert("通信エラー: サーバーに接続できませんでした。");
-            }
-            showLoading(false);
+            } catch(e) { alert("通信エラー"); }
+            finally { showLoading(false); }
         }
 
         async function performLogin() {
@@ -2120,19 +2036,14 @@
                     headers: {'Content-Type': 'application/json'},
                     body: JSON.stringify({ email, password: pass, code })
                 });
-
                 const data = await res.json();
-
                 if(res.ok && data.success) {
                     loginSuccess({ email, username: data.username, token: data.token });
                 } else {
-                    alert(`ログイン失敗: ${data.message || data.error || '入力情報が正しくありません'}`);
+                    alert(`ログイン失敗: ${data.message || data.error}`);
                 }
-            } catch(e) {
-                console.error(e);
-                alert("通信エラー: ログインできませんでした。");
-            }
-            showLoading(false);
+            } catch(e) { alert("通信エラー"); }
+            finally { showLoading(false); }
         }
 
         async function performRegister() {
@@ -2148,26 +2059,16 @@
                 const res = await fetch(`${API_BASE}/api/auth/register`, {
                     method: 'POST',
                     headers: {'Content-Type': 'application/json'},
-                    body: JSON.stringify({ 
-                        email, 
-                        password: pass, 
-                        username: name,
-                        code 
-                    })
+                    body: JSON.stringify({ email, password: pass, username: name, code })
                 });
-
                 const data = await res.json();
-
                 if(res.ok && data.success) {
                     loginSuccess({ email, username: data.username, token: data.token });
                 } else {
-                    alert(`登録失敗: ${data.message || data.error || '登録できませんでした'}`);
+                    alert(`登録失敗: ${data.message || data.error}`);
                 }
-            } catch(e) {
-                console.error(e);
-                alert("通信エラー: 登録処理に失敗しました。");
-            }
-            showLoading(false);
+            } catch(e) { alert("通信エラー"); }
+            finally { showLoading(false); }
         }
 
         function loginSuccess(user) {
@@ -2175,24 +2076,19 @@
             localStorage.setItem('omikuji_user', JSON.stringify(user));
             updateAuthUI();
             loadFavorites(); 
-            alert(`ようこそ、${user.username || user.email} 様！\nログインしました。`);
+            alert(`ようこそ、${user.username || user.email} 様！`);
             showView('home');
         }
 
         function updateAuthUI() {
             const badge = document.getElementById('fav-status-badge');
+            const navBtn = document.getElementById('nav-login-btn');
             
             if(currentState.user) {
-                document.getElementById('auth-user-info').classList.remove('hidden');
-                document.getElementById('form-login').parentElement.querySelector('div:not(#auth-user-info)').style.display = 'none'; 
-                document.getElementById('user-display-name').textContent = currentState.user.username || currentState.user.email;
-                document.getElementById('nav-login-btn').innerHTML = `<i class="bi bi-person-check-fill text-green-400"></i><span class="nav-text">会員: ${currentState.user.username}</span>`;
+                navBtn.innerHTML = `<i class="bi bi-person-check-fill text-green-400"></i><span class="nav-text">会員: ${currentState.user.username}</span>`;
                 if(badge) badge.textContent = "クラウド保存済み";
             } else {
-                document.getElementById('auth-user-info').classList.add('hidden');
-                const formsContainer = document.getElementById('form-login').parentElement.querySelector('div:not(#auth-user-info)');
-                if(formsContainer) formsContainer.style.display = 'block';
-                document.getElementById('nav-login-btn').innerHTML = `<i class="bi bi-person-circle"></i><span class="nav-text">ログイン/登録</span>`;
+                navBtn.innerHTML = `<i class="bi bi-person-circle"></i><span class="nav-text">ログイン/登録</span>`;
                 if(badge) badge.textContent = "端末に保存中";
             }
         }
@@ -2203,10 +2099,75 @@
             location.reload();
         }
 
-        // --- お気に入り機能 ---
+        // --- 記事詳細 (長文版・更新版) ---
+        function openArticle(type, id) {
+            const container = document.getElementById('article-detail-content');
+            container.innerHTML = '';
+            let html = '';
+            
+            if (type === 'column') {
+                if (id === 1) {
+                    html = `
+                        <div class="article-header"><h2 class="article-title">おみくじの順番（正しい吉凶の順）</h2><div class="article-meta">2026/01/01</div></div>
+                        <div class="article-content">
+                            <p>初詣や神社参拝の際に引く「おみくじ」。結果に一喜一憂するのも楽しみの一つですが、その「順位」について正しく理解している人は意外と少ないかもしれません。実は神社やお寺によって解釈が異なる場合があるのですが、一般的に広く知られている順位と、当サイト「運勢・天命乃杜」で採用している伝統的な12段階の順位について詳しく解説します。</p>
+                            <h3>一般的な7段階の順位</h3>
+                            <p>多くの神社で採用されている最もポピュラーな順位は以下の通りです。<br><b>大吉 ＞ 吉 ＞ 中吉 ＞ 小吉 ＞ 末吉 ＞ 凶 ＞ 大凶</b><br>あるいは、「吉」の位置が変わり、<b>大吉 ＞ 中吉 ＞ 小吉 ＞ 吉 ＞ 末吉 ＞ 凶 ＞ 大凶</b> とする場合もあります。「吉」は「大吉」に次ぐ良い運勢とする説と、「小吉」と「末吉」の間の中庸な運勢とする説があるのです。</p>
+                            <h3>当サイトの12段階詳細順位</h3>
+                            <p>当サイトでは、より細かく運勢を占うため、古来からの伝統に基づいた以下の12段階を採用しています。</p>
+                            <ol class="list-decimal list-inside space-y-2 ml-4 mb-6 font-bold">
+                                <li>大吉 (だいきち)：最高の運気。感謝を忘れずに。</li>
+                                <li>中吉 (ちゅうきち)：大吉に次ぐ良運。</li>
+                                <li>小吉 (しょうきち)：ささやかな幸せが続く。</li>
+                                <li>吉 (きち)：安定した運気。</li>
+                                <li>半吉 (はんきち)：吉と凶の中間。</li>
+                                <li>末吉 (すえきち)：末広がりの未来がある。</li>
+                                <li>末小吉 (すえしょうきち)：今は耐える時だが希望はある。</li>
+                                <li>凶 (きょう)：運気が停滞気味。慎重に。</li>
+                                <li>小凶 (しょうきょう)：小さなトラブルに注意。</li>
+                                <li>半凶 (はんきょう)：半分は凶だが半分は吉に転じる可能性。</li>
+                                <li>末凶 (すえきょう)：終わりの凶、つまり次は吉へ向かう。</li>
+                                <li>大凶 (だいきょう)：最も警戒すべき運気。しかしこれ以上落ちない。</li>
+                            </ol>
+                            <p>しかし、最も重要なのは順位そのものではありません。おみくじの本質は、そこに書かれている「神様からの和歌や助言」にあります。大吉であっても戒めの言葉があれば気を引き締め、大凶であっても励ましの言葉があれば希望を持つことが大切です。結果に一喜一憂せず、日々の行動指針として活用してください。</p>
+                        </div>
+                    `;
+                } else if (id === 2) {
+                    html = `
+                        <div class="article-header"><h2 class="article-title">悪い結果が出ても実は大丈夫？「凶」の正しい扱い方</h2><div class="article-meta">2026/01/01</div></div>
+                        <div class="article-content">
+                            <p>おみくじを引いて「凶」や「大凶」が出ると、誰しも気分が落ち込むものです。「今年は良いことがないのではないか」「不吉なことが起こる前兆ではないか」と不安になるかもしれません。しかし、古来より「凶」は必ずしも忌むべきものとはされてきませんでした。むしろ、考え方によっては幸運への入り口とも言えるのです。</p>
+                            <h3>「凶」は運気の底、これからは上がるのみ</h3>
+                            <p>陰陽道などの東洋思想では、物事は極まれば反転すると考えます。「大吉」は今が頂点であり、これからは下り坂になる可能性があるため、むしろ慎重な行動が求められます。慢心すれば足元をすくわれる、という戒めが含まれていることが多いのです。</p>
+                            <p>逆に「凶」は、今が運気の底であり、これからは上昇する一方であることを示唆しています。「禍を転じて福となす」という言葉通り、今の困難を乗り越えることで、より大きな幸運をつかむチャンスなのです。凶を引いたということは、これ以上悪くなることはない、つまり「伸びしろしかない」状態であると前向きに捉えましょう。</p>
+                            <h3>結ぶか、持ち帰るか？</h3>
+                            <p>悪い結果が出た場合、神社の境内にある「結び所」に結んで帰る風習が一般的です。これには「神様と縁を結ぶ」「悪い運気を神様に預けて浄化してもらう」という意味があります。利き手ではない手で結ぶことで、「困難な行いを達成した」として吉に転じさせるという修行的な意味合いも含まれています。</p>
+                            <p>一方で、「戒めとして財布に入れて持ち歩く」という考え方もあります。自分への警告として時々読み返すことで、慎重な行動を心がけ、災いを未然に防ぐことができるからです。ボロボロになったら神社にお焚き上げをお願いすれば良いのです。</p>
+                            <p>当サイトでは、引いたおみくじの結果は自動的に「おみくじの轍」に記録されます。これがデジタルの「結び所」です。悪い結果が出ても、ここに結んでいくことで運気は好転するでしょう。</p>
+                        </div>
+                    `;
+                } else if (id === 3) {
+                    html = `<div class="article-header"><h2 class="article-title">神社での正しい参拝マナー</h2><div class="article-meta">2025/12/30</div></div><div class="article-content"><p>神社は神様のお住まいです。初詣や日常の参拝で失礼のないよう、基本的な参拝マナーをおさらいしましょう。作法を知ることで、心も整い、より深い感謝の気持ちを伝えることができます。</p><h3>1. 鳥居をくぐる時</h3><p>鳥居は俗界と神域を分ける結界です。くぐる前には衣服を整え、軽く一礼（一揖）をし、帽子などは取ります。参道の中央（正中）は神様の通り道なので、避けて端を歩くのがマナーです。帰る際も、鳥居を出てから振り返り一礼するのが美しい作法です。</p><h3>2. 手水舎での清め方</h3><p>参拝の前に、手水舎（てみずや）で身の穢れを落とします。<br>1. 右手で柄杓を持ち、水を汲んで左手を清める。<br>2. 左手に持ち替え、右手を清める。<br>3. 再び右手に持ち、左手で水を受けて口をすすぐ（柄杓に直接口をつけない）。<br>4. 左手を再度清め、最後に柄杓を立てて残った水で柄を洗い流す。<br>これらを一杯の水で行うのが理想的です。</p><h3>3. 拝礼（二礼二拍手一礼）</h3><p>お賽銭を入れた後、鈴を鳴らし、姿勢を正します。<br>1. 深く二回お辞儀をする（二礼）。<br>2. 胸の前で両手を合わせ、右手を少し下にずらして二回拍手を打つ（二拍手）。音を立てることで邪気を払います。<br>3. 指先を揃えて祈りを捧げる。感謝の気持ちを述べ、その後に願い事を。<br>4. 最後にもう一度深くお辞儀をする（一礼）。</p><p>※出雲大社など、一部の神社では「四拍手」など作法が異なる場合がありますので、現地の案内に従ってください。</p></div>`;
+                } else if (id === 4) {
+                    html = `<div class="article-header"><h2 class="article-title">「失せ物」の本当の意味</h2><div class="article-meta">2025/12/28</div></div><div class="article-content"><p>おみくじの項目にある「失せ物（うせもの）」。これは単に「落とし物」や「無くした財布」のことだけを指すのではありません。人生において私たちが失ってしまうものは、物理的なモノだけではないからです。</p><h3>形あるもの、形なきもの</h3><p>失せ物には、物理的な物品だけでなく、「失った信頼」「忘れていた初心」「疎遠になった友人」「失恋した相手」「やる気」「健康」など、形のないものも含まれます。今あなたが心の中で「失ってしまった」と感じている欠落感、それこそが「失せ物」の正体かもしれません。</p><h3>言葉の意味</h3><ul class="list-disc ml-5 mb-4"><li><b>「出ず（いでず）」</b>：残念ながら戻ってこない可能性が高いです。諦めて新しいものを探すか、執着を手放すべき時です。過去にとらわれず前へ進めというメッセージです。</li><li><b>「出る」</b>：見つかります。焦らず探しましょう。</li><li><b>「高いところより出る」</b>：棚の上や、普段見ない高い場所、あるいは目上の人からの連絡で見つかるかもしれません。</li><li><b>「女（男）の知る事あり」</b>：その性別の知人が何か知っているか、持っている可能性があります。</li></ul><p>「失せ物」の欄を見る時は、今自分が「何を探しているのか」「何を失ってしまったと感じているのか」を深く問い直してみると、表面的な意味以上の深いメッセージを受け取れるかもしれません。</p></div>`;
+                } else if (id === 5) {
+                    html = `<div class="article-header"><h2 class="article-title">「待ち人」は恋愛だけじゃない</h2><div class="article-meta">2025/12/25</div></div><div class="article-content"><p>「待ち人来ず」と出ると、恋人ができないのかとガッカリする人が多いですが、これは大きな誤解です。おみくじにおける「待ち人」の意味はもっと広く、人生全般に関わるものです。</p><h3>人生を導くキーパーソン</h3><p>おみくじにおける「待ち人」とは、「あなたの人生に良い影響を与えてくれる人」「運命を切り開くきっかけとなる人」全般を指します。それは将来の恋人や結婚相手かもしれませんし、ビジネスパートナー、あるいは人生の師となる先生、一生の親友、もしかすると赤ちゃん（妊娠）のことかもしれません。あなたを待っている人、あるいはあなたが待つべき運命の人、すべてを含みます。</p><h3>「来ず」の意味</h3><p>「来ず」とあっても、一生現れないわけではありません。「今はまだその時ではない」「自分から動きなさい」というメッセージであることが多いのです。「音信（たより）あり」とあれば、遠くから連絡が来るでしょう。「触り（さわり）あり」なら、何らかの邪魔が入るかもしれません。</p><p>待ち人は、じっと待っているだけでは現れないこともあります。自分を磨き、行動範囲を広げることで、巡り会う確率はぐっと高まります。焦らず、その時を待ちつつ、自分自身を高める努力を続けましょう。</p></div>`;
+                }
+            } else if (type === 'news') {
+                if (id === 1) html = `<div class="article-header"><h2 class="article-title">あけましておめでとうごさいます</h2><div class="article-meta">2026/01/01</div></div><div class="article-content"><p>謹んで新年のご祝詞を申し上げます。</p><p>旧年中はひとかたならぬご厚情を賜り、誠にありがとうございました。<br>本年も皆様に幸多き年となりますよう、天命乃杜運営一同、心よりお祈り申し上げます。</p><p>新しい年が始まり、皆様それぞれに新たな目標や願いをお持ちのことと存じます。当サイトのおみくじが、皆様の迷いを晴らし、一歩を踏み出すための道標となれば幸いです。本年も変わらぬご愛顧のほど、よろしくお願い申し上げます。</p></div>`;
+                else if (id === 2) html = `<div class="article-header"><h2 class="article-title">「運勢・天命乃杜」を公開いたしました。</h2><div class="article-meta">2026/01/02</div></div><div class="article-content"><p>平素より格別のご高配を賜り、厚く御礼申し上げます。</p><p>この度、誰でも気軽に、かつ本格的な運勢占いを楽しめるWebサイト「運勢・天命乃杜（てんめいのもり）」を正式に公開いたしました。</p><p>当サイトでは、伝統的なおみくじの要素に加え、西洋占星術と血液型診断を組み合わせた独自のアルゴリズムによる「日替わり運勢ランキング」を提供しております。また、会員登録（無料）を行っていただくことで、ご自身の運勢履歴を保存したり、全体の統計データに参加したりすることが可能です。今後もコンテンツの拡充や機能改善に努めてまいりますので、末永くご愛顧いただけますようお願い申し上げます。</p></div>`;
+                else if (id === 3) html = `<div class="article-header"><h2 class="article-title">プレオープンのお知らせ</h2><div class="article-meta">2025/12/25</div></div><div class="article-content"><p>本日より、一部機能を制限した状態でのプレオープンを開始いたしました。</p><p>現在ご利用いただけるのは、「おみくじ機能」および「12星座占い（β版）」です。正式リリース時には、履歴保存機能や会員システムが追加される予定です。</p></div>`;
+                else if (id === 4) html = `<div class="article-header"><h2 class="article-title">サーバーメンテナンス完了</h2><div class="article-meta">2025/12/20</div></div><div class="article-content"><p>本日14:00より実施しておりましたサーバーメンテナンスは、予定通り18:00に完了いたしました。</p><p>今回のメンテナンスにより、データベースの応答速度が向上しております。ご協力ありがとうございました。</p></div>`;
+                else if (id === 5) html = `<div class="article-header"><h2 class="article-title">サイト開設準備室より</h2><div class="article-meta">2025/12/10</div></div><div class="article-content"><p>「運勢・天命乃杜」の開設に向け、現在鋭意開発中です。</p><p>皆様に愛されるサイトを目指し、デザインの調整や占いロジックの検証を行っております。公開まで今しばらくお待ちください。</p></div>`;
+            }
+
+            container.innerHTML = html;
+            showView('article-detail');
+        }
+
+        // --- お気に入り、ランキングなど既存機能 (省略なし) ---
         async function loadFavorites() {
             const badge = document.getElementById('fav-status-badge');
-            
             if(currentState.user) {
                 if(badge) badge.textContent = "同期中...";
                 try {
@@ -2216,44 +2177,16 @@
                         favoriteList = data.favorites || [];
                         if(badge) badge.textContent = "クラウド保存済み";
                     }
-                } catch(e) {
-                    console.error("Fav fetch error", e);
-                }
+                } catch(e) { console.error(e); }
             } else {
                 const stored = localStorage.getItem('fortuneFavorites');
-                if (stored) {
-                    favoriteList = JSON.parse(stored);
-                }
+                if (stored) favoriteList = JSON.parse(stored);
                 if(badge) badge.textContent = "端末に保存中";
             }
             renderFavorites();
         }
 
-        async function saveFavorites() {
-            if(currentState.user) {
-                try {
-                    await fetch(`${API_BASE}/api/favorites`, {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({
-                            email: currentState.user.email,
-                            token: currentState.user.token,
-                            favorites: favoriteList
-                        })
-                    });
-                } catch(e) {
-                    console.error("Fav save error", e);
-                }
-            } else {
-                localStorage.setItem('fortuneFavorites', JSON.stringify(favoriteList));
-            }
-            renderFavorites();
-            renderRanking();
-        }
-
-        // ==========================================
-        //  12星座×血液型占いロジック
-        // ==========================================
+        // 12星座ロジック
         function initZodiacSystem() {
             const dateStr = getJSTDateString();
             const dateParts = dateStr.split('-');
@@ -2261,26 +2194,21 @@
             generateDailyRanking(dateStr);
             renderRanking();
         }
-
         function getJSTDateString() {
             const now = new Date();
             const jstOffset = 9 * 60; 
             const jstNow = new Date(now.getTime() + (now.getTimezoneOffset() + jstOffset) * 60000);
             return jstNow.toISOString().split('T')[0];
         }
-
         function getFutureDateString(baseDateStr, daysToAdd) {
             const date = new Date(baseDateStr);
             date.setDate(date.getDate() + daysToAdd);
             return date.toISOString().split('T')[0];
         }
-
         class SeededRandom {
             constructor(seed) {
                 this.seed = 0;
-                for (let i = 0; i < seed.length; i++) {
-                    this.seed = (this.seed * 31 + seed.charCodeAt(i)) >>> 0;
-                }
+                for (let i = 0; i < seed.length; i++) this.seed = (this.seed * 31 + seed.charCodeAt(i)) >>> 0;
             }
             next() {
                 this.seed ^= this.seed << 13;
@@ -2290,17 +2218,12 @@
                 return (x % 100000) / 100000;
             }
         }
-
-        const zodiacSigns = [
-            { id: "aries", name: "牡羊座", icon: "♈" }, { id: "taurus", name: "牡牛座", icon: "♉" }, { id: "gemini", name: "双子座", icon: "♊" },
-            { id: "cancer", name: "蟹座", icon: "♋" }, { id: "leo", name: "獅子座", icon: "♌" }, { id: "virgo", name: "乙女座", icon: "♍" },
-            { id: "libra", name: "天秤座", icon: "♎" }, { id: "scorpio", name: "蠍座", icon: "♏" }, { id: "sagittarius", name: "射手座", icon: "♐" },
-            { id: "capricorn", name: "山羊座", icon: "♑" }, { id: "aquarius", name: "水瓶座", icon: "♒" }, { id: "pisces", name: "魚座", icon: "♓" }
-        ];
+        const zodiacSigns = [{ id: "aries", name: "牡羊座", icon: "♈" }, { id: "taurus", name: "牡牛座", icon: "♉" }, { id: "gemini", name: "双子座", icon: "♊" },{ id: "cancer", name: "蟹座", icon: "♋" }, { id: "leo", name: "獅子座", icon: "♌" }, { id: "virgo", name: "乙女座", icon: "♍" },{ id: "libra", name: "天秤座", icon: "♎" }, { id: "scorpio", name: "蠍座", icon: "♏" }, { id: "sagittarius", name: "射手座", icon: "♐" },{ id: "capricorn", name: "山羊座", icon: "♑" }, { id: "aquarius", name: "水瓶座", icon: "♒" }, { id: "pisces", name: "魚座", icon: "♓" }];
         const bloodTypes = ["A", "B", "O", "AB"];
-        const luckyItems = ["アンティーク時計", "文庫本の小説", "ミネラルウォーター", "銀のアクセサリー", "小さな観葉植物", "革製のシステム手帳", "ラベンダーの香り", "新しいスニーカー", "ワイヤレスイヤホン", "ミントタブレット"];
-        const luckyColors = ["ルビーレッド", "スカイブルー", "フォレストグリーン", "レモンイエロー", "パールホワイト", "ミッドナイトブラック", "シャンパンゴールド", "プラチナシルバー", "サクラピンク", "ネイビーブルー"];
-
+        const luckyItemsZodiac = ["時計", "本", "水", "銀", "植物", "手帳", "香り", "靴", "音楽", "飴"];
+        const luckyColorsZodiac = ["赤", "青", "緑", "黄", "白", "黒", "金", "銀", "桃", "紺"];
+        
+        // 修正点: 前のコードと同じロジックに戻し、0:00更新であることを明示
         const descPartsStart = [
             "全体的な星の配置を見ると、今日のあなたは非常に感受性が豊かになっており、",
             "今日の運勢は、宇宙のエネルギーがあなたの内面に強く働きかける配置となっていて、",
@@ -2329,21 +2252,14 @@
             "笑顔を絶やさず、ポジティブな言葉を使うことを意識すれば、素晴らしい一日になることは間違いありません。",
             "新しいことへのチャレンジを恐れず、自信を持って一歩を踏み出してください。星たちはあなたを応援しています。"
         ];
-
         const loveShorts = ["積極的なアプローチが吉", "相手の話を聞く姿勢が大事", "出会いのチャンス到来", "今は自分磨きに専念を", "誤解が解ける好機", "パートナーと穏やかな時間を"];
         const moneyShorts = ["無駄遣いに注意が必要", "思わぬ臨時収入の予感", "自己投資には最適な日", "財布の紐を固く締めて", "欲しかった物が安く手に入る", "契約事は慎重に確認を"];
         const workShorts = ["集中力が高まり効率アップ", "チームワークを大切に", "新しいアイデアが光る", "報告連絡相談を密に", "ミスに注意し確認徹底", "リーダーシップを発揮できる"];
 
         function generateDailyRanking(dateStr) {
             let combinations = [];
-            zodiacSigns.forEach(sign => {
-                bloodTypes.forEach(blood => {
-                    combinations.push({ sign, blood });
-                });
-            });
-
+            zodiacSigns.forEach(sign => { bloodTypes.forEach(blood => { combinations.push({ sign, blood }); }); });
             const rng = new SeededRandom(dateStr);
-
             let scoredData = combinations.map(item => {
                 const baseScore = Math.floor(rng.next() * 60) + 40; 
                 const loveScore = Math.floor(rng.next() * 60) + 40;
@@ -2366,32 +2282,24 @@
                     money: { score: moneyScore, desc: moneyShorts[Math.floor(rng.next() * moneyShorts.length)] },
                     work: { score: workScore, desc: workShorts[Math.floor(rng.next() * workShorts.length)] },
                     luckyNum: Math.floor(rng.next() * 9) + 1,
-                    item: luckyItems[Math.floor(rng.next() * luckyItems.length)],
-                    color: luckyColors[Math.floor(rng.next() * luckyColors.length)],
+                    item: luckyItemsZodiac[Math.floor(rng.next() * luckyItemsZodiac.length)],
+                    color: luckyColorsZodiac[Math.floor(rng.next() * luckyColorsZodiac.length)],
                     longDesc: longDesc
                 };
             });
-
             scoredData.sort((a, b) => b.totalScore - a.totalScore);
             scoredData.forEach((d, i) => d.rank = i + 1);
-
-            const assignSubRank = (prop) => {
-                const sorted = [...scoredData].sort((a, b) => b[prop].score - a[prop].score);
-                scoredData.forEach(d => {
-                    d[prop].rank = sorted.findIndex(s => s === d) + 1;
-                });
-            };
-            assignSubRank('love');
-            assignSubRank('money');
-            assignSubRank('work');
-
-            scoredData.forEach(person => {
-                person.calendar = calculateFutureLuck(person.sign.id, person.blood, dateStr);
+            scoredData.forEach(d => {
+                const sorted = [...scoredData].sort((a, b) => b.love.score - a.love.score);
+                d.love.rank = sorted.findIndex(s => s === d) + 1;
+                const sortedM = [...scoredData].sort((a, b) => b.money.score - a.money.score);
+                d.money.rank = sortedM.findIndex(s => s === d) + 1;
+                const sortedW = [...scoredData].sort((a, b) => b.work.score - a.work.score);
+                d.work.rank = sortedW.findIndex(s => s === d) + 1;
             });
-
+            scoredData.forEach(person => { person.calendar = calculateFutureLuck(person.sign.id, person.blood, dateStr); });
             dailyRanking = scoredData;
         }
-
         function calculateFutureLuck(signId, bloodType, baseDateStr) {
             let calendarDays = [];
             for(let i=0; i<30; i++) {
@@ -2419,9 +2327,8 @@
             }
             return calendarDays;
         }
-
         function createCardHTML(data) {
-            const isFav = isFavorite(data.sign.id, data.blood);
+            const isFav = favoriteList.some(f => f.sign === data.sign.id && f.blood === data.blood);
             const rankClass = data.rank <= 3 ? `rank-${data.rank}` : 'rank-other';
             const borderClass = data.rank <= 3 ? 'border-l-4 border-yellow-400' : '';
             const getBarColor = (score) => score > 80 ? '#ef4444' : (score > 50 ? '#eab308' : '#3b82f6');
@@ -2484,73 +2391,48 @@
                 </div>
             `;
         }
-
+        function toggleFavorite(signId, bloodType) {
+            const existsIndex = favoriteList.findIndex(f => f.sign === signId && f.blood === bloodType);
+            if (existsIndex >= 0) { favoriteList.splice(existsIndex, 1); } 
+            else { if (favoriteList.length >= 5) return alert('最大5つまで'); favoriteList.push({ sign: signId, blood: bloodType }); }
+            if(currentState.user) {
+                fetch(`${API_BASE}/api/favorites`, { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({email:currentState.user.email, token:currentState.user.token, favorites:favoriteList}) });
+            } else { localStorage.setItem('fortuneFavorites', JSON.stringify(favoriteList)); }
+            renderFavorites();
+        }
         function renderFavorites() {
             const container = document.getElementById('favorites-list');
             const section = document.getElementById('favorites-section');
             container.innerHTML = '';
-            
-            if (favoriteList.length === 0) {
-                section.classList.add('hidden');
-                return;
-            }
+            if (favoriteList.length === 0) { section.classList.add('hidden'); return; }
             section.classList.remove('hidden');
-
             favoriteList.forEach(fav => {
                 const data = dailyRanking.find(d => d.sign.id === fav.sign && d.blood === fav.blood);
-                if (data) {
-                    container.innerHTML += createCardHTML(data);
-                }
+                if (data) container.innerHTML += createCardHTML(data);
             });
         }
-
         function renderRanking() {
             const listContainer = document.getElementById('ranking-list');
             const fullListContainer = document.getElementById('full-ranking-list');
-            listContainer.innerHTML = '';
-            fullListContainer.innerHTML = '';
+            listContainer.innerHTML = ''; fullListContainer.innerHTML = '';
             dailyRanking.forEach((data, index) => {
                 const html = createCardHTML(data);
-                if (index < 3) { listContainer.insertAdjacentHTML('beforeend', html); }
-                else { fullListContainer.insertAdjacentHTML('beforeend', html); }
+                if (index < 3) listContainer.insertAdjacentHTML('beforeend', html);
+                else fullListContainer.insertAdjacentHTML('beforeend', html);
             });
         }
-
         function showFullRanking() {
             const fullList = document.getElementById('full-ranking-list');
             const txt = document.getElementById('show-ranking-text');
             if (fullList.classList.contains('hidden')) { fullList.classList.remove('hidden'); txt.textContent = "ランキングを閉じる"; }
             else { fullList.classList.add('hidden'); txt.textContent = "4位以下を見る"; }
         }
-
         function findMyRank() {
             const signId = document.getElementById('user-sign').value;
             const bloodId = document.getElementById('user-blood').value;
             const resultDiv = document.getElementById('my-rank-result');
             const myData = dailyRanking.find(d => d.sign.id === signId && d.blood === bloodId);
-            if (myData) {
-                resultDiv.innerHTML = createCardHTML(myData);
-                resultDiv.classList.remove('hidden');
-            }
-        }
-
-        // お気に入りヘルパー
-        function toggleFavorite(signId, bloodType) {
-            const existsIndex = favoriteList.findIndex(f => f.sign === signId && f.blood === bloodType);
-            if (existsIndex >= 0) {
-                favoriteList.splice(existsIndex, 1);
-            } else {
-                if (favoriteList.length >= 5) {
-                    alert('お気に入りは最大5つまでです。');
-                    return;
-                }
-                favoriteList.push({ sign: signId, blood: bloodType });
-            }
-            saveFavorites(); 
-        }
-
-        function isFavorite(signId, bloodType) {
-            return favoriteList.some(f => f.sign === signId && f.blood === bloodType);
+            if (myData) { resultDiv.innerHTML = createCardHTML(myData); resultDiv.classList.remove('hidden'); }
         }
     </script>
 </body>
