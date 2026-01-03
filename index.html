@@ -2651,13 +2651,18 @@ ${userName}様の運勢：【 ${res.type} 】
             if(!email || !pass) return alert("メールアドレスとパスワードを入力してください");
             if(mode === 'register' && !username) return alert("ユーザー名を入力してください");
 
-            // 擬似的にコード送信APIを叩く
+            // コード送信APIを叩く (脆弱性修正: パスワード検証を追加)
             showLoading(true);
             try {
                 const res = await fetch(`${API_BASE}/api/auth/send`, { 
                     method: 'POST', 
                     headers: {'Content-Type': 'application/json'},
-                    body: JSON.stringify({ email, username: mode === 'register' ? username : undefined }) 
+                    body: JSON.stringify({ 
+                        email, 
+                        password: pass, // パスワードも送信して事前検証する
+                        username: mode === 'register' ? username : undefined,
+                        mode: mode 
+                    }) 
                 });
                 const data = await res.json();
                 
@@ -2806,7 +2811,7 @@ ${userName}様の運勢：【 ${res.type} 】
                 } else if (id === 4) {
                     html = `<div class="article-header"><h2 class="article-title">「失せ物」の本当の意味</h2><div class="article-meta">2025/12/28</div></div><div class="article-content"><p>おみくじの項目にある「失せ物（うせもの）」。これは単に「落とし物」や「無くした財布」のことだけを指すのではありません。人生において私たちが失ってしまうものは、物理的なモノだけではないからです。</p><h3>形あるもの、形なきもの</h3><p>失せ物には、物理的な物品だけでなく、「失った信頼」「忘れていた初心」「疎遠になった友人」「失恋した相手」「やる気」「健康」など、形のないものも含まれます。今あなたが心の中で「失ってしまった」と感じている欠落感、それこそが「失せ物」の正体かもしれません。</p><h3>言葉の意味</h3><ul class="list-disc ml-5 mb-4"><li><b>「出ず（いでず）」</b>：残念ながら戻ってこない可能性が高いです。諦めて新しいものを探すか、執着を手放すべき時です.過去にとらわれず前へ進めというメッセージです。</li><li><b>「出る」</b>：見つかります。焦らず探しましょう。</li><li><b>「高いところより出る」</b>：棚の上や、普段見ない高い場所、あるいは目上の人からの連絡で見つかるかもしれません。</li><li><b>「女（男）の知る事あり」</b>：その性別の知人が何か知っているか、持っている可能性があります。</li></ul><p>「失せ物」の欄を見る時は、今自分が「何を探しているのか」「何を失ってしまったと感じているのか」を深く問い直してみると、表面的な意味以上の深いメッセージを受け取れるかもしれません。</p></div>`;
                 } else if (id === 5) {
-                    html = `<div class="article-header"><h2 class="article-title">「待ち人」は恋愛だけじゃない</h2><div class="article-meta">2025/12/25</div></div><div class="article-content"><p>「待ち人来ず」と出ると、恋人ができないのかとガッカリする人が多いですが、これは大きな誤解です。おみくじにおける「待ち人」の意味はもっと広く、人生全般に関わるものです。</p><h3>人生を導くキーパーソン</h3><p>おみくじにおける「待ち人」とは、「あなたの人生に良い影響を与えてくれる人」「運命を切り開くきっかけとなる人」全般を指します。それは将来の恋人や結婚相手かもしれませんし、ビジネスパートナー、あるいは人生の師となる先生、一生の親友、もしかすると赤ちゃん（妊娠）のことかもしれません。あなたを待っている人、あるいはあなたが待つべき運命の人、すべてを含みます。</p><h3>「来ず」の意味</h3><p>「来ず」とあっても、一生現れないわけではありません。「今はまだその時ではない」「自分から動きなさい」というメッセージであることが多いのです。「音信（たより）あり」とあれば、遠くから連絡が来るでしょう。「触り（さわり）あり」なら、何らかの邪魔が入るかもしれません。</p><p>待ち人は、じっと待っているだけでは現れないこともあります。自分を磨き、行動範囲を広げることで、巡り会う確率はぐっと高まります。焦らず、その時を待ちつつ、自分自身を高める努力を続けましょう。</p></div>`;
+                    html = `<div class="article-header"><h2 class="article-title">「待ち人」は恋愛だけじゃない</h2><div class="article-meta">2025/12/25</div></div><div class="article-content"><p>「待ち人来ず」と出ると、恋人ができないのかとガッカリする人が多いですが、これは大きな誤解です。おみくじにおける「待ち人」の意味はもっと広く、人生全般に関わるものです。</p><h3>人生を導くキーパーソン</h3><p>おみくじにおける「待ち人」とは、「あなたの人生に良い影響を与えてくれる人」「運命を切り開くきっかけとなる人」全般を指します。それは将来の恋人や結婚相手かもしれませんし、ビジネスパートナー、あるいは人生の師となる先生、一生の親友、もしかすると赤ちゃん（妊娠）のことかもしれません。あなたを待っている人、あるいはあなたが待つべき運命の人、すべてを含みます。</p><h3>「来ず」の意味</h3><p>「来ず」とあっても、一生現れないこともあります。「今はまだその時ではない」「自分から動きなさい」というメッセージであることが多いのです。「音信（たより）あり」とあれば、遠くから連絡が来るでしょう。「触り（さわり）あり」なら、何らかの邪魔が入るかもしれません。</p><p>待ち人は、じっと待っているだけでは現れないこともあります。自分を磨き、行動範囲を広げることで、巡り会う確率はぐっと高まります。焦らず、その時を待ちつつ、自分自身を高める努力を続けましょう。</p></div>`;
                 }
             } else if (type === 'news') {
                 if (id === 1) html = `<div class="article-header"><h2 class="article-title">あけましておめでとうごさいます</h2><div class="article-meta">2026/01/01</div></div><div class="article-content"><p>謹んで新年のご祝詞を申し上げます。</p><p>旧年中はひとかたならぬご厚情を賜り、誠にありがとうございました。<br>本年も皆様に幸多き年となりますよう、天命乃杜運営一同、心よりお祈り申し上げます。</p><p>新しい年が始まり、皆様それぞれに新たな目標や願いをお持ちのことと存じます。当サイトのおみくじが、皆様の迷いを晴らし、一歩を踏み出すための道標となれば幸いです。本年も変わらぬご愛顧のほど、よろしくお願い申し上げます。</p></div>`;
@@ -2893,38 +2898,59 @@ ${userName}様の運勢：【 ${res.type} 】
             "サーモン", "コーラル", "ターコイズ", "インディゴ", "マゼンタ", "シアン", "ライム", "レモン", "チャコール", "カーキ"
         ];
 
-        // 修正点: 前のコードと同じロジックに戻し、0:00更新であることを明示
-        const descPartsStart = [
-            "全体的な星の配置を見ると、今日のあなたは非常に感受性が豊かになっており、",
-            "今日の運勢は、宇宙のエネルギーがあなたの内面に強く働きかける配置となっていて、",
-            "一日の流れとして、午前中は静かなスタートとなりますが、午後からは運気が急上昇し、",
-            "今日の星回りは、過去の努力が実を結ぶタイミングを示唆しており、",
-            "周囲の環境とあなたの波長が完璧にシンクロする一日となりそうで、"
-        ];
-        const descPartsSection2 = [
-            "特に人間関係においては、あなたの何気ない一言が周囲の人々を勇気づけ、感謝される場面があるでしょう。",
-            "直感が冴え渡る瞬間が多く訪れ、迷ったときに自分の心の声に従うことで、最良の選択をすることができます。",
-            "今まで苦手意識を持っていたことに対して、不思議と前向きに取り組めるエネルギーが湧いてくるはずです。",
-            "予期せぬ場所での出会いや、懐かしい人からの連絡が、新しいチャンスへの扉を開く鍵となるかもしれません。",
-            "少し疲れを感じる瞬間もあるかもしれませんが、それは次のステップへ進むための好転反応ですので心配はいりません。"
-        ];
-        const descPartsSection3 = [
-            "仕事や勉学の面では、集中力が途切れがちになるかもしれませんが、適度な休憩を挟むことで驚くほどの効率アップが望めます。",
-            "金銭面に関しては、衝動買いに注意が必要ですが、自己投資となるものには惜しまずお金を使うことが将来の利益に繋がります。",
-            "恋愛面では、素直な気持ちを伝えるのに最適な日であり、パートナーがいる人はより深い絆を結ぶことができるでしょう。",
-            "クリエイティブな活動にツキがあり、あなたの独創的なアイデアが周囲から高く評価される可能性が高いです。",
-            "健康面では、十分な睡眠とバランスの取れた食事を心がけることで、一日中パワフルに活動することができます。"
-        ];
-        const descPartsEnd = [
-            "一日の終わりには、今日あった出来事に感謝しつつ、ゆっくりとリラックスする時間を持つことが、明日の幸運を引き寄せる秘訣です。",
-            "ラッキーアイテムを身近に置くことで、さらに運気を底上げし、トラブルを未然に防ぐお守りとなってくれるでしょう。",
-            "今日の経験は、あなたの人生において重要な意味を持つピースとなり、未来の成功への確かな布石となります。",
-            "笑顔を絶やさず、ポジティブな言葉を使うことを意識すれば、素晴らしい一日になることは間違いありません。",
-            "新しいことへのチャレンジを恐れず、自信を持って一歩を踏み出してください。星たちはあなたを応援しています。"
-        ];
-        const loveShorts = ["積極的なアプローチが吉", "相手の話を聞く姿勢が大事", "出会いのチャンス到来", "今は自分磨きに専念を", "誤解が解ける好機", "パートナーと穏やかな時間を"];
-        const moneyShorts = ["無駄遣いに注意が必要", "思わぬ臨時収入の予感", "自己投資には最適な日", "財布の紐を固く締めて", "欲しかった物が安く手に入る", "契約事は慎重に確認を"];
-        const workShorts = ["集中力が高まり効率アップ", "チームワークを大切に", "新しいアイデアが光る", "報告連絡相談を密に", "ミスに注意し確認徹底", "リーダーシップを発揮できる"];
+        // 運勢コメントデータ (ランク別: S=90+, A=75+, B=50+, C=49-)
+        const luckComments = {
+            mainIntro: {
+                S: ["今日のあなたは、宇宙のエネルギーが完璧に調和し、あらゆる幸運を引き寄せる最強の配置にあります。", "まるで星々があなたのために輝いているかのような、奇跡的な一日が始まろうとしています。", "これまでの努力が全て報われるような、素晴らしい展開が期待できる最高の一日となるでしょう。"],
+                A: ["全体的な運気は非常に好調で、心地よい追い風を感じることができるでしょう。", "星々の配置があなたの背中を押し、前向きな気持ちで一日を過ごすことができます。", "直感が冴え渡り、スムーズに物事が進む、充実した一日になりそうです。"],
+                B: ["今日は安定した運気で、穏やかな時間を過ごすことができるでしょう。", "大きな波乱はなく、平穏無事な一日となりそうです。日常の小さな幸せを見つけてみてください。", "可もなく不可もなくといった運勢ですが、あなたの心がけ次第で良い方向に転がります。"],
+                C: ["今日は少し雲行きが怪しい一日となりそうです。慎重な行動を心がける必要があります。", "予期せぬトラブルや障害が発生しやすい星回りです。焦らず冷静に対処しましょう。", "全体的に運気が低迷しており、忍耐力が試される場面があるかもしれません。"]
+            },
+            mainLovePart: {
+                S: ["特に恋愛運に関しては、運命的な出会いや、パートナーとの絆が劇的に深まるような出来事が待っています。素直な気持ちを伝えることで、愛の奇跡が起こるでしょう。", "愛の女神が微笑んでおり、あなたの魅力が最大限に輝く時です。意中の人との距離が一気に縮まり、甘いひとときを過ごせる可能性が高いです。"],
+                C: ["恋愛面では、些細なすれ違いや誤解が生じやすいので注意が必要です。相手の言葉を遮らず、最後まで聞く余裕を持つことが、トラブル回避の鍵となります。", "感情的になりやすく、大切な人を傷つけてしまう恐れがあります。今日は自己主張を控え、相手を立てることに徹するのが賢明でしょう。"]
+            },
+            mainMoneyPart: {
+                S: ["金運は絶好調で、思いがけない臨時収入や、将来の資産形成につながる絶好のチャンスが舞い込む予感です。直感に従って投資や買い物をすると吉と出るでしょう。", "豊かさのエネルギーが循環しており、経済的な不安が一掃されるような出来事があるかもしれません。自分への投資も大きなリターンを生むはずです。"],
+                C: ["金銭面では、衝動買いや無駄遣いに十分な注意が必要です。財布の紐を固く締め、本当に必要なものかどうかを冷静に判断するよう心がけてください。", "予期せぬ出費や、甘い誘惑による損失の可能性があります。今日は大きなお金を動かすのは避け、堅実な管理に徹しましょう。"]
+            },
+            mainWorkPart: {
+                S: ["仕事や勉学においては、あなたの才能が開花し、周囲から高い評価を得られるでしょう。難しい課題も難なくクリアでき、大きな成果を上げることができます。", "集中力が極限まで高まり、驚くべき効率でタスクをこなせる日です。新しいアイデアが次々と湧き出し、プロジェクトを成功へと導くキーパーソンになれます。"],
+                C: ["仕事や勉強では、集中力が散漫になりがちで、思わぬミスを招く恐れがあります。基本に立ち返り、一つ一つの作業を丁寧に確認することが大切です。", "周囲とのコミュニケーション不足によるトラブルが懸念されます。報告・連絡・相談を怠らず、謙虚な姿勢で取り組むことで、最悪の事態は防げるでしょう。"]
+            },
+            mainConclusion: {
+                S: ["総じて、今日は何をやってもうまくいく無敵の一日です。感謝の心を忘れずに、最高の幸運を存分に味わってください。", "この素晴らしい運気を活かし、新しいことに挑戦するのにも最適な日です。あなたの未来は明るく輝いています。"],
+                A: ["ポジティブな姿勢を保つことで、運気はさらに上昇します。笑顔を絶やさず、周囲への感謝を忘れずに過ごしましょう。", "自信を持って行動すれば、きっと良い結果がついてきます。今日という一日を大切に過ごしてください。"],
+                B: ["無理をせず、自分のペースを守ることが大切です。リラックスできる時間を持ち、明日のためにエネルギーを蓄えましょう。", "焦らず着実に進むことが、最終的な成功への近道です。今日は準備期間と捉え、地道な努力を続けてください。"],
+                C: ["今日は「忍耐」の日と割り切り、嵐が過ぎ去るのを静かに待ちましょう。この経験が、必ずやあなたの糧となるはずです。", "落ち込む必要はありません。運気は必ず巡ります。今日は自分自身を見つめ直す良い機会と捉え、前を向いていきましょう。"]
+            },
+            // サブ項目用ショートメッセージ
+            loveShorts: {
+                S: ["運命の出会いが期待できる日", "パートナーとの愛が深まる最高の日", "アプローチするなら今がチャンス", "あなたの魅力が最高潮に達する時"],
+                A: ["穏やかで幸せな時間を過ごせそう", "素直な気持ちが相手に届く日", "良い出会いの兆しあり", "楽しいデートができる予感"],
+                B: ["現状維持を心がけると吉", "相手の話をよく聞くことが大切", "焦らずゆっくり関係を育んで", "友達感覚での交流がおすすめ"],
+                C: ["誤解を招きやすいので言動に注意", "感情的な衝突に気をつけて", "一人の時間を大切にするのが無難", "無理なアプローチは控えて"]
+            },
+            moneyShorts: {
+                S: ["臨時収入や昇給のチャンス到来", "投資や宝くじにツキがある日", "欲しかったものがお得に手に入る", "金運最高潮、財布が潤う予感"],
+                A: ["賢い買い物ができそうな日", "将来のための自己投資は吉", "お金回りが良くスムーズな一日", "予想外のプチラッキーがあるかも"],
+                B: ["収支のバランスを見直すと良い", "計画的な利用を心がけて", "衝動買いは控えたほうが無難", "堅実な節約が功を奏する日"],
+                C: ["財布の紐を固く締めるべき日", "詐欺や甘い話には要注意", "無駄遣いで後悔する可能性大", "予期せぬ出費に備えて"]
+            },
+            workShorts: {
+                S: ["大きな成果を上げて評価される日", "リーダーシップを発揮できる時", "新しいアイデアが採用されそう", "集中力抜群で作業が捗る"],
+                A: ["チームワークが成功の鍵", "効率よくタスクを消化できる日", "周囲からの信頼が高まる予感", "やりがいを感じられる一日"],
+                B: ["基本に忠実に取り組むと吉", "報告・連絡・相談を大切に", "無理せずマイペースに進めて", "準備や整理整頓に適した日"],
+                C: ["ケアレスミスに十分注意して", "確認作業を怠らないように", "無理なスケジュールは避けて", "休息を取りつつ慎重に進めて"]
+            }
+        };
+
+        function getRank(score) {
+            if (score >= 90) return 'S';
+            if (score >= 75) return 'A';
+            if (score >= 50) return 'B';
+            return 'C';
+        }
 
         function generateDailyRanking(dateStr) {
             let combinations = [];
@@ -2934,12 +2960,9 @@ ${userName}様の運勢：【 ${res.type} 】
             // 重複しないようにシャッフルリストを作成
             let shuffledItems = [];
             let shuffledColors = [];
-            // 十分な数を確保するためにループで埋める
             while(shuffledItems.length < combinations.length) shuffledItems = shuffledItems.concat(zodiacItemsList);
             while(shuffledColors.length < combinations.length) shuffledColors = shuffledColors.concat(zodiacColorsList);
             
-            // シード付きランダムでシャッフル（日付ごとに固定されるように）
-            // Fisher-Yates shuffle with seeded RNG
             for (let i = shuffledItems.length - 1; i > 0; i--) {
                 const j = Math.floor(rng.next() * (i + 1));
                 [shuffledItems[i], shuffledItems[j]] = [shuffledItems[j], shuffledItems[i]];
@@ -2956,28 +2979,74 @@ ${userName}様の運勢：【 ${res.type} 】
                 const workScore = Math.floor(rng.next() * 60) + 40;
                 const totalScoreRaw = (baseScore + loveScore + moneyScore + workScore) / 4;
                 const totalScore = Math.min(100, Math.floor(totalScoreRaw));
+                
+                // ランク判定
+                const totalRank = getRank(totalScore);
+                const loveRank = getRank(loveScore);
+                const moneyRank = getRank(moneyScore);
+                const workRank = getRank(workScore);
 
-                const p1 = descPartsStart[Math.floor(rng.next() * descPartsStart.length)];
-                const p2 = descPartsSection2[Math.floor(rng.next() * descPartsSection2.length)];
-                const p3 = descPartsSection3[Math.floor(rng.next() * descPartsSection3.length)];
-                const p4 = descPartsEnd[Math.floor(rng.next() * descPartsEnd.length)];
-                const longDesc = `${p1}${p2} ${p3}${p4}`;
+                // ショートメッセージ生成 (ランクに応じてランダム選択)
+                const loveDescList = luckComments.loveShorts[loveRank];
+                const moneyDescList = luckComments.moneyShorts[moneyRank];
+                const workDescList = luckComments.workShorts[workRank];
+
+                const loveDesc = loveDescList[Math.floor(rng.next() * loveDescList.length)];
+                const moneyDesc = moneyDescList[Math.floor(rng.next() * moneyDescList.length)];
+                const workDesc = workDescList[Math.floor(rng.next() * workDescList.length)];
+
+                // 長文生成ロジック
+                // 1. 導入 (総合ランクベース)
+                const introList = luckComments.mainIntro[totalRank];
+                let longDesc = introList[Math.floor(rng.next() * introList.length)];
+
+                // 2. 各論 (特徴的なものを挿入)
+                // SランクまたはCランクのものがあれば優先的に言及する
+                let specifics = [];
+                
+                // 恋愛について
+                if (loveRank === 'S') specifics.push(luckComments.mainLovePart.S[Math.floor(rng.next() * luckComments.mainLovePart.S.length)]);
+                else if (loveRank === 'C') specifics.push(luckComments.mainLovePart.C[Math.floor(rng.next() * luckComments.mainLovePart.C.length)]);
+                
+                // 金運について
+                if (moneyRank === 'S') specifics.push(luckComments.mainMoneyPart.S[Math.floor(rng.next() * luckComments.mainMoneyPart.S.length)]);
+                else if (moneyRank === 'C') specifics.push(luckComments.mainMoneyPart.C[Math.floor(rng.next() * luckComments.mainMoneyPart.C.length)]);
+
+                // 仕事について
+                if (workRank === 'S') specifics.push(luckComments.mainWorkPart.S[Math.floor(rng.next() * luckComments.mainWorkPart.S.length)]);
+                else if (workRank === 'C') specifics.push(luckComments.mainWorkPart.C[Math.floor(rng.next() * luckComments.mainWorkPart.C.length)]);
+
+                // 特徴的なものがなければ、ランダムに1つ選んで普通のコメントを入れる（今回は簡略化のため特徴的なもののみ結合）
+                if (specifics.length > 0) {
+                    longDesc += " " + specifics.join(" ");
+                } else {
+                    // 特になければBランク相当の当たり障りのない文言を入れるなどの拡張が可能だが、
+                    // ここでは導入+結びで十分な長さになる場合もあるため、そのまま結びへ
+                }
+
+                // 3. 結び (総合ランクベース)
+                const conclusionList = luckComments.mainConclusion[totalRank];
+                longDesc += " " + conclusionList[Math.floor(rng.next() * conclusionList.length)];
 
                 return {
                     sign: item.sign,
                     blood: item.blood,
                     totalScore: totalScore,
-                    love: { score: loveScore, desc: loveShorts[Math.floor(rng.next() * loveShorts.length)] },
-                    money: { score: moneyScore, desc: moneyShorts[Math.floor(rng.next() * moneyShorts.length)] },
-                    work: { score: workScore, desc: workShorts[Math.floor(rng.next() * workShorts.length)] },
+                    love: { score: loveScore, desc: loveDesc },
+                    money: { score: moneyScore, desc: moneyDesc },
+                    work: { score: workScore, desc: workDesc },
                     luckyNum: Math.floor(rng.next() * 9) + 1,
-                    item: shuffledItems[index], // 重複なしリストから割り当て
-                    color: shuffledColors[index], // 重複なしリストから割り当て
+                    item: shuffledItems[index], 
+                    color: shuffledColors[index],
                     longDesc: longDesc
                 };
             });
+            
+            // スコア順にソートして順位を確定
             scoredData.sort((a, b) => b.totalScore - a.totalScore);
-            scoredData.forEach((d, i) => d.rank = i + 1);
+            scoredData.forEach((d, i) => { d.rank = i + 1; });
+
+            // サブランク計算
             scoredData.forEach(d => {
                 const sorted = [...scoredData].sort((a, b) => b.love.score - a.love.score);
                 d.love.rank = sorted.findIndex(s => s === d) + 1;
