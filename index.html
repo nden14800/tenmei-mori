@@ -28,7 +28,7 @@
             --accent-gold: #c5a059;
             --glass-bg: rgba(255, 255, 255, 0.85);
             --glass-border: rgba(255, 255, 255, 0.3);
-            --sidebar-bg: rgba(255, 255, 255, 0.95);
+            --sidebar-bg: rgba(255, 255, 255, 0.75); /* すりガラス用に透明度アップ */
             --input-bg: #ffffff;
             --omi-paper: #fffcf2; 
             --sidebar-width: 80px;
@@ -38,7 +38,7 @@
         /* ダークモード変数 (自動検知) */
         @media (prefers-color-scheme: dark) {
             :root {
-                --bg-pattern: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23444444' fill-opacity='0.15'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+                --bg-pattern: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23444444' fill-opacity='0.15'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
                 --bg-color: #1a1a1a;
                 --text-main: #e0e0e0;
                 --text-sub: #b0b0b0;
@@ -48,10 +48,26 @@
                 --accent-gold: #e5c07b;
                 --glass-bg: rgba(30, 30, 30, 0.9);
                 --glass-border: rgba(255, 255, 255, 0.1);
-                --sidebar-bg: rgba(30, 30, 30, 0.95);
+                --sidebar-bg: rgba(30, 30, 30, 0.75); /* すりガラス用に透明度アップ */
                 --input-bg: #333333;
                 --omi-paper: #fffcf2; 
             }
+        }
+
+        /* Lab: 迎春・雅モード */
+        body.theme-newyear {
+            --bg-color: #fffbf0;
+            --bg-pattern: url("data:image/svg+xml,%3Csvg width='40' height='40' viewBox='0 0 40 40' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='%23d4af37' fill-opacity='0.2'%3E%3Cpath d='M0 0h40v40H0V0zm20 20h20v20H20V20zM0 20h20v20H0V20zM20 0h20v20H20V0z'/%3E%3C/g%3E%3C/svg%3E");
+            --accent-red: #e60033; /* 紅白の紅 */
+            --accent-gold: #d4af37; /* 金 */
+            --card-border: #d4af37;
+        }
+        body.theme-newyear .nav-btn {
+            color: #333;
+        }
+        body.theme-newyear #sidebar {
+            background-color: rgba(255, 252, 240, 0.85);
+            border-right: 1px solid #d4af37;
         }
 
         body {
@@ -80,11 +96,12 @@
             border: 1px solid var(--card-border);
         }
 
-        /* --- サイドバー --- */
+        /* --- サイドバー (すりガラス効果強化) --- */
         #sidebar {
             width: var(--sidebar-width);
             background-color: var(--sidebar-bg);
-            backdrop-filter: blur(10px);
+            backdrop-filter: blur(15px); /* すりガラス効果 */
+            -webkit-backdrop-filter: blur(15px);
             border-right: 1px solid var(--glass-border);
             height: 100vh;
             position: fixed;
@@ -97,6 +114,7 @@
             align-items: flex-start;
             padding-top: 20px;
             overflow: hidden;
+            box-shadow: 2px 0 10px rgba(0,0,0,0.05);
         }
         #sidebar:hover {
             width: var(--sidebar-width-expanded);
@@ -123,6 +141,16 @@
             min-width: 40px;
             text-align: center;
         }
+        /* サイドバー用フラスコSVGのスタイル */
+        .nav-btn svg {
+            min-width: 40px; /* アイコンの幅を確保 */
+            width: 32px;
+            height: 32px;
+            margin: 0; /* 左寄せではなく中央になるようにマージン調整が必要だがflexで制御 */
+            display: block;
+            flex-shrink: 0;
+        }
+
         .nav-text {
             opacity: 0;
             transform: translateX(-10px);
@@ -190,26 +218,36 @@
             background-color: rgba(128,128,128,0.1);
         }
 
-        /* --- ローディングスピナー --- */
+        /* --- 新ローディングスピナー --- */
         #loading-overlay {
             position: fixed;
             top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0,0,0,0.5);
+            background: rgba(0,0,0,0.6);
             z-index: 9999;
             display: none;
             align-items: center;
             justify-content: center;
+            opacity: 0;
+            transition: opacity 0.3s ease; /* 滑らかなフェード */
         }
-        .spinner {
-            width: 50px;
-            height: 50px;
-            border-radius: 50%;
-            border: 4px solid rgba(255, 255, 255, 0.2);
-            border-top-color: #ffffff;
-            animation: spin 1s infinite linear;
+        #loading-overlay.visible {
+            opacity: 1;
         }
-        @keyframes spin {
-            to { transform: rotate(360deg); }
+        
+        .loader-svg {
+            width: 80px;
+            height: 80px;
+            animation: rotate 1s linear infinite;
+            transform-origin: center center;
+        }
+        .loader-path {
+            stroke: #ffffff; /* 白色の線 */
+            stroke-linecap: round;
+            stroke-dasharray: 89 150;
+            stroke-dashoffset: 0;
+        }
+        @keyframes rotate {
+            100% { transform: rotate(360deg); }
         }
 
         /* --- ホーム画面 --- */
@@ -307,7 +345,6 @@
         }
         .result-card-outer {
             width: 600px;
-            /* 高さを自動調整 */
             min-height: 1200px;
             padding: 30px;
             box-sizing: border-box;
@@ -544,17 +581,39 @@
             max-width: 400px;
         }
 
-        /* 詳細モーダル */
-        #history-detail-modal {
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0,0,0,0.8); z-index: 2000;
-            display: none; align-items: center; justify-content: center;
-            overflow-y: auto;
+        /* Labs ぼかし制御 */
+        .lab-blurred {
+            filter: blur(10px);
+            pointer-events: none;
+            user-select: none;
+            opacity: 0.6;
+            transition: all 0.5s;
         }
-        #history-detail-content {
-            background: transparent;
-            width: 100%; max-width: 650px; margin: 20px;
-            position: relative;
+        .lab-lock-overlay {
+            position: absolute;
+            top: 50%; left: 50%;
+            transform: translate(-50%, -50%);
+            z-index: 20;
+            background-color: rgba(255, 255, 255, 0.7);
+            backdrop-filter: blur(10px);
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+            text-align: center;
+            border: 1px solid var(--card-border);
+            width: 80%;
+            max-width: 400px;
+        }
+        /* ダークモード時のロック画面 */
+        @media (prefers-color-scheme: dark) {
+            .lab-lock-overlay {
+                background-color: rgba(30, 30, 30, 0.7);
+            }
+        }
+
+        /* 詳細モーダル (削除予定だが互換性のために残す) */
+        #history-detail-modal {
+            display: none; 
         }
 
         /* 記事詳細 */
@@ -569,13 +628,208 @@
         .article-content h3 { font-size: 1.4rem; font-weight: bold; margin: 30px 0 15px; border-left: 4px solid var(--accent-red); padding-left: 10px; }
         .article-content p { margin-bottom: 20px; }
 
+        /* TENMEI Labs (新スタイル) */
+        #view-lab {
+            background: linear-gradient(135deg, rgba(230,240,255,0.5) 0%, rgba(255,240,245,0.5) 50%, rgba(255,250,230,0.5) 100%);
+            border-radius: 20px;
+            padding: 30px;
+            min-height: 80vh;
+        }
+        .dark #view-lab {
+            background: linear-gradient(135deg, rgba(30,40,60,0.5) 0%, rgba(50,30,40,0.5) 50%, rgba(50,50,30,0.5) 100%);
+        }
+
+        .lab-card {
+            background-color: rgba(255, 255, 255, 0.7);
+            backdrop-filter: blur(5px);
+            border: 1px solid rgba(255,255,255,0.5);
+            padding: 24px;
+            border-radius: 16px;
+            margin-bottom: 20px;
+            position: relative;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        .dark .lab-card {
+            background-color: rgba(40, 40, 40, 0.7);
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+        .lab-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(0,0,0,0.1);
+        }
+
+        .toggle-switch {
+            position: relative;
+            display: inline-block;
+            width: 50px;
+            height: 24px;
+        }
+        .toggle-switch input { opacity: 0; width: 0; height: 0; }
+        .slider {
+            position: absolute; cursor: pointer;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background-color: #ccc;
+            transition: .4s;
+            border-radius: 34px;
+        }
+        .slider:before {
+            position: absolute; content: "";
+            height: 16px; width: 16px;
+            left: 4px; bottom: 4px;
+            background-color: white;
+            transition: .4s;
+            border-radius: 50%;
+        }
+        input:checked + .slider { background-color: #6366f1; } /* インディゴ系に変更 */
+        input:checked + .slider:before { transform: translateX(26px); }
+
+        /* Labアイコンのアニメーション定義 (カスタムSVG) */
+        .lab-icon-svg {
+            width: 30px;
+            height: 30px;
+            display: inline-block;
+        }
+        .flask-gradient-def {
+            --flask-color-start: #4facfe;
+            --flask-color-end: #00f2fe;
+        }
+        .dark .flask-gradient-def {
+            --flask-color-start: #8e2de2;
+            --flask-color-end: #4a00e0;
+        }
+        
+        .flask-liquid-path {
+            fill: url(#flaskLiquidGradient);
+            animation: liquidWave 2s infinite ease-in-out;
+            transform-origin: 50% 100%;
+        }
+        .flask-body-path {
+            stroke: currentColor;
+            stroke-width: 2.5;
+            fill: none;
+            stroke-linecap: round; 
+            stroke-linejoin: round;
+        }
+        .flask-bubble {
+            fill: rgba(255,255,255,0.6);
+            animation: bubbleRise 3s infinite ease-in;
+        }
+        .flask-group {
+            animation: flaskShake 3s infinite ease-in-out; /* 揺れを強く、速く */
+            transform-origin: 50% 80%;
+        }
+        
+        /* タイトル上の大きいアニメーションフラスコ */
+        .title-flask-anim {
+            width: 140px;
+            height: 140px;
+            margin: 0 auto 10px;
+        }
+        .title-flask-anim .flask-body-path {
+            stroke: var(--text-main);
+            stroke-width: 2;
+        }
+
+        /* サイドバー用の小さいアニメーションフラスコ */
+        .nav-btn .lab-icon-svg {
+             width: 32px;
+             height: 32px;
+             margin: 0;
+        }
+        
+        @keyframes liquidWave {
+            0%, 100% { transform: scaleY(1) translateY(0) skewX(0deg); }
+            25% { transform: scaleY(1.05) translateY(-2px) skewX(2deg); }
+            50% { transform: scaleY(1.1) translateY(-3px) skewX(0deg); }
+            75% { transform: scaleY(1.05) translateY(-2px) skewX(-2deg); }
+        }
+        @keyframes flaskShake {
+            0%, 100% { transform: rotate(0deg); }
+            15% { transform: rotate(12deg); }
+            30% { transform: rotate(-10deg); }
+            45% { transform: rotate(8deg); }
+            60% { transform: rotate(-6deg); }
+            75% { transform: rotate(3deg); }
+        }
+        @keyframes bubbleRise {
+            0% { transform: translateY(0) scale(0.5); opacity: 0; }
+            20% { opacity: 1; }
+            100% { transform: translateY(-40px) scale(1.2); opacity: 0; }
+        }
+
+        /* 認証コード入力欄（和風） */
+        .auth-code-input-container {
+            display: flex;
+            justify-content: center;
+            margin: 20px 0;
+            position: relative;
+        }
+        .auth-code-input {
+            width: 300px;
+            height: 60px;
+            font-size: 2rem;
+            letter-spacing: 0.8em;
+            text-align: center;
+            border: 3px double var(--accent-red);
+            background-color: var(--omi-paper);
+            color: var(--text-main);
+            font-family: 'Zen Old Mincho', serif;
+            border-radius: 4px;
+            outline: none;
+            box-shadow: inset 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .auth-code-input:focus {
+            box-shadow: 0 0 10px rgba(185, 28, 28, 0.3);
+            background-color: #fff;
+        }
+        .auth-code-deco {
+            position: absolute;
+            top: -10px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: var(--card-bg);
+            padding: 0 10px;
+            font-size: 0.8rem;
+            color: var(--accent-red);
+            font-weight: bold;
+        }
+
+        /* 認証初期選択画面 */
+        .auth-selection-btn {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 100%;
+            padding: 20px;
+            margin-bottom: 15px;
+            border-radius: 12px;
+            font-size: 1.2rem;
+            font-weight: bold;
+            transition: all 0.3s;
+            border: 1px solid var(--card-border);
+            background-color: var(--card-bg);
+            color: var(--text-main);
+        }
+        .auth-selection-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            background-color: rgba(128,128,128,0.05);
+        }
+        .auth-selection-btn i {
+            font-size: 1.5rem;
+            margin-right: 15px;
+        }
+
     </style>
 </head>
 <body>
 
-    <!-- ローディングスピナー -->
+    <!-- ローディングスピナー (SVG版) -->
     <div id="loading-overlay">
-        <div class="spinner"></div>
+        <svg class="loader-svg" viewBox="0 0 50 50">
+            <circle class="loader-path" cx="25" cy="25" r="20" fill="none" stroke-width="1.5"></circle>
+        </svg>
     </div>
 
     <!-- サイドバー -->
@@ -600,6 +854,26 @@
             <i class="bi bi-book"></i>
             <span class="nav-text">神籤草子</span>
         </button>
+        <!-- Lab機能ボタン (カスタムSVGアニメーション) -->
+        <button class="nav-btn" onclick="showView('lab')">
+            <div class="lab-icon-svg">
+                <svg viewBox="0 0 24 24" overflow="visible">
+                    <!-- 定義: グラデーション -->
+                    <defs>
+                        <linearGradient id="flaskLiquidGradientSmall" x1="0%" y1="0%" x2="0%" y2="100%">
+                            <stop offset="0%" style="stop-color:#4facfe;stop-opacity:1" />
+                            <stop offset="100%" style="stop-color:#00f2fe;stop-opacity:1" />
+                        </linearGradient>
+                    </defs>
+                    <g class="flask-group">
+                        <path class="flask-liquid-path" style="fill:url(#flaskLiquidGradientSmall)" d="M5 14 C7 13, 9 15, 12 14 C15 13, 17 15, 19 14 L18.5 20 C18.5 21, 18 22, 16 22 L8 22 C6 22, 5.5 21, 5.5 20 Z" />
+                        <path class="flask-body-path" d="M9 2 L15 2 L15 7 L20 18 C20.5 19.5, 19 22, 16 22 L8 22 C5 22, 3.5 19.5, 4 18 L9 7 Z" />
+                    </g>
+                </svg>
+            </div>
+            <span class="nav-text">TENMEI Labs</span>
+        </button>
+        
         <button class="nav-btn" onclick="handleProfileClick()" id="nav-login-btn">
             <i class="bi bi-person-circle"></i>
             <span class="nav-text">ログイン/登録</span>
@@ -670,7 +944,7 @@
                          <div class="flex justify-between"><span>大凶</span><span><span id="cnt-daikyo" class="mr-2 font-mono">0</span><span id="stat-daikyo">0.00%</span></span></div>
                          <div class="w-full bg-gray-200 dark:bg-gray-600 h-2 rounded"><div id="bar-daikyo" class="bg-black h-2 rounded" style="width: 0%"></div></div>
                     </div>
-                    <button onclick="showView('history')" class="text-sm text-red-600 hover:underline">おみくじの轍をもっと見る</button>
+                    <button onclick="showView('history')" class="text-sm text-red-600 hover:underline">おみくじの轍をもっと見る (全運勢ログ)</button>
                 </div>
 
                 <!-- お知らせ -->
@@ -813,45 +1087,180 @@
             <div id="full-ranking-list" class="space-y-4 mt-4 hidden max-w-3xl mx-auto"></div>
         </section>
 
-        <!-- ビュー: ログイン/登録 -->
+        <!-- ビュー: TENMEI Labs (新デザイン) -->
+        <section id="view-lab" class="view-section max-w-3xl mx-auto relative">
+            <div class="text-center mb-10 mt-4">
+                <!-- タイトル上のアニメーションフラスコ (カスタムSVG) -->
+                <div class="title-flask-anim">
+                    <svg viewBox="0 0 24 24" overflow="visible" style="width:100%; height:100%;">
+                        <defs>
+                            <linearGradient id="flaskLiquidGradient" x1="0%" y1="0%" x2="0%" y2="100%">
+                                <stop offset="0%" style="stop-color:#818cf8;stop-opacity:1" />
+                                <stop offset="100%" style="stop-color:#6366f1;stop-opacity:1" />
+                            </linearGradient>
+                        </defs>
+                        <g class="flask-group">
+                            <!-- 液体 (よりリアルな波) -->
+                            <path class="flask-liquid-path" d="M5 14 C7 13, 9 15, 12 14 C15 13, 17 15, 19 14 L18.5 20 C18.5 21, 18 22, 16 22 L8 22 C6 22, 5.5 21, 5.5 20 Z" />
+                            <!-- 泡 -->
+                            <circle class="flask-bubble" cx="10" cy="18" r="1" style="animation-delay:0s" />
+                            <circle class="flask-bubble" cx="14" cy="19" r="0.8" style="animation-delay:1s" />
+                            <circle class="flask-bubble" cx="12" cy="16" r="0.6" style="animation-delay:0.5s" />
+                            <!-- フラスコ本体 (底丸め) -->
+                            <path class="flask-body-path" d="M9 2 L15 2 L15 7 L20 18 C20.5 19.5, 19 22, 16 22 L8 22 C5 22, 3.5 19.5, 4 18 L9 7 Z" />
+                        </g>
+                    </svg>
+                </div>
+                <h2 class="text-4xl font-bold mb-2 tracking-wide" style="color: #6366f1;">
+                    TENMEI Labs
+                </h2>
+                <p class="text-gray-600 dark:text-gray-300 font-bold">新機能を試してみる</p>
+                <p class="text-sm text-gray-500 mt-2">実験中の機能に早期アクセスし、開発にご協力ください。</p>
+            </div>
+
+            <!-- ラッパー: ぼかし適用対象 -->
+            <div id="lab-content-wrapper">
+                <div id="lab-container">
+                    <!-- 1. 迎春・雅モード -->
+                    <div class="lab-card">
+                        <div class="flex justify-between items-center">
+                            <div>
+                                <h3 class="font-bold text-lg text-yellow-600 dark:text-yellow-400">迎春・雅（みやび）モード</h3>
+                                <p class="text-sm themed-text-sub">サイト全体の雰囲気を紅白と金色のお正月仕様に変更します。</p>
+                            </div>
+                            <label class="toggle-switch">
+                                <input type="checkbox" onchange="TenmeiLab.toggleNewYear(this)">
+                                <span class="slider"></span>
+                            </label>
+                        </div>
+                    </div>
+
+                    <!-- 2. 神速の祈り -->
+                    <div class="lab-card">
+                        <div class="flex justify-between items-center">
+                            <div>
+                                <h3 class="font-bold text-lg text-blue-600 dark:text-blue-400">神速（しんそく）の祈り</h3>
+                                <p class="text-sm themed-text-sub">おみくじのアニメーションをスキップし、結果を即座に表示します。</p>
+                            </div>
+                            <label class="toggle-switch">
+                                <input type="checkbox" onchange="TenmeiLab.toggleSpeed(this)">
+                                <span class="slider"></span>
+                            </label>
+                        </div>
+                    </div>
+
+                    <!-- 3. 宵闇の刻 -->
+                    <div class="lab-card">
+                        <div class="flex justify-between items-center">
+                            <div>
+                                <h3 class="font-bold text-lg text-purple-600 dark:text-purple-400">宵闇（よいやみ）の刻</h3>
+                                <p class="text-sm themed-text-sub">OSの設定に関わらず、常にダークモードを強制適用します。</p>
+                            </div>
+                            <label class="toggle-switch">
+                                <input type="checkbox" onchange="TenmeiLab.toggleDark(this)">
+                                <span class="slider"></span>
+                            </label>
+                        </div>
+                    </div>
+
+                    <!-- 4. 言霊の増幅 -->
+                    <div class="lab-card">
+                        <div class="flex justify-between items-center">
+                            <div>
+                                <h3 class="font-bold text-lg text-green-600 dark:text-green-400">言霊（ことだま）の増幅</h3>
+                                <p class="text-sm themed-text-sub">結果画面の文字サイズを大きくし、視認性を向上させます。</p>
+                            </div>
+                            <label class="toggle-switch">
+                                <input type="checkbox" onchange="TenmeiLab.toggleBigText(this)">
+                                <span class="slider"></span>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 非ログイン時のロックオーバーレイ (ぼかしの上に表示) -->
+            <div id="lab-lock" class="lab-lock-overlay hidden">
+                <i class="bi bi-lock-fill text-5xl text-gray-400 mb-4 block"></i>
+                <h3 class="text-xl font-bold mb-2">会員限定機能</h3>
+                <p class="text-sm text-gray-500 mb-6">TENMEI Labsは会員様のみご利用いただけます。<br>ログインして実験的機能をお楽しみください。</p>
+                <button onclick="showView('auth')" class="btn-primary w-full shadow-lg">ログイン / 登録</button>
+            </div>
+        </section>
+
+        <!-- ビュー: ログイン/登録 (新フロー: 選択 -> 入力 -> 認証) -->
         <section id="view-auth" class="view-section max-w-md mx-auto themed-card p-8 rounded-xl shadow-lg mt-10">
-            <h2 class="text-2xl font-bold mb-6 text-center">アカウント認証</h2>
+            <h2 class="text-2xl font-bold mb-8 text-center">アカウント認証</h2>
             
-            <div class="flex justify-center mb-6 border-b">
-                <button class="px-4 py-2 border-b-2 border-red-500 font-bold" id="tab-login" onclick="toggleAuthTab('login')">ログイン</button>
-                <button class="px-4 py-2 border-b-2 border-transparent text-gray-500" id="tab-register" onclick="toggleAuthTab('register')">新規登録</button>
+            <!-- 初期選択画面 -->
+            <div id="auth-selection">
+                <div class="mb-6 p-4 bg-red-50 dark:bg-red-900/20 text-sm text-red-700 dark:text-red-300 border border-red-200 dark:border-red-800 rounded">
+                    <h4 class="font-bold mb-2"><i class="bi bi-unlock-fill mr-1"></i> 会員特典</h4>
+                    <ul class="list-disc list-inside space-y-1 text-xs">
+                        <li>おみくじの轍（履歴）の完全閲覧＆保存</li>
+                        <li>TENMEI Labs（実験機能）の利用権</li>
+                        <li>累計発行本数カウンターへの貢献</li>
+                    </ul>
+                </div>
+
+                <button class="auth-selection-btn" onclick="startAuthFlow('login')">
+                    <i class="bi bi-box-arrow-in-right text-blue-500"></i> ログイン
+                </button>
+                <button class="auth-selection-btn" onclick="startAuthFlow('register')">
+                    <i class="bi bi-person-plus text-green-500"></i> 新規登録
+                </button>
             </div>
 
-            <div class="mb-6 p-3 bg-red-50 dark:bg-red-900/20 text-xs text-red-700 dark:text-red-300 border border-red-200 dark:border-red-800 rounded">
-                <i class="bi bi-info-circle-fill mr-1"></i>
-                ログインすると、あなたの祈りが「累計発行本数」に刻まれます。
+            <!-- ステップ1: メール/パスワード入力 -->
+            <div id="auth-step-1" class="hidden">
+                <div class="flex items-center mb-6">
+                    <button onclick="backToAuthSelection()" class="text-gray-500 hover:text-gray-800 mr-4">
+                        <i class="bi bi-arrow-left text-xl"></i>
+                    </button>
+                    <h3 class="font-bold text-lg" id="auth-form-title">ログイン</h3>
+                </div>
+
+                <div id="form-login-fields" class="hidden">
+                    <label class="block mb-2 font-bold text-sm">メールアドレス</label>
+                    <input type="email" id="login-email" placeholder="example@email.com" class="w-full p-3 border rounded mb-4 themed-input">
+                    <label class="block mb-2 font-bold text-sm">パスワード</label>
+                    <input type="password" id="login-password" placeholder="********" class="w-full p-3 border rounded mb-4 themed-input">
+                    <button onclick="initiateAuth('login')" class="btn-primary w-full justify-center">
+                        <i class="bi bi-send"></i> 認証コードを送信
+                    </button>
+                </div>
+
+                <div id="form-register-fields" class="hidden">
+                    <label class="block mb-2 font-bold text-sm">ユーザー名</label>
+                    <input type="text" id="reg-username" placeholder="天命 太郎" class="w-full p-3 border rounded mb-4 themed-input">
+                    <label class="block mb-2 font-bold text-sm">メールアドレス</label>
+                    <input type="email" id="reg-email" placeholder="example@email.com" class="w-full p-3 border rounded mb-4 themed-input">
+                    <label class="block mb-2 font-bold text-sm">パスワード</label>
+                    <input type="password" id="reg-password" placeholder="********" class="w-full p-3 border rounded mb-4 themed-input">
+                    <button onclick="initiateAuth('register')" class="btn-primary w-full justify-center">
+                        <i class="bi bi-send"></i> 認証コードを送信
+                    </button>
+                </div>
             </div>
 
-            <div id="form-login">
-                <label class="block mb-2 font-bold text-sm">メールアドレス</label>
-                <input type="email" id="login-email" placeholder="example@email.com" class="w-full p-3 border rounded mb-4 themed-input">
-                <label class="block mb-2 font-bold text-sm">パスワード</label>
-                <input type="password" id="login-password" placeholder="********" class="w-full p-3 border rounded mb-4 themed-input">
-                <label class="block mb-2 font-bold text-sm">認証コード (6桁)</label>
-                <input type="text" id="login-code" placeholder="123456" class="w-full p-3 border rounded mb-4 themed-input">
-                <button onclick="performLogin()" class="btn-primary w-full justify-center">ログイン</button>
-            </div>
+            <!-- ステップ2: 認証コード入力 (和風デザイン) -->
+            <div id="auth-step-2" class="hidden text-center">
+                <div class="mb-4">
+                    <i class="bi bi-envelope-check text-4xl text-red-500"></i>
+                </div>
+                <p class="mb-2 font-bold">認証コードを入力してください</p>
+                <p class="text-xs text-gray-500 mb-6">メールアドレスに送信された6桁の数字を入力し、認証を完了させてください。</p>
+                
+                <div class="auth-code-input-container">
+                    <div class="auth-code-deco">天命認証符</div>
+                    <input type="text" id="auth-code-input" maxlength="6" class="auth-code-input" placeholder="一二三四五六" oninput="this.value = this.value.replace(/[^0-9]/g, '');">
+                </div>
 
-            <div id="form-register" class="hidden">
-                <label class="block mb-2 font-bold text-sm">ユーザー名</label>
-                <input type="text" id="reg-username" placeholder="天命 太郎" class="w-full p-3 border rounded mb-4 themed-input">
-                <label class="block mb-2 font-bold text-sm">メールアドレス</label>
-                <input type="email" id="reg-email" placeholder="example@email.com" class="w-full p-3 border rounded mb-4 themed-input">
-                <label class="block mb-2 font-bold text-sm">パスワード</label>
-                <input type="password" id="reg-password" placeholder="********" class="w-full p-3 border rounded mb-4 themed-input">
-                <label class="block mb-2 font-bold text-sm">認証コード (6桁)</label>
-                <input type="text" id="reg-code" placeholder="123456" class="w-full p-3 border rounded mb-4 themed-input">
-                <button onclick="performRegister()" class="btn-primary w-full justify-center">登録</button>
-            </div>
-
-            <div class="mt-4 text-center">
-                <button onclick="sendAuthCode()" class="text-xs text-blue-500 underline font-bold px-4 py-2 hover:text-blue-700">
-                    <i class="bi bi-send"></i> 認証コードを送信する
+                <button onclick="finalizeAuth()" class="btn-primary w-full justify-center mb-3">
+                    <i class="bi bi-check-circle-fill"></i> 認証完了
+                </button>
+                <button onclick="backToAuthStep1()" class="text-sm underline text-gray-500">
+                    戻る
                 </button>
             </div>
         </section>
@@ -1187,13 +1596,33 @@
             view: 'home',
             user: null, // { email, username, token }
             lastResult: null,
-            liveCount: 0 
+            liveCount: 0,
+            authMode: 'login' // 'login' or 'register'
         };
 
         let favoriteList = [];
         let dailyRanking = [];
         let globalHistory = [];
         let personalHistory = [];
+
+        // Lab機能の状態管理
+        const TenmeiLab = {
+            toggleNewYear: (el) => {
+                if(el.checked) document.body.classList.add('theme-newyear');
+                else document.body.classList.remove('theme-newyear');
+            },
+            toggleSpeed: (el) => {
+                window.labSpeedMode = el.checked;
+            },
+            toggleDark: (el) => {
+                if(el.checked) document.documentElement.classList.add('dark');
+                else if(!window.matchMedia('(prefers-color-scheme: dark)').matches) document.documentElement.classList.remove('dark');
+            },
+            toggleBigText: (el) => {
+                if(el.checked) document.body.style.fontSize = '120%';
+                else document.body.style.fontSize = '';
+            }
+        };
 
         // --- イニシャライズ ---
         window.onload = function() {
@@ -1230,10 +1659,36 @@
         };
 
         function showLoading(show) {
-            document.getElementById('loading-overlay').style.display = show ? 'flex' : 'none';
+            const overlay = document.getElementById('loading-overlay');
+            if(show) {
+                overlay.style.display = 'flex';
+                // わずかに遅らせてopacityを変更しフェードインさせる
+                requestAnimationFrame(() => overlay.classList.add('visible'));
+            } else {
+                overlay.classList.remove('visible');
+                // フェードアウト後に非表示
+                setTimeout(() => {
+                    if(!overlay.classList.contains('visible')) overlay.style.display = 'none';
+                }, 300);
+            }
         }
 
         function showView(viewId) {
+            // Lab機能へのアクセス制限処理
+            // ビュー自体は表示するが、非ログイン時はぼかしとロックをかける
+            if(viewId === 'lab') {
+                const lock = document.getElementById('lab-lock');
+                const wrapper = document.getElementById('lab-content-wrapper');
+                
+                if(!currentState.user) {
+                    lock.classList.remove('hidden');
+                    wrapper.classList.add('lab-blurred');
+                } else {
+                    lock.classList.add('hidden');
+                    wrapper.classList.remove('lab-blurred');
+                }
+            }
+
             document.querySelectorAll('.view-section').forEach(el => {
                 el.classList.remove('active');
                 setTimeout(() => {
@@ -1440,6 +1895,13 @@
             const numEl = document.getElementById('countdown-number');
             overlay.style.display = 'flex';
             
+            // Lab: 神速の祈りモードならカウントダウン省略
+            if(window.labSpeedMode) {
+                overlay.style.display = 'none';
+                showResultDetail(true);
+                return;
+            }
+            
             let count = 3;
             numEl.textContent = count;
             
@@ -1474,7 +1936,6 @@
                 }));
 
                 // ラッキー/アンラッキー（リストからランダムに取得し重複を避ける）
-                // 簡易的にランダム取得するが、リストが大きいので被る確率は低い
                 luckyItems = {
                     item: luckyItemsList[Math.floor(Math.random()*luckyItemsList.length)],
                     spot: luckySpotsList[Math.floor(Math.random()*luckySpotsList.length)],
@@ -1775,8 +2236,10 @@
                         div.className = `${bgClass} p-3 rounded flex justify-between items-center border-l-4 ${borderColor} cursor-pointer hover:opacity-80 transition shadow-sm`;
                         
                         // 修正: クリックで詳細ページ(結果画面)へ遷移
+                        // 引いた時と「全く同じ」画面を再現するため、showResultDetailを使用
                         div.onclick = () => {
                             showResultDetail(false, item);
+                            // 履歴から開いた場合でもURLを更新する
                             updateURL(item);
                         }; 
 
@@ -1896,7 +2359,31 @@
             if(!currentState.lastResult) return;
             const res = currentState.lastResult;
             const userName = res.username || "参拝者"; 
-            const text = `⛩️ 運勢・天命乃杜で運試し ⛩️\n\n${userName}様の運勢は……【 ${res.type} 】でした！\n\n📜 神託：『${res.poem}』\n\n#天命乃杜 #おみくじ`;
+            
+            // 超長文テキスト生成
+            const text = `⛩️ 運勢・天命乃杜で運試し ⛩️
+
+星霜を経て巡り会う、天命の導き。
+${userName}様の運勢は……【 ${res.type} 】と出ました！
+
+📜 神託：
+『${res.poem}』
+
+🌸 助言：
+${res.desc}
+
+🌟 開運の鍵：
+${res.lucky.item}・${res.lucky.color}（${res.lucky.spot}にて）
+
+禍を転じて福となす。心の在り方ひとつで未来は拓ける。
+この結果を胸に、今日という日を大切に歩んでまいります。
+
+👇 あなたも今すぐ無料で本格おみくじを引いてみませんか？
+12星座×血液型の詳細診断や、あなただけの開運アイテムも見つかります。
+会員登録で「おみくじの轍」に記録を残し、運気の流れを読み解きましょう。
+
+#天命乃杜 #運勢天命乃杜 #おみくじ #占い #運勢 #運勢診断 #今日の運勢 #開運 #神社 #スピリチュアル #御神籤 #パワースポット #人生 #拡散希望 #願掛け #吉凶 #運気上昇 #精神統一 #日本の心 #伝統文化 #オンライン参拝 #デジタル神社 #Webサービス #nden148`;
+
             const url = getShareUrl();
 
             // Web Share API (画像添付) トライ
@@ -1906,7 +2393,7 @@
                     if (navigator.canShare && navigator.canShare({ files: [file] })) {
                         await navigator.share({
                             text: text,
-                            url: url, // Xは画像とURL同時シェアが難しい場合があるが、API仕様に任せる
+                            url: url, 
                             files: [file]
                         });
                         return; // 成功したら終了
@@ -2014,48 +2501,60 @@
             finally { showLoading(false); }
         }
 
-        // --- 認証系 ---
-        function toggleAuthTab(tab) {
-            const loginForm = document.getElementById('form-login');
-            const regForm = document.getElementById('form-register');
-            const tabLogin = document.getElementById('tab-login');
-            const tabReg = document.getElementById('tab-register');
+        // --- 認証系 (新: 選択 -> 入力 -> 認証) ---
+        function startAuthFlow(mode) {
+            document.getElementById('auth-selection').classList.add('hidden');
+            document.getElementById('auth-step-1').classList.remove('hidden');
+            
+            currentState.authMode = mode;
+            
+            const loginFields = document.getElementById('form-login-fields');
+            const regFields = document.getElementById('form-register-fields');
+            const title = document.getElementById('auth-form-title');
 
-            if (tab === 'login') {
-                loginForm.classList.remove('hidden');
-                regForm.classList.add('hidden');
-                tabLogin.classList.add('border-red-500', 'font-bold');
-                tabLogin.classList.remove('border-transparent', 'text-gray-500');
-                tabReg.classList.remove('border-red-500', 'font-bold');
-                tabReg.classList.add('border-transparent', 'text-gray-500');
+            if (mode === 'login') {
+                loginFields.classList.remove('hidden');
+                regFields.classList.add('hidden');
+                title.textContent = 'ログイン';
             } else {
-                loginForm.classList.add('hidden');
-                regForm.classList.remove('hidden');
-                tabReg.classList.add('border-red-500', 'font-bold');
-                tabReg.classList.remove('border-transparent', 'text-gray-500');
-                tabLogin.classList.remove('border-red-500', 'font-bold');
-                tabLogin.classList.add('border-transparent', 'text-gray-500');
+                loginFields.classList.add('hidden');
+                regFields.classList.remove('hidden');
+                title.textContent = '新規登録';
             }
         }
 
-        async function sendAuthCode() {
-            const isLoginOpen = !document.getElementById('form-login').classList.contains('hidden');
-            const emailInputId = isLoginOpen ? 'login-email' : 'reg-email';
+        function backToAuthSelection() {
+            document.getElementById('auth-step-1').classList.add('hidden');
+            document.getElementById('auth-selection').classList.remove('hidden');
+        }
+
+        async function initiateAuth(mode) {
+            const emailInputId = (mode === 'login') ? 'login-email' : 'reg-email';
             const email = document.getElementById(emailInputId).value;
             const username = document.getElementById('reg-username').value;
+            const pass = document.getElementById(mode === 'login' ? 'login-password' : 'reg-password').value;
 
-            if(!email) return alert("メールアドレスを入力してください");
+            if(!email || !pass) return alert("メールアドレスとパスワードを入力してください");
+            if(mode === 'register' && !username) return alert("ユーザー名を入力してください");
+
+            // 擬似的にコード送信APIを叩く
             showLoading(true);
-
             try {
                 const res = await fetch(`${API_BASE}/api/auth/send`, { 
                     method: 'POST', 
                     headers: {'Content-Type': 'application/json'},
-                    body: JSON.stringify({ email, username: isLoginOpen ? undefined : username }) 
+                    body: JSON.stringify({ email, username: mode === 'register' ? username : undefined }) 
                 });
                 const data = await res.json();
+                
                 if(res.ok && data.success) {
-                    alert(`${email} に認証コードを送信しました。`);
+                    // ステップ2へ遷移
+                    document.getElementById('auth-step-1').classList.add('hidden');
+                    document.getElementById('auth-step-2').classList.remove('hidden');
+                    // コード入力欄をクリアしてフォーカス
+                    const codeInput = document.getElementById('auth-code-input');
+                    codeInput.value = '';
+                    codeInput.focus();
                 } else {
                     alert(`送信エラー: ${data.error || '不明なエラー'}`);
                 }
@@ -2063,60 +2562,57 @@
             finally { showLoading(false); }
         }
 
-        async function performLogin() {
-            const email = document.getElementById('login-email').value;
-            const pass = document.getElementById('login-password').value;
-            const code = document.getElementById('login-code').value;
+        function backToAuthStep1() {
+            document.getElementById('auth-step-2').classList.add('hidden');
+            document.getElementById('auth-step-1').classList.remove('hidden');
+        }
 
-            if(!email || !pass || !code) return alert("全ての項目を入力してください");
+        async function finalizeAuth() {
+            const code = document.getElementById('auth-code-input').value;
+            if(!code || code.length !== 6) return alert("6桁の認証コードを入力してください");
+
+            const mode = currentState.authMode;
+            const email = document.getElementById(mode === 'login' ? 'login-email' : 'reg-email').value;
+            const pass = document.getElementById(mode === 'login' ? 'login-password' : 'reg-password').value;
+            const username = document.getElementById('reg-username').value;
+
             showLoading(true);
-            
             try {
-                const res = await fetch(`${API_BASE}/api/auth/login`, {
+                const endpoint = (mode === 'login') ? '/api/auth/login' : '/api/auth/register';
+                const body = { email, password: pass, code };
+                if (mode === 'register') body.username = username;
+
+                const res = await fetch(`${API_BASE}${endpoint}`, {
                     method: 'POST',
                     headers: {'Content-Type': 'application/json'},
-                    body: JSON.stringify({ email, password: pass, code })
+                    body: JSON.stringify(body)
                 });
                 const data = await res.json();
+                
                 if(res.ok && data.success) {
                     loginSuccess({ email, username: data.username, token: data.token });
                 } else {
-                    alert(`ログイン失敗: ${data.message || data.error}`);
+                    alert(`${mode === 'login' ? 'ログイン' : '登録'}失敗: ${data.message || data.error}`);
                 }
             } catch(e) { alert("通信エラー"); }
             finally { showLoading(false); }
         }
 
-        async function performRegister() {
-            const name = document.getElementById('reg-username').value;
-            const email = document.getElementById('reg-email').value;
-            const pass = document.getElementById('reg-password').value;
-            const code = document.getElementById('reg-code').value;
-
-            if(!name || !email || !pass || !code) return alert("全ての項目を入力してください");
-            showLoading(true);
-
-            try {
-                const res = await fetch(`${API_BASE}/api/auth/register`, {
-                    method: 'POST',
-                    headers: {'Content-Type': 'application/json'},
-                    body: JSON.stringify({ email, password: pass, username: name, code })
-                });
-                const data = await res.json();
-                if(res.ok && data.success) {
-                    loginSuccess({ email, username: data.username, token: data.token });
-                } else {
-                    alert(`登録失敗: ${data.message || data.error}`);
-                }
-            } catch(e) { alert("通信エラー"); }
-            finally { showLoading(false); }
-        }
+        // 旧: sendAuthCode (削除せず互換性のため残すが使用しない)
+        async function sendAuthCode() { initiateAuth(currentState.authMode); }
+        // 旧: performLogin / performRegister (finalizeAuthに統合)
 
         function loginSuccess(user) {
             currentState.user = user;
             localStorage.setItem('omikuji_user', JSON.stringify(user));
             updateAuthUI();
             loadFavorites(); 
+            
+            // Lab画面のロック状態を即座に更新するためにView再描画
+            if(currentState.view === 'lab') {
+                showView('lab');
+            }
+            
             alert(`ようこそ、${user.username || user.email} 様！`);
             showView('home');
         }
