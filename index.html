@@ -630,57 +630,33 @@
 
         /* TENMEI Labs (新スタイル) */
         #view-lab {
-            /* グラデーション背景を削除し、LabsのUIに近づける */
-            background-color: var(--bg-color); /* 通常の背景に戻す */
+            background: linear-gradient(135deg, rgba(230,240,255,0.5) 0%, rgba(255,240,245,0.5) 50%, rgba(255,250,230,0.5) 100%);
             border-radius: 20px;
             padding: 30px;
             min-height: 80vh;
         }
-        /* 
-           Labsのカードスタイル:
-           Google Search Labs風のカードにする。
-           通常時: 白背景、角丸、シャドウ
-           ダークモード時: 暗い背景
-           宵闇の刻ON時: 強制ダーク
-        */
-        .lab-card {
-            background-color: #fff;
-            border-radius: 24px; /* 丸みを強く */
-            padding: 24px;
-            margin-bottom: 20px;
-            position: relative;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.12), 0 1px 2px rgba(0,0,0,0.24); /* マテリアルデザイン風シャドウ */
-            transition: all 0.3s cubic-bezier(.25,.8,.25,1);
-            border: 1px solid #e0e0e0;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-        }
-        .dark .lab-card, html.dark .lab-card { /* html.dark を追加して強制ダークに対応 */
-            background-color: #303134; /* Googleダークモード風グレー */
-            border: 1px solid #5f6368;
-            color: #e8eaed;
-        }
-        .lab-card:hover {
-            box-shadow: 0 14px 28px rgba(0,0,0,0.25), 0 10px 10px rgba(0,0,0,0.22);
-            transform: translateY(-2px);
+        .dark #view-lab {
+            background: linear-gradient(135deg, rgba(30,40,60,0.5) 0%, rgba(50,30,40,0.5) 50%, rgba(50,50,30,0.5) 100%);
         }
 
-        /* 
-           Labsのヘッダー部分:
-           グラデーション背景を持つコンテナの中にタイトルと説明を入れる
-        */
-        .lab-header-container {
-            background: linear-gradient(135deg, #e8f0fe 0%, #fce8e6 100%); /* 薄い青から赤へのグラデーション */
-            border-radius: 24px;
-            padding: 40px;
-            margin-bottom: 40px;
-            text-align: center;
+        .lab-card {
+            background-color: rgba(255, 255, 255, 0.7);
+            backdrop-filter: blur(5px);
+            border: 1px solid rgba(255,255,255,0.5);
+            padding: 24px;
+            border-radius: 16px;
+            margin-bottom: 20px;
             position: relative;
-            overflow: hidden;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+            transition: transform 0.2s, box-shadow 0.2s;
         }
-        .dark .lab-header-container, html.dark .lab-header-container {
-            background: linear-gradient(135deg, #3c4043 0%, #202124 100%);
+        .dark .lab-card {
+            background-color: rgba(40, 40, 40, 0.7);
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+        .lab-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(0,0,0,0.1);
         }
 
         .toggle-switch {
@@ -705,8 +681,8 @@
             transition: .4s;
             border-radius: 50%;
         }
-        input:checked + .slider { background-color: #8ab4f8; } /* Google Blue風 */
-        input:checked + .slider:before { transform: translateX(26px); background-color: #1a73e8; } /* ノブを青に */
+        input:checked + .slider { background-color: #6366f1; } /* インディゴ系に変更 */
+        input:checked + .slider:before { transform: translateX(26px); }
 
         /* Labアイコンのアニメーション定義 (カスタムSVG) */
         .lab-icon-svg {
@@ -714,8 +690,14 @@
             height: 30px;
             display: inline-block;
         }
-        
-        /* グラデーション定義はSVG内で行う */
+        .flask-gradient-def {
+            --flask-color-start: #4facfe;
+            --flask-color-end: #00f2fe;
+        }
+        .dark .flask-gradient-def {
+            --flask-color-start: #8e2de2;
+            --flask-color-end: #4a00e0;
+        }
         
         .flask-liquid-path {
             fill: url(#flaskLiquidGradient);
@@ -745,12 +727,8 @@
             margin: 0 auto 10px;
         }
         .title-flask-anim .flask-body-path {
-            stroke: var(--text-main); /* テーマに応じて色が変わる */
+            stroke: var(--text-main);
             stroke-width: 2;
-        }
-        /* ダークモード時のフラスコの線色 */
-        .dark .title-flask-anim .flask-body-path, html.dark .title-flask-anim .flask-body-path {
-            stroke: #e8eaed;
         }
 
         /* サイドバー用の小さいアニメーションフラスコ */
@@ -780,14 +758,14 @@
             100% { transform: translateY(-40px) scale(1.2); opacity: 0; }
         }
 
-        /* 認証コード入力欄（個別の枠） */
+        /* 認証コード入力欄（数字のみ・枠線） */
         .auth-code-input-container {
             display: flex;
             justify-content: center;
             gap: 10px;
             margin: 20px 0;
         }
-        .auth-code-digit {
+        .auth-digit-input {
             width: 50px;
             height: 60px;
             font-size: 2rem;
@@ -796,13 +774,12 @@
             border-radius: 8px;
             background-color: var(--input-bg);
             color: var(--text-main);
-            font-family: monospace; /* 数字用フォント */
             outline: none;
             transition: border-color 0.2s, box-shadow 0.2s;
         }
-        .auth-code-digit:focus {
+        .auth-digit-input:focus {
             border-color: var(--accent-red);
-            box-shadow: 0 0 0 3px rgba(185, 28, 28, 0.2);
+            box-shadow: 0 0 5px rgba(185, 28, 28, 0.3);
         }
 
         /* 認証初期選択画面 */
@@ -868,7 +845,7 @@
         <button class="nav-btn" onclick="showView('lab')">
             <div class="lab-icon-svg">
                 <svg viewBox="0 0 24 24" overflow="visible">
-                    <!-- 定義: グラデーション (青〜紫) -->
+                    <!-- 定義: グラデーション -->
                     <defs>
                         <linearGradient id="flaskLiquidGradientSmall" x1="0%" y1="0%" x2="0%" y2="100%">
                             <stop offset="0%" style="stop-color:#4facfe;stop-opacity:1" />
@@ -920,17 +897,11 @@
 
             <!-- カウンター -->
             <div id="home-counter-area" class="themed-card p-4 rounded-lg mb-2">
-                <div class="grid grid-cols-2 gap-4">
-                    <div>
-                        <p class="text-sm themed-text-sub">累計発行本数</p>
-                        <div class="text-3xl font-bold font-mono text-red-700" id="live-counter">---</div>
-                    </div>
-                    <div>
-                        <p class="text-sm themed-text-sub">総参拝者数（登録者）</p>
-                        <div class="text-3xl font-bold font-mono text-blue-700" id="live-users">---</div>
-                    </div>
-                </div>
-                <p class="text-xs themed-text-sub mt-2">最終更新: <span id="counter-time">--:--:--</span> (1秒毎更新)</p>
+                <p class="text-sm themed-text-sub">累計発行本数</p>
+                <div class="text-3xl font-bold font-mono text-red-700" id="live-counter">---</div>
+                <p class="text-sm themed-text-sub mt-2">累計新規登録者数</p>
+                <div class="text-xl font-bold font-mono text-blue-700" id="live-user-counter">---</div>
+                <p class="text-xs themed-text-sub mt-1">最終更新: <span id="counter-time">--:--:--</span> (1秒毎更新)</p>
                 <p class="text-[10px] themed-text-sub mt-1">※会員様の祈りの数のみが反映されます</p>
             </div>
 
@@ -940,9 +911,27 @@
                 <div class="themed-card p-6 rounded-xl shadow-sm">
                     <h3 class="font-bold text-lg mb-2 border-b border-gray-300 dark:border-gray-600 pb-2"><i class="bi bi-balloon-heart text-red-500"></i> おみくじの轍</h3>
                     <div class="text-xs text-right mb-2 themed-text-sub">更新: <span id="stats-update-time">--:--:--</span></div>
-                    <!-- 全種類の運勢を表示 -->
                     <div class="space-y-3 mb-4 text-sm" id="home-history-stats">
-                         <!-- JSで全種類レンダリング -->
+                         <div class="flex justify-between"><span>大吉</span><span><span id="cnt-daikichi" class="mr-2 font-mono">0</span><span id="stat-daikichi">0.00%</span></span></div>
+                         <div class="w-full bg-gray-200 dark:bg-gray-600 h-2 rounded"><div id="bar-daikichi" class="bg-yellow-400 h-2 rounded" style="width: 0%"></div></div>
+                         
+                         <div class="flex justify-between"><span>吉</span><span><span id="cnt-kichi" class="mr-2 font-mono">0</span><span id="stat-kichi">0.00%</span></span></div>
+                         <div class="w-full bg-gray-200 dark:bg-gray-600 h-2 rounded"><div id="bar-kichi" class="bg-red-400 h-2 rounded" style="width: 0%"></div></div>
+
+                         <div class="flex justify-between"><span>中吉</span><span><span id="cnt-chukichi" class="mr-2 font-mono">0</span><span id="stat-chukichi">0.00%</span></span></div>
+                         <div class="w-full bg-gray-200 dark:bg-gray-600 h-2 rounded"><div id="bar-chukichi" class="bg-orange-400 h-2 rounded" style="width: 0%"></div></div>
+
+                         <div class="flex justify-between"><span>小吉</span><span><span id="cnt-shokichi" class="mr-2 font-mono">0</span><span id="stat-shokichi">0.00%</span></span></div>
+                         <div class="w-full bg-gray-200 dark:bg-gray-600 h-2 rounded"><div id="bar-shokichi" class="bg-green-400 h-2 rounded" style="width: 0%"></div></div>
+                         
+                         <div class="flex justify-between"><span>末吉</span><span><span id="cnt-suekichi" class="mr-2 font-mono">0</span><span id="stat-suekichi">0.00%</span></span></div>
+                         <div class="w-full bg-gray-200 dark:bg-gray-600 h-2 rounded"><div id="bar-suekichi" class="bg-blue-400 h-2 rounded" style="width: 0%"></div></div>
+
+                         <div class="flex justify-between"><span>凶</span><span><span id="cnt-kyo" class="mr-2 font-mono">0</span><span id="stat-kyo">0.00%</span></span></div>
+                         <div class="w-full bg-gray-200 dark:bg-gray-600 h-2 rounded"><div id="bar-kyo" class="bg-gray-400 h-2 rounded" style="width: 0%"></div></div>
+
+                         <div class="flex justify-between"><span>大凶</span><span><span id="cnt-daikyo" class="mr-2 font-mono">0</span><span id="stat-daikyo">0.00%</span></span></div>
+                         <div class="w-full bg-gray-200 dark:bg-gray-600 h-2 rounded"><div id="bar-daikyo" class="bg-black h-2 rounded" style="width: 0%"></div></div>
                     </div>
                     <button onclick="showView('history')" class="text-sm text-red-600 hover:underline">おみくじの轍をもっと見る (全運勢ログ)</button>
                 </div>
@@ -1089,21 +1078,24 @@
 
         <!-- ビュー: TENMEI Labs (新デザイン) -->
         <section id="view-lab" class="view-section max-w-3xl mx-auto relative">
-            <div class="lab-header-container">
-                <!-- タイトル上のアニメーションフラスコ -->
+            <div class="text-center mb-10 mt-4">
+                <!-- タイトル上のアニメーションフラスコ (カスタムSVG) -->
                 <div class="title-flask-anim">
                     <svg viewBox="0 0 24 24" overflow="visible" style="width:100%; height:100%;">
                         <defs>
                             <linearGradient id="flaskLiquidGradient" x1="0%" y1="0%" x2="0%" y2="100%">
-                                <stop offset="0%" style="stop-color:#4facfe;stop-opacity:1" />
-                                <stop offset="100%" style="stop-color:#8e2de2;stop-opacity:1" />
+                                <stop offset="0%" style="stop-color:#4facfe;stop-opacity:1; animation: colorShift 5s infinite alternate;" />
+                                <stop offset="100%" style="stop-color:#8e2de2;stop-opacity:1; animation: colorShift 5s infinite alternate-reverse;" />
                             </linearGradient>
                         </defs>
                         <g class="flask-group">
+                            <!-- 液体 (よりリアルな波) -->
                             <path class="flask-liquid-path" d="M5 14 C7 13, 9 15, 12 14 C15 13, 17 15, 19 14 L18.5 20 C18.5 21, 18 22, 16 22 L8 22 C6 22, 5.5 21, 5.5 20 Z" />
+                            <!-- 泡 -->
                             <circle class="flask-bubble" cx="10" cy="18" r="1" style="animation-delay:0s" />
                             <circle class="flask-bubble" cx="14" cy="19" r="0.8" style="animation-delay:1s" />
                             <circle class="flask-bubble" cx="12" cy="16" r="0.6" style="animation-delay:0.5s" />
+                            <!-- フラスコ本体 (底丸め) -->
                             <path class="flask-body-path" d="M9 2 L15 2 L15 7 L20 18 C20.5 19.5, 19 22, 16 22 L8 22 C5 22, 3.5 19.5, 4 18 L9 7 Z" />
                         </g>
                     </svg>
@@ -1111,120 +1103,67 @@
                 <h2 class="text-4xl font-bold mb-2 tracking-wide" style="color: #6366f1;">
                     TENMEI Labs
                 </h2>
-                <p class="font-bold text-lg mb-2">実験中の機能</p>
-                <p class="text-sm text-gray-500">開発中の機能をいち早くお試しいただけます。フィードバックを歓迎します。</p>
+                <p class="text-gray-600 dark:text-gray-300 font-bold">新機能を試してみる</p>
+                <p class="text-sm text-gray-500 mt-2">実験中の機能に早期アクセスし、開発にご協力ください。</p>
             </div>
-
-            <!-- ラッパー -->
-            <div id="lab-content-wrapper">
-                <div id="lab-container">
-                    <!-- 1. 迎春・雅モード -->
-                    <div class="lab-card">
-                        <div>
-                            <h3 class="font-bold text-lg text-yellow-600 dark:text-yellow-400">迎春・雅（みやび）モード</h3>
-                            <p class="text-sm themed-text-sub">サイト全体の雰囲気を紅白と金色のお正月仕様に変更します。</p>
-                        </div>
-                        <label class="toggle-switch">
-                            <input type="checkbox" id="toggle-newyear" onchange="TenmeiLab.toggleNewYear(this)">
-                            <span class="slider"></span>
-                        </label>
-                    </div>
-
-                    <!-- 2. 神速の祈り -->
-                    <div class="lab-card">
-                        <div>
-                            <h3 class="font-bold text-lg text-blue-600 dark:text-blue-400">神速（しんそく）の祈り</h3>
-                            <p class="text-sm themed-text-sub">おみくじのアニメーションをスキップし、結果を即座に表示します。</p>
-                        </div>
-                        <label class="toggle-switch">
-                            <input type="checkbox" id="toggle-speed" onchange="TenmeiLab.toggleSpeed(this)">
-                            <span class="slider"></span>
-                        </label>
-                    </div>
-
-                    <!-- 3. 宵闇の刻 -->
-                    <div class="lab-card">
-                        <div>
-                            <h3 class="font-bold text-lg text-purple-600 dark:text-purple-400">宵闇（よいやみ）の刻</h3>
-                            <p class="text-sm themed-text-sub">OSの設定に関わらず、常にダークモードを強制適用します。</p>
-                        </div>
-                        <label class="toggle-switch">
-                            <input type="checkbox" id="toggle-dark" onchange="TenmeiLab.toggleDark(this)">
-                            <span class="slider"></span>
-                        </label>
-                    </div>
-
-                    <!-- 4. 言霊の増幅 -->
-                    <div class="lab-card">
-                        <div>
-                            <h3 class="font-bold text-lg text-green-600 dark:text-green-400">言霊（ことだま）の増幅</h3>
-                            <p class="text-sm themed-text-sub">結果画面の文字サイズを大きくし、視認性を向上させます。</p>
-                        </div>
-                        <label class="toggle-switch">
-                            <input type="checkbox" id="toggle-bigtext" onchange="TenmeiLab.toggleBigText(this)">
-                            <span class="slider"></span>
-                        </label>
-                    </div>
-                </div>
-            </div>
-
-            <div id="lab-lock" class="lab-lock-overlay hidden">
-                <i class="bi bi-lock-fill text-5xl text-gray-400 mb-4 block"></i>
-                <h3 class="text-xl font-bold mb-2">会員限定機能</h3>
-                <p class="text-sm text-gray-500 mb-6">TENMEI Labsは会員様のみご利用いただけます。<br>ログインして実験的機能をお楽しみください。</p>
-                <button onclick="showView('auth')" class="btn-primary w-full shadow-lg">ログイン / 登録</button>
-            </div>
-        </section>
 
             <!-- ラッパー: ぼかし適用対象 -->
             <div id="lab-content-wrapper">
                 <div id="lab-container">
                     <!-- 1. 迎春・雅モード -->
                     <div class="lab-card">
-                        <div>
-                            <h3 class="font-bold text-lg text-yellow-600 dark:text-yellow-400">迎春・雅（みやび）モード</h3>
-                            <p class="text-sm themed-text-sub">サイト全体の雰囲気を紅白と金色のお正月仕様に変更します。</p>
+                        <div class="flex justify-between items-center">
+                            <div>
+                                <h3 class="font-bold text-lg text-yellow-600 dark:text-yellow-400">迎春・雅（みやび）モード</h3>
+                                <p class="text-sm themed-text-sub">サイト全体の雰囲気を紅白と金色のお正月仕様に変更します。</p>
+                            </div>
+                            <label class="toggle-switch">
+                                <input type="checkbox" onchange="TenmeiLab.toggleNewYear(this)" id="lab-toggle-newyear">
+                                <span class="slider"></span>
+                            </label>
                         </div>
-                        <label class="toggle-switch">
-                            <input type="checkbox" id="toggle-newyear" onchange="TenmeiLab.toggleNewYear(this)">
-                            <span class="slider"></span>
-                        </label>
                     </div>
 
                     <!-- 2. 神速の祈り -->
                     <div class="lab-card">
-                        <div>
-                            <h3 class="font-bold text-lg text-blue-600 dark:text-blue-400">神速（しんそく）の祈り</h3>
-                            <p class="text-sm themed-text-sub">おみくじのアニメーションをスキップし、結果を即座に表示します。</p>
+                        <div class="flex justify-between items-center">
+                            <div>
+                                <h3 class="font-bold text-lg text-blue-600 dark:text-blue-400">神速（しんそく）の祈り</h3>
+                                <p class="text-sm themed-text-sub">おみくじのアニメーションをスキップし、結果を即座に表示します。</p>
+                            </div>
+                            <label class="toggle-switch">
+                                <input type="checkbox" onchange="TenmeiLab.toggleSpeed(this)" id="lab-toggle-speed">
+                                <span class="slider"></span>
+                            </label>
                         </div>
-                        <label class="toggle-switch">
-                            <input type="checkbox" id="toggle-speed" onchange="TenmeiLab.toggleSpeed(this)">
-                            <span class="slider"></span>
-                        </label>
                     </div>
 
                     <!-- 3. 宵闇の刻 -->
                     <div class="lab-card">
-                        <div>
-                            <h3 class="font-bold text-lg text-purple-600 dark:text-purple-400">宵闇（よいやみ）の刻</h3>
-                            <p class="text-sm themed-text-sub">OSの設定に関わらず、常にダークモードを強制適用します。</p>
+                        <div class="flex justify-between items-center">
+                            <div>
+                                <h3 class="font-bold text-lg text-purple-600 dark:text-purple-400">宵闇（よいやみ）の刻</h3>
+                                <p class="text-sm themed-text-sub">OSの設定に関わらず、常にダークモードを強制適用します。</p>
+                            </div>
+                            <label class="toggle-switch">
+                                <input type="checkbox" onchange="TenmeiLab.toggleDark(this)" id="lab-toggle-dark">
+                                <span class="slider"></span>
+                            </label>
                         </div>
-                        <label class="toggle-switch">
-                            <input type="checkbox" id="toggle-dark" onchange="TenmeiLab.toggleDark(this)">
-                            <span class="slider"></span>
-                        </label>
                     </div>
 
                     <!-- 4. 言霊の増幅 -->
                     <div class="lab-card">
-                        <div>
-                            <h3 class="font-bold text-lg text-green-600 dark:text-green-400">言霊（ことだま）の増幅</h3>
-                            <p class="text-sm themed-text-sub">結果画面の文字サイズを大きくし、視認性を向上させます。</p>
+                        <div class="flex justify-between items-center">
+                            <div>
+                                <h3 class="font-bold text-lg text-green-600 dark:text-green-400">言霊（ことだま）の増幅</h3>
+                                <p class="text-sm themed-text-sub">結果画面の文字サイズを大きくし、視認性を向上させます。</p>
+                            </div>
+                            <label class="toggle-switch">
+                                <input type="checkbox" onchange="TenmeiLab.toggleBigText(this)" id="lab-toggle-bigtext">
+                                <span class="slider"></span>
+                            </label>
                         </div>
-                        <label class="toggle-switch">
-                            <input type="checkbox" id="toggle-bigtext" onchange="TenmeiLab.toggleBigText(this)">
-                            <span class="slider"></span>
-                        </label>
                     </div>
                 </div>
             </div>
@@ -1293,7 +1232,7 @@
                 </div>
             </div>
 
-            <!-- ステップ2: 認証コード入力 (個別の枠デザイン) -->
+            <!-- ステップ2: 認証コード入力 (数字ごとに枠) -->
             <div id="auth-step-2" class="hidden text-center">
                 <div class="mb-4">
                     <i class="bi bi-envelope-check text-4xl text-red-500"></i>
@@ -1302,12 +1241,12 @@
                 <p class="text-xs text-gray-500 mb-6">メールアドレスに送信された6桁の数字を入力し、認証を完了させてください。</p>
                 
                 <div class="auth-code-input-container">
-                    <input type="text" class="auth-code-digit" maxlength="1" oninput="this.value=this.value.replace(/[^0-9]/g,''); if(this.value) this.nextElementSibling?.focus();" onkeydown="if(event.key==='Backspace' && !this.value) this.previousElementSibling?.focus();">
-                    <input type="text" class="auth-code-digit" maxlength="1" oninput="this.value=this.value.replace(/[^0-9]/g,''); if(this.value) this.nextElementSibling?.focus();" onkeydown="if(event.key==='Backspace' && !this.value) this.previousElementSibling?.focus();">
-                    <input type="text" class="auth-code-digit" maxlength="1" oninput="this.value=this.value.replace(/[^0-9]/g,''); if(this.value) this.nextElementSibling?.focus();" onkeydown="if(event.key==='Backspace' && !this.value) this.previousElementSibling?.focus();">
-                    <input type="text" class="auth-code-digit" maxlength="1" oninput="this.value=this.value.replace(/[^0-9]/g,''); if(this.value) this.nextElementSibling?.focus();" onkeydown="if(event.key==='Backspace' && !this.value) this.previousElementSibling?.focus();">
-                    <input type="text" class="auth-code-digit" maxlength="1" oninput="this.value=this.value.replace(/[^0-9]/g,''); if(this.value) this.nextElementSibling?.focus();" onkeydown="if(event.key==='Backspace' && !this.value) this.previousElementSibling?.focus();">
-                    <input type="text" class="auth-code-digit" maxlength="1" oninput="this.value=this.value.replace(/[^0-9]/g,'');" onkeydown="if(event.key==='Backspace' && !this.value) this.previousElementSibling?.focus();">
+                    <input type="text" class="auth-digit-input" maxlength="1" oninput="moveToNext(this, 'digit2')" id="digit1">
+                    <input type="text" class="auth-digit-input" maxlength="1" oninput="moveToNext(this, 'digit3')" id="digit2">
+                    <input type="text" class="auth-digit-input" maxlength="1" oninput="moveToNext(this, 'digit4')" id="digit3">
+                    <input type="text" class="auth-digit-input" maxlength="1" oninput="moveToNext(this, 'digit5')" id="digit4">
+                    <input type="text" class="auth-digit-input" maxlength="1" oninput="moveToNext(this, 'digit6')" id="digit5">
+                    <input type="text" class="auth-digit-input" maxlength="1" oninput="moveToNext(this, null)" id="digit6">
                 </div>
 
                 <button onclick="finalizeAuth()" class="btn-primary w-full justify-center mb-3">
@@ -1347,7 +1286,7 @@
                 <h3 class="font-bold text-red-600 mb-2">アカウント操作</h3>
                 <button onclick="logout()" class="w-full bg-gray-500 text-white py-2 rounded hover:opacity-80 mb-4">ログアウト</button>
                 <button onclick="deleteAccount()" class="w-full bg-red-600 text-white py-2 rounded hover:opacity-80 text-sm">アカウント削除</button>
-                <p class="text-xs text-gray-500 mt-2">※アカウントを削除しても、同じメールアドレスで再登録可能です。</p>
+                <p class="text-xs text-gray-500 mt-2">※アカウントを削除すると、全てのデータ（履歴、お気に入り、Lab設定等）が完全に削除されます。</p>
             </div>
         </section>
 
@@ -1357,17 +1296,6 @@
             
             <div class="text-center mb-6">
                 <p class="text-sm themed-text-sub">ログインすると、ご自身の履歴と皆様の参拝記録が保存されます。</p>
-            </div>
-
-            <!-- グラフエリア (Highcharts) -->
-            <div class="mb-8">
-                <div class="flex justify-end space-x-2 mb-2">
-                    <button onclick="updateCharts('1s')" class="px-3 py-1 text-xs border rounded bg-white hover:bg-gray-100">1秒</button>
-                    <button onclick="updateCharts('1m')" class="px-3 py-1 text-xs border rounded bg-white hover:bg-gray-100">1分</button>
-                    <button onclick="updateCharts('1h')" class="px-3 py-1 text-xs border rounded bg-white hover:bg-gray-100">1時間</button>
-                    <button onclick="updateCharts('1d')" class="px-3 py-1 text-xs border rounded bg-white hover:bg-gray-100">1日</button>
-                </div>
-                <div id="history-charts" style="width:100%; height:400px;" class="themed-card rounded p-2"></div>
             </div>
 
             <div id="history-container" class="">
@@ -1401,244 +1329,7 @@
             </div>
         </section>
 
-        <!-- ビュー: 社務所だより -->
-        <section id="view-news" class="view-section max-w-3xl mx-auto">
-            <h2 class="text-2xl font-bold mb-6">社務所だより</h2>
-            <div class="space-y-4">
-                <!-- 既存記事省略なし -->
-                <article class="themed-card p-4 rounded shadow border-l-4 border-blue-500 cursor-pointer hover:opacity-80 transition" onclick="openArticle('news', 2)">
-                    <div class="text-sm themed-text-sub">2026年1月2日 16:00</div>
-                    <h3 class="font-bold text-lg">「運勢・天命乃杜」を公開いたしました。</h3>
-                    <p class="text-sm mt-2 truncate themed-text-sub">本サービスを正式にリリースいたしました。</p>
-                </article>
-                <article class="themed-card p-4 rounded shadow border-l-4 border-gray-500 cursor-pointer hover:opacity-80 transition" onclick="openArticle('news', 1)">
-                    <div class="text-sm themed-text-sub">2026年1月1日 0:00</div>
-                    <h3 class="font-bold text-lg">あけましておめでとうごさいます</h3>
-                    <p class="text-sm mt-2 truncate themed-text-sub">謹んで新年のご祝詞を申し上げます。</p>
-                </article>
-                <article class="themed-card p-4 rounded shadow border-l-4 border-gray-400 cursor-pointer hover:opacity-80 transition" onclick="openArticle('news', 3)">
-                    <div class="text-sm themed-text-sub">2025年12月25日 10:00</div>
-                    <h3 class="font-bold text-lg">プレオープンのお知らせ</h3>
-                    <p class="text-sm mt-2 truncate themed-text-sub">一部機能を先行公開いたしました。</p>
-                </article>
-                <article class="themed-card p-4 rounded shadow border-l-4 border-green-500 cursor-pointer hover:opacity-80 transition" onclick="openArticle('news', 4)">
-                    <div class="text-sm themed-text-sub">2025年12月20日 18:00</div>
-                    <h3 class="font-bold text-lg">サーバーメンテナンス完了</h3>
-                    <p class="text-sm mt-2 truncate themed-text-sub">予定されていたメンテナンスは無事終了しました。</p>
-                </article>
-                <article class="themed-card p-4 rounded shadow border-l-4 border-gray-400 cursor-pointer hover:opacity-80 transition" onclick="openArticle('news', 5)">
-                    <div class="text-sm themed-text-sub">2025年12月10日 12:00</div>
-                    <h3 class="font-bold text-lg">サイト開設準備室より</h3>
-                    <p class="text-sm mt-2 truncate themed-text-sub">現在、正式公開に向けて最終調整を行っております。</p>
-                </article>
-            </div>
-        </section>
-
-        <!-- ビュー: 神籤草子 -->
-        <section id="view-column" class="view-section max-w-3xl mx-auto">
-            <h2 class="text-2xl font-bold mb-6">神籤草子</h2>
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <!-- 既存記事省略なし -->
-                <article class="themed-card rounded overflow-hidden shadow cursor-pointer hover:shadow-lg transition" onclick="openArticle('column', 1)">
-                    <div class="h-32 bg-green-100 dark:bg-green-900 flex items-center justify-center text-green-800 dark:text-green-200 font-bold">
-                        <i class="bi bi-list-ol text-3xl"></i>
-                    </div>
-                    <div class="p-4">
-                        <div class="text-xs themed-text-sub mb-1">
-                            <span class="bg-gray-200 dark:bg-zinc-700 px-2 py-0.5 rounded text-[10px] mr-2">雑学</span>2026/01/01
-                        </div>
-                        <h3 class="font-bold">おみくじの順番（正しい吉凶の順）</h3>
-                    </div>
-                </article>
-                <article class="themed-card rounded overflow-hidden shadow cursor-pointer hover:shadow-lg transition" onclick="openArticle('column', 2)">
-                    <div class="h-32 bg-green-100 dark:bg-green-900 flex items-center justify-center text-green-800 dark:text-green-200 font-bold">
-                        <i class="bi bi-cloud-sun text-3xl"></i>
-                    </div>
-                    <div class="p-4">
-                        <div class="text-xs themed-text-sub mb-1">
-                             <span class="bg-gray-200 dark:bg-zinc-700 px-2 py-0.5 rounded text-[10px] mr-2">豆知識</span>2026/01/01
-                        </div>
-                        <h3 class="font-bold">悪い結果が出ても実は大丈夫？</h3>
-                    </div>
-                </article>
-                <article class="themed-card rounded overflow-hidden shadow cursor-pointer hover:shadow-lg transition" onclick="openArticle('column', 3)">
-                    <div class="h-32 bg-green-100 dark:bg-green-900 flex items-center justify-center text-green-800 dark:text-green-200 font-bold">
-                        <i class="bi bi-person-praying text-3xl"></i>
-                    </div>
-                    <div class="p-4">
-                        <div class="text-xs themed-text-sub mb-1">
-                             <span class="bg-gray-200 dark:bg-zinc-700 px-2 py-0.5 rounded text-[10px] mr-2">作法</span>2025/12/30
-                        </div>
-                        <h3 class="font-bold">神社での正しい参拝マナー</h3>
-                    </div>
-                </article>
-                <article class="themed-card rounded overflow-hidden shadow cursor-pointer hover:shadow-lg transition" onclick="openArticle('column', 4)">
-                    <div class="h-32 bg-green-100 dark:bg-green-900 flex items-center justify-center text-green-800 dark:text-green-200 font-bold">
-                        <i class="bi bi-search text-3xl"></i>
-                    </div>
-                    <div class="p-4">
-                        <div class="text-xs themed-text-sub mb-1">
-                             <span class="bg-gray-200 dark:bg-zinc-700 px-2 py-0.5 rounded text-[10px] mr-2">豆知識</span>2025/12/28
-                        </div>
-                        <h3 class="font-bold">「失せ物」の本当の意味</h3>
-                    </div>
-                </article>
-                <article class="themed-card rounded overflow-hidden shadow cursor-pointer hover:shadow-lg transition" onclick="openArticle('column', 5)">
-                    <div class="h-32 bg-green-100 dark:bg-green-900 flex items-center justify-center text-green-800 dark:text-green-200 font-bold">
-                        <i class="bi bi-heart text-3xl"></i>
-                    </div>
-                    <div class="p-4">
-                        <div class="text-xs themed-text-sub mb-1">
-                             <span class="bg-gray-200 dark:bg-zinc-700 px-2 py-0.5 rounded text-[10px] mr-2">開運</span>2025/12/25
-                        </div>
-                        <h3 class="font-bold">「待ち人」は恋愛だけじゃない</h3>
-                    </div>
-                </article>
-            </div>
-        </section>
-
-        <!-- ビュー: 記事詳細 -->
-        <section id="view-article-detail" class="view-section">
-            <div class="max-w-3xl mx-auto mb-4">
-                <button onclick="articleBack()" class="text-sm themed-text-sub hover:text-red-500">
-                    <i class="bi bi-arrow-left"></i> 戻る
-                </button>
-            </div>
-            <div id="article-detail-content" class="article-container themed-card">
-                <!-- JSでコンテンツ挿入 -->
-            </div>
-        </section>
-
-        <!-- ビュー: 当サイトについて -->
-        <section id="view-about" class="view-section max-w-4xl mx-auto themed-card p-10 rounded shadow-lg text-justify leading-loose">
-            <!-- 省略なし -->
-            <h2 class="text-3xl font-bold mb-8 text-center border-b border-gray-300 dark:border-gray-600 pb-4">当サイトについて・利用規約・詳細解説</h2>
-            <div class="text-right text-sm themed-text-sub mb-8">
-                最終改定日: 2026年1月3日<br>
-                運営: nden148
-            </div>
-            <h3 class="text-xl font-bold mt-8 mb-4 border-l-4 border-red-500 pl-3">第1章 はじめに：当サイトの理念と目的</h3>
-            <p class="mb-4">
-                ようこそ、「運勢・天命乃杜（てんめいのもり）」（以下、「当サイト」といいます）へお越しくださいました。当サイトは、古来より日本に伝わる神道の伝統的な「おみくじ」の精神性と、西洋占星術および血液型性格診断という統計学的な要素を融合させ、現代を生きる人々の迷いや不安を少しでも和らげ、日々の生活における指針や活力の源となることを目的として開設された、デジタルプラットフォーム上の仮想社殿です。
-            </p>
-            <p class="mb-4">
-                我々は、インターネットという広大な情報の海において、心の平穏と自己省察の機会を提供する「鎮守の杜」のような存在でありたいと願っています。忙しない日常の中で、ふと立ち止まり、天命に耳を傾ける時間を持つこと。それが、より豊かな人生への第一歩であると信じているからです。利用者の皆様には、以下の詳細な規約と解説を熟読し、十分に理解・同意された上で、当サイトの各機能をご利用いただけますようお願い申し上げます。
-            </p>
-            <p class="mb-4">
-                本サービスを利用することによって、利用者は本規約に全面的に同意したものとみなされます。もし本規約に同意されない場合は、直ちに本サービスの利用を中止してください。当サイトは、利用者に事前の通知なく、本規約を変更する権利を留保します。変更後の規約は、当サイト上に掲示された時点から効力を生じるものとし、利用者が変更後に本サービスを利用し続けた場合、変更後の規約に同意したものとみなされます。
-            </p>
-            <h3 class="text-xl font-bold mt-8 mb-4 border-l-4 border-red-500 pl-3">第2章 おみくじ機能の仕様とアルゴリズムの透明性</h3>
-            <p class="mb-4">
-                当サイトで提供する「おみくじ」機能は、完全なランダム性を保証するために高度な乱数生成アルゴリズム（暗号論的擬似乱数生成器に準ずるロジック）を使用しています。おみくじを引く際のアニメーション演出では、画面上に散らばる多数の神籤札の中から、利用者が直感に基づいて一枚を選択するプロセスを採用しています。ユーザーが札をクリックした瞬間、サーバーサイド（またはクライアントサイドのセキュアなロジック）において即座に抽選が行われ、結果が確定します。これにより、作為的な操作が介入する余地を排除し、純粋な運勢診断を提供しています。
-            </p>
-            <p class="mb-4">
-                おみくじの結果には、「大吉」「吉」「中吉」「小吉」「末吉」「凶」「大凶」などの等級が含まれます。当サイトでは特に「大吉」の場合には金色を基調とした特別なテクスチャデザインを、「大凶」の場合には黒色を基調とした厳粛なデザインを表示する仕様となっております。これは単なる視覚効果にとどまらず、利用者の心理状態に働きかけ、大吉であれば高揚感を、大凶であれば身を引き締める緊張感を与えることを意図しています。さらに、当サイト独自の12段階評価（大吉から大凶まで）を採用しており、一般的なおみくじよりも詳細な運勢判断が可能となっております。
-            </p>
-            <p class="mb-4">
-                なお、当サイトの占いは科学的根拠に基づくものではなく、あくまでエンターテインメントおよび精神的な示唆を提供するものです。結果がいかなるものであれ、それによって生じた現実の損害や利益について、当サイトは一切の責任を負いません。占いの結果をどのように受け止め、どのように行動するかは、すべて利用者ご自身の判断に委ねられています。神託とは、それを受け取る者の心の在り方によって、その意味を大きく変えるものなのです。
-            </p>
-            <h3 class="text-xl font-bold mt-8 mb-4 border-l-4 border-red-500 pl-3">第3章 アカウント認証・セキュリティ・会員特典</h3>
-            <p class="mb-4">
-                当サイトでは、ユーザーの利便性とセキュリティを両立させるため、メールアドレス、パスワード、およびユーザー名を用いた認証システムを導入しています。新規登録時には、真正性を確認するための認証コード（OTP）がメールアドレス宛に送信されます。これにより、なりすまし登録や不正アクセスを未然に防ぐ体制を整えています。
-            </p>
-            <p class="mb-4">
-                会員登録を行い、ログインした状態で本サービスを利用することで、以下の特別な機能（会員特典）を享受することができます。
-                <br>1. **おみくじの轍（履歴）の完全閲覧権:** ご自身の過去の履歴に加え、他の参拝者様が引いたおみくじの結果（匿名化されたデータ）を「おみくじの轍」として閲覧することが可能になります。これにより、世の中の運気の流れを感じ取ることができます。
-                <br>2. **詳細結果の再確認:** 履歴リストから過去の結果をクリックすることで、おみくじを引いた直後の詳細な結果画面（和歌や各項目の助言）をいつでも再表示・アニメーション再生することができます。
-                <br>3. **累計発行本数への貢献:** ログインユーザーがおみくじを引いた場合のみ、サイトトップに表示される「累計発行本数」のカウンターがインクリメント（加算）されます。これは、会員様の祈りが「杜」の歴史の一部として刻まれることを意味します。
-                <br>4. **クラウド同期:** お気に入り設定や履歴データがサーバー上に保存されるため、スマートフォンやPCなど、異なるデバイスからアクセスしても常に同じ環境でご利用いただけます。
-            </p>
-            <p class="mb-4">
-                非ログイン状態（ゲストユーザー）の場合、これらの機能は制限されます。履歴は表示されず（ぼかし表示）、カウンターの数値にも影響を与えません。また、データはブラウザの「localStorage」に一時保存されるのみであり、キャッシュクリア等により消失する可能性があります。恒久的なデータの保存を希望される場合は、会員登録を強く推奨いたします。
-            </p>
-            <h3 class="text-xl font-bold mt-8 mb-4 border-l-4 border-red-500 pl-3">第4章 コンテンツの著作権とシェア機能</h3>
-            <p class="mb-4">
-                当サイトに掲載されている全てのコンテンツ（文章、画像、プログラムコード、デザイン、ロゴマーク、アルゴリズム等）の著作権は、運営者または正当な権利を有する第三者に帰属します。これらは、日本の著作権法、国際条約、およびその他の知的財産権に関する法律によって保護されています。私的な利用の範囲を超えて、これらを無断で複製、転載、改変、再配布、公衆送信することは法律で固く禁じられており、違反した場合は民事上の損害賠償請求や刑事罰の対象となる可能性があります。
-            </p>
-            <p class="mb-4">
-                ただし、当サイトが提供する「シェア機能」を通じて生成されたおみくじ結果画像に関しては、利用者が個人のソーシャルメディア（SNS）等で共有する目的に限り、自由にご利用いただけます。この画像には当サイトのURLやQRコードが含まれており、これらを削除・隠蔽せずにそのままの状態で共有していただくことが利用の条件となります。公序良俗に反する投稿や、当サイトの名誉を毀損するような文脈での利用は禁止します。
-            </p>
-            <h3 class="text-xl font-bold mt-8 mb-4 border-l-4 border-red-500 pl-3">第5章 免責事項</h3>
-            <p class="mb-4">
-                当サイトは、本サービスの提供において万全を期しておりますが、その完全性、正確性、確実性、有用性等についてはいかなる保証も行いません。システム障害、通信回線の不具合、サーバーのダウン、第三者による不正アクセス、天災地変等により本サービスの提供が中断・遅延・停止した結果、利用者に生じたいかなる損害についても、当サイトは一切の責任を負わないものとします。また、当サイトからリンクされている外部サイトの内容やサービスについても、当サイトは関知せず、一切の責任を負いません。利用者は、自己の責任において本サービスを利用するものとします。
-            </p>
-        </section>
-
-        <!-- ビュー: プライバシーポリシー -->
-        <section id="view-privacy" class="view-section max-w-4xl mx-auto themed-card p-10 rounded shadow-lg text-justify leading-loose">
-            <!-- 省略なし -->
-            <h2 class="text-3xl font-bold mb-6 text-center">プライバシーポリシー</h2>
-            <p class="mb-4">
-                nden148（以下「当運営」といいます。）は、本ウェブサイト上で提供するサービス（以下、「本サービス」といいます。）における、ユーザーの個人情報の取扱いについて、以下のとおりプライバシーポリシー（以下、「本ポリシー」といいます。）を定めます。本ポリシーは、ユーザーが本サービスを利用する際に適用され、当運営は個人情報の重要性を深く認識し、その保護の徹底を図るため、個人情報の保護に関する法律（平成15年法律第57号。以下「個人情報保護法」といいます。）等の関係法令を遵守するとともに、以下のプライバシーポリシーに従って厳重に管理いたします。
-            </p>
-            <h4 class="font-bold mt-4 text-lg border-b border-gray-300 dark:border-gray-600 pb-1">第1条（個人情報の定義）</h4>
-            <p class="mb-4">
-                本ポリシーにおいて、「個人情報」とは、個人情報保護法第2条第1項に規定される「個人情報」を指すものとします。具体的には、生存する個人に関する情報であって、当該情報に含まれる氏名、生年月日、住所、電話番号、連絡先、その他の記述等により特定の個人を識別できる情報（個人識別情報）、および容貌、指紋、声紋にかかるデータ、健康保険証の保険者番号などの当該情報単体から特定の個人を識別できる情報（個人識別符号）を指します。本サービスにおいては、ユーザー登録時に入力いただくメールアドレス、ユーザー名、パスワード（暗号化されたハッシュ値）などがこれに該当します。
-            </p>
-            <h4 class="font-bold mt-4 text-lg border-b border-gray-300 dark:border-gray-600 pb-1">第2条（個人情報の収集方法）</h4>
-            <p class="mb-4">
-                当運営は、ユーザーが利用登録をする際に、氏名（ユーザー名）、メールアドレス、パスワード等の個人情報をお尋ねすることがあります。また、ユーザーと提携先などとの間でなされたユーザーの個人情報を含む取引記録や決済に関する情報を、当運営の提携先（情報提供元、広告主、広告配信先などを含みます。以下、｢提携先｣といいます。）などから収集することがあります。
-                <br>さらに、ユーザーが本サービスを利用するにあたり、端末情報、ログ情報、Cookie（クッキー）、IPアドレス、位置情報などのインフォマティブデータを自動的に取得する場合があります。これらは、サービスの品質向上、不正利用の防止、およびユーザーごとに最適化されたコンテンツを提供するために利用されます。
-            </p>
-            <h4 class="font-bold mt-4 text-lg border-b border-gray-300 dark:border-gray-600 pb-1">第3条（個人情報を収集・利用する目的）</h4>
-            <p class="mb-4">当運営が個人情報を収集・利用する目的は、以下のとおりです。</p>
-            <ul class="list-disc pl-5 mb-4 space-y-2">
-                <li>本サービスの提供・運営のため（認証コードの送信、ログイン状態の維持、ユーザー設定の保存など）</li>
-                <li>ユーザーからのお問い合わせに回答するため（本人確認を行うことを含む）</li>
-                <li>ユーザーが利用中のサービスの新機能、更新情報、キャンペーン等及び当運営が提供する他のサービスの案内のメールを送付するため</li>
-                <li>メンテナンス、重要なお知らせなど必要に応じたご連絡のため</li>
-                <li>利用規約に違反したユーザーや、不正・不当な目的でサービスを利用しようとするユーザーの特定をし、ご利用をお断りするため</li>
-                <li>ユーザーにご自身の登録情報の閲覧や変更、削除、ご利用状況の閲覧を行っていただくため</li>
-                <li>有料サービスにおいて、ユーザーに利用料金を請求するため（将来的な実装を含む）</li>
-                <li>上記の利用目的に付随する目的</li>
-            </ul>
-            <h4 class="font-bold mt-4 text-lg border-b border-gray-300 dark:border-gray-600 pb-1">第4条（利用目的の変更）</h4>
-            <p class="mb-4">
-                当運営は、利用目的が変更前と関連性を有すると合理的に認められる場合に限り、個人情報の利用目的を変更するものとします。利用目的の変更を行った場合には、変更後の目的について、当運営所定の方法により、ユーザーに通知し、または本ウェブサイト上に公表するものとします。変更後のプライバシーポリシーは、本ウェブサイトに掲載したときから効力を生じるものとします。
-            </p>
-            <h4 class="font-bold mt-4 text-lg border-b border-gray-300 dark:border-gray-600 pb-1">第5条（個人情報の第三者提供）</h4>
-            <p class="mb-4">
-                当運営は、次に掲げる場合を除いて、あらかじめユーザーの同意を得ることなく、第三者に個人情報を提供することはありません。ただし、個人情報保護法その他の法令で認められる場合を除きます。
-                <br>1. 人の生命、身体または財産の保護のために必要がある場合であって、本人の同意を得ることが困難であるとき
-                <br>2. 公衆衛生の向上または児童の健全な育成の推進のために特に必要がある場合であって、本人の同意を得ることが困難であるとき
-                <br>3. 国の機関もしくは地方公共団体またはその委託を受けた者が法令の定める事務を遂行することに対して協力する必要がある場合であって、本人の同意を得ることにより当該事務の遂行に支障を及ぼすおそれがあるとき
-                <br>4. 予め次の事項を告知あるいは公表し、かつ当運営が個人情報保護委員会に届出をしたとき
-                <br>   (1) 利用目的に第三者への提供を含むこと
-                <br>   (2) 第三者に提供されるデータの項目
-                <br>   (3) 第三者への提供の手段または方法
-                <br>   (4) 本人の求めに応じて個人情報の第三者への提供を停止すること
-                <br>   (5) 本人の求めを受け付ける方法
-            </p>
-            <h4 class="font-bold mt-4 text-lg border-b border-gray-300 dark:border-gray-600 pb-1">第6条（個人情報の開示・訂正・削除）</h4>
-            <p class="mb-4">
-                当運営は、本人から個人情報の開示を求められたときは、本人に対し、遅滞なくこれを開示します。ただし、開示することにより次のいずれかに該当する場合は、その全部または一部を開示しないこともあり、開示しない決定をした場合には、その旨を遅滞なく通知します。
-                <br>1. 本人または第三者の生命、身体、財産その他の権利利益を害するおそれがある場合
-                <br>2. 当運営の業務の適正な実施に著しい支障を及ぼすおそれがある場合
-                <br>3. その他法令に違反することとなる場合
-                <br>ユーザーは、当運営の保有する自己の個人情報が誤った情報である場合には、当運営が定める手続きにより、当運営に対して個人情報の訂正、追加または削除（以下、「訂正等」といいます。）を請求することができます。当運営は、ユーザーから前項の請求を受けてその請求に応じる必要があると判断した場合には、遅滞なく、当該個人情報の訂正等を行うものとします。
-            </p>
-            <h4 class="font-bold mt-4 text-lg border-b border-gray-300 dark:border-gray-600 pb-1">第7条（お問い合わせ窓口）</h4>
-            <p class="mb-4">
-                本ポリシーに関するお問い合わせは、当サイトのお問い合わせフォーム、または運営者(nden148)までご連絡ください。当運営は、個人情報の取扱いに関する苦情や相談に対し、適切かつ迅速に対応するよう努めます。
-            </p>
-        </section>
-
     </main>
-
-    <!-- カウントダウンオーバーレイ -->
-    <div id="countdown-overlay">
-        <div id="countdown-number">3</div>
-    </div>
-
-    <!-- 詳細モーダル (おみくじの轍用) -->
-    <div id="history-detail-modal" onclick="closeHistoryDetail(event)">
-        <div id="history-detail-content" onclick="event.stopPropagation()">
-            <!-- ここに結果カードを複製表示 -->
-        </div>
-        <button onclick="closeHistoryDetail(null)" class="fixed top-5 right-5 text-white text-4xl hover:text-gray-300 z-[2100]">
-            <i class="bi bi-x-circle"></i>
-        </button>
-    </div>
 
     <!-- JavaScript ロジック -->
     <script>
@@ -1651,10 +1342,10 @@
         // --- 状態管理 ---
         let currentState = {
             view: 'home',
-            user: null, // { email, username, token }
+            user: null, // { email, username, token, labSettings }
             lastResult: null,
             liveCount: 0,
-            liveUsers: 0, // 登録ユーザー数
+            liveUserCount: 0,
             authMode: 'login' // 'login' or 'register'
         };
 
@@ -1662,85 +1353,64 @@
         let dailyRanking = [];
         let globalHistory = [];
         let personalHistory = [];
-        
-        // Lab設定 (デフォルト値)
-        let labSettings = {
-            newYear: false,
-            speed: false,
-            dark: false,
-            bigText: false
-        };
 
         // Lab機能の状態管理
         const TenmeiLab = {
+            saveSettings: () => {
+                if(currentState.user) {
+                    const settings = {
+                        newyear: document.getElementById('lab-toggle-newyear').checked,
+                        speed: document.getElementById('lab-toggle-speed').checked,
+                        dark: document.getElementById('lab-toggle-dark').checked,
+                        bigtext: document.getElementById('lab-toggle-bigtext').checked
+                    };
+                    currentState.user.labSettings = settings;
+                    localStorage.setItem('omikuji_user', JSON.stringify(currentState.user));
+                    // サーバーへの保存も実装可能だが今回はlocalStorageのみで簡易実装
+                }
+            },
             toggleNewYear: (el) => {
-                labSettings.newYear = el.checked;
+                if(!currentState.user) { el.checked = false; return; }
                 if(el.checked) document.body.classList.add('theme-newyear');
                 else document.body.classList.remove('theme-newyear');
-                saveLabSettings();
+                TenmeiLab.saveSettings();
             },
             toggleSpeed: (el) => {
-                labSettings.speed = el.checked;
-                saveLabSettings();
+                if(!currentState.user) { el.checked = false; return; }
+                window.labSpeedMode = el.checked;
+                TenmeiLab.saveSettings();
             },
             toggleDark: (el) => {
-                labSettings.dark = el.checked;
-                applyDarkMode(el.checked);
-                saveLabSettings();
+                if(!currentState.user) { el.checked = false; return; }
+                if(el.checked) document.documentElement.classList.add('dark');
+                else if(!window.matchMedia('(prefers-color-scheme: dark)').matches) document.documentElement.classList.remove('dark');
+                TenmeiLab.saveSettings();
             },
             toggleBigText: (el) => {
-                labSettings.bigText = el.checked;
+                if(!currentState.user) { el.checked = false; return; }
                 if(el.checked) document.body.style.fontSize = '120%';
                 else document.body.style.fontSize = '';
-                saveLabSettings();
+                TenmeiLab.saveSettings();
+            },
+            applySettings: (settings) => {
+                if(!settings) return;
+                const setCheck = (id, val) => {
+                    const el = document.getElementById(id);
+                    if(el) {
+                        el.checked = val;
+                        // イベント発火
+                        if(id === 'lab-toggle-newyear') TenmeiLab.toggleNewYear(el);
+                        if(id === 'lab-toggle-speed') TenmeiLab.toggleSpeed(el);
+                        if(id === 'lab-toggle-dark') TenmeiLab.toggleDark(el);
+                        if(id === 'lab-toggle-bigtext') TenmeiLab.toggleBigText(el);
+                    }
+                };
+                setCheck('lab-toggle-newyear', settings.newyear);
+                setCheck('lab-toggle-speed', settings.speed);
+                setCheck('lab-toggle-dark', settings.dark);
+                setCheck('lab-toggle-bigtext', settings.bigtext);
             }
         };
-
-        function applyDarkMode(isDark) {
-            const html = document.documentElement;
-            if(isDark) {
-                html.classList.add('dark');
-            } else {
-                if(window.matchMedia('(prefers-color-scheme: dark)').matches) {
-                    html.classList.add('dark');
-                } else {
-                    html.classList.remove('dark');
-                }
-            }
-        }
-
-        async function saveLabSettings() {
-            if(currentState.user) {
-                localStorage.setItem(`lab_settings_${currentState.user.email}`, JSON.stringify(labSettings));
-            }
-        }
-
-        function loadLabSettings() {
-            if(currentState.user) {
-                const stored = localStorage.getItem(`lab_settings_${currentState.user.email}`);
-                if(stored) {
-                    try {
-                        labSettings = JSON.parse(stored);
-                        // UI反映
-                        const ny = document.getElementById('toggle-newyear');
-                        if(ny) ny.checked = labSettings.newYear;
-                        
-                        const sp = document.getElementById('toggle-speed');
-                        if(sp) sp.checked = labSettings.speed;
-                        
-                        const dk = document.getElementById('toggle-dark');
-                        if(dk) dk.checked = labSettings.dark;
-                        
-                        const bt = document.getElementById('toggle-bigtext');
-                        if(bt) bt.checked = labSettings.bigText;
-
-                        if(labSettings.newYear) document.body.classList.add('theme-newyear');
-                        applyDarkMode(labSettings.dark);
-                        if(labSettings.bigText) document.body.style.fontSize = '120%';
-                    } catch(e){}
-                }
-            }
-        }
 
         // --- イニシャライズ ---
         window.onload = function() {
@@ -1751,18 +1421,19 @@
             if(storedUser) {
                 try {
                     currentState.user = JSON.parse(storedUser);
+                    if(currentState.user && currentState.user.labSettings) {
+                        TenmeiLab.applySettings(currentState.user.labSettings);
+                    }
                 } catch(e) {
                     console.error("Auth Data Parse Error", e);
                 }
             }
             updateAuthUI();
-            
-            // Lab設定の読み込み (ログイン時)
-            loadLabSettings();
 
             startLiveCounter();
-            fetchHistoryStats(); // 初回
-            setInterval(fetchHistoryStats, 1000); // 1秒ごと更新
+            fetchHistoryStats();
+            setInterval(fetchHistoryStats, 1000); 
+            setInterval(startLiveCounter, 1000); 
             
             loadFavorites();
 
@@ -1771,9 +1442,7 @@
             const shareData = params.get('d');
             if (shareData) {
                 try {
-                    // Base64デコード (日本語対応)
-                    const decodedStr = decodeURIComponent(escape(atob(shareData)));
-                    const decoded = JSON.parse(decodedStr);
+                    const decoded = JSON.parse(atob(shareData));
                     showResultDetail(false, decoded);
                 } catch(e) {
                     console.error("Share data decode error", e);
@@ -1785,9 +1454,11 @@
             const overlay = document.getElementById('loading-overlay');
             if(show) {
                 overlay.style.display = 'flex';
+                // わずかに遅らせてopacityを変更しフェードインさせる
                 requestAnimationFrame(() => overlay.classList.add('visible'));
             } else {
                 overlay.classList.remove('visible');
+                // フェードアウト後に非表示
                 setTimeout(() => {
                     if(!overlay.classList.contains('visible')) overlay.style.display = 'none';
                 }, 300);
@@ -1796,6 +1467,7 @@
 
         function showView(viewId) {
             // Lab機能へのアクセス制限処理
+            // ビュー自体は表示するが、非ログイン時はぼかしとロックをかける
             if(viewId === 'lab') {
                 const lock = document.getElementById('lab-lock');
                 const wrapper = document.getElementById('lab-content-wrapper');
@@ -1803,6 +1475,7 @@
                 if(!currentState.user) {
                     lock.classList.remove('hidden');
                     wrapper.classList.add('lab-blurred');
+                    // スイッチを無効化
                     document.querySelectorAll('.toggle-switch input').forEach(el => el.disabled = true);
                 } else {
                     lock.classList.add('hidden');
@@ -1854,26 +1527,22 @@
         // --- ライブカウンター (API連携) ---
         function startLiveCounter() {
             const el = document.getElementById('live-counter');
-            const userEl = document.getElementById('live-users');
+            const userEl = document.getElementById('live-user-counter');
             const timeEl = document.getElementById('counter-time');
             
-            fetchCount();
-            setInterval(fetchCount, 1000); // 1秒ごと
+            const now = new Date();
+            timeEl.textContent = now.toLocaleTimeString();
 
-            async function fetchCount() {
-                const now = new Date();
-                timeEl.textContent = now.toLocaleTimeString();
-                try {
-                    const res = await fetch(`${API_BASE}/api/counter`);
-                    if(res.ok) {
-                        const data = await res.json();
-                        currentState.liveCount = (data.count || 0);
-                        currentState.liveUsers = (data.users || 0);
-                        if(el) el.textContent = currentState.liveCount.toLocaleString() + "本";
-                        if(userEl) userEl.textContent = currentState.liveUsers.toLocaleString() + "人";
-                    }
-                } catch(e) { console.error(e); }
-            }
+            fetch(`${API_BASE}/api/counter`)
+                .then(res => res.json())
+                .then(data => {
+                    currentState.liveCount = (data.count || 0);
+                    el.textContent = currentState.liveCount.toLocaleString() + "本";
+                    // ユーザー数（仮実装: API側で未実装なら0）
+                    currentState.liveUserCount = (data.userCount || 0);
+                    userEl.textContent = currentState.liveUserCount.toLocaleString() + "人";
+                })
+                .catch(e => console.error(e));
         }
 
         // --- 統計情報の取得 ---
@@ -1882,37 +1551,25 @@
                 const res = await fetch(`${API_BASE}/api/stats`);
                 if(res.ok) {
                     const data = await res.json();
-                    const timeEl = document.getElementById('stats-update-time');
-                    if(timeEl) timeEl.textContent = data.timestamp || "--:--:--";
+                    document.getElementById('stats-update-time').textContent = data.timestamp || "--:--:--";
 
-                    const allTypes = ["大吉", "中吉", "小吉", "吉", "半吉", "末吉", "末小吉", "凶", "小凶", "半凶", "末凶", "大凶"];
-                    const mapKey = {
-                        "大吉":"daikichi", "中吉":"chukichi", "小吉":"shokichi", "吉":"kichi",
-                        "半吉":"hankichi", "末吉":"suekichi", "末小吉":"sueshokichi", 
-                        "凶":"kyo", "小凶":"shokyo", "半凶":"hankyo", "末凶":"suekyo", "大凶":"daikyo"
+                    const setBar = (id, percent, count) => {
+                        const p = parseFloat(percent).toFixed(2);
+                        document.getElementById(`stat-${id}`).textContent = p + "%";
+                        document.getElementById(`cnt-${id}`).textContent = (count || 0).toLocaleString() + "本";
+                        document.getElementById(`bar-${id}`).style.width = p + "%";
                     };
+
+                    const stats = data.stats || {};
+                    const counts = data.counts || {};
                     
-                    const container = document.getElementById('home-history-stats');
-                    if(container) {
-                        container.innerHTML = '';
-                        const stats = data.stats || {};
-                        const counts = data.counts || {};
-
-                        allTypes.forEach(type => {
-                            const key = mapKey[type];
-                            const count = counts[key] || 0;
-                            const percent = stats[key] || 0;
-                            const barColor = type.includes('凶') ? 'bg-gray-400' : 
-                                             type === '大吉' ? 'bg-yellow-400' :
-                                             type === '吉' ? 'bg-red-400' : 'bg-blue-400';
-
-                            const html = `
-                                <div class="flex justify-between"><span>${type}</span><span><span class="mr-2 font-mono">${count.toLocaleString()}本</span><span>${percent.toFixed(2)}%</span></span></div>
-                                <div class="w-full bg-gray-200 dark:bg-gray-600 h-2 rounded"><div class="${barColor} h-2 rounded" style="width: ${percent}%"></div></div>
-                            `;
-                            container.insertAdjacentHTML('beforeend', html);
-                        });
-                    }
+                    setBar('daikichi', stats.daikichi, counts.daikichi);
+                    setBar('kichi', stats.kichi, counts.kichi);
+                    setBar('chukichi', stats.chukichi, counts.chukichi);
+                    setBar('shokichi', stats.shokichi, counts.shokichi);
+                    setBar('suekichi', stats.suekichi, counts.suekichi);
+                    setBar('kyo', stats.kyo, counts.kyo);
+                    setBar('daikyo', stats.daikyo, counts.daikyo);
                 }
             } catch(e) { console.error(e); }
         }
@@ -1969,31 +1626,74 @@
         }
 
         const omikujiResults = [
-            { type: "大吉", poem: "枯れ果てし 枝に再び 花咲くが如し", desc: "最高の運気です。長年の努力が報われ、枯れ木に花が咲くような喜びが訪れるでしょう。" },
-            { type: "中吉", poem: "照る月を 雲が隠せど 風払うなり", desc: "一時的な迷いがあっても、すぐに晴れ間が見えます。信念を貫けば道は開かれます。" },
-            { type: "小吉", poem: "小川の水 淀まず流るる 様を見るべし", desc: "派手さはありませんが、平穏無事な日々が続きます。流れに身を任せるのが吉。" },
-            { type: "吉", poem: "春風に 池の氷も 解け初めて", desc: "厳しい冬が終わり、徐々に運気が上昇しています。焦らず着実に進みましょう。" },
-            { type: "半吉", poem: "登り坂 息を切らせど 頂近し", desc: "苦労の先に光があります。今は耐え忍ぶ時ですが、成果は確実に近づいています。" },
-            { type: "末吉", poem: "山道の 険しき坂も 一歩より", desc: "今は登り坂で苦しい時かもしれませんが、一歩一歩進めば必ず頂上に辿り着けます。" },
-            { type: "末小吉", poem: "冬枯れの 野にも若菜の 萌え出ずる", desc: "まだ寒さは残りますが、希望の芽は育っています。春を待つ心で過ごしましょう。" },
-            { type: "凶", poem: "雨雲の 晴れ間も見えず 濡れ衣かな", desc: "誤解を受けやすく、思うようにいかない時期です。今は弁解せず静観が吉。" },
-            { type: "小凶", poem: "石の上 にも三年と いう習わし", desc: "忍耐が必要です。すぐに結果を求めず、地道な努力を続けることが大切です。" },
-            { type: "半凶", poem: "暗き夜に 灯火ひとつ 頼りなり", desc: "不安な状況ですが、必ず助け舟があります。希望の光を見失わないように。" },
-            { type: "末凶", poem: "落葉樹 風に吹かれて 葉を落とす", desc: "今は不要なものを手放す時期。執着を捨てれば、新たな芽吹きへの準備となります。" },
-            { type: "大凶", poem: "嵐吹く 荒野に一人 立つが如し", desc: "八方塞がりの厳しい運勢。無理に動くと災いを招きます。身を潜め、自分を見つめ直す時。" }
+            { type: "大吉", poem: "枯れ果てし 枝に再び 花咲くが如し", desc: "最高の運気です。長年の努力が報われ、枯れ木に花が咲くような喜びが訪れるでしょう。しかし慢心は禁物。感謝の心を忘れずに。" },
+            { type: "中吉", poem: "照る月を 雲が隠せど 風払うなり", desc: "一時的な迷いがあっても、すぐに晴れ間が見えます。自分の信念を貫くことで、雲を払う風のような助けが現れるはずです。" },
+            { type: "小吉", poem: "小川の水 淀まず流るる 様を見るべし", desc: "派手さはありませんが、平穏無事な日々が続きます。日々の小さな幸せを大切にし、流れに身を任せるのが吉です。" },
+            { type: "吉", poem: "春風に 池の氷も 解け初めて", desc: "厳しい冬が終わり、徐々に運気が上昇しています。焦らず着実に進めば、池の氷が解けるように悩みも消えていくでしょう。" },
+            { type: "末吉", poem: "山道の 険しき坂も 一歩より", desc: "今は登り坂で苦しい時かもしれませんが、一歩一歩進めば必ず頂上に辿り着けます。忍耐力が試される時です。" },
+            { type: "凶", poem: "雨雲の 晴れ間も見えず 濡れ衣かな", desc: "誤解を受けやすく、思うようにいかない時期です。今は弁解せず、静かに嵐が過ぎるのを待つのが賢明な判断です。" },
+            { type: "大凶", poem: "嵐吹く 荒野に一人 立つが如し", desc: "八方塞がりの厳しい運勢。無理に動くと災いを招きます。身を潜め、自分を見つめ直す修行の時と心得てください。" }
         ];
 
-        const luckyItemsList = ["古時計","香水","手鏡","文庫本","スニーカー","万年筆","水晶","観葉植物","銀の指輪","ハンカチ","革靴","手帳","香辛料","紅茶","コイン","鈴","扇子","万華鏡","砂時計","栞","眼鏡","帽子","手袋","香木","和紙","筆","インク","切手","古銭","鍵","ロケット","ブローチ","スカーフ","リボン","ベルト","財布","パスケース","名刺入れ","ポーチ","水筒","マグカップ","皿","箸","風鈴","お守り","数珠","朱肉","印鑑"];
-        const luckySpotsList = ["図書館","カフェ","神社","海辺","高台","公園","美術館","映画館","博物館","水族館","動物園","植物園","本屋","雑貨屋","パン屋","花屋","駅","空港","港","橋の上","川沿い","山頂","森","温泉","寺院","教会","塔","城","市場","路地裏","噴水広場","並木道","屋上","地下街","交差点","歩道橋","ベンチ","テラス","窓際","カウンター","個室","ロビー","玄関","庭","ベランダ","書斎","リビング","寝室"];
-        const luckyColorsList = ["赤","青","白","金","紫","緑","黄","橙","桃","黒","銀","紺","茶","灰","水色","黄緑","深紅","群青","琥珀","翡翠","瑠璃","真紅","漆黒","純白","桜色","藤色","山吹色","若草色","空色","茜色","黄金","白銀","銅","パール","ベージュ","クリーム","ワインレッド","オリーブ","ミント","ラベンダー","サーモン","コーラル","ターコイズ","インディゴ","マゼンタ","シアン","ライム","レモン"];
-        const luckyPersonsList = ["旧友","年上","年下","家族","先生","初対面","同僚","上司","部下","隣人","店員","旅人","子供","老人","職人","芸術家","医師","看護師","警察官","消防士","運転手","駅員","郵便屋","料理人","美容師","作家","歌手","俳優","選手","学者","社長","秘書","受付","警備員","清掃員","農家","漁師","神主","住職","牧師","シスター","占い師","幼馴染","親戚","恩師","先輩","後輩","ライバル"];
+        // 重複排除用リスト拡張 (おみくじ用) 100種以上
+        const luckyItemsList = [
+            "古時計","香水","手鏡","文庫本","スニーカー","万年筆","水晶","観葉植物","銀の指輪","ハンカチ",
+            "革靴","手帳","香辛料","紅茶","コイン","鈴","扇子","万華鏡","砂時計","栞","眼鏡","帽子","手袋",
+            "香木","和紙","筆","インク","切手","古銭","鍵","ロケット","ブローチ","スカーフ","リボン","ベルト",
+            "財布","パスケース","名刺入れ","ポーチ","水筒","マグカップ","皿","箸","風鈴","お守り","数珠","朱肉",
+            "印鑑","ガラス玉","竹細工","土鈴","絵馬","破魔矢","達磨","招き猫","こけし","折り鶴","手拭い",
+            "足袋","草履","下駄","簪","帯留め","巾着","風呂敷","茶碗","湯呑み","急須","鉄瓶","火箸","風車",
+            "独楽","凧","羽子板","カルタ","双六","ビー玉","おはじき","メンコ","竹馬","竹とんぼ","お手玉",
+            "あやとり","剣玉","ヨーヨー","将棋の駒","碁石","花札","サイコロ","トランプ","チェス駒","パズル",
+            "模型","フィギュア","ぬいぐるみ","オルゴール","ハーモニカ","笛","太鼓","三味線","琴","琵琶"
+        ];
+        const luckySpotsList = [
+            "図書館","カフェ","神社","海辺","高台","公園","美術館","映画館","博物館","水族館","動物園","植物園",
+            "本屋","雑貨屋","パン屋","花屋","駅","空港","港","橋の上","川沿い","山頂","森","温泉","寺院","教会",
+            "塔","城","市場","路地裏","噴水広場","並木道","屋上","地下街","交差点","歩道橋","ベンチ","テラス",
+            "窓際","カウンター","個室","ロビー","玄関","庭","ベランダ","書斎","リビング","寝室","台所","浴室",
+            "屋根裏","地下室","物置","車庫","バス停","タクシー乗り場","駐車場","駐輪場","校庭","体育館","教室",
+            "講堂","食堂","売店","保健室","職員室","図書室","音楽室","美術室","理科室","家庭科室","技術室",
+            "放送室","生徒会室","部室","更衣室","プール","道場","弓道場","相撲場","テニスコート","グラウンド",
+            "スタジアム","アリーナ","ホール","劇場","ライブハウス","スタジオ","ギャラリー","アトリエ","工房","研究所",
+            "工場","倉庫","オフィス","会議室","応接室","社長室","休憩室","給湯室","トイレ","エレベーター"
+        ];
+        const luckyColorsList = [
+            "赤","青","白","金","紫","緑","黄","橙","桃","黒","銀","紺","茶","灰","水色","黄緑","深紅","群青",
+            "琥珀","翡翠","瑠璃","真紅","漆黒","純白","桜色","藤色","山吹色","若草色","空色","茜色","黄金",
+            "白銀","銅","パール","ベージュ","クリーム","ワインレッド","オリーブ","ミント","ラベンダー","サーモン",
+            "コーラル","ターコイズ","インディゴ","マゼンタ","シアン","ライム","レモン","チャコール","カーキ","セピア",
+            "ブロンズ","プラチナ","ローズ","アクア","マリン","スカイ","フォレスト","リーフ","グラス","サンセット",
+            "ミッドナイト","スノー","アイボリー","サンド","アース","メタル","ネオン","パステル","ビビッド","ダーク",
+            "ライト","クリア","マット","グロス","メタリック","パールホワイト","シャンパンゴールド","ロイヤルブルー",
+            "ベビーピンク","モスグリーン","マスタード","テラコッタ","ボルドー","キャメル","グレージュ","オフホワイト",
+            "ミストグレー","アイスブルー","シェルピンク","ラベンダーアメジスト","ミントグリーン","レモンイエロー",
+            "アプリコット","ピーチ","ラズベリー","ストロベリー","チョコレート","ココア","モカ"
+        ];
+        const luckyPersonsList = [
+            "旧友","年上","年下","家族","先生","初対面","同僚","上司","部下","隣人","店員","旅人","子供","老人",
+            "職人","芸術家","医師","看護師","警察官","消防士","運転手","駅員","郵便屋","料理人","美容師","作家",
+            "歌手","俳優","選手","学者","社長","秘書","受付","警備員","清掃員","農家","漁師","神主","住職","牧師",
+            "シスター","占い師","幼馴染","親戚","恩師","先輩","後輩","ライバル","パートナー","恋人","片思いの人",
+            "元恋人","婚約者","配偶者","祖父","祖母","父","母","兄","弟","姉","妹","息子","娘","孫","叔父","叔母",
+            "甥","姪","従兄弟","はとこ","義父","義母","義兄","義弟","義姉","義妹","友人","親友","悪友","知人",
+            "メル友","ネッ友","フォロワー","ファン","推し","アイドル","タレント","芸人","アナウンサー","モデル",
+            "声優","YouTuber","インフルエンサー","ブロガー","ライター","編集者","カメラマン","デザイナー","イラストレーター"
+        ];
+
+        function getRandomUnique(list, count) {
+            // シャッフルして先頭からcount個取得
+            const shuffled = [...list].sort(() => 0.5 - Math.random());
+            return shuffled.slice(0, count);
+        }
 
         function drawResult(element) {
             const overlay = document.getElementById('countdown-overlay');
             const numEl = document.getElementById('countdown-number');
             overlay.style.display = 'flex';
             
-            if(labSettings.speed) {
+            // Lab: 神速の祈りモードならカウントダウン省略
+            if(window.labSpeedMode) {
                 overlay.style.display = 'none';
                 showResultDetail(true);
                 return;
@@ -2018,11 +1718,13 @@
             let resultData, randNum, detailsList, luckyItems, unluckyItems, timestamp, username;
 
             if (isNewDraw) {
+                // 新規抽選
                 const base = omikujiResults[Math.floor(Math.random() * omikujiResults.length)];
                 randNum = Math.floor(Math.random() * 100) + 1;
                 timestamp = Date.now();
                 username = currentState.user ? (currentState.user.username || "参拝者") : "ゲスト";
 
+                // 詳細項目
                 const cats = ['願事','恋愛','待人','商売','旅立','学問','病気'];
                 const vals = ['叶う','良し','来る','繁盛','吉','成就','治る','遅れる','待て','控','難','危'];
                 detailsList = cats.map(c => ({
@@ -2030,18 +1732,25 @@
                     content: vals[Math.floor(Math.random() * vals.length)]
                 }));
 
-                const lItem = luckyItemsList[Math.floor(Math.random()*luckyItemsList.length)];
-                const lSpot = luckySpotsList[Math.floor(Math.random()*luckySpotsList.length)];
-                const lColor = luckyColorsList[Math.floor(Math.random()*luckyColorsList.length)];
-                const lPerson = luckyPersonsList[Math.floor(Math.random()*luckyPersonsList.length)];
-                
-                let uItem, uSpot, uPerson;
-                do { uItem = luckyItemsList[Math.floor(Math.random()*luckyItemsList.length)]; } while(uItem === lItem);
-                do { uSpot = luckySpotsList[Math.floor(Math.random()*luckySpotsList.length)]; } while(uSpot === lSpot);
-                do { uPerson = luckyPersonsList[Math.floor(Math.random()*luckyPersonsList.length)]; } while(uPerson === lPerson);
+                // ラッキー/アンラッキー（リストからランダムに取得し重複を避ける）
+                // 確実にランダムにするため毎回シャッフル
+                const shuffledItems = getRandomUnique(luckyItemsList, 2);
+                const shuffledSpots = getRandomUnique(luckySpotsList, 2);
+                const shuffledColors = getRandomUnique(luckyColorsList, 1);
+                const shuffledPersons = getRandomUnique(luckyPersonsList, 2);
 
-                luckyItems = { item: lItem, spot: lSpot, color: lColor, person: lPerson };
-                unluckyItems = { item: uItem, spot: uSpot, person: uPerson };
+                luckyItems = {
+                    item: shuffledItems[0],
+                    spot: shuffledSpots[0],
+                    color: shuffledColors[0],
+                    person: shuffledPersons[0]
+                };
+                
+                unluckyItems = {
+                    item: shuffledItems[1],
+                    spot: shuffledSpots[1],
+                    person: shuffledPersons[1]
+                };
 
                 resultData = { 
                     type: base.type, 
@@ -2056,8 +1765,10 @@
                 };
                 currentState.lastResult = resultData;
 
+                // URL更新 (おみくじを引いた時)
                 updateURL(resultData);
 
+                // ログイン時のみ保存・更新
                 if(currentState.user) {
                     showLoading(true);
                     try {
@@ -2069,6 +1780,7 @@
                                 token: currentState.user.token,
                                 result: resultData.type,
                                 poem: resultData.poem,
+                                desc: resultData.desc, // 追加: 助言も保存
                                 detail: detailsList,
                                 lucky: luckyItems,
                                 unlucky: unluckyItems
@@ -2078,7 +1790,9 @@
                         if(res.ok) {
                             const data = await res.json();
                             if(data.success && data.count) {
+                                // サーバーからのカウント
                                 currentState.liveCount = data.count;
+                                document.getElementById('live-counter').textContent = currentState.liveCount.toLocaleString() + "本";
                                 fetchHistoryStats();
                             }
                         }
@@ -2087,19 +1801,31 @@
                 }
 
             } else {
+                // 復元 (履歴などから)
                 resultData = dataOverride;
-                if (!resultData.lucky) resultData.lucky = { item: '不明', spot: '不明', color: '不明', person: '不明' };
-                if (!resultData.unlucky) resultData.unlucky = { item: '不明', spot: '不明', person: '不明' };
+                randNum = dataOverride.num || 1;
+                detailsList = dataOverride.detail;
+                luckyItems = dataOverride.lucky;
+                unluckyItems = dataOverride.unlucky;
+                timestamp = dataOverride.timestamp;
+                username = dataOverride.username || "参拝者";
+                
+                // 互換性チェック: descがない場合はtypeから復元を試みる
                 if (!resultData.desc) {
-                    const match = omikujiResults.find(r => r.type === resultData.type);
-                    resultData.desc = match ? match.desc : "心穏やかに過ごすべし。";
+                    const base = omikujiResults.find(r => r.type === resultData.type);
+                    if (base) resultData.desc = base.desc;
+                    else resultData.desc = "心穏やかに過ごすべし。";
                 }
+
                 currentState.lastResult = resultData;
             }
 
+            // レンダリング (メインエリア)
             renderResultToCard('result-card-outer', resultData, true); 
+
             showView('result');
             
+            // 画像生成コンテナリセット
             const container = document.getElementById('generated-image-container');
             container.innerHTML = '';
             container.classList.add('hidden');
@@ -2117,11 +1843,13 @@
             const outer = document.getElementById(outerId);
             outer.innerHTML = ''; 
 
+            // スタイル適用
             outer.className = 'result-card-outer';
             if (data.type === "大吉") outer.classList.add("style-daikichi");
-            else if (data.type === "大凶" || data.type === "凶") outer.classList.add("style-daikyo");
+            else if (data.type === "大凶") outer.classList.add("style-daikyo");
             else outer.classList.add("style-normal");
 
+            // 1. 最上部: 家紋 + タイトル
             const headerDiv = document.createElement('div');
             headerDiv.className = 'result-logo-area';
             headerDiv.innerHTML = `
@@ -2130,28 +1858,32 @@
             `;
             outer.appendChild(headerDiv);
 
+            // 2. 累計発行本数 (第〇〇番の代わり)
             const issueDiv = document.createElement('div');
             issueDiv.className = 'result-issue-num';
             let issueNum = currentState.liveCount || 15118061;
             issueDiv.textContent = `累計発行本数 ${issueNum.toLocaleString()} 本`;
             outer.appendChild(issueDiv);
 
+            // 3. 中央: 運勢結果（円）
             const circleBox = document.createElement('div');
             circleBox.className = 'result-circle-box accent-border';
             circleBox.innerHTML = `<div class="result-kanji-main accent-text">${data.type}</div>`;
             outer.appendChild(circleBox);
 
+            // 4. 円の下: 運勢という文字
             const labelSub = document.createElement('div');
             labelSub.className = 'result-label-sub accent-text';
             labelSub.textContent = '運勢';
             outer.appendChild(labelSub);
 
+            // 5. メインメッセージ + 助言
             const msgArea = document.createElement('div');
             msgArea.className = 'result-main-message-area';
             
             const adviceBox = document.createElement('div');
             adviceBox.className = 'result-advice-box accent-border';
-            const adviceText = data.desc || "心穏やかに過ごすべし。";
+            const adviceText = data.desc || "心穏やかに過ごすべし。"; // ここで確実にテキストを入れる
             adviceBox.innerHTML = `<span class="advice-label accent-text">助言</span> <span class="accent-text">${adviceText}</span>`;
             
             const poemDiv = document.createElement('div');
@@ -2162,6 +1894,7 @@
             msgArea.appendChild(poemDiv);
             outer.appendChild(msgArea);
 
+            // 6. 詳細運勢リスト (縦書き)
             const detailGrid = document.createElement('div');
             detailGrid.className = 'result-details-grid accent-border';
             
@@ -2175,6 +1908,7 @@
             }
             outer.appendChild(detailGrid);
 
+            // 7. 開運・不運項目
             const luckyArea = document.createElement('div');
             luckyArea.className = 'lucky-area';
             
@@ -2204,6 +1938,7 @@
             luckyArea.appendChild(uBox);
             outer.appendChild(luckyArea);
 
+            // 8. フッター (日時・名前・QR)
             if (withFooter) {
                 const footer = document.createElement('div');
                 footer.className = 'result-footer-info accent-border';
@@ -2242,6 +1977,7 @@
             }
         }
 
+        // --- 履歴・おみくじの轍 ---
         async function loadHistory() {
             const list = document.getElementById('history-list');
             const container = document.getElementById('history-container');
@@ -2279,6 +2015,7 @@
             overlay.classList.add('hidden');
             viewMode.textContent = "全参拝者の記録 (全期間)";
             list.innerHTML = '<p class="text-center text-sm themed-text-sub">読み込み中...</p>';
+            showLoading(true);
 
             try {
                 const res = await fetch(`${API_BASE}/api/history/global?token=${encodeURIComponent(currentState.user.token)}`);
@@ -2299,11 +2036,12 @@
                     globalHistory.forEach((item, index) => {
                         const div = document.createElement('div');
                         const isMe = item.username === currentState.user.username;
-                        const borderColor = (item.result || item.type).includes('凶') ? 'border-gray-500' : 'border-red-500';
+                        const borderColor = item.result.includes('凶') ? 'border-gray-500' : 'border-red-500';
                         const bgClass = isMe ? 'bg-red-50 dark:bg-red-900/20' : 'bg-gray-50 dark:bg-zinc-800';
 
                         div.className = `${bgClass} p-3 rounded flex justify-between items-center border-l-4 ${borderColor} cursor-pointer hover:opacity-80 transition shadow-sm`;
                         
+                        // 修正: クリックで詳細ページ(結果画面)へ遷移
                         div.onclick = () => {
                             showResultDetail(false, item);
                             updateURL(item);
@@ -2318,7 +2056,7 @@
                                 <span class="text-xs text-gray-400">${dateStr}</span>
                             </div>
                             <div class="flex items-center gap-4">
-                                <span class="font-bold text-red-700 dark:text-red-400 text-lg w-16 text-right">${item.result || item.type}</span>
+                                <span class="font-bold text-red-700 dark:text-red-400 text-lg w-16 text-right">${item.result}</span>
                             </div>
                         `;
                         list.appendChild(div);
@@ -2329,7 +2067,14 @@
             } catch(e) {
                 console.error(e);
                 list.innerHTML = '<p class="text-center text-red-500">通信エラー</p>';
+            } finally {
+                showLoading(false);
             }
+        }
+
+        function closeHistoryDetail(e) {
+            if(e && e.target.id !== 'history-detail-modal' && e.target.tagName !== 'BUTTON') return;
+            document.getElementById('history-detail-modal').style.display = 'none';
         }
 
         // --- シェア用画像生成 (UI崩れ修正版) ---
@@ -2342,11 +2087,13 @@
             container.innerHTML = '';
             container.classList.add('hidden');
             
+            // フォント読み込み完了を待つ
             document.fonts.ready.then(() => {
                 const originalScrollPos = window.scrollY;
 
+                // キャプチャ設定
                 html2canvas(target, { 
-                    scale: 3, 
+                    scale: 3, // 高解像度化
                     useCORS: true, 
                     allowTaint: true,
                     backgroundColor: null, 
@@ -2355,6 +2102,7 @@
                     onclone: (clonedDoc) => {
                         const clonedOuter = clonedDoc.getElementById('result-card-outer');
                         if (clonedOuter) {
+                            // 縦書きハック: CSSで強制的に指定し直す
                             const verticals = clonedOuter.querySelectorAll('.result-poem-vertical, .result-advice-box, .detail-column');
                             verticals.forEach(el => {
                                 el.style.letterSpacing = '0.1em'; 
@@ -2368,10 +2116,14 @@
                     }
                 }).then(canvas => {
                     status.textContent = "";
+                    
                     container.innerHTML = '<p class="text-green-600 font-bold mb-2">画像の生成完了</p>';
+                    
+                    // 生成された画像をBlob化して共有用に保持
                     canvas.toBlob(blob => {
                         currentState.lastImageBlob = blob;
                         const url = URL.createObjectURL(blob);
+                        
                         const img = document.createElement('img');
                         img.src = url;
                         img.className = "mx-auto rounded border w-32 mb-2 shadow-sm"; 
@@ -2385,7 +2137,9 @@
                         dlLink.innerHTML = '<i class="bi bi-download"></i> ダウンロード';
                         container.appendChild(dlLink);
                     }, 'image/png');
+
                     window.scrollTo(0, originalScrollPos);
+
                 }).catch(err => {
                     console.error(err);
                     status.textContent = "画像の生成に失敗しました。再試行してください。";
@@ -2395,15 +2149,18 @@
         }
 
         function getShareUrl() {
-            return SITE_URL;
+            if(!currentState.lastResult) return SITE_URL;
+            // 現在のURLパラメータを含んだURLを返す
+            return window.location.href;
         }
 
-        // --- シェアアクション ---
+        // --- シェアアクション (Web Share API優先) ---
         async function shareToX() {
             if(!currentState.lastResult) return;
             const res = currentState.lastResult;
             const userName = res.username || "参拝者"; 
             
+            // X (Twitter) の文字数制限に合わせて短縮
             const text = `⛩️ 運勢・天命乃杜 ⛩️
 ${userName}様の運勢：【 ${res.type} 】
 
@@ -2411,24 +2168,29 @@ ${userName}様の運勢：【 ${res.type} 】
 
 開運：${res.lucky.item}・${res.lucky.color}
 
-#天命乃杜 #おみくじ #運勢 ${SITE_URL}`;
+#天命乃杜 #おみくじ #運勢`;
 
+            const url = getShareUrl();
+
+            // Web Share API (画像添付) トライ
             if (navigator.share && currentState.lastImageBlob) {
                 try {
                     const file = new File([currentState.lastImageBlob], "omikuji.png", { type: "image/png" });
                     if (navigator.canShare && navigator.canShare({ files: [file] })) {
                         await navigator.share({
                             text: text,
+                            url: url, 
                             files: [file]
                         });
-                        return;
+                        return; // 成功したら終了
                     }
                 } catch (e) {
                     console.log("Web Share API failed, falling back to Intent", e);
                 }
             }
 
-            const intent = `https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}`;
+            // フォールバック: Twitter Intent (画像添付不可)
+            const intent = `https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}&url=${encodeURIComponent(url)}`;
             window.open(intent, '_blank');
         }
 
@@ -2443,6 +2205,7 @@ ${userName}様の運勢：【 ${res.type} 】
             const res = currentState.lastResult;
             const text = `${res.username}の運勢：${res.type}\n${url}`;
             
+            // LINEもWeb Share APIを試みる
              if (navigator.share && currentState.lastImageBlob) {
                 try {
                     const file = new File([currentState.lastImageBlob], "omikuji.png", { type: "image/png" });
@@ -2518,7 +2281,7 @@ ${userName}様の運勢：【 ${res.type} 】
                     alert("アカウントを削除しました。ご利用ありがとうございました。");
                     logout();
                 } else {
-                    alert("削除失敗: " + (data.message || data.error));
+                    alert("削除失敗: " + data.error);
                 }
             } catch(e) { 
                 console.error(e);
@@ -2563,6 +2326,7 @@ ${userName}様の運勢：【 ${res.type} 】
             if(!email || !pass) return alert("メールアドレスとパスワードを入力してください");
             if(mode === 'register' && !username) return alert("ユーザー名を入力してください");
 
+            // 擬似的にコード送信APIを叩く
             showLoading(true);
             try {
                 const res = await fetch(`${API_BASE}/api/auth/send`, { 
@@ -2573,10 +2337,12 @@ ${userName}様の運勢：【 ${res.type} 】
                 const data = await res.json();
                 
                 if(res.ok && data.success) {
+                    // ステップ2へ遷移
                     document.getElementById('auth-step-1').classList.add('hidden');
                     document.getElementById('auth-step-2').classList.remove('hidden');
-                    const firstInput = document.querySelector('.auth-code-digit');
-                    if(firstInput) firstInput.focus();
+                    // コード入力欄リセット
+                    document.querySelectorAll('.auth-digit-input').forEach(el => el.value = '');
+                    document.getElementById('digit1').focus();
                 } else {
                     alert(`送信エラー: ${data.error || '不明なエラー'}`);
                 }
@@ -2589,12 +2355,19 @@ ${userName}様の運勢：【 ${res.type} 】
             document.getElementById('auth-step-1').classList.remove('hidden');
         }
 
-        async function finalizeAuth() {
-            const inputs = document.querySelectorAll('.auth-code-digit');
-            let code = "";
-            inputs.forEach(input => code += input.value);
+        // 入力欄移動
+        function moveToNext(el, nextId) {
+            if (el.value.length === 1 && nextId) {
+                document.getElementById(nextId).focus();
+            }
+        }
 
-            if(!code || code.length !== 6) return alert("6桁の認証コードを入力してください");
+        async function finalizeAuth() {
+            let code = "";
+            for(let i=1; i<=6; i++) {
+                code += document.getElementById(`digit${i}`).value;
+            }
+            if(code.length !== 6) return alert("6桁の認証コードを入力してください");
 
             const mode = currentState.authMode;
             const email = document.getElementById(mode === 'login' ? 'login-email' : 'reg-email').value;
@@ -2628,7 +2401,6 @@ ${userName}様の運勢：【 ${res.type} 】
             localStorage.setItem('omikuji_user', JSON.stringify(user));
             updateAuthUI();
             loadFavorites(); 
-            loadLabSettings(); 
             
             if(currentState.view === 'lab') {
                 showView('lab');
@@ -2657,24 +2429,28 @@ ${userName}様の運勢：【 ${res.type} 】
             location.reload();
         }
 
-        // 12星座ロジック
+        // 12星座ロジック (被らないように修正)
         function generateDailyRanking(dateStr) {
             let combinations = [];
             zodiacSigns.forEach(sign => { bloodTypes.forEach(blood => { combinations.push({ sign, blood }); }); });
-            
             const rng = new SeededRandom(dateStr);
+            
+            // 重複しないようにシャッフルリストを作成 (48通り以上用意)
             let shuffledItems = [];
             let shuffledColors = [];
             while(shuffledItems.length < combinations.length) shuffledItems = shuffledItems.concat(zodiacItemsList);
             while(shuffledColors.length < combinations.length) shuffledColors = shuffledColors.concat(zodiacColorsList);
             
-            for (let i = shuffledItems.length - 1; i > 0; i--) {
-                const j = Math.floor(rng.next() * (i + 1));
-                [shuffledItems[i], shuffledItems[j]] = [shuffledItems[j], shuffledItems[i]];
-            }
-            for (let i = shuffledColors.length - 1; i > 0; i--) {
-                const j = Math.floor(rng.next() * (i + 1));
-                [shuffledColors[i], shuffledColors[j]] = [shuffledColors[j], shuffledColors[i]];
+            // 完全にランダムにするため十分シャッフル
+            for(let k=0; k<3; k++) { // 念入りにシャッフル
+                for (let i = shuffledItems.length - 1; i > 0; i--) {
+                    const j = Math.floor(rng.next() * (i + 1));
+                    [shuffledItems[i], shuffledItems[j]] = [shuffledItems[j], shuffledItems[i]];
+                }
+                for (let i = shuffledColors.length - 1; i > 0; i--) {
+                    const j = Math.floor(rng.next() * (i + 1));
+                    [shuffledColors[i], shuffledColors[j]] = [shuffledColors[j], shuffledColors[i]];
+                }
             }
 
             let scoredData = combinations.map((item, index) => {
@@ -2699,13 +2475,15 @@ ${userName}様の運勢：【 ${res.type} 】
                     money: { score: moneyScore, desc: moneyShorts[Math.floor(rng.next() * moneyShorts.length)] },
                     work: { score: workScore, desc: workShorts[Math.floor(rng.next() * workShorts.length)] },
                     luckyNum: Math.floor(rng.next() * 9) + 1,
-                    item: shuffledItems[index], 
-                    color: shuffledColors[index], 
+                    item: shuffledItems[index],
+                    color: shuffledColors[index],
                     longDesc: longDesc
                 };
             });
             scoredData.sort((a, b) => b.totalScore - a.totalScore);
             scoredData.forEach((d, i) => d.rank = i + 1);
+            
+            // 順位付け (同率処理簡易版)
             scoredData.forEach(d => {
                 const sorted = [...scoredData].sort((a, b) => b.love.score - a.love.score);
                 d.love.rank = sorted.findIndex(s => s === d) + 1;
