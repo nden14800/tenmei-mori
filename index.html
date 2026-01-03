@@ -1089,26 +1089,21 @@
 
         <!-- ビュー: TENMEI Labs (新デザイン) -->
         <section id="view-lab" class="view-section max-w-3xl mx-auto relative">
-            <!-- ヘッダー部分 (Google Search Labs風) -->
             <div class="lab-header-container">
-                <!-- タイトル上のアニメーションフラスコ (カスタムSVG) -->
+                <!-- タイトル上のアニメーションフラスコ -->
                 <div class="title-flask-anim">
                     <svg viewBox="0 0 24 24" overflow="visible" style="width:100%; height:100%;">
                         <defs>
-                            <!-- 青から紫へのグラデーション -->
                             <linearGradient id="flaskLiquidGradient" x1="0%" y1="0%" x2="0%" y2="100%">
                                 <stop offset="0%" style="stop-color:#4facfe;stop-opacity:1" />
                                 <stop offset="100%" style="stop-color:#8e2de2;stop-opacity:1" />
                             </linearGradient>
                         </defs>
                         <g class="flask-group">
-                            <!-- 液体 (よりリアルな波) -->
                             <path class="flask-liquid-path" d="M5 14 C7 13, 9 15, 12 14 C15 13, 17 15, 19 14 L18.5 20 C18.5 21, 18 22, 16 22 L8 22 C6 22, 5.5 21, 5.5 20 Z" />
-                            <!-- 泡 -->
                             <circle class="flask-bubble" cx="10" cy="18" r="1" style="animation-delay:0s" />
                             <circle class="flask-bubble" cx="14" cy="19" r="0.8" style="animation-delay:1s" />
                             <circle class="flask-bubble" cx="12" cy="16" r="0.6" style="animation-delay:0.5s" />
-                            <!-- フラスコ本体 (底丸め) -->
                             <path class="flask-body-path" d="M9 2 L15 2 L15 7 L20 18 C20.5 19.5, 19 22, 16 22 L8 22 C5 22, 3.5 19.5, 4 18 L9 7 Z" />
                         </g>
                     </svg>
@@ -1116,9 +1111,70 @@
                 <h2 class="text-4xl font-bold mb-2 tracking-wide" style="color: #6366f1;">
                     TENMEI Labs
                 </h2>
-                <p class="font-bold text-lg mb-2">新機能を試してみる</p>
-                <p class="text-sm text-gray-500">ご意見をお聞かせください</p>
+                <p class="font-bold text-lg mb-2">実験中の機能</p>
+                <p class="text-sm text-gray-500">開発中の機能をいち早くお試しいただけます。フィードバックを歓迎します。</p>
             </div>
+
+            <!-- ラッパー -->
+            <div id="lab-content-wrapper">
+                <div id="lab-container">
+                    <!-- 1. 迎春・雅モード -->
+                    <div class="lab-card">
+                        <div>
+                            <h3 class="font-bold text-lg text-yellow-600 dark:text-yellow-400">迎春・雅（みやび）モード</h3>
+                            <p class="text-sm themed-text-sub">サイト全体の雰囲気を紅白と金色のお正月仕様に変更します。</p>
+                        </div>
+                        <label class="toggle-switch">
+                            <input type="checkbox" id="toggle-newyear" onchange="TenmeiLab.toggleNewYear(this)">
+                            <span class="slider"></span>
+                        </label>
+                    </div>
+
+                    <!-- 2. 神速の祈り -->
+                    <div class="lab-card">
+                        <div>
+                            <h3 class="font-bold text-lg text-blue-600 dark:text-blue-400">神速（しんそく）の祈り</h3>
+                            <p class="text-sm themed-text-sub">おみくじのアニメーションをスキップし、結果を即座に表示します。</p>
+                        </div>
+                        <label class="toggle-switch">
+                            <input type="checkbox" id="toggle-speed" onchange="TenmeiLab.toggleSpeed(this)">
+                            <span class="slider"></span>
+                        </label>
+                    </div>
+
+                    <!-- 3. 宵闇の刻 -->
+                    <div class="lab-card">
+                        <div>
+                            <h3 class="font-bold text-lg text-purple-600 dark:text-purple-400">宵闇（よいやみ）の刻</h3>
+                            <p class="text-sm themed-text-sub">OSの設定に関わらず、常にダークモードを強制適用します。</p>
+                        </div>
+                        <label class="toggle-switch">
+                            <input type="checkbox" id="toggle-dark" onchange="TenmeiLab.toggleDark(this)">
+                            <span class="slider"></span>
+                        </label>
+                    </div>
+
+                    <!-- 4. 言霊の増幅 -->
+                    <div class="lab-card">
+                        <div>
+                            <h3 class="font-bold text-lg text-green-600 dark:text-green-400">言霊（ことだま）の増幅</h3>
+                            <p class="text-sm themed-text-sub">結果画面の文字サイズを大きくし、視認性を向上させます。</p>
+                        </div>
+                        <label class="toggle-switch">
+                            <input type="checkbox" id="toggle-bigtext" onchange="TenmeiLab.toggleBigText(this)">
+                            <span class="slider"></span>
+                        </label>
+                    </div>
+                </div>
+            </div>
+
+            <div id="lab-lock" class="lab-lock-overlay hidden">
+                <i class="bi bi-lock-fill text-5xl text-gray-400 mb-4 block"></i>
+                <h3 class="text-xl font-bold mb-2">会員限定機能</h3>
+                <p class="text-sm text-gray-500 mb-6">TENMEI Labsは会員様のみご利用いただけます。<br>ログインして実験的機能をお楽しみください。</p>
+                <button onclick="showView('auth')" class="btn-primary w-full shadow-lg">ログイン / 登録</button>
+            </div>
+        </section>
 
             <!-- ラッパー: ぼかし適用対象 -->
             <div id="lab-content-wrapper">
@@ -1645,10 +1701,7 @@
             if(isDark) {
                 html.classList.add('dark');
             } else {
-                // OS設定に従う
                 if(window.matchMedia('(prefers-color-scheme: dark)').matches) {
-                    // ここでOS設定がダークなら強制的にダークを解除するか？
-                    // "宵闇の刻" OFF = OS設定に従うべきなので、OSがダークならダークのまま
                     html.classList.add('dark');
                 } else {
                     html.classList.remove('dark');
@@ -1658,8 +1711,6 @@
 
         async function saveLabSettings() {
             if(currentState.user) {
-                // サーバーに保存 (実装簡略化のためKVに投げるエンドポイントが必要だが今回はlocalStorageで代用または省略)
-                // 本来はPOST /api/user/settings 等で行う
                 localStorage.setItem(`lab_settings_${currentState.user.email}`, JSON.stringify(labSettings));
             }
         }
@@ -1671,13 +1722,20 @@
                     try {
                         labSettings = JSON.parse(stored);
                         // UI反映
-                        document.getElementById('toggle-newyear').checked = labSettings.newYear;
-                        document.getElementById('toggle-speed').checked = labSettings.speed;
-                        document.getElementById('toggle-dark').checked = labSettings.dark;
-                        document.getElementById('toggle-bigtext').checked = labSettings.bigText;
+                        const ny = document.getElementById('toggle-newyear');
+                        if(ny) ny.checked = labSettings.newYear;
+                        
+                        const sp = document.getElementById('toggle-speed');
+                        if(sp) sp.checked = labSettings.speed;
+                        
+                        const dk = document.getElementById('toggle-dark');
+                        if(dk) dk.checked = labSettings.dark;
+                        
+                        const bt = document.getElementById('toggle-bigtext');
+                        if(bt) bt.checked = labSettings.bigText;
 
                         if(labSettings.newYear) document.body.classList.add('theme-newyear');
-                        if(labSettings.dark) document.documentElement.classList.add('dark');
+                        applyDarkMode(labSettings.dark);
                         if(labSettings.bigText) document.body.style.fontSize = '120%';
                     } catch(e){}
                 }
@@ -1727,11 +1785,9 @@
             const overlay = document.getElementById('loading-overlay');
             if(show) {
                 overlay.style.display = 'flex';
-                // わずかに遅らせてopacityを変更しフェードインさせる
                 requestAnimationFrame(() => overlay.classList.add('visible'));
             } else {
                 overlay.classList.remove('visible');
-                // フェードアウト後に非表示
                 setTimeout(() => {
                     if(!overlay.classList.contains('visible')) overlay.style.display = 'none';
                 }, 300);
@@ -1740,7 +1796,6 @@
 
         function showView(viewId) {
             // Lab機能へのアクセス制限処理
-            // ビュー自体は表示するが、非ログイン時はぼかしとロックをかける
             if(viewId === 'lab') {
                 const lock = document.getElementById('lab-lock');
                 const wrapper = document.getElementById('lab-content-wrapper');
@@ -1748,7 +1803,6 @@
                 if(!currentState.user) {
                     lock.classList.remove('hidden');
                     wrapper.classList.add('lab-blurred');
-                    // スイッチ無効化
                     document.querySelectorAll('.toggle-switch input').forEach(el => el.disabled = true);
                 } else {
                     lock.classList.add('hidden');
@@ -1775,7 +1829,6 @@
             }
             if(viewId === 'history') {
                 loadHistory();
-                setTimeout(() => updateCharts('1h'), 500); // チャート初期化 (デフォルト1時間)
             }
         }
 
@@ -1814,11 +1867,10 @@
                     const res = await fetch(`${API_BASE}/api/counter`);
                     if(res.ok) {
                         const data = await res.json();
-                        // サーバーの値をそのまま表示
                         currentState.liveCount = (data.count || 0);
-                        currentState.liveUsers = (data.users || 0); // ユーザー数
-                        el.textContent = currentState.liveCount.toLocaleString() + "本";
-                        userEl.textContent = currentState.liveUsers.toLocaleString() + "人";
+                        currentState.liveUsers = (data.users || 0);
+                        if(el) el.textContent = currentState.liveCount.toLocaleString() + "本";
+                        if(userEl) userEl.textContent = currentState.liveUsers.toLocaleString() + "人";
                     }
                 } catch(e) { console.error(e); }
             }
@@ -1830,9 +1882,9 @@
                 const res = await fetch(`${API_BASE}/api/stats`);
                 if(res.ok) {
                     const data = await res.json();
-                    document.getElementById('stats-update-time').textContent = data.timestamp || "--:--:--";
+                    const timeEl = document.getElementById('stats-update-time');
+                    if(timeEl) timeEl.textContent = data.timestamp || "--:--:--";
 
-                    // 全種類の運勢を表示する (12種類)
                     const allTypes = ["大吉", "中吉", "小吉", "吉", "半吉", "末吉", "末小吉", "凶", "小凶", "半凶", "末凶", "大凶"];
                     const mapKey = {
                         "大吉":"daikichi", "中吉":"chukichi", "小吉":"shokichi", "吉":"kichi",
@@ -1841,25 +1893,26 @@
                     };
                     
                     const container = document.getElementById('home-history-stats');
-                    container.innerHTML = ''; // クリア
+                    if(container) {
+                        container.innerHTML = '';
+                        const stats = data.stats || {};
+                        const counts = data.counts || {};
 
-                    const stats = data.stats || {}; // パーセント
-                    const counts = data.counts || {}; // 実数
+                        allTypes.forEach(type => {
+                            const key = mapKey[type];
+                            const count = counts[key] || 0;
+                            const percent = stats[key] || 0;
+                            const barColor = type.includes('凶') ? 'bg-gray-400' : 
+                                             type === '大吉' ? 'bg-yellow-400' :
+                                             type === '吉' ? 'bg-red-400' : 'bg-blue-400';
 
-                    allTypes.forEach(type => {
-                        const key = mapKey[type];
-                        const count = counts[key] || 0;
-                        const percent = stats[key] || 0;
-                        const barColor = type.includes('凶') ? 'bg-gray-400' : 
-                                         type === '大吉' ? 'bg-yellow-400' :
-                                         type === '吉' ? 'bg-red-400' : 'bg-blue-400';
-
-                        const html = `
-                            <div class="flex justify-between"><span>${type}</span><span><span class="mr-2 font-mono">${count.toLocaleString()}本</span><span>${percent.toFixed(2)}%</span></span></div>
-                            <div class="w-full bg-gray-200 dark:bg-gray-600 h-2 rounded"><div class="${barColor} h-2 rounded" style="width: ${percent}%"></div></div>
-                        `;
-                        container.insertAdjacentHTML('beforeend', html);
-                    });
+                            const html = `
+                                <div class="flex justify-between"><span>${type}</span><span><span class="mr-2 font-mono">${count.toLocaleString()}本</span><span>${percent.toFixed(2)}%</span></span></div>
+                                <div class="w-full bg-gray-200 dark:bg-gray-600 h-2 rounded"><div class="${barColor} h-2 rounded" style="width: ${percent}%"></div></div>
+                            `;
+                            container.insertAdjacentHTML('beforeend', html);
+                        });
+                    }
                 }
             } catch(e) { console.error(e); }
         }
@@ -1915,7 +1968,6 @@
             }
         }
 
-        // 12種類に拡張 + 被らないように工夫
         const omikujiResults = [
             { type: "大吉", poem: "枯れ果てし 枝に再び 花咲くが如し", desc: "最高の運気です。長年の努力が報われ、枯れ木に花が咲くような喜びが訪れるでしょう。" },
             { type: "中吉", poem: "照る月を 雲が隠せど 風払うなり", desc: "一時的な迷いがあっても、すぐに晴れ間が見えます。信念を貫けば道は開かれます。" },
@@ -1931,34 +1983,16 @@
             { type: "大凶", poem: "嵐吹く 荒野に一人 立つが如し", desc: "八方塞がりの厳しい運勢。無理に動くと災いを招きます。身を潜め、自分を見つめ直す時。" }
         ];
 
-        // 重複排除用リスト拡張 (十分な数を確保)
-        const luckyItemsList = [
-            "古時計","香水","手鏡","文庫本","スニーカー","万年筆",
-            "水晶","観葉植物","銀の指輪","ハンカチ","革靴","手帳",
-            "香辛料","紅茶","コイン","鈴","扇子","万華鏡",
-            "砂時計","栞","眼鏡","帽子","手袋","香木",
-            "和紙","筆","インク","切手","古銭","鍵",
-            "ロケット","ブローチ","スカーフ","リボン","ベルト","財布",
-            "パスケース","名刺入れ","ポーチ","水筒","マグカップ","皿",
-            "箸","風鈴","お守り","数珠","朱肉","印鑑"
-        ];
-        // ... (spots, colors, persons も同様に十分あると仮定)
+        const luckyItemsList = ["古時計","香水","手鏡","文庫本","スニーカー","万年筆","水晶","観葉植物","銀の指輪","ハンカチ","革靴","手帳","香辛料","紅茶","コイン","鈴","扇子","万華鏡","砂時計","栞","眼鏡","帽子","手袋","香木","和紙","筆","インク","切手","古銭","鍵","ロケット","ブローチ","スカーフ","リボン","ベルト","財布","パスケース","名刺入れ","ポーチ","水筒","マグカップ","皿","箸","風鈴","お守り","数珠","朱肉","印鑑"];
         const luckySpotsList = ["図書館","カフェ","神社","海辺","高台","公園","美術館","映画館","博物館","水族館","動物園","植物園","本屋","雑貨屋","パン屋","花屋","駅","空港","港","橋の上","川沿い","山頂","森","温泉","寺院","教会","塔","城","市場","路地裏","噴水広場","並木道","屋上","地下街","交差点","歩道橋","ベンチ","テラス","窓際","カウンター","個室","ロビー","玄関","庭","ベランダ","書斎","リビング","寝室"];
         const luckyColorsList = ["赤","青","白","金","紫","緑","黄","橙","桃","黒","銀","紺","茶","灰","水色","黄緑","深紅","群青","琥珀","翡翠","瑠璃","真紅","漆黒","純白","桜色","藤色","山吹色","若草色","空色","茜色","黄金","白銀","銅","パール","ベージュ","クリーム","ワインレッド","オリーブ","ミント","ラベンダー","サーモン","コーラル","ターコイズ","インディゴ","マゼンタ","シアン","ライム","レモン"];
         const luckyPersonsList = ["旧友","年上","年下","家族","先生","初対面","同僚","上司","部下","隣人","店員","旅人","子供","老人","職人","芸術家","医師","看護師","警察官","消防士","運転手","駅員","郵便屋","料理人","美容師","作家","歌手","俳優","選手","学者","社長","秘書","受付","警備員","清掃員","農家","漁師","神主","住職","牧師","シスター","占い師","幼馴染","親戚","恩師","先輩","後輩","ライバル"];
-
-        function getRandomUnique(list, count) {
-            // シャッフルして先頭からcount個取得
-            const shuffled = [...list].sort(() => 0.5 - Math.random());
-            return shuffled.slice(0, count);
-        }
 
         function drawResult(element) {
             const overlay = document.getElementById('countdown-overlay');
             const numEl = document.getElementById('countdown-number');
             overlay.style.display = 'flex';
             
-            // Lab: 神速の祈りモードならカウントダウン省略
             if(labSettings.speed) {
                 overlay.style.display = 'none';
                 showResultDetail(true);
@@ -1984,13 +2018,11 @@
             let resultData, randNum, detailsList, luckyItems, unluckyItems, timestamp, username;
 
             if (isNewDraw) {
-                // 新規抽選
                 const base = omikujiResults[Math.floor(Math.random() * omikujiResults.length)];
                 randNum = Math.floor(Math.random() * 100) + 1;
                 timestamp = Date.now();
                 username = currentState.user ? (currentState.user.username || "参拝者") : "ゲスト";
 
-                // 詳細項目 (ランダム生成)
                 const cats = ['願事','恋愛','待人','商売','旅立','学問','病気'];
                 const vals = ['叶う','良し','来る','繁盛','吉','成就','治る','遅れる','待て','控','難','危'];
                 detailsList = cats.map(c => ({
@@ -1998,14 +2030,11 @@
                     content: vals[Math.floor(Math.random() * vals.length)]
                 }));
 
-                // ラッキー/アンラッキー（リストからランダムに取得し重複を避ける）
-                // 簡易的にランダム
                 const lItem = luckyItemsList[Math.floor(Math.random()*luckyItemsList.length)];
                 const lSpot = luckySpotsList[Math.floor(Math.random()*luckySpotsList.length)];
                 const lColor = luckyColorsList[Math.floor(Math.random()*luckyColorsList.length)];
                 const lPerson = luckyPersonsList[Math.floor(Math.random()*luckyPersonsList.length)];
                 
-                // アンラッキーはラッキーと被らないようにする
                 let uItem, uSpot, uPerson;
                 do { uItem = luckyItemsList[Math.floor(Math.random()*luckyItemsList.length)]; } while(uItem === lItem);
                 do { uSpot = luckySpotsList[Math.floor(Math.random()*luckySpotsList.length)]; } while(uSpot === lSpot);
@@ -2027,10 +2056,8 @@
                 };
                 currentState.lastResult = resultData;
 
-                // URL更新 (おみくじを引いた時)
                 updateURL(resultData);
 
-                // ログイン時のみ保存・更新
                 if(currentState.user) {
                     showLoading(true);
                     try {
@@ -2051,9 +2078,7 @@
                         if(res.ok) {
                             const data = await res.json();
                             if(data.success && data.count) {
-                                // サーバーからのカウント
                                 currentState.liveCount = data.count;
-                                document.getElementById('live-counter').textContent = currentState.liveCount.toLocaleString() + "本";
                                 fetchHistoryStats();
                             }
                         }
@@ -2062,26 +2087,19 @@
                 }
 
             } else {
-                // 復元 (シェアURLやおみくじの轍から)
                 resultData = dataOverride;
-                // 古いデータ形式に対応するためチェック
                 if (!resultData.lucky) resultData.lucky = { item: '不明', spot: '不明', color: '不明', person: '不明' };
                 if (!resultData.unlucky) resultData.unlucky = { item: '不明', spot: '不明', person: '不明' };
-                // 助言 (desc) がない場合、リストから検索して補完する
                 if (!resultData.desc) {
                     const match = omikujiResults.find(r => r.type === resultData.type);
-                    resultData.desc = match ? match.desc : "詳細な助言データがありません。";
+                    resultData.desc = match ? match.desc : "心穏やかに過ごすべし。";
                 }
-
                 currentState.lastResult = resultData;
             }
 
-            // レンダリング (メインエリア)
             renderResultToCard('result-card-outer', resultData, true); 
-
             showView('result');
             
-            // 画像生成コンテナリセット
             const container = document.getElementById('generated-image-container');
             container.innerHTML = '';
             container.classList.add('hidden');
@@ -2089,7 +2107,6 @@
         }
 
         function updateURL(resultData) {
-            // 文字化け対策: 日本語を含むJSONをBase64にする
             const json = JSON.stringify(resultData);
             const encoded = btoa(unescape(encodeURIComponent(json))); 
             const newUrl = `${window.location.pathname}?d=${encoded}`;
@@ -2100,13 +2117,11 @@
             const outer = document.getElementById(outerId);
             outer.innerHTML = ''; 
 
-            // スタイル適用
             outer.className = 'result-card-outer';
             if (data.type === "大吉") outer.classList.add("style-daikichi");
             else if (data.type === "大凶" || data.type === "凶") outer.classList.add("style-daikyo");
             else outer.classList.add("style-normal");
 
-            // 1. 最上部: 家紋 + タイトル
             const headerDiv = document.createElement('div');
             headerDiv.className = 'result-logo-area';
             headerDiv.innerHTML = `
@@ -2115,32 +2130,27 @@
             `;
             outer.appendChild(headerDiv);
 
-            // 2. 累計発行本数 (第〇〇番の代わり)
             const issueDiv = document.createElement('div');
             issueDiv.className = 'result-issue-num';
             let issueNum = currentState.liveCount || 15118061;
             issueDiv.textContent = `累計発行本数 ${issueNum.toLocaleString()} 本`;
             outer.appendChild(issueDiv);
 
-            // 3. 中央: 運勢結果（円）
             const circleBox = document.createElement('div');
             circleBox.className = 'result-circle-box accent-border';
             circleBox.innerHTML = `<div class="result-kanji-main accent-text">${data.type}</div>`;
             outer.appendChild(circleBox);
 
-            // 4. 円の下: 運勢という文字
             const labelSub = document.createElement('div');
             labelSub.className = 'result-label-sub accent-text';
             labelSub.textContent = '運勢';
             outer.appendChild(labelSub);
 
-            // 5. メインメッセージ + 助言
             const msgArea = document.createElement('div');
             msgArea.className = 'result-main-message-area';
             
             const adviceBox = document.createElement('div');
             adviceBox.className = 'result-advice-box accent-border';
-            // 助言がundefinedにならないように対策
             const adviceText = data.desc || "心穏やかに過ごすべし。";
             adviceBox.innerHTML = `<span class="advice-label accent-text">助言</span> <span class="accent-text">${adviceText}</span>`;
             
@@ -2152,7 +2162,6 @@
             msgArea.appendChild(poemDiv);
             outer.appendChild(msgArea);
 
-            // 6. 詳細運勢リスト (縦書き)
             const detailGrid = document.createElement('div');
             detailGrid.className = 'result-details-grid accent-border';
             
@@ -2166,7 +2175,6 @@
             }
             outer.appendChild(detailGrid);
 
-            // 7. 開運・不運項目
             const luckyArea = document.createElement('div');
             luckyArea.className = 'lucky-area';
             
@@ -2196,7 +2204,6 @@
             luckyArea.appendChild(uBox);
             outer.appendChild(luckyArea);
 
-            // 8. フッター (日時・名前・QR)
             if (withFooter) {
                 const footer = document.createElement('div');
                 footer.className = 'result-footer-info accent-border';
@@ -2224,7 +2231,7 @@
 
                 setTimeout(() => {
                     new QRCode(qrTarget, {
-                        text: SITE_URL, // トップページへの固定リンク
+                        text: SITE_URL,
                         width: 60,
                         height: 60,
                         colorDark : "#000000",
@@ -2235,7 +2242,6 @@
             }
         }
 
-        // --- 履歴・おみくじの轍 ---
         async function loadHistory() {
             const list = document.getElementById('history-list');
             const container = document.getElementById('history-container');
@@ -2273,7 +2279,6 @@
             overlay.classList.add('hidden');
             viewMode.textContent = "全参拝者の記録 (全期間)";
             list.innerHTML = '<p class="text-center text-sm themed-text-sub">読み込み中...</p>';
-            // グラフ更新は別途呼び出し
 
             try {
                 const res = await fetch(`${API_BASE}/api/history/global?token=${encodeURIComponent(currentState.user.token)}`);
@@ -2299,7 +2304,6 @@
 
                         div.className = `${bgClass} p-3 rounded flex justify-between items-center border-l-4 ${borderColor} cursor-pointer hover:opacity-80 transition shadow-sm`;
                         
-                        // 修正: クリックで詳細ページ(結果画面)へ遷移
                         div.onclick = () => {
                             showResultDetail(false, item);
                             updateURL(item);
@@ -2328,81 +2332,6 @@
             }
         }
 
-        // --- グラフ表示 (Highcharts) ---
-        async function updateCharts(period) {
-            // Highchartsの設定
-            const categories = []; // 時間軸
-            const seriesTotal = []; // 累計発行本数
-            const seriesUsers = []; // ユーザー数
-            const seriesDraws = []; // 轍 (期間内の数)
-
-            // ダミーデータ生成 (本来はAPIから期間データを取得すべきだが、ここではモック生成)
-            // 実際の実装では /api/stats/history?period=1h などのエンドポイントが必要
-            const now = Date.now();
-            let points = 20;
-            let interval = 1000; // ms
-            let format = '%H:%M:%S';
-
-            if(period === '1s') { interval = 1000; points = 60; }
-            else if(period === '1m') { interval = 60000; points = 60; format = '%H:%M'; }
-            else if(period === '1h') { interval = 3600000; points = 48; format = '%m/%d %H:00'; }
-            else if(period === '1d') { interval = 86400000; points = 60; format = '%m/%d'; }
-
-            // サーバーからデータを取れないので、ランダムウォークでそれっぽいグラフを表示
-            // 基準値
-            let baseTotal = currentState.liveCount || 15000000;
-            let baseUsers = currentState.liveUsers || 50000;
-            
-            // 過去に遡ってデータ生成
-            let tempDataTotal = [];
-            let tempDataUsers = [];
-            
-            for(let i=0; i<points; i++) {
-                const t = now - (points - 1 - i) * interval;
-                categories.push(t);
-                
-                // 少しずつ減らして過去のデータを作る
-                baseTotal -= Math.floor(Math.random() * 10);
-                baseUsers -= (Math.random() > 0.8 ? 1 : 0); // たまに減る
-
-                tempDataTotal.unshift(baseTotal);
-                tempDataUsers.unshift(baseUsers);
-            }
-
-            Highcharts.chart('history-charts', {
-                chart: { type: 'line', backgroundColor: 'transparent' },
-                title: { text: '運勢推移グラフ', style: { color: 'var(--text-main)' } },
-                xAxis: { 
-                    type: 'datetime',
-                    labels: { format: format, style: { color: 'var(--text-sub)' } }
-                },
-                yAxis: { 
-                    title: { text: '件数', style: { color: 'var(--text-sub)' } },
-                    labels: { style: { color: 'var(--text-sub)' } }
-                },
-                series: [{
-                    name: '累計発行本数',
-                    data: tempDataTotal.map((v, i) => [categories[i], v]),
-                    color: '#b91c1c'
-                }, {
-                    name: '登録ユーザー数',
-                    data: tempDataUsers.map((v, i) => [categories[i], v]),
-                    color: '#1d4ed8'
-                }],
-                credits: { enabled: false },
-                legend: { itemStyle: { color: 'var(--text-main)' } }
-            });
-        }
-
-        // モーダル機能は使わなくなったので削除または無効化
-        function openHistoryDetail(index) {
-            // 廃止: 直接遷移するため
-        }
-        function closeHistoryDetail(e) {
-            if(e && e.target.id !== 'history-detail-modal' && e.target.tagName !== 'BUTTON') return;
-            document.getElementById('history-detail-modal').style.display = 'none';
-        }
-
         // --- シェア用画像生成 (UI崩れ修正版) ---
         function generateResultImage() {
             const status = document.getElementById('gen-img-status');
@@ -2413,13 +2342,11 @@
             container.innerHTML = '';
             container.classList.add('hidden');
             
-            // フォント読み込み完了を待つ
             document.fonts.ready.then(() => {
                 const originalScrollPos = window.scrollY;
 
-                // キャプチャ設定
                 html2canvas(target, { 
-                    scale: 3, // 高解像度化
+                    scale: 3, 
                     useCORS: true, 
                     allowTaint: true,
                     backgroundColor: null, 
@@ -2428,7 +2355,6 @@
                     onclone: (clonedDoc) => {
                         const clonedOuter = clonedDoc.getElementById('result-card-outer');
                         if (clonedOuter) {
-                            // 縦書きハック: CSSで強制的に指定し直す
                             const verticals = clonedOuter.querySelectorAll('.result-poem-vertical, .result-advice-box, .detail-column');
                             verticals.forEach(el => {
                                 el.style.letterSpacing = '0.1em'; 
@@ -2442,14 +2368,10 @@
                     }
                 }).then(canvas => {
                     status.textContent = "";
-                    
                     container.innerHTML = '<p class="text-green-600 font-bold mb-2">画像の生成完了</p>';
-                    
-                    // 生成された画像をBlob化して共有用に保持
                     canvas.toBlob(blob => {
                         currentState.lastImageBlob = blob;
                         const url = URL.createObjectURL(blob);
-                        
                         const img = document.createElement('img');
                         img.src = url;
                         img.className = "mx-auto rounded border w-32 mb-2 shadow-sm"; 
@@ -2463,9 +2385,7 @@
                         dlLink.innerHTML = '<i class="bi bi-download"></i> ダウンロード';
                         container.appendChild(dlLink);
                     }, 'image/png');
-
                     window.scrollTo(0, originalScrollPos);
-
                 }).catch(err => {
                     console.error(err);
                     status.textContent = "画像の生成に失敗しました。再試行してください。";
@@ -2475,19 +2395,15 @@
         }
 
         function getShareUrl() {
-            if(!currentState.lastResult) return SITE_URL;
-            // パラメータを含めると長くなりすぎるので、シェア用URLはシンプルにする
-            // または、短縮URLサービスを使うなどの工夫が必要だが、ここではトップページにする
-            return SITE_URL; 
+            return SITE_URL;
         }
 
-        // --- シェアアクション (Web Share API優先) ---
+        // --- シェアアクション ---
         async function shareToX() {
             if(!currentState.lastResult) return;
             const res = currentState.lastResult;
             const userName = res.username || "参拝者"; 
             
-            // Xの文字数制限 (280文字) に合わせて短縮
             const text = `⛩️ 運勢・天命乃杜 ⛩️
 ${userName}様の運勢：【 ${res.type} 】
 
@@ -2497,7 +2413,6 @@ ${userName}様の運勢：【 ${res.type} 】
 
 #天命乃杜 #おみくじ #運勢 ${SITE_URL}`;
 
-            // Web Share API (画像添付) トライ
             if (navigator.share && currentState.lastImageBlob) {
                 try {
                     const file = new File([currentState.lastImageBlob], "omikuji.png", { type: "image/png" });
@@ -2506,14 +2421,13 @@ ${userName}様の運勢：【 ${res.type} 】
                             text: text,
                             files: [file]
                         });
-                        return; // 成功したら終了
+                        return;
                     }
                 } catch (e) {
                     console.log("Web Share API failed, falling back to Intent", e);
                 }
             }
 
-            // フォールバック: Twitter Intent
             const intent = `https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}`;
             window.open(intent, '_blank');
         }
@@ -2529,7 +2443,6 @@ ${userName}様の運勢：【 ${res.type} 】
             const res = currentState.lastResult;
             const text = `${res.username}の運勢：${res.type}\n${url}`;
             
-            // LINEもWeb Share APIを試みる
              if (navigator.share && currentState.lastImageBlob) {
                 try {
                     const file = new File([currentState.lastImageBlob], "omikuji.png", { type: "image/png" });
@@ -2592,7 +2505,6 @@ ${userName}様の運勢：【 ${res.type} 】
             
             showLoading(true);
             try {
-                // DELETEメソッドではなくPOSTメソッドで統一 (Worker側の実装依存)
                 const res = await fetch(`${API_BASE}/api/user/delete`, {
                     method: 'POST',
                     headers: {'Content-Type': 'application/json'},
@@ -2615,7 +2527,7 @@ ${userName}様の運勢：【 ${res.type} 】
             finally { showLoading(false); }
         }
 
-        // --- 認証系 (新: 選択 -> 入力 -> 認証) ---
+        // --- 認証系 ---
         function startAuthFlow(mode) {
             document.getElementById('auth-selection').classList.add('hidden');
             document.getElementById('auth-step-1').classList.remove('hidden');
@@ -2651,7 +2563,6 @@ ${userName}様の運勢：【 ${res.type} 】
             if(!email || !pass) return alert("メールアドレスとパスワードを入力してください");
             if(mode === 'register' && !username) return alert("ユーザー名を入力してください");
 
-            // 擬似的にコード送信APIを叩く
             showLoading(true);
             try {
                 const res = await fetch(`${API_BASE}/api/auth/send`, { 
@@ -2662,10 +2573,8 @@ ${userName}様の運勢：【 ${res.type} 】
                 const data = await res.json();
                 
                 if(res.ok && data.success) {
-                    // ステップ2へ遷移
                     document.getElementById('auth-step-1').classList.add('hidden');
                     document.getElementById('auth-step-2').classList.remove('hidden');
-                    // コード入力欄をクリアしてフォーカス (最初の枠)
                     const firstInput = document.querySelector('.auth-code-digit');
                     if(firstInput) firstInput.focus();
                 } else {
@@ -2681,7 +2590,6 @@ ${userName}様の運勢：【 ${res.type} 】
         }
 
         async function finalizeAuth() {
-            // 6つの入力欄からコードを結合
             const inputs = document.querySelectorAll('.auth-code-digit');
             let code = "";
             inputs.forEach(input => code += input.value);
@@ -2720,9 +2628,8 @@ ${userName}様の運勢：【 ${res.type} 】
             localStorage.setItem('omikuji_user', JSON.stringify(user));
             updateAuthUI();
             loadFavorites(); 
-            loadLabSettings(); // 設定読み込み
+            loadLabSettings(); 
             
-            // Lab画面のロック状態を即座に更新するためにView再描画
             if(currentState.view === 'lab') {
                 showView('lab');
             }
@@ -2750,24 +2657,17 @@ ${userName}様の運勢：【 ${res.type} 】
             location.reload();
         }
 
-        // 12星座ロジック (被りなし48通り)
+        // 12星座ロジック
         function generateDailyRanking(dateStr) {
             let combinations = [];
             zodiacSigns.forEach(sign => { bloodTypes.forEach(blood => { combinations.push({ sign, blood }); }); });
             
-            // 48通りのユニークなアイテム、色、場所、人などを生成する必要がある
-            // リストが足りないので、組み合わせで生成するか、リストをループさせる
-            // ここでは簡易的にシャッフルして割り当てる
             const rng = new SeededRandom(dateStr);
-            
-            // 重複しないようにシャッフルリストを作成
             let shuffledItems = [];
             let shuffledColors = [];
-            // 十分な数を確保するためにループで埋める
             while(shuffledItems.length < combinations.length) shuffledItems = shuffledItems.concat(zodiacItemsList);
             while(shuffledColors.length < combinations.length) shuffledColors = shuffledColors.concat(zodiacColorsList);
             
-            // シード付きランダムでシャッフル
             for (let i = shuffledItems.length - 1; i > 0; i--) {
                 const j = Math.floor(rng.next() * (i + 1));
                 [shuffledItems[i], shuffledItems[j]] = [shuffledItems[j], shuffledItems[i]];
@@ -2799,8 +2699,8 @@ ${userName}様の運勢：【 ${res.type} 】
                     money: { score: moneyScore, desc: moneyShorts[Math.floor(rng.next() * moneyShorts.length)] },
                     work: { score: workScore, desc: workShorts[Math.floor(rng.next() * workShorts.length)] },
                     luckyNum: Math.floor(rng.next() * 9) + 1,
-                    item: shuffledItems[index], // 重複なしリストから割り当て
-                    color: shuffledColors[index], // 重複なしリストから割り当て
+                    item: shuffledItems[index], 
+                    color: shuffledColors[index], 
                     longDesc: longDesc
                 };
             });
