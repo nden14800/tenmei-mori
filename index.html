@@ -628,15 +628,16 @@
         .article-content h3 { font-size: 1.4rem; font-weight: bold; margin: 30px 0 15px; border-left: 4px solid var(--accent-red); padding-left: 10px; }
         .article-content p { margin-bottom: 20px; }
 
-        /* TENMEI Labs (新スタイル) */
+        /* --- Labs (TENMEI Labs) のスタイル修正 --- */
         #view-lab {
             background: linear-gradient(135deg, rgba(230,240,255,0.5) 0%, rgba(255,240,245,0.5) 50%, rgba(255,250,230,0.5) 100%);
             border-radius: 20px;
             padding: 30px;
             min-height: 80vh;
         }
+        /* ダークモード時の背景を暗く */
         .dark #view-lab {
-            background: linear-gradient(135deg, rgba(30,40,60,0.5) 0%, rgba(50,30,40,0.5) 50%, rgba(50,50,30,0.5) 100%);
+            background: linear-gradient(135deg, rgba(20,20,30,0.8) 0%, rgba(30,20,25,0.8) 50%, rgba(30,30,20,0.8) 100%);
         }
 
         .lab-card {
@@ -650,112 +651,69 @@
             box-shadow: 0 4px 15px rgba(0,0,0,0.05);
             transition: transform 0.2s, box-shadow 0.2s;
         }
+        /* 【修正】ダークモード時のカード背景を修正 */
         .dark .lab-card {
-            background-color: rgba(40, 40, 40, 0.7);
+            background-color: rgba(30, 30, 30, 0.6); /* より暗く透明に */
             border: 1px solid rgba(255,255,255,0.1);
+            color: #e0e0e0;
+        }
+        .dark .lab-card h3 {
+            color: #fff;
         }
         .lab-card:hover {
             transform: translateY(-2px);
             box-shadow: 0 8px 20px rgba(0,0,0,0.1);
         }
 
-        .toggle-switch {
-            position: relative;
-            display: inline-block;
-            width: 50px;
-            height: 24px;
-        }
-        .toggle-switch input { opacity: 0; width: 0; height: 0; }
-        .slider {
-            position: absolute; cursor: pointer;
-            top: 0; left: 0; right: 0; bottom: 0;
-            background-color: #ccc;
-            transition: .4s;
-            border-radius: 34px;
-        }
-        .slider:before {
-            position: absolute; content: "";
-            height: 16px; width: 16px;
-            left: 4px; bottom: 4px;
-            background-color: white;
-            transition: .4s;
-            border-radius: 50%;
-        }
-        input:checked + .slider { background-color: #6366f1; } /* インディゴ系に変更 */
-        input:checked + .slider:before { transform: translateX(26px); }
-
-        /* Labアイコンのアニメーション定義 (カスタムSVG) */
+        /* --- フラスコアニメーション強化 --- */
         .lab-icon-svg {
             width: 30px;
             height: 30px;
             display: inline-block;
         }
-        .flask-gradient-def {
-            --flask-color-start: #4facfe;
-            --flask-color-end: #00f2fe;
-        }
-        .dark .flask-gradient-def {
-            --flask-color-start: #8e2de2;
-            --flask-color-end: #4a00e0;
-        }
+        /* グラデーション定義はSVGタグ内で行う */
         
         .flask-liquid-path {
-            fill: url(#flaskLiquidGradient);
+            /* グラデーションはSVG定義参照 */
             animation: liquidWave 2s infinite ease-in-out;
             transform-origin: 50% 100%;
         }
         .flask-body-path {
             stroke: currentColor;
-            stroke-width: 2.5;
+            stroke-width: 2;
             fill: none;
             stroke-linecap: round; 
             stroke-linejoin: round;
         }
         .flask-bubble {
-            fill: rgba(255,255,255,0.6);
-            animation: bubbleRise 3s infinite ease-in;
+            fill: rgba(255,255,255,0.8);
+            animation: bubbleRise 2.5s infinite ease-in;
         }
+        /* 【修正】揺れを大きく */
         .flask-group {
-            animation: flaskShake 3s infinite ease-in-out; /* 揺れを強く、速く */
-            transform-origin: 50% 80%;
+            animation: flaskShake 3s infinite ease-in-out;
+            transform-origin: 50% 70%; /* 揺れの中心を調整 */
         }
         
-        /* タイトル上の大きいアニメーションフラスコ */
-        .title-flask-anim {
-            width: 140px;
-            height: 140px;
-            margin: 0 auto 10px;
-        }
-        .title-flask-anim .flask-body-path {
-            stroke: var(--text-main);
-            stroke-width: 2;
-        }
-
-        /* サイドバー用の小さいアニメーションフラスコ */
-        .nav-btn .lab-icon-svg {
-             width: 32px;
-             height: 32px;
-             margin: 0;
-        }
-        
+        /* アニメーション定義 */
         @keyframes liquidWave {
             0%, 100% { transform: scaleY(1) translateY(0) skewX(0deg); }
-            25% { transform: scaleY(1.05) translateY(-2px) skewX(2deg); }
-            50% { transform: scaleY(1.1) translateY(-3px) skewX(0deg); }
-            75% { transform: scaleY(1.05) translateY(-2px) skewX(-2deg); }
+            25% { transform: scaleY(1.05) translateY(-1px) skewX(3deg); }
+            50% { transform: scaleY(1.1) translateY(-2px) skewX(0deg); }
+            75% { transform: scaleY(1.05) translateY(-1px) skewX(-3deg); }
         }
         @keyframes flaskShake {
             0%, 100% { transform: rotate(0deg); }
-            15% { transform: rotate(12deg); }
-            30% { transform: rotate(-10deg); }
-            45% { transform: rotate(8deg); }
-            60% { transform: rotate(-6deg); }
-            75% { transform: rotate(3deg); }
+            15% { transform: rotate(15deg); } /* 角度増加 */
+            30% { transform: rotate(-12deg); }
+            45% { transform: rotate(10deg); }
+            60% { transform: rotate(-8deg); }
+            75% { transform: rotate(4deg); }
         }
         @keyframes bubbleRise {
             0% { transform: translateY(0) scale(0.5); opacity: 0; }
-            20% { opacity: 1; }
-            100% { transform: translateY(-40px) scale(1.2); opacity: 0; }
+            50% { opacity: 1; }
+            100% { transform: translateY(-35px) scale(1.1); opacity: 0; }
         }
 
         /* 認証コード入力欄（和風） */
