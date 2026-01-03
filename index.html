@@ -50,7 +50,7 @@
                 --glass-border: rgba(255, 255, 255, 0.1);
                 --sidebar-bg: rgba(30, 30, 30, 0.95);
                 --input-bg: #333333;
-                --omi-paper: #fffcf2; /* 札の色はあえて紙色を維持 */
+                --omi-paper: #fffcf2; 
             }
         }
 
@@ -173,6 +173,31 @@
             transform: none;
         }
 
+        /* --- ローディングスピナー --- */
+        #loading-overlay {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.6); /* 少し暗く */
+            z-index: 9999;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            backdrop-filter: blur(2px);
+        }
+        .spinner {
+            width: 50px;
+            height: 50px;
+            border: 4px solid rgba(255, 255, 255, 0.3);
+            border-top: 4px solid var(--accent-red); /* 回転部分だけ色付け */
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            box-shadow: 0 0 15px rgba(0,0,0,0.2);
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
         /* --- ホーム画面 --- */
         .home-circle-container {
             width: 300px;
@@ -210,7 +235,6 @@
         .omikuji-pool {
             position: relative;
             width: 100%;
-            /* スクロール可能にするために高さを確保し overflow-y: visible */
             min-height: 100vh;
             overflow-y: visible;
             perspective: 1000px;
@@ -267,38 +291,40 @@
             margin: 0 auto;
             position: relative;
         }
+        /* 新デザイン：Omikuji-do風 */
         .result-card-outer {
             width: 600px;
-            min-height: 1050px;
-            background-color: #b91c1c;
-            padding: 20px;
+            min-height: 1100px;
+            background-color: #b91c1c; /* ベースの赤 */
+            padding: 40px;
             box-sizing: border-box;
             display: flex;
             flex-direction: column;
             align-items: center;
             position: relative;
+            color: white;
         }
-        .result-top-title {
-            color: #fff;
-            font-size: 1.8rem;
-            font-weight: bold;
+        .result-title-name {
             font-family: 'Zen Old Mincho', serif;
-            margin-bottom: 15px;
+            font-size: 1.5rem;
+            margin-bottom: 5px;
             letter-spacing: 0.1em;
-            text-shadow: 0 2px 4px rgba(0,0,0,0.2);
+            text-align: center;
         }
-        .result-qr-box {
-            background: #fff;
-            padding: 10px;
-            border-radius: 8px;
-            margin-bottom: 20px;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+        .result-subtitle {
+            font-family: sans-serif;
+            font-size: 0.7rem;
+            letter-spacing: 0.2em;
+            opacity: 0.8;
+            margin-bottom: 30px;
+            text-align: center;
         }
+
         .result-card-paper {
             width: 100%;
-            flex: 1;
-            background-color: var(--omi-paper);
-            border: 6px double #b91c1c;
+            /* 白い紙部分 */
+            background-color: #fffcf2; 
+            border: 4px double #b91c1c;
             padding: 40px 30px;
             box-sizing: border-box;
             display: flex;
@@ -307,19 +333,28 @@
             font-family: 'Shippori Mincho', serif;
             color: #b91c1c;
             position: relative;
-            box-shadow: 0 0 15px rgba(0,0,0,0.1);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+        }
+
+        /* 大吉：金でザラザラ */
+        .is-daikichi .result-card-outer {
+            background-color: #b91c1c; 
         }
         .is-daikichi .result-card-paper {
             background-color: #d4af37;
-            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='0.2'/%3E%3C/svg%3E");
+            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='0.3'/%3E%3C/svg%3E");
             color: #b91c1c;
             border-color: #b91c1c;
         }
         .is-daikichi .result-circle {
             background-color: #fff !important;
-            border-color: #b91c1c !important;
+            border: 3px solid #b91c1c !important;
         }
-        .is-daikyo .result-card-outer { background-color: #000; }
+
+        /* 大凶：黒 */
+        .is-daikyo .result-card-outer {
+            background-color: #000000;
+        }
         .is-daikyo .result-card-paper {
             background-color: #1a1a1a;
             color: #e0e0e0;
@@ -330,35 +365,59 @@
             background-color: #000 !important;
             color: #fff !important;
         }
-        .is-daikyo .result-shrine-logo, .is-daikyo .detail-title { color: #fff !important; border-color: #fff !important; }
         
         .result-header {
-            width: 100%; display: flex; justify-content: space-between; align-items: center;
-            border-bottom: 2px solid currentColor; padding-bottom: 15px; margin-bottom: 25px;
+            width: 100%; display: flex; justify-content: center; align-items: center; gap: 10px;
+            border-bottom: 1px solid currentColor; padding-bottom: 20px; margin-bottom: 20px;
         }
-        .result-shrine-logo { font-size: 1.8rem; font-weight: 900; display: flex; align-items: center; gap: 10px; }
-        .result-num { font-size: 1.1rem; font-weight: bold; letter-spacing: 0.1em; }
+        .result-shrine-logo { font-size: 2rem; font-weight: 900; display: flex; align-items: center; gap: 8px; }
+        .result-num { font-size: 1rem; margin-top: 10px; font-weight: bold; text-align: center; }
+        
         .result-circle {
-            width: 160px; height: 160px; border-radius: 50%; border: 5px solid currentColor;
+            width: 140px; height: 140px; border-radius: 50%; border: 2px solid currentColor;
             display: flex; flex-direction: column; align-items: center; justify-content: center;
-            margin: 10px 0 40px 0; background-color: #fff;
+            margin: 20px 0 40px 0; background-color: #fff; color: #b91c1c;
         }
-        .result-label { font-size: 1rem; margin-bottom: 5px; font-weight: bold; }
-        .result-kanji { font-size: 5rem; font-weight: 900; line-height: 1; }
-        .result-body { display: flex; flex-direction: row-reverse; width: 100%; flex: 1; justify-content: space-between; gap: 25px; }
-        .result-poem-col {
-            writing-mode: vertical-rl; text-orientation: upright; font-size: 1.5rem;
-            font-weight: bold; line-height: 1.8; letter-spacing: 0.15em; padding-left: 20px;
-            border-left: 2px solid currentColor; min-height: 400px;
+        .result-label { font-size: 0.9rem; margin-bottom: 0px; font-weight: bold; }
+        .result-kanji { font-size: 4.5rem; font-weight: 900; line-height: 1; }
+
+        .result-body { display: flex; flex-direction: row-reverse; width: 100%; flex: 1; justify-content: space-between; gap: 30px; }
+        
+        /* 助言（縦書き詩） */
+        .result-poem-box {
+            border: 1px solid currentColor;
+            padding: 15px 10px;
+            writing-mode: vertical-rl;
+            text-orientation: upright;
+            min-height: 300px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
-        .result-details-col { flex: 1; display: flex; flex-direction: column; gap: 12px; justify-content: center; }
-        .detail-row { display: flex; align-items: center; border-bottom: 1px dashed currentColor; padding-bottom: 6px; font-size: 1.1rem; }
-        .detail-title {
-            font-weight: 900; min-width: 60px; text-align: center; border: 2px solid currentColor;
-            border-radius: 20px; padding: 3px 8px; margin-right: 12px; font-size: 0.9rem; white-space: nowrap;
+        .result-poem-title { font-size: 0.8rem; border-bottom: 1px solid currentColor; padding-bottom: 5px; margin-left: 10px; }
+        .result-poem-content { font-size: 1.3rem; font-weight: bold; letter-spacing: 0.2em; line-height: 1.8; }
+
+        .result-details-col { flex: 1; display: flex; flex-direction: column; gap: 8px; justify-content: flex-start; writing-mode: vertical-rl; height: 450px; flex-wrap: wrap; align-content: flex-end; }
+        .detail-row { font-size: 0.95rem; margin-left: 10px; padding: 5px 0; border-left: 1px dashed currentColor; padding-left: 5px; height: 100%; max-height: 450px; display: flex; flex-direction: column; }
+        .detail-title { font-weight: 900; margin-bottom: 8px; font-size: 0.9rem; color: currentColor; }
+        .detail-content { font-weight: 500; }
+
+        .result-qr-box {
+            background: #fff;
+            padding: 8px;
+            border-radius: 4px;
+            margin-top: 30px;
+            margin-bottom: 10px;
         }
-        .detail-content { font-weight: 600; }
-        .result-footer { margin-top: auto; width: 100%; text-align: center; padding-top: 30px; font-size: 0.9rem; font-weight: bold; letter-spacing: 0.1em; opacity: 0.8; word-break: break-all; }
+        .result-footer-link { font-size: 0.8rem; margin-top: 5px; font-family: sans-serif; letter-spacing: 0.05em; }
+        .result-date {
+            margin-top: 20px;
+            font-size: 0.9rem;
+            border-top: 1px solid currentColor;
+            padding-top: 10px;
+            width: 100%;
+            text-align: right;
+        }
 
         /* シェア画面 */
         #generated-image-container img { max-width: 100%; box-shadow: 0 10px 25px rgba(0,0,0,0.3); border-radius: 8px; }
@@ -436,21 +495,32 @@
         }
 
         /* 詳細モーダル */
-        #history-detail-modal {
+        #history-detail-modal, #profile-modal {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background: rgba(0,0,0,0.8); z-index: 2000;
             display: none; align-items: center; justify-content: center;
             overflow-y: auto;
         }
-        #history-detail-content {
+        #history-detail-content, #profile-content {
             background: transparent;
             width: 100%; max-width: 600px; margin: 20px;
             position: relative;
+        }
+        #profile-content {
+            background: var(--card-bg);
+            padding: 30px;
+            border-radius: 12px;
+            max-width: 500px;
         }
 
     </style>
 </head>
 <body>
+
+    <!-- ローディングオーバーレイ -->
+    <div id="loading-overlay">
+        <div class="spinner"></div>
+    </div>
 
     <!-- サイドバー -->
     <nav id="sidebar">
@@ -498,7 +568,7 @@
         <section id="view-home" class="view-section active text-center max-w-4xl mx-auto">
             <h1 class="text-4xl font-black mb-2 tracking-widest" style="font-family: 'Zen Old Mincho'">運勢・天命乃杜</h1>
             <p class="text-sm font-serif mb-4 tracking-widest uppercase">FORTUNE TENMEI-NO-MORI</p>
-            <p class="text-lg font-serif mb-8 themed-text-sub">かみさまからの道標  無料神籤<br>禍を転じて福となす</p>
+            <p class="text-lg font-serif mb-8 themed-text-sub">天命を知る道標  無料神籤<br>困難を乗り越え福となす</p>
 
             <div class="home-circle-container" id="home-anim-container">
                 <!-- JSで紙を生成 -->
@@ -520,7 +590,7 @@
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mt-12 text-left">
                 <!-- 轍 (統計) -->
                 <div class="themed-card p-6 rounded-xl shadow-sm">
-                    <h3 class="font-bold text-lg mb-2 border-b border-gray-300 dark:border-gray-600 pb-2"><i class="bi bi-balloon-heart text-red-500"></i> おみくじの轍</h3>
+                    <h3 class="font-bold text-lg mb-2 border-b border-gray-300 dark:border-gray-600 pb-2"><i class="bi bi-balloon-heart text-red-500"></i> おみくじの轍 (統計)</h3>
                     <div class="text-xs text-right mb-2 themed-text-sub">更新: <span id="stats-update-time">--:--:--</span></div>
                     <div class="space-y-3 mb-4 text-sm" id="home-history-stats">
                          <div class="flex justify-between"><span>大吉</span><span><span id="cnt-daikichi" class="mr-2 font-mono">0</span><span id="stat-daikichi">0.00%</span></span></div>
@@ -591,17 +661,13 @@
         <!-- ビュー: おみくじ結果 -->
         <section id="view-result" class="view-section text-center">
             <div id="result-display-area" class="py-10">
-                <h2 class="text-2xl font-bold mb-8 text-red-700">おみくじの結果</h2>
                 
                 <div style="display: flex; justify-content: center; overflow: hidden;">
                     <div id="result-capture-container">
                         <div class="result-card-outer" id="result-card-outer">
-                            <div class="result-top-title">運勢・天命乃杜</div>
+                            <div class="result-title-name" id="result-title-name"></div>
+                            <div class="result-subtitle">KNOTTING THE FORTUNE</div>
                             
-                            <div class="result-qr-box">
-                                <div id="qrcode"></div>
-                            </div>
-
                             <div class="result-card-paper" id="result-card-paper">
                                 <!-- ヘッダー -->
                                 <div class="result-header">
@@ -620,8 +686,9 @@
                                 <!-- 本文 -->
                                 <div class="result-body">
                                     <!-- 詩 (右) -->
-                                    <div class="result-poem-col" id="result-poem">
-                                        枯れ果てし 枝に再び 花咲くが如し
+                                    <div class="result-poem-box">
+                                        <div class="result-poem-content" id="result-poem"></div>
+                                        <div class="result-poem-title">助言</div>
                                     </div>
                                     <!-- 詳細 (左) -->
                                     <div class="result-details-col" id="result-details">
@@ -629,10 +696,12 @@
                                     </div>
                                 </div>
 
-                                <!-- フッター -->
-                                <div class="result-footer">
-                                    fortune-telling-at-tenmei-no-mori-authentic-today-s-fortun.pages.dev
+                                <!-- フッター (QR) -->
+                                <div class="result-qr-box">
+                                    <div id="qrcode"></div>
                                 </div>
+                                <div class="result-footer-link">fortune-telling-at-tenmei-no-mori.pages.dev</div>
+                                <div class="result-date" id="result-date">2026/01/01 12:00</div>
                             </div>
                         </div>
                     </div>
@@ -650,7 +719,7 @@
 
                     <div class="flex flex-col gap-3 mt-4">
                         <button onclick="shareToX()" class="bg-black text-white py-3 rounded-lg font-bold flex items-center justify-center gap-2 hover:opacity-80">
-                            <i class="bi bi-twitter-x"></i> Xでシェア (画像を保存して添付)
+                            <i class="bi bi-twitter-x"></i> Xでシェア (手動で保存して添付)
                         </button>
                         <button onclick="shareToFB()" class="bg-blue-600 text-white py-3 rounded-lg font-bold flex items-center justify-center gap-2 hover:opacity-80">
                             <i class="bi bi-facebook"></i> Facebookでシェア
@@ -767,7 +836,10 @@
             </div>
 
             <div id="auth-user-info" class="hidden text-center mt-6">
-                <p class="text-lg mb-4">ようこそ、<span id="user-display-name" class="font-bold"></span> 様</p>
+                <div class="mb-4">
+                    <p class="text-lg">ようこそ、<span id="user-display-name" class="font-bold cursor-pointer hover:underline" onclick="openProfileModal()"></span> 様</p>
+                    <button onclick="openProfileModal()" class="text-sm bg-gray-200 dark:bg-gray-700 px-3 py-1 rounded mt-2"><i class="bi bi-gear-fill"></i> プロフィール設定</button>
+                </div>
                 <button onclick="logout()" class="text-red-500 underline text-sm">ログアウト</button>
             </div>
         </section>
@@ -777,15 +849,25 @@
             <h2 class="text-3xl font-bold mb-6 text-center text-red-800 dark:text-red-400">おみくじの轍</h2>
             
             <div class="text-center mb-6">
-                <p class="text-sm themed-text-sub">ログインすると、他の参拝者様の結び（履歴）も閲覧できます。</p>
+                <p class="text-sm themed-text-sub">ログインすると、ご自身の軌跡と、杜を訪れた参拝者様の軌跡を閲覧できます。</p>
             </div>
 
             <!-- 履歴コンテナ (ぼかし対象) -->
             <div id="history-container" class="">
                 <div class="themed-card p-6 rounded shadow mb-6">
                     <div class="flex justify-between items-center border-b border-gray-300 dark:border-gray-600 pb-2 mb-4">
-                        <h3 class="font-bold">結び履歴一覧</h3>
+                        <h3 class="font-bold">軌跡一覧</h3>
                         <div class="text-xs text-gray-500" id="history-view-mode"></div>
+                    </div>
+                    <div id="history-summary" class="flex gap-4 mb-4 text-sm hidden">
+                        <div class="bg-red-50 dark:bg-red-900/20 p-2 rounded flex-1 text-center border border-red-200">
+                            <div class="font-bold text-red-700 dark:text-red-400">あなたの結び</div>
+                            <div class="font-mono text-xl" id="my-history-count">0</div>
+                        </div>
+                        <div class="bg-gray-50 dark:bg-gray-800 p-2 rounded flex-1 text-center border border-gray-200">
+                            <div class="font-bold text-gray-700 dark:text-gray-400">みんなの結び</div>
+                            <div class="font-mono text-xl" id="global-history-count">0</div>
+                        </div>
                     </div>
                     <div id="history-list" class="space-y-3">
                         <!-- JSで挿入 -->
@@ -797,7 +879,7 @@
             <div id="history-login-overlay" class="history-overlay hidden">
                 <i class="bi bi-lock-fill text-4xl text-gray-400 mb-4 block"></i>
                 <p class="text-lg font-bold mb-2">轍を見るには会員証が必要です</p>
-                <p class="text-sm themed-text-sub mb-4">ログインすると、ご自身の過去の履歴に加え、他の参拝者様の結果も閲覧できるようになります。</p>
+                <p class="text-sm themed-text-sub mb-4">ログインすると、過去の結果を振り返ることができます。</p>
                 <button onclick="showView('auth')" class="btn-primary">ログイン / 登録</button>
             </div>
         </section>
@@ -899,8 +981,8 @@
         <!-- ビュー: 記事詳細 -->
         <section id="view-article-detail" class="view-section">
             <div class="max-w-3xl mx-auto mb-4">
-                <button onclick="history.back()" class="text-sm themed-text-sub hover:text-red-500">
-                    <i class="bi bi-arrow-left"></i> 戻る
+                <button onclick="backToArticleList()" class="text-sm themed-text-sub hover:text-red-500 flex items-center gap-1">
+                    <i class="bi bi-arrow-left"></i> 一覧に戻る
                 </button>
             </div>
             <div id="article-detail-content" class="article-container themed-card">
@@ -1049,6 +1131,34 @@
         </button>
     </div>
 
+    <!-- プロフィール設定モーダル -->
+    <div id="profile-modal" onclick="closeProfileModal(event)">
+        <div id="profile-content" onclick="event.stopPropagation()">
+            <h2 class="text-xl font-bold mb-4">プロフィール設定</h2>
+            
+            <div class="mb-6">
+                <h3 class="font-bold text-sm mb-2 border-b pb-1">ユーザー名変更</h3>
+                <input type="text" id="update-username" placeholder="新しいユーザー名" class="w-full p-2 border rounded mb-2 themed-input">
+                <button onclick="updateProfile('username')" class="btn-primary py-1 px-4 text-sm w-full">変更</button>
+            </div>
+
+            <div class="mb-6">
+                <h3 class="font-bold text-sm mb-2 border-b pb-1">パスワード変更</h3>
+                <input type="password" id="update-pass-old" placeholder="現在のパスワード" class="w-full p-2 border rounded mb-2 themed-input">
+                <input type="password" id="update-pass-new" placeholder="新しいパスワード" class="w-full p-2 border rounded mb-2 themed-input">
+                <button onclick="updateProfile('password')" class="btn-primary py-1 px-4 text-sm w-full">変更</button>
+            </div>
+
+            <div class="mt-8 border-t pt-4">
+                <button onclick="deleteAccount()" class="text-red-500 text-xs underline hover:text-red-700">アカウントを削除する</button>
+                <p class="text-[10px] text-gray-500 mt-1">※削除後も同じメールアドレスで再登録可能です。</p>
+            </div>
+        </div>
+        <button onclick="closeProfileModal(null)" class="fixed top-5 right-5 text-white text-4xl hover:text-gray-300 z-[2100]">
+            <i class="bi bi-x-circle"></i>
+        </button>
+    </div>
+
     <!-- JavaScript ロジック -->
     <script>
         // ==========================================
@@ -1056,7 +1166,7 @@
         // ==========================================
         const API_BASE = "https://aaaaa.nden14800.workers.dev";
         
-        // サイトのベースURL (修正済み)
+        // サイトのベースURL
         const SITE_URL = "https://fortune-telling-at-tenmei-no-mori-authentic-today-s-fortun.pages.dev";
 
         // --- 状態管理 ---
@@ -1064,7 +1174,8 @@
             view: 'home',
             user: null, // { email, username, token }
             lastResult: null,
-            liveCount: 0 // 初期値は0（APIから取得）
+            liveCount: 0,
+            prevArticleView: null // 記事詳細からの戻り先
         };
 
         let favoriteList = [];
@@ -1073,6 +1184,7 @@
 
         // --- イニシャライズ ---
         window.onload = function() {
+            showLoading(true);
             initHomeAnimation();
             initZodiacSystem();
             
@@ -1086,13 +1198,25 @@
             }
             updateAuthUI();
 
-            startLiveCounter();
-            fetchHistoryStats(); // APIから統計を取得
-            setInterval(fetchHistoryStats, 5000); // 5秒毎に統計更新
+            // 統計とカウンター取得
+            fetchCount();
+            fetchHistoryStats();
+            setInterval(fetchHistoryStats, 5000); 
+            setInterval(fetchCount, 5000);
             
             // お気に入りの読み込み
             loadFavorites();
+            showLoading(false);
         };
+
+        function showLoading(show) {
+            const overlay = document.getElementById('loading-overlay');
+            if(show) {
+                overlay.style.display = 'flex';
+            } else {
+                overlay.style.display = 'none';
+            }
+        }
 
         function showView(viewId) {
             document.querySelectorAll('.view-section').forEach(el => {
@@ -1106,6 +1230,11 @@
             target.style.display = 'block';
             void target.offsetWidth; 
             target.classList.add('active');
+            
+            // 記事詳細の戻り先管理
+            if (viewId === 'news' || viewId === 'column') {
+                currentState.prevArticleView = viewId;
+            }
             currentState.view = viewId;
 
             if(viewId === 'draw') {
@@ -1113,6 +1242,14 @@
             }
             if(viewId === 'history') {
                 loadHistory();
+            }
+        }
+
+        function backToArticleList() {
+            if (currentState.prevArticleView) {
+                showView(currentState.prevArticleView);
+            } else {
+                showView('home');
             }
         }
 
@@ -1132,30 +1269,25 @@
         }
 
         // --- ライブカウンター (API連携) ---
-        function startLiveCounter() {
-            const el = document.getElementById('live-counter');
-            const timeEl = document.getElementById('counter-time');
-            
-            // 初回実行
-            fetchCount();
-
-            // 定期実行
-            setInterval(fetchCount, 5000); // 5秒間隔
-
-            async function fetchCount() {
-                const now = new Date();
-                timeEl.textContent = now.toLocaleTimeString();
-                try {
-                    const res = await fetch(`${API_BASE}/api/counter`);
-                    if(res.ok) {
-                        const data = await res.json();
-                        currentState.liveCount = data.count;
-                        el.textContent = currentState.liveCount.toLocaleString() + "本";
-                    }
-                } catch(e) {
-                    console.error("Counter fetch error", e);
+        async function fetchCount() {
+            try {
+                const res = await fetch(`${API_BASE}/api/counter`);
+                if(res.ok) {
+                    const data = await res.json();
+                    // ログインしてない場合は表示だけ、してれば値はAPI由来
+                    currentState.liveCount = data.count || 0;
+                    document.getElementById('live-counter').textContent = currentState.liveCount.toLocaleString() + "本";
+                    
+                    const now = new Date();
+                    document.getElementById('counter-time').textContent = now.toLocaleTimeString();
                 }
+            } catch(e) {
+                console.error("Counter fetch error", e);
             }
+        }
+
+        function startOmikuji() {
+            showView('draw');
         }
 
         // --- 統計情報の取得と表示 (API連携) ---
@@ -1190,10 +1322,6 @@
         }
 
         // --- おみくじロジック ---
-        function startOmikuji() {
-            showView('draw');
-        }
-
         function resetOmikujiPool() {
             const pool = document.getElementById('omikuji-pool');
             pool.innerHTML = '';
@@ -1240,7 +1368,7 @@
             }
         }
 
-        // 12段階の順位に対応したデータ
+        // 12段階の順位に対応したデータ (おみくじ堂準拠)
         const omikujiResults = [
             { type: "大吉", poem: "枯れ果てし 枝に再び 花咲くが如し", desc: "最高の運気です。長年の努力が報われ、枯れ木に花が咲くような喜びが訪れるでしょう。しかし慢心は禁物。感謝の心を忘れずに。", rankCode: 'daikichi' },
             { type: "中吉", poem: "照る月を 雲が隠せど 風払うなり", desc: "一時的な迷いがあっても、すぐに晴れ間が見えます。自分の信念を貫くことで、雲を払う風のような助けが現れるはずです。", rankCode: 'chukichi' },
@@ -1277,16 +1405,17 @@
         }
 
         async function showResultDetail(isNewDraw, dataOverride = null) {
+            showLoading(true);
             let resultData;
             let randNum;
-            let detailsList = []; // 詳細情報
+            let detailsList = []; 
+            let drawDateStr;
 
             if (isNewDraw) {
                 // 新規抽選
                 resultData = omikujiResults[Math.floor(Math.random() * omikujiResults.length)];
                 randNum = Math.floor(Math.random() * 100) + 1;
                 
-                // 詳細項目の生成
                 const cats = ['願望','待人','失物','旅行','商売','学問','恋愛','転居','病気'];
                 const vals = ['叶う','来る','出る','吉','良','励め','実る','良し','治る','遅れる','来ず','出難い','控','耐','危','悪'];
                 
@@ -1295,15 +1424,18 @@
                     content: vals[Math.floor(Math.random() * vals.length)]
                 }));
                 
-                // 履歴用に保存データを作成
+                const now = new Date();
+                drawDateStr = `${now.getFullYear()}/${now.getMonth()+1}/${now.getDate()} ${now.getHours()}:${String(now.getMinutes()).padStart(2, '0')}`;
+
                 currentState.lastResult = { 
                     ...resultData, 
                     num: randNum, 
-                    timestamp: new Date(), 
-                    detail: detailsList 
+                    timestamp: now.getTime(), 
+                    detail: detailsList,
+                    dateStr: drawDateStr
                 };
 
-                // ログインしている場合のみAPIへ送信（サーバー側でカウントアップ）
+                // ログインしている場合のみAPIへ送信
                 if(currentState.user) {
                     try {
                         const res = await fetch(`${API_BASE}/api/draw`, {
@@ -1314,17 +1446,15 @@
                                 token: currentState.user.token,
                                 result: resultData.type,
                                 poem: resultData.poem,
-                                detail: detailsList // 詳細も送信
+                                detail: detailsList 
                             })
                         });
                         
                         if(res.ok) {
                             const data = await res.json();
                             if(data.success && data.count) {
-                                // 自分の画面も即時更新
-                                currentState.liveCount = data.count;
-                                document.getElementById('live-counter').textContent = currentState.liveCount.toLocaleString() + "本";
-                                fetchHistoryStats(); // 統計も再取得
+                                currentState.liveCount = data.count; // カウンター更新
+                                fetchHistoryStats();
                             }
                         }
                     } catch(e) {
@@ -1337,25 +1467,34 @@
                 resultData = dataOverride;
                 randNum = dataOverride.num || 1;
                 detailsList = dataOverride.detail || [];
+                const d = new Date(dataOverride.timestamp || Date.now());
+                drawDateStr = `${d.getFullYear()}/${d.getMonth()+1}/${d.getDate()} ${d.getHours()}:${String(d.getMinutes()).padStart(2, '0')}`;
             }
 
-            // DOM更新 (通常の結果表示エリア)
-            renderResultToCard('result-card-outer', resultData, randNum, detailsList);
+            // DOM更新 (カードに情報を流し込む)
+            renderResultToCard('result-card-outer', resultData, randNum, detailsList, drawDateStr);
 
+            showLoading(false);
             showView('result');
             
             if (isNewDraw) {
-                setTimeout(generateResultImage, 1500);
+                setTimeout(generateResultImage, 1000);
             }
         }
 
-        function renderResultToCard(outerId, resultData, randNum, detailsList) {
+        function renderResultToCard(outerId, resultData, randNum, detailsList, dateStr) {
             const outer = document.getElementById(outerId);
-            const numText = outer.querySelector('.result-num');
-            const kanji = outer.querySelector('.result-kanji');
-            const poem = outer.querySelector('.result-poem-col');
-            const details = outer.querySelector('.result-details-col');
-            const qrBox = outer.querySelector('.result-qr-box');
+            const numText = outer.querySelector('#result-num');
+            const kanji = outer.querySelector('#result-kanji');
+            const poem = outer.querySelector('#result-poem');
+            const details = outer.querySelector('#result-details');
+            const qrBox = outer.querySelector('#qrcode');
+            const dateEl = outer.querySelector('#result-date');
+            const titleName = outer.querySelector('#result-title-name');
+
+            // ユーザー名表示
+            const name = currentState.user ? currentState.user.username : "あなた";
+            titleName.textContent = `${name}さんのおみくじの結果`;
 
             // クラスリセット
             outer.className = 'result-card-outer';
@@ -1365,12 +1504,10 @@
             numText.textContent = `第${randNum}番`;
             kanji.textContent = resultData.type;
             poem.textContent = resultData.poem;
+            dateEl.textContent = dateStr;
             
-            // 詳細項目の表示
+            // 詳細項目
             details.innerHTML = '';
-            
-            // 詳細データがない場合(古い履歴など)はランダム生成せず空にするか、何らかの処理が必要
-            // ここでは簡易的に、データがなければ表示しない
             if(detailsList && detailsList.length > 0) {
                 detailsList.forEach(item => {
                     const row = document.createElement('div');
@@ -1381,12 +1518,8 @@
             }
 
             // QRコード生成
-            const qrTarget = qrBox.querySelector('div') || qrBox;
-            qrTarget.innerHTML = '';
-            // 既存のcanvasがあれば削除
-            while(qrTarget.firstChild) qrTarget.removeChild(qrTarget.firstChild);
-            
-            new QRCode(qrTarget, {
+            qrBox.innerHTML = '';
+            new QRCode(qrBox, {
                 text: SITE_URL,
                 width: 100,
                 height: 100,
@@ -1398,22 +1531,25 @@
 
         // --- 履歴・おみくじの轍 ---
         async function loadHistory() {
+            showLoading(true);
             const list = document.getElementById('history-list');
             const container = document.getElementById('history-container');
             const overlay = document.getElementById('history-login-overlay');
             const viewMode = document.getElementById('history-view-mode');
+            const summary = document.getElementById('history-summary');
 
             list.innerHTML = '';
 
             if(!currentState.user) {
-                // 非ログイン時: ぼかし適用＆操作不能＆ダミー大量表示
+                // 非ログイン時
                 container.classList.add('history-blurred');
                 overlay.classList.remove('hidden');
                 viewMode.textContent = "";
+                summary.classList.add('hidden');
 
-                // ぼかし背景用にダミーを生成
+                // ダミー表示
                 let html = '';
-                for(let i=0; i<15; i++) {
+                for(let i=0; i<10; i++) {
                     html += `
                         <div class="bg-gray-50 dark:bg-zinc-800 p-3 rounded flex justify-between items-center border-l-4 border-gray-300">
                             <div class="flex flex-col">
@@ -1425,24 +1561,31 @@
                     `;
                 }
                 list.innerHTML = html;
+                showLoading(false);
                 return;
             }
 
-            // ログイン時: APIからグローバル履歴を取得
+            // ログイン時
             container.classList.remove('history-blurred');
             overlay.classList.add('hidden');
-            viewMode.textContent = "全参拝者の履歴を表示中";
-            list.innerHTML = '<p class="text-center text-sm themed-text-sub">読み込み中...</p>';
-
+            viewMode.textContent = "全参拝者の軌跡を表示中";
+            summary.classList.remove('hidden');
+            
             try {
                 const res = await fetch(`${API_BASE}/api/history/global?token=${encodeURIComponent(currentState.user.token)}`);
                 if(res.ok) {
                     const data = await res.json();
                     globalHistory = data.history || [];
                     
+                    // 件数集計
+                    const myCount = globalHistory.filter(h => h.username === currentState.user.username).length;
+                    document.getElementById('my-history-count').textContent = myCount;
+                    document.getElementById('global-history-count').textContent = globalHistory.length;
+
                     list.innerHTML = '';
                     if(globalHistory.length === 0) {
                         list.innerHTML = '<p class="text-gray-400 text-center">まだ履歴がありません。</p>';
+                        showLoading(false);
                         return;
                     }
 
@@ -1453,6 +1596,7 @@
                         const bgClass = isMe ? 'bg-red-50 dark:bg-red-900/20' : 'bg-gray-50 dark:bg-zinc-800';
 
                         div.className = `${bgClass} p-3 rounded flex justify-between items-center border-l-4 ${borderColor} cursor-pointer hover:opacity-80 transition shadow-sm`;
+                        // 履歴クリックで詳細再現
                         div.onclick = () => openHistoryDetail(index); 
 
                         const date = new Date(item.timestamp);
@@ -1477,6 +1621,7 @@
                 console.error(e);
                 list.innerHTML = '<p class="text-center text-red-500">通信エラーが発生しました。</p>';
             }
+            showLoading(false);
         }
 
         // --- 履歴詳細モーダル ---
@@ -1485,43 +1630,155 @@
             const modal = document.getElementById('history-detail-modal');
             const content = document.getElementById('history-detail-content');
             
-            // データから再現用のオブジェクトを作成
+            // データ再現 (引いた当時の情報を復元、なければ補完)
             const restoreData = {
                 type: data.result,
                 poem: data.poem,
-                detail: data.detail || [], // 詳細があれば使う
-                num: Math.floor(Math.random() * 100) + 1 // 番号は保存してなければランダム
+                detail: data.detail || [], 
+                num: Math.floor(Math.random() * 100) + 1 
             };
+            const d = new Date(data.timestamp);
+            const dateStr = `${d.getFullYear()}/${d.getMonth()+1}/${d.getDate()} ${d.getHours()}:${String(d.getMinutes()).padStart(2, '0')}`;
 
+            // モーダル内にカードHTMLを複製
             content.innerHTML = `
                 <div class="result-card-outer mx-auto scale-90 origin-top" id="history-modal-card">
-                    <div class="result-top-title">運勢・天命乃杜</div>
-                    <div class="result-qr-box"><div id="qr-history"></div></div>
+                    <div class="result-title-name" id="hist-title-name"></div>
+                    <div class="result-subtitle">KNOTTING THE FORTUNE</div>
                     <div class="result-card-paper">
                         <div class="result-header">
                             <div class="result-shrine-logo"><i class="bi bi-moon-stars-fill"></i> 天命乃杜</div>
-                            <div class="result-num"></div>
+                            <div class="result-num" id="hist-num"></div>
                         </div>
                         <div class="result-circle">
                             <div class="result-label">運勢</div>
-                            <div class="result-kanji"></div>
+                            <div class="result-kanji" id="hist-kanji"></div>
                         </div>
                         <div class="result-body">
-                            <div class="result-poem-col"></div>
-                            <div class="result-details-col"></div>
+                            <div class="result-poem-box">
+                                <div class="result-poem-content" id="hist-poem"></div>
+                                <div class="result-poem-title">助言</div>
+                            </div>
+                            <div class="result-details-col" id="hist-details"></div>
                         </div>
-                        <div class="result-footer">fortune-telling-at-tenmei-no-mori.pages.dev</div>
+                        <div class="result-qr-box"><div id="hist-qrcode"></div></div>
+                        <div class="result-footer-link">fortune-telling-at-tenmei-no-mori.pages.dev</div>
+                        <div class="result-date" id="hist-date"></div>
                     </div>
                 </div>
             `;
             
-            renderResultToCard('history-modal-card', restoreData, restoreData.num, restoreData.detail);
+            // IDを付け替えてレンダリング関数を呼ぶのは面倒なので、要素を直接操作
+            const card = document.getElementById('history-modal-card');
+            
+            // スタイル適用
+            card.className = 'result-card-outer mx-auto scale-90 origin-top';
+            if(restoreData.type === '大吉') card.classList.add('is-daikichi');
+            else if(restoreData.type === '大凶') card.classList.add('is-daikyo');
+
+            card.querySelector('#hist-title-name').textContent = `${data.username || '匿名'}さんのおみくじの結果`;
+            card.querySelector('#hist-num').textContent = `第${restoreData.num}番`;
+            card.querySelector('#hist-kanji').textContent = restoreData.type;
+            card.querySelector('#hist-poem').textContent = restoreData.poem;
+            card.querySelector('#hist-date').textContent = dateStr;
+
+            const details = card.querySelector('#hist-details');
+            details.innerHTML = '';
+            if(restoreData.detail && restoreData.detail.length > 0) {
+                restoreData.detail.forEach(item => {
+                    const row = document.createElement('div');
+                    row.className = 'detail-row';
+                    row.innerHTML = `<span class="detail-title">${item.title}</span><span class="detail-content">${item.content}</span>`;
+                    details.appendChild(row);
+                });
+            }
+
+            const qrBox = card.querySelector('#hist-qrcode');
+            qrBox.innerHTML = '';
+            new QRCode(qrBox, {
+                text: SITE_URL,
+                width: 100, height: 100, colorDark : "#000000", colorLight : "#ffffff", correctLevel : QRCode.CorrectLevel.H
+            });
+            
             modal.style.display = 'flex';
         }
 
         function closeHistoryDetail(e) {
             if(e && e.target.id !== 'history-detail-modal' && e.target.tagName !== 'BUTTON') return;
             document.getElementById('history-detail-modal').style.display = 'none';
+        }
+
+        // --- プロフィール関連 ---
+        function openProfileModal() {
+            document.getElementById('profile-modal').style.display = 'flex';
+        }
+        function closeProfileModal(e) {
+            if(e && e.target.id !== 'profile-modal' && e.target.tagName !== 'BUTTON') return;
+            document.getElementById('profile-modal').style.display = 'none';
+        }
+
+        async function updateProfile(type) {
+            if(!currentState.user) return;
+            showLoading(true);
+            
+            let body = { email: currentState.user.email, token: currentState.user.token, type: type };
+            
+            if(type === 'username') {
+                const newName = document.getElementById('update-username').value;
+                if(!newName) return alert('新しいユーザー名を入力してください');
+                body.username = newName;
+            } else if (type === 'password') {
+                const oldPass = document.getElementById('update-pass-old').value;
+                const newPass = document.getElementById('update-pass-new').value;
+                if(!oldPass || !newPass) return alert('パスワードを入力してください');
+                body.oldPassword = oldPass;
+                body.newPassword = newPass;
+            }
+
+            try {
+                // エンドポイントは仮定 (実装時はBackendも対応が必要)
+                const res = await fetch(`${API_BASE}/api/auth/update`, {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify(body)
+                });
+                const data = await res.json();
+                if(res.ok && data.success) {
+                    alert('変更しました');
+                    if(type === 'username') {
+                        currentState.user.username = body.username;
+                        localStorage.setItem('omikuji_user', JSON.stringify(currentState.user));
+                        updateAuthUI();
+                    }
+                    closeProfileModal(null);
+                } else {
+                    alert('変更に失敗しました: ' + (data.message || '不明なエラー'));
+                }
+            } catch(e) {
+                alert('通信エラー');
+            }
+            showLoading(false);
+        }
+
+        async function deleteAccount() {
+            if(!confirm('本当にアカウントを削除しますか？\n（同じメールアドレスでの再登録は可能です）')) return;
+            showLoading(true);
+            try {
+                const res = await fetch(`${API_BASE}/api/auth/delete`, {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({ email: currentState.user.email, token: currentState.user.token })
+                });
+                if(res.ok) {
+                    alert('アカウントを削除しました。');
+                    logout();
+                } else {
+                    alert('削除に失敗しました。');
+                }
+            } catch(e) {
+                alert('通信エラー');
+            }
+            showLoading(false);
         }
 
         // --- シェア用画像生成 ---
@@ -1552,7 +1809,7 @@
                 dlLink.href = img.src;
                 dlLink.download = `omikuji_result_${Date.now()}.png`;
                 dlLink.className = "btn-primary text-sm mt-4 inline-block";
-                dlLink.innerHTML = '<i class="bi bi-download"></i> 画像を保存';
+                dlLink.innerHTML = '<i class="bi bi-download"></i> 画像を長押し等で保存';
                 container.appendChild(dlLink);
             }).catch(err => {
                 console.error(err);
@@ -1560,7 +1817,7 @@
             });
         }
 
-        // --- シェアアクション (新URL) ---
+        // --- シェアアクション (パラメータ付きURL) ---
         function shareToX() {
             if(!currentState.lastResult) return;
             const res = currentState.lastResult;
@@ -1568,7 +1825,11 @@
             if(res.type === "大吉") advice = "最高の運気です。";
             if(res.type === "凶") advice = "今は耐える時です。";
             
-            const text = `おみくじの結果は・・・「${res.type}」${res.type.includes('吉') ? '✨' : '😱'}\n\n【助言】\n${advice}\n\n（続きはWebで）\n ${SITE_URL} #天命乃杜 #おみくじ #運勢診断`;
+            // 結果をURLパラメータに含める（簡易実装）
+            // 実際にはサーバーサイドでOGP生成が必要だが、ここではURLのみ生成
+            const shareUrl = `${SITE_URL}?result=${encodeURIComponent(res.type)}`;
+            
+            const text = `おみくじの結果は・・・「${res.type}」${res.type.includes('吉') ? '✨' : '😱'}\n\n【助言】\n${advice}\n\n（続きはWebで）\n ${shareUrl} #天命乃杜 #おみくじ #運勢診断`;
             const intent = `https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}`;
             window.open(intent, '_blank');
         }
@@ -1822,6 +2083,7 @@
             const username = document.getElementById('reg-username').value;
 
             if(!email) return alert("メールアドレスを入力してください");
+            showLoading(true);
 
             try {
                 const res = await fetch(`${API_BASE}/api/auth/send`, { 
@@ -1841,6 +2103,7 @@
                 console.error(e);
                 alert("通信エラー: サーバーに接続できませんでした。");
             }
+            showLoading(false);
         }
 
         async function performLogin() {
@@ -1849,6 +2112,7 @@
             const code = document.getElementById('login-code').value;
 
             if(!email || !pass || !code) return alert("全ての項目を入力してください");
+            showLoading(true);
             
             try {
                 const res = await fetch(`${API_BASE}/api/auth/login`, {
@@ -1868,6 +2132,7 @@
                 console.error(e);
                 alert("通信エラー: ログインできませんでした。");
             }
+            showLoading(false);
         }
 
         async function performRegister() {
@@ -1877,6 +2142,7 @@
             const code = document.getElementById('reg-code').value;
 
             if(!name || !email || !pass || !code) return alert("全ての項目を入力してください");
+            showLoading(true);
 
             try {
                 const res = await fetch(`${API_BASE}/api/auth/register`, {
@@ -1901,15 +2167,14 @@
                 console.error(e);
                 alert("通信エラー: 登録処理に失敗しました。");
             }
+            showLoading(false);
         }
 
         function loginSuccess(user) {
             currentState.user = user;
             localStorage.setItem('omikuji_user', JSON.stringify(user));
             updateAuthUI();
-            
             loadFavorites(); 
-            
             alert(`ようこそ、${user.username || user.email} 様！\nログインしました。`);
             showView('home');
         }
@@ -1919,18 +2184,15 @@
             
             if(currentState.user) {
                 document.getElementById('auth-user-info').classList.remove('hidden');
-                document.getElementById('form-login').parentElement.querySelector('div:not(#auth-user-info)').style.display = 'none'; // フォーム隠す
+                document.getElementById('form-login').parentElement.querySelector('div:not(#auth-user-info)').style.display = 'none'; 
                 document.getElementById('user-display-name').textContent = currentState.user.username || currentState.user.email;
                 document.getElementById('nav-login-btn').innerHTML = `<i class="bi bi-person-check-fill text-green-400"></i><span class="nav-text">会員: ${currentState.user.username}</span>`;
-                
                 if(badge) badge.textContent = "クラウド保存済み";
             } else {
                 document.getElementById('auth-user-info').classList.add('hidden');
                 const formsContainer = document.getElementById('form-login').parentElement.querySelector('div:not(#auth-user-info)');
                 if(formsContainer) formsContainer.style.display = 'block';
-                
                 document.getElementById('nav-login-btn').innerHTML = `<i class="bi bi-person-circle"></i><span class="nav-text">ログイン/登録</span>`;
-                
                 if(badge) badge.textContent = "端末に保存中";
             }
         }
@@ -1946,7 +2208,6 @@
             const badge = document.getElementById('fav-status-badge');
             
             if(currentState.user) {
-                // ログイン時: サーバーから取得
                 if(badge) badge.textContent = "同期中...";
                 try {
                     const res = await fetch(`${API_BASE}/api/favorites?email=${encodeURIComponent(currentState.user.email)}&token=${encodeURIComponent(currentState.user.token)}`);
@@ -1959,7 +2220,6 @@
                     console.error("Fav fetch error", e);
                 }
             } else {
-                // 未ログイン時: LocalStorage
                 const stored = localStorage.getItem('fortuneFavorites');
                 if (stored) {
                     favoriteList = JSON.parse(stored);
@@ -1971,7 +2231,6 @@
 
         async function saveFavorites() {
             if(currentState.user) {
-                // サーバーへ保存
                 try {
                     await fetch(`${API_BASE}/api/favorites`, {
                         method: 'POST',
@@ -1986,7 +2245,6 @@
                     console.error("Fav save error", e);
                 }
             } else {
-                // LocalStorageへ保存
                 localStorage.setItem('fortuneFavorites', JSON.stringify(favoriteList));
             }
             renderFavorites();
@@ -2162,24 +2420,6 @@
             return calendarDays;
         }
 
-        function toggleFavorite(signId, bloodType) {
-            const existsIndex = favoriteList.findIndex(f => f.sign === signId && f.blood === bloodType);
-            if (existsIndex >= 0) {
-                favoriteList.splice(existsIndex, 1);
-            } else {
-                if (favoriteList.length >= 5) {
-                    alert('お気に入りは最大5つまでです。');
-                    return;
-                }
-                favoriteList.push({ sign: signId, blood: bloodType });
-            }
-            saveFavorites(); // 保存処理呼び出し
-        }
-
-        function isFavorite(signId, bloodType) {
-            return favoriteList.some(f => f.sign === signId && f.blood === bloodType);
-        }
-
         function createCardHTML(data) {
             const isFav = isFavorite(data.sign.id, data.blood);
             const rankClass = data.rank <= 3 ? `rank-${data.rank}` : 'rank-other';
@@ -2292,6 +2532,25 @@
                 resultDiv.innerHTML = createCardHTML(myData);
                 resultDiv.classList.remove('hidden');
             }
+        }
+
+        // お気に入りヘルパー
+        function toggleFavorite(signId, bloodType) {
+            const existsIndex = favoriteList.findIndex(f => f.sign === signId && f.blood === bloodType);
+            if (existsIndex >= 0) {
+                favoriteList.splice(existsIndex, 1);
+            } else {
+                if (favoriteList.length >= 5) {
+                    alert('お気に入りは最大5つまでです。');
+                    return;
+                }
+                favoriteList.push({ sign: signId, blood: bloodType });
+            }
+            saveFavorites(); 
+        }
+
+        function isFavorite(signId, bloodType) {
+            return favoriteList.some(f => f.sign === signId && f.blood === bloodType);
         }
     </script>
 </body>
