@@ -2690,7 +2690,7 @@
             document.getElementById('history-detail-modal').style.display = 'none';
         }
 
-        // --- シェア用画像生成 (UI崩れ修正版) ---
+        // --- シェア用画像生成 (大吉バグ修正版) ---
         function generateResultImage() {
             const status = document.getElementById('gen-img-status');
             status.textContent = "シェア画像を生成中...フォント読み込み待機";
@@ -2700,28 +2700,32 @@
             container.innerHTML = '';
             container.classList.add('hidden');
             
-            // フォント読み込み完了を待つ
             document.fonts.ready.then(() => {
                 const originalScrollPos = window.scrollY;
 
-                // キャプチャ設定
                 html2canvas(target, { 
-                    scale: 3, // 高解像度化
+                    scale: 3, 
                     useCORS: true, 
                     allowTaint: true,
                     backgroundColor: null, 
                     scrollX: 0,
                     scrollY: -window.scrollY, 
+                    // ここが修正の肝です
                     onclone: (clonedDoc) => {
                         const clonedOuter = clonedDoc.getElementById('result-card-outer');
                         if (clonedOuter) {
-                            // 縦書きハック: CSSで強制的に指定し直す
+                            // 1. 縦書きレイアウト崩れ防止ハック
                             const verticals = clonedOuter.querySelectorAll('.result-poem-vertical, .result-advice-box, .detail-column');
                             verticals.forEach(el => {
                                 el.style.letterSpacing = '0.1em'; 
                                 el.style.lineHeight = '1.6';
                                 el.style.fontFamily = "'Zen Old Mincho', serif"; 
                             });
+
+                            // 2. 【重要】大吉の背景SVGを削除する (これでクラッシュを防ぐ)
+                            // 模様は消えますが、背景色の金色(#f3c845)は残るので見た目は金色のままです
+                            clonedOuter.style.backgroundImage = 'none';
+
                             clonedOuter.style.height = 'auto';
                             clonedOuter.style.minHeight = '1200px'; 
                             clonedOuter.style.transform = 'none'; 
@@ -2732,7 +2736,6 @@
                     
                     container.innerHTML = '<p class="text-green-600 font-bold mb-2">画像の生成完了</p>';
                     
-                    // 生成された画像をBlob化して共有用に保持
                     canvas.toBlob(blob => {
                         currentState.lastImageBlob = blob;
                         const url = URL.createObjectURL(blob);
@@ -2755,7 +2758,7 @@
 
                 }).catch(err => {
                     console.error(err);
-                    status.textContent = "画像の生成に失敗しました。再試行してください。";
+                    status.textContent = "画像の生成に失敗しました。";
                     window.scrollTo(0, originalScrollPos);
                 });
             });
