@@ -1,4 +1,4 @@
-.<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="ja">
 <head>
     <meta charset="UTF-8">
@@ -1670,13 +1670,72 @@
         const API_BASE = "https://aaaaa.nden14800.workers.dev";
         const SITE_URL = "https://fortune-telling-at-tenmei-no-mori-authentic-today-s-fortun.pages.dev";
 
+        // ==========================================
+        //  データ定義 (エンコード/デコードで共通使用するためグローバル化)
+        // ==========================================
+        
+        // 12種類のおみくじ結果定義
+        const omikujiResults = [
+            { type: "大吉", rank: 5, poem: "枯れ果てし 枝に再び 花咲くが如し", desc: "最高の運気です。長年の努力が報われ、枯れ木に花が咲くような喜びが訪れるでしょう。しかし慢心は禁物。感謝の心を忘れずに。" },
+            { type: "中吉", rank: 4, poem: "照る月を 雲が隠せど 風払うなり", desc: "一時的な迷いがあっても、すぐに晴れ間が見えます。自分の信念を貫くことで、雲を払う風のような助けが現れるはずです。" },
+            { type: "小吉", rank: 3, poem: "小川の水 淀まず流るる 様を見るべし", desc: "派手さはありませんが、平穏無事な日々が続きます。日々の小さな幸せを大切にし、流れに身を任せるのが吉です。" },
+            { type: "吉", rank: 4, poem: "春風に 池の氷も 解け初めて", desc: "厳しい冬が終わり、徐々に運気が上昇しています。焦らず着実に進めば、池の氷が解けるように悩みも消えていくでしょう。" },
+            { type: "半吉", rank: 3, poem: "山里の 雪解け水も 川となりて", desc: "今はまだ準備段階。しかし確実に運気は開けつつあります。焦らず力を蓄え、時が来るのを待ちましょう。" },
+            { type: "末吉", rank: 3, poem: "山道の 険しき坂も 一歩より", desc: "今は登り坂で苦しい時かもしれませんが、一歩一歩進めば必ず頂上に辿り着けます。忍耐力が試される時です。" },
+            { type: "末小吉", rank: 2, poem: "種まけば やがて芽が出る 時を待て", desc: "結果が出るまでには時間がかかります。今は地道な努力を続ける時期。将来の大輪の花を信じて。" },
+            { type: "凶", rank: 1, poem: "雨雲の 晴れ間も見えず 濡れ衣かな", desc: "誤解を受けやすく、思うようにいかない時期です。今は弁解せず、静かに嵐が過ぎるのを待つのが賢明な判断です。" },
+            { type: "小凶", rank: 2, poem: "石の上にも 三年いれば 暖かき", desc: "辛抱が必要な時。すぐに結果を求めず、じっくりと腰を据えて取り組むことで道が開けます。" },
+            { type: "半凶", rank: 2, poem: "嵐吹く 庭の小枝も 折れぬよう", desc: "逆風が吹くかもしれません。しかし、しなやかに対応すれば折れることはありません。柔軟な姿勢が大切です。" },
+            { type: "末凶", rank: 1, poem: "夜の闇 深きほどに 暁近し", desc: "今は一番暗い時期かもしれませんが、夜明けは必ず来ます。希望を捨てずに前を向きましょう。" },
+            { type: "大凶", rank: 0, poem: "嵐吹く 荒野に一人 立つが如し", desc: "八方塞がりの厳しい運勢。無理に動くと災いを招きます。身を潜め、自分を見つめ直す修行の時と心得てください。" }
+        ];
+
+        // 運勢ランク別詳細テキストデータ
+        const detailTexts = {
+            '願事': ["意のままに叶う", "速やかに叶う", "後に叶う", "叶うが遅し", "叶いにくし", "叶わず"],
+            '恋愛': ["相思相愛なり", "良縁に恵まれる", "誠意で通じる", "迷いあり", "諦めが肝心", "縁なし"],
+            '待人': ["来る 喜びあり", "来る たよりあり", "遅れるが来る", "来ず 音信あり", "来ず さわりあり", "来ず 決して来ず"],
+            '商売': ["買うに吉 利あり", "利益あり", "売り買い吉", "利少なし", "損害の恐れ", "商うな 損する"],
+            '旅立': ["いざ行け 大吉", "行先に利あり", "よき連れあり", "盗難に注意", "行くな 災いあり", "道中 危険あり"],
+            '学問': ["安心して勉めよ", "試験に通る", "努力せよ", "困難あり", "危うし", "絶望的"],
+            '病気': ["全快す", "治る 信じよ", "長引くが治る", "養生せよ", "重し 医者を選べ", "危うし 祈れ"]
+        };
+        // 項目順序固定（エンコード用）
+        const detailKeys = ['願事','恋愛','待人','商売','旅立','学問','病気'];
+
+        // ラッキーアイテム等のリスト (順序固定)
+        const luckyItemsList = [
+            "古時計","香水","手鏡","文庫本","スニーカー","万年筆","水晶","観葉植物","銀の指輪","ハンカチ","革靴","手帳",
+            "香辛料","紅茶","コイン","鈴","扇子","万華鏡","砂時計","栞","眼鏡","帽子","手袋","香木",
+            "和紙","筆","インク","切手","古銭","鍵","ロケット","ブローチ","スカーフ","リボン","ベルト","財布",
+            "パスケース","名刺入れ","ポーチ","水筒","マグカップ","皿","箸","風鈴","お守り","数珠","朱肉","印鑑"
+        ];
+        const luckySpotsList = [
+            "図書館","カフェ","神社","海辺","高台","公園","美術館","映画館","博物館","水族館","動物園","植物園",
+            "本屋","雑貨屋","パン屋","花屋","駅","空港","港","橋の上","川沿い","山頂","森","温泉",
+            "寺院","教会","塔","城","市場","路地裏","噴水広場","並木道","屋上","地下街","交差点","歩道橋",
+            "ベンチ","テラス","窓際","カウンター","個室","ロビー","玄関","庭","ベランダ","書斎","リビング","寝室"
+        ];
+        const luckyColorsList = [
+            "赤","青","白","金","紫","緑","黄","橙","桃","黒","銀","紺",
+            "茶","灰","水色","黄緑","深紅","群青","琥珀","翡翠","瑠璃","真紅","漆黒","純白",
+            "桜色","藤色","山吹色","若草色","空色","茜色","黄金","白銀","銅","パール","ベージュ","クリーム",
+            "ワインレッド","オリーブ","ミント","ラベンダー","サーモン","コーラル","ターコイズ","インディゴ","マゼンタ","シアン","ライム","レモン"
+        ];
+        const luckyPersonsList = [
+            "旧友","年上","年下","家族","先生","初対面","同僚","上司","部下","隣人","店員","旅人",
+            "子供","老人","職人","芸術家","医師","看護師","警察官","消防士","運転手","駅員","郵便屋","料理人",
+            "美容師","作家","歌手","俳優","選手","学者","社長","秘書","受付","警備員","清掃員","農家",
+            "漁師","神主","住職","牧師","シスター","占い師","幼馴染","親戚","恩師","先輩","後輩","ライバル"
+        ];
+
         // --- 状態管理 ---
         let currentState = {
             view: 'home',
             user: null, // { email, username, token }
             lastResult: null,
             liveCount: 0,
-            authMode: 'login' // 'login' or 'register'
+            authMode: 'login'
         };
 
         let favoriteList = [];
@@ -1696,7 +1755,6 @@
                 saveLabSettings();
             },
             toggleDark: (el) => {
-                // Tailwindの手動切り替え設定 ('class'モード) に合わせてhtmlタグにクラス付与
                 if(el.checked) document.documentElement.classList.add('dark');
                 else if(!window.matchMedia('(prefers-color-scheme: dark)').matches) document.documentElement.classList.remove('dark');
                 saveLabSettings();
@@ -1742,7 +1800,6 @@
                     }
                 }
             } else {
-                // Reset lab settings if logged out
                 document.getElementById('switch-newyear').checked = false;
                 document.body.classList.remove('theme-newyear');
                 document.getElementById('switch-speed').checked = false;
@@ -1756,6 +1813,7 @@
 
         // --- イニシャライズ ---
         window.onload = function() {
+            // 共通初期化
             initHomeAnimation();
             initZodiacSystem();
             
@@ -1763,43 +1821,165 @@
             if(storedUser) {
                 try {
                     currentState.user = JSON.parse(storedUser);
-                } catch(e) {
-                    console.error("Auth Data Parse Error", e);
-                }
+                } catch(e) { console.error(e); }
             }
             updateAuthUI();
             loadLabSettings();
-
+            loadFavorites();
             startLiveCounter();
             fetchHistoryStats();
             setInterval(fetchHistoryStats, 5000); 
-            
-            loadFavorites();
 
-            // シェアURLパラメータチェック (修正版: 日本語対応デコード)
+            // URLパラメータチェックと復元 (最優先)
             const params = new URLSearchParams(window.location.search);
             const shareData = params.get('d');
+            
             if (shareData) {
                 try {
-                    // 日本語を含む文字列を正しくデコードする処理
-                    const decoded = JSON.parse(decodeURIComponent(escape(atob(shareData))));
-                    showResultDetail(false, decoded);
+                    // 短縮URLパラメータのデコード
+                    const resultData = decodeResultData(shareData);
+                    if (resultData) {
+                        // 結果画面を強制表示 (Homeアニメーション等をスキップ)
+                        currentState.lastResult = resultData;
+                        renderResultToCard('result-card-outer', resultData, true);
+                        
+                        // ビュー切り替え
+                        document.querySelectorAll('.view-section').forEach(el => el.classList.remove('active'));
+                        const target = document.getElementById('view-result');
+                        target.style.display = 'block';
+                        void target.offsetWidth;
+                        target.classList.add('active');
+                        currentState.view = 'result';
+                        
+                        // 生成画像エリアリセット
+                        const container = document.getElementById('generated-image-container');
+                        container.innerHTML = '';
+                        container.classList.add('hidden');
+                        document.getElementById('gen-img-status').textContent = "";
+                        
+                        return; // ここで処理終了し、Homeを表示させない
+                    }
                 } catch(e) {
                     console.error("Share data decode error", e);
-                    // エラー時はホームへ (デフォルトのまま)
                 }
             }
+            
+            // パラメータがない場合は通常通りHomeを表示
+            showView('home');
         };
+
+        // --- URL短縮化・エンコード/デコードロジック ---
+        
+        // 結果データを圧縮配列に変換し、Base64エンコードする
+        function encodeResultData(data) {
+            // 1. おみくじタイプのインデックス
+            const typeIdx = omikujiResults.findIndex(r => r.type === data.type);
+            
+            // 2. 詳細項目のインデックス配列
+            // data.detail は [{title:..., content:...}, ...]
+            // detailTexts[title] の中で content が何番目かを探す
+            const detailIndices = detailKeys.map(key => {
+                const item = data.detail.find(d => d.title === key);
+                return detailTexts[key].indexOf(item.content);
+            });
+
+            // 3. ラッキーアイテム等のインデックス
+            const luckyIndices = [
+                luckyItemsList.indexOf(data.lucky.item),
+                luckySpotsList.indexOf(data.lucky.spot),
+                luckyColorsList.indexOf(data.lucky.color),
+                luckyPersonsList.indexOf(data.lucky.person)
+            ];
+
+            // 4. アンラッキーアイテム等のインデックス
+            const unluckyIndices = [
+                luckyItemsList.indexOf(data.unlucky.item),
+                luckySpotsList.indexOf(data.unlucky.spot),
+                luckyPersonsList.indexOf(data.unlucky.person)
+            ];
+
+            // 5. 配列にまとめる [type, detailArr, luckyArr, unluckyArr, timestamp, username]
+            const minified = [
+                typeIdx,
+                detailIndices,
+                luckyIndices,
+                unluckyIndices,
+                data.timestamp,
+                data.username
+            ];
+
+            // 6. JSON文字列化 -> Base64 (URLセーフ)
+            return btoa(unescape(encodeURIComponent(JSON.stringify(minified))));
+        }
+
+        // Base64文字列を復元して完全なオブジェクトに戻す
+        function decodeResultData(base64Str) {
+            try {
+                const jsonStr = decodeURIComponent(escape(atob(base64Str)));
+                const minified = JSON.parse(jsonStr);
+                
+                // データ構造: [typeIdx, detailIndices, luckyIndices, unluckyIndices, timestamp, username]
+                const typeIdx = minified[0];
+                const baseRes = omikujiResults[typeIdx];
+                
+                const detailIndices = minified[1];
+                const detailObj = detailKeys.map((key, i) => ({
+                    title: key,
+                    content: detailTexts[key][detailIndices[i]]
+                }));
+
+                const lIdx = minified[2];
+                const luckyObj = {
+                    item: luckyItemsList[lIdx[0]],
+                    spot: luckySpotsList[lIdx[1]],
+                    color: luckyColorsList[lIdx[2]],
+                    person: luckyPersonsList[lIdx[3]]
+                };
+
+                const uIdx = minified[3];
+                const unluckyObj = {
+                    item: luckyItemsList[uIdx[0]],
+                    spot: luckySpotsList[uIdx[1]],
+                    person: luckyPersonsList[uIdx[2]]
+                };
+
+                return {
+                    type: baseRes.type,
+                    poem: baseRes.poem,
+                    desc: baseRes.desc,
+                    detail: detailObj,
+                    lucky: luckyObj,
+                    unlucky: unluckyObj,
+                    timestamp: minified[4],
+                    username: minified[5]
+                };
+            } catch(e) {
+                console.error("Decode failed", e);
+                return null;
+            }
+        }
+
+        // URL更新関数 (pushState使用)
+        function updateURL(resultData) {
+            const encoded = encodeResultData(resultData);
+            const newUrl = `${window.location.pathname}?d=${encoded}`;
+            // 履歴に追加 (ブラウザバックで戻れるようにするならpushState, 置き換えるならreplaceState)
+            // ここでは引くたびに履歴に残す
+            window.history.pushState({ path: newUrl }, '', newUrl);
+        }
+
+        // 共有用URL取得 (現在のURLを返す)
+        function getShareUrl() {
+            return window.location.href;
+        }
 
         function showLoading(show) {
             const overlay = document.getElementById('loading-overlay');
             if(show) {
                 overlay.style.display = 'flex';
-                // わずかに遅らせてopacityを変更しフェードインさせる
                 requestAnimationFrame(() => overlay.classList.add('visible'));
             } else {
                 overlay.classList.remove('visible');
-                // フェードアウト後に非表示
                 setTimeout(() => {
                     if(!overlay.classList.contains('visible')) overlay.style.display = 'none';
                 }, 300);
@@ -1807,12 +1987,10 @@
         }
 
         function showView(viewId) {
-            // Lab機能へのアクセス制限処理
-            // ビュー自体は表示するが、非ログイン時はぼかしとロックをかける
+            // Lab機能へのアクセス制限
             if(viewId === 'lab') {
                 const lock = document.getElementById('lab-lock');
                 const wrapper = document.getElementById('lab-content-wrapper');
-                
                 if(!currentState.user) {
                     lock.classList.remove('hidden');
                     wrapper.classList.add('lab-blurred');
@@ -1835,12 +2013,8 @@
             target.classList.add('active');
             currentState.view = viewId;
 
-            if(viewId === 'draw') {
-                resetOmikujiPool();
-            }
-            if(viewId === 'history') {
-                loadHistory();
-            }
+            if(viewId === 'draw') resetOmikujiPool();
+            if(viewId === 'history') loadHistory();
         }
 
         function articleBack() {
@@ -1850,6 +2024,7 @@
         // --- ホームアニメーション ---
         function initHomeAnimation() {
             const container = document.getElementById('home-anim-container');
+            container.innerHTML = ''; // クリア
             const paperCount = 20;
             for(let i=0; i<paperCount; i++) {
                 const paper = document.createElement('div');
@@ -1877,7 +2052,6 @@
                     const res = await fetch(`${API_BASE}/api/counter`);
                     if(res.ok) {
                         const data = await res.json();
-                        // サーバーの値をそのまま表示
                         currentState.liveCount = (data.count || 0);
                         el.textContent = currentState.liveCount.toLocaleString() + "本";
                     }
@@ -1885,7 +2059,7 @@
             }
         }
 
-        // --- 統計情報の取得 (12種類対応版) ---
+        // --- 統計情報の取得 ---
         async function fetchHistoryStats() {
             try {
                 const res = await fetch(`${API_BASE}/api/stats`);
@@ -1894,9 +2068,8 @@
                     document.getElementById('stats-update-time').textContent = data.timestamp || "--:--:--";
 
                     const setBar = (id, percent, count) => {
-                        // 要素が存在する場合のみ更新
                         const statEl = document.getElementById(`stat-${id}`);
-                        if (statEl) {
+                        if(statEl) {
                             const p = parseFloat(percent).toFixed(2);
                             statEl.textContent = p + "%";
                             document.getElementById(`cnt-${id}`).textContent = (count || 0).toLocaleString() + "本";
@@ -1906,16 +2079,9 @@
 
                     const stats = data.stats || {};
                     const counts = data.counts || {};
+                    const keys = ['daikichi', 'chukichi', 'shokichi', 'kichi', 'hankichi', 'suekichi', 'sueshokichi', 'kyo', 'shokyo', 'hankyo', 'suekyo', 'daikyo'];
                     
-                    // 12種類全てのキーを更新
-                    const keys = [
-                        'daikichi', 'chukichi', 'shokichi', 'kichi', 'hankichi', 'suekichi', 'sueshokichi',
-                        'kyo', 'shokyo', 'hankyo', 'suekyo', 'daikyo'
-                    ];
-                    
-                    keys.forEach(key => {
-                        setBar(key, stats[key] || 0, counts[key] || 0);
-                    });
+                    keys.forEach(key => setBar(key, stats[key] || 0, counts[key] || 0));
                 }
             } catch(e) { console.error(e); }
         }
@@ -1948,14 +2114,8 @@
                 const stick = document.createElement('div');
                 stick.className = 'omikuji-stick shadow-md rounded';
                 stick.textContent = `天命乃杜`; 
-                
                 const left = Math.random() * 90 + 5; 
-                let top;
-                if (isInitial) {
-                    top = (i * 20) + (Math.random() * 100); 
-                } else {
-                    top = lastBottom + (i * 20) + (Math.random() * 100);
-                }
+                let top = isInitial ? (i * 20) + (Math.random() * 100) : lastBottom + (i * 20) + (Math.random() * 100);
                 const rot = Math.random() * 360;
                 
                 stick.style.left = `calc(${left}% - 25px)`;
@@ -1966,83 +2126,11 @@
                 stick.onclick = function() {
                     drawResult(this);
                 };
-                
                 pool.appendChild(stick);
             }
         }
 
-        // 12種類のおみくじ結果定義
-        const omikujiResults = [
-            { type: "大吉", rank: 5, poem: "枯れ果てし 枝に再び 花咲くが如し", desc: "最高の運気です。長年の努力が報われ、枯れ木に花が咲くような喜びが訪れるでしょう。しかし慢心は禁物。感謝の心を忘れずに。" },
-            { type: "中吉", rank: 4, poem: "照る月を 雲が隠せど 風払うなり", desc: "一時的な迷いがあっても、すぐに晴れ間が見えます。自分の信念を貫くことで、雲を払う風のような助けが現れるはずです。" },
-            { type: "小吉", rank: 3, poem: "小川の水 淀まず流るる 様を見るべし", desc: "派手さはありませんが、平穏無事な日々が続きます。日々の小さな幸せを大切にし、流れに身を任せるのが吉です。" },
-            { type: "吉", rank: 4, poem: "春風に 池の氷も 解け初めて", desc: "厳しい冬が終わり、徐々に運気が上昇しています。焦らず着実に進めば、池の氷が解けるように悩みも消えていくでしょう。" },
-            { type: "半吉", rank: 3, poem: "山里の 雪解け水も 川となりて", desc: "今はまだ準備段階。しかし確実に運気は開けつつあります。焦らず力を蓄え、時が来るのを待ちましょう。" },
-            { type: "末吉", rank: 3, poem: "山道の 険しき坂も 一歩より", desc: "今は登り坂で苦しい時かもしれませんが、一歩一歩進めば必ず頂上に辿り着けます。忍耐力が試される時です。" },
-            { type: "末小吉", rank: 2, poem: "種まけば やがて芽が出る 時を待て", desc: "結果が出るまでには時間がかかります。今は地道な努力を続ける時期。将来の大輪の花を信じて。" },
-            { type: "凶", rank: 1, poem: "雨雲の 晴れ間も見えず 濡れ衣かな", desc: "誤解を受けやすく、思うようにいかない時期です。今は弁解せず、静かに嵐が過ぎるのを待つのが賢明な判断です。" },
-            { type: "小凶", rank: 2, poem: "石の上にも 三年いれば 暖かき", desc: "辛抱が必要な時。すぐに結果を求めず、じっくりと腰を据えて取り組むことで道が開けます。" },
-            { type: "半凶", rank: 2, poem: "嵐吹く 庭の小枝も 折れぬよう", desc: "逆風が吹くかもしれません。しかし、しなやかに対応すれば折れることはありません。柔軟な姿勢が大切です。" },
-            { type: "末凶", rank: 1, poem: "夜の闇 深きほどに 暁近し", desc: "今は一番暗い時期かもしれませんが、夜明けは必ず来ます。希望を捨てずに前を向きましょう。" },
-            { type: "大凶", rank: 0, poem: "嵐吹く 荒野に一人 立つが如し", desc: "八方塞がりの厳しい運勢。無理に動くと災いを招きます。身を潜め、自分を見つめ直す修行の時と心得てください。" }
-        ];
-
-        // 運勢ランク別詳細テキストデータ
-        // 配列インデックス: 0=Rank5(大吉) ... 5=Rank0(大凶)
-        const detailTexts = {
-            '願事': ["意のままに叶う", "速やかに叶う", "後に叶う", "叶うが遅し", "叶いにくし", "叶わず"],
-            '恋愛': ["相思相愛なり", "良縁に恵まれる", "誠意で通じる", "迷いあり", "諦めが肝心", "縁なし"],
-            '待人': ["来る 喜びあり", "来る たよりあり", "遅れるが来る", "来ず 音信あり", "来ず さわりあり", "来ず 決して来ず"],
-            '商売': ["買うに吉 利あり", "利益あり", "売り買い吉", "利少なし", "損害の恐れ", "商うな 損する"],
-            '旅立': ["いざ行け 大吉", "行先に利あり", "よき連れあり", "盗難に注意", "行くな 災いあり", "道中 危険あり"],
-            '学問': ["安心して勉めよ", "試験に通る", "努力せよ", "困難あり", "危うし", "絶望的"],
-            '病気': ["全快す", "治る 信じよ", "長引くが治る", "養生せよ", "重し 医者を選べ", "危うし 祈れ"]
-        };
-
-        // 重複排除用リスト拡張
-        const luckyItemsList = [
-            "古時計","香水","手鏡","文庫本","スニーカー","万年筆",
-            "水晶","観葉植物","銀の指輪","ハンカチ","革靴","手帳",
-            "香辛料","紅茶","コイン","鈴","扇子","万華鏡",
-            "砂時計","栞","眼鏡","帽子","手袋","香木",
-            "和紙","筆","インク","切手","古銭","鍵",
-            "ロケット","ブローチ","スカーフ","リボン","ベルト","財布",
-            "パスケース","名刺入れ","ポーチ","水筒","マグカップ","皿",
-            "箸","風鈴","お守り","数珠","朱肉","印鑑"
-        ];
-        const luckySpotsList = [
-            "図書館","カフェ","神社","海辺","高台","公園",
-            "美術館","映画館","博物館","水族館","動物園","植物園",
-            "本屋","雑貨屋","パン屋","花屋","駅","空港",
-            "港","橋の上","川沿い","山頂","森","温泉",
-            "寺院","教会","塔","城","市場","路地裏",
-            "噴水広場","並木道","屋上","地下街","交差点","歩道橋",
-            "ベンチ","テラス","窓際","カウンター","個室","ロビー",
-            "玄関","庭","ベランダ","書斎","リビング","寝室"
-        ];
-        const luckyColorsList = [
-            "赤","青","白","金","紫","緑",
-            "黄","橙","桃","黒","銀","紺",
-            "茶","灰","水色","黄緑","深紅","群青",
-            "琥珀","翡翠","瑠璃","真紅","漆黒","純白",
-            "桜色","藤色","山吹色","若草色","空色","茜色",
-            "黄金","白銀","銅","パール","ベージュ","クリーム",
-            "ワインレッド","オリーブ","ミント","ラベンダー","サーモン","コーラル",
-            "ターコイズ","インディゴ","マゼンタ","シアン","ライム","レモン"
-        ];
-        const luckyPersonsList = [
-            "旧友","年上","年下","家族","先生","初対面",
-            "同僚","上司","部下","隣人","店員","旅人",
-            "子供","老人","職人","芸術家","医師","看護師",
-            "警察官","消防士","運転手","駅員","郵便屋","料理人",
-            "美容師","作家","歌手","俳優","選手","学者",
-            "社長","秘書","受付","警備員","清掃員","農家",
-            "漁師","神主","住職","牧師","シスター","占い師",
-            "幼馴染","親戚","恩師","先輩","後輩","ライバル"
-        ];
-
         function getRandomUnique(list, count) {
-            // シャッフルして先頭からcount個取得
             const shuffled = [...list].sort(() => 0.5 - Math.random());
             return shuffled.slice(0, count);
         }
@@ -2052,7 +2140,6 @@
             const numEl = document.getElementById('countdown-number');
             overlay.style.display = 'flex';
             
-            // Lab: 神速の祈りモードならカウントダウン省略
             if(window.labSpeedMode) {
                 overlay.style.display = 'none';
                 showResultDetail(true);
@@ -2075,65 +2162,51 @@
         }
 
         async function showResultDetail(isNewDraw, dataOverride = null) {
-            let resultData, randNum, detailsList, luckyItems, unluckyItems, timestamp, username;
+            let resultData;
 
             if (isNewDraw) {
                 // 新規抽選
                 const base = omikujiResults[Math.floor(Math.random() * omikujiResults.length)];
-                randNum = Math.floor(Math.random() * 100) + 1;
-                timestamp = Date.now();
-                username = currentState.user ? (currentState.user.username || "参拝者") : "ゲスト";
+                const timestamp = Date.now();
+                const username = currentState.user ? (currentState.user.username || "参拝者") : "ゲスト";
 
-                // 詳細項目: 運勢ランク連動ロジック
-                // base.rank が 5(大吉) 〜 0(大凶)
-                // detailTextsのインデックスは 0(良) 〜 5(悪) なので反転させる
+                // 詳細項目 (ランク連動)
                 const detailIndex = 5 - base.rank;
-                const cats = ['願事','恋愛','待人','商売','旅立','学問','病気'];
-                
-                detailsList = cats.map(c => ({
+                const detailsList = detailKeys.map(c => ({
                     title: c,
-                    // 該当ランクのテキストを取得（配列境界チェック付）
                     content: detailTexts[c][Math.min(detailIndex, detailTexts[c].length - 1)]
                 }));
 
-                // ラッキー/アンラッキー（リストからランダムに取得し重複を避ける）
-                // アイテム自体はランダムだが、良い運勢の時はアイテムのご利益でさらに良く、悪い時は救いになるという解釈
-                luckyItems = {
+                // ラッキーアイテム等
+                const luckyItems = {
                     item: luckyItemsList[Math.floor(Math.random()*luckyItemsList.length)],
                     spot: luckySpotsList[Math.floor(Math.random()*luckySpotsList.length)],
                     color: luckyColorsList[Math.floor(Math.random()*luckyColorsList.length)],
                     person: luckyPersonsList[Math.floor(Math.random()*luckyPersonsList.length)]
                 };
                 
-                // アンラッキーはラッキーと被らないようにする
                 let ulItem, ulSpot, ulPerson;
                 do { ulItem = luckyItemsList[Math.floor(Math.random()*luckyItemsList.length)]; } while(ulItem === luckyItems.item);
                 do { ulSpot = luckySpotsList[Math.floor(Math.random()*luckySpotsList.length)]; } while(ulSpot === luckyItems.spot);
                 do { ulPerson = luckyPersonsList[Math.floor(Math.random()*luckyPersonsList.length)]; } while(ulPerson === luckyItems.person);
 
-                unluckyItems = {
-                    item: ulItem,
-                    spot: ulSpot,
-                    person: ulPerson
-                };
+                const unluckyItems = { item: ulItem, spot: ulSpot, person: ulPerson };
 
                 resultData = { 
                     type: base.type, 
                     poem: base.poem, 
                     desc: base.desc,
-                    num: randNum, 
                     detail: detailsList,
                     lucky: luckyItems,
                     unlucky: unluckyItems,
                     timestamp: timestamp,
                     username: username
                 };
-                currentState.lastResult = resultData;
-
-                // URL更新 (おみくじを引いた時)
+                
+                // URL更新 (新規抽選時)
                 updateURL(resultData);
 
-                // ログイン時のみ保存・更新
+                // サーバー保存 (ログイン時のみ)
                 if(currentState.user) {
                     showLoading(true);
                     try {
@@ -2150,11 +2223,9 @@
                                 unlucky: unluckyItems
                             })
                         });
-                        
                         if(res.ok) {
                             const data = await res.json();
                             if(data.success && data.count) {
-                                // サーバーからのカウント
                                 currentState.liveCount = data.count;
                                 document.getElementById('live-counter').textContent = currentState.liveCount.toLocaleString() + "本";
                                 fetchHistoryStats();
@@ -2165,60 +2236,27 @@
                 }
 
             } else {
-                // 復元
+                // 復元 (履歴クリック時)
+                // 履歴データには既にすべての情報が含まれている前提
                 resultData = dataOverride;
-                randNum = dataOverride.num || 1;
                 
-                // 詳細項目の復元
-                if (Array.isArray(dataOverride.detail)) {
-                    detailsList = dataOverride.detail;
-                } else {
-                    // 古い形式のフォールバック (ランダム生成)
-                    const cats = ['願事','恋愛','待人','商売','旅立','学問','病気'];
-                    const vals = ['叶う','良し','来る','繁盛','吉','成就','治る','遅れる','待て','控','難','危'];
-                    detailsList = cats.map(c => ({
+                // 古いデータ形式の互換性維持
+                if (!Array.isArray(resultData.detail)) {
+                    // 基本情報から再構築（本来は履歴にすべて保存されているべきだが念のため）
+                    const original = omikujiResults.find(r => r.poem === resultData.poem) || omikujiResults[0];
+                    const detailIndex = 5 - original.rank;
+                    resultData.detail = detailKeys.map(c => ({
                         title: c,
-                        content: vals[Math.floor(Math.random() * vals.length)]
+                        content: detailTexts[c][Math.min(detailIndex, detailTexts[c].length - 1)]
                     }));
                 }
-
-                // 助言の復元
-                let restoredDesc = dataOverride.desc;
-                if (!restoredDesc && dataOverride.poem) {
-                    const original = omikujiResults.find(r => r.poem === dataOverride.poem);
-                    if (original) {
-                        restoredDesc = original.desc;
-                    } else {
-                        restoredDesc = "心穏やかに過ごすべし。";
-                    }
-                } else if (!restoredDesc) {
-                    restoredDesc = "心穏やかに過ごすべし。";
-                }
-
-                // ラッキーアイテム等の復元
-                luckyItems = dataOverride.lucky || { item: "不明", spot: "不明", color: "不明", person: "不明" };
-                unluckyItems = dataOverride.unlucky || { item: "不明", spot: "不明", person: "不明" };
-
-                timestamp = dataOverride.timestamp;
-                username = dataOverride.username || "参拝者";
                 
-                resultData = {
-                    type: dataOverride.type || dataOverride.result, // 互換性のため
-                    poem: dataOverride.poem,
-                    desc: restoredDesc, // 復元した助言
-                    num: randNum,
-                    detail: detailsList,
-                    lucky: luckyItems,
-                    unlucky: unluckyItems,
-                    timestamp: timestamp,
-                    username: username
-                };
-                currentState.lastResult = resultData;
+                // URL更新 (履歴から開いた時もURLを変更)
+                updateURL(resultData);
             }
 
-            // レンダリング (メインエリア)
+            currentState.lastResult = resultData;
             renderResultToCard('result-card-outer', resultData, true); 
-
             showView('result');
             
             // 画像生成コンテナリセット
@@ -2228,73 +2266,50 @@
             document.getElementById('gen-img-status').textContent = "";
         }
 
-        function updateURL(resultData) {
-            const json = JSON.stringify(resultData);
-            // 日本語をBase64化するためのエスケープ処理
-            const encoded = btoa(unescape(encodeURIComponent(json))); 
-            const newUrl = `${window.location.pathname}?d=${encoded}`;
-            window.history.pushState({ path: newUrl }, '', newUrl);
-        }
-
         function renderResultToCard(outerId, data, withFooter) {
             const outer = document.getElementById(outerId);
             outer.innerHTML = ''; 
-
-            // スタイル適用
             outer.className = 'result-card-outer';
             if (data.type === "大吉") outer.classList.add("style-daikichi");
             else if (data.type === "大凶") outer.classList.add("style-daikyo");
             else outer.classList.add("style-normal");
 
-            // 1. 最上部: 家紋 + タイトル
             const headerDiv = document.createElement('div');
             headerDiv.className = 'result-logo-area';
-            headerDiv.innerHTML = `
-                <div class="result-kamon accent-text"><i class="bi bi-flower1"></i></div>
-                <div class="result-title-text accent-text">運勢・天命乃杜</div>
-            `;
+            headerDiv.innerHTML = `<div class="result-kamon accent-text"><i class="bi bi-flower1"></i></div><div class="result-title-text accent-text">運勢・天命乃杜</div>`;
             outer.appendChild(headerDiv);
 
-            // 2. 累計発行本数 (第〇〇番の代わり)
             const issueDiv = document.createElement('div');
             issueDiv.className = 'result-issue-num';
             let issueNum = currentState.liveCount || 15118061;
             issueDiv.textContent = `累計発行本数 ${issueNum.toLocaleString()} 本`;
             outer.appendChild(issueDiv);
 
-            // 3. 中央: 運勢結果（円）
             const circleBox = document.createElement('div');
             circleBox.className = 'result-circle-box accent-border';
             circleBox.innerHTML = `<div class="result-kanji-main accent-text">${data.type}</div>`;
             outer.appendChild(circleBox);
 
-            // 4. 円の下: 運勢という文字
             const labelSub = document.createElement('div');
             labelSub.className = 'result-label-sub accent-text';
             labelSub.textContent = '運勢';
             outer.appendChild(labelSub);
 
-            // 5. メインメッセージ + 助言
             const msgArea = document.createElement('div');
             msgArea.className = 'result-main-message-area';
-            
             const adviceBox = document.createElement('div');
             adviceBox.className = 'result-advice-box accent-border';
             const adviceText = data.desc || "心穏やかに過ごすべし。";
             adviceBox.innerHTML = `<span class="advice-label accent-text">助言</span> <span class="accent-text">${adviceText}</span>`;
-            
             const poemDiv = document.createElement('div');
             poemDiv.className = 'result-poem-vertical accent-text';
             poemDiv.textContent = data.poem;
-
             msgArea.appendChild(adviceBox);
             msgArea.appendChild(poemDiv);
             outer.appendChild(msgArea);
 
-            // 6. 詳細運勢リスト (縦書き)
             const detailGrid = document.createElement('div');
             detailGrid.className = 'result-details-grid accent-border';
-            
             if (data.detail) {
                 data.detail.forEach(d => {
                     const col = document.createElement('div');
@@ -2305,234 +2320,84 @@
             }
             outer.appendChild(detailGrid);
 
-            // 7. 開運・不運項目
             const luckyArea = document.createElement('div');
             luckyArea.className = 'lucky-area';
-            
             const lBox = document.createElement('div');
             lBox.className = 'lucky-box accent-border';
             if (data.lucky) {
-                lBox.innerHTML = `
-                    <div class="lucky-title accent-text">開運</div>
-                    <div class="lucky-row accent-text"><span class="lucky-icon"><i class="bi bi-stars"></i></span>物：${data.lucky.item}</div>
-                    <div class="lucky-row accent-text"><span class="lucky-icon"><i class="bi bi-geo-alt"></i></span>所：${data.lucky.spot}</div>
-                    <div class="lucky-row accent-text"><span class="lucky-icon"><i class="bi bi-palette"></i></span>色：${data.lucky.color}</div>
-                    <div class="lucky-row accent-text"><span class="lucky-icon"><i class="bi bi-person"></i></span>人：${data.lucky.person}</div>
-                `;
+                lBox.innerHTML = `<div class="lucky-title accent-text">開運</div><div class="lucky-row accent-text"><span class="lucky-icon"><i class="bi bi-stars"></i></span>物：${data.lucky.item}</div><div class="lucky-row accent-text"><span class="lucky-icon"><i class="bi bi-geo-alt"></i></span>所：${data.lucky.spot}</div><div class="lucky-row accent-text"><span class="lucky-icon"><i class="bi bi-palette"></i></span>色：${data.lucky.color}</div><div class="lucky-row accent-text"><span class="lucky-icon"><i class="bi bi-person"></i></span>人：${data.lucky.person}</div>`;
             }
             luckyArea.appendChild(lBox);
-
             const uBox = document.createElement('div');
             uBox.className = 'unlucky-box accent-border';
             if (data.unlucky) {
-                uBox.innerHTML = `
-                    <div class="lucky-title accent-text red-text" style="color:red">不運・注意</div>
-                    <div class="lucky-row accent-text"><span class="lucky-icon"><i class="bi bi-exclamation-triangle"></i></span>物：${data.unlucky.item}</div>
-                    <div class="lucky-row accent-text"><span class="lucky-icon"><i class="bi bi-x-octagon"></i></span>所：${data.unlucky.spot}</div>
-                    <div class="lucky-row accent-text"><span class="lucky-icon"><i class="bi bi-person-x"></i></span>人：${data.unlucky.person}</div>
-                `;
+                uBox.innerHTML = `<div class="lucky-title accent-text red-text" style="color:red">不運・注意</div><div class="lucky-row accent-text"><span class="lucky-icon"><i class="bi bi-exclamation-triangle"></i></span>物：${data.unlucky.item}</div><div class="lucky-row accent-text"><span class="lucky-icon"><i class="bi bi-x-octagon"></i></span>所：${data.unlucky.spot}</div><div class="lucky-row accent-text"><span class="lucky-icon"><i class="bi bi-person-x"></i></span>人：${data.unlucky.person}</div>`;
             }
             luckyArea.appendChild(uBox);
             outer.appendChild(luckyArea);
 
-            // 8. フッター (日時・名前・QR)
             if (withFooter) {
                 const footer = document.createElement('div');
                 footer.className = 'result-footer-info accent-border';
-                
                 const metaDiv = document.createElement('div');
                 metaDiv.style.textAlign = 'left';
-                
                 const name = data.username || "参拝者";
                 const date = new Date(data.timestamp || Date.now());
                 const dateStr = `${date.getFullYear()}年${date.getMonth()+1}月${date.getDate()}日 ${date.getHours()}:${String(date.getMinutes()).padStart(2,'0')}`;
-
-                metaDiv.innerHTML = `
-                    <div class="result-user-name accent-text">${name} 様の運勢</div>
-                    <div class="result-date accent-text">参拝日: ${dateStr}</div>
-                `;
-
+                metaDiv.innerHTML = `<div class="result-user-name accent-text">${name} 様の運勢</div><div class="result-date accent-text">参拝日: ${dateStr}</div>`;
                 const qrDiv = document.createElement('div');
                 qrDiv.className = 'result-qr-container';
                 const qrTarget = document.createElement('div');
                 qrDiv.appendChild(qrTarget);
-                
                 footer.appendChild(metaDiv);
                 footer.appendChild(qrDiv);
                 outer.appendChild(footer);
-
                 setTimeout(() => {
                     new QRCode(qrTarget, {
-                        text: SITE_URL,
-                        width: 60,
-                        height: 60,
-                        colorDark : "#000000",
-                        colorLight : "#ffffff",
+                        text: getShareUrl(), // QRコードも現在の(短縮)URLにする
+                        width: 60, height: 60,
+                        colorDark : "#000000", colorLight : "#ffffff",
                         correctLevel : QRCode.CorrectLevel.H
                     });
                 }, 100);
             }
         }
 
-        // --- 履歴・おみくじの轍 ---
-        async function loadHistory() {
-            const list = document.getElementById('history-list');
-            const container = document.getElementById('history-container');
-            const overlay = document.getElementById('history-login-overlay');
-            const viewMode = document.getElementById('history-view-mode');
-            const myCountEl = document.getElementById('personal-history-count');
-            const globalCountEl = document.getElementById('global-history-count');
-
-            list.innerHTML = '';
-
-            if(!currentState.user) {
-                container.classList.add('history-blurred');
-                overlay.classList.remove('hidden');
-                viewMode.textContent = "";
-                myCountEl.textContent = "-";
-                globalCountEl.textContent = "-";
-
-                let html = '';
-                for(let i=0; i<10; i++) {
-                    html += `
-                        <div class="bg-gray-50 dark:bg-zinc-800 p-3 rounded flex justify-between items-center border-l-4 border-gray-300">
-                            <div class="flex flex-col">
-                                <span class="text-xs themed-text-sub">??? 様</span>
-                                <span class="text-xs text-gray-400">----/--/--</span>
-                            </div>
-                            <span class="font-bold text-lg">???</span>
-                        </div>
-                    `;
-                }
-                list.innerHTML = html;
-                return;
-            }
-
-            container.classList.remove('history-blurred');
-            overlay.classList.add('hidden');
-            viewMode.textContent = "全参拝者の記録 (全期間)";
-            list.innerHTML = '<p class="text-center text-sm themed-text-sub">読み込み中...</p>';
-            showLoading(true);
-
-            try {
-                const res = await fetch(`${API_BASE}/api/history/global?token=${encodeURIComponent(currentState.user.token)}`);
-                if(res.ok) {
-                    const data = await res.json();
-                    globalHistory = data.global || [];
-                    personalHistory = data.personal || [];
-                    
-                    myCountEl.textContent = personalHistory.length + "回";
-                    globalCountEl.textContent = globalHistory.length + "回";
-
-                    list.innerHTML = '';
-                    if(globalHistory.length === 0) {
-                        list.innerHTML = '<p class="text-gray-400 text-center">まだ履歴がありません。</p>';
-                        return;
-                    }
-
-                    globalHistory.forEach((item, index) => {
-                        const div = document.createElement('div');
-                        const isMe = item.username === currentState.user.username;
-                        const borderColor = item.result.includes('凶') ? 'border-gray-500' : 'border-red-500';
-                        const bgClass = isMe ? 'bg-red-50 dark:bg-red-900/20' : 'bg-gray-50 dark:bg-zinc-800';
-
-                        div.className = `${bgClass} p-3 rounded flex justify-between items-center border-l-4 ${borderColor} cursor-pointer hover:opacity-80 transition shadow-sm`;
-                        
-                        // 修正: クリックで詳細ページ(結果画面)へ遷移
-                        // 引いた時と「全く同じ」画面を再現するため、showResultDetailを使用
-                        div.onclick = () => {
-                            showResultDetail(false, item);
-                            // 履歴から開いた場合でもURLを更新する
-                            updateURL(item);
-                        }; 
-
-                        const date = new Date(item.timestamp);
-                        const dateStr = `${date.getMonth()+1}/${date.getDate()} ${date.getHours()}:${String(date.getMinutes()).padStart(2, '0')}`;
-                        
-                        div.innerHTML = `
-                            <div class="flex flex-col text-left">
-                                <span class="text-xs font-bold ${isMe ? 'text-red-600' : 'themed-text-sub'}">${item.username} 様</span>
-                                <span class="text-xs text-gray-400">${dateStr}</span>
-                            </div>
-                            <div class="flex items-center gap-4">
-                                <span class="font-bold text-red-700 dark:text-red-400 text-lg w-16 text-right">${item.result}</span>
-                            </div>
-                        `;
-                        list.appendChild(div);
-                    });
-                } else {
-                    list.innerHTML = '<p class="text-center text-red-500">取得失敗</p>';
-                }
-            } catch(e) {
-                console.error(e);
-                list.innerHTML = '<p class="text-center text-red-500">通信エラー</p>';
-            } finally {
-                showLoading(false);
-            }
-        }
-
-        // モーダル機能は使わなくなったので削除または無効化
-        function openHistoryDetail(index) {
-            // 廃止: 直接遷移するため
-        }
-        function closeHistoryDetail(e) {
-            if(e && e.target.id !== 'history-detail-modal' && e.target.tagName !== 'BUTTON') return;
-            document.getElementById('history-detail-modal').style.display = 'none';
-        }
-
-        // --- シェア用画像生成 (UI崩れ修正版) ---
+        // --- シェア用画像生成 ---
         function generateResultImage() {
             const status = document.getElementById('gen-img-status');
             status.textContent = "シェア画像を生成中...フォント読み込み待機";
-            
             const target = document.getElementById('result-capture-container');
             const container = document.getElementById('generated-image-container');
             container.innerHTML = '';
             container.classList.add('hidden');
             
-            // フォント読み込み完了を待つ
             document.fonts.ready.then(() => {
                 const originalScrollPos = window.scrollY;
-
-                // キャプチャ設定
                 html2canvas(target, { 
-                    scale: 3, // 高解像度化
-                    useCORS: true, 
-                    allowTaint: true,
-                    backgroundColor: null, 
-                    scrollX: 0,
-                    scrollY: -window.scrollY, 
+                    scale: 3, useCORS: true, allowTaint: true, backgroundColor: null, 
+                    scrollX: 0, scrollY: -window.scrollY, 
                     onclone: (clonedDoc) => {
                         const clonedOuter = clonedDoc.getElementById('result-card-outer');
                         if (clonedOuter) {
-                            // 縦書きハック: CSSで強制的に指定し直す
                             const verticals = clonedOuter.querySelectorAll('.result-poem-vertical, .result-advice-box, .detail-column');
                             verticals.forEach(el => {
-                                el.style.letterSpacing = '0.1em'; 
-                                el.style.lineHeight = '1.6';
-                                el.style.fontFamily = "'Zen Old Mincho', serif"; 
+                                el.style.letterSpacing = '0.1em'; el.style.lineHeight = '1.6'; el.style.fontFamily = "'Zen Old Mincho', serif"; 
                             });
-                            clonedOuter.style.height = 'auto';
-                            clonedOuter.style.minHeight = '1200px'; 
-                            clonedOuter.style.transform = 'none'; 
+                            clonedOuter.style.height = 'auto'; clonedOuter.style.minHeight = '1200px'; clonedOuter.style.transform = 'none'; 
                         }
                     }
                 }).then(canvas => {
                     status.textContent = "";
-                    
                     container.innerHTML = '<p class="text-green-600 font-bold mb-2">画像の生成完了</p>';
-                    
-                    // 生成された画像をBlob化して共有用に保持
                     canvas.toBlob(blob => {
                         currentState.lastImageBlob = blob;
                         const url = URL.createObjectURL(blob);
-                        
                         const img = document.createElement('img');
                         img.src = url;
                         img.className = "mx-auto rounded border w-32 mb-2 shadow-sm"; 
                         container.appendChild(img);
                         container.classList.remove('hidden');
-
                         const dlLink = document.createElement('a');
                         dlLink.href = url;
                         dlLink.download = `tenmei_omikuji_${Date.now()}.png`;
@@ -2540,9 +2405,7 @@
                         dlLink.innerHTML = '<i class="bi bi-download"></i> ダウンロード';
                         container.appendChild(dlLink);
                     }, 'image/png');
-
                     window.scrollTo(0, originalScrollPos);
-
                 }).catch(err => {
                     console.error(err);
                     status.textContent = "画像の生成に失敗しました。再試行してください。";
@@ -2551,390 +2414,66 @@
             });
         }
 
-        function getShareUrl() {
-            if(!currentState.lastResult) return SITE_URL;
-            // 現在のURLパラメータを含んだURLを返す
-            return window.location.href;
-        }
-
-        // --- シェアアクション (Web Share API優先) ---
+        // --- シェアアクション (超長文・豪華版) ---
         async function shareToX() {
             if(!currentState.lastResult) return;
             const res = currentState.lastResult;
             const userName = res.username || "参拝者"; 
             const url = getShareUrl();
             
-            // 豪華な投稿テキスト作成 (文字数制限考慮)
-            const shortText = `⛩️ 運勢・天命乃杜 ⛩️
-${userName}様の運勢
-✨【 ${res.type} 】✨
+            // X (Twitter) は140文字(日本語)ですが、URLは23文字換算。
+            // ある程度長文でもスレッド形式や長文ツイート対応クライアント向けにリッチにする
+            const text = `⛩️ 運勢・天命乃杜 ⛩️
+${userName}様の運勢神託
 
-📜『${res.poem}』
+✨ 運勢：【 ${res.type} 】 ✨
+￣￣￣￣￣￣￣￣￣￣
+📜 詠
+『${res.poem}』
 
-🗝️開運：${res.lucky.item}・${res.lucky.color}
+💬 助言
+${res.desc}
+
+💫 導きの鍵
+物：${res.lucky.item}
+所：${res.lucky.spot}
+色：${res.lucky.color}
 
 #天命乃杜 #おみくじ #運勢`;
 
-            // Web Share API (画像添付) トライ
             if (navigator.share && currentState.lastImageBlob) {
                 try {
                     const file = new File([currentState.lastImageBlob], "omikuji.png", { type: "image/png" });
                     if (navigator.canShare && navigator.canShare({ files: [file] })) {
-                        await navigator.share({
-                            text: shortText,
-                            url: url, 
-                            files: [file]
-                        });
-                        return; // 成功したら終了
+                        await navigator.share({ text: text, url: url, files: [file] });
+                        return;
                     }
-                } catch (e) {
-                    console.log("Web Share API failed, falling back to Intent", e);
-                }
+                } catch (e) { console.log(e); }
             }
-
-            // フォールバック: Twitter Intent (画像添付不可)
-            const intent = `https://twitter.com/intent/tweet?text=${encodeURIComponent(shortText)}&url=${encodeURIComponent(url)}`;
+            const intent = `https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}&url=${encodeURIComponent(url)}`;
             window.open(intent, '_blank');
         }
 
         function shareToFB() {
             const url = getShareUrl();
-            const intent = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(url)}`;
-            window.open(intent, '_blank');
+            window.open(`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(url)}`, '_blank');
         }
         
         async function shareToLine() {
             const url = getShareUrl();
             const res = currentState.lastResult;
             const text = `${res.username}の運勢：${res.type}\n${url}`;
-            
-            // LINEもWeb Share APIを試みる
-             if (navigator.share && currentState.lastImageBlob) {
+            if (navigator.share && currentState.lastImageBlob) {
                 try {
                     const file = new File([currentState.lastImageBlob], "omikuji.png", { type: "image/png" });
-                    await navigator.share({
-                        text: text,
-                        files: [file]
-                    });
+                    await navigator.share({ text: text, files: [file] });
                     return;
                 } catch(e) {}
             }
-
-            const intent = `https://social-plugins.line.me/lineit/share?url=${encodeURIComponent(url)}&text=${encodeURIComponent(text)}`;
-            window.open(intent, '_blank');
+            window.open(`https://social-plugins.line.me/lineit/share?url=${encodeURIComponent(url)}&text=${encodeURIComponent(text)}`, '_blank');
         }
 
-        // --- プロフィール機能 ---
-        function handleProfileClick() {
-            if(currentState.user) {
-                showView('profile');
-                document.getElementById('profile-current-username').textContent = currentState.user.username;
-                document.getElementById('profile-current-email').textContent = currentState.user.email;
-            } else {
-                showView('auth');
-            }
-        }
-
-        async function updateProfile() {
-            const newName = document.getElementById('profile-new-username').value;
-            const newPass = document.getElementById('profile-new-password').value;
-            
-            if(!newName && !newPass) return alert("変更内容を入力してください");
-            
-            showLoading(true);
-            try {
-                const res = await fetch(`${API_BASE}/api/user/update`, {
-                    method: 'POST',
-                    headers: {'Content-Type': 'application/json'},
-                    body: JSON.stringify({
-                        token: currentState.user.token,
-                        email: currentState.user.email,
-                        newUsername: newName || undefined,
-                        newPassword: newPass || undefined
-                    })
-                });
-                const data = await res.json();
-                if(data.success) {
-                    alert("更新しました");
-                    if(newName) currentState.user.username = newName;
-                    localStorage.setItem('omikuji_user', JSON.stringify(currentState.user));
-                    handleProfileClick();
-                } else {
-                    alert("更新失敗: " + data.error);
-                }
-            } catch(e) { alert("通信エラー"); }
-            finally { showLoading(false); }
-        }
-
-        async function deleteAccount() {
-            if(!confirm("本当にアカウントを削除しますか？\n履歴やお気に入りデータも完全に消去されます。")) return;
-            
-            showLoading(true);
-            try {
-                const res = await fetch(`${API_BASE}/api/user/delete`, {
-                    method: 'POST',
-                    headers: {'Content-Type': 'application/json'},
-                    body: JSON.stringify({
-                        token: currentState.user.token,
-                        email: currentState.user.email
-                    })
-                });
-                
-                // レスポンスがJSONかどうか確認
-                const contentType = res.headers.get("content-type");
-                if (contentType && contentType.indexOf("application/json") !== -1) {
-                    const data = await res.json();
-                    if(data.success) {
-                        alert("アカウントを削除しました。ご利用ありがとうございました。");
-                        logout();
-                    } else {
-                        alert("削除失敗: " + (data.message || data.error));
-                    }
-                } else {
-                    // JSONでない場合（サーバーエラーなど）
-                    const text = await res.text();
-                    console.error("Delete Error:", text);
-                    alert("削除処理中にエラーが発生しました。");
-                }
-            } catch(e) { 
-                console.error(e);
-                alert("通信エラーが発生しました。"); 
-            }
-            finally { showLoading(false); }
-        }
-
-        // --- 認証系 (新: 選択 -> 入力 -> 認証) ---
-        function startAuthFlow(mode) {
-            document.getElementById('auth-selection').classList.add('hidden');
-            document.getElementById('auth-step-1').classList.remove('hidden');
-            
-            currentState.authMode = mode;
-            
-            const loginFields = document.getElementById('form-login-fields');
-            const regFields = document.getElementById('form-register-fields');
-            const title = document.getElementById('auth-form-title');
-
-            if (mode === 'login') {
-                loginFields.classList.remove('hidden');
-                regFields.classList.add('hidden');
-                title.textContent = 'ログイン';
-            } else {
-                loginFields.classList.add('hidden');
-                regFields.classList.remove('hidden');
-                title.textContent = '新規登録';
-            }
-        }
-
-        function backToAuthSelection() {
-            document.getElementById('auth-step-1').classList.add('hidden');
-            document.getElementById('auth-selection').classList.remove('hidden');
-        }
-
-        async function initiateAuth(mode) {
-            const emailInputId = (mode === 'login') ? 'login-email' : 'reg-email';
-            const email = document.getElementById(emailInputId).value;
-            const username = document.getElementById('reg-username').value;
-            const pass = document.getElementById(mode === 'login' ? 'login-password' : 'reg-password').value;
-
-            if(!email || !pass) return alert("メールアドレスとパスワードを入力してください");
-            if(mode === 'register' && !username) return alert("ユーザー名を入力してください");
-
-            // コード送信APIを叩く (脆弱性修正: パスワード検証を追加)
-            showLoading(true);
-            try {
-                const res = await fetch(`${API_BASE}/api/auth/send`, { 
-                    method: 'POST', 
-                    headers: {'Content-Type': 'application/json'},
-                    body: JSON.stringify({ 
-                        email, 
-                        password: pass, // パスワードも送信して事前検証する
-                        username: mode === 'register' ? username : undefined,
-                        mode: mode 
-                    }) 
-                });
-                const data = await res.json();
-                
-                if(res.ok && data.success) {
-                    // ステップ2へ遷移
-                    document.getElementById('auth-step-1').classList.add('hidden');
-                    document.getElementById('auth-step-2').classList.remove('hidden');
-                    // コード入力欄をクリアしてフォーカス
-                    const codeInput = document.getElementById('auth-code-input');
-                    codeInput.value = '';
-                    codeInput.focus();
-                } else {
-                    alert(`送信エラー: ${data.error || '不明なエラー'}`);
-                }
-            } catch(e) { alert("通信エラー"); }
-            finally { showLoading(false); }
-        }
-
-        function backToAuthStep1() {
-            document.getElementById('auth-step-2').classList.add('hidden');
-            document.getElementById('auth-step-1').classList.remove('hidden');
-        }
-
-        async function finalizeAuth() {
-            const code = document.getElementById('auth-code-input').value;
-            if(!code || code.length !== 6) return alert("6桁の認証コードを入力してください");
-
-            const mode = currentState.authMode;
-            const email = document.getElementById(mode === 'login' ? 'login-email' : 'reg-email').value;
-            const pass = document.getElementById(mode === 'login' ? 'login-password' : 'reg-password').value;
-            const username = document.getElementById('reg-username').value;
-
-            showLoading(true);
-            try {
-                const endpoint = (mode === 'login') ? '/api/auth/login' : '/api/auth/register';
-                const body = { email, password: pass, code };
-                if (mode === 'register') body.username = username;
-
-                const res = await fetch(`${API_BASE}${endpoint}`, {
-                    method: 'POST',
-                    headers: {'Content-Type': 'application/json'},
-                    body: JSON.stringify(body)
-                });
-                const data = await res.json();
-                
-                if(res.ok && data.success) {
-                    loginSuccess({ email, username: data.username, token: data.token });
-                } else {
-                    alert(`${mode === 'login' ? 'ログイン' : '登録'}失敗: ${data.message || data.error}`);
-                }
-            } catch(e) { alert("通信エラー"); }
-            finally { showLoading(false); }
-        }
-
-        // 旧: sendAuthCode (削除せず互換性のため残すが使用しない)
-        async function sendAuthCode() { initiateAuth(currentState.authMode); }
-        // 旧: performLogin / performRegister (finalizeAuthに統合)
-
-        function loginSuccess(user) {
-            currentState.user = user;
-            localStorage.setItem('omikuji_user', JSON.stringify(user));
-            updateAuthUI();
-            loadFavorites(); 
-            loadLabSettings();
-            
-            // Lab画面のロック状態を即座に更新するためにView再描画
-            if(currentState.view === 'lab') {
-                showView('lab');
-            }
-            
-            alert(`ようこそ、${user.username || user.email} 様！`);
-            showView('home');
-        }
-
-        function updateAuthUI() {
-            const badge = document.getElementById('fav-status-badge');
-            const navBtn = document.getElementById('nav-login-btn');
-            
-            if(currentState.user) {
-                navBtn.innerHTML = `<i class="bi bi-person-check-fill text-green-400"></i><span class="nav-text">会員: ${currentState.user.username}</span>`;
-                if(badge) badge.textContent = "クラウド保存済み";
-            } else {
-                navBtn.innerHTML = `<i class="bi bi-person-circle"></i><span class="nav-text">ログイン/登録</span>`;
-                if(badge) badge.textContent = "端末に保存中";
-            }
-        }
-        
-        function logout() {
-            localStorage.removeItem('omikuji_user');
-            // ラボ設定もクリア
-            if(currentState.user) localStorage.removeItem(`lab_settings_${currentState.user.email}`);
-            
-            currentState.user = null;
-            location.reload();
-        }
-
-        // --- 記事詳細 (長文版・更新版) ---
-        function openArticle(type, id) {
-            const container = document.getElementById('article-detail-content');
-            container.innerHTML = '';
-            let html = '';
-            
-            if (type === 'column') {
-                if (id === 1) {
-                    html = `
-                        <div class="article-header"><h2 class="article-title">おみくじの順番（正しい吉凶の順）</h2><div class="article-meta">2026/01/01</div></div>
-                        <div class="article-content">
-                            <p>初詣や神社参拝の際に引く「おみくじ」。結果に一喜一憂するのも楽しみの一つですが、その「順位」について正しく理解している人は意外と少ないかもしれません。実は神社やお寺によって解釈が異なる場合があるのですが、一般的に広く知られている順位と、当サイト「運勢・天命乃杜」で採用している伝統的な12段階の順位について詳しく解説します。</p>
-                            <h3>一般的な7段階の順位</h3>
-                            <p>多くの神社で採用されている最もポピュラーな順位は以下の通りです。<br><b>大吉 ＞ 吉 ＞ 中吉 ＞ 小吉 ＞ 末吉 ＞ 凶 ＞ 大凶</b><br>あるいは、「吉」の位置が変わり、<b>大吉 ＞ 中吉 ＞ 小吉 ＞ 吉 ＞ 末吉 ＞ 凶 ＞ 大凶</b> とする場合もあります。「吉」は「大吉」に次ぐ良い運勢とする説と、「小吉」と「末吉」の間の中庸な運勢とする説があるのです。</p>
-                            <h3>当サイトの12段階詳細順位</h3>
-                            <p>当サイトでは、より細かく運勢を占うため、古来からの伝統に基づいた以下の12段階を採用しています。</p>
-                            <ol class="list-decimal list-inside space-y-2 ml-4 mb-6 font-bold">
-                                <li>大吉 (だいきち)：最高の運気。感謝を忘れずに。</li>
-                                <li>中吉 (ちゅうきち)：大吉に次ぐ良運。</li>
-                                <li>小吉 (しょうきち)：ささやかな幸せが続く。</li>
-                                <li>吉 (きち)：安定した運気。</li>
-                                <li>半吉 (はんきち)：吉と凶の中間。</li>
-                                <li>末吉 (すえきち)：末広がりの未来がある。</li>
-                                <li>末小吉 (すえしょうきち)：今は耐える時だが希望はある。</li>
-                                <li>凶 (きょう)：運気が停滞気味。慎重に。</li>
-                                <li>小凶 (しょうきょう)：小さなトラブルに注意。</li>
-                                <li>半凶 (はんきょう)：半分は凶だが半分は吉に転じる可能性。</li>
-                                <li>末凶 (すえきょう)：終わりの凶、つまり次は吉へ向かう。</li>
-                                <li>大凶 (だいきょう)：最も警戒すべき運気。しかしこれ以上落ちない。</li>
-                            </ol>
-                            <p>しかし、最も重要なのは順位そのものではありません。おみくじの本質は、そこに書かれている「神様からの和歌や助言」にあります。大吉であっても戒めの言葉があれば気を引き締め、大凶であっても励ましの言葉があれば希望を持つことが大切です。結果に一喜一憂せず、日々の行動指針として活用してください。</p>
-                        </div>
-                    `;
-                } else if (id === 2) {
-                    html = `
-                        <div class="article-header"><h2 class="article-title">悪い結果が出ても実は大丈夫？「凶」の正しい扱い方</h2><div class="article-meta">2026/01/01</div></div>
-                        <div class="article-content">
-                            <p>おみくじを引いて「凶」や「大凶」が出ると、誰しも気分が落ち込むものです。「今年は良いことがないのではないか」「不吉なことが起こる前兆ではないか」と不安になるかもしれません。しかし、古来より「凶」は必ずしも忌むべきものとはされてきませんでした。むしろ、考え方によっては幸運への入り口とも言えるのです。</p>
-                            <h3>「凶」は運気の底、これからは上がるのみ</h3>
-                            <p>陰陽道などの東洋思想では、物事は極まれば反転すると考えます。「大吉」は今が頂点であり、これからは下り坂になる可能性があるため、むしろ慎重な行動が求められます。慢心すれば足元をすくわれる、という戒めが含まれていることが多いのです。</p>
-                            <p>逆に「凶」は、今が運気の底であり、これからは上昇する一方であることを示唆しています。「禍を転じて福となす」という言葉通り、今の困難を乗り越えることで、より大きな幸運をつかむチャンスなのです。凶を引いたということは、これ以上悪くなることはない、つまり「伸びしろしかない」状態であると前向きに捉えましょう。</p>
-                            <h3>結ぶか、持ち帰るか？</h3>
-                            <p>悪い結果が出た場合、神社の境内にある「結び所」に結んで帰る風習が一般的です。これには「神様と縁を結ぶ」「悪い運気を神様に預けて浄化してもらう」という意味があります。利き手ではない手で結ぶことで、「困難な行いを達成した」として吉に転じさせるという修行的な意味合いも含まれています。</p>
-                            <p>一方で、「戒めとして財布に入れて持ち歩く」という考え方もあります。自分への警告として時々読み返すことで、慎重な行動を心がけ、災いを未然に防ぐことができるからです。ボロボロになったら神社にお焚き上げをお願いすれば良いのです。</p>
-                            <p>当サイトでは、引いたおみくじの結果は自動的に「おみくじの轍」に記録されます。これがデジタルの「結び所」です。悪い結果が出ても、ここに結んでいくことで運気は好転するでしょう。</p>
-                        </div>
-                    `;
-                } else if (id === 3) {
-                    html = `<div class="article-header"><h2 class="article-title">神社での正しい参拝マナー</h2><div class="article-meta">2025/12/30</div></div><div class="article-content"><p>神社は神様のお住まいです。初詣や日常の参拝で失礼のないよう、基本的な参拝マナーをおさらいしましょう。作法を知ることで、心も整い、より深い感謝の気持ちを伝えることができます。</p><h3>1. 鳥居をくぐる時</h3><p>鳥居は俗界と神域を分ける結界です。くぐる前には衣服を整え、軽く一礼（一揖）をし、帽子などは取ります。参道の中央（正中）は神様の通り道なので、避けて端を歩くのがマナーです。帰る際も、鳥居を出てから振り返り一礼するのが美しい作法です。</p><h3>2. 手水舎での清め方</h3><p>参拝の前に、手水舎（てみずや）で身の穢れを落とします。<br>1. 右手で柄杓を持ち、水を汲んで左手を清める。<br>2. 左手に持ち替え、右手を清める。<br>3. 再び右手に持ち、左手で水を受けて口をすすぐ（柄杓に直接口をつけない）。<br>4. 左手を再度清め、最後に柄杓を立てて残った水で柄を洗い流す。<br>これらを一杯の水で行うのが理想的です。</p><h3>3. 拝礼（二礼二拍手一礼）</h3><p>お賽銭を入れた後、鈴を鳴らし、姿勢を正します。<br>1. 深く二回お辞儀をする（二礼）。<br>2. 胸の前で両手を合わせ、右手を少し下にずらして二回拍手を打つ（二拍手）。音を立てることで邪気を払います。<br>3. 指先を揃えて祈りを捧げる。感謝の気持ちを述べ、その後に願い事を。<br>4. 最後にもう一度深くお辞儀をする（一礼）。</p><p>※出雲大社など、一部の神社では「四拍手」など作法が異なる場合がありますので、現地の案内に従ってください。</p></div>`;
-                } else if (id === 4) {
-                    html = `<div class="article-header"><h2 class="article-title">「失せ物」の本当の意味</h2><div class="article-meta">2025/12/28</div></div><div class="article-content"><p>おみくじの項目にある「失せ物（うせもの）」。これは単に「落とし物」や「無くした財布」のことだけを指すのではありません。人生において私たちが失ってしまうものは、物理的なモノだけではないからです。</p><h3>形あるもの、形なきもの</h3><p>失せ物には、物理的な物品だけでなく、「失った信頼」「忘れていた初心」「疎遠になった友人」「失恋した相手」「やる気」「健康」など、形のないものも含まれます。今あなたが心の中で「失ってしまった」と感じている欠落感、それこそが「失せ物」の正体かもしれません。</p><h3>言葉の意味</h3><ul class="list-disc ml-5 mb-4"><li><b>「出ず（いでず）」</b>：残念ながら戻ってこない可能性が高いです。諦めて新しいものを探すか、執着を手放すべき時です.過去にとらわれず前へ進めというメッセージです。</li><li><b>「出る」</b>：見つかります。焦らず探しましょう。</li><li><b>「高いところより出る」</b>：棚の上や、普段見ない高い場所、あるいは目上の人からの連絡で見つかるかもしれません。</li><li><b>「女（男）の知る事あり」</b>：その性別の知人が何か知っているか、持っている可能性があります。</li></ul><p>「失せ物」の欄を見る時は、今自分が「何を探しているのか」「何を失ってしまったと感じているのか」を深く問い直してみると、表面的な意味以上の深いメッセージを受け取れるかもしれません。</p></div>`;
-                } else if (id === 5) {
-                    html = `<div class="article-header"><h2 class="article-title">「待ち人」は恋愛だけじゃない</h2><div class="article-meta">2025/12/25</div></div><div class="article-content"><p>「待ち人来ず」と出ると、恋人ができないのかとガッカリする人が多いですが、これは大きな誤解です。おみくじにおける「待ち人」の意味はもっと広く、人生全般に関わるものです。</p><h3>人生を導くキーパーソン</h3><p>おみくじにおける「待ち人」とは、「あなたの人生に良い影響を与えてくれる人」「運命を切り開くきっかけとなる人」全般を指します。それは将来の恋人や結婚相手かもしれませんし、ビジネスパートナー、あるいは人生の師となる先生、一生の親友、もしかすると赤ちゃん（妊娠）のことかもしれません。あなたを待っている人、あるいはあなたが待つべき運命の人、すべてを含みます。</p><h3>「来ず」の意味</h3><p>「来ず」とあっても、一生現れないこともあります。「今はまだその時ではない」「自分から動きなさい」というメッセージであることが多いのです。「音信（たより）あり」とあれば、遠くから連絡が来るでしょう。「触り（さわり）あり」なら、何らかの邪魔が入るかもしれません。</p><p>待ち人は、じっと待っているだけでは現れないこともあります。自分を磨き、行動範囲を広げることで、巡り会う確率はぐっと高まります。焦らず、その時を待ちつつ、自分自身を高める努力を続けましょう。</p></div>`;
-                }
-            } else if (type === 'news') {
-                if (id === 1) html = `<div class="article-header"><h2 class="article-title">あけましておめでとうごさいます</h2><div class="article-meta">2026/01/01</div></div><div class="article-content"><p>謹んで新年のご祝詞を申し上げます。</p><p>旧年中はひとかたならぬご厚情を賜り、誠にありがとうございました。<br>本年も皆様に幸多き年となりますよう、天命乃杜運営一同、心よりお祈り申し上げます。</p><p>新しい年が始まり、皆様それぞれに新たな目標や願いをお持ちのことと存じます。当サイトのおみくじが、皆様の迷いを晴らし、一歩を踏み出すための道標となれば幸いです。本年も変わらぬご愛顧のほど、よろしくお願い申し上げます。</p></div>`;
-                else if (id === 2) html = `<div class="article-header"><h2 class="article-title">「運勢・天命乃杜」を公開いたしました。</h2><div class="article-meta">2026/01/02</div></div><div class="article-content"><p>平素より格別のご高配を賜り、厚く御礼申し上げます。</p><p>この度、誰でも気軽に、かつ本格的な運勢占いを楽しめるWebサイト「運勢・天命乃杜（てんめいのもり）」を正式に公開いたしました。</p><p>当サイトでは、伝統的なおみくじの要素に加え、西洋占星術と血液型診断を組み合わせた独自のアルゴリズムによる「日替わり運勢ランキング」を提供しております。また、会員登録（無料）を行っていただくことで、ご自身の運勢履歴を保存したり、全体の統計データに参加したりすることが可能です。今後もコンテンツの拡充や機能改善に努めてまいりますので、末永くご愛顧いただけますようお願い申し上げます。</p></div>`;
-                else if (id === 3) html = `<div class="article-header"><h2 class="article-title">プレオープンのお知らせ</h2><div class="article-meta">2025/12/25</div></div><div class="article-content"><p>本日より、一部機能を制限した状態でのプレオープンを開始いたしました。</p><p>現在ご利用いただけるのは、「おみくじ機能」および「12星座占い（β版）」です。正式リリース時には、履歴保存機能や会員システムが追加される予定です。</p></div>`;
-                else if (id === 4) html = `<div class="article-header"><h2 class="article-title">サーバーメンテナンス完了</h2><div class="article-meta">2025/12/20</div></div><div class="article-content"><p>本日14:00より実施しておりましたサーバーメンテナンスは、予定通り18:00に完了いたしました。</p><p>今回のメンテナンスにより、データベースの応答速度が向上しております。ご協力ありがとうございました。</p></div>`;
-                else if (id === 5) html = `<div class="article-header"><h2 class="article-title">サイト開設準備室より</h2><div class="article-meta">2025/12/10</div></div><div class="article-content"><p>「運勢・天命乃杜」の開設に向け、現在鋭意開発中です。</p><p>皆様に愛されるサイトを目指し、デザインの調整や占いロジックの検証を行っております。公開まで今しばらくお待ちください。</p></div>`;
-            }
-
-            container.innerHTML = html;
-            showView('article-detail');
-        }
-
-        // --- お気に入り、ランキングなど既存機能 (省略なし) ---
-        async function loadFavorites() {
-            const badge = document.getElementById('fav-status-badge');
-            if(currentState.user) {
-                if(badge) badge.textContent = "同期中...";
-                try {
-                    const res = await fetch(`${API_BASE}/api/favorites?email=${encodeURIComponent(currentState.user.email)}&token=${encodeURIComponent(currentState.user.token)}`);
-                    if(res.ok) {
-                        const data = await res.json();
-                        favoriteList = data.favorites || [];
-                        if(badge) badge.textContent = "クラウド保存済み";
-                    }
-                } catch(e) { console.error(e); }
-            } else {
-                const stored = localStorage.getItem('fortuneFavorites');
-                if (stored) favoriteList = JSON.parse(stored);
-                if(badge) badge.textContent = "端末に保存中";
-            }
-            renderFavorites();
-        }
-
-        // 12星座ロジック
+        // --- 12星座ロジック ---
         function initZodiacSystem() {
             const dateStr = getJSTDateString();
             const dateParts = dateStr.split('-');
@@ -2942,17 +2481,11 @@ ${userName}様の運勢
             generateDailyRanking(dateStr);
             renderRanking();
         }
-        
-        // --- 日本時間 (JST) の日付文字列取得 (修正版) ---
         function getJSTDateString() {
             return new Date().toLocaleDateString("ja-JP", {
-                timeZone: "Asia/Tokyo",
-                year: "numeric",
-                month: "2-digit",
-                day: "2-digit"
+                timeZone: "Asia/Tokyo", year: "numeric", month: "2-digit", day: "2-digit"
             }).replaceAll('/', '-');
         }
-        
         function getFutureDateString(baseDateStr, daysToAdd) {
             const date = new Date(baseDateStr);
             date.setDate(date.getDate() + daysToAdd);
@@ -2974,24 +2507,11 @@ ${userName}様の運勢
         const zodiacSigns = [{ id: "aries", name: "牡羊座", icon: "♈" }, { id: "taurus", name: "牡牛座", icon: "♉" }, { id: "gemini", name: "双子座", icon: "♊" },{ id: "cancer", name: "蟹座", icon: "♋" }, { id: "leo", name: "獅子座", icon: "♌" }, { id: "virgo", name: "乙女座", icon: "♍" },{ id: "libra", name: "天秤座", icon: "♎" }, { id: "scorpio", name: "蠍座", icon: "♏" }, { id: "sagittarius", name: "射手座", icon: "♐" },{ id: "capricorn", name: "山羊座", icon: "♑" }, { id: "aquarius", name: "水瓶座", icon: "♒" }, { id: "pisces", name: "魚座", icon: "♓" }];
         const bloodTypes = ["A", "B", "O", "AB"];
         
-        // ラッキーアイテム等の重複排除ロジック (12星座用)
-        // 48通り分のユニークな組み合わせを作るためにリストを拡張
-        const zodiacItemsList = [
-            "時計", "本", "水", "銀", "植物", "手帳", "香り", "靴", "音楽", "飴",
-            "鏡", "ハンカチ", "帽子", "鞄", "ペン", "写真", "石", "貝殻", "鍵", "鈴",
-            "リボン", "指輪", "お茶", "果物", "野菜", "パン", "手紙", "切手", "地図", "コンパス",
-            "ランプ", "キャンドル", "クッション", "マグカップ", "グラス", "皿", "箸", "スプーン", "フォーク", "ナイフ",
-            "石鹸", "タオル", "入浴剤", "お香", "風鈴", "扇子", "うちわ", "手袋", "マフラー", "傘"
-        ];
-        const zodiacColorsList = [
-            "赤", "青", "緑", "黄", "白", "黒", "金", "銀", "桃", "紺",
-            "橙", "紫", "茶", "灰", "水色", "黄緑", "深紅", "群青", "琥珀", "翡翠",
-            "瑠璃", "真紅", "漆黒", "純白", "桜色", "藤色", "山吹色", "若草色", "空色", "茜色",
-            "黄金", "白銀", "銅", "パール", "ベージュ", "クリーム", "ワインレッド", "オリーブ", "ミント", "ラベンダー",
-            "サーモン", "コーラル", "ターコイズ", "インディゴ", "マゼンタ", "シアン", "ライム", "レモン", "チャコール", "カーキ"
-        ];
+        // 12星座用リスト
+        const zodiacItemsList = ["時計", "本", "水", "銀", "植物", "手帳", "香り", "靴", "音楽", "飴", "鏡", "ハンカチ", "帽子", "鞄", "ペン", "写真", "石", "貝殻", "鍵", "鈴", "リボン", "指輪", "お茶", "果物", "野菜", "パン", "手紙", "切手", "地図", "コンパス", "ランプ", "キャンドル", "クッション", "マグカップ", "グラス", "皿", "箸", "スプーン", "フォーク", "ナイフ", "石鹸", "タオル", "入浴剤", "お香", "風鈴", "扇子", "うちわ", "手袋", "マフラー", "傘"];
+        const zodiacColorsList = ["赤", "青", "緑", "黄", "白", "黒", "金", "銀", "桃", "紺", "橙", "紫", "茶", "灰", "水色", "黄緑", "深紅", "群青", "琥珀", "翡翠", "瑠璃", "真紅", "漆黒", "純白", "桜色", "藤色", "山吹色", "若草色", "空色", "茜色", "黄金", "白銀", "銅", "パール", "ベージュ", "クリーム", "ワインレッド", "オリーブ", "ミント", "ラベンダー", "サーモン", "コーラル", "ターコイズ", "インディゴ", "マゼンタ", "シアン", "ライム", "レモン", "チャコール", "カーキ"];
 
-        // 運勢コメントデータ (ランク別: S=90+, A=75+, B=50+, C=49-)
+        // 12星座ランク定義
         const luckComments = {
             mainIntro: {
                 S: ["今日のあなたは、宇宙のエネルギーが完璧に調和し、あらゆる幸運を引き寄せる最強の配置にあります。", "まるで星々があなたのために輝いているかのような、奇跡的な一日が始まろうとしています。", "これまでの努力が全て報われるような、素晴らしい展開が期待できる最高の一日となるでしょう。"],
@@ -3017,7 +2537,6 @@ ${userName}様の運勢
                 B: ["無理をせず、自分のペースを守ることが大切です。リラックスできる時間を持ち、明日のためにエネルギーを蓄えましょう。", "焦らず着実に進むことが、最終的な成功への近道です。今日は準備期間と捉え、地道な努力を続けてください。"],
                 C: ["今日は「忍耐」の日と割り切り、嵐が過ぎ去るのを静かに待ちましょう。この経験が、必ずやあなたの糧となるはずです。", "落ち込む必要はありません。運気は必ず巡ります。今日は自分自身を見つめ直す良い機会と捉え、前を向いていきましょう。"]
             },
-            // サブ項目用ショートメッセージ
             loveShorts: {
                 S: ["運命の出会いが期待できる日", "パートナーとの愛が深まる最高の日", "アプローチするなら今がチャンス", "あなたの魅力が最高潮に達する時"],
                 A: ["穏やかで幸せな時間を過ごせそう", "素直な気持ちが相手に届く日", "良い出会いの兆しあり", "楽しいデートができる予感"],
@@ -3037,68 +2556,10 @@ ${userName}様の運勢
                 C: ["ケアレスミスに十分注意して", "確認作業を怠らないように", "無理なスケジュールは避けて", "休息を取りつつ慎重に進めて"]
             }
         };
-
-        // 48種類の運勢テキスト（順位連動型：上位ほど良い内容、下位ほど悪い内容）
-        const zodiacDescriptions = [
-            // 1-12位 (絶好調)
-            "宇宙のエネルギーが完全に味方しています。何をしても成功する最強の運気です。長年の夢が叶う瞬間がすぐそこまで来ています。",
-            "驚くほどの幸運が舞い込む一日。直感が冴え渡り、迷いのない決断が大きな成果を生みます。新しい挑戦に最適な日です。",
-            "周囲からの評価が急上昇し、リーダーシップを発揮できる時。自信を持って行動すれば、誰もがあなたについてくるでしょう。",
-            "恋愛も仕事も絶好調。あなたの魅力が最大限に輝き、素敵な出会いやチャンスを引き寄せます。笑顔を絶やさずに。",
-            "これまでの努力が実を結び、大きな収穫を得られる日。感謝の気持ちを伝えることで、さらなる幸運が巡ってきます。",
-            "金運が最高潮。思いがけない臨時収入や、将来につながる投資のチャンスがありそう。直感を信じて吉。",
-            "人間関係が非常に円滑で、楽しい時間を過ごせます。困っている人を助けることで、あなたの評判はさらに高まるでしょう。",
-            "クリエイティブな才能が開花する日。斬新なアイデアが次々と浮かび、周囲を驚かせること間違いなしです。",
-            "心身ともに充実し、エネルギーに満ち溢れています。難しい課題も今日なら難なくクリアできるはずです。",
-            "過去の失敗が嘘のように、全てが順調に進みます。ポジティブな言葉を使うことで、さらに運気を加速させましょう。",
-            "あなたの優しさが周囲を癒やし、感謝される一日。穏やかな気持ちで過ごすことで、幸運の女神が微笑みます。",
-            "好奇心の赴くままに行動すると吉。新しい趣味や学びが、将来の大きな武器となる可能性を秘めています。",
-            // 13-24位 (好調)
-            "安定した運気の一日。大きなトラブルもなく、平穏に過ごせます。日々の小さな幸せを大切にしましょう。",
-            "友人との会話にツキがあります。何気ない一言から、悩みを解決するヒントが得られるかもしれません。",
-            "少し忙しくなりそうですが、充実感のある一日。計画的に行動することで、予想以上の成果を上げられます。",
-            "懐かしい人からの連絡があるかも。旧交を温めることで、忘れていた大切な気持ちを思い出せるでしょう。",
-            "体調管理に気をつければ、快適に過ごせる日。軽い運動やストレッチでリフレッシュするのがおすすめです。",
-            "買い物運が好調。欲しかったものがお得に手に入るかもしれません。ただし、衝動買いには少し注意を。",
-            "仕事や勉強がはかどる日。集中力が高まっているので、溜まっていたタスクを一気に片付けるチャンスです。",
-            "パートナーや家族との絆が深まる予感。素直な気持ちを伝えることで、関係がより良くなるでしょう。",
-            "芸術に触れると運気がアップ。映画鑑賞や読書など、心を豊かにする時間を持ちましょう。",
-            "美味しい食事をとることでパワーチャージ。旬の食材を使った料理を食べると、さらに運気が上がります。",
-            "部屋の片付けをすると吉。不要なものを手放すことで、新しい運気が入り込むスペースが生まれます。",
-            "自然の中で過ごすとリラックスできます。近くの公園を散歩するだけでも、良い気分転換になるでしょう。",
-            // 25-36位 (普通〜やや注意)
-            "可もなく不可もない一日ですが、油断は禁物。些細なミスが大きな問題に発展しないよう、確認を怠らずに。",
-            "少し疲れが溜まっているようです。無理をせず、早めに帰宅してゆっくり休むことを優先しましょう。",
-            "感情の起伏が激しくなりがち。イライラした時は深呼吸をして、冷静さを取り戻すよう心がけてください。",
-            "予定変更が相次ぎ、慌ただしい一日になるかも。臨機応変な対応が求められます。柔軟な思考を持ちましょう。",
-            "言葉の選び方に注意が必要。悪気はなくても、相手を傷つけてしまう可能性があります。慎重な発言を。",
-            "忘れ物や落とし物に気をつけて。出かける前の持ち物チェックは入念に行うのが無難です。",
-            "周囲の意見に流されやすい日。自分の軸をしっかりと持ち、安易な同調は避けるようにしましょう。",
-            "金銭感覚が少し麻痺しがち。財布の紐を固く締め、本当に必要なものかどうか自問自答してください。",
-            "恋愛面で少しすれ違いが起きるかも。相手の立場になって考えることで、トラブルを回避できます。",
-            "健康面で不安が出るかもしれません。少しでも違和感を感じたら、無理をせず休息をとってください。",
-            "SNSでのトラブルに注意。不用意な発言や拡散は控え、静観する姿勢が身を守ります。",
-            "やる気が出ない時は、無理に頑張らなくて大丈夫。今日は充電期間と割り切り、自分を甘やかしましょう。",
-            // 37-48位 (不調・要注意)
-            "運気は低迷気味。予期せぬトラブルに巻き込まれる可能性があります。今日は目立った行動は控えましょう。",
-            "誤解を受けやすい日。言い訳をすると逆効果になるので、誠実な態度で接することが大切です。",
-            "計画通りに進まないことが多い一日。焦れば焦るほど空回りします。一度立ち止まり、深呼吸を。",
-            "人間関係のトラブルに要注意。批判的な言動は避け、聞き役に徹するのが賢明です。",
-            "体調を崩しやすい日。暴飲暴食や夜更かしは厳禁。規則正しい生活を心がけ、体を労りましょう。",
-            "金銭トラブルの暗示あり。甘い話には裏があります。怪しい勧誘や投資話には絶対に乗らないでください。",
-            "大切なものを失くしてしまうかも。貴重品の管理はいつも以上に厳重に行い、肌身離さず持ち歩きましょう。",
-            "過去の失敗を蒸し返される可能性があります。反論せず、素直に受け止める姿勢が事態を沈静化させます。",
-            "孤独を感じやすい一日。しかし、それは自分と向き合うための大切な時間です。静かに読書などをして過ごしましょう。",
-            "突発的なアクシデントに注意。時間に余裕を持って行動し、万が一の事態に備えておくことが大切です。",
-            "今日は「忍耐」の日。理不尽なことがあっても、グッと堪えてやり過ごしましょう。明日は必ず良くなります。",
-            "最下位ですが、落ち込む必要はありません。これ以上悪くなることはない「底」の状態。ここからは上がるのみです。"
-        ];
+        const zodiacDescriptions = ["宇宙のエネルギーが完全に味方しています。何をしても成功する最強の運気です。長年の夢が叶う瞬間がすぐそこまで来ています。"]; // フォールバック
 
         function getRank(score) {
-            if (score >= 90) return 'S';
-            if (score >= 75) return 'A';
-            if (score >= 50) return 'B';
-            return 'C';
+            if (score >= 90) return 'S'; if (score >= 75) return 'A'; if (score >= 50) return 'B'; return 'C';
         }
 
         function generateDailyRanking(dateStr) {
@@ -3106,103 +2567,47 @@ ${userName}様の運勢
             zodiacSigns.forEach(sign => { bloodTypes.forEach(blood => { combinations.push({ sign, blood }); }); });
             const rng = new SeededRandom(dateStr);
             
-            // 重複しないようにシャッフルリストを作成
-            let shuffledItems = [];
-            let shuffledColors = [];
+            let shuffledItems = []; let shuffledColors = [];
             while(shuffledItems.length < combinations.length) shuffledItems = shuffledItems.concat(zodiacItemsList);
             while(shuffledColors.length < combinations.length) shuffledColors = shuffledColors.concat(zodiacColorsList);
-            
-            for (let i = shuffledItems.length - 1; i > 0; i--) {
-                const j = Math.floor(rng.next() * (i + 1));
-                [shuffledItems[i], shuffledItems[j]] = [shuffledItems[j], shuffledItems[i]];
-            }
-            for (let i = shuffledColors.length - 1; i > 0; i--) {
-                const j = Math.floor(rng.next() * (i + 1));
-                [shuffledColors[i], shuffledColors[j]] = [shuffledColors[j], shuffledColors[i]];
-            }
+            for (let i = shuffledItems.length - 1; i > 0; i--) { const j = Math.floor(rng.next() * (i + 1)); [shuffledItems[i], shuffledItems[j]] = [shuffledItems[j], shuffledItems[i]]; }
+            for (let i = shuffledColors.length - 1; i > 0; i--) { const j = Math.floor(rng.next() * (i + 1)); [shuffledColors[i], shuffledColors[j]] = [shuffledColors[j], shuffledColors[i]]; }
 
             let scoredData = combinations.map((item, index) => {
                 const baseScore = Math.floor(rng.next() * 60) + 40; 
                 const loveScore = Math.floor(rng.next() * 60) + 40;
                 const moneyScore = Math.floor(rng.next() * 60) + 40;
                 const workScore = Math.floor(rng.next() * 60) + 40;
-                const totalScoreRaw = (baseScore + loveScore + moneyScore + workScore) / 4;
-                const totalScore = Math.min(100, Math.floor(totalScoreRaw));
+                const totalScore = Math.min(100, Math.floor((baseScore + loveScore + moneyScore + workScore) / 4));
                 
-                // ランク判定
-                const totalRank = getRank(totalScore);
-                const loveRank = getRank(loveScore);
-                const moneyRank = getRank(moneyScore);
-                const workRank = getRank(workScore);
+                const totalRank = getRank(totalScore); const loveRank = getRank(loveScore); const moneyRank = getRank(moneyScore); const workRank = getRank(workScore);
+                const loveDesc = luckComments.loveShorts[loveRank][Math.floor(rng.next() * luckComments.loveShorts[loveRank].length)];
+                const moneyDesc = luckComments.moneyShorts[moneyRank][Math.floor(rng.next() * luckComments.moneyShorts[moneyRank].length)];
+                const workDesc = luckComments.workShorts[workRank][Math.floor(rng.next() * luckComments.workShorts[workRank].length)];
 
-                // ショートメッセージ生成 (ランクに応じてランダム選択)
-                const loveDescList = luckComments.loveShorts[loveRank];
-                const moneyDescList = luckComments.moneyShorts[moneyRank];
-                const workDescList = luckComments.workShorts[workRank];
-
-                const loveDesc = loveDescList[Math.floor(rng.next() * loveDescList.length)];
-                const moneyDesc = moneyDescList[Math.floor(rng.next() * moneyDescList.length)];
-                const workDesc = workDescList[Math.floor(rng.next() * workDescList.length)];
-
-                // 長文生成ロジック
-                // 1. 導入 (総合ランクベース)
-                const introList = luckComments.mainIntro[totalRank];
-                let longDesc = introList[Math.floor(rng.next() * introList.length)];
-
-                // 2. 各論 (特徴的なものを挿入)
-                // SランクまたはCランクのものがあれば優先的に言及する
+                let longDesc = luckComments.mainIntro[totalRank][Math.floor(rng.next() * luckComments.mainIntro[totalRank].length)];
                 let specifics = [];
-                
-                // 恋愛について
                 if (loveRank === 'S') specifics.push(luckComments.mainLovePart.S[Math.floor(rng.next() * luckComments.mainLovePart.S.length)]);
                 else if (loveRank === 'C') specifics.push(luckComments.mainLovePart.C[Math.floor(rng.next() * luckComments.mainLovePart.C.length)]);
-                
-                // 金運について
                 if (moneyRank === 'S') specifics.push(luckComments.mainMoneyPart.S[Math.floor(rng.next() * luckComments.mainMoneyPart.S.length)]);
                 else if (moneyRank === 'C') specifics.push(luckComments.mainMoneyPart.C[Math.floor(rng.next() * luckComments.mainMoneyPart.C.length)]);
-
-                // 仕事について
                 if (workRank === 'S') specifics.push(luckComments.mainWorkPart.S[Math.floor(rng.next() * luckComments.mainWorkPart.S.length)]);
                 else if (workRank === 'C') specifics.push(luckComments.mainWorkPart.C[Math.floor(rng.next() * luckComments.mainWorkPart.C.length)]);
-
-                // 特徴的なものがなければ、ランダムに1つ選んで普通のコメントを入れる（今回は簡略化のため特徴的なもののみ結合）
-                if (specifics.length > 0) {
-                    longDesc += " " + specifics.join(" ");
-                }
-
-                // 3. 結び (総合ランクベース)
-                const conclusionList = luckComments.mainConclusion[totalRank];
-                longDesc += " " + conclusionList[Math.floor(rng.next() * conclusionList.length)];
-
-                // フォールバック: 万が一生成テキストが空なら48種テキストを使う（通常ありえないが）
-                if (!longDesc) longDesc = zodiacDescriptions[0];
+                if (specifics.length > 0) longDesc += " " + specifics.join(" ");
+                longDesc += " " + luckComments.mainConclusion[totalRank][Math.floor(rng.next() * luckComments.mainConclusion[totalRank].length)];
 
                 return {
-                    sign: item.sign,
-                    blood: item.blood,
-                    totalScore: totalScore,
-                    love: { score: loveScore, desc: loveDesc },
-                    money: { score: moneyScore, desc: moneyDesc },
-                    work: { score: workScore, desc: workDesc },
-                    luckyNum: Math.floor(rng.next() * 9) + 1,
-                    item: shuffledItems[index], 
-                    color: shuffledColors[index],
-                    longDesc: longDesc
+                    sign: item.sign, blood: item.blood, totalScore: totalScore,
+                    love: { score: loveScore, desc: loveDesc }, money: { score: moneyScore, desc: moneyDesc }, work: { score: workScore, desc: workDesc },
+                    luckyNum: Math.floor(rng.next() * 9) + 1, item: shuffledItems[index], color: shuffledColors[index], longDesc: longDesc
                 };
             });
-            
-            // スコア順にソートして順位を確定
             scoredData.sort((a, b) => b.totalScore - a.totalScore);
             scoredData.forEach((d, i) => { d.rank = i + 1; });
-
-            // サブランク計算
             scoredData.forEach(d => {
-                const sorted = [...scoredData].sort((a, b) => b.love.score - a.love.score);
-                d.love.rank = sorted.findIndex(s => s === d) + 1;
-                const sortedM = [...scoredData].sort((a, b) => b.money.score - a.money.score);
-                d.money.rank = sortedM.findIndex(s => s === d) + 1;
-                const sortedW = [...scoredData].sort((a, b) => b.work.score - a.work.score);
-                d.work.rank = sortedW.findIndex(s => s === d) + 1;
+                const sorted = [...scoredData].sort((a, b) => b.love.score - a.love.score); d.love.rank = sorted.findIndex(s => s === d) + 1;
+                const sortedM = [...scoredData].sort((a, b) => b.money.score - a.money.score); d.money.rank = sortedM.findIndex(s => s === d) + 1;
+                const sortedW = [...scoredData].sort((a, b) => b.work.score - a.work.score); d.work.rank = sortedW.findIndex(s => s === d) + 1;
             });
             scoredData.forEach(person => { person.calendar = calculateFutureLuck(person.sign.id, person.blood, dateStr); });
             dailyRanking = scoredData;
@@ -3216,10 +2621,7 @@ ${userName}様の運勢
                 let dayScores = [];
                 zodiacSigns.forEach(s => {
                     bloodTypes.forEach(b => {
-                        const bScore = Math.floor(rng.next() * 60) + 40;
-                        const lScore = Math.floor(rng.next() * 60) + 40;
-                        const mScore = Math.floor(rng.next() * 60) + 40;
-                        const wScore = Math.floor(rng.next() * 60) + 40;
+                        const bScore = Math.floor(rng.next() * 60) + 40; const lScore = Math.floor(rng.next() * 60) + 40; const mScore = Math.floor(rng.next() * 60) + 40; const wScore = Math.floor(rng.next() * 60) + 40;
                         const tScore = Math.floor((bScore + lScore + mScore + wScore) / 4);
                         dayScores.push({ s: s.id, b: b, t: tScore, l: lScore, m: mScore, w: wScore });
                     });
@@ -3341,6 +2743,8 @@ ${userName}様の運勢
             const myData = dailyRanking.find(d => d.sign.id === signId && d.blood === bloodId);
             if (myData) { resultDiv.innerHTML = createCardHTML(myData); resultDiv.classList.remove('hidden'); }
         }
+        function backToAuthSelection() { document.getElementById('auth-step-1').classList.add('hidden'); document.getElementById('auth-selection').classList.remove('hidden'); }
+        function backToAuthStep1() { document.getElementById('auth-step-2').classList.add('hidden'); document.getElementById('auth-step-1').classList.remove('hidden'); }
     </script>
 </body>
 </html>
