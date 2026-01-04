@@ -737,47 +737,74 @@
             --flask-color-end: #4a00e0;
         }
         
-        /* --- リアルなフラスコアニメーション --- */
         .flask-liquid-path {
             fill: url(#flaskLiquidGradient);
-            /* 波が左右に動くアニメーション */
-            animation: liquidWaveReal 3s infinite linear;
+            animation: liquidWave 2s infinite ease-in-out;
+            transform-origin: 50% 100%;
         }
-
-        .flask-liquid-container {
-            /* 液体全体が少し傾くアニメーション */
-            animation: liquidSlosh 4s infinite ease-in-out;
+        .flask-body-path {
+            stroke: currentColor;
+            stroke-width: 2.5;
+            fill: none;
+            stroke-linecap: round; 
+            stroke-linejoin: round;
+        }
+        /* --- Labs フラスコアニメーション修正 --- */
+        .flask-bubble {
+            fill: rgba(59, 130, 246, 0.6); /* ライトモード: 青色で見やすく */
+            animation: bubbleRise 3s infinite ease-in;
+        }
+        
+        /* ダークモード時は白に戻す */
+        @media (prefers-color-scheme: dark) {
+            .flask-bubble {
+                fill: rgba(255, 255, 255, 0.6);
+            }
+        }
+        .dark .flask-bubble {
+            fill: rgba(255, 255, 255, 0.6);
+        }
+        .flask-group {
+            animation: flaskShake 3s infinite ease-in-out; /* 揺れを強く、速く */
             transform-origin: 50% 80%;
         }
-
-        .flask-group {
-            /* フラスコ本体の揺れ */
-            animation: flaskSwing 4s infinite ease-in-out;
-            transform-origin: 50% 10%;
+        
+        /* タイトル上の大きいアニメーションフラスコ */
+        .title-flask-anim {
+            width: 140px;
+            height: 140px;
+            margin: 0 auto 10px;
+        }
+        .title-flask-anim .flask-body-path {
+            stroke: var(--text-main);
+            stroke-width: 2;
         }
 
-        /* 液面が左右に流れる（波の移動） */
-        @keyframes liquidWaveReal {
-            0% { transform: translateX(-20px); }
-            100% { transform: translateX(0px); }
+        /* サイドバー用の小さいアニメーションフラスコ */
+        .nav-btn .lab-icon-svg {
+             width: 32px;
+             height: 32px;
+             margin: 0;
         }
-
-        /* 液体全体が慣性で左右に傾く */
-        @keyframes liquidSlosh {
-            0%, 100% { transform: rotate(-3deg); }
-            50% { transform: rotate(3deg); }
+        
+        @keyframes liquidWave {
+            0%, 100% { transform: scaleY(1) translateY(0) skewX(0deg); }
+            25% { transform: scaleY(1.05) translateY(-2px) skewX(2deg); }
+            50% { transform: scaleY(1.1) translateY(-3px) skewX(0deg); }
+            75% { transform: scaleY(1.05) translateY(-2px) skewX(-2deg); }
         }
-
-        /* フラスコが吊り下げられているような揺れ */
-        @keyframes flaskSwing {
-            0%, 100% { transform: rotate(2deg) translateX(1px); }
-            50% { transform: rotate(-2deg) translateX(-1px); }
+        @keyframes flaskShake {
+            0%, 100% { transform: rotate(0deg); }
+            15% { transform: rotate(12deg); }
+            30% { transform: rotate(-10deg); }
+            45% { transform: rotate(8deg); }
+            60% { transform: rotate(-6deg); }
+            75% { transform: rotate(3deg); }
         }
-
         @keyframes bubbleRise {
             0% { transform: translateY(0) scale(0.5); opacity: 0; }
             20% { opacity: 1; }
-            100% { transform: translateY(-45px) scale(1.2); opacity: 0; }
+            100% { transform: translateY(-40px) scale(1.2); opacity: 0; }
         }
 
         /* 認証コード入力欄（和風） */
@@ -1207,40 +1234,26 @@
         <section id="view-lab" class="view-section max-w-3xl mx-auto relative">
             <div class="text-center mb-10 mt-4">
                 <!-- タイトル上のアニメーションフラスコ (カスタムSVG) -->
-                <!-- タイトル上のアニメーションフラスコ (物理修正版) -->
-<div class="title-flask-anim">
-    <svg viewBox="0 0 24 24" overflow="hidden" style="width:100%; height:100%;">
-        <defs>
-            <!-- はっきりした青から紫のグラデーション -->
-            <linearGradient id="flaskLiquidGradient" x1="0%" y1="0%" x2="0%" y2="100%">
-                <stop offset="0%" style="stop-color:#3b82f6;stop-opacity:1" /> <!-- 鮮やかな青 -->
-                <stop offset="100%" style="stop-color:#8b5cf6;stop-opacity:1" /> <!-- 深い紫 -->
-            </linearGradient>
-            <!-- 液体をフラスコの形に切り抜くマスク -->
-            <clipPath id="flaskClip">
-                <path d="M9 2 L15 2 L15 7 L20 18 C20.5 19.5, 19 22, 16 22 L8 22 C5 22, 3.5 19.5, 4 18 L9 7 Z" />
-            </clipPath>
-        </defs>
-        
-        <g class="flask-group">
-            <!-- 液体部分 (クリップ適用) -->
-            <g clip-path="url(#flaskClip)" class="flask-liquid-container">
-                <!-- 長い波のパスを左右に動かすことでリアルな液面を表現 -->
-                <path class="flask-liquid-path" 
-                      d="M-20 14 Q-15 13 -10 14 T0 14 T10 14 T20 14 T30 14 T40 14 V25 H-20 Z" />
-                
-                <!-- 泡 -->
-                <circle class="flask-bubble" cx="10" cy="18" r="0.8" style="animation-delay:0s" />
-                <circle class="flask-bubble" cx="14" cy="19" r="0.6" style="animation-delay:1.2s" />
-                <circle class="flask-bubble" cx="12" cy="16" r="0.5" style="animation-delay:0.6s" />
-            </g>
-            
-            <!-- フラスコ本体の線 -->
-            <path class="flask-body-path" fill="none" stroke-width="1.5"
-                  d="M9 2 L15 2 L15 7 L20 18 C20.5 19.5, 19 22, 16 22 L8 22 C5 22, 3.5 19.5, 4 18 L9 7 Z" />
-        </g>
-    </svg>
-</div>
+                <div class="title-flask-anim">
+                    <svg viewBox="0 0 24 24" overflow="visible" style="width:100%; height:100%;">
+                        <defs>
+                            <linearGradient id="flaskLiquidGradient" x1="0%" y1="0%" x2="0%" y2="100%">
+                                <stop offset="0%" style="stop-color:#818cf8;stop-opacity:1" />
+                                <stop offset="100%" style="stop-color:#6366f1;stop-opacity:1" />
+                            </linearGradient>
+                        </defs>
+                        <g class="flask-group">
+                            <!-- 液体 (よりリアルな波) -->
+                            <path class="flask-liquid-path" d="M5 14 C7 13, 9 15, 12 14 C15 13, 17 15, 19 14 L18.5 20 C18.5 21, 18 22, 16 22 L8 22 C6 22, 5.5 21, 5.5 20 Z" />
+                            <!-- 泡 -->
+                            <circle class="flask-bubble" cx="10" cy="18" r="1" style="animation-delay:0s" />
+                            <circle class="flask-bubble" cx="14" cy="19" r="0.8" style="animation-delay:1s" />
+                            <circle class="flask-bubble" cx="12" cy="16" r="0.6" style="animation-delay:0.5s" />
+                            <!-- フラスコ本体 (底丸め) -->
+                            <path class="flask-body-path" d="M9 2 L15 2 L15 7 L20 18 C20.5 19.5, 19 22, 16 22 L8 22 C5 22, 3.5 19.5, 4 18 L9 7 Z" />
+                        </g>
+                    </svg>
+                </div>
                 <h2 class="text-4xl font-bold mb-2 tracking-wide" style="color: #6366f1;">
                     TENMEI Labs
                 </h2>
