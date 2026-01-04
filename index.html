@@ -737,74 +737,47 @@
             --flask-color-end: #4a00e0;
         }
         
+        /* --- リアルなフラスコアニメーション --- */
         .flask-liquid-path {
             fill: url(#flaskLiquidGradient);
-            animation: liquidWave 2s infinite ease-in-out;
-            transform-origin: 50% 100%;
-        }
-        .flask-body-path {
-            stroke: currentColor;
-            stroke-width: 2.5;
-            fill: none;
-            stroke-linecap: round; 
-            stroke-linejoin: round;
-        }
-        /* --- Labs フラスコアニメーション修正 --- */
-        .flask-bubble {
-            fill: rgba(59, 130, 246, 0.6); /* ライトモード: 青色で見やすく */
-            animation: bubbleRise 3s infinite ease-in;
-        }
-        
-        /* ダークモード時は白に戻す */
-        @media (prefers-color-scheme: dark) {
-            .flask-bubble {
-                fill: rgba(255, 255, 255, 0.6);
-            }
-        }
-        .dark .flask-bubble {
-            fill: rgba(255, 255, 255, 0.6);
-        }
-        .flask-group {
-            animation: flaskShake 3s infinite ease-in-out; /* 揺れを強く、速く */
-            transform-origin: 50% 80%;
-        }
-        
-        /* タイトル上の大きいアニメーションフラスコ */
-        .title-flask-anim {
-            width: 140px;
-            height: 140px;
-            margin: 0 auto 10px;
-        }
-        .title-flask-anim .flask-body-path {
-            stroke: var(--text-main);
-            stroke-width: 2;
+            /* 波が左右に動くアニメーション */
+            animation: liquidWaveReal 3s infinite linear;
         }
 
-        /* サイドバー用の小さいアニメーションフラスコ */
-        .nav-btn .lab-icon-svg {
-             width: 32px;
-             height: 32px;
-             margin: 0;
+        .flask-liquid-container {
+            /* 液体全体が少し傾くアニメーション */
+            animation: liquidSlosh 4s infinite ease-in-out;
+            transform-origin: 50% 80%;
         }
-        
-        @keyframes liquidWave {
-            0%, 100% { transform: scaleY(1) translateY(0) skewX(0deg); }
-            25% { transform: scaleY(1.05) translateY(-2px) skewX(2deg); }
-            50% { transform: scaleY(1.1) translateY(-3px) skewX(0deg); }
-            75% { transform: scaleY(1.05) translateY(-2px) skewX(-2deg); }
+
+        .flask-group {
+            /* フラスコ本体の揺れ */
+            animation: flaskSwing 4s infinite ease-in-out;
+            transform-origin: 50% 10%;
         }
-        @keyframes flaskShake {
-            0%, 100% { transform: rotate(0deg); }
-            15% { transform: rotate(12deg); }
-            30% { transform: rotate(-10deg); }
-            45% { transform: rotate(8deg); }
-            60% { transform: rotate(-6deg); }
-            75% { transform: rotate(3deg); }
+
+        /* 液面が左右に流れる（波の移動） */
+        @keyframes liquidWaveReal {
+            0% { transform: translateX(-20px); }
+            100% { transform: translateX(0px); }
         }
+
+        /* 液体全体が慣性で左右に傾く */
+        @keyframes liquidSlosh {
+            0%, 100% { transform: rotate(-3deg); }
+            50% { transform: rotate(3deg); }
+        }
+
+        /* フラスコが吊り下げられているような揺れ */
+        @keyframes flaskSwing {
+            0%, 100% { transform: rotate(2deg) translateX(1px); }
+            50% { transform: rotate(-2deg) translateX(-1px); }
+        }
+
         @keyframes bubbleRise {
             0% { transform: translateY(0) scale(0.5); opacity: 0; }
             20% { opacity: 1; }
-            100% { transform: translateY(-40px) scale(1.2); opacity: 0; }
+            100% { transform: translateY(-45px) scale(1.2); opacity: 0; }
         }
 
         /* 認証コード入力欄（和風） */
