@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+.<!DOCTYPE html>
 <html lang="ja">
 <head>
     <meta charset="UTF-8">
@@ -949,26 +949,56 @@
                     <h3 class="font-bold text-lg mb-2 border-b border-gray-300 dark:border-gray-600 pb-2"><i class="bi bi-balloon-heart text-red-500"></i> おみくじの轍</h3>
                     <div class="text-xs text-right mb-2 themed-text-sub">更新: <span id="stats-update-time">--:--:--</span></div>
                     <div class="space-y-3 mb-4 text-sm" id="home-history-stats">
-                         <div class="flex justify-between"><span>大吉</span><span><span id="cnt-daikichi" class="mr-2 font-mono">0</span><span id="stat-daikichi">0.00%</span></span></div>
-                         <div class="w-full bg-gray-200 dark:bg-gray-600 h-2 rounded"><div id="bar-daikichi" class="bg-yellow-400 h-2 rounded" style="width: 0%"></div></div>
-                         
-                         <div class="flex justify-between"><span>吉</span><span><span id="cnt-kichi" class="mr-2 font-mono">0</span><span id="stat-kichi">0.00%</span></span></div>
-                         <div class="w-full bg-gray-200 dark:bg-gray-600 h-2 rounded"><div id="bar-kichi" class="bg-red-400 h-2 rounded" style="width: 0%"></div></div>
+                         <!-- 12段階 統計表示 -->
+                         <div class="grid grid-cols-1 gap-2">
+                             <!-- 大吉 -->
+                             <div class="flex justify-between text-xs"><span>大吉</span><span><span id="cnt-daikichi" class="mr-2 font-mono">0</span><span id="stat-daikichi">0.00%</span></span></div>
+                             <div class="w-full bg-gray-200 dark:bg-gray-600 h-1.5 rounded mb-1"><div id="bar-daikichi" class="bg-yellow-400 h-1.5 rounded" style="width: 0%"></div></div>
+                             
+                             <!-- 中吉 -->
+                             <div class="flex justify-between text-xs"><span>中吉</span><span><span id="cnt-chukichi" class="mr-2 font-mono">0</span><span id="stat-chukichi">0.00%</span></span></div>
+                             <div class="w-full bg-gray-200 dark:bg-gray-600 h-1.5 rounded mb-1"><div id="bar-chukichi" class="bg-orange-400 h-1.5 rounded" style="width: 0%"></div></div>
 
-                         <div class="flex justify-between"><span>中吉</span><span><span id="cnt-chukichi" class="mr-2 font-mono">0</span><span id="stat-chukichi">0.00%</span></span></div>
-                         <div class="w-full bg-gray-200 dark:bg-gray-600 h-2 rounded"><div id="bar-chukichi" class="bg-orange-400 h-2 rounded" style="width: 0%"></div></div>
+                             <!-- 小吉 -->
+                             <div class="flex justify-between text-xs"><span>小吉</span><span><span id="cnt-shokichi" class="mr-2 font-mono">0</span><span id="stat-shokichi">0.00%</span></span></div>
+                             <div class="w-full bg-gray-200 dark:bg-gray-600 h-1.5 rounded mb-1"><div id="bar-shokichi" class="bg-green-400 h-1.5 rounded" style="width: 0%"></div></div>
 
-                         <div class="flex justify-between"><span>小吉</span><span><span id="cnt-shokichi" class="mr-2 font-mono">0</span><span id="stat-shokichi">0.00%</span></span></div>
-                         <div class="w-full bg-gray-200 dark:bg-gray-600 h-2 rounded"><div id="bar-shokichi" class="bg-green-400 h-2 rounded" style="width: 0%"></div></div>
-                         
-                         <div class="flex justify-between"><span>末吉</span><span><span id="cnt-suekichi" class="mr-2 font-mono">0</span><span id="stat-suekichi">0.00%</span></span></div>
-                         <div class="w-full bg-gray-200 dark:bg-gray-600 h-2 rounded"><div id="bar-suekichi" class="bg-blue-400 h-2 rounded" style="width: 0%"></div></div>
+                             <!-- 吉 -->
+                             <div class="flex justify-between text-xs"><span>吉</span><span><span id="cnt-kichi" class="mr-2 font-mono">0</span><span id="stat-kichi">0.00%</span></span></div>
+                             <div class="w-full bg-gray-200 dark:bg-gray-600 h-1.5 rounded mb-1"><div id="bar-kichi" class="bg-red-400 h-1.5 rounded" style="width: 0%"></div></div>
 
-                         <div class="flex justify-between"><span>凶</span><span><span id="cnt-kyo" class="mr-2 font-mono">0</span><span id="stat-kyo">0.00%</span></span></div>
-                         <div class="w-full bg-gray-200 dark:bg-gray-600 h-2 rounded"><div id="bar-kyo" class="bg-gray-400 h-2 rounded" style="width: 0%"></div></div>
+                             <!-- 半吉 -->
+                             <div class="flex justify-between text-xs"><span>半吉</span><span><span id="cnt-hankichi" class="mr-2 font-mono">0</span><span id="stat-hankichi">0.00%</span></span></div>
+                             <div class="w-full bg-gray-200 dark:bg-gray-600 h-1.5 rounded mb-1"><div id="bar-hankichi" class="bg-red-300 h-1.5 rounded" style="width: 0%"></div></div>
 
-                         <div class="flex justify-between"><span>大凶</span><span><span id="cnt-daikyo" class="mr-2 font-mono">0</span><span id="stat-daikyo">0.00%</span></span></div>
-                         <div class="w-full bg-gray-200 dark:bg-gray-600 h-2 rounded"><div id="bar-daikyo" class="bg-black h-2 rounded" style="width: 0%"></div></div>
+                             <!-- 末吉 -->
+                             <div class="flex justify-between text-xs"><span>末吉</span><span><span id="cnt-suekichi" class="mr-2 font-mono">0</span><span id="stat-suekichi">0.00%</span></span></div>
+                             <div class="w-full bg-gray-200 dark:bg-gray-600 h-1.5 rounded mb-1"><div id="bar-suekichi" class="bg-blue-400 h-1.5 rounded" style="width: 0%"></div></div>
+
+                             <!-- 末小吉 -->
+                             <div class="flex justify-between text-xs"><span>末小吉</span><span><span id="cnt-sueshokichi" class="mr-2 font-mono">0</span><span id="stat-sueshokichi">0.00%</span></span></div>
+                             <div class="w-full bg-gray-200 dark:bg-gray-600 h-1.5 rounded mb-1"><div id="bar-sueshokichi" class="bg-blue-300 h-1.5 rounded" style="width: 0%"></div></div>
+
+                             <!-- 凶 -->
+                             <div class="flex justify-between text-xs"><span>凶</span><span><span id="cnt-kyo" class="mr-2 font-mono">0</span><span id="stat-kyo">0.00%</span></span></div>
+                             <div class="w-full bg-gray-200 dark:bg-gray-600 h-1.5 rounded mb-1"><div id="bar-kyo" class="bg-gray-400 h-1.5 rounded" style="width: 0%"></div></div>
+
+                             <!-- 小凶 -->
+                             <div class="flex justify-between text-xs"><span>小凶</span><span><span id="cnt-shokyo" class="mr-2 font-mono">0</span><span id="stat-shokyo">0.00%</span></span></div>
+                             <div class="w-full bg-gray-200 dark:bg-gray-600 h-1.5 rounded mb-1"><div id="bar-shokyo" class="bg-gray-500 h-1.5 rounded" style="width: 0%"></div></div>
+
+                             <!-- 半凶 -->
+                             <div class="flex justify-between text-xs"><span>半凶</span><span><span id="cnt-hankyo" class="mr-2 font-mono">0</span><span id="stat-hankyo">0.00%</span></span></div>
+                             <div class="w-full bg-gray-200 dark:bg-gray-600 h-1.5 rounded mb-1"><div id="bar-hankyo" class="bg-gray-600 h-1.5 rounded" style="width: 0%"></div></div>
+
+                             <!-- 末凶 -->
+                             <div class="flex justify-between text-xs"><span>末凶</span><span><span id="cnt-suekyo" class="mr-2 font-mono">0</span><span id="stat-suekyo">0.00%</span></span></div>
+                             <div class="w-full bg-gray-200 dark:bg-gray-600 h-1.5 rounded mb-1"><div id="bar-suekyo" class="bg-gray-700 h-1.5 rounded" style="width: 0%"></div></div>
+
+                             <!-- 大凶 -->
+                             <div class="flex justify-between text-xs"><span>大凶</span><span><span id="cnt-daikyo" class="mr-2 font-mono">0</span><span id="stat-daikyo">0.00%</span></span></div>
+                             <div class="w-full bg-gray-200 dark:bg-gray-600 h-1.5 rounded mb-1"><div id="bar-daikyo" class="bg-black h-1.5 rounded" style="width: 0%"></div></div>
+                         </div>
                     </div>
                     <button onclick="showView('history')" class="text-sm text-red-600 hover:underline">おみくじの轍をもっと見る (全運勢ログ)</button>
                 </div>
