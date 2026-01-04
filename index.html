@@ -2730,42 +2730,29 @@
             return SITE_URL;
         }
 
-        // 全プラットフォーム共通の長文テキスト生成ロジック
+        // 全プラットフォーム共通の凝縮版長文テキスト生成ロジック
+        // 日本語140文字程度に収めるよう調整
         function generateUnifiedShareText(res) {
             const userName = res.username || "参拝者"; 
             const date = new Date(res.timestamp);
-            const dateStr = `${date.getFullYear()}年${date.getMonth()+1}月${date.getDate()}日`;
+            const dateStr = `${date.getMonth()+1}月${date.getDate()}日`;
             
-            return `⛩️ 運勢・天命乃杜 参拝之証 ⛩️
+            // 開運情報は全て表示
+            const luckyItems = `🗝️開運:${res.lucky.item}/${res.lucky.color}/${res.lucky.spot}/${res.lucky.person}`;
+            
+            // 投稿文組み立て
+            return `⛩️ 運勢・天命乃杜で運試し ⛩️
 
-【 参拝者 】 ${userName} 様
-【 参拝日 】 ${dateStr}
+参拝者：${userName}様（${dateStr}）
+✨運勢：【 ${res.type} 】
+📜神託：『${res.poem.substring(0, 10)}...』続きはWebで
 
-✨ 運勢：${res.type} ✨
+${luckyItems}
 
-古き良き和の心と最新技術が融合した、次世代のデジタル社殿。
-天命乃杜（てんめいのもり）にて、本日のお告げを授かりました。
+過去の記録は「おみくじの轍」へ保存済⛩️
+履歴が多ければ条件指定の検索機能で即発見🔍
 
-📜 神託（和歌）
-『${res.poem}』
-
-🗝️ 開運の鍵
-アイテム：${res.lucky.item}
-色：${res.lucky.color}
-
----
-【 天命乃杜（てんめいのもり）とは？ 】
-既存の占いサイトの常識を覆す、没入型運勢診断サービス。
-
-✅ 会員機能「おみくじの轍」：過去の運勢を1バイトの漏れなく完全記録。
-✅ 12星座×血液型：48通りの超細密アルゴリズムによる日替わりランキング。
-✅ 静寂の「宵闇の刻」：広告一切なし。ダークモード標準対応の美しきUI。
-✅ 毎日0時更新：天命が導く、あなただけの新しい一日の指針。
-
-他サイトにはない「静謐な時間」と「正確な記録」がここにあります。
-あなたも天命乃杜で、自らの運命を紐解いてみませんか？
-
-#天命乃杜 #おみくじ #運勢 #占い #開運 #神社 #デジタル参拝 #今日の運勢
+#天命乃杜 #おみくじ #運勢
 ${getShareUrl()}`;
         }
 
@@ -2790,7 +2777,7 @@ ${getShareUrl()}`;
                 }
             }
 
-            // フォールバック: X Intent (※文字数制限により一部カットされる可能性があるためIntent用のみ調整)
+            // フォールバック: X Intent
             const intent = `https://twitter.com/intent/tweet?text=${encodeURIComponent(fullText)}`;
             window.open(intent, '_blank');
         }
@@ -2799,7 +2786,6 @@ ${getShareUrl()}`;
             if(!currentState.lastResult) return;
             const fullText = generateUnifiedShareText(currentState.lastResult);
 
-            // FacebookはWeb Share API経由でのみテキスト投稿が可能
             if (navigator.share && currentState.lastImageBlob) {
                 try {
                     const file = new File([currentState.lastImageBlob], "omikuji.png", { type: "image/png" });
@@ -2813,7 +2799,6 @@ ${getShareUrl()}`;
                 }
             }
 
-            // フォールバック: FB Sharer (FBの仕様上、IntentではURLのみ共有可能)
             const url = getShareUrl();
             const intent = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(url)}`;
             window.open(intent, '_blank');
@@ -2823,7 +2808,6 @@ ${getShareUrl()}`;
             if(!currentState.lastResult) return;
             const fullText = generateUnifiedShareText(currentState.lastResult);
 
-            // LINE Web Share API (画像添付) トライ
              if (navigator.share && currentState.lastImageBlob) {
                 try {
                     const file = new File([currentState.lastImageBlob], "omikuji.png", { type: "image/png" });
@@ -2837,7 +2821,6 @@ ${getShareUrl()}`;
                 }
             }
 
-            // フォールバック: LINE Intent (テキスト共有)
             const intent = `https://social-plugins.line.me/lineit/share?text=${encodeURIComponent(fullText)}`;
             window.open(intent, '_blank');
         }
