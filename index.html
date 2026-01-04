@@ -1776,15 +1776,17 @@
             
             loadFavorites();
 
-            // シェアURLパラメータチェック
+            // シェアURLパラメータチェック (修正版: 日本語対応デコード)
             const params = new URLSearchParams(window.location.search);
             const shareData = params.get('d');
             if (shareData) {
                 try {
-                    const decoded = JSON.parse(atob(shareData));
+                    // 日本語を含む文字列を正しくデコードする処理
+                    const decoded = JSON.parse(decodeURIComponent(escape(atob(shareData))));
                     showResultDetail(false, decoded);
                 } catch(e) {
                     console.error("Share data decode error", e);
+                    // エラー時はホームへ (デフォルトのまま)
                 }
             }
         };
@@ -2228,6 +2230,7 @@
 
         function updateURL(resultData) {
             const json = JSON.stringify(resultData);
+            // 日本語をBase64化するためのエスケープ処理
             const encoded = btoa(unescape(encodeURIComponent(json))); 
             const newUrl = `${window.location.pathname}?d=${encoded}`;
             window.history.pushState({ path: newUrl }, '', newUrl);
@@ -3337,7 +3340,7 @@ ${userName}様の運勢
             const resultDiv = document.getElementById('my-rank-result');
             const myData = dailyRanking.find(d => d.sign.id === signId && d.blood === bloodId);
             if (myData) { resultDiv.innerHTML = createCardHTML(myData); resultDiv.classList.remove('hidden'); }
-        } 
+        }
     </script>
 </body>
 </html>
