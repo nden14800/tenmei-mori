@@ -1841,18 +1841,9 @@
                 saveLabSettings();
             },
             toggleDark: (el) => {
-                // Tailwind CSS (classモード) のためhtml要素のクラスを制御
-                if(el.checked) {
-                    document.documentElement.classList.add('dark');
-                } else {
-                    // LabがOFFの場合はシステムの優先設定に従う
-                    const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-                    if(prefersDark) {
-                        document.documentElement.classList.add('dark');
-                    } else {
-                        document.documentElement.classList.remove('dark');
-                    }
-                }
+                // Tailwindの手動切り替え設定 ('class'モード) に合わせてhtmlタグにクラス付与
+                if(el.checked) document.documentElement.classList.add('dark');
+                else if(!window.matchMedia('(prefers-color-scheme: dark)').matches) document.documentElement.classList.remove('dark');
                 saveLabSettings();
             },
             toggleBigText: (el) => {
@@ -1861,6 +1852,18 @@
                 saveLabSettings();
             }
         };
+
+        function saveLabSettings() {
+            if (currentState.user) {
+                const settings = {
+                    newyear: document.getElementById('switch-newyear').checked,
+                    speed: document.getElementById('switch-speed').checked,
+                    dark: document.getElementById('switch-dark').checked,
+                    bigtext: document.getElementById('switch-bigtext').checked
+                };
+                localStorage.setItem(`lab_settings_${currentState.user.email}`, JSON.stringify(settings));
+            }
+        }
 
         function loadLabSettings() {
             if (currentState.user) {
@@ -1874,25 +1877,25 @@
                         document.getElementById('switch-speed').checked = true;
                         TenmeiLab.toggleSpeed(document.getElementById('switch-speed'));
                     }
-                    
-                    // ダークモード設定の読み込み
                     if (settings.dark) {
                         document.getElementById('switch-dark').checked = true;
+                        TenmeiLab.toggleDark(document.getElementById('switch-dark'));
                     }
-                    // 設定に関わらずTenmeiLab.toggleDarkを呼び出して状態を確定させる
-                    TenmeiLab.toggleDark(document.getElementById('switch-dark'));
-
                     if (settings.bigtext) {
                         document.getElementById('switch-bigtext').checked = true;
                         TenmeiLab.toggleBigText(document.getElementById('switch-bigtext'));
                     }
-                } else {
-                    // 設定データがない場合もシステムの初期状態を反映
-                    TenmeiLab.toggleDark(document.getElementById('switch-dark'));
                 }
             } else {
-                // ゲスト時もシステムのダークモード設定を反映
-                TenmeiLab.toggleDark(document.getElementById('switch-dark'));
+                // Reset lab settings if logged out
+                document.getElementById('switch-newyear').checked = false;
+                document.body.classList.remove('theme-newyear');
+                document.getElementById('switch-speed').checked = false;
+                window.labSpeedMode = false;
+                document.getElementById('switch-dark').checked = false;
+                if(!window.matchMedia('(prefers-color-scheme: dark)').matches) document.documentElement.classList.remove('dark');
+                document.getElementById('switch-bigtext').checked = false;
+                document.body.style.fontSize = '';
             }
         }
 
@@ -1909,8 +1912,6 @@
                     console.error("Auth Data Parse Error", e);
                 }
             }
-            
-            // Lab設定の読み込み（ここでダークモードのクラスも適用される）
             updateAuthUI();
             loadLabSettings();
 
@@ -1923,6 +1924,7 @@
             // URLパラメータによる復元ロジックは廃止
             const url = new URL(window.location);
             if (url.searchParams.has('d')) {
+                // パラメータがある場合はクリーンなURLにリダイレクト（履歴に残さない）
                 url.searchParams.delete('d');
                 window.history.replaceState({}, '', url);
             }
