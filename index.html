@@ -2515,22 +2515,21 @@
             return window.location.href;
         }
 
-        // --- シェアアクション (Web Share API優先) ---
+        // --- シェアアクション (X/Twitter用 豪華版) ---
         async function shareToX() {
             if(!currentState.lastResult) return;
             const res = currentState.lastResult;
             const userName = res.username || "参拝者"; 
             const url = getShareUrl();
             
-            // X (Twitter) の文字数制限 (日本語140文字、URLは23文字換算)
-            // 約117文字以内に収める必要がある
-            
-            const shortText = `運勢・天命乃杜
-${userName}様の運勢：【 ${res.type} 】
+            // 豪華な投稿テキスト作成
+            const shortText = `⛩️ 運勢・天命乃杜 ⛩️
+${userName}様の運勢
+✨【 ${res.type} 】✨
 
-『${res.poem}』
+📜『${res.poem}』
 
-開運：${res.lucky.item}・${res.lucky.color}
+🗝️開運：${res.lucky.item}・${res.lucky.color}
 
 #天命乃杜 #おみくじ #運勢`;
 
