@@ -2202,56 +2202,16 @@
                 saveLabSettings();
             },
             toggleDark: (el) => {
+                // スイッチを切り替えたら設定を保存してテーマを再適用
                 saveLabSettings();
                 applyTheme(); 
             },
             toggleBigText: (el) => {
-                // 【修正点】bodyのstyleではなく、htmlタグにクラスを付け外しする
-                if(el.checked) document.documentElement.classList.add('lab-big-text');
-                else document.documentElement.classList.remove('lab-big-text');
+                if(el.checked) document.body.style.fontSize = '120%';
+                else document.body.style.fontSize = '';
                 saveLabSettings();
             }
         };
-
-        // ... (applyTheme関数とsaveLabSettings関数は変更なし) ...
-
-        // --- 修正版: 設定読み込み ---
-        function loadLabSettings() {
-            if (currentState.user) {
-                const settings = JSON.parse(localStorage.getItem(`lab_settings_${currentState.user.email}`));
-                if (settings) {
-                    if (settings.newyear) {
-                        document.getElementById('switch-newyear').checked = true;
-                        TenmeiLab.toggleNewYear(document.getElementById('switch-newyear'));
-                    }
-                    if (settings.speed) {
-                        document.getElementById('switch-speed').checked = true;
-                        TenmeiLab.toggleSpeed(document.getElementById('switch-speed'));
-                    }
-                    // 【修正点】文字サイズ設定の復元ロジック
-                    if (settings.bigtext) {
-                        document.getElementById('switch-bigtext').checked = true;
-                        document.documentElement.classList.add('lab-big-text');
-                    }
-                    if (settings.dark) {
-                        document.getElementById('switch-dark').checked = true;
-                    }
-                }
-            } else {
-                // 未ログイン時のリセット
-                document.getElementById('switch-newyear').checked = false;
-                document.body.classList.remove('theme-newyear');
-                document.getElementById('switch-speed').checked = false;
-                window.labSpeedMode = false;
-                document.getElementById('switch-dark').checked = false;
-                
-                // 【修正点】文字サイズのリセット
-                document.getElementById('switch-bigtext').checked = false;
-                document.documentElement.classList.remove('lab-big-text');
-            }
-            
-            applyTheme();
-        }
 
         // --- 追加: テーマ適用ロジック（OS設定とLab設定の統合） ---
         function applyTheme() {
