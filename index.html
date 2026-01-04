@@ -2803,35 +2803,30 @@ ${luckyItems}
 ${getShareUrl()}`;
         }
 
-        // --- シェアアクション (画像保存 → 投稿画面へ誘導) ---
+        // --- シェアアクション (アラート削除版) ---
         async function shareToX() {
             if(!currentState.lastResult) return;
             const fullText = generateUnifiedShareText(currentState.lastResult);
 
-            // 1. まず Web Share API を試す (スマホ向け: 成功すればラッキー)
+            // 1. Web Share API (スマホアプリ連携) トライ
             if (navigator.share && currentState.lastImageBlob) {
                 try {
                     const file = new File([currentState.lastImageBlob], "tenmei_omikuji.png", { type: "image/png" });
-                    
-                    // ファイル共有がサポートされているか確認
                     if (navigator.canShare && navigator.canShare({ files: [file] })) {
                         await navigator.share({
                             text: fullText,
                             files: [file]
                         });
-                        return; // 成功したらここで終了
+                        return;
                     }
                 } catch (e) {
-                    console.log("Web Share API cancelled or failed", e);
-                    // エラーやキャンセルの場合は、下のフォールバック処理に進む
+                    console.log("Web Share API failed", e);
                 }
             }
 
-            // 2. Web Share APIがダメだった場合 (PCや、画像が渡らなかった場合)
-            // 手動で画像を保存させてから、Xを開く
-            
+            // 2. PC/フォールバック: 画像ダウンロード + 投稿画面
             if (currentState.lastImageBlob) {
-                // 強制的に画像をダウンロードさせる
+                // 画像をダウンロードさせる
                 const url = URL.createObjectURL(currentState.lastImageBlob);
                 const a = document.createElement('a');
                 a.href = url;
@@ -2840,12 +2835,11 @@ ${getShareUrl()}`;
                 a.click();
                 document.body.removeChild(a);
                 URL.revokeObjectURL(url);
-
-                // ユーザーに案内を出す (これが重要)
-                alert("画像を端末に保存しました。\n開いたX(Twitter)の画面で、保存した画像を選んで投稿してください。");
+                
+                // 【削除】ここで alert を出していましたが、削除しました。
             }
 
-            // Xの投稿画面を開く (テキストのみ)
+            // Xの投稿画面を開く
             const intent = `https://twitter.com/intent/tweet?text=${encodeURIComponent(fullText)}`;
             window.open(intent, '_blank');
         }
