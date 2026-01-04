@@ -2792,28 +2792,49 @@ ${luckyItems}
 ${getShareUrl()}`;
         }
 
-        // --- シェアアクション (Web Share API優先、全SNS共通テキスト) ---
+        // --- シェアアクション (画像保存 → 投稿画面へ誘導) ---
         async function shareToX() {
             if(!currentState.lastResult) return;
             const fullText = generateUnifiedShareText(currentState.lastResult);
 
-            // Web Share API (画像添付) トライ
+            // 1. まず Web Share API を試す (スマホ向け: 成功すればラッキー)
             if (navigator.share && currentState.lastImageBlob) {
                 try {
-                    const file = new File([currentState.lastImageBlob], "omikuji.png", { type: "image/png" });
+                    const file = new File([currentState.lastImageBlob], "tenmei_omikuji.png", { type: "image/png" });
+                    
+                    // ファイル共有がサポートされているか確認
                     if (navigator.canShare && navigator.canShare({ files: [file] })) {
                         await navigator.share({
                             text: fullText,
                             files: [file]
                         });
-                        return;
+                        return; // 成功したらここで終了
                     }
                 } catch (e) {
-                    console.log("Web Share API failed", e);
+                    console.log("Web Share API cancelled or failed", e);
+                    // エラーやキャンセルの場合は、下のフォールバック処理に進む
                 }
             }
 
-            // フォールバック: X Intent
+            // 2. Web Share APIがダメだった場合 (PCや、画像が渡らなかった場合)
+            // 手動で画像を保存させてから、Xを開く
+            
+            if (currentState.lastImageBlob) {
+                // 強制的に画像をダウンロードさせる
+                const url = URL.createObjectURL(currentState.lastImageBlob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `tenmei_omikuji_${Date.now()}.png`;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                URL.revokeObjectURL(url);
+
+                // ユーザーに案内を出す (これが重要)
+                alert("画像を端末に保存しました。\n開いたX(Twitter)の画面で、保存した画像を選んで投稿してください。");
+            }
+
+            // Xの投稿画面を開く (テキストのみ)
             const intent = `https://twitter.com/intent/tweet?text=${encodeURIComponent(fullText)}`;
             window.open(intent, '_blank');
         }
