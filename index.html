@@ -1859,7 +1859,7 @@
             }
         }
 
-        // --- 統計情報の取得 ---
+        // --- 統計情報の取得 (12種類対応版) ---
         async function fetchHistoryStats() {
             try {
                 const res = await fetch(`${API_BASE}/api/stats`);
@@ -1868,22 +1868,28 @@
                     document.getElementById('stats-update-time').textContent = data.timestamp || "--:--:--";
 
                     const setBar = (id, percent, count) => {
-                        const p = parseFloat(percent).toFixed(2);
-                        document.getElementById(`stat-${id}`).textContent = p + "%";
-                        document.getElementById(`cnt-${id}`).textContent = (count || 0).toLocaleString() + "本";
-                        document.getElementById(`bar-${id}`).style.width = p + "%";
+                        // 要素が存在する場合のみ更新
+                        const statEl = document.getElementById(`stat-${id}`);
+                        if (statEl) {
+                            const p = parseFloat(percent).toFixed(2);
+                            statEl.textContent = p + "%";
+                            document.getElementById(`cnt-${id}`).textContent = (count || 0).toLocaleString() + "本";
+                            document.getElementById(`bar-${id}`).style.width = p + "%";
+                        }
                     };
 
                     const stats = data.stats || {};
                     const counts = data.counts || {};
                     
-                    setBar('daikichi', stats.daikichi, counts.daikichi);
-                    setBar('kichi', stats.kichi, counts.kichi);
-                    setBar('chukichi', stats.chukichi, counts.chukichi);
-                    setBar('shokichi', stats.shokichi, counts.shokichi);
-                    setBar('suekichi', stats.suekichi, counts.suekichi);
-                    setBar('kyo', stats.kyo, counts.kyo);
-                    setBar('daikyo', stats.daikyo, counts.daikyo);
+                    // 12種類全てのキーを更新
+                    const keys = [
+                        'daikichi', 'chukichi', 'shokichi', 'kichi', 'hankichi', 'suekichi', 'sueshokichi',
+                        'kyo', 'shokyo', 'hankyo', 'suekyo', 'daikyo'
+                    ];
+                    
+                    keys.forEach(key => {
+                        setBar(key, stats[key] || 0, counts[key] || 0);
+                    });
                 }
             } catch(e) { console.error(e); }
         }
