@@ -1829,7 +1829,7 @@
         let globalHistory = [];
         let personalHistory = [];
 
-        // Lab機能の状態管理
+        // --- 修正版: Lab機能の状態管理 ---
         const TenmeiLab = {
             toggleNewYear: (el) => {
                 if(el.checked) document.body.classList.add('theme-newyear');
@@ -1841,10 +1841,9 @@
                 saveLabSettings();
             },
             toggleDark: (el) => {
-                // Tailwindの手動切り替え設定 ('class'モード) に合わせてhtmlタグにクラス付与
-                if(el.checked) document.documentElement.classList.add('dark');
-                else if(!window.matchMedia('(prefers-color-scheme: dark)').matches) document.documentElement.classList.remove('dark');
+                // スイッチを切り替えたら設定を保存してテーマを再適用
                 saveLabSettings();
+                applyTheme(); 
             },
             toggleBigText: (el) => {
                 if(el.checked) document.body.style.fontSize = '120%';
@@ -1853,6 +1852,36 @@
             }
         };
 
+        // --- 追加: テーマ適用ロジック（OS設定とLab設定の統合） ---
+        function applyTheme() {
+            let userSettings = null;
+            if (currentState.user) {
+                try {
+                    userSettings = JSON.parse(localStorage.getItem(`lab_settings_${currentState.user.email}`));
+                } catch(e) {}
+            }
+
+            // 「宵闇の刻」がONかどうか
+            const forceDark = userSettings ? userSettings.dark : false;
+            
+            // OSがダークモードかどうか
+            const systemDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+
+            // スイッチON または (スイッチOFFかつOSがダーク) の場合に dark クラスを付与
+            if (forceDark || systemDark) {
+                document.documentElement.classList.add('dark');
+            } else {
+                document.documentElement.classList.remove('dark');
+            }
+
+            // スイッチの見た目同期（ログイン時のみ）
+            const switchDark = document.getElementById('switch-dark');
+            if(switchDark && userSettings) {
+                switchDark.checked = forceDark;
+            }
+        }
+
+        // --- 修正版: 設定保存 ---
         function saveLabSettings() {
             if (currentState.user) {
                 const settings = {
@@ -1865,7 +1894,9 @@
             }
         }
 
+        // --- 修正版: 設定読み込み ---
         function loadLabSettings() {
+            // まずテーマ以外の設定を復元
             if (currentState.user) {
                 const settings = JSON.parse(localStorage.getItem(`lab_settings_${currentState.user.email}`));
                 if (settings) {
@@ -1877,29 +1908,31 @@
                         document.getElementById('switch-speed').checked = true;
                         TenmeiLab.toggleSpeed(document.getElementById('switch-speed'));
                     }
-                    if (settings.dark) {
-                        document.getElementById('switch-dark').checked = true;
-                        TenmeiLab.toggleDark(document.getElementById('switch-dark'));
-                    }
                     if (settings.bigtext) {
                         document.getElementById('switch-bigtext').checked = true;
                         TenmeiLab.toggleBigText(document.getElementById('switch-bigtext'));
                     }
+                    // dark設定は applyTheme で処理するためここではスイッチ状態のみ復元
+                    if (settings.dark) {
+                        document.getElementById('switch-dark').checked = true;
+                    }
                 }
             } else {
-                // Reset lab settings if logged out
+                // 未ログイン時のリセット
                 document.getElementById('switch-newyear').checked = false;
                 document.body.classList.remove('theme-newyear');
                 document.getElementById('switch-speed').checked = false;
                 window.labSpeedMode = false;
-                document.getElementById('switch-dark').checked = false;
-                if(!window.matchMedia('(prefers-color-scheme: dark)').matches) document.documentElement.classList.remove('dark');
+                document.getElementById('switch-dark').checked = false; // スイッチはOFF
                 document.getElementById('switch-bigtext').checked = false;
                 document.body.style.fontSize = '';
             }
+            
+            // 最後にテーマを一括適用（ここでOS設定も反映されます）
+            applyTheme();
         }
 
-        // --- イニシャライズ ---
+        // --- window.onload への追加修正 ---
         window.onload = function() {
             initHomeAnimation();
             initZodiacSystem();
@@ -1913,7 +1946,12 @@
                 }
             }
             updateAuthUI();
-            loadLabSettings();
+            loadLabSettings(); // ここで applyTheme が呼ばれます
+
+            // OSのダークモード切り替えをリアルタイム検知して反映するリスナーを追加
+            window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', () => {
+                applyTheme();
+            });
 
             startLiveCounter();
             fetchHistoryStats();
@@ -1921,10 +1959,8 @@
             
             loadFavorites();
 
-            // URLパラメータによる復元ロジックは廃止
             const url = new URL(window.location);
             if (url.searchParams.has('d')) {
-                // パラメータがある場合はクリーンなURLにリダイレクト（履歴に残さない）
                 url.searchParams.delete('d');
                 window.history.replaceState({}, '', url);
             }
