@@ -2725,22 +2725,18 @@
             });
         }
 
-        // getShareUrl は残すが、常にサイトルートを返すように変更
+        // サイトルートURLを返す（生成URL廃止）
         function getShareUrl() {
             return SITE_URL;
         }
 
-        // --- シェアアクション (Web Share API優先) ---
-        // 修正: 投稿テキストの長文化、URL削除、日時・ユーザー名追加、宣伝・比較を含める
-        async function shareToX() {
-            if(!currentState.lastResult) return;
-            const res = currentState.lastResult;
+        // 全プラットフォーム共通の長文テキスト生成ロジック
+        function generateUnifiedShareText(res) {
             const userName = res.username || "参拝者"; 
             const date = new Date(res.timestamp);
             const dateStr = `${date.getFullYear()}年${date.getMonth()+1}月${date.getDate()}日`;
-            const url = getShareUrl();
             
-            const shortText = `⛩️ 運勢・天命乃杜 参拝之証 ⛩️
+            return `⛩️ 運勢・天命乃杜 参拝之証 ⛩️
 
 【 参拝者 】 ${userName} 様
 【 参拝日 】 ${dateStr}
@@ -2759,18 +2755,24 @@
 
 ---
 【 天命乃杜（てんめいのもり）とは？ 】
-他サイトとの決定的な違いは「あなただけの物語」を紡ぐこと。
+既存の占いサイトの常識を覆す、没入型運勢診断サービス。
 
-✅ 会員機能「おみくじの轍」で過去の運勢を完全記録
-✅ 12星座×血液型＝48通りの超細密・日替わりランキング
-✅ 広告ゼロ。静寂と没入感を守る「宵闇の刻（ダークモード）」
-✅ 毎日0時更新。今日の指針をその手に。
+✅ 会員機能「おみくじの轍」：過去の運勢を1バイトの漏れなく完全記録。
+✅ 12星座×血液型：48通りの超細密アルゴリズムによる日替わりランキング。
+✅ 静寂の「宵闇の刻」：広告一切なし。ダークモード標準対応の美しきUI。
+✅ 毎日0時更新：天命が導く、あなただけの新しい一日の指針。
 
-既存の占いサイトに満足できないあなたへ。
-静謐なデジタル空間で、天命に耳を傾けてみませんか？
+他サイトにはない「静謐な時間」と「正確な記録」がここにあります。
+あなたも天命乃杜で、自らの運命を紐解いてみませんか？
 
 #天命乃杜 #おみくじ #運勢 #占い #開運 #神社 #デジタル参拝 #今日の運勢
-${url}`;
+${getShareUrl()}`;
+        }
+
+        // --- シェアアクション (Web Share API優先、全SNS共通テキスト) ---
+        async function shareToX() {
+            if(!currentState.lastResult) return;
+            const fullText = generateUnifiedShareText(currentState.lastResult);
 
             // Web Share API (画像添付) トライ
             if (navigator.share && currentState.lastImageBlob) {
@@ -2778,67 +2780,65 @@ ${url}`;
                     const file = new File([currentState.lastImageBlob], "omikuji.png", { type: "image/png" });
                     if (navigator.canShare && navigator.canShare({ files: [file] })) {
                         await navigator.share({
-                            text: shortText,
-                            url: url, 
+                            text: fullText,
                             files: [file]
                         });
-                        return; // 成功したら終了
+                        return;
                     }
                 } catch (e) {
-                    console.log("Web Share API failed, falling back to Intent", e);
+                    console.log("Web Share API failed", e);
                 }
             }
 
-            // フォールバック: Twitter Intent (画像添付不可)
-            // テキストが長すぎる場合はURLエンコード制限に引っかかる可能性があるため、ある程度トリミングが必要
-            // Twitter IntentはURLを除いて日本語140字程度まで。
-            
-            const intentText = `⛩️ 運勢・天命乃杜 参拝之証 ⛩️
-${userName}様の運勢：✨${res.type}✨
-
-『${res.poem}』
-
-広告なし・履歴保存機能付きの次世代デジタルおみくじ。
-静寂な杜で天命を知る。
-
-#天命乃杜 #おみくじ
-${url}`;
-
-            const intent = `https://twitter.com/intent/tweet?text=${encodeURIComponent(intentText)}`;
+            // フォールバック: X Intent (※文字数制限により一部カットされる可能性があるためIntent用のみ調整)
+            const intent = `https://twitter.com/intent/tweet?text=${encodeURIComponent(fullText)}`;
             window.open(intent, '_blank');
         }
 
-        function shareToFB() {
+        async function shareToFB() {
+            if(!currentState.lastResult) return;
+            const fullText = generateUnifiedShareText(currentState.lastResult);
+
+            // FacebookはWeb Share API経由でのみテキスト投稿が可能
+            if (navigator.share && currentState.lastImageBlob) {
+                try {
+                    const file = new File([currentState.lastImageBlob], "omikuji.png", { type: "image/png" });
+                    await navigator.share({
+                        text: fullText,
+                        files: [file]
+                    });
+                    return;
+                } catch (e) {
+                    console.log("Web Share API failed for FB", e);
+                }
+            }
+
+            // フォールバック: FB Sharer (FBの仕様上、IntentではURLのみ共有可能)
             const url = getShareUrl();
             const intent = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(url)}`;
             window.open(intent, '_blank');
         }
         
         async function shareToLine() {
-            const url = getShareUrl();
-            const res = currentState.lastResult;
-            const userName = res.username || "参拝者"; 
-            
-            // LINE用テキスト
-            const text = `⛩️ 運勢・天命乃杜 ⛩️
-${userName}様の運勢：${res.type}
-『${res.poem}』
+            if(!currentState.lastResult) return;
+            const fullText = generateUnifiedShareText(currentState.lastResult);
 
-詳細はこちら: ${url}`;
-            
-            // LINEもWeb Share APIを試みる
+            // LINE Web Share API (画像添付) トライ
              if (navigator.share && currentState.lastImageBlob) {
                 try {
                     const file = new File([currentState.lastImageBlob], "omikuji.png", { type: "image/png" });
                     await navigator.share({
-                        text: text,
+                        text: fullText,
                         files: [file]
                     });
                     return;
-                } catch(e) {}
+                } catch(e) {
+                    console.log("Web Share API failed for LINE", e);
+                }
             }
 
-            const intent = `https://social-plugins.line.me/lineit/share?url=${encodeURIComponent(url)}&text=${encodeURIComponent(text)}`;
+            // フォールバック: LINE Intent (テキスト共有)
+            const intent = `https://social-plugins.line.me/lineit/share?text=${encodeURIComponent(fullText)}`;
             window.open(intent, '_blank');
         }
 
