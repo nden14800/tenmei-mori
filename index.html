@@ -2202,13 +2202,13 @@
                 saveLabSettings();
             },
             toggleDark: (el) => {
-                // スイッチを切り替えたら設定を保存してテーマを再適用
                 saveLabSettings();
                 applyTheme(); 
             },
             toggleBigText: (el) => {
-                if(el.checked) document.body.style.fontSize = '120%';
-                else document.body.style.fontSize = '';
+                // 【修正点】bodyのstyleではなく、htmlタグにクラスを付け外しする
+                if(el.checked) document.documentElement.classList.add('lab-big-text');
+                else document.documentElement.classList.remove('lab-big-text');
                 saveLabSettings();
             }
         };
@@ -2257,7 +2257,6 @@
 
         // --- 修正版: 設定読み込み ---
         function loadLabSettings() {
-            // まずテーマ以外の設定を復元
             if (currentState.user) {
                 const settings = JSON.parse(localStorage.getItem(`lab_settings_${currentState.user.email}`));
                 if (settings) {
@@ -2269,11 +2268,11 @@
                         document.getElementById('switch-speed').checked = true;
                         TenmeiLab.toggleSpeed(document.getElementById('switch-speed'));
                     }
+                    // 【修正点】文字サイズ設定の復元ロジック
                     if (settings.bigtext) {
                         document.getElementById('switch-bigtext').checked = true;
-                        TenmeiLab.toggleBigText(document.getElementById('switch-bigtext'));
+                        document.documentElement.classList.add('lab-big-text');
                     }
-                    // dark設定は applyTheme で処理するためここではスイッチ状態のみ復元
                     if (settings.dark) {
                         document.getElementById('switch-dark').checked = true;
                     }
@@ -2284,15 +2283,16 @@
                 document.body.classList.remove('theme-newyear');
                 document.getElementById('switch-speed').checked = false;
                 window.labSpeedMode = false;
-                document.getElementById('switch-dark').checked = false; // スイッチはOFF
+                document.getElementById('switch-dark').checked = false;
+                
+                // 【修正点】文字サイズのリセット
                 document.getElementById('switch-bigtext').checked = false;
-                document.body.style.fontSize = '';
+                document.documentElement.classList.remove('lab-big-text');
             }
             
-            // 最後にテーマを一括適用（ここでOS設定も反映されます）
             applyTheme();
         }
-
+        
         // --- window.onload への追加修正 ---
         window.onload = function() {
             initHomeAnimation();
