@@ -2901,11 +2901,15 @@ ${userName}様の運勢：【 ${res.type} 】
             generateDailyRanking(dateStr);
             renderRanking();
         }
+        // --- 日本時間 (JST) の日付文字列取得 (修正版) ---
         function getJSTDateString() {
-            const now = new Date();
-            const jstOffset = 9 * 60; 
-            const jstNow = new Date(now.getTime() + (now.getTimezoneOffset() + jstOffset) * 60000);
-            return jstNow.toISOString().split('T')[0];
+            // クライアントのロケールに関わらず、強制的にAsia/Tokyoの0:00基準の日付文字列を生成
+            return new Date().toLocaleDateString("ja-JP", {
+                timeZone: "Asia/Tokyo",
+                year: "numeric",
+                month: "2-digit",
+                day: "2-digit"
+            }).replaceAll('/', '-');
         }
         function getFutureDateString(baseDateStr, daysToAdd) {
             const date = new Date(baseDateStr);
