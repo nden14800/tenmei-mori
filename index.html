@@ -3710,7 +3710,6 @@
 
         function showView(viewId) {
             // Lab機能へのアクセス制限処理
-            // ビュー自体は表示するが、非ログイン時はぼかしとロックをかける
             if(viewId === 'lab') {
                 const lock = document.getElementById('lab-lock');
                 const wrapper = document.getElementById('lab-content-wrapper');
@@ -3724,6 +3723,7 @@
                 }
             }
 
+            // 画面の切り替え（フェードアニメーション）
             document.querySelectorAll('.view-section').forEach(el => {
                 el.classList.remove('active');
                 setTimeout(() => {
@@ -3732,19 +3732,25 @@
             });
             
             const target = document.getElementById(`view-${viewId}`);
-            target.style.display = 'block';
-            void target.offsetWidth; 
-            target.classList.add('active');
+            if (target) {
+                target.style.display = 'block';
+                void target.offsetWidth; 
+                target.classList.add('active');
+            }
             currentState.view = viewId;
 
+            // --- 各ビューごとの初期化ロジック ---
             if(viewId === 'draw') {
                 resetOmikujiPool();
             }
             if(viewId === 'history') {
                 loadHistory();
             }
+            // ▼ ここが重要：都道府県ランキングの呼び出し
+            if(viewId === 'prefecture') {
+                renderPrefectureRanking();
+            }
         }
-
         function articleBack() {
             showView('home'); 
         }
