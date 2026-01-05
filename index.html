@@ -1390,62 +1390,52 @@
                 <!-- ヒーローエリア (タイトル) -->
                 <div class="lab-hero-area">
                    
-                   <!-- 三角フラスコ (物理慣性・高画質版) -->
+                   <!-- メインフラスコ (サイドバーとデザイン統一) -->
                     <div class="title-flask-anim mb-6 transform scale-110">
                         <svg viewBox="0 0 200 200" overflow="hidden" style="width:100%; height:100%;">
                             <defs>
-                                <!-- メイングラデーション (青→紫) -->
-                                <linearGradient id="gradMain" x1="0%" y1="100%" x2="100%" y2="0%">
+                                <!-- 共通の鮮やかなグラデーション (青→紫) -->
+                                <linearGradient id="gradUnified" x1="0%" y1="100%" x2="100%" y2="0%">
                                     <stop offset="0%" stop-color="#4facfe" />
                                     <stop offset="100%" stop-color="#8e2de2" />
                                 </linearGradient>
-                                <!-- 奥側のグラデーション (深みを出すため少し暗く) -->
-                                <linearGradient id="gradDeep" x1="0%" y1="100%" x2="100%" y2="0%">
-                                    <stop offset="0%" stop-color="#2c3e50" />
-                                    <stop offset="100%" stop-color="#4ca1af" />
-                                </linearGradient>
-
-                                <!-- 三角フラスコの内側形状（液体のマスク） -->
-                                <clipPath id="flaskTriClip">
-                                    <!-- 三角形のパスデータ -->
+                                
+                                <!-- 三角フラスコのマスク形状 -->
+                                <clipPath id="flaskClipMain">
                                     <path d="M80 20 L120 20 L120 70 L170 170 C175 180, 165 190, 150 190 L50 190 C35 190, 25 180, 30 170 L80 70 Z" />
                                 </clipPath>
                             </defs>
 
-                            <!-- 全体を揺らすグループ -->
-                            <g class="flask-physics-container">
+                            <!-- 揺れる本体 -->
+                            <g class="flask-container">
                                 
-                                <!-- 1. 液体レイヤー (マスク適用 + 慣性アニメーション) -->
-                                <g clip-path="url(#flaskTriClip)">
-                                    <g class="liquid-inertia-container">
-                                        <!-- 背景色 -->
+                                <!-- 液体レイヤー -->
+                                <g clip-path="url(#flaskClipMain)">
+                                    <g class="liquid-container">
+                                        <!-- 背景 (薄いガラス色) -->
                                         <rect x="-50" y="-50" width="300" height="300" fill="rgba(255,255,255,0.05)" />
 
-                                        <!-- 奥の波 -->
-                                        <path class="real-wave-path wave-back" 
-                                              d="M0 125 Q50 105 100 125 T200 125 T300 125 T400 125 V250 H0 Z" />
+                                        <!-- 奥の波 (サイドバーに合わせて薄く、色は同じ) -->
+                                        <path class="wave-path wave-back" 
+                                              d="M0 125 Q50 110 100 125 T200 125 T300 125 T400 125 V250 H0 Z" />
 
-                                        <!-- 手前の波 -->
-                                        <path class="real-wave-path wave-front" 
-                                              d="M0 135 Q50 155 100 135 T200 135 T300 135 T400 135 V250 H0 Z" />
+                                        <!-- 手前の波 (メイン) -->
+                                        <path class="wave-path wave-front" 
+                                              d="M0 135 Q50 150 100 135 T200 135 T300 135 T400 135 V250 H0 Z" />
                                         
-                                        <!-- 泡 -->
-                                        <circle class="phys-bubble" cx="100" cy="180" r="4" style="animation-delay:0s" />
-                                        <circle class="phys-bubble" cx="60" cy="170" r="3" style="animation-delay:1s" />
-                                        <circle class="phys-bubble" cx="140" cy="175" r="5" style="animation-delay:2s" />
+                                        <!-- 泡 (リアルさの演出) -->
+                                        <circle class="bubble" cx="100" cy="180" r="4" style="animation-delay:0s" />
+                                        <circle class="bubble" cx="60" cy="170" r="3" style="animation-delay:1s" />
+                                        <circle class="bubble" cx="140" cy="175" r="5" style="animation-delay:2s" />
                                     </g>
                                 </g>
 
-                                <!-- 2. ガラス容器（三角フラスコ） -->
-                                <path class="glass-contour" fill="none" 
+                                <!-- ガラス容器 (三角) -->
+                                <path class="glass-stroke" fill="none" 
                                       d="M80 20 L120 20 L120 70 L170 170 C175 180, 165 190, 150 190 L50 190 C35 190, 25 180, 30 170 L80 70 Z" />
-
-                                <!-- フラスコの口（リム） -->
-                                <rect x="75" y="15" width="50" height="8" rx="2" class="glass-contour" fill="none" />
-
-                                <!-- ガラスのハイライト（左側と首筋） -->
-                                <path d="M45 170 L75 80" stroke="rgba(255,255,255,0.3)" stroke-width="3" fill="none" />
-                                <path d="M110 30 V60" stroke="rgba(255,255,255,0.3)" stroke-width="3" fill="none" />
+                                
+                                <!-- ハイライト -->
+                                <path d="M45 170 L75 80" stroke="rgba(255,255,255,0.3)" stroke-width="4" fill="none" />
                             </g>
                         </svg>
                     </div>
