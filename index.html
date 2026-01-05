@@ -3191,6 +3191,196 @@
         resultArea.classList.remove('hidden');
     };
 
+        // ==========================================
+    //  都道府県ランキング機能 (JST 0:00更新・完全版)
+    // ==========================================
+    
+    const prefecturesList = [
+        "北海道","青森県","岩手県","宮城県","秋田県","山形県","福島県",
+        "茨城県","栃木県","群馬県","埼玉県","千葉県","東京都","神奈川県",
+        "新潟県","富山県","石川県","福井県","山梨県","長野県","岐阜県",
+        "静岡県","愛知県","三重県","滋賀県","京都府","大阪府","兵庫県",
+        "奈良県","和歌山県","鳥取県","島根県","岡山県","広島県","山口県",
+        "徳島県","香川県","愛媛県","高知県","福岡県","佐賀県","長崎県",
+        "熊本県","大分県","宮崎県","鹿児島県","沖縄県"
+    ];
+
+    // ランキング生成・描画関数
+    window.renderPrefectureRanking = function() {
+        const listContainer = document.getElementById('prefecture-list');
+        const dateDisplay = document.getElementById('pref-date-display');
+        
+        // コンテナが存在しない場合は処理を中断（エラー防止）
+        if (!listContainer) return;
+
+        // 【重要】日本時間(JST)の日付文字列を取得
+        // これにより、毎日深夜0:00にシード値が変わり、ランキングが更新されます。
+        const dateStr = getJSTDateString(); 
+        
+        if (dateDisplay) {
+            const dateParts = dateStr.split('-');
+            dateDisplay.innerHTML = `${dateParts[0]}年${dateParts[1]}月${dateParts[2]}日 <span class="text-sm font-normal ml-2 text-gray-500 dark:text-gray-400">の運勢順位</span>`;
+        }
+
+        // 1. データ生成 (47都道府県すべて計算)
+        let rankingData = prefecturesList.map(pref => {
+            // シード: 日付文字列(JST) + 県名
+            // これにより「同じ日」なら「誰が見ても同じ結果」になり、「日が替わる」と「全員変わる」
+            const seed = dateStr + "_" + pref;
+            const rng = new SeededRandom(seed);
+            
+            // スコア算出 (0〜100点の範囲でランダム)
+            const score = Math.floor(rng.next() * 101);
+            
+            return {
+                name: pref,
+                score: score,
+                text: generatePrefectureText(pref, score, rng)
+            };
+        });
+
+        // 2. ソート (点数が高い順に並び替え)
+        rankingData.sort((a, b) => b.score - a.score);
+
+        // 3. 描画 HTML生成
+        let html = '';
+        rankingData.forEach((item, index) => {
+            const rank = index + 1;
+            
+            // ランク別スタイル定義
+            let rankBadgeClass = "bg-gray-200 text-gray-600";
+            let borderClass = "border-gray-300";
+            let scoreColor = "text-gray-600";
+
+            // 100点〜90点 (Sランク)
+            if (item.score >= 90) { 
+                rankBadgeClass = "bg-gradient-to-br from-yellow-300 to-yellow-500 text-white border-2 border-yellow-100 shadow";
+                borderClass = "border-yellow-400 bg-yellow-50 dark:bg-yellow-900/20";
+                scoreColor = "text-red-600";
+            
+            // 89点〜70点 (Aランク)
+            } else if (item.score >= 70) { 
+                rankBadgeClass = "bg-red-500 text-white";
+                borderClass = "border-red-300 bg-red-50 dark:bg-red-900/10";
+                scoreColor = "text-red-500";
+            
+            // 69点〜40点 (Bランク)
+            } else if (item.score >= 40) { 
+                rankBadgeClass = "bg-blue-500 text-white";
+                borderClass = "border-blue-200";
+                scoreColor = "text-blue-600";
+            
+            // 39点〜0点 (Cランク)
+            } else { 
+                rankBadgeClass = "bg-gray-500 text-white";
+                borderClass = "border-gray-400 bg-gray-100 dark:bg-zinc-800";
+                scoreColor = "text-gray-500";
+            }
+
+            // 王冠アイコン (TOP3のみ表示)
+            let crown = "";
+            if(rank === 1) crown = '<i class="bi bi-trophy-fill text-yellow-500 mr-1"></i>';
+            else if(rank === 2) crown = '<i class="bi bi-award-fill text-gray-400 mr-1"></i>';
+            else if(rank === 3) crown = '<i class="bi bi-award-fill text-orange-400 mr-1"></i>';
+
+            // カードHTMLの組み立て
+            html += `
+                <div class="themed-card rounded-xl p-5 border-l-8 ${borderClass} shadow-sm flex flex-col md:flex-row gap-4 items-start md:items-center">
+                    <!-- 順位と県名 -->
+                    <div class="flex items-center gap-4 min-w-[180px]">
+                        <div class="flex flex-col items-center justify-center w-16">
+                            <span class="text-xs font-bold text-gray-400 mb-1">RANK</span>
+                            <div class="w-12 h-12 rounded-full flex items-center justify-center font-black text-xl ${rankBadgeClass}">
+                                ${rank}
+                            </div>
+                        </div>
+                        <div>
+                            <div class="text-sm text-gray-500 font-bold mb-1">${crown}No.${rank}</div>
+                            <div class="text-2xl font-black tracking-widest">${item.name}</div>
+                        </div>
+                    </div>
+
+                    <!-- スコアとテキスト -->
+                    <div class="flex-1 w-full">
+                        <div class="flex justify-between items-end border-b border-gray-200 dark:border-gray-700 pb-2 mb-3">
+                            <span class="text-xs font-bold text-gray-400">運気指数</span>
+                            <span class="text-3xl font-black ${scoreColor} font-mono">${item.score}<span class="text-sm ml-1 text-gray-500">/100</span></span>
+                        </div>
+                        <p class="text-sm leading-7 text-justify text-gray-700 dark:text-gray-300 font-medium">
+                            ${item.text}
+                        </p>
+                    </div>
+                </div>
+            `;
+        });
+
+        // 画面に反映
+        listContainer.innerHTML = html;
+    };
+
+    // 文章生成ロジック (スコアに応じて内容を変え、かつ県名を入れた長文を生成)
+    function generatePrefectureText(prefName, score, rng) {
+        // バリエーションを出すためのランダム選択関数
+        const pick = (arr) => arr[Math.floor(rng.next() * arr.length)];
+
+        if (score >= 90) {
+            // --- 90〜100点 (絶好調) ---
+            const phrases = [
+                `今日の${prefName}は、あたかも天からの祝福を受けているかのような、強烈かつ清らかなエネルギーに満ち溢れています。土地自体が発光しているかのような高い波動を観測でき、この場所に身を置くすべての人に幸運をもたらすでしょう。`,
+                `奇跡的な星の配置により、本日の${prefName}は国内で最も「願いが通じやすい」特異点となっています。長年の悩みが嘘のように晴れたり、思いがけない良縁に恵まれたりと、ドラマチックな展開が期待できる一日です。`,
+                `まさに最強の運気です。今日の${prefName}全域において、滞っていた物事が一気に動き出す「開運の風」が吹いています。ビジネス、恋愛、健康、あらゆる面においてポジティブな結果が得られる、稀に見る吉日となるでしょう。`
+            ];
+            const actions = [
+                `特に${prefName}内の神社仏閣への参拝は絶大な効果を発揮します。感謝の気持ちを伝えることで、さらなる加護が得られるでしょう。`,
+                `この土地の食材を使った料理を食べることで、身体の内側から運気を取り込むことができます。地産地消を心がけてみてください。`,
+                `新しいプロジェクトの始動や、大切な人への告白など、人生の重要な決断を下すのにこれ以上ない最適なタイミングです。`
+            ];
+            return `${pick(phrases)} ${pick(actions)} 自信を持って行動してください。`;
+
+        } else if (score >= 70) {
+            // --- 70〜89点 (好調) ---
+            const phrases = [
+                `${prefName}の空には穏やかで温かい気が流れており、非常に過ごしやすい一日となりそうです。派手さはありませんが、確実な前進を感じられる安定した良運気に包まれています。`,
+                `今日の${prefName}は、「調和」と「発展」のエネルギーが活性化しています。人間関係がスムーズに運び、周囲との協力体制が自然と築けるような、心地よい空気が土地全体を覆っています。`,
+                `活気あふれる一日です。${prefName}の土地が持つ本来のパワーが高まっており、訪れる人のやる気や好奇心を刺激してくれるでしょう。何か新しい発見があるかもしれません。`
+            ];
+            const actions = [
+                `${prefName}の自然豊かな場所へ足を運ぶと、心身のリフレッシュ効果が倍増します。深呼吸をして、土地のエネルギーを吸い込みましょう。`,
+                `友人や家族と${prefName}の名所を訪れるのが吉です。会話が弾み、絆がより一層深まる素晴らしい時間を過ごせるはずです。`,
+                `買い物や散策に出かけるのに適しています。以前から欲しかったものが${prefName}のお店で見つかるなど、小さなラッキーが重なる予感です。`
+            ];
+            return `${pick(phrases)} ${pick(actions)} 笑顔を絶やさず過ごしましょう。`;
+
+        } else if (score >= 40) {
+            // --- 40〜69点 (普通・平穏) ---
+            const phrases = [
+                `今日の${prefName}は、可もなく不可もなく、静寂に包まれたフラットな運気です。劇的な変化は望めませんが、それは逆に言えば「平穏無事」であるという証でもあります。`,
+                `嵐の前の静けさのような、落ち着いた空気が${prefName}を漂っています。外に向かってエネルギーを発散するよりも、内面を見つめ直すのに適した、静的な一日となるでしょう。`,
+                `エネルギーの波は安定しています。今日の${prefName}では、ルーティンワークや日常の些細な出来事を大切にすることで、運気が徐々に上向いていく傾向にあります。`
+            ];
+            const actions = [
+                `無理に予定を詰め込まず、${prefName}のカフェや公園でゆっくりと読書などをして過ごすのがおすすめです。心の洗濯をしましょう。`,
+                `家の中の掃除や整理整頓を行うと良いでしょう。${prefName}の土地の神様は、清潔な場所を好みます。足元を固める一日としてください。`,
+                `今日は「受け身」の姿勢が吉と出ます。${prefName}の中で起こる出来事に抗わず、流れに身を任せることで、災いを避けることができます。`
+            ];
+            return `${pick(phrases)} ${pick(actions)} 焦らずマイペースを維持してください。`;
+
+        } else {
+            // --- 0〜39点 (低調・要注意) ---
+            const phrases = [
+                `残念ながら、今日の${prefName}周辺は気の流れが滞り気味です。全体的に重たい空気が漂っており、物事が思うように進まないもどかしさを感じるかもしれません。`,
+                `注意が必要です。今日の${prefName}はエネルギーのバランスが崩れており、些細なことでイライラしたり、トラブルに巻き込まれやすい不安定な星回りとなっています。`,
+                `今日は${prefName}にとって「試練」の一日となるかもしれません。予期せぬ障害や、コミュニケーションのすれ違いが発生しやすい、慎重さが求められる運気です。`
+            ];
+            const actions = [
+                `今日は${prefName}での派手な行動は慎み、早めに帰宅して身体を休めることを強く推奨します。湯船にゆっくり浸かり、邪気を洗い流しましょう。`,
+                `言動には十分な注意が必要です。${prefName}にいる間は、謙虚な姿勢を心がけ、感謝の言葉を意識的に口にすることで、悪い運気を跳ね返すことができます。`,
+                `もし${prefName}の神社を見かけたら、立ち寄って手を合わせましょう。「大難を小難に」変えてくれるよう祈ることで、守りが固まります。`
+            ];
+            return `${pick(phrases)} ${pick(actions)} 明けない夜はありません。今日は耐える時です。`;
+        }
+    }
+
     // ==========================================
     //  統合された初期化処理 (window.onload)
     // ==========================================
