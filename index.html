@@ -1097,52 +1097,6 @@
         @keyframes blinkCursor { 0%, 100% { opacity: 1; } 50% { opacity: 0; } }
         @keyframes fadeInTerminal { from { opacity: 0; } to { opacity: 1; } } 
 
-        /* --- 隠し機能: 神モード（God Mode）専用スタイル --- */
-        .lab-card-god {
-            /* 黄金グラデーション */
-            background: linear-gradient(135deg, #bf953f, #fcf6ba, #b38728, #fbf5b7, #aa771c);
-            background-size: 300% 300%;
-            /* ザラザラノイズ（和紙のような質感） */
-            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='0.15'/%3E%3C/svg%3E"), 
-                              linear-gradient(135deg, #bf953f, #fcf6ba, #b38728, #fbf5b7, #aa771c);
-            border-radius: 24px;
-            padding: 24px;
-            margin-bottom: 20px;
-            border: 2px solid #fff;
-            box-shadow: 0 0 20px rgba(255, 215, 0, 0.6), inset 0 0 20px rgba(255, 255, 255, 0.5);
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            animation: godShine 3s ease infinite;
-            position: relative;
-            overflow: hidden;
-            color: #5d4037; /* 文字色は濃い茶色で見やすく */
-        }
-
-        /* 常にキラキラさせる */
-        @keyframes godShine {
-            0% { background-position: 0% 50%; box-shadow: 0 0 20px rgba(255, 215, 0, 0.6); }
-            50% { background-position: 100% 50%; box-shadow: 0 0 40px rgba(255, 215, 0, 0.9); }
-            100% { background-position: 0% 50%; box-shadow: 0 0 20px rgba(255, 215, 0, 0.6); }
-        }
-
-        .god-title {
-            font-family: 'Zen Old Mincho', serif;
-            font-weight: 900;
-            font-size: 1.3rem;
-            text-shadow: 1px 1px 0px rgba(255,255,255,0.5);
-            background: linear-gradient(to bottom, #5d4037, #3e2723);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-        }
-
-        .god-desc {
-            font-size: 0.75rem;
-            font-weight: bold;
-            color: #3e2723;
-            margin-top: 4px;
-        }
-
     </style>
 </head>
 <body>
@@ -1229,14 +1183,7 @@
         
         <!-- ビュー: ホーム -->
         <section id="view-home" class="view-section active text-center max-w-4xl mx-auto">
-            <!-- ビュー: ホーム -->
-        <section id="view-home" class="view-section active text-center max-w-4xl mx-auto">
-            <!-- 修正箇所: onclickイベントを追加 -->
-            <h1 class="text-4xl font-black mb-2 tracking-widest cursor-pointer select-none active:scale-95 transition-transform" 
-                style="font-family: 'Zen Old Mincho'"
-                onclick="handleSecretCommand()">
-                運勢・天命乃杜
-            </h1>
+            <h1 class="text-4xl font-black mb-2 tracking-widest" style="font-family: 'Zen Old Mincho'">運勢・天命乃杜</h1>
             <p class="text-sm font-serif mb-4 tracking-widest uppercase">FORTUNE TENMEI-NO-MORI</p>
             <p class="text-lg font-serif mb-8 themed-text-sub">天命が導く、日々の道しるべ<br>災いを避け、福を招く</p>
 
@@ -1480,36 +1427,51 @@
                 <!-- ヒーローエリア (タイトル) -->
                 <div class="lab-hero-area">
                    
-                   <!-- フラスコ (ここを5回タップで隠し機能発動) -->
-                    <div class="title-flask-anim mb-6 transform scale-110 cursor-pointer active:scale-95 transition-transform" 
-                         onclick="handleGodModeCommand()">
+                   <!-- メインフラスコ (奥の波を削除し、サイドバーと完全統一) -->
+                    <div class="title-flask-anim mb-6 transform scale-110">
                         <svg viewBox="0 0 200 200" overflow="hidden" style="width:100%; height:100%;">
-                            <!-- (中のSVGコードは変更なし、そのままでOK) -->
-                             <defs>
+                            <defs>
+                                <!-- 共通の鮮やかなグラデーション (青→紫) -->
                                 <linearGradient id="gradUnified" x1="0%" y1="100%" x2="100%" y2="0%">
                                     <stop offset="0%" stop-color="#4facfe" />
                                     <stop offset="100%" stop-color="#8e2de2" />
                                 </linearGradient>
+                                
+                                <!-- 三角フラスコのマスク形状 -->
                                 <clipPath id="flaskClipMain">
                                     <path d="M80 20 L120 20 L120 70 L170 170 C175 180, 165 190, 150 190 L50 190 C35 190, 25 180, 30 170 L80 70 Z" />
                                 </clipPath>
                             </defs>
+
+                            <!-- 揺れる本体 -->
                             <g class="flask-container">
+                                
+                                <!-- 液体レイヤー -->
                                 <g clip-path="url(#flaskClipMain)">
                                     <g class="liquid-container">
+                                        <!-- 背景 (薄いガラス色) -->
                                         <rect x="-50" y="-50" width="300" height="300" fill="rgba(255,255,255,0.05)" />
-                                        <path class="wave-path wave-front" d="M0 135 Q50 150 100 135 T200 135 T300 135 T400 135 V250 H0 Z" />
+
+                                        <!-- 手前の波 (これ1つだけにしました) -->
+                                        <path class="wave-path wave-front" 
+                                              d="M0 135 Q50 150 100 135 T200 135 T300 135 T400 135 V250 H0 Z" />
+                                        
+                                        <!-- 泡 -->
                                         <circle class="bubble" cx="100" cy="180" r="4" style="animation-delay:0s" />
                                         <circle class="bubble" cx="60" cy="170" r="3" style="animation-delay:1s" />
                                         <circle class="bubble" cx="140" cy="175" r="5" style="animation-delay:2s" />
                                     </g>
                                 </g>
-                                <path class="glass-stroke" fill="none" d="M80 20 L120 20 L120 70 L170 170 C175 180, 165 190, 150 190 L50 190 C35 190, 25 180, 30 170 L80 70 Z" />
+
+                                <!-- ガラス容器 (三角) -->
+                                <path class="glass-stroke" fill="none" 
+                                      d="M80 20 L120 20 L120 70 L170 170 C175 180, 165 190, 150 190 L50 190 C35 190, 25 180, 30 170 L80 70 Z" />
+                                
+                                <!-- ハイライト -->
                                 <path d="M45 170 L75 80" stroke="rgba(255,255,255,0.3)" stroke-width="4" fill="none" />
                             </g>
                         </svg>
                     </div>
-                    
                     <h2 class="text-3xl md:text-5xl font-black mb-4 tracking-tight text-gray-800 dark:text-white" style="font-family: 'Shippori Mincho', serif;">
                         未来の運勢を<br>試してみる
                     </h2>
@@ -3521,169 +3483,6 @@
 
         return selectedText + " " + advice;
     }
-        // ==========================================
-    //  隠しコマンド機能 (Secret Easter Egg)
-    // ==========================================
-    
-    let secretTapCount = 0;
-    let secretTapTimer = null;
-
-    // タイトルをタップした時の処理
-    window.handleSecretCommand = function() {
-        secretTapCount++;
-        
-        // タップ音がわりの微細なバイブレーション（スマホのみ）
-        if (navigator.vibrate) navigator.vibrate(50);
-
-        // タイムアウト設定（1.5秒間隔があいたらリセット）
-        clearTimeout(secretTapTimer);
-        secretTapTimer = setTimeout(() => {
-            secretTapCount = 0;
-        }, 1500);
-
-        // 7回連続タップで発動
-        if (secretTapCount === 7) {
-            activateSecretMode();
-            secretTapCount = 0; // リセット
-        }
-    };
-
-    // 演出開始
-    function activateSecretMode() {
-        const overlay = document.getElementById('secret-overlay');
-        const content = document.getElementById('secret-terminal-content');
-        const closeBtn = document.getElementById('secret-close-btn');
-        
-        overlay.classList.add('active');
-        content.innerHTML = '';
-        closeBtn.classList.add('hidden');
-
-        // 表示するメッセージ (タイプライター風)
-        const messages = [
-            "Connecting to Cloudflare Workers...",
-            "Accessing KV Namespace: OMIKUJI_DATA...",
-            "Bypassing security protocols...",
-            "Authenticating User: nden148 (Admin)...",
-            "ACCESS GRANTED.",
-            "",
-            "ようこそ、裏・天命乃杜へ。",
-            "ここは開発者の思考領域です。",
-            "このサイトを見つけてくれてありがとう。",
-            "あなたの人生に、",
-            "本物の「大吉」が訪れますように。",
-            "",
-            "Project: Tenmei-no-Mori",
-            "Status: Online",
-            "System: All Green",
-            "EOF"
-        ];
-
-        let lineIndex = 0;
-
-        function typeWriter() {
-            if (lineIndex < messages.length) {
-                const p = document.createElement('div');
-                p.className = 'secret-text';
-                if (lineIndex === messages.length - 1) p.classList.add('secret-cursor');
-                p.textContent = messages[lineIndex];
-                content.appendChild(p);
-                
-                // スクロール追従
-                overlay.scrollTop = overlay.scrollHeight;
-
-                lineIndex++;
-                // ランダムな遅延でタイプライター感を出す
-                setTimeout(typeWriter, Math.random() * 300 + 100);
-            } else {
-                // 完了後、閉じるボタンを表示
-                setTimeout(() => {
-                    closeBtn.classList.remove('hidden');
-                }, 1000);
-            }
-        }
-
-        typeWriter();
-    }
-
-    // 演出終了
-    window.closeSecretMode = function() {
-        const overlay = document.getElementById('secret-overlay');
-        overlay.classList.remove('active');
-        // ちょっとした余韻（Labsの全機能解放などをここに仕込むことも可能）
-        alert("通常世界線へ復帰します。");
-    };
-        
-// ==========================================
-    //  Labs隠し機能: 神モード (God Mode)
-    // ==========================================
-    
-    // リロードで初期化される変数（ストレージには保存しない）
-    window.godModeEnabled = false; 
-    let godTapCount = 0;
-    let godTapTimer = null;
-
-    // フラスコタップ時の処理
-    window.handleGodModeCommand = function() {
-        godTapCount++;
-        
-        // 連続タップ判定（1秒以内）
-        clearTimeout(godTapTimer);
-        godTapTimer = setTimeout(() => { godTapCount = 0; }, 1000);
-
-        // 5回タップで発動
-        if (godTapCount === 5) {
-            spawnGodCard();
-            godTapCount = 0;
-        }
-    };
-
-    // 黄金のカードを生成・挿入
-    function spawnGodCard() {
-        // 既にある場合は何もしない
-        if(document.getElementById('god-mode-card')) {
-            alert("神の力は既に解放されています。");
-            return;
-        }
-
-        const container = document.getElementById('lab-container');
-        
-        // 黄金のカードHTML
-        const cardHTML = `
-            <div id="god-mode-card" class="lab-card-god" style="animation: slideInDown 0.5s ease-out;">
-                <div class="flex items-center gap-5">
-                    <div class="w-14 h-14 rounded-full bg-white flex items-center justify-center text-3xl flex-shrink-0 shadow-lg border-2 border-yellow-500">
-                        <i class="bi bi-stars text-yellow-600"></i>
-                    </div>
-                    <div>
-                        <h3 class="god-title">天命操作（神モード）</h3>
-                        <p class="god-desc">常に「大吉」を招き寄せます。<br>※この運命は轍（履歴）には刻まれません。</p>
-                    </div>
-                </div>
-                <label class="toggle-switch flex-shrink-0 ml-4">
-                    <input type="checkbox" onchange="window.toggleGodMode(this)">
-                    <span class="slider" style="background-color: #5d4037 !important;"></span>
-                </label>
-            </div>
-        `;
-        
-        // リストの先頭に挿入
-        container.insertAdjacentHTML('afterbegin', cardHTML);
-        alert("禁断の扉が開かれました...\n「天命操作」機能が一時的にアンロックされました。");
-    }
-
-    // スイッチ切り替え時の処理
-    window.toggleGodMode = function(el) {
-        window.godModeEnabled = el.checked;
-        if(window.godModeEnabled) {
-            // エフェクト（画面を一瞬光らせるなどしても良いが今回はアラートのみ）
-        }
-    };
-
-    // スライドアニメーション用スタイル定義をJSから注入
-    const style = document.createElement('style');
-    style.innerHTML = `@keyframes slideInDown { from { opacity: 0; transform: translateY(-20px); } to { opacity: 1; transform: translateY(0); } }`;
-    document.head.appendChild(style);
-        
     // ==========================================
     //  統合された初期化処理 (window.onload)
     // ==========================================
@@ -4287,18 +4086,9 @@
             let resultData, randNum, detailsList, luckyItems, unluckyItems, timestamp, username;
 
             if (isNewDraw) {
-                // ▼ 隠し機能: 神モード判定 ▼
-                let base;
-                if (window.godModeEnabled) {
-                    // 強制的に「大吉」を選択
-                    base = omikujiResults.find(r => r.type === "大吉");
-                    randNum = 77; // ラッキーセブン
-                } else {
-                    // 通常抽選
-                    base = omikujiResults[Math.floor(Math.random() * omikujiResults.length)];
-                    randNum = Math.floor(Math.random() * 100) + 1;
-                }
-                
+                // 新規抽選
+                const base = omikujiResults[Math.floor(Math.random() * omikujiResults.length)];
+                randNum = Math.floor(Math.random() * 100) + 1;
                 timestamp = Date.now();
                 username = currentState.user ? (currentState.user.username || "参拝者") : "ゲスト";
 
@@ -4343,45 +4133,40 @@
                 };
                 currentState.lastResult = resultData;
 
-                // ▼ 履歴保存処理（神モード時はスキップ！） ▼
+                // URL更新廃止: クリーンなURLのまま
+
+                // ログイン時のみ保存・更新
                 if(currentState.user) {
-                    if (window.godModeEnabled) {
-                        console.log("God Mode Active: History saving skipped.");
-                        // 擬似的にカウントだけ更新したように見せる（実際はサーバーと同期しない）
-                        // 必要ならここでローディング演出だけ入れる
-                    } else {
-                        // 通常時: サーバーへ保存
-                        showLoading(true);
-                        try {
-                            const res = await fetch(`${API_BASE}/api/draw`, {
-                                method: 'POST',
-                                headers: { 'Content-Type': 'application/json' },
-                                body: JSON.stringify({ 
-                                    email: currentState.user.email,
-                                    token: currentState.user.token,
-                                    result: resultData.type,
-                                    poem: resultData.poem,
-                                    detail: detailsList,
-                                    lucky: luckyItems,
-                                    unlucky: unluckyItems
-                                })
-                            });
-                            
-                            if(res.ok) {
-                                const data = await res.json();
-                                if(data.success && data.count) {
-                                    currentState.liveCount = data.count;
-                                    document.getElementById('live-counter').textContent = currentState.liveCount.toLocaleString() + "本";
-                                    fetchHistoryStats();
-                                }
+                    showLoading(true);
+                    try {
+                        const res = await fetch(`${API_BASE}/api/draw`, {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ 
+                                email: currentState.user.email,
+                                token: currentState.user.token,
+                                result: resultData.type,
+                                poem: resultData.poem,
+                                detail: detailsList,
+                                lucky: luckyItems,
+                                unlucky: unluckyItems
+                            })
+                        });
+                        
+                        if(res.ok) {
+                            const data = await res.json();
+                            if(data.success && data.count) {
+                                currentState.liveCount = data.count;
+                                document.getElementById('live-counter').textContent = currentState.liveCount.toLocaleString() + "本";
+                                fetchHistoryStats();
                             }
-                        } catch(e) { console.error(e); }
-                        finally { showLoading(false); }
-                    }
+                        }
+                    } catch(e) { console.error(e); }
+                    finally { showLoading(false); }
                 }
 
             } else {
-                // 復元 (履歴からの表示など)
+                // 復元
                 resultData = dataOverride;
                 randNum = dataOverride.num || 1;
                 
@@ -5594,12 +5379,5 @@ ${getShareUrl()}`;
             if (myData) { resultDiv.innerHTML = createCardHTML(myData); resultDiv.classList.remove('hidden'); }
         }
     </script>
-    <!-- 隠しコマンド用オーバーレイ -->
-    <div id="secret-overlay">
-        <div id="secret-terminal-content"></div>
-        <button onclick="closeSecretMode()" class="mt-8 border border-green-500 text-green-500 px-6 py-2 rounded hover:bg-green-900 transition font-mono hidden" id="secret-close-btn">
-            [ EXIT SYSTEM ]
-        </button>
-    </div>
 </body>
 </html>
