@@ -3587,6 +3587,45 @@
         let globalHistory = [];
         let personalHistory = [];
 
+        // ==========================================
+    //  隠しコマンド管理 (Secret Logic)
+    // ==========================================
+    const secretState = {
+        flaskClicks: 0,
+        titleClicks: 0,
+        isGodMode: false, // 大吉確定モードフラグ
+        clickTimer: null
+    };
+
+    window.handleSecretCommand = function(type) {
+        // タイマーリセット (連打判定用: 1秒以内に次を押さないとリセット)
+        if (secretState.clickTimer) clearTimeout(secretState.clickTimer);
+        secretState.clickTimer = setTimeout(() => {
+            secretState.flaskClicks = 0;
+            secretState.titleClicks = 0;
+        }, 1000);
+
+        if (type === 'flask') {
+            secretState.flaskClicks++;
+            if (secretState.flaskClicks === 5) {
+                secretState.isGodMode = !secretState.isGodMode; // トグル
+                if (secretState.isGodMode) {
+                    alert("【天命解放】\n\nゴッドモードが有効になりました。\n次のおみくじは必ず……？");
+                } else {
+                    alert("ゴッドモードを解除しました。");
+                }
+                secretState.flaskClicks = 0;
+            }
+        } 
+        else if (type === 'title') {
+            secretState.titleClicks++;
+            if (secretState.titleClicks === 7) {
+                document.getElementById('secret-message-overlay').classList.add('active');
+                secretState.titleClicks = 0;
+            }
+        }
+    };
+
         // --- Lab機能の状態管理とモーダル制御 ---
         const TenmeiLab = {
             // 機能ごとの詳細データ
