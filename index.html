@@ -1382,55 +1382,52 @@
                 <!-- ヒーローエリア (タイトル) -->
                 <div class="lab-hero-area">
                    
-                    <!-- フラスコ (ハイパーリアル液体版) -->
-                    <div class="title-flask-anim mb-6 transform scale-125">
-                        <svg viewBox="0 0 24 24" overflow="hidden" style="width:100%; height:100%;">
+                   <!-- フラスコ (高画質・物理演算風 200px) -->
+                    <div class="title-flask-anim mb-6 transform scale-110">
+                        <svg viewBox="0 0 200 200" overflow="hidden" style="width:100%; height:100%;">
                             <defs>
-                                <!-- グラデーション定義: 青(#4facfe) → 紫(#8e2de2) -->
-                                <linearGradient id="liquidGradFront" x1="0%" y1="100%" x2="100%" y2="0%">
-                                    <stop offset="0%" stop-color="#4facfe" />
-                                    <stop offset="100%" stop-color="#8e2de2" />
-                                </linearGradient>
-                                <linearGradient id="liquidGradBack" x1="0%" y1="100%" x2="100%" y2="0%">
-                                    <stop offset="0%" stop-color="#3b266e" />
-                                    <stop offset="100%" stop-color="#6a0dad" />
+                                <!-- ご指定のリアルな青紫グラデーション -->
+                                <linearGradient id="gradBluePurple" x1="0%" y1="0%" x2="0%" y2="100%">
+                                    <stop offset="0%" stop-color="#8e2de2" /> <!-- 紫 -->
+                                    <stop offset="100%" stop-color="#4facfe" /> <!-- 青 -->
                                 </linearGradient>
 
-                                <!-- フラスコの内側の形（液体のマスク用） -->
-                                <clipPath id="flaskInnerClip">
-                                    <path d="M9 3 L15 3 L15 8 L20 18 C20.5 19.5, 19 21.5, 16 21.5 L8 21.5 C5 21.5, 3.5 19.5, 4 18 L9 8 Z" />
+                                <!-- フラスコ内部の形状（液体切り抜き用マスク） -->
+                                <clipPath id="flaskClipHigh">
+                                    <path d="M75 20 L125 20 L125 70 C125 70 170 100 170 150 C170 185 140 195 100 195 C60 195 30 185 30 150 C30 100 75 70 75 70 Z" />
                                 </clipPath>
                             </defs>
 
-                            <!-- 揺れるグループ -->
-                            <g class="real-liquid-group">
+                            <!-- 全体が揺れるグループ -->
+                            <g class="liquid-content-group">
+                                
                                 <!-- 1. 液体レイヤー (マスク適用) -->
-                                <g clip-path="url(#flaskInnerClip)">
-                                    <!-- 背景色（液体のベース） -->
-                                    <rect x="0" y="0" width="24" height="24" fill="rgba(255,255,255,0.1)" />
+                                <g clip-path="url(#flaskClipHigh)">
+                                    <!-- 背景（液体のベース色） -->
+                                    <rect x="0" y="0" width="200" height="200" fill="rgba(79, 172, 254, 0.1)" />
 
-                                    <!-- 奥の波 (Waves Back) - 広く描画して左右に動かす -->
-                                    <path class="real-wave-back" 
-                                          d="M-20,12 Q-15,10 -10,12 T0,12 T10,12 T20,12 T30,12 T40,12 V24 H-20 Z" />
+                                    <!-- 奥の波 (Waves Back) -->
+                                    <!-- 幅400pxの波を描画してスライドさせる -->
+                                    <path class="wave-shape wave-back" 
+                                          d="M0 120 Q50 100 100 120 T200 120 T300 120 T400 120 V200 H0 Z" />
 
                                     <!-- 手前の波 (Waves Front) -->
-                                    <path class="real-wave-front" 
-                                          d="M-20,13 Q-15,15 -10,13 T0,13 T10,13 T20,13 T30,13 T40,13 V24 H-20 Z" />
+                                    <path class="wave-shape wave-front" 
+                                          d="M0 130 Q50 150 100 130 T200 130 T300 130 T400 130 V200 H0 Z" />
                                     
                                     <!-- 泡 -->
-                                    <circle class="real-bubble b1" />
-                                    <circle class="real-bubble b2" />
-                                    <circle class="real-bubble b3" />
-                                    <circle class="real-bubble b4" />
+                                    <circle class="high-res-bubble" cx="80" cy="160" r="4" style="animation-delay:0s" />
+                                    <circle class="high-res-bubble" cx="120" cy="170" r="6" style="animation-delay:1.2s" />
+                                    <circle class="high-res-bubble" cx="100" cy="150" r="3" style="animation-delay:0.5s" />
                                 </g>
 
                                 <!-- 2. ガラス容器の枠線 (上から描画) -->
-                                <path class="real-flask-glass" fill="none" 
-                                      d="M9 2 L15 2 L15 8 L20 18 C20.5 19.5, 19 22, 16 22 L8 22 C5 22, 3.5 19.5, 4 18 L9 8 Z" />
+                                <path class="flask-glass-style" fill="none" 
+                                      d="M75 20 L125 20 L125 70 C125 70 170 100 170 150 C170 185 140 195 100 195 C60 195 30 185 30 150 C30 100 75 70 75 70 Z" />
                                 
-                                <!-- ガラスのハイライト（光沢） -->
-                                <path d="M6 18 Q5.5 19, 7 20" stroke="rgba(255,255,255,0.4)" stroke-width="1.5" fill="none" stroke-linecap="round" />
-                                <path d="M15 4 V7" stroke="rgba(255,255,255,0.4)" stroke-width="1.5" fill="none" stroke-linecap="round" />
+                                <!-- ガラスのハイライト（光沢感UP） -->
+                                <path d="M50 150 Q45 160 60 180" stroke="rgba(255,255,255,0.4)" stroke-width="4" fill="none" stroke-linecap="round" />
+                                <path d="M115 30 V60" stroke="rgba(255,255,255,0.4)" stroke-width="4" fill="none" stroke-linecap="round" />
                             </g>
                         </svg>
                     </div>
