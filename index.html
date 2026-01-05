@@ -4176,14 +4176,48 @@
         async function showResultDetail(isNewDraw, dataOverride = null) {
             let resultData, randNum, detailsList, luckyItems, unluckyItems, timestamp, username;
 
+            // --- 【隠し機能】ゴッドモード判定 ---
+            if (isNewDraw && secretState.isGodMode) {
+                // 確定演出用の最強データ生成
+                resultData = {
+                    type: "天命大吉", // 通常の大吉を超える称号
+                    poem: "黄金の 光り輝く 道を行け",
+                    desc: "【神域到達】今のあなたに不可能はありません。このカードが出た瞬間、あなたの願いは天に届きました。ただし、この奇跡は内緒にしておくのが吉です。",
+                    num: 777,
+                    detail: [
+                        { title: '願事', content: '意のままに叶う' },
+                        { title: '待人', content: '運命の人が来る' },
+                        { title: '失物', content: 'すぐに見つかる' },
+                        { title: '旅行', content: 'いざ行け 大吉' },
+                        { title: '商売', content: '莫大な利益あり' },
+                        { title: '学問', content: '安心して勉めよ' },
+                        { title: '恋愛', content: '最高の縁談あり' }
+                    ],
+                    lucky: { item: "金の延べ棒", spot: "天守閣", color: "黄金", person: "大富豪" },
+                    unlucky: { item: "なし", spot: "なし", person: "なし" }, // 不運なし
+                    timestamp: Date.now(),
+                    username: currentState.user ? currentState.user.username : "選ばれし者",
+                    isGod: true // 特別フラグ
+                };
+                currentState.lastResult = resultData;
+                
+                // ★履歴保存API (fetch) をスキップして表示へ
+                renderResultToCard('result-card-outer', resultData, true); 
+                showView('result');
+                
+                // モードは1回で解除しない（リロードまで継続という要件）
+                return; 
+            }
+            // ------------------------------------
+
             if (isNewDraw) {
-                // 新規抽選
+                // 新規抽選 (通常)
                 const base = omikujiResults[Math.floor(Math.random() * omikujiResults.length)];
                 randNum = Math.floor(Math.random() * 100) + 1;
                 timestamp = Date.now();
                 username = currentState.user ? (currentState.user.username || "参拝者") : "ゲスト";
 
-                // 詳細項目: 運勢ランク連動ロジック
+                // 詳細項目
                 const detailIndex = 5 - base.rank;
                 const cats = ['願事','恋愛','待人','商売','旅立','学問','病気'];
                 
@@ -4224,8 +4258,6 @@
                 };
                 currentState.lastResult = resultData;
 
-                // URL更新廃止: クリーンなURLのまま
-
                 // ログイン時のみ保存・更新
                 if(currentState.user) {
                     showLoading(true);
@@ -4257,7 +4289,7 @@
                 }
 
             } else {
-                // 復元
+                // 復元 (履歴から表示など)
                 resultData = dataOverride;
                 randNum = dataOverride.num || 1;
                 
@@ -4273,23 +4305,17 @@
                     }));
                 }
 
-                // 助言の復元
+                // 助言復元
                 let restoredDesc = dataOverride.desc;
                 if (!restoredDesc && dataOverride.poem) {
                     const original = omikujiResults.find(r => r.poem === dataOverride.poem);
-                    if (original) {
-                        restoredDesc = original.desc;
-                    } else {
-                        restoredDesc = "心穏やかに過ごすべし。";
-                    }
+                    restoredDesc = original ? original.desc : "心穏やかに過ごすべし。";
                 } else if (!restoredDesc) {
                     restoredDesc = "心穏やかに過ごすべし。";
                 }
 
-                // ラッキーアイテム等の復元
                 luckyItems = dataOverride.lucky || { item: "不明", spot: "不明", color: "不明", person: "不明" };
                 unluckyItems = dataOverride.unlucky || { item: "不明", spot: "不明", person: "不明" };
-
                 timestamp = dataOverride.timestamp;
                 username = dataOverride.username || "参拝者";
                 
