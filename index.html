@@ -2906,60 +2906,128 @@
         }
     ];
 
-    // --- コンテンツ描画ロジック (強制上書き・完全版) ---
-
-    // 1. ホーム画面のリストをレンダリング（最新4件）
-    // ★修正: 社務所だよりも神籤草子と同じタグ形式に統一
-    window.renderHomeLists = function() {
-        // 社務所だより（最新4件）
-        const newsListEl = document.getElementById('home-news-list');
-        if (newsListEl) {
-            newsListEl.innerHTML = newsData.slice(0, 4).map(item => `
-                <li class="flex justify-between cursor-pointer hover:bg-gray-100 dark:hover:bg-zinc-700 p-1 rounded transition" onclick="openArticle('news', ${item.id})">
-                    <span class="truncate">
-                        <span class="bg-gray-200 dark:bg-zinc-700 px-1 py-0.5 rounded text-[10px] mr-1 ${item.tagColor || 'text-gray-600'}">${item.tag}</span>
-                        ${item.title}
-                    </span>
-                    <span class="themed-text-sub flex-shrink-0 ml-2">${item.date}</span>
-                </li>
-            `).join('');
-        }
-
-        // 神籤草子（最新4件）
-        const columnListEl = document.getElementById('home-column-list');
-        if (columnListEl) {
-            columnListEl.innerHTML = columnData.slice(0, 4).map(item => `
-                <li class="flex justify-between cursor-pointer hover:bg-gray-100 dark:hover:bg-zinc-700 p-1 rounded transition" onclick="openArticle('column', ${item.id})">
-                    <span class="truncate">
-                        <span class="bg-gray-200 dark:bg-zinc-700 px-1 py-0.5 rounded text-[10px] mr-1 text-gray-600 dark:text-gray-300">${item.category}</span>
-                        ${item.title}
-                    </span>
-                    <span class="themed-text-sub flex-shrink-0 ml-2">${item.date}</span>
-                </li>
-            `).join('');
-        }
+    // ==========================================
+    //  ページネーション＆検索機能ロジック
+    // ==========================================
+    
+    // 状態管理
+    const listState = {
+        news: { page: 1, query: '', perPage: 5 },   // ニュースは1ページ5件
+        column: { page: 1, query: '', perPage: 6 }  // コラムは1ページ6件
     };
 
-    // 2. 社務所だより（全件ページ）レンダリング
+    // 検索ハンドラ
+    window.handleSearch = function(type, query) {
+        listState[type].query = query.trim().toLowerCase();
+        listState[type].page = 1; // 検索時は1ページ目に戻す
+        if (type === 'news') renderFullNewsView();
+        else renderFullColumnView();
+    };
+
+    // ページ切り替えハンドラ
+    window.changePage = function(type, newPage) {
+        listState[type].page = newPage;
+        if (type === 'news') renderFullNewsView();
+        else renderFullColumnView();
+        
+        // ページ上部へスクロール
+        const section = document.getElementById(`view-${type}`);
+        if(section) section.scrollIntoView({ behavior: 'smooth' });
+    };
+
+    // 共通: データのフィルタリングとページ切り出し
+    function getPaginatedData(type, sourceData) {
+        const state = listState[type];
+        
+        // 1. 検索フィルタ
+        const filtered = sourceData.filter(item => {
+            if (!state.query) return true;
+            return item.title.toLowerCase().includes(state.query) || 
+                   (item.desc && item.desc.toLowerCase().includes(state.query)) ||
+                   (item.content && item.content.toLowerCase().includes(state.query)) ||
+                   (item.tag && item.tag.toLowerCase().includes(state.query)) ||
+                   (item.category && item.category.toLowerCase().includes(state.query));
+        });
+
+        // 2. ページネーション計算
+        const totalItems = filtered.length;
+        const totalPages = Math.ceil(totalItems / state.perPage) || 1;
+        
+        // ページ番号が範囲外なら補正
+        if (state.page > totalPages) state.page = totalPages;
+        if (state.page < 1) state.page = 1;
+
+        const startIndex = (state.page - 1) * state.perPage;
+        const endIndex = startIndex + state.perPage;
+        const slicedData = filtered.slice(startIndex, endIndex);
+
+        return { data: slicedData, totalPages, currentPage: state.page, totalItems };
+    }
+
+    // 共通: ページネーションボタンの生成HTML
+    function createPaginationHTML(type, current, total) {
+        if (total <= 1) return ''; // 1ページのみなら非表示
+
+        let html = '';
+        
+        // 前へボタン
+        html += `<button onclick="changePage('${type}', ${current - 1})" 
+                 class="px-4 py-2 rounded border bg-white dark:bg-zinc-800 hover:bg-gray-100 dark:hover:bg-zinc-700 disabled:opacity-50"
+                 ${current === 1 ? 'disabled' : ''}>
+                 <i class="bi bi-chevron-left"></i> 前へ</button>`;
+
+        // ページ番号 (スマホ対応: 現在/総数)
+        html += `<span class="font-bold font-mono mx-2">${current} / ${total}</span>`;
+
+        // 次へボタン
+        html += `<button onclick="changePage('${type}', ${current + 1})" 
+                 class="px-4 py-2 rounded border bg-white dark:bg-zinc-800 hover:bg-gray-100 dark:hover:bg-zinc-700 disabled:opacity-50"
+                 ${current === total ? 'disabled' : ''}>
+                 次へ <i class="bi bi-chevron-right"></i></button>`;
+
+        return html;
+    }
+
+    // --- 【修正版】社務所だよりレンダリング ---
     window.renderFullNewsView = function() {
         const container = document.getElementById('view-news-list');
+        const pagination = document.getElementById('news-pagination');
         if (!container) return;
-        
-        container.innerHTML = newsData.map(item => `
+
+        const { data, totalPages, currentPage, totalItems } = getPaginatedData('news', newsData);
+
+        if (totalItems === 0) {
+            container.innerHTML = '<p class="text-center text-gray-500 py-8">該当する記事が見つかりませんでした。</p>';
+            pagination.innerHTML = '';
+            return;
+        }
+
+        container.innerHTML = data.map(item => `
             <article class="themed-card p-4 rounded shadow border-l-4 ${item.borderColor || 'border-gray-400'} cursor-pointer hover:opacity-80 transition" onclick="openArticle('news', ${item.id})">
                 <div class="text-sm themed-text-sub">${item.date} ${item.time || ''} <span class="ml-2 font-bold ${item.tagColor}">${item.tag}</span></div>
                 <h3 class="font-bold text-lg ${item.tag === '重要' ? 'text-red-600' : ''}">${item.title}</h3>
                 <p class="text-sm mt-2 truncate themed-text-sub">${item.desc}</p>
             </article>
         `).join('');
+
+        pagination.innerHTML = createPaginationHTML('news', currentPage, totalPages);
     };
 
-    // 3. 神籤草子（全件ページ）レンダリング
+    // --- 【修正版】神籤草子レンダリング ---
     window.renderFullColumnView = function() {
         const container = document.getElementById('view-column-list');
+        const pagination = document.getElementById('column-pagination');
         if (!container) return;
 
-        container.innerHTML = columnData.map(item => `
+        const { data, totalPages, currentPage, totalItems } = getPaginatedData('column', columnData);
+
+        if (totalItems === 0) {
+            container.innerHTML = '<p class="col-span-full text-center text-gray-500 py-8">該当するコラムが見つかりませんでした。</p>';
+            pagination.innerHTML = '';
+            return;
+        }
+
+        container.innerHTML = data.map(item => `
             <article class="themed-card rounded overflow-hidden shadow cursor-pointer hover:shadow-lg transition" onclick="openArticle('column', ${item.id})">
                 <div class="h-32 bg-${item.colorClass}-100 dark:bg-${item.colorClass}-900 flex items-center justify-center text-${item.colorClass}-800 dark:text-${item.colorClass}-200 font-bold">
                     <i class="bi ${item.icon} text-3xl"></i>
@@ -2972,88 +3040,8 @@
                 </div>
             </article>
         `).join('');
-    };
 
-    // 4. 記事詳細を開く関数（修正版）
-    // ★修正点: 本文のラッパーを 'article-body' から 'article-content' に変更しました。
-    // これにより、CSSで定義された「h3見出しの左側の赤い縦線」などが正しく適用されます。
-    window.openArticle = function(type, id) {
-        let item;
-        if (type === 'news') {
-            item = newsData.find(d => d.id === id);
-        } else if (type === 'column') {
-            item = columnData.find(d => d.id === id);
-        }
-
-        if (!item) {
-            console.error("Article not found:", type, id);
-            return;
-        }
-
-        const container = document.getElementById('article-detail-content');
-        if (!container) {
-            console.error("Detail container not found!");
-            return;
-        }
-
-        // 重要タグが付いている場合はタイトルを赤くする
-        const headerTitleClass = (type === 'news' && item.tag === '重要') ? 'text-red-600' : '';
-
-        const html = `
-            <div class="article-header">
-                <h2 class="article-title ${headerTitleClass}">${item.title}</h2>
-                <div class="article-meta">
-                    <span>${item.date} ${item.time || ''}</span>
-                    ${item.tag ? `<span class="article-tag">${item.tag}</span>` : ''}
-                    ${item.category ? `<span class="article-tag">${item.category}</span>` : ''}
-                </div>
-            </div>
-            <!-- ここを article-content にすることで、h3タグ等のスタイル（赤い縦線）が適用されます -->
-            <div class="article-content">
-                ${item.content}
-            </div>
-        `;
-
-        container.innerHTML = html;
-        showView('article-detail');
-        window.scrollTo(0, 0);
-    };
-
-    // 5. 初期化処理（window.onload に追記）
-    window.onload = function() {
-        // 既存の初期化処理
-        initHomeAnimation();
-        initZodiacSystem();
-        
-        const storedUser = localStorage.getItem('omikuji_user');
-        if(storedUser) {
-            try {
-                currentState.user = JSON.parse(storedUser);
-            } catch(e) { console.error("Auth Data Parse Error", e); }
-        }
-        updateAuthUI();
-        loadLabSettings(); 
-
-        window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', () => {
-            applyTheme();
-        });
-
-        startLiveCounter();
-        fetchHistoryStats();
-        setInterval(fetchHistoryStats, 60000); 
-        loadFavorites();
-
-        // クリーンURL処理
-        const url = new URL(window.location);
-        if (url.searchParams.has('d')) {
-            url.searchParams.delete('d');
-            window.history.replaceState({}, '', url);
-        }
-        
-        // ▼ 今回の追加箇所（レンダリング実行）
-        renderHomeLists();
-        renderFullNewsView();
-        renderFullColumnView();
+        pagination.innerHTML = createPaginationHTML('column', currentPage, totalPages);
     };
 
         // --- 状態管理 ---
