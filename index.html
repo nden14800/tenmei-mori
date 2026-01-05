@@ -1480,51 +1480,36 @@
                 <!-- ヒーローエリア (タイトル) -->
                 <div class="lab-hero-area">
                    
-                   <!-- メインフラスコ (奥の波を削除し、サイドバーと完全統一) -->
-                    <div class="title-flask-anim mb-6 transform scale-110">
+                   <!-- フラスコ (ここを5回タップで隠し機能発動) -->
+                    <div class="title-flask-anim mb-6 transform scale-110 cursor-pointer active:scale-95 transition-transform" 
+                         onclick="handleGodModeCommand()">
                         <svg viewBox="0 0 200 200" overflow="hidden" style="width:100%; height:100%;">
-                            <defs>
-                                <!-- 共通の鮮やかなグラデーション (青→紫) -->
+                            <!-- (中のSVGコードは変更なし、そのままでOK) -->
+                             <defs>
                                 <linearGradient id="gradUnified" x1="0%" y1="100%" x2="100%" y2="0%">
                                     <stop offset="0%" stop-color="#4facfe" />
                                     <stop offset="100%" stop-color="#8e2de2" />
                                 </linearGradient>
-                                
-                                <!-- 三角フラスコのマスク形状 -->
                                 <clipPath id="flaskClipMain">
                                     <path d="M80 20 L120 20 L120 70 L170 170 C175 180, 165 190, 150 190 L50 190 C35 190, 25 180, 30 170 L80 70 Z" />
                                 </clipPath>
                             </defs>
-
-                            <!-- 揺れる本体 -->
                             <g class="flask-container">
-                                
-                                <!-- 液体レイヤー -->
                                 <g clip-path="url(#flaskClipMain)">
                                     <g class="liquid-container">
-                                        <!-- 背景 (薄いガラス色) -->
                                         <rect x="-50" y="-50" width="300" height="300" fill="rgba(255,255,255,0.05)" />
-
-                                        <!-- 手前の波 (これ1つだけにしました) -->
-                                        <path class="wave-path wave-front" 
-                                              d="M0 135 Q50 150 100 135 T200 135 T300 135 T400 135 V250 H0 Z" />
-                                        
-                                        <!-- 泡 -->
+                                        <path class="wave-path wave-front" d="M0 135 Q50 150 100 135 T200 135 T300 135 T400 135 V250 H0 Z" />
                                         <circle class="bubble" cx="100" cy="180" r="4" style="animation-delay:0s" />
                                         <circle class="bubble" cx="60" cy="170" r="3" style="animation-delay:1s" />
                                         <circle class="bubble" cx="140" cy="175" r="5" style="animation-delay:2s" />
                                     </g>
                                 </g>
-
-                                <!-- ガラス容器 (三角) -->
-                                <path class="glass-stroke" fill="none" 
-                                      d="M80 20 L120 20 L120 70 L170 170 C175 180, 165 190, 150 190 L50 190 C35 190, 25 180, 30 170 L80 70 Z" />
-                                
-                                <!-- ハイライト -->
+                                <path class="glass-stroke" fill="none" d="M80 20 L120 20 L120 70 L170 170 C175 180, 165 190, 150 190 L50 190 C35 190, 25 180, 30 170 L80 70 Z" />
                                 <path d="M45 170 L75 80" stroke="rgba(255,255,255,0.3)" stroke-width="4" fill="none" />
                             </g>
                         </svg>
                     </div>
+                    
                     <h2 class="text-3xl md:text-5xl font-black mb-4 tracking-tight text-gray-800 dark:text-white" style="font-family: 'Shippori Mincho', serif;">
                         未来の運勢を<br>試してみる
                     </h2>
