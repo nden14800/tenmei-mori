@@ -1,2 +1,2 @@
 # Fortune-telling-at-Tenmei-no-Mori-Authentic-Today-s-Fortune
-Webでくじ引きができます
+Webで運勢・天命乃杜を体験できます
