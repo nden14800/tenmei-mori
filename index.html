@@ -1396,52 +1396,62 @@
                 <!-- ヒーローエリア (タイトル) -->
                 <div class="lab-hero-area">
                    
-                   <!-- フラスコ (高画質・物理演算風 200px) -->
+                   <!-- 三角フラスコ (物理慣性・高画質版) -->
                     <div class="title-flask-anim mb-6 transform scale-110">
                         <svg viewBox="0 0 200 200" overflow="hidden" style="width:100%; height:100%;">
                             <defs>
-                                <!-- ご指定のリアルな青紫グラデーション -->
-                                <linearGradient id="gradBluePurple" x1="0%" y1="0%" x2="0%" y2="100%">
-                                    <stop offset="0%" stop-color="#8e2de2" /> <!-- 紫 -->
-                                    <stop offset="100%" stop-color="#4facfe" /> <!-- 青 -->
+                                <!-- メイングラデーション (青→紫) -->
+                                <linearGradient id="gradMain" x1="0%" y1="100%" x2="100%" y2="0%">
+                                    <stop offset="0%" stop-color="#4facfe" />
+                                    <stop offset="100%" stop-color="#8e2de2" />
+                                </linearGradient>
+                                <!-- 奥側のグラデーション (深みを出すため少し暗く) -->
+                                <linearGradient id="gradDeep" x1="0%" y1="100%" x2="100%" y2="0%">
+                                    <stop offset="0%" stop-color="#2c3e50" />
+                                    <stop offset="100%" stop-color="#4ca1af" />
                                 </linearGradient>
 
-                                <!-- フラスコ内部の形状（液体切り抜き用マスク） -->
-                                <clipPath id="flaskClipHigh">
-                                    <path d="M75 20 L125 20 L125 70 C125 70 170 100 170 150 C170 185 140 195 100 195 C60 195 30 185 30 150 C30 100 75 70 75 70 Z" />
+                                <!-- 三角フラスコの内側形状（液体のマスク） -->
+                                <clipPath id="flaskTriClip">
+                                    <!-- 三角形のパスデータ -->
+                                    <path d="M80 20 L120 20 L120 70 L170 170 C175 180, 165 190, 150 190 L50 190 C35 190, 25 180, 30 170 L80 70 Z" />
                                 </clipPath>
                             </defs>
 
-                            <!-- 全体が揺れるグループ -->
-                            <g class="liquid-content-group">
+                            <!-- 全体を揺らすグループ -->
+                            <g class="flask-physics-container">
                                 
-                                <!-- 1. 液体レイヤー (マスク適用) -->
-                                <g clip-path="url(#flaskClipHigh)">
-                                    <!-- 背景（液体のベース色） -->
-                                    <rect x="0" y="0" width="200" height="200" fill="rgba(79, 172, 254, 0.1)" />
+                                <!-- 1. 液体レイヤー (マスク適用 + 慣性アニメーション) -->
+                                <g clip-path="url(#flaskTriClip)">
+                                    <g class="liquid-inertia-container">
+                                        <!-- 背景色 -->
+                                        <rect x="-50" y="-50" width="300" height="300" fill="rgba(255,255,255,0.05)" />
 
-                                    <!-- 奥の波 (Waves Back) -->
-                                    <!-- 幅400pxの波を描画してスライドさせる -->
-                                    <path class="wave-shape wave-back" 
-                                          d="M0 120 Q50 100 100 120 T200 120 T300 120 T400 120 V200 H0 Z" />
+                                        <!-- 奥の波 -->
+                                        <path class="real-wave-path wave-back" 
+                                              d="M0 125 Q50 105 100 125 T200 125 T300 125 T400 125 V250 H0 Z" />
 
-                                    <!-- 手前の波 (Waves Front) -->
-                                    <path class="wave-shape wave-front" 
-                                          d="M0 130 Q50 150 100 130 T200 130 T300 130 T400 130 V200 H0 Z" />
-                                    
-                                    <!-- 泡 -->
-                                    <circle class="high-res-bubble" cx="80" cy="160" r="4" style="animation-delay:0s" />
-                                    <circle class="high-res-bubble" cx="120" cy="170" r="6" style="animation-delay:1.2s" />
-                                    <circle class="high-res-bubble" cx="100" cy="150" r="3" style="animation-delay:0.5s" />
+                                        <!-- 手前の波 -->
+                                        <path class="real-wave-path wave-front" 
+                                              d="M0 135 Q50 155 100 135 T200 135 T300 135 T400 135 V250 H0 Z" />
+                                        
+                                        <!-- 泡 -->
+                                        <circle class="phys-bubble" cx="100" cy="180" r="4" style="animation-delay:0s" />
+                                        <circle class="phys-bubble" cx="60" cy="170" r="3" style="animation-delay:1s" />
+                                        <circle class="phys-bubble" cx="140" cy="175" r="5" style="animation-delay:2s" />
+                                    </g>
                                 </g>
 
-                                <!-- 2. ガラス容器の枠線 (上から描画) -->
-                                <path class="flask-glass-style" fill="none" 
-                                      d="M75 20 L125 20 L125 70 C125 70 170 100 170 150 C170 185 140 195 100 195 C60 195 30 185 30 150 C30 100 75 70 75 70 Z" />
-                                
-                                <!-- ガラスのハイライト（光沢感UP） -->
-                                <path d="M50 150 Q45 160 60 180" stroke="rgba(255,255,255,0.4)" stroke-width="4" fill="none" stroke-linecap="round" />
-                                <path d="M115 30 V60" stroke="rgba(255,255,255,0.4)" stroke-width="4" fill="none" stroke-linecap="round" />
+                                <!-- 2. ガラス容器（三角フラスコ） -->
+                                <path class="glass-contour" fill="none" 
+                                      d="M80 20 L120 20 L120 70 L170 170 C175 180, 165 190, 150 190 L50 190 C35 190, 25 180, 30 170 L80 70 Z" />
+
+                                <!-- フラスコの口（リム） -->
+                                <rect x="75" y="15" width="50" height="8" rx="2" class="glass-contour" fill="none" />
+
+                                <!-- ガラスのハイライト（左側と首筋） -->
+                                <path d="M45 170 L75 80" stroke="rgba(255,255,255,0.3)" stroke-width="3" fill="none" />
+                                <path d="M110 30 V60" stroke="rgba(255,255,255,0.3)" stroke-width="3" fill="none" />
                             </g>
                         </svg>
                     </div>
