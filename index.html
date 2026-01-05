@@ -2660,45 +2660,45 @@
 
         function showView(viewId) {
             // Lab機能へのアクセス制限処理
-            // ビュー自体は表示するが、非ログイン時はぼかしとロックをかける
-            if(viewId === 'lab') {
+            if (viewId === 'lab') {
                 const lock = document.getElementById('lab-lock');
                 const wrapper = document.getElementById('lab-content-wrapper');
-                
-                if(!currentState.user) {
+                if (!currentState.user) {
                     lock.classList.remove('hidden');
                     wrapper.classList.add('lab-blurred');
                 } else {
                     lock.classList.add('hidden');
                     wrapper.classList.remove('lab-blurred');
                 }
-                if(viewId === 'map') {
-                // 地図ビューが開かれた時だけ初期化 & リサイズ
+            } // ←ここでIF文を閉じる
+
+            // 地図ビューの処理
+            if (viewId === 'map') {
                 setTimeout(() => {
                     initJapanMap();
-                    if(mapInstance) mapInstance.invalidateSize(); // サイズ再計算
+                    if (mapInstance) mapInstance.invalidateSize();
                 }, 100);
             }
 
+            // 全てのセクションを非表示にする
             document.querySelectorAll('.view-section').forEach(el => {
                 el.classList.remove('active');
                 setTimeout(() => {
-                    if(!el.classList.contains('active')) el.style.display = 'none';
+                    if (!el.classList.contains('active')) el.style.display = 'none';
                 }, 500);
             });
-            
+
+            // 指定されたビューを表示する
             const target = document.getElementById(`view-${viewId}`);
-            target.style.display = 'block';
-            void target.offsetWidth; 
-            target.classList.add('active');
+            if (target) {
+                target.style.display = 'block';
+                void target.offsetWidth;
+                target.classList.add('active');
+            }
             currentState.view = viewId;
 
-            if(viewId === 'draw') {
-                resetOmikujiPool();
-            }
-            if(viewId === 'history') {
-                loadHistory();
-            }
+            if (viewId === 'draw') resetOmikujiPool();
+            if (viewId === 'history') loadHistory();
         }
 
         function articleBack() {
