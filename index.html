@@ -789,101 +789,83 @@
         input:checked + .slider { background-color: #6366f1; } /* インディゴ系に変更 */
         input:checked + .slider:before { transform: translateX(26px); }
 
-        /* --- Labアイコンのアニメーション定義 (リアル液体・青紫グラデーション版) --- */
-        
-        /* 共通アイコンコンテナ */
-        .lab-icon-svg {
-            width: 30px;
-            height: 30px;
-            display: inline-block;
-        }
-        
-        /* 1. 液体のアニメーション (物理挙動) */
-        .flask-liquid-path {
-            /* グラデーションはHTML側のdefsで指定 */
-            /* 液体自体を変形させて「チャプチャプ」させる */
-            animation: liquidWave 2s infinite ease-in-out;
-            transform-origin: 50% 100%; /* 底を基準に変形 */
-        }
-        
-        /* 2. フラスコ本体の線 */
-        .flask-body-path {
-            stroke: currentColor;
-            stroke-width: 2.5;
-            fill: none;
-            stroke-linecap: round; 
-            stroke-linejoin: round;
-        }
+        /* --- TENMEI Labs: ハイパーリアル液体フラスコ --- */
 
-        /* 3. 泡のアニメーション */
-        .flask-bubble {
-            fill: rgba(255, 255, 255, 0.8);
-            animation: bubbleRise 3s infinite ease-in;
-        }
-        .dark .flask-bubble {
-            fill: rgba(255, 255, 255, 0.6);
-        }
-
-        /* 4. フラスコ全体の揺れ */
-        .flask-group {
-            animation: flaskShake 2s infinite ease-in-out;
-            transform-origin: 50% 85%; /* 重心に近い位置で揺らす */
-        }
-        
-        /* タイトル上の大きいフラスコ特有の設定 */
+        /* フラスコ全体のコンテナ */
         .title-flask-anim {
             width: 140px;
             height: 140px;
             margin: 0 auto 10px;
+            filter: drop-shadow(0 10px 15px rgba(99, 102, 241, 0.3)); /* 全体の発光感 */
         }
-        .title-flask-anim .flask-body-path {
-            stroke: #444; /* 明るい背景で見やすい色 */
+
+        /* フラスコ本体（ガラス容器） */
+        .real-flask-glass {
+            fill: rgba(255, 255, 255, 0.1); /* ガラスの透明感 */
+            stroke: #333; /* 枠線 */
             stroke-width: 2;
+            stroke-linecap: round;
+            stroke-linejoin: round;
         }
-        .dark .title-flask-anim .flask-body-path {
-            stroke: #eee;
+        .dark .real-flask-glass { stroke: #e0e0e0; fill: rgba(255, 255, 255, 0.05); }
+
+        /* 液体グループ（マスクで切り抜かれる部分） */
+        .real-liquid-group {
+            /* フラスコが揺れるアニメーション */
+            transform-origin: 50% 80%;
+            animation: flaskSway 4s ease-in-out infinite;
         }
 
-        /* サイドバー用の小さいフラスコ */
-        .nav-btn .lab-icon-svg {
-             width: 32px;
-             height: 32px;
-             margin: 0;
-        }
-        
-        /* --- アニメーションキーフレーム (リアル化) --- */
-        
-        /* 液体の動き: フラスコの揺れと逆方向に表面を傾けることで慣性を表現 */
-        @keyframes liquidWave {
-            0%, 100% { 
-                transform: scaleY(1) skewX(0deg) translateY(0); 
-            }
-            25% { 
-                /* フラスコが左に傾く時、水面は右に上がり(Skew)、少し盛り上がる(ScaleY) */
-                transform: scaleY(1.1) skewX(-15deg) translateY(-2px); 
-            }
-            50% { 
-                transform: scaleY(1.05) skewX(0deg) translateY(-1px); 
-            }
-            75% { 
-                /* フラスコが右に傾く時、水面は左に上がる */
-                transform: scaleY(1.1) skewX(15deg) translateY(-2px); 
-            }
+        /* 波（共通設定） */
+        .real-wave {
+            animation: waveFlow 2s linear infinite;
         }
 
-        /* フラスコ全体の揺れ */
-        @keyframes flaskShake {
+        /* 奥の波（少し遅く、色が濃い） */
+        .real-wave-back {
+            fill: url(#liquidGradBack);
+            opacity: 0.7;
+            animation: waveFlow 3s linear infinite reverse; /* 逆回転で複雑な干渉を作る */
+        }
+
+        /* 手前の波（メイン、透明度あり） */
+        .real-wave-front {
+            fill: url(#liquidGradFront);
+            opacity: 0.9;
+            animation: waveFlow 2s linear infinite;
+        }
+
+        /* 泡（浮上アニメーション） */
+        .real-bubble {
+            fill: rgba(255, 255, 255, 0.6);
+            animation: bubbleFloat 3s infinite ease-in;
+        }
+        .b1 { cx: 10; cy: 18; r: 0.8; animation-delay: 0s; }
+        .b2 { cx: 14; cy: 19; r: 0.6; animation-delay: 1.2s; }
+        .b3 { cx: 12; cy: 16; r: 0.4; animation-delay: 0.5s; }
+        .b4 { cx: 9;  cy: 20; r: 0.5; animation-delay: 2.0s; }
+
+        /* --- 物理演算風アニメーション定義 --- */
+
+        /* 波のうねり（パスを水平移動させて波に見せる） */
+        @keyframes waveFlow {
+            0% { transform: translateX(0); }
+            100% { transform: translateX(-20px); } /* 波の1周期分移動 */
+        }
+
+        /* フラスコの揺れ（液体は慣性で遅れて動くように見せるため、逆位相にする工夫も可だが今回は容器ごと揺らす） */
+        @keyframes flaskSway {
             0%, 100% { transform: rotate(0deg); }
-            25% { transform: rotate(10deg); }  /* 右へ */
-            75% { transform: rotate(-10deg); } /* 左へ */
+            25% { transform: rotate(3deg); }
+            75% { transform: rotate(-3deg); }
         }
 
-        /* 泡の上昇 */
-        @keyframes bubbleRise {
-            0% { transform: translateY(0) scale(0.4); opacity: 0; }
+        /* 泡の浮上とゆらぎ */
+        @keyframes bubbleFloat {
+            0% { transform: translateY(0) scale(0.5); opacity: 0; }
             20% { opacity: 1; }
             80% { opacity: 1; }
-            100% { transform: translateY(-30px) scale(0); opacity: 0; }
+            100% { transform: translateY(-30px) scale(1.2) translateX(2px); opacity: 0; }
         }
 
         /* 認証コード入力欄（和風） */
