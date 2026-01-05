@@ -3490,6 +3490,97 @@
 
         return selectedText + " " + advice;
     }
+        // ==========================================
+    //  隠しコマンド機能 (Secret Easter Egg)
+    // ==========================================
+    
+    let secretTapCount = 0;
+    let secretTapTimer = null;
+
+    // タイトルをタップした時の処理
+    window.handleSecretCommand = function() {
+        secretTapCount++;
+        
+        // タップ音がわりの微細なバイブレーション（スマホのみ）
+        if (navigator.vibrate) navigator.vibrate(50);
+
+        // タイムアウト設定（1.5秒間隔があいたらリセット）
+        clearTimeout(secretTapTimer);
+        secretTapTimer = setTimeout(() => {
+            secretTapCount = 0;
+        }, 1500);
+
+        // 7回連続タップで発動
+        if (secretTapCount === 7) {
+            activateSecretMode();
+            secretTapCount = 0; // リセット
+        }
+    };
+
+    // 演出開始
+    function activateSecretMode() {
+        const overlay = document.getElementById('secret-overlay');
+        const content = document.getElementById('secret-terminal-content');
+        const closeBtn = document.getElementById('secret-close-btn');
+        
+        overlay.classList.add('active');
+        content.innerHTML = '';
+        closeBtn.classList.add('hidden');
+
+        // 表示するメッセージ (タイプライター風)
+        const messages = [
+            "Connecting to Cloudflare Workers...",
+            "Accessing KV Namespace: OMIKUJI_DATA...",
+            "Bypassing security protocols...",
+            "Authenticating User: nden148 (Admin)...",
+            "ACCESS GRANTED.",
+            "",
+            "ようこそ、裏・天命乃杜へ。",
+            "ここは開発者の思考領域です。",
+            "このサイトを見つけてくれてありがとう。",
+            "あなたの人生に、",
+            "本物の「大吉」が訪れますように。",
+            "",
+            "Project: Tenmei-no-Mori",
+            "Status: Online",
+            "System: All Green",
+            "EOF"
+        ];
+
+        let lineIndex = 0;
+
+        function typeWriter() {
+            if (lineIndex < messages.length) {
+                const p = document.createElement('div');
+                p.className = 'secret-text';
+                if (lineIndex === messages.length - 1) p.classList.add('secret-cursor');
+                p.textContent = messages[lineIndex];
+                content.appendChild(p);
+                
+                // スクロール追従
+                overlay.scrollTop = overlay.scrollHeight;
+
+                lineIndex++;
+                // ランダムな遅延でタイプライター感を出す
+                setTimeout(typeWriter, Math.random() * 300 + 100);
+            } else {
+                // 完了後、閉じるボタンを表示
+                setTimeout(() => {
+                    closeBtn.classList.remove('hidden');
+                }, 1000);
+            }
+        }
+
+        typeWriter();
+    }
+
+    // 演出終了
+    window.closeSecretMode = function() {
+        const overlay = document.getElementById('secret-overlay');
+        overlay.classList.remove('active');
+        // ちょっとした余韻（Labsの全機能解放などをここに仕込むことも可能）
+        alert("通常世界線へ復帰します。");
+    };
     // ==========================================
     //  統合された初期化処理 (window.onload)
     // ==========================================
