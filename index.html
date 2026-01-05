@@ -20,10 +20,6 @@
     <link href="https://fonts.googleapis.com/css2?family=Shippori+Mincho:wght@400;500;600;800&family=Zen+Old+Mincho:wght@400;700;900&display=swap" rel="stylesheet">
     <!-- Bootstrap Icons -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
-    <!-- Leaflet CSS (地図用) -->
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
-    <!-- Leaflet JS (地図用) -->
-    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
     
     <style>
         :root {
@@ -1124,10 +1120,6 @@
             </div>
             <span class="nav-text">TENMEI Labs</span>
         </button>
-        <button class="nav-btn" onclick="showView('map')">
-            <i class="bi bi-map"></i>
-            <span class="nav-text">全国の運気</span>
-        </button>
         
         <button class="nav-btn" onclick="handleProfileClick()" id="nav-login-btn">
             <i class="bi bi-person-circle"></i>
@@ -1548,39 +1540,7 @@
                 <!-- JSでコンテンツ挿入 -->
             </div>
         </div>
-    </div> <!-- ←追加 -->
-     <!-- ビュー: 全国の運気マップ -->
-        <section id="view-map" class="view-section">
-            <div class="max-w-4xl mx-auto">
-                <div class="text-center mb-6">
-                    <h2 class="text-2xl font-bold mb-2"><i class="bi bi-geo-alt-fill text-red-600"></i> 全国・土地の運気予報</h2>
-                    <p class="text-sm themed-text-sub">日本時間 0:00 更新<br>色が<span class="text-red-600 font-bold">赤く</span>濃い地域ほど、本日の「地の利」があります。</p>
-                    <p class="text-xs text-gray-500 mt-1" id="map-date-display">---</p>
-                </div>
-                
-                <!-- 地図コンテナ -->
-                <div class="themed-card p-2 rounded-xl shadow-lg border relative">
-                    <div id="japan-map" style="height: 600px; width: 100%; z-index: 1; border-radius: 8px; background: #aadaff;"></div>
-                    
-                    <!-- 読み込み中表示 -->
-                    <div id="map-loading" class="absolute inset-0 flex items-center justify-center bg-white/80 z-10 rounded-xl">
-                        <div class="text-center">
-                            <div class="loader-svg mx-auto mb-2" style="border-color:#333"></div>
-                            <p class="font-bold">地図データを取得中...</p>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="mt-6 p-4 themed-card rounded-lg text-sm leading-relaxed">
-                    <h3 class="font-bold mb-2">💡 この地図について</h3>
-                    <p>この「運気ヒートマップ」は、OpenStreetMapの地理情報と、当サイト独自の数秘術アルゴリズム（日付連動）を組み合わせて生成されています。</p>
-                    <ul class="list-disc list-inside mt-2 text-gray-600 dark:text-gray-400">
-                        <li>赤い地域：エネルギーが満ちています。旅行や買い物に吉。</li>
-                        <li>青い地域：静寂の運気。静かに過ごすか、神社参拝で運気底上げを。</li>
-                    </ul>
-                    <p class="text-xs text-right mt-2 text-gray-400">Map data &copy; <a href="https://www.openstreetmap.org/copyright" target="_blank">OpenStreetMap</a> contributors</p>
-                </div>
-            </div>
+    </div>
         </section>
 
         <!-- ビュー: ログイン/登録 (新フロー: 選択 -> 入力 -> 認証) -->
@@ -2661,45 +2621,39 @@
 
         function showView(viewId) {
             // Lab機能へのアクセス制限処理
-            if (viewId === 'lab') {
+            // ビュー自体は表示するが、非ログイン時はぼかしとロックをかける
+            if(viewId === 'lab') {
                 const lock = document.getElementById('lab-lock');
                 const wrapper = document.getElementById('lab-content-wrapper');
-                if (!currentState.user) {
+                
+                if(!currentState.user) {
                     lock.classList.remove('hidden');
                     wrapper.classList.add('lab-blurred');
                 } else {
                     lock.classList.add('hidden');
                     wrapper.classList.remove('lab-blurred');
                 }
-            } // ←ここでIF文を閉じる
-
-            // 地図ビューの処理
-            if (viewId === 'map') {
-                setTimeout(() => {
-                    initJapanMap();
-                    if (mapInstance) mapInstance.invalidateSize();
-                }, 100);
             }
 
-            // 全てのセクションを非表示にする
             document.querySelectorAll('.view-section').forEach(el => {
                 el.classList.remove('active');
                 setTimeout(() => {
-                    if (!el.classList.contains('active')) el.style.display = 'none';
+                    if(!el.classList.contains('active')) el.style.display = 'none';
                 }, 500);
             });
-
-            // 指定されたビューを表示する
+            
             const target = document.getElementById(`view-${viewId}`);
-            if (target) {
-                target.style.display = 'block';
-                void target.offsetWidth;
-                target.classList.add('active');
-            }
+            target.style.display = 'block';
+            void target.offsetWidth; 
+            target.classList.add('active');
             currentState.view = viewId;
 
-            if (viewId === 'draw') resetOmikujiPool();
-            if (viewId === 'history') loadHistory();
+            if(viewId === 'draw') {
+                resetOmikujiPool();
+            }
+            if(viewId === 'history') {
+                loadHistory();
+            }
         }
 
         function articleBack() {
@@ -4225,114 +4179,6 @@ ${getShareUrl()}`;
             const resultDiv = document.getElementById('my-rank-result');
             const myData = dailyRanking.find(d => d.sign.id === signId && d.blood === bloodId);
             if (myData) { resultDiv.innerHTML = createCardHTML(myData); resultDiv.classList.remove('hidden'); }
-        }
-        // --- 全国運気マップ (OpenStreetMap + Leaflet) ---
-        let mapInstance = null;
-        let geoJsonLayer = null;
-
-        async function initJapanMap() {
-            if (mapInstance) return; // 初期化済みなら何もしない
-
-            // 1. 地図の初期化 (中心: 日本, ズーム: 5)
-            mapInstance = L.map('japan-map').setView([37.8, 137], 5);
-
-            // 2. OpenStreetMapのタイル読み込み
-            L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
-                maxZoom: 19,
-                attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>'
-            }).addTo(mapInstance);
-
-            // 3. 都道府県データの取得と描画
-            try {
-                // 軽量な都道府県GeoJSONデータを取得
-                const response = await fetch('https://raw.githubusercontent.com/niiyz/JapanCityGeoJson/master/simplified/prefectures.json');
-                if (!response.ok) throw new Error("Map data fetch failed");
-                const geoData = await response.json();
-
-                document.getElementById('map-loading').style.display = 'none';
-
-                // 日付シードの生成 (JST 0:00基準)
-                const dateStr = getJSTDateString(); // 既存関数 "YYYY-MM-DD"
-                document.getElementById('map-date-display').textContent = `${dateStr} の運勢分布`;
-
-                // 4. GeoJSONレイヤーの作成
-                geoJsonLayer = L.geoJson(geoData, {
-                    style: (feature) => styleFeature(feature, dateStr),
-                    onEachFeature: (feature, layer) => {
-                        const prefName = feature.properties.name || feature.properties.nam_ja;
-                        const scoreData = getPrefectureScore(prefName, dateStr);
-                        
-                        // ポップアップ設定
-                        layer.bindPopup(`
-                            <div style="text-align:center; font-family:'Zen Old Mincho', serif;">
-                                <h4 style="font-weight:bold; margin-bottom:5px; font-size:1.2rem;">${prefName}</h4>
-                                <div style="font-size:2rem; font-weight:900; color:${getColor(scoreData.score)}; line-height:1;">${scoreData.score}</div>
-                                <div style="font-size:0.8rem; color:#666;">運気ポイント</div>
-                                <hr style="margin:5px 0; border-top:1px solid #eee;">
-                                <div style="font-size:0.9rem;">${scoreData.comment}</div>
-                            </div>
-                        `);
-
-                        // ホバー効果
-                        layer.on({
-                            mouseover: (e) => {
-                                const l = e.target;
-                                l.setStyle({ weight: 3, color: '#666', fillOpacity: 0.9 });
-                                l.bringToFront();
-                            },
-                            mouseout: (e) => {
-                                geoJsonLayer.resetStyle(e.target);
-                            }
-                        });
-                    }
-                }).addTo(mapInstance);
-
-            } catch (e) {
-                console.error(e);
-                document.getElementById('map-loading').innerHTML = '<p class="text-red-500 font-bold">地図データの読み込みに失敗しました</p>';
-            }
-        }
-
-        // 都道府県ごとの運気計算 (日付と県名で固定乱数を生成)
-        function getPrefectureScore(prefName, dateStr) {
-            // シード文字: 日付 + 県名 (これで毎日・県ごとに固定される)
-            const seed = dateStr + "_" + prefName;
-            const rng = new SeededRandom(seed); // 既存の乱数クラスを使用
-            
-            const score = Math.floor(rng.next() * 60) + 40; // 40~100点
-            
-            let comment = "";
-            if(score >= 90) comment = "絶好調！地の利あり。";
-            else if(score >= 80) comment = "活気あふれる良運気。";
-            else if(score >= 60) comment = "平穏無事な一日。";
-            else comment = "静かに力を蓄える時。";
-
-            return { score, comment };
-        }
-
-        // スコアに応じた色塗りスタイル
-        function styleFeature(feature, dateStr) {
-            const prefName = feature.properties.name || feature.properties.nam_ja;
-            const score = getPrefectureScore(prefName, dateStr).score;
-            
-            return {
-                fillColor: getColor(score),
-                weight: 1,
-                opacity: 1,
-                color: 'white', // 境界線
-                dashArray: '3',
-                fillOpacity: 0.7
-            };
-        }
-
-        // 色分けロジック (ヒートマップ風)
-        function getColor(d) {
-            return d > 90 ? '#b91c1c' : // 濃い赤 (大吉)
-                   d > 80 ? '#fb923c' : // オレンジ
-                   d > 70 ? '#facc15' : // 黄色
-                   d > 60 ? '#a3e635' : // 黄緑
-                   d > 50 ? '#60a5fa' : // 水色
-                            '#94a3b8';  // グレー (凶)
         }
     </script>
 </body>
