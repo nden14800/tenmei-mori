@@ -2658,13 +2658,14 @@
             }
         }
 
-        // --- 修正版：完全な showView 関数 ---
+        // ==========================================
+        // 1. showView 関数 (修正版：構造を整理)
+        // ==========================================
         function showView(viewId) {
-            // Lab機能へのアクセス制限処理
+            // Lab機能へのアクセス制限
             if(viewId === 'lab') {
                 const lock = document.getElementById('lab-lock');
                 const wrapper = document.getElementById('lab-content-wrapper');
-                
                 if(!currentState.user) {
                     lock.classList.remove('hidden');
                     wrapper.classList.add('lab-blurred');
@@ -2674,7 +2675,7 @@
                 }
             }
 
-            // 全てのセクションを非表示にする
+            // セクションの切り替え演出
             document.querySelectorAll('.view-section').forEach(el => {
                 el.classList.remove('active');
                 setTimeout(() => {
@@ -2682,7 +2683,6 @@
                 }, 500);
             });
             
-            // 指定したセクションを表示する
             const target = document.getElementById(`view-${viewId}`);
             if (target) {
                 target.style.display = 'block';
@@ -2691,21 +2691,16 @@
             }
             currentState.view = viewId;
 
-            // 各ビューごとの個別初期化
-            if(viewId === 'draw') {
-                resetOmikujiPool();
-            }
-            if(viewId === 'history') {
-                loadHistory();
-            }
+            // 各ビューごとの初期化
+            if(viewId === 'draw') { resetOmikujiPool(); }
+            if(viewId === 'history') { loadHistory(); }
             if(viewId === 'map') {
-                // 地図ビューが開かれた時だけ初期化 & リサイズ
                 setTimeout(() => {
                     initJapanMap();
-                    if(mapInstance) mapInstance.invalidateSize(); // 地図の表示崩れ防止
+                    if(mapInstance) mapInstance.invalidateSize();
                 }, 100);
             }
-        } // ← このカッコが閉じられていないのがエラーの原因であることが多いです
+        }
 
             document.querySelectorAll('.view-section').forEach(el => {
                 el.classList.remove('active');
