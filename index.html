@@ -2392,6 +2392,239 @@
         const API_BASE = "https://aaaaa.nden14800.workers.dev";
         const SITE_URL = "https://fortune-telling-at-tenmei-no-mori-authentic-today-s-fortun.pages.dev";
 
+        // ==========================================
+    //  データ管理: 社務所だより & 神籤草子 (完全版)
+    // ==========================================
+    
+    // ■ 社務所だより（ニュース）データ
+    const newsData = [
+        {
+            id: 8,
+            title: "【重要】「全国・土地の運気予報」の開発中止に関するお知らせ",
+            date: "2026/1/5",
+            time: "14:30",
+            tag: "重要",
+            tagColor: "text-red-600",
+            desc: "技術的な不具合により、マップ機能の開発を完全に中止いたしました。代替案もございません。",
+            content: `<p>いつも「運勢・天命乃杜」をご利用いただき、誠にありがとうございます。</p><p>以前より「TENMEI Labs」の追加機能として検討しておりました「全国・土地の運気予報（マップ機能）」につきまして、検討の結果、開発を完全に中止することといたしました。なお、本機能につきましては別の形での実装や代替機能の提供予定もございません。</p><h3>中止の理由</h3><p>外部地図ライブラリの導入に伴うシステムの深刻な不安定化、およびプログラム上の修復困難なエラーが複数確認されました。無理な実装を強行することは、現在安定して稼働している他の機能（おみくじやLabs等）の動作を損なう致命的なリスクがあると判断いたしました。</p><h3>今後の展望</h3><p>期待をお寄せいただいた皆様には誠に申し訳ございませんが、今後は新たな地図機能の模索は行わず、既存機能の保守と品質向上にのみ注力してまいります。何卒ご理解を賜りますようお願い申し上げます。</p>`
+        },
+        {
+            id: 7,
+            title: "【重要】認証システムに関する不具合の修正とお詫び",
+            date: "2026/1/4",
+            time: "08:00",
+            tag: "障害報告",
+            tagColor: "text-red-600",
+            desc: "ログインおよびアカウント管理に関する重大な不具合を修正いたしました。",
+            content: `<p>いつも「運勢・天命乃杜」をご利用いただき、誠にありがとうございます。2026年1月3日頃より発生しておりました、ログイン認証システムに関する重大な不具合について、修正が完了いたしましたことをご報告申し上げます。</p><h3>修正された不具合の内容</h3><p>1. ログイン時、パスワードが一致しない状態でも認証コードが送信される問題<br>2. パスワード不一致のまま認証を完了させると、意図せずアカウントが削除される問題<br>3. 未登録のメールアドレスに対しても、ログイン認証コードが送信される問題</p><h3>原因と経緯</h3><p>本不具合は、昨日（1月3日）のシステム更新の際、運営者によるコード編集上の不注意（人為的ミス）により発生いたしました。セキュリティに関わる重要な機能において、ユーザーの皆様にご不安とご不便をおかけしましたこと、深くお詫び申し上げます。現在はバリデーションロジックを全面的に見直し、正常な挙動に復旧しております。今後、再発防止に向けてコード管理の徹底に努めてまいります。</p>`
+        },
+        {
+            id: 6,
+            title: "新機能「TENMEI Labs」を公開いたしました。",
+            date: "2026/1/3",
+            time: "17:01",
+            tag: "お知らせ",
+            tagColor: "text-purple-600",
+            desc: "実験的な新機能を体験できるLabsページを会員様限定で追加しました。",
+            content: `<p>いつも「運勢・天命乃杜」をご利用いただき、誠にありがとうございます。</p><p>この度、当サイトの実験的な試みとして、新機能<strong>「TENMEI Labs（天命ラボ）」</strong>を公開いたしました。</p><p>Labsでは、開発中の新機能や、サイトの雰囲気を大きく変える特殊なカスタマイズ設定をいち早く体験いただくことが可能です。現在は「迎春・雅モード」や「神速の祈り」など、複数の実験的な機能を公開しております。</p><p>本機能は、会員登録（ログイン）を行っていただくことでご利用いただけます。サイドバーのフラスコアイコンより、ぜひ未知の天命体験をお楽しみください。</p><p>今後も「杜」の技術革新に努めてまいります。何卒よろしくお願い申し上げます。</p>`
+        },
+        {
+            id: 2,
+            title: "「運勢・天命乃杜」を公開いたしました。",
+            date: "2026/1/2",
+            time: "16:00",
+            tag: "お知らせ",
+            tagColor: "text-blue-600",
+            desc: "本サービスを正式にリリースいたしました。",
+            content: `<p>平素より格別のご高配を賜り、厚く御礼申し上げます。</p><p>この度、誰でも気軽に、かつ本格的な運勢占いを楽しめるWebサイト「運勢・天命乃杜（てんめいのもり）」を正式に公開いたしました。</p><p>当サイトでは、伝統的なおみくじの要素に加え、西洋占星術と血液型診断を組み合わせた独自のアルゴリズムによる「日替わり運勢ランキング」を提供しております。また、会員登録（無料）を行っていただくことで、ご自身の運勢履歴を保存したり、全体の統計データに参加したりすることが可能です。今後もコンテンツの拡充や機能改善に努めてまいりますので、末永くご愛顧いただけますようお願い申し上げます。</p>`
+        },
+        {
+            id: 1,
+            title: "あけましておめでとうごさいます",
+            date: "2026/1/1",
+            time: "00:00",
+            tag: "ご挨拶",
+            tagColor: "text-gray-600",
+            desc: "謹んで新年のご祝詞を申し上げます。",
+            content: `<p>謹んで新年のご祝詞を申し上げます。</p><p>旧年中はひとかたならぬご厚情を賜り、誠にありがとうございました。<br>本年も皆様に幸多き年となりますよう、天命乃杜運営一同、心よりお祈り申し上げます。</p><p>新しい年が始まり、皆様それぞれに新たな目標や願いをお持ちのことと存じます。当サイトのおみくじが、皆様の迷いを晴らし、一歩を踏み出すための道標となれば幸いです。本年も変わらぬご愛顧のほど、よろしくお願い申し上げます。</p>`
+        },
+        {
+            id: 3,
+            title: "プレオープンのお知らせ",
+            date: "2025/12/25",
+            time: "10:00",
+            tag: "お知らせ",
+            tagColor: "text-gray-600",
+            desc: "一部機能を先行公開いたしました。",
+            content: `<p>本日より、一部機能を制限した状態でのプレオープンを開始いたしました。</p><p>現在ご利用いただけるのは、「おみくじ機能」および「12星座占い（β版）」です。正式リリース時には、履歴保存機能や会員システムが追加される予定です。</p>`
+        },
+        {
+            id: 4,
+            title: "サーバーメンテナンス完了",
+            date: "2025/12/20",
+            time: "18:00",
+            tag: "メンテナンス",
+            tagColor: "text-green-600",
+            desc: "予定されていたメンテナンスは無事終了しました。",
+            content: `<p>本日14:00より実施しておりましたサーバーメンテナンスは、予定通り18:00に完了いたしました。</p><p>今回のメンテナンスにより、データベースの応答速度が向上しております。ご協力ありがとうございました。</p>`
+        },
+        {
+            id: 5,
+            title: "サイト開設準備室より",
+            date: "2025/12/10",
+            time: "12:00",
+            tag: "お知らせ",
+            tagColor: "text-gray-600",
+            desc: "現在、正式公開に向けて最終調整を行っております。",
+            content: `<p>「運勢・天命乃杜」の開設に向け、現在鋭意開発中です。</p><p>皆様に愛されるサイトを目指し、デザインの調整や占いロジックの検証を行っております。公開まで今しばらくお待ちください。</p>`
+        }
+    ];
+
+    // ■ 神籤草子（コラム）データ
+    const columnData = [
+        {
+            id: 1,
+            title: "おみくじの順番（正しい吉凶の順）",
+            date: "2026/01/01",
+            category: "雑学",
+            icon: "bi-list-ol",
+            colorClass: "green",
+            content: `<div class="article-content"><p>初詣や神社参拝の際に引く「おみくじ」。結果に一喜一憂するのも楽しみの一つですが、その「順位」について正しく理解している人は意外と少ないかもしれません。実は神社やお寺によって解釈が異なる場合があるのですが、一般的に広く知られている順位と、当サイト「運勢・天命乃杜」で採用している伝統的な12段階の順位について詳しく解説します。</p><h3>一般的な7段階の順位</h3><p>多くの神社で採用されている最もポピュラーな順位は以下の通りです。<br><b>大吉 ＞ 吉 ＞ 中吉 ＞ 小吉 ＞ 末吉 ＞ 凶 ＞ 大凶</b><br>あるいは、「吉」の位置が変わり、<b>大吉 ＞ 中吉 ＞ 小吉 ＞ 吉 ＞ 末吉 ＞ 凶 ＞ 大凶</b> とする場合もあります。「吉」は「大吉」に次ぐ良い運勢とする説と、「小吉」と「末吉」の間の中庸な運勢とする説があるのです。</p><h3>当サイトの12段階詳細順位</h3><p>当サイトでは、より細かく運勢を占うため、古来からの伝統に基づいた以下の12段階を採用しています。</p><ol class="list-decimal list-inside space-y-2 ml-4 mb-6 font-bold"><li>大吉 (だいきち)：最高の運気。感謝を忘れずに。</li><li>中吉 (ちゅうきち)：大吉に次ぐ良運。</li><li>小吉 (しょうきち)：ささやかな幸せが続く。</li><li>吉 (きち)：安定した運気。</li><li>半吉 (はんきち)：吉と凶の中間。</li><li>末吉 (すえきち)：末広がりの未来がある。</li><li>末小吉 (すえしょうきち)：今は耐える時だが希望はある。</li><li>凶 (きょう)：運気が停滞気味。慎重に。</li><li>小凶 (しょうきょう)：小さなトラブルに注意。</li><li>半凶 (はんきょう)：半分は凶だが半分は吉に転じる可能性。</li><li>末凶 (すえきょう)：終わりの凶、つまり次は吉へ向かう。</li><li>大凶 (だいきょう)：最も警戒すべき運気。しかしこれ以上落ちない。</li></ol><p>しかし、最も重要なのは順位そのものではありません。おみくじの本質は、そこに書かれている「神様からの和歌や助言」にあります。大吉であっても戒めの言葉があれば気を引き締め、大凶であっても励ましの言葉があれば希望を持つことが大切です。結果に一喜一憂せず、日々の行動指針として活用してください。</p></div>`
+        },
+        {
+            id: 2,
+            title: "悪い結果が出ても実は大丈夫？",
+            date: "2026/01/01",
+            category: "豆知識",
+            icon: "bi-cloud-sun",
+            colorClass: "green",
+            content: `<div class="article-content"><p>おみくじを引いて「凶」や「大凶」が出ると、誰しも気分が落ち込むものです。「今年は良いことがないのではないか」「不吉なことが起こる前兆ではないか」と不安になるかもしれません。しかし、古来より「凶」は必ずしも忌むべきものとはされてきませんでした。むしろ、考え方によっては幸運への入り口とも言えるのです。</p><h3>「凶」は運気の底、これからは上がるのみ</h3><p>陰陽道などの東洋思想では、物事は極まれば反転すると考えます。「大吉」は今が頂点であり、これからは下り坂になる可能性があるため、むしろ慎重な行動を求められます。</p><p>逆に「凶」は、今が運気の底であり、これからは上昇する一方であることを示唆しています。「禍を転じて福となす」という言葉通り、今の困難を乗り越えることで、より大きな幸運をつかむチャンスなのです。凶を引いたということは、これ以上悪くなることはない、つまり「伸びしろしかない」状態であると前向きに捉えましょう。</p><h3>結ぶか、持ち帰るか？</h3><p>悪い結果が出た場合、神社の境内にある「結び所」に結んで帰る風習が一般的です。これには「神様と縁を結ぶ」「悪い運気を神様に預けて浄化してもらう」という意味があります。</p><p>一方で、「戒めとして財布に入れて持ち歩く」という考え方もあります。自分への警告として時々読み返すことで、慎重な行動を心がけ、災いを未然に防ぐことができるからです。</p></div>`
+        },
+        {
+            id: 3,
+            title: "神社での正しい参拝マナー",
+            date: "2025/12/30",
+            category: "作法",
+            icon: "bi-person-praying",
+            colorClass: "green",
+            content: `<div class="article-content"><p>神社は神様のお住まいです。初詣や日常の参拝で失礼のないよう、基本的な参拝マナーをおさらいしましょう。作法を知ることで、心も整い、より深い感謝の気持ちを伝えることができます。</p><h3>1. 鳥居をくぐる時</h3><p>鳥居は俗界と神域を分ける結界です。くぐる前には衣服を整え、軽く一礼（一揖）をし、帽子などは取ります。参道の中央（正中）は神様の通り道なので、避けて端を歩くのがマナーです。</p><h3>2. 手水舎での清め方</h3><p>参拝の前に、手水舎（てみずや）で身の穢れを落とします。<br>1. 右手で柄杓を持ち、水を汲んで左手を清める。<br>2. 左手に持ち替え、右手を清める。<br>3. 再び右手に持ち、左手で水を受けて口をすすぐ。<br>4. 左手を再度清め、最後に柄杓を立てて残った水で柄を洗い流す。</p><h3>3. 拝礼（二礼二拍手一礼）</h3><p>お賽銭を入れた後、鈴を鳴らし、姿勢を正します。<br>1. 深く二回お辞儀をする（二礼）。<br>2. 胸の前で両手を合わせ、右手を少し下にずらして二回拍手を打つ（二拍手）。<br>3. 指先を揃えて祈りを捧げる。<br>4. 最後にもう一度深くお辞儀をする（一礼）。</p></div>`
+        },
+        {
+            id: 4,
+            title: "「失せ物」の本当の意味",
+            date: "2025/12/28",
+            category: "豆知識",
+            icon: "bi-search",
+            colorClass: "green",
+            content: `<div class="article-content"><p>おみくじの項目にある「失せ物（うせもの）」。これは単に「落とし物」や「無くした財布」のことだけを指すのではありません。人生において私たちが失ってしまうものは、物理的なモノだけではないからです。</p><h3>形あるもの、形なきもの</h3><p>失せ物には、物理的な物品だけでなく、「失った信頼」「忘れていた初心」「疎遠になった友人」「失恋した相手」「やる気」「健康」など、形のないものも含まれます。今あなたが心の中で「失ってしまった」と感じている欠落感、それこそが「失せ物」の正体かもしれません。</p><h3>言葉の意味</h3><ul class="list-disc ml-5 mb-4"><li><b>「出ず（いでず）」</b>：残念ながら戻ってこない可能性が高いです。諦めて新しいものを探すか、執着を手放すべき時です。</li><li><b>「出る」</b>：見つかります。焦らず探しましょう。</li><li><b>「高いところより出る」</b>：棚の上や、普段見ない高い場所、あるいは目上の人からの連絡で見つかるかもしれません。</li></ul></div>`
+        },
+        {
+            id: 5,
+            title: "「待ち人」は恋愛だけじゃない",
+            date: "2025/12/25",
+            category: "開運",
+            icon: "bi-heart",
+            colorClass: "green",
+            content: `<div class="article-content"><p>「待ち人来ず」と出ると、恋人ができないのかとガッカリする人が多いですが、これは大きな誤解です。おみくじにおける「待ち人」の意味はもっと広く、人生全般に関わるものです。</p><h3>人生を導くキーパーソン</h3><p>おみくじにおける「待ち人」とは、「あなたの人生に良い影響を与えてくれる人」「運命を切り開くきっかけとなる人」全般を指します。それは将来の恋人や結婚相手かもしれませんし、ビジネスパートナー、あるいは人生の師となる先生、一生の親友、もしかすると赤ちゃん（妊娠）のことかもしれません。</p><h3>「来ず」の意味</h3><p>「来ず」とあっても、一生現れないこともあります。「今はまだその時ではない」「自分から動きなさい」というメッセージであることが多いのです。「音信（たより）あり」とあれば、遠くから連絡が来るでしょう。</p></div>`
+        }
+    ];
+
+    // --- コンテンツ描画ロジック (完全版) ---
+
+    // ホーム画面のリストをレンダリング（最新4件など）
+    function renderHomeLists() {
+        // 社務所だより（最新4件）
+        const newsListEl = document.getElementById('home-news-list');
+        if (newsListEl) {
+            newsListEl.innerHTML = newsData.slice(0, 4).map(item => `
+                <li class="flex justify-between cursor-pointer hover:bg-gray-100 dark:hover:bg-zinc-700 p-1 rounded transition" onclick="openArticle('news', ${item.id})">
+                    <span class="truncate ${item.tagColor || ''} ${item.tag === '重要' ? 'font-bold' : ''}">
+                        ${item.tag === '重要' ? '【重要】' : ''}${item.title}
+                    </span>
+                    <span class="themed-text-sub flex-shrink-0 ml-2">${item.date}</span>
+                </li>
+            `).join('');
+        }
+
+        // 神籤草子（最新4件）
+        const columnListEl = document.getElementById('home-column-list');
+        if (columnListEl) {
+            columnListEl.innerHTML = columnData.slice(0, 4).map(item => `
+                <li class="flex justify-between cursor-pointer hover:bg-gray-100 dark:hover:bg-zinc-700 p-1 rounded transition" onclick="openArticle('column', ${item.id})">
+                    <span class="truncate">
+                        <span class="bg-gray-200 dark:bg-zinc-700 px-1 py-0.5 rounded text-[10px] mr-1 text-gray-600 dark:text-gray-300">${item.category}</span>
+                        ${item.title}
+                    </span>
+                    <span class="themed-text-sub flex-shrink-0 ml-2">${item.date}</span>
+                </li>
+            `).join('');
+        }
+    }
+
+    // 社務所だより（全件ページ）レンダリング
+    function renderFullNewsView() {
+        const container = document.getElementById('view-news-list');
+        if (!container) return;
+        
+        container.innerHTML = newsData.map(item => `
+            <article class="themed-card p-4 rounded shadow border-l-4 ${item.tag === '重要' ? 'border-red-600' : 'border-gray-400'} cursor-pointer hover:opacity-80 transition" onclick="openArticle('news', ${item.id})">
+                <div class="text-sm themed-text-sub">${item.date} ${item.time || ''} <span class="ml-2 font-bold ${item.tagColor}">${item.tag}</span></div>
+                <h3 class="font-bold text-lg ${item.tag === '重要' ? 'text-red-600' : ''}">${item.title}</h3>
+                <p class="text-sm mt-2 truncate themed-text-sub">${item.desc}</p>
+            </article>
+        `).join('');
+    }
+
+    // 神籤草子（全件ページ）レンダリング
+    function renderFullColumnView() {
+        const container = document.getElementById('view-column-list');
+        if (!container) return;
+
+        container.innerHTML = columnData.map(item => `
+            <article class="themed-card rounded overflow-hidden shadow cursor-pointer hover:shadow-lg transition" onclick="openArticle('column', ${item.id})">
+                <div class="h-32 bg-${item.colorClass}-100 dark:bg-${item.colorClass}-900 flex items-center justify-center text-${item.colorClass}-800 dark:text-${item.colorClass}-200 font-bold">
+                    <i class="bi ${item.icon} text-3xl"></i>
+                </div>
+                <div class="p-4">
+                    <div class="text-xs themed-text-sub mb-1">
+                         <span class="bg-gray-200 dark:bg-zinc-700 px-2 py-0.5 rounded text-[10px] mr-2">${item.category}</span>${item.date}
+                    </div>
+                    <h3 class="font-bold">${item.title}</h3>
+                </div>
+            </article>
+        `).join('');
+    }
+
+    // 記事詳細を開く関数（統合版）
+    function openArticle(type, id) {
+        let item;
+        if (type === 'news') {
+            item = newsData.find(d => d.id === id);
+        } else if (type === 'column') {
+            item = columnData.find(d => d.id === id);
+        }
+
+        if (!item) return;
+
+        const container = document.getElementById('article-detail-content');
+        const headerTitleClass = (type === 'news' && item.tag === '重要') ? 'text-red-600' : '';
+
+        const html = `
+            <div class="article-header">
+                <h2 class="article-title ${headerTitleClass}">${item.title}</h2>
+                <div class="article-meta">
+                    <span>${item.date} ${item.time || ''}</span>
+                    ${item.tag ? `<span class="article-tag">${item.tag}</span>` : ''}
+                    ${item.category ? `<span class="article-tag">${item.category}</span>` : ''}
+                </div>
+            </div>
+            ${item.content}
+        `;
+
+        container.innerHTML = html;
+        showView('article-detail');
+    }
+
         // --- 状態管理 ---
         let currentState = {
             view: 'home',
