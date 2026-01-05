@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="ja">
 <head>
@@ -4219,6 +4218,114 @@ ${getShareUrl()}`;
             const resultDiv = document.getElementById('my-rank-result');
             const myData = dailyRanking.find(d => d.sign.id === signId && d.blood === bloodId);
             if (myData) { resultDiv.innerHTML = createCardHTML(myData); resultDiv.classList.remove('hidden'); }
+        }
+        // --- 全国運気マップ (OpenStreetMap + Leaflet) ---
+        let mapInstance = null;
+        let geoJsonLayer = null;
+
+        async function initJapanMap() {
+            if (mapInstance) return; // 初期化済みなら何もしない
+
+            // 1. 地図の初期化 (中心: 日本, ズーム: 5)
+            mapInstance = L.map('japan-map').setView([37.8, 137], 5);
+
+            // 2. OpenStreetMapのタイル読み込み
+            L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                maxZoom: 19,
+                attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+            }).addTo(mapInstance);
+
+            // 3. 都道府県データの取得と描画
+            try {
+                // 軽量な都道府県GeoJSONデータを取得
+                const response = await fetch('https://raw.githubusercontent.com/niiyz/JapanCityGeoJson/master/simplified/prefectures.json');
+                if (!response.ok) throw new Error("Map data fetch failed");
+                const geoData = await response.json();
+
+                document.getElementById('map-loading').style.display = 'none';
+
+                // 日付シードの生成 (JST 0:00基準)
+                const dateStr = getJSTDateString(); // 既存関数 "YYYY-MM-DD"
+                document.getElementById('map-date-display').textContent = `${dateStr} の運勢分布`;
+
+                // 4. GeoJSONレイヤーの作成
+                geoJsonLayer = L.geoJson(geoData, {
+                    style: (feature) => styleFeature(feature, dateStr),
+                    onEachFeature: (feature, layer) => {
+                        const prefName = feature.properties.name || feature.properties.nam_ja;
+                        const scoreData = getPrefectureScore(prefName, dateStr);
+                        
+                        // ポップアップ設定
+                        layer.bindPopup(`
+                            <div style="text-align:center; font-family:'Zen Old Mincho', serif;">
+                                <h4 style="font-weight:bold; margin-bottom:5px; font-size:1.2rem;">${prefName}</h4>
+                                <div style="font-size:2rem; font-weight:900; color:${getColor(scoreData.score)}; line-height:1;">${scoreData.score}</div>
+                                <div style="font-size:0.8rem; color:#666;">運気ポイント</div>
+                                <hr style="margin:5px 0; border-top:1px solid #eee;">
+                                <div style="font-size:0.9rem;">${scoreData.comment}</div>
+                            </div>
+                        `);
+
+                        // ホバー効果
+                        layer.on({
+                            mouseover: (e) => {
+                                const l = e.target;
+                                l.setStyle({ weight: 3, color: '#666', fillOpacity: 0.9 });
+                                l.bringToFront();
+                            },
+                            mouseout: (e) => {
+                                geoJsonLayer.resetStyle(e.target);
+                            }
+                        });
+                    }
+                }).addTo(mapInstance);
+
+            } catch (e) {
+                console.error(e);
+                document.getElementById('map-loading').innerHTML = '<p class="text-red-500 font-bold">地図データの読み込みに失敗しました</p>';
+            }
+        }
+
+        // 都道府県ごとの運気計算 (日付と県名で固定乱数を生成)
+        function getPrefectureScore(prefName, dateStr) {
+            // シード文字: 日付 + 県名 (これで毎日・県ごとに固定される)
+            const seed = dateStr + "_" + prefName;
+            const rng = new SeededRandom(seed); // 既存の乱数クラスを使用
+            
+            const score = Math.floor(rng.next() * 60) + 40; // 40~100点
+            
+            let comment = "";
+            if(score >= 90) comment = "絶好調！地の利あり。";
+            else if(score >= 80) comment = "活気あふれる良運気。";
+            else if(score >= 60) comment = "平穏無事な一日。";
+            else comment = "静かに力を蓄える時。";
+
+            return { score, comment };
+        }
+
+        // スコアに応じた色塗りスタイル
+        function styleFeature(feature, dateStr) {
+            const prefName = feature.properties.name || feature.properties.nam_ja;
+            const score = getPrefectureScore(prefName, dateStr).score;
+            
+            return {
+                fillColor: getColor(score),
+                weight: 1,
+                opacity: 1,
+                color: 'white', // 境界線
+                dashArray: '3',
+                fillOpacity: 0.7
+            };
+        }
+
+        // 色分けロジック (ヒートマップ風)
+        function getColor(d) {
+            return d > 90 ? '#b91c1c' : // 濃い赤 (大吉)
+                   d > 80 ? '#fb923c' : // オレンジ
+                   d > 70 ? '#facc15' : // 黄色
+                   d > 60 ? '#a3e635' : // 黄緑
+                   d > 50 ? '#60a5fa' : // 水色
+                            '#94a3b8';  // グレー (凶)
         }
     </script>
 </body>
