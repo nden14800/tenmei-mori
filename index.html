@@ -4333,27 +4333,23 @@
                 currentState.lastResult = resultData;
             }
 
-            renderResultToCard('result-card-outer', resultData, true); 
-            showView('result');
-            
-            const container = document.getElementById('generated-image-container');
-            container.innerHTML = '';
-            container.classList.add('hidden');
-            document.getElementById('gen-img-status').textContent = "";
-        }
-
-        // updateURL は廃止（空関数にして互換性維持）
-        function updateURL(resultData) {}
-
-        function renderResultToCard(outerId, data, withFooter) {
+            function renderResultToCard(outerId, data, withFooter) {
             const outer = document.getElementById(outerId);
             outer.innerHTML = ''; 
 
             // スタイル適用
             outer.className = 'result-card-outer';
-            if (data.type === "大吉") outer.classList.add("style-daikichi");
-            else if (data.type === "大凶") outer.classList.add("style-daikyo");
-            else outer.classList.add("style-normal");
+            
+            // ★隠し機能: ゴッドモードのスタイル適用
+            if (data.isGod) {
+                outer.classList.add("style-god-mode");
+            } else if (data.type === "大吉") {
+                outer.classList.add("style-daikichi");
+            } else if (data.type === "大凶") {
+                outer.classList.add("style-daikyo");
+            } else {
+                outer.classList.add("style-normal");
+            }
 
             // 1. 最上部: 家紋 + タイトル
             const headerDiv = document.createElement('div');
@@ -4368,13 +4364,14 @@
             const issueDiv = document.createElement('div');
             issueDiv.className = 'result-issue-num';
             let issueNum = currentState.liveCount || 15118061;
+            if(data.isGod) issueNum = 77777777; // ゴッドモードは番号も特別
             issueDiv.textContent = `累計発行本数 ${issueNum.toLocaleString()} 本`;
             outer.appendChild(issueDiv);
 
             // 3. 中央: 運勢結果（円）
             const circleBox = document.createElement('div');
             circleBox.className = 'result-circle-box accent-border';
-            circleBox.innerHTML = `<div class="result-kanji-main accent-text">${data.type}</div>`;
+            circleBox.innerHTML = `<div class="result-kanji-main accent-text" style="${data.isGod ? 'font-size:4rem;' : ''}">${data.type}</div>`;
             outer.appendChild(circleBox);
 
             // 4. 円の下: 運勢という文字
@@ -4435,7 +4432,7 @@
             uBox.className = 'unlucky-box accent-border';
             if (data.unlucky) {
                 uBox.innerHTML = `
-                    <div class="lucky-title accent-text red-text" style="color:red">不運・注意</div>
+                    <div class="lucky-title accent-text red-text" style="color:${data.isGod ? '#8b4513' : 'red'}">不運・注意</div>
                     <div class="lucky-row accent-text"><span class="lucky-icon"><i class="bi bi-exclamation-triangle"></i></span>物：${data.unlucky.item}</div>
                     <div class="lucky-row accent-text"><span class="lucky-icon"><i class="bi bi-x-octagon"></i></span>所：${data.unlucky.spot}</div>
                     <div class="lucky-row accent-text"><span class="lucky-icon"><i class="bi bi-person-x"></i></span>人：${data.unlucky.person}</div>
@@ -4444,7 +4441,7 @@
             luckyArea.appendChild(uBox);
             outer.appendChild(luckyArea);
 
-            // 8. フッター (日時・名前・QR)
+            // 8. フッター
             if (withFooter) {
                 const footer = document.createElement('div');
                 footer.className = 'result-footer-info accent-border';
