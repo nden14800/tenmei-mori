@@ -4287,9 +4287,18 @@
             let resultData, randNum, detailsList, luckyItems, unluckyItems, timestamp, username;
 
             if (isNewDraw) {
-                // 新規抽選
-                const base = omikujiResults[Math.floor(Math.random() * omikujiResults.length)];
-                randNum = Math.floor(Math.random() * 100) + 1;
+                // ▼ 隠し機能: 神モード判定 ▼
+                let base;
+                if (window.godModeEnabled) {
+                    // 強制的に「大吉」を選択
+                    base = omikujiResults.find(r => r.type === "大吉");
+                    randNum = 77; // ラッキーセブン
+                } else {
+                    // 通常抽選
+                    base = omikujiResults[Math.floor(Math.random() * omikujiResults.length)];
+                    randNum = Math.floor(Math.random() * 100) + 1;
+                }
+                
                 timestamp = Date.now();
                 username = currentState.user ? (currentState.user.username || "参拝者") : "ゲスト";
 
@@ -4334,40 +4343,45 @@
                 };
                 currentState.lastResult = resultData;
 
-                // URL更新廃止: クリーンなURLのまま
-
-                // ログイン時のみ保存・更新
+                // ▼ 履歴保存処理（神モード時はスキップ！） ▼
                 if(currentState.user) {
-                    showLoading(true);
-                    try {
-                        const res = await fetch(`${API_BASE}/api/draw`, {
-                            method: 'POST',
-                            headers: { 'Content-Type': 'application/json' },
-                            body: JSON.stringify({ 
-                                email: currentState.user.email,
-                                token: currentState.user.token,
-                                result: resultData.type,
-                                poem: resultData.poem,
-                                detail: detailsList,
-                                lucky: luckyItems,
-                                unlucky: unluckyItems
-                            })
-                        });
-                        
-                        if(res.ok) {
-                            const data = await res.json();
-                            if(data.success && data.count) {
-                                currentState.liveCount = data.count;
-                                document.getElementById('live-counter').textContent = currentState.liveCount.toLocaleString() + "本";
-                                fetchHistoryStats();
+                    if (window.godModeEnabled) {
+                        console.log("God Mode Active: History saving skipped.");
+                        // 擬似的にカウントだけ更新したように見せる（実際はサーバーと同期しない）
+                        // 必要ならここでローディング演出だけ入れる
+                    } else {
+                        // 通常時: サーバーへ保存
+                        showLoading(true);
+                        try {
+                            const res = await fetch(`${API_BASE}/api/draw`, {
+                                method: 'POST',
+                                headers: { 'Content-Type': 'application/json' },
+                                body: JSON.stringify({ 
+                                    email: currentState.user.email,
+                                    token: currentState.user.token,
+                                    result: resultData.type,
+                                    poem: resultData.poem,
+                                    detail: detailsList,
+                                    lucky: luckyItems,
+                                    unlucky: unluckyItems
+                                })
+                            });
+                            
+                            if(res.ok) {
+                                const data = await res.json();
+                                if(data.success && data.count) {
+                                    currentState.liveCount = data.count;
+                                    document.getElementById('live-counter').textContent = currentState.liveCount.toLocaleString() + "本";
+                                    fetchHistoryStats();
+                                }
                             }
-                        }
-                    } catch(e) { console.error(e); }
-                    finally { showLoading(false); }
+                        } catch(e) { console.error(e); }
+                        finally { showLoading(false); }
+                    }
                 }
 
             } else {
-                // 復元
+                // 復元 (履歴からの表示など)
                 resultData = dataOverride;
                 randNum = dataOverride.num || 1;
                 
