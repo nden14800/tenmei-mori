@@ -2298,6 +2298,171 @@
     
     // ■ 社務所だより（ニュース）データ
     const newsData = [
+        {
+            id: 11,
+            title: "【システム】サーバー負荷軽減対策の実施と詳細データ",
+            date: "2026/1/5",
+            time: "17:39",
+            tag: "システム",
+            tagColor: "text-gray-600",
+            borderColor: "border-gray-500",
+            desc: "サイトの自動更新頻度を調整し、通信負荷を約94%削減いたしました。詳細な推移表を公開します。",
+            content: `
+                <div class="article-content">
+                    <p>いつも「運勢・天命乃杜」をご利用いただき、誠にありがとうございます。</p>
+                    <p>本日、安定したサービス提供継続のため、トップページの「発行本数カウンター」および「統計グラフ」の自動更新間隔の調整を行いました。</p>
+                    
+                    <h3>変更内容</h3>
+                    <p>データの自動取得間隔を、従来の<strong>「5秒毎」から「1分毎」に変更</strong>いたしました。</p>
+                    <p>これにより、サーバー（Cloudflare Workers KV）への読み取りリクエスト数が<strong>従来の約15分の1（平均 0.167 req/s）まで大幅に低下</strong>しました。</p>
+
+                    <h3>負荷状況と許容人数の推移表</h3>
+                    <p>無料プランの上限（1日100,000回）に対し、どれくらいの人数が同時に利用できるかの試算データです。</p>
+
+                    <h4 class="font-bold text-red-600 mt-6 mb-2">▼ 【修正前】5秒更新（危険な状態）</h4>
+                    <p class="text-xs mb-2 text-gray-500">※1人あたりの消費数が多く、少人数でも上限に達してしまう状態でした。</p>
+                    <div class="overflow-x-auto mb-8">
+                        <table class="w-full text-xs border-collapse border border-gray-300 text-center" style="min-width: 500px;">
+                            <thead class="bg-gray-100 dark:bg-zinc-700 font-bold">
+                                <tr>
+                                    <th class="p-2 border border-gray-300">タブ数</th>
+                                    <th class="p-2 border border-gray-300">利用時間</th>
+                                    <th class="p-2 border border-gray-300">読取回数/人</th>
+                                    <th class="p-2 border border-gray-300">1日許容人数</th>
+                                    <th class="p-2 border border-gray-300">判定</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <!-- 1タブ -->
+                                <tr>
+                                    <td rowspan="4" class="p-2 border border-gray-300 bg-gray-50 dark:bg-zinc-800 font-bold">1つ</td>
+                                    <td class="p-2 border border-gray-300">1分間</td>
+                                    <td class="p-2 border border-gray-300">24回</td>
+                                    <td class="p-2 border border-gray-300">4,166人</td>
+                                    <td class="p-2 border border-gray-300">注意</td>
+                                </tr>
+                                <tr>
+                                    <td class="p-2 border border-gray-300">10分間</td>
+                                    <td class="p-2 border border-gray-300">240回</td>
+                                    <td class="p-2 border border-gray-300">416人</td>
+                                    <td class="p-2 border border-gray-300">注意</td>
+                                </tr>
+                                <tr>
+                                    <td class="p-2 border border-gray-300">1時間</td>
+                                    <td class="p-2 border border-gray-300">1,440回</td>
+                                    <td class="p-2 border border-gray-300">69人</td>
+                                    <td class="p-2 border border-gray-300 text-red-600 font-bold">危険</td>
+                                </tr>
+                                <tr>
+                                    <td class="p-2 border border-gray-300">24時間</td>
+                                    <td class="p-2 border border-gray-300">34,560回</td>
+                                    <td class="p-2 border border-gray-300">2人</td>
+                                    <td class="p-2 border border-gray-300 text-red-600 font-bold">危険</td>
+                                </tr>
+                                <!-- 4タブ -->
+                                <tr>
+                                    <td rowspan="4" class="p-2 border border-gray-300 bg-gray-50 dark:bg-zinc-800 font-bold">4つ</td>
+                                    <td class="p-2 border border-gray-300">1分間</td>
+                                    <td class="p-2 border border-gray-300">96回</td>
+                                    <td class="p-2 border border-gray-300">1,041人</td>
+                                    <td class="p-2 border border-gray-300 text-red-600 font-bold">危険</td>
+                                </tr>
+                                <tr>
+                                    <td class="p-2 border border-gray-300">10分間</td>
+                                    <td class="p-2 border border-gray-300">960回</td>
+                                    <td class="p-2 border border-gray-300">104人</td>
+                                    <td class="p-2 border border-gray-300 text-red-600 font-bold">危険</td>
+                                </tr>
+                                <tr>
+                                    <td class="p-2 border border-gray-300">1時間</td>
+                                    <td class="p-2 border border-gray-300">5,760回</td>
+                                    <td class="p-2 border border-gray-300">17人</td>
+                                    <td class="p-2 border border-gray-300 bg-red-100 text-red-800 font-bold">停止</td>
+                                </tr>
+                                <tr>
+                                    <td class="p-2 border border-gray-300">24時間</td>
+                                    <td class="p-2 border border-gray-300">138,240回</td>
+                                    <td class="p-2 border border-gray-300">0人</td>
+                                    <td class="p-2 border border-gray-300 bg-black text-white font-bold">即死</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <h4 class="font-bold text-green-600 mt-6 mb-2">▼ 【修正後】60秒更新（現在の状態）</h4>
+                    <p class="text-xs mb-2 text-gray-500">※消費数が激減し、多くの人が同時に利用しても安全な状態です。</p>
+                    <div class="overflow-x-auto mb-6">
+                        <table class="w-full text-xs border-collapse border border-gray-300 text-center" style="min-width: 500px;">
+                            <thead class="bg-blue-50 dark:bg-zinc-800 font-bold">
+                                <tr>
+                                    <th class="p-2 border border-gray-300">タブ数</th>
+                                    <th class="p-2 border border-gray-300">利用時間</th>
+                                    <th class="p-2 border border-gray-300">読取回数/人</th>
+                                    <th class="p-2 border border-gray-300">1日許容人数</th>
+                                    <th class="p-2 border border-gray-300">判定</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <!-- 1タブ -->
+                                <tr>
+                                    <td rowspan="4" class="p-2 border border-gray-300 bg-gray-50 dark:bg-zinc-800 font-bold">1つ</td>
+                                    <td class="p-2 border border-gray-300">1分間</td>
+                                    <td class="p-2 border border-gray-300">2回</td>
+                                    <td class="p-2 border border-gray-300">50,000人</td>
+                                    <td class="p-2 border border-gray-300 text-green-600 font-bold">余裕</td>
+                                </tr>
+                                <tr>
+                                    <td class="p-2 border border-gray-300">10分間</td>
+                                    <td class="p-2 border border-gray-300">20回</td>
+                                    <td class="p-2 border border-gray-300">5,000人</td>
+                                    <td class="p-2 border border-gray-300 text-green-600 font-bold">余裕</td>
+                                </tr>
+                                <tr>
+                                    <td class="p-2 border border-gray-300">1時間</td>
+                                    <td class="p-2 border border-gray-300">120回</td>
+                                    <td class="p-2 border border-gray-300">833人</td>
+                                    <td class="p-2 border border-gray-300 text-green-600 font-bold">余裕</td>
+                                </tr>
+                                <tr>
+                                    <td class="p-2 border border-gray-300">24時間</td>
+                                    <td class="p-2 border border-gray-300">2,880回</td>
+                                    <td class="p-2 border border-gray-300">34人</td>
+                                    <td class="p-2 border border-gray-300 text-blue-600 font-bold">安全</td>
+                                </tr>
+                                <!-- 4タブ -->
+                                <tr>
+                                    <td rowspan="4" class="p-2 border border-gray-300 bg-gray-50 dark:bg-zinc-800 font-bold">4つ</td>
+                                    <td class="p-2 border border-gray-300">1分間</td>
+                                    <td class="p-2 border border-gray-300">8回</td>
+                                    <td class="p-2 border border-gray-300">12,500人</td>
+                                    <td class="p-2 border border-gray-300 text-green-600 font-bold">余裕</td>
+                                </tr>
+                                <tr>
+                                    <td class="p-2 border border-gray-300">10分間</td>
+                                    <td class="p-2 border border-gray-300">80回</td>
+                                    <td class="p-2 border border-gray-300">1,250人</td>
+                                    <td class="p-2 border border-gray-300 text-green-600 font-bold">余裕</td>
+                                </tr>
+                                <tr>
+                                    <td class="p-2 border border-gray-300">1時間</td>
+                                    <td class="p-2 border border-gray-300">480回</td>
+                                    <td class="p-2 border border-gray-300">208人</td>
+                                    <td class="p-2 border border-gray-300 text-blue-600 font-bold">安全</td>
+                                </tr>
+                                <tr>
+                                    <td class="p-2 border border-gray-300">24時間</td>
+                                    <td class="p-2 border border-gray-300">11,520回</td>
+                                    <td class="p-2 border border-gray-300">8人</td>
+                                    <td class="p-2 border border-gray-300 text-blue-600 font-bold">安全</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    
+                    <p>以上の通り、今回の調整により、より多くの参拝者様に快適にご利用いただける環境が整いました。引き続き「運勢・天命乃杜」をよろしくお願い申し上げます。</p>
+                </div>
+            `
+        },
         
         {
             id: 9,
