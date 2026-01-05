@@ -2672,6 +2672,12 @@
                     lock.classList.add('hidden');
                     wrapper.classList.remove('lab-blurred');
                 }
+                if(viewId === 'map') {
+                // 地図ビューが開かれた時だけ初期化 & リサイズ
+                setTimeout(() => {
+                    initJapanMap();
+                    if(mapInstance) mapInstance.invalidateSize(); // サイズ再計算
+                }, 100);
             }
 
             document.querySelectorAll('.view-section').forEach(el => {
