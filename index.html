@@ -3612,6 +3612,78 @@
         // ちょっとした余韻（Labsの全機能解放などをここに仕込むことも可能）
         alert("通常世界線へ復帰します。");
     };
+        
+// ==========================================
+    //  Labs隠し機能: 神モード (God Mode)
+    // ==========================================
+    
+    // リロードで初期化される変数（ストレージには保存しない）
+    window.godModeEnabled = false; 
+    let godTapCount = 0;
+    let godTapTimer = null;
+
+    // フラスコタップ時の処理
+    window.handleGodModeCommand = function() {
+        godTapCount++;
+        
+        // 連続タップ判定（1秒以内）
+        clearTimeout(godTapTimer);
+        godTapTimer = setTimeout(() => { godTapCount = 0; }, 1000);
+
+        // 5回タップで発動
+        if (godTapCount === 5) {
+            spawnGodCard();
+            godTapCount = 0;
+        }
+    };
+
+    // 黄金のカードを生成・挿入
+    function spawnGodCard() {
+        // 既にある場合は何もしない
+        if(document.getElementById('god-mode-card')) {
+            alert("神の力は既に解放されています。");
+            return;
+        }
+
+        const container = document.getElementById('lab-container');
+        
+        // 黄金のカードHTML
+        const cardHTML = `
+            <div id="god-mode-card" class="lab-card-god" style="animation: slideInDown 0.5s ease-out;">
+                <div class="flex items-center gap-5">
+                    <div class="w-14 h-14 rounded-full bg-white flex items-center justify-center text-3xl flex-shrink-0 shadow-lg border-2 border-yellow-500">
+                        <i class="bi bi-stars text-yellow-600"></i>
+                    </div>
+                    <div>
+                        <h3 class="god-title">天命操作（神モード）</h3>
+                        <p class="god-desc">常に「大吉」を招き寄せます。<br>※この運命は轍（履歴）には刻まれません。</p>
+                    </div>
+                </div>
+                <label class="toggle-switch flex-shrink-0 ml-4">
+                    <input type="checkbox" onchange="window.toggleGodMode(this)">
+                    <span class="slider" style="background-color: #5d4037 !important;"></span>
+                </label>
+            </div>
+        `;
+        
+        // リストの先頭に挿入
+        container.insertAdjacentHTML('afterbegin', cardHTML);
+        alert("禁断の扉が開かれました...\n「天命操作」機能が一時的にアンロックされました。");
+    }
+
+    // スイッチ切り替え時の処理
+    window.toggleGodMode = function(el) {
+        window.godModeEnabled = el.checked;
+        if(window.godModeEnabled) {
+            // エフェクト（画面を一瞬光らせるなどしても良いが今回はアラートのみ）
+        }
+    };
+
+    // スライドアニメーション用スタイル定義をJSから注入
+    const style = document.createElement('style');
+    style.innerHTML = `@keyframes slideInDown { from { opacity: 0; transform: translateY(-20px); } to { opacity: 1; transform: translateY(0); } }`;
+    document.head.appendChild(style);
+        
     // ==========================================
     //  統合された初期化処理 (window.onload)
     // ==========================================
