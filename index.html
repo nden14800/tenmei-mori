@@ -2658,9 +2658,9 @@
             }
         }
 
+        // --- 修正版：完全な showView 関数 ---
         function showView(viewId) {
             // Lab機能へのアクセス制限処理
-            // ビュー自体は表示するが、非ログイン時はぼかしとロックをかける
             if(viewId === 'lab') {
                 const lock = document.getElementById('lab-lock');
                 const wrapper = document.getElementById('lab-content-wrapper');
@@ -2672,13 +2672,40 @@
                     lock.classList.add('hidden');
                     wrapper.classList.remove('lab-blurred');
                 }
-                if(viewId === 'map') {
+            }
+
+            // 全てのセクションを非表示にする
+            document.querySelectorAll('.view-section').forEach(el => {
+                el.classList.remove('active');
+                setTimeout(() => {
+                    if(!el.classList.contains('active')) el.style.display = 'none';
+                }, 500);
+            });
+            
+            // 指定したセクションを表示する
+            const target = document.getElementById(`view-${viewId}`);
+            if (target) {
+                target.style.display = 'block';
+                void target.offsetWidth; 
+                target.classList.add('active');
+            }
+            currentState.view = viewId;
+
+            // 各ビューごとの個別初期化
+            if(viewId === 'draw') {
+                resetOmikujiPool();
+            }
+            if(viewId === 'history') {
+                loadHistory();
+            }
+            if(viewId === 'map') {
                 // 地図ビューが開かれた時だけ初期化 & リサイズ
                 setTimeout(() => {
                     initJapanMap();
-                    if(mapInstance) mapInstance.invalidateSize(); // サイズ再計算
+                    if(mapInstance) mapInstance.invalidateSize(); // 地図の表示崩れ防止
                 }, 100);
             }
+        } // ← このカッコが閉じられていないのがエラーの原因であることが多いです
 
             document.querySelectorAll('.view-section').forEach(el => {
                 el.classList.remove('active');
