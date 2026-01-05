@@ -1097,6 +1097,60 @@
         @keyframes blinkCursor { 0%, 100% { opacity: 1; } 50% { opacity: 0; } }
         @keyframes fadeInTerminal { from { opacity: 0; } to { opacity: 1; } } 
 
+        /* --- 隠し機能: ゴッドモード（確変大吉）カード --- */
+        .style-god-mode {
+            background-color: #ffd700; /* 純金 */
+            /* ザラザラ感を出すノイズテクスチャ */
+            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='1.5' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='0.4'/%3E%3C/svg%3E");
+            border: 8px solid #b8860b; /* ダークゴールデンロッド */
+            color: #3e1e00;
+            box-shadow: 0 0 50px rgba(255, 215, 0, 0.8), inset 0 0 30px rgba(0,0,0,0.2);
+            text-shadow: 0 1px 0 rgba(255,255,255,0.5);
+            animation: goldShine 3s infinite alternate;
+        }
+        .style-god-mode .accent-border { border-color: #3e1e00; }
+        .style-god-mode .accent-text { color: #8b4513; font-weight: 900; }
+        
+        @keyframes goldShine {
+            0% { box-shadow: 0 0 20px rgba(255, 215, 0, 0.5); filter: brightness(100%); }
+            100% { box-shadow: 0 0 60px rgba(255, 215, 0, 0.9); filter: brightness(110%); }
+        }
+
+        /* --- 隠し機能: 開発者メッセージオーバーレイ --- */
+        #secret-message-overlay {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0, 0, 0, 0.95);
+            z-index: 9999;
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            color: #fff;
+            font-family: 'Zen Old Mincho', serif;
+            opacity: 0;
+            transition: opacity 1s ease-in;
+            text-align: center;
+            padding: 20px;
+        }
+        #secret-message-overlay.active { display: flex; opacity: 1; }
+        
+        .secret-text {
+            font-size: 1.5rem;
+            margin-bottom: 20px;
+            opacity: 0;
+            transform: translateY(20px);
+            animation: textFadeUp 1s forwards;
+            background: linear-gradient(to right, #fff, #aaa);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        .secret-sub { font-size: 0.9rem; color: #888; animation-delay: 2s; }
+        
+        @keyframes textFadeUp {
+            to { opacity: 1; transform: translateY(0); }
+        }
+
     </style>
 </head>
 <body>
