@@ -2362,8 +2362,37 @@
         let globalHistory = [];
         let personalHistory = [];
 
-        // --- 修正版: Lab機能の状態管理 ---
+        // --- Lab機能の状態管理とモーダル制御 ---
         const TenmeiLab = {
+            // 機能ごとの詳細データ
+            details: {
+                newyear: {
+                    title: "迎春・雅（みやび）モード",
+                    icon: '<i class="bi bi-flower1 text-yellow-600"></i>',
+                    desc: "サイト全体のテーマカラーを「紅白」と「金」を基調としたお正月仕様に変更します。<br><br>画面の背景には和柄の文様が浮かび上がり、ボタンやアイコンも雅な雰囲気に包まれます。新年の初詣気分をより一層高めるための特別演出です。",
+                    bgClass: "bg-yellow-100"
+                },
+                speed: {
+                    title: "神速（しんそく）の祈り",
+                    icon: '<i class="bi bi-lightning-charge-fill text-blue-600"></i>',
+                    desc: "おみくじを引く際のアニメーション演出（筒を振る、棒が出るなど）を全てスキップします。<br><br>タップした瞬間に結果が表示されるため、日々の運勢を素早く確認したい方や、通信環境が不安定な場所での利用に最適です。",
+                    bgClass: "bg-blue-100"
+                },
+                dark: {
+                    title: "宵闇（よいやみ）の刻",
+                    icon: '<i class="bi bi-moon-stars-fill text-purple-600"></i>',
+                    desc: "端末（OS）の設定に関わらず、強制的にダークモードを適用します。<br><br>夜間の利用や、明るい画面が苦手な方に。背景は深い漆黒となり、文字は月明かりのように白く浮かび上がります。目に優しい配色です。",
+                    bgClass: "bg-purple-100"
+                },
+                bigtext: {
+                    title: "言霊（ことだま）の増幅",
+                    icon: '<i class="bi bi-type-h1 text-green-600"></i>',
+                    desc: "サイト内の主要な文字サイズを約1.2倍に拡大します。<br><br>特に「おみくじの結果」や「和歌（神託）」など、重要なメッセージが大きく表示されるため、細かな文字が読みづらい方でも快適にご利用いただけます。",
+                    bgClass: "bg-green-100"
+                }
+            },
+
+            // 既存のトグル関数
             toggleNewYear: (el) => {
                 if(el.checked) document.body.classList.add('theme-newyear');
                 else document.body.classList.remove('theme-newyear');
@@ -2378,10 +2407,46 @@
                 applyTheme(); 
             },
             toggleBigText: (el) => {
-                // 【修正点】bodyのstyleではなく、htmlタグにクラスを付け外しする
                 if(el.checked) document.documentElement.classList.add('lab-big-text');
                 else document.documentElement.classList.remove('lab-big-text');
                 saveLabSettings();
+            },
+
+            // --- 新規追加: モーダル制御 ---
+            openModal: (key) => {
+                const data = TenmeiLab.details[key];
+                if(!data) return;
+
+                const content = document.getElementById('lab-modal-content');
+                content.innerHTML = `
+                    <div class="flex flex-col items-center text-center">
+                        <div class="w-20 h-20 rounded-full ${data.bgClass} flex items-center justify-center text-4xl mb-6 shadow-sm">
+                            ${data.icon}
+                        </div>
+                        <h3 class="text-2xl font-bold mb-4">${data.title}</h3>
+                        <p class="text-gray-600 dark:text-gray-300 leading-loose text-left w-full bg-gray-50 dark:bg-zinc-800 p-6 rounded-xl border border-gray-100 dark:border-gray-700">
+                            ${data.desc}
+                        </p>
+                        
+                        <div class="mt-8 w-full">
+                            <button onclick="TenmeiLab.closeModal(null)" class="btn-primary w-full py-3">閉じる</button>
+                        </div>
+                    </div>
+                `;
+
+                const modal = document.getElementById('lab-modal');
+                modal.classList.add('active');
+                // スクロールロック
+                document.body.style.overflow = 'hidden';
+            },
+
+            closeModal: (e) => {
+                if (e && e.target.id !== 'lab-modal' && !e.target.classList.contains('lab-close-btn')) return;
+                
+                const modal = document.getElementById('lab-modal');
+                modal.classList.remove('active');
+                // スクロールロック解除
+                document.body.style.overflow = '';
             }
         };
 
