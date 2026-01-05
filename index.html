@@ -2910,7 +2910,7 @@
     //  ページネーション＆検索機能ロジック
     // ==========================================
     
-    // 状態管理
+    // 状態管理 (ページ番号と検索ワード)
     const listState = {
         news: { page: 1, query: '', perPage: 5 },   // ニュースは1ページ5件
         column: { page: 1, query: '', perPage: 6 }  // コラムは1ページ6件
@@ -2942,18 +2942,16 @@
         // 1. 検索フィルタ
         const filtered = sourceData.filter(item => {
             if (!state.query) return true;
-            return item.title.toLowerCase().includes(state.query) || 
-                   (item.desc && item.desc.toLowerCase().includes(state.query)) ||
-                   (item.content && item.content.toLowerCase().includes(state.query)) ||
-                   (item.tag && item.tag.toLowerCase().includes(state.query)) ||
-                   (item.category && item.category.toLowerCase().includes(state.query));
+            // タイトル、本文、タグなどを検索対象にする
+            const searchStr = (item.title + (item.desc || '') + (item.content || '') + (item.tag || '') + (item.category || '')).toLowerCase();
+            return searchStr.includes(state.query);
         });
 
         // 2. ページネーション計算
         const totalItems = filtered.length;
         const totalPages = Math.ceil(totalItems / state.perPage) || 1;
         
-        // ページ番号が範囲外なら補正
+        // ページ番号の補正
         if (state.page > totalPages) state.page = totalPages;
         if (state.page < 1) state.page = 1;
 
@@ -2964,31 +2962,66 @@
         return { data: slicedData, totalPages, currentPage: state.page, totalItems };
     }
 
-    // 共通: ページネーションボタンの生成HTML
+    // 共通: ページネーションボタンのHTML生成
     function createPaginationHTML(type, current, total) {
         if (total <= 1) return ''; // 1ページのみなら非表示
 
         let html = '';
-        
         // 前へボタン
         html += `<button onclick="changePage('${type}', ${current - 1})" 
-                 class="px-4 py-2 rounded border bg-white dark:bg-zinc-800 hover:bg-gray-100 dark:hover:bg-zinc-700 disabled:opacity-50"
+                 class="px-4 py-2 rounded border bg-white dark:bg-zinc-800 hover:bg-gray-100 dark:hover:bg-zinc-700 disabled:opacity-50 transition"
                  ${current === 1 ? 'disabled' : ''}>
                  <i class="bi bi-chevron-left"></i> 前へ</button>`;
 
-        // ページ番号 (スマホ対応: 現在/総数)
-        html += `<span class="font-bold font-mono mx-2">${current} / ${total}</span>`;
+        // ページ番号
+        html += `<span class="font-bold font-mono mx-4">${current} / ${total}</span>`;
 
         // 次へボタン
         html += `<button onclick="changePage('${type}', ${current + 1})" 
-                 class="px-4 py-2 rounded border bg-white dark:bg-zinc-800 hover:bg-gray-100 dark:hover:bg-zinc-700 disabled:opacity-50"
+                 class="px-4 py-2 rounded border bg-white dark:bg-zinc-800 hover:bg-gray-100 dark:hover:bg-zinc-700 disabled:opacity-50 transition"
                  ${current === total ? 'disabled' : ''}>
                  次へ <i class="bi bi-chevron-right"></i></button>`;
 
         return html;
     }
 
-    // --- 【修正版】社務所だよりレンダリング ---
+    // ==========================================
+    //  描画ロジック (一覧・ホーム・詳細)
+    // ==========================================
+
+    // 1. ホーム画面のリスト (最新件数のみ表示)
+    // ★これが消えていたためエラーになっていました
+    window.renderHomeLists = function() {
+        // 社務所だより（最新4件）
+        const newsListEl = document.getElementById('home-news-list');
+        if (newsListEl) {
+            newsListEl.innerHTML = newsData.slice(0, 4).map(item => `
+                <li class="flex justify-between cursor-pointer hover:bg-gray-100 dark:hover:bg-zinc-700 p-1 rounded transition" onclick="openArticle('news', ${item.id})">
+                    <span class="truncate">
+                        <span class="bg-gray-200 dark:bg-zinc-700 px-1 py-0.5 rounded text-[10px] mr-1 ${item.tagColor || 'text-gray-600'}">${item.tag}</span>
+                        ${item.title}
+                    </span>
+                    <span class="themed-text-sub flex-shrink-0 ml-2">${item.date}</span>
+                </li>
+            `).join('');
+        }
+
+        // 神籤草子（最新5件）
+        const columnListEl = document.getElementById('home-column-list');
+        if (columnListEl) {
+            columnListEl.innerHTML = columnData.slice(0, 5).map(item => `
+                <li class="flex justify-between cursor-pointer hover:bg-gray-100 dark:hover:bg-zinc-700 p-1 rounded transition" onclick="openArticle('column', ${item.id})">
+                    <span class="truncate">
+                        <span class="bg-gray-200 dark:bg-zinc-700 px-1 py-0.5 rounded text-[10px] mr-1 text-gray-600 dark:text-gray-300">${item.category}</span>
+                        ${item.title}
+                    </span>
+                    <span class="themed-text-sub flex-shrink-0 ml-2">${item.date}</span>
+                </li>
+            `).join('');
+        }
+    };
+
+    // 2. 社務所だより一覧 (検索・ページ機能付き)
     window.renderFullNewsView = function() {
         const container = document.getElementById('view-news-list');
         const pagination = document.getElementById('news-pagination');
@@ -3013,7 +3046,7 @@
         pagination.innerHTML = createPaginationHTML('news', currentPage, totalPages);
     };
 
-    // --- 【修正版】神籤草子レンダリング ---
+    // 3. 神籤草子一覧 (検索・ページ機能付き)
     window.renderFullColumnView = function() {
         const container = document.getElementById('view-column-list');
         const pagination = document.getElementById('column-pagination');
@@ -3042,6 +3075,103 @@
         `).join('');
 
         pagination.innerHTML = createPaginationHTML('column', currentPage, totalPages);
+    };
+
+    // 4. 記事詳細表示
+    window.openArticle = function(type, id) {
+        let item;
+        if (type === 'news') item = newsData.find(d => d.id === id);
+        else if (type === 'column') item = columnData.find(d => d.id === id);
+
+        if (!item) return;
+
+        const container = document.getElementById('article-detail-content');
+        if (container) {
+            const headerTitleClass = (type === 'news' && item.tag === '重要') ? 'text-red-600' : '';
+            container.innerHTML = `
+                <div class="article-header">
+                    <h2 class="article-title ${headerTitleClass}">${item.title}</h2>
+                    <div class="article-meta">
+                        <span>${item.date} ${item.time || ''}</span>
+                        ${item.tag ? `<span class="article-tag">${item.tag}</span>` : ''}
+                        ${item.category ? `<span class="article-tag">${item.category}</span>` : ''}
+                    </div>
+                </div>
+                <div class="article-content">${item.content}</div>
+            `;
+            showView('article-detail');
+            window.scrollTo(0, 0);
+        }
+    };
+
+    // 5. クイズ機能ロジック
+    window.handleQuiz = function(btn, isCorrect, correctIndex) {
+        const optionsArea = btn.parentElement;
+        const allBtns = optionsArea.querySelectorAll('button');
+        const resultArea = optionsArea.nextElementSibling;
+        const msg = resultArea.querySelector('.quiz-msg');
+
+        allBtns.forEach(b => {
+            b.disabled = true;
+            b.classList.add('opacity-50', 'cursor-not-allowed');
+        });
+
+        if (isCorrect) {
+            btn.classList.remove('bg-white', 'dark:bg-black', 'border-gray-300', 'opacity-50');
+            btn.classList.add('bg-green-100', 'dark:bg-green-900', 'border-green-500', 'text-green-800', 'dark:text-green-100', 'ring-2', 'ring-green-500');
+            btn.innerHTML = '<i class="bi bi-circle text-xl mr-2"></i> ' + btn.innerText;
+            msg.innerHTML = '<span class="text-green-600"><i class="bi bi-check-circle-fill"></i> 正解！</span>';
+        } else {
+            btn.classList.remove('bg-white', 'dark:bg-black', 'border-gray-300', 'opacity-50');
+            btn.classList.add('bg-red-100', 'dark:bg-red-900', 'border-red-500', 'text-red-800', 'dark:text-red-100');
+            btn.innerHTML = '<i class="bi bi-x-lg text-xl mr-2"></i> ' + btn.innerText;
+            msg.innerHTML = '<span class="text-red-600"><i class="bi bi-x-circle-fill"></i> 不正解...</span>';
+            const correctBtn = allBtns[correctIndex]; 
+            if(correctBtn) {
+                correctBtn.classList.remove('opacity-50', 'bg-white', 'dark:bg-black', 'border-gray-300');
+                correctBtn.classList.add('bg-green-50', 'dark:bg-green-900/30', 'border-green-500', 'font-black', 'text-green-700', 'dark:text-green-300');
+                correctBtn.innerHTML = '<i class="bi bi-circle text-xl mr-2"></i> ' + correctBtn.innerText;
+            }
+        }
+        resultArea.classList.remove('hidden');
+    };
+
+    // ==========================================
+    //  統合された初期化処理 (window.onload)
+    // ==========================================
+    window.onload = function() {
+        // 基本初期化
+        initHomeAnimation();
+        initZodiacSystem();
+        
+        // 認証状態の復元
+        const storedUser = localStorage.getItem('omikuji_user');
+        if(storedUser) {
+            try { currentState.user = JSON.parse(storedUser); } catch(e){ console.error(e); }
+        }
+        updateAuthUI();
+        loadLabSettings();
+
+        // ダークモード監視
+        window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', applyTheme);
+
+        // 各種データ取得・定期実行
+        startLiveCounter();
+        fetchHistoryStats();
+        setInterval(fetchHistoryStats, 60000); 
+        loadFavorites();
+
+        // URLクリーンアップ
+        const url = new URL(window.location);
+        if (url.searchParams.has('d')) {
+            url.searchParams.delete('d');
+            window.history.replaceState({}, '', url);
+        }
+
+        // ▼ 記事リストの描画（ここでエラーが出ていた箇所を修正）
+        renderHomeLists();      // ホーム画面用
+        renderFullNewsView();   // 一覧画面用（ニュース）
+        renderFullColumnView(); // 一覧画面用（コラム）
     };
 
         // --- 状態管理 ---
