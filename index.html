@@ -788,46 +788,6 @@
         }
         input:checked + .slider { background-color: #6366f1; } /* インディゴ系に変更 */
         input:checked + .slider:before { transform: translateX(26px); }
-        
-        /* Search Labs風 左上タイトル */
-        .lab-top-brand {
-            position: absolute;
-            top: 24px;
-            left: 24px;
-            z-index: 50; /* 最前面に配置 */
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            background: rgba(255, 255, 255, 0.6); /* 半透明の白背景 */
-            padding: 10px 20px;
-            border-radius: 50px;
-            backdrop-filter: blur(12px); /* すりガラス効果 */
-            box-shadow: 0 4px 20px rgba(0,0,0,0.08);
-            border: 1px solid rgba(255,255,255,0.4);
-            transition: transform 0.2s;
-        }
-        .dark .lab-top-brand {
-            background: rgba(30, 30, 30, 0.6);
-            border: 1px solid rgba(255,255,255,0.1);
-        }
-        .lab-top-brand:hover {
-            transform: scale(1.02);
-        }
-        .lab-brand-text {
-            font-family: sans-serif; /* ゴシック体でモダンに */
-            font-weight: bold;
-            font-size: 0.95rem;
-            color: #444;
-            letter-spacing: 0.05em;
-        }
-        .dark .lab-brand-text { color: #eee; }
-        
-        /* タイトル横のフラスコアイコン */
-        .lab-brand-icon {
-            font-size: 1.2rem;
-            color: #6366f1; /* テーマカラーの青紫 */
-        }
-        .dark .lab-brand-icon { color: #818cf8; }
 
         /* --- TENMEI Labs: Unified Real Flask --- */
 
@@ -1416,12 +1376,6 @@
         <!-- ビュー: TENMEI Labs (動画風モダンUI版) -->
         <section id="view-lab" class="view-section max-w-4xl mx-auto">
             
-            <!-- 【追加】左上のSearch Labs風タイトル -->
-            <div class="lab-top-brand">
-                <i class="bi bi-flask-fill lab-brand-icon"></i>
-                <span class="lab-brand-text">TENMEI Labs</span>
-            </div>
-
             <!-- 1. 背景アニメーションレイヤー -->
             <div class="lab-modern-bg">
                 <div class="lab-blob blob-1"></div>
@@ -1440,7 +1394,7 @@
                 <!-- ヒーローエリア (タイトル) -->
                 <div class="lab-hero-area">
                    
-                   <!-- メインフラスコ (サイドバーと統一された三角・シングル波形デザイン) -->
+                   <!-- メインフラスコ (奥の波を削除し、サイドバーと完全統一) -->
                     <div class="title-flask-anim mb-6 transform scale-110">
                         <svg viewBox="0 0 200 200" overflow="hidden" style="width:100%; height:100%;">
                             <defs>
@@ -1465,7 +1419,7 @@
                                         <!-- 背景 (薄いガラス色) -->
                                         <rect x="-50" y="-50" width="300" height="300" fill="rgba(255,255,255,0.05)" />
 
-                                        <!-- 手前の波 (1つのみ表示) -->
+                                        <!-- 手前の波 (これ1つだけにしました) -->
                                         <path class="wave-path wave-front" 
                                               d="M0 135 Q50 150 100 135 T200 135 T300 135 T400 135 V250 H0 Z" />
                                         
@@ -1579,14 +1533,14 @@
                 </div>
             </div>
             <!-- 詳細モーダル (全画面オーバーレイ) -->
-            <div id="lab-modal" class="lab-modal-overlay" onclick="TenmeiLab.closeModal(event)">
-                <div class="lab-modal-card" onclick="event.stopPropagation()">
-                    <button class="lab-close-btn" onclick="TenmeiLab.closeModal(null)"><i class="bi bi-x-lg"></i></button>
-                    <div id="lab-modal-content">
-                        <!-- JSでコンテンツ挿入 -->
-                    </div>
-                </div>
+    <div id="lab-modal" class="lab-modal-overlay" onclick="TenmeiLab.closeModal(event)">
+        <div class="lab-modal-card" onclick="event.stopPropagation()">
+            <button class="lab-close-btn" onclick="TenmeiLab.closeModal(null)"><i class="bi bi-x-lg"></i></button>
+            <div id="lab-modal-content">
+                <!-- JSでコンテンツ挿入 -->
             </div>
+        </div>
+    </div>
         </section>
 
         <!-- ビュー: ログイン/登録 (新フロー: 選択 -> 入力 -> 認証) -->
