@@ -2948,39 +2948,7 @@
         }
     };
 
-    // 2. 社務所だより（全件ページ）レンダリング
-    window.renderFullNewsView = function() {
-        const container = document.getElementById('view-news-list');
-        if (!container) return;
-        
-        container.innerHTML = newsData.map(item => `
-            <article class="themed-card p-4 rounded shadow border-l-4 ${item.borderColor || 'border-gray-400'} cursor-pointer hover:opacity-80 transition" onclick="openArticle('news', ${item.id})">
-                <div class="text-sm themed-text-sub">${item.date} ${item.time || ''} <span class="ml-2 font-bold ${item.tagColor}">${item.tag}</span></div>
-                <h3 class="font-bold text-lg ${item.tag === '重要' ? 'text-red-600' : ''}">${item.title}</h3>
-                <p class="text-sm mt-2 truncate themed-text-sub">${item.desc}</p>
-            </article>
-        `).join('');
-    };
-
-    // 3. 神籤草子（全件ページ）レンダリング
-    window.renderFullColumnView = function() {
-        const container = document.getElementById('view-column-list');
-        if (!container) return;
-
-        container.innerHTML = columnData.map(item => `
-            <article class="themed-card rounded overflow-hidden shadow cursor-pointer hover:shadow-lg transition" onclick="openArticle('column', ${item.id})">
-                <div class="h-32 bg-${item.colorClass}-100 dark:bg-${item.colorClass}-900 flex items-center justify-center text-${item.colorClass}-800 dark:text-${item.colorClass}-200 font-bold">
-                    <i class="bi ${item.icon} text-3xl"></i>
-                </div>
-                <div class="p-4">
-                    <div class="text-xs themed-text-sub mb-1">
-                         <span class="bg-gray-200 dark:bg-zinc-700 px-2 py-0.5 rounded text-[10px] mr-2">${item.category}</span>${item.date}
-                    </div>
-                    <h3 class="font-bold">${item.title}</h3>
-                </div>
-            </article>
-        `).join('');
-    };
+    
 
     // 4. 記事詳細を開く関数（修正版）
     // ★修正点: 本文のラッパーを 'article-body' から 'article-content' に変更しました。
@@ -3027,7 +2995,124 @@
         window.scrollTo(0, 0);
     };
 
-    // 5. 初期化処理（window.onload に追記）
+        // ==========================================
+    //  検索＆ページネーション制御ロジック
+    // ==========================================
+    
+    // 状態管理用オブジェクト
+    const listState = {
+        news: { page: 1, perPage: 5, query: "", filtered: [] },
+        column: { page: 1, perPage: 6, query: "", filtered: [] } // コラムは2列なので偶数個がいい
+    };
+
+    // 1. 初期化＆データフィルタリング
+    function initListState() {
+        // 最初は全データをセット
+        listState.news.filtered = [...newsData];
+        listState.column.filtered = [...columnData];
+        
+        renderPagedList('news');
+        renderPagedList('column');
+    }
+
+    // 2. 検索ハンドラ
+    window.handleSearch = function(type, query) {
+        const state = listState[type];
+        const data = (type === 'news') ? newsData : columnData;
+        state.query = query.toLowerCase().trim();
+        state.page = 1; // 検索したら1ページ目に戻す
+
+        if (!state.query) {
+            state.filtered = [...data];
+        } else {
+            state.filtered = data.filter(item => {
+                // タイトル、本文、日付、タグから検索
+                const target = `${item.title} ${item.content} ${item.date} ${item.tag || ''} ${item.category || ''}`.toLowerCase();
+                return target.includes(state.query);
+            });
+        }
+        renderPagedList(type);
+    };
+
+    // 3. ページ切り替えハンドラ
+    window.changePage = function(type, newPage) {
+        listState[type].page = newPage;
+        renderPagedList(type);
+        // ページ切り替え時に上部へスクロール
+        const sectionId = (type === 'news') ? 'view-news' : 'view-column';
+        const section = document.getElementById(sectionId);
+        if(section) section.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    };
+
+    // 4. 描画メイン関数
+    function renderPagedList(type) {
+        const state = listState[type];
+        const container = document.getElementById(`view-${type}-list`);
+        const countEl = document.getElementById(`${type}-count`);
+        const pagerEl = document.getElementById(`${type}-pagination`);
+        
+        if (!container) return;
+
+        // 件数表示
+        countEl.textContent = `全 ${state.filtered.length} 件`;
+
+        if (state.filtered.length === 0) {
+            container.innerHTML = `<div class="col-span-full text-center py-10 text-gray-400">該当する記事がありません</div>`;
+            pagerEl.innerHTML = '';
+            return;
+        }
+
+        // ページング計算
+        const start = (state.page - 1) * state.perPage;
+        const end = start + state.perPage;
+        const pageItems = state.filtered.slice(start, end);
+        const totalPages = Math.ceil(state.filtered.length / state.perPage);
+
+        // コンテンツ描画 (タイプ別)
+        if (type === 'news') {
+            container.innerHTML = pageItems.map(item => `
+                <article class="themed-card p-4 rounded shadow border-l-4 ${item.borderColor || 'border-gray-400'} cursor-pointer hover:opacity-80 transition" onclick="openArticle('news', ${item.id})">
+                    <div class="text-sm themed-text-sub">${item.date} ${item.time || ''} <span class="ml-2 font-bold ${item.tagColor}">${item.tag}</span></div>
+                    <h3 class="font-bold text-lg ${item.tag === '重要' ? 'text-red-600' : ''}">${item.title}</h3>
+                    <p class="text-sm mt-2 truncate themed-text-sub">${item.desc}</p>
+                </article>
+            `).join('');
+        } else {
+            container.innerHTML = pageItems.map(item => `
+                <article class="themed-card rounded overflow-hidden shadow cursor-pointer hover:shadow-lg transition" onclick="openArticle('column', ${item.id})">
+                    <div class="h-32 bg-${item.colorClass}-100 dark:bg-${item.colorClass}-900 flex items-center justify-center text-${item.colorClass}-800 dark:text-${item.colorClass}-200 font-bold">
+                        <i class="bi ${item.icon} text-3xl"></i>
+                    </div>
+                    <div class="p-4">
+                        <div class="text-xs themed-text-sub mb-1">
+                             <span class="bg-gray-200 dark:bg-zinc-700 px-2 py-0.5 rounded text-[10px] mr-2">${item.category}</span>${item.date}
+                        </div>
+                        <h3 class="font-bold">${item.title}</h3>
+                    </div>
+                </article>
+            `).join('');
+        }
+
+        // ページネーションボタン描画
+        if (totalPages > 1) {
+            let pagerHtml = '';
+            
+            // 前へ
+            pagerHtml += `<button onclick="changePage('${type}', ${state.page - 1})" class="btn-outline px-3 py-1 text-xs" ${state.page === 1 ? 'disabled style="opacity:0.3"' : ''}><i class="bi bi-chevron-left"></i></button>`;
+            
+            // ページ番号
+            pagerHtml += `<span class="mx-2 text-sm font-bold">${state.page} / ${totalPages}</span>`;
+            
+            // 次へ
+            pagerHtml += `<button onclick="changePage('${type}', ${state.page + 1})" class="btn-outline px-3 py-1 text-xs" ${state.page === totalPages ? 'disabled style="opacity:0.3"' : ''}><i class="bi bi-chevron-right"></i></button>`;
+            
+            pagerEl.innerHTML = pagerHtml;
+        } else {
+            pagerEl.innerHTML = '';
+        }
+    }
+
+    // 5. 初期化処理（window.onload）
     window.onload = function() {
         // 既存の初期化処理
         initHomeAnimation();
@@ -3059,10 +3144,11 @@
         }
         
         // ▼ 今回の追加箇所（レンダリング実行）
-        renderHomeLists();
-        renderFullNewsView();
-        renderFullColumnView();
+        renderHomeLists(); // ホーム画面用（既存関数）
+        initListState();   // 新しい一覧画面用（検索・ページング初期化）
     };
+
+    
 
         // --- 状態管理 ---
         let currentState = {
