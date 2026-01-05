@@ -2515,8 +2515,9 @@
         `).join('');
     };
 
-    // 4. 記事詳細を開く関数（強制上書き）
-    // ★ここが重要: window.openArticle に代入することで、古い関数を確実に上書きします
+    // 4. 記事詳細を開く関数（修正版）
+    // ★修正点: 本文のラッパーを 'article-body' から 'article-content' に変更しました。
+    // これにより、CSSで定義された「h3見出しの左側の赤い縦線」などが正しく適用されます。
     window.openArticle = function(type, id) {
         let item;
         if (type === 'news') {
@@ -2536,6 +2537,7 @@
             return;
         }
 
+        // 重要タグが付いている場合はタイトルを赤くする
         const headerTitleClass = (type === 'news' && item.tag === '重要') ? 'text-red-600' : '';
 
         const html = `
@@ -2547,14 +2549,15 @@
                     ${item.category ? `<span class="article-tag">${item.category}</span>` : ''}
                 </div>
             </div>
-            <div class="article-body">
+            <!-- ここを article-content にすることで、h3タグ等のスタイル（赤い縦線）が適用されます -->
+            <div class="article-content">
                 ${item.content}
             </div>
         `;
 
         container.innerHTML = html;
         showView('article-detail');
-        window.scrollTo(0, 0); // ページ上部へスクロール
+        window.scrollTo(0, 0);
     };
 
     // 5. 初期化処理（window.onload に追記）
