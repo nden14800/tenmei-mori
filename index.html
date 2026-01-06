@@ -1097,9 +1097,57 @@
         @keyframes blinkCursor { 0%, 100% { opacity: 1; } 50% { opacity: 0; } }
         @keyframes fadeInTerminal { from { opacity: 0; } to { opacity: 1; } } 
 
+        /* --- TENMEI Labs: 追加機能スタイル --- */
+
+        /* 1. 幽玄の霧 (Mist Effect) */
+        #mist-container {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            pointer-events: none; /* クリックを邪魔しない */
+            z-index: 50; /* コンテンツの上、サイドバーの下 */
+            display: none; /* 初期は非表示 */
+            opacity: 0.4;
+        }
+        .mist-layer {
+            position: absolute;
+            top: 0; left: 0; width: 200%; height: 100%;
+            background: url('https://www.transparenttextures.com/patterns/fog.png'); /* 霧のテクスチャ */
+            animation: mistMove 60s linear infinite;
+        }
+        .mist-layer-2 {
+            animation: mistMove 40s linear infinite reverse;
+            opacity: 0.5;
+        }
+        @keyframes mistMove {
+            from { transform: translateX(0); }
+            to { transform: translateX(-50%); }
+        }
+
+        /* 2. 黄金の神域 (Gold Theme Override) */
+        body.theme-gold {
+            --accent-red: #d4af37 !important; /* ゴールド */
+            --accent-gold: #b8860b !important; /* 濃い金 */
+        }
+        body.theme-gold .btn-primary {
+            background: linear-gradient(135deg, #f1c40f, #d4af37) !important;
+            color: #3e1e00 !important;
+            box-shadow: 0 4px 15px rgba(212, 175, 55, 0.4) !important;
+        }
+        body.theme-gold .text-red-600, 
+        body.theme-gold .text-red-700,
+        body.theme-gold .text-red-500 {
+            color: #b8860b !important;
+        }
+        body.theme-gold .border-red-500,
+        body.theme-gold .border-red-600 {
+            border-color: #d4af37 !important;
+        }
+
     </style>
 </head>
 <body>
+
+    <div id="mist-container"><div class="mist-layer"></div><div class="mist-layer-2"></div></div>
 
     <!-- ローディングスピナー (SVG版) -->
     <div id="loading-overlay">
@@ -1486,7 +1534,7 @@
                         
                         <!-- カード 1: 迎春・雅 -->
                         <div class="lab-card-modern" onclick="TenmeiLab.openModal('newyear')">
-                            <div class="flex items-center gap-5 pointer-events-none"> <!-- 中身はクリックイベント無効化して親に任せる -->
+                            <div class="flex items-center gap-5 pointer-events-none">
                                 <div class="w-14 h-14 rounded-full bg-yellow-100 text-yellow-600 flex items-center justify-center text-2xl flex-shrink-0 shadow-sm">
                                     <i class="bi bi-flower1"></i>
                                 </div>
@@ -1495,7 +1543,7 @@
                                     <p class="text-xs text-gray-500 dark:text-gray-400 mt-1 font-bold">サイト全体を紅白と金色の雅な装いに変更します。</p>
                                 </div>
                             </div>
-                            <label class="toggle-switch flex-shrink-0 ml-4" onclick="event.stopPropagation()"> <!-- スイッチクリック時はモーダルを開かない -->
+                            <label class="toggle-switch flex-shrink-0 ml-4" onclick="event.stopPropagation()">
                                 <input type="checkbox" onchange="TenmeiLab.toggleNewYear(this)" id="switch-newyear">
                                 <span class="slider"></span>
                             </label>
@@ -1548,6 +1596,40 @@
                             </div>
                             <label class="toggle-switch flex-shrink-0 ml-4" onclick="event.stopPropagation()">
                                 <input type="checkbox" onchange="TenmeiLab.toggleBigText(this)" id="switch-bigtext">
+                                <span class="slider"></span>
+                            </label>
+                        </div>
+
+                        <!-- 追加カード 5: 幽玄の霧 -->
+                        <div class="lab-card-modern" onclick="TenmeiLab.openModal('mist')">
+                            <div class="flex items-center gap-5 pointer-events-none">
+                                <div class="w-14 h-14 rounded-full bg-gray-100 text-gray-600 flex items-center justify-center text-2xl flex-shrink-0 shadow-sm">
+                                    <i class="bi bi-cloud-haze2-fill"></i>
+                                </div>
+                                <div>
+                                    <h3 class="font-bold text-lg text-gray-800 dark:text-white">幽玄の霧</h3>
+                                    <p class="text-xs text-gray-500 dark:text-gray-400 mt-1 font-bold">画面に神秘的な霧を漂わせ、杜の臨場感を高めます。</p>
+                                </div>
+                            </div>
+                            <label class="toggle-switch flex-shrink-0 ml-4" onclick="event.stopPropagation()">
+                                <input type="checkbox" onchange="TenmeiLab.toggleMist(this)" id="switch-mist">
+                                <span class="slider"></span>
+                            </label>
+                        </div>
+
+                        <!-- 追加カード 6: 黄金の神域 -->
+                        <div class="lab-card-modern" onclick="TenmeiLab.openModal('gold')">
+                            <div class="flex items-center gap-5 pointer-events-none">
+                                <div class="w-14 h-14 rounded-full bg-yellow-50 text-yellow-500 flex items-center justify-center text-2xl flex-shrink-0 shadow-sm border border-yellow-200">
+                                    <i class="bi bi-stars"></i>
+                                </div>
+                                <div>
+                                    <h3 class="font-bold text-lg text-gray-800 dark:text-white">黄金の神域</h3>
+                                    <p class="text-xs text-gray-500 dark:text-gray-400 mt-1 font-bold">サイトのアクセントカラーを「紅」から「黄金」へ変更します。</p>
+                                </div>
+                            </div>
+                            <label class="toggle-switch flex-shrink-0 ml-4" onclick="event.stopPropagation()">
+                                <input type="checkbox" onchange="TenmeiLab.toggleGold(this)" id="switch-gold">
                                 <span class="slider"></span>
                             </label>
                         </div>
