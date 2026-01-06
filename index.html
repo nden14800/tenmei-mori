@@ -1061,6 +1061,41 @@
 .lab-card-modern .toggle-switch {
     z-index: 5; /* カードクリックより優先 */
 }
+       /* --- 隠しコマンド（イースターエッグ）演出用 --- */
+        #secret-overlay {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background-color: #000;
+            z-index: 99999; /* 最前面 */
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            color: #0f0; /* ターミナルグリーン */
+            font-family: 'Courier New', monospace;
+            padding: 20px;
+            overflow: hidden;
+        }
+        #secret-overlay.active { display: flex; }
+        
+        .secret-text {
+            font-size: 1.2rem;
+            line-height: 1.5;
+            white-space: pre-wrap;
+            text-align: left;
+            max-width: 600px;
+            width: 100%;
+            margin-bottom: 20px;
+            opacity: 0;
+            animation: fadeInTerminal 0.1s forwards;
+        }
+        .secret-cursor::after {
+            content: '▋';
+            animation: blinkCursor 1s infinite;
+        }
+
+        @keyframes blinkCursor { 0%, 100% { opacity: 1; } 50% { opacity: 0; } }
+        @keyframes fadeInTerminal { from { opacity: 0; } to { opacity: 1; } } 
 
         /* --- TENMEI Labs: 追加機能スタイル --- */
 
@@ -1132,28 +1167,6 @@
         body.theme-gold .border-red-500,
         body.theme-gold .border-red-600 {
             border-color: #d4af37 !important;
-        }
-
-        /* 3. 水鏡の祓い (Ripple Effect) */
-        .ripple-effect {
-            position: fixed;
-            border-radius: 50%;
-            background: radial-gradient(circle, rgba(255, 255, 255, 0.8) 0%, rgba(160, 216, 239, 0.4) 60%, transparent 100%);
-            transform: scale(0);
-            pointer-events: none; /* クリックを邪魔しない */
-            z-index: 9999;
-            animation: rippleAnim 0.6s linear forwards;
-            box-shadow: 0 0 15px rgba(160, 216, 239, 0.3); /* 水色の光 */
-        }
-        /* ダークモード時は少し光を強く */
-        .dark .ripple-effect {
-            background: radial-gradient(circle, rgba(200, 230, 255, 0.9) 0%, rgba(50, 100, 255, 0.3) 60%, transparent 100%);
-            box-shadow: 0 0 20px rgba(100, 150, 255, 0.5);
-        }
-
-        @keyframes rippleAnim {
-            0% { transform: scale(0); opacity: 1; }
-            100% { transform: scale(4); opacity: 0; }
         }
 
     </style>
@@ -1649,23 +1662,6 @@
                             </div>
                             <label class="toggle-switch flex-shrink-0 ml-4" onclick="event.stopPropagation()">
                                 <input type="checkbox" onchange="TenmeiLab.toggleGold(this)" id="switch-gold">
-                                <span class="slider"></span>
-                            </label>
-                        </div>
-
-                        <!-- 追加カード 7: 水鏡の祓い -->
-                        <div class="lab-card-modern" onclick="TenmeiLab.openModal('ripple')">
-                            <div class="flex items-center gap-5 pointer-events-none">
-                                <div class="w-14 h-14 rounded-full bg-cyan-100 text-cyan-600 flex items-center justify-center text-2xl flex-shrink-0 shadow-sm">
-                                    <i class="bi bi-droplet-fill"></i>
-                                </div>
-                                <div>
-                                    <h3 class="font-bold text-lg text-gray-800 dark:text-white">水鏡の祓い</h3>
-                                    <p class="text-xs text-gray-500 dark:text-gray-400 mt-1 font-bold">画面に触れるたび、清らかな水紋が広がり穢れを祓います。</p>
-                                </div>
-                            </div>
-                            <label class="toggle-switch flex-shrink-0 ml-4" onclick="event.stopPropagation()">
-                                <input type="checkbox" onchange="TenmeiLab.toggleRipple(this)" id="switch-ripple">
                                 <span class="slider"></span>
                             </label>
                         </div>
@@ -4136,7 +4132,7 @@
         let globalHistory = [];
         let personalHistory = [];
 
-        // --- Lab機能の状態管理とモーダル制御 (水鏡の祓い追加版) ---
+        // --- Lab機能の状態管理とモーダル制御 (拡張完全版) ---
         const TenmeiLab = {
             details: {
                 newyear: {
@@ -4174,13 +4170,6 @@
                     icon: '<i class="bi bi-stars text-yellow-500"></i>',
                     desc: "サイト全体のアクセントカラーである「紅」を、すべて「黄金（ゴールド）」に変更します。<br><br>ボタンやタイトル、アイコンが金色に輝き、最高位の神域を彷彿とさせる豪華な装いになります。",
                     bgClass: "bg-yellow-50"
-                },
-                // ▼ 今回追加 ▼
-                ripple: {
-                    title: "水鏡（みずかがみ）の祓い",
-                    icon: '<i class="bi bi-droplet-fill text-cyan-600"></i>',
-                    desc: "画面をクリックまたはタップするたびに、清らかな水面のような波紋のエフェクトが広がります。<br><br>手水舎で手を清めるように、デジタル空間の穢れ（けがれ）を祓いながら操作するための機能です。",
-                    bgClass: "bg-cyan-100"
                 }
             },
 
@@ -4206,19 +4195,17 @@
             toggleMist: (el) => {
                 const container = document.getElementById('mist-container');
                 if(!container) return;
-                if(el.checked) container.classList.add('active');
-                else container.classList.remove('active');
+
+                if(el.checked) {
+                    container.classList.add('active');
+                } else {
+                    container.classList.remove('active');
+                }
                 saveLabSettings();
             },
             toggleGold: (el) => {
                 if(el.checked) document.body.classList.add('theme-gold');
                 else document.body.classList.remove('theme-gold');
-                saveLabSettings();
-            },
-            // ▼ 今回追加 ▼
-            toggleRipple: (el) => {
-                if(el.checked) document.body.classList.add('lab-ripple-active');
-                else document.body.classList.remove('lab-ripple-active');
                 saveLabSettings();
             },
 
@@ -4252,35 +4239,40 @@
             }
         };
 
-        // --- 追加: 波紋エフェクトのイベントリスナー ---
-        document.addEventListener('click', function(e) {
-            // クラスが付与されている(ONの)時だけ実行
-            if (!document.body.classList.contains('lab-ripple-active')) return;
+        // --- 追加: テーマ適用ロジック（OS設定とLab設定の統合） ---
+        function applyTheme() {
+            let userSettings = null;
+            if (currentState.user) {
+                try {
+                    userSettings = JSON.parse(localStorage.getItem(`lab_settings_${currentState.user.email}`));
+                } catch(e) {}
+            }
 
-            // 波紋要素を生成
-            const ripple = document.createElement('div');
-            ripple.className = 'ripple-effect';
+            // 「宵闇の刻」がONかどうか
+            const forceDark = userSettings ? userSettings.dark : false;
             
-            // クリック位置を中心に配置
-            const size = 100; // 波紋の初期サイズ基準
-            ripple.style.width = size + 'px';
-            ripple.style.height = size + 'px';
-            ripple.style.left = (e.clientX - size/2) + 'px';
-            ripple.style.top = (e.clientY - size/2) + 'px';
+            // OSがダークモードかどうか
+            const systemDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
 
-            document.body.appendChild(ripple);
+            // スイッチON または (スイッチOFFかつOSがダーク) の場合に dark クラスを付与
+            if (forceDark || systemDark) {
+                document.documentElement.classList.add('dark');
+            } else {
+                document.documentElement.classList.remove('dark');
+            }
 
-            // アニメーション終了後にDOMから削除 (メモリリーク防止)
-            ripple.addEventListener('animationend', () => {
-                ripple.remove();
-            });
-        });
+            // スイッチの見た目同期（ログイン時のみ）
+            const switchDark = document.getElementById('switch-dark');
+            if(switchDark && userSettings) {
+                switchDark.checked = forceDark;
+            }
+        }
 
         // ==========================================
     //  TENMEI Labs 設定同期ロジック (サーバー連携版)
     // ==========================================
 
-    // 1. 設定を保存する関数 (rippleを追加)
+    // 1. 設定を保存する関数 (クラウド+ローカル)
     async function saveLabSettings() {
         const settings = {
             newyear: document.getElementById('switch-newyear').checked,
@@ -4288,12 +4280,14 @@
             dark: document.getElementById('switch-dark').checked,
             bigtext: document.getElementById('switch-bigtext').checked,
             mist: document.getElementById('switch-mist').checked,
-            gold: document.getElementById('switch-gold').checked,
-            ripple: document.getElementById('switch-ripple').checked // 追加
+            gold: document.getElementById('switch-gold').checked
         };
 
         if (currentState.user) {
+            // ログイン中：サーバー(KV)と同期
+            // まずローカルに保存（オフライン対策・高速化）
             localStorage.setItem(`lab_settings_${currentState.user.email}`, JSON.stringify(settings));
+            
             try {
                 const res = await fetch(`${API_BASE}/api/user/settings`, {
                     method: 'POST',
@@ -4304,76 +4298,87 @@
                         settings: settings
                     })
                 });
-            } catch (e) { console.error("Labs設定同期失敗", e); }
+                if(!res.ok) throw new Error("Sync Failed");
+                console.log("Labs設定をクラウドに保存しました");
+            } catch (e) {
+                console.error("Labs設定のクラウド同期に失敗しました", e);
+            }
         } else {
+            // 未ログイン：ゲスト用としてローカルのみ保存
             localStorage.setItem('lab_settings_guest', JSON.stringify(settings));
         }
     }
 
-    // 2. 設定を読み込む関数 (rippleを追加)
+    // 2. 設定を読み込み、UIに反映させる関数
     async function loadLabSettings() {
         let settings = null;
 
         if (currentState.user) {
+            // ログイン中：サーバーから最新設定を取得
             try {
                 const res = await fetch(`${API_BASE}/api/user/settings?email=${encodeURIComponent(currentState.user.email)}&token=${encodeURIComponent(currentState.user.token)}`);
                 if (res.ok) {
                     const data = await res.json();
                     settings = data.settings;
+                    // クラウドから得た最新をローカルにもキャッシュ
                     if(settings) localStorage.setItem(`lab_settings_${currentState.user.email}`, JSON.stringify(settings));
                 }
             } catch (e) {
+                console.error("サーバーからの設定取得に失敗しました。ローカルデータを使用します。", e);
                 const local = localStorage.getItem(`lab_settings_${currentState.user.email}`);
                 if(local) settings = JSON.parse(local);
             }
         } else {
+            // 未ログイン：ローカルから取得
             const local = localStorage.getItem('lab_settings_guest');
             if(local) settings = JSON.parse(local);
         }
 
+        // --- UI（スイッチ）とクラスの反映 ---
         if (settings) {
+            // 雅モード
             const swNewYear = document.getElementById('switch-newyear');
             if(swNewYear) swNewYear.checked = !!settings.newyear;
             if(settings.newyear) document.body.classList.add('theme-newyear');
             else document.body.classList.remove('theme-newyear');
 
+            // 神速の祈り
             const swSpeed = document.getElementById('switch-speed');
             if(swSpeed) swSpeed.checked = !!settings.speed;
             window.labSpeedMode = !!settings.speed;
 
+            // 言霊の増幅
             const swBigText = document.getElementById('switch-bigtext');
             if(swBigText) swBigText.checked = !!settings.bigtext;
             if(settings.bigtext) document.documentElement.classList.add('lab-big-text');
             else document.documentElement.classList.remove('lab-big-text');
 
+            // 幽玄の霧
             const swMist = document.getElementById('switch-mist');
             const mistContainer = document.getElementById('mist-container');
             if(swMist) swMist.checked = !!settings.mist;
             if(settings.mist && mistContainer) mistContainer.classList.add('active');
             else if(mistContainer) mistContainer.classList.remove('active');
 
+            // 黄金の神域
             const swGold = document.getElementById('switch-gold');
             if(swGold) swGold.checked = !!settings.gold;
             if(settings.gold) document.body.classList.add('theme-gold');
             else document.body.classList.remove('theme-gold');
 
+            // 宵闇の刻
             const swDark = document.getElementById('switch-dark');
             if(swDark) swDark.checked = !!settings.dark;
-
-            // ▼ 今回追加 ▼
-            const swRipple = document.getElementById('switch-ripple');
-            if(swRipple) swRipple.checked = !!settings.ripple;
-            if(settings.ripple) document.body.classList.add('lab-ripple-active');
-            else document.body.classList.remove('lab-ripple-active');
-
         } else {
-            // 初期化
-            document.body.classList.remove('theme-newyear', 'theme-gold', 'lab-ripple-active'); // ripple解除追加
+            // 設定データがない場合の初期化
+            document.body.classList.remove('theme-newyear', 'theme-gold');
             document.documentElement.classList.remove('lab-big-text');
             const mistContainer = document.getElementById('mist-container');
             if(mistContainer) mistContainer.classList.remove('active');
             window.labSpeedMode = false;
         }
+
+        // 最後に共通のテーマ適用（宵闇の刻など）を呼び出す
         applyTheme();
     }
         
