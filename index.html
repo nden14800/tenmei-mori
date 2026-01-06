@@ -3725,74 +3725,183 @@
     };
 
     // ==========================================
-    //  【最新版】クイズ機能ロジック (スコア・正答率計算対応)
+    //  【完全版】クイズ機能ロジック (スコア・正答率・結果画面対応)
     // ==========================================
     
-    // クイズの状態管理用オブジェクト
-    window.quizTracker = {
-        totalAnswered: 0,
-        correctCount: 0
-    };
+    // クイズの進捗状態を管理するオブジェクト
+    // 記事IDごとに独立して管理します
+    window.quizState = {};
 
-    window.handleQuiz = function(btn, isCorrect, correctIndex, mode = 'normal') {
+    /**
+     * クイズの回答処理
+     * @param {HTMLElement} btn - クリックされたボタン要素
+     * @param {boolean} isCorrect - 正解かどうか
+     * @param {number} correctIndex - 正解の選択肢インデックス (0始まり)
+     * @param {number} articleId - 記事のID (どのクイズか識別するため)
+     * @param {number} totalQuestions - その記事の総問題数 (結果発表用)
+     */
+    window.handleQuiz = function(btn, isCorrect, correctIndex, articleId, totalQuestions) {
+        // 親要素（選択肢コンテナ）と解説エリアを取得
         const optionsArea = btn.parentElement;
         const allBtns = optionsArea.querySelectorAll('button');
-        const resultArea = optionsArea.nextElementSibling;
+        const resultArea = optionsArea.nextElementSibling; // 解説エリア
         const msg = resultArea.querySelector('.quiz-msg');
 
-        // すでに回答済みの場合は何もしない（一回切り）
+        // すでに回答済みの場合は何もしない（連打防止）
         if (btn.classList.contains('answered')) return;
 
-        // 全ボタンに回答済みマークをつけ、無効化
+        // --- 状態の初期化 (その記事で初めて回答した場合) ---
+        if (!window.quizState[articleId]) {
+            window.quizState[articleId] = {
+                answeredCount: 0,
+                correctCount: 0
+            };
+        }
+
+        // --- 回答処理 ---
+        // 全ボタンを無効化し、answeredクラスを付与
         allBtns.forEach(b => {
             b.disabled = true;
             b.classList.add('opacity-50', 'cursor-not-allowed', 'answered');
         });
 
-        // スコア集計ロジック（modeが'score'の場合のみ）
-        window.quizTracker.totalAnswered++;
+        // 集計
+        window.quizState[articleId].answeredCount++;
+        
+        // 正誤判定と演出
         if (isCorrect) {
-            window.quizTracker.correctCount++;
+            window.quizState[articleId].correctCount++; // 正解数加算
             
             btn.classList.remove('bg-white', 'dark:bg-black', 'border-gray-300', 'opacity-50');
             btn.classList.add('bg-green-100', 'dark:bg-green-900', 'border-green-500', 'text-green-800', 'dark:text-green-100', 'ring-2', 'ring-green-500');
             btn.innerHTML = '<i class="bi bi-circle text-xl mr-2"></i> ' + btn.innerText;
-            msg.innerHTML = '<span class="text-green-600"><i class="bi bi-check-circle-fill"></i> 正解！</span>';
+            if(msg) msg.innerHTML = '<span class="text-green-600"><i class="bi bi-check-circle-fill"></i> 正解！</span>';
         } else {
             btn.classList.remove('bg-white', 'dark:bg-black', 'border-gray-300', 'opacity-50');
             btn.classList.add('bg-red-100', 'dark:bg-red-900', 'border-red-500', 'text-red-800', 'dark:text-red-100');
             btn.innerHTML = '<i class="bi bi-x-lg text-xl mr-2"></i> ' + btn.innerText;
-            msg.innerHTML = '<span class="text-red-600"><i class="bi bi-x-circle-fill"></i> 不正解...</span>';
+            if(msg) msg.innerHTML = '<span class="text-red-600"><i class="bi bi-x-circle-fill"></i> 不正解...</span>';
             
-            // 正解のボタンをハイライト（答え合わせ）
+            // 正解のボタンを教えてあげる
             const correctBtn = allBtns[correctIndex]; 
             if(correctBtn) {
                 correctBtn.classList.remove('opacity-50', 'bg-white', 'dark:bg-black', 'border-gray-300');
-                correctBtn.classList.add('bg-green-50', 'dark:bg-green-900/30', 'border-green-500', 'text-green-700', 'dark:text-green-300');
+                correctBtn.classList.add('bg-green-50', 'dark:bg-green-900/30', 'border-green-500', 'text-green-700', 'dark:text-green-300', 'font-black');
                 correctBtn.innerHTML = '<i class="bi bi-check2 text-xl mr-2"></i> ' + correctBtn.innerText;
             }
         }
 
-        // --- スコア表示の更新 ---
-        const scoreEl = document.getElementById('quiz-score');
-        const accuracyEl = document.getElementById('quiz-accuracy');
-        if (scoreEl && accuracyEl) {
-            // スコア更新 (1問1点)
-            scoreEl.innerText = window.quizTracker.correctCount;
-            // 正答率計算
-            const acc = Math.round((window.quizTracker.correctCount / window.quizTracker.totalAnswered) * 100);
-            accuracyEl.innerText = acc;
-        }
-
+        // 解説を表示
         resultArea.classList.remove('hidden');
+
+        // --- スコア表示の更新 ---
+        updateScoreDisplay(articleId, totalQuestions);
+
+        // --- 全問終了時の結果画面表示 ---
+        if (window.quizState[articleId].answeredCount >= totalQuestions) {
+            setTimeout(() => {
+                showQuizResult(articleId, totalQuestions);
+            }, 1500); // 解説を読めるように少し待ってから表示
+        }
     };
 
-    // 記事詳細を閉じた時や切り替えた時にクイズ結果をリセットする処理
+    // スコアボード（得点・正答率）を更新する関数
+    function updateScoreDisplay(articleId, totalQuestions) {
+        const state = window.quizState[articleId];
+        if (!state) return;
+
+        // 画面上のスコア表示要素を探す
+        // 記事内に id="quiz-score-13" のように記事ID付きの要素があると想定
+        // もし汎用IDなら、現在表示中の記事コンテナ内から探す
+        const container = document.getElementById('article-detail-content');
+        if (!container) return;
+
+        const scoreEl = container.querySelector('#quiz-score');
+        const accuracyEl = container.querySelector('#quiz-accuracy');
+
+        if (scoreEl) {
+            scoreEl.innerText = state.correctCount;
+        }
+        if (accuracyEl) {
+            const acc = Math.round((state.correctCount / state.answeredCount) * 100);
+            accuracyEl.innerText = acc;
+        }
+    }
+
+    // 結果画面（モーダル的なもの）を記事の最後に挿入する関数
+    function showQuizResult(articleId, total) {
+        const state = window.quizState[articleId];
+        const container = document.getElementById('article-detail-content');
+        if (!container) return;
+
+        // ランク判定
+        const score = state.correctCount;
+        let rankTitle = "";
+        let rankMsg = "";
+        let rankColor = "";
+
+        if (score === total) {
+            rankTitle = "免許皆伝";
+            rankMsg = "素晴らしい！あなたは天命乃杜の知識を極めし者です。";
+            rankColor = "text-yellow-500";
+        } else if (score >= total * 0.8) {
+            rankTitle = "神域の達人";
+            rankMsg = "惜しい！あと少しで満点です。かなりの知識をお持ちですね。";
+            rankColor = "text-red-500";
+        } else if (score >= total * 0.5) {
+            rankTitle = "参拝の常連";
+            rankMsg = "平均的な知識をお持ちです。解説を読んでさらに深めましょう。";
+            rankColor = "text-blue-500";
+        } else {
+            rankTitle = "迷える子羊";
+            rankMsg = "まだ伸び代があります。これから知識を学んでいきましょう！";
+            rankColor = "text-gray-500";
+        }
+
+        // 結果HTMLの生成
+        const resultHTML = `
+            <div class="mt-10 p-8 rounded-2xl bg-white dark:bg-zinc-800 border-4 border-double border-gray-300 dark:border-gray-600 text-center shadow-xl animation-fade-in">
+                <p class="text-sm font-bold text-gray-500 mb-2">検定結果発表</p>
+                <h3 class="text-3xl font-black mb-4 ${rankColor}">${rankTitle}</h3>
+                <div class="text-5xl font-mono font-bold mb-4">
+                    ${score} <span class="text-lg text-gray-400">/ ${total}点</span>
+                </div>
+                <p class="mb-6 text-sm text-gray-600 dark:text-gray-300">${rankMsg}</p>
+                
+                <div class="flex justify-center gap-4">
+                    <button onclick="shareQuizResult('${rankTitle}', ${score}, ${total})" class="btn-primary text-sm py-2 px-6">
+                        <i class="bi bi-twitter-x"></i> 結果をシェア
+                    </button>
+                    <button onclick="articleBack()" class="btn-outline text-sm py-2 px-6">
+                        <i class="bi bi-arrow-left"></i> 一覧に戻る
+                    </button>
+                </div>
+            </div>
+        `;
+
+        // 記事の末尾に追加
+        const resultDiv = document.createElement('div');
+        resultDiv.innerHTML = resultHTML;
+        container.appendChild(resultDiv);
+
+        // 結果までスクロール
+        resultDiv.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+
+    // シェア機能
+    window.shareQuizResult = function(rank, score, total) {
+        const text = `⛩️天命乃杜・神籤草子クイズ⛩️\n\n結果：【${rank}】\nスコア：${score} / ${total}点\n\nあなたの知識はどのくらい？挑戦してみよう！\n#天命乃杜 #神社検定\n`;
+        const url = "https://fortune-telling-at-tenmei-no-mori-authentic-today-s-fortun.pages.dev";
+        const intent = `https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}&url=${encodeURIComponent(url)}`;
+        window.open(intent, '_blank');
+    };
+
+    // 記事を閉じる・切り替える時のリセット処理
+    // （前回の状態が残らないようにする）
     const originalArticleBack = window.articleBack;
     window.articleBack = function() {
-        // スコアリセット
-        window.quizTracker.correctCount = 0;
-        window.quizTracker.totalAnswered = 0;
+        // 状態をクリア
+        window.quizState = {};
         if (originalArticleBack) originalArticleBack();
     };
 
