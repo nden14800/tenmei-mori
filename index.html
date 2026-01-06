@@ -1097,60 +1097,6 @@
         @keyframes blinkCursor { 0%, 100% { opacity: 1; } 50% { opacity: 0; } }
         @keyframes fadeInTerminal { from { opacity: 0; } to { opacity: 1; } } 
 
-        /* --- 隠し機能: ゴッドモード（確変大吉）カード --- */
-        .style-god-mode {
-            background-color: #ffd700; /* 純金 */
-            /* ザラザラ感を出すノイズテクスチャ */
-            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='1.5' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='0.4'/%3E%3C/svg%3E");
-            border: 8px solid #b8860b; /* ダークゴールデンロッド */
-            color: #3e1e00;
-            box-shadow: 0 0 50px rgba(255, 215, 0, 0.8), inset 0 0 30px rgba(0,0,0,0.2);
-            text-shadow: 0 1px 0 rgba(255,255,255,0.5);
-            animation: goldShine 3s infinite alternate;
-        }
-        .style-god-mode .accent-border { border-color: #3e1e00; }
-        .style-god-mode .accent-text { color: #8b4513; font-weight: 900; }
-        
-        @keyframes goldShine {
-            0% { box-shadow: 0 0 20px rgba(255, 215, 0, 0.5); filter: brightness(100%); }
-            100% { box-shadow: 0 0 60px rgba(255, 215, 0, 0.9); filter: brightness(110%); }
-        }
-
-        /* --- 隠し機能: 開発者メッセージオーバーレイ --- */
-        #secret-message-overlay {
-            position: fixed;
-            top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0, 0, 0, 0.95);
-            z-index: 9999;
-            display: none;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            color: #fff;
-            font-family: 'Zen Old Mincho', serif;
-            opacity: 0;
-            transition: opacity 1s ease-in;
-            text-align: center;
-            padding: 20px;
-        }
-        #secret-message-overlay.active { display: flex; opacity: 1; }
-        
-        .secret-text {
-            font-size: 1.5rem;
-            margin-bottom: 20px;
-            opacity: 0;
-            transform: translateY(20px);
-            animation: textFadeUp 1s forwards;
-            background: linear-gradient(to right, #fff, #aaa);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-        }
-        .secret-sub { font-size: 0.9rem; color: #888; animation-delay: 2s; }
-        
-        @keyframes textFadeUp {
-            to { opacity: 1; transform: translateY(0); }
-        }
-
     </style>
 </head>
 <body>
@@ -1237,12 +1183,7 @@
         
         <!-- ビュー: ホーム -->
         <section id="view-home" class="view-section active text-center max-w-4xl mx-auto">
-            <!-- タイトル (7回クリックで隠しメッセージ) -->
-            <h1 class="text-4xl font-black mb-2 tracking-widest cursor-pointer select-none active:scale-95 transition-transform" 
-                style="font-family: 'Zen Old Mincho'"
-                onclick="handleSecretCommand('title')">
-                運勢・天命乃杜
-            </h1>
+            <h1 class="text-4xl font-black mb-2 tracking-widest" style="font-family: 'Zen Old Mincho'">運勢・天命乃杜</h1>
             <p class="text-sm font-serif mb-4 tracking-widest uppercase">FORTUNE TENMEI-NO-MORI</p>
             <p class="text-lg font-serif mb-8 themed-text-sub">天命が導く、日々の道しるべ<br>災いを避け、福を招く</p>
 
@@ -1486,33 +1427,47 @@
                 <!-- ヒーローエリア (タイトル) -->
                 <div class="lab-hero-area">
                    
-                   <!-- メインフラスコ (5回クリックでゴッドモード) -->
-                    <div class="title-flask-anim mb-6 transform scale-110 cursor-pointer active:scale-100 transition-transform"
-                         onclick="handleSecretCommand('flask')">
+                   <!-- メインフラスコ (奥の波を削除し、サイドバーと完全統一) -->
+                    <div class="title-flask-anim mb-6 transform scale-110">
                         <svg viewBox="0 0 200 200" overflow="hidden" style="width:100%; height:100%;">
-                            <!-- (中のSVGコードは変更なしなのでそのまま) -->
                             <defs>
+                                <!-- 共通の鮮やかなグラデーション (青→紫) -->
                                 <linearGradient id="gradUnified" x1="0%" y1="100%" x2="100%" y2="0%">
                                     <stop offset="0%" stop-color="#4facfe" />
                                     <stop offset="100%" stop-color="#8e2de2" />
                                 </linearGradient>
+                                
+                                <!-- 三角フラスコのマスク形状 -->
                                 <clipPath id="flaskClipMain">
                                     <path d="M80 20 L120 20 L120 70 L170 170 C175 180, 165 190, 150 190 L50 190 C35 190, 25 180, 30 170 L80 70 Z" />
                                 </clipPath>
                             </defs>
+
+                            <!-- 揺れる本体 -->
                             <g class="flask-container">
+                                
+                                <!-- 液体レイヤー -->
                                 <g clip-path="url(#flaskClipMain)">
                                     <g class="liquid-container">
+                                        <!-- 背景 (薄いガラス色) -->
                                         <rect x="-50" y="-50" width="300" height="300" fill="rgba(255,255,255,0.05)" />
+
+                                        <!-- 手前の波 (これ1つだけにしました) -->
                                         <path class="wave-path wave-front" 
                                               d="M0 135 Q50 150 100 135 T200 135 T300 135 T400 135 V250 H0 Z" />
+                                        
+                                        <!-- 泡 -->
                                         <circle class="bubble" cx="100" cy="180" r="4" style="animation-delay:0s" />
                                         <circle class="bubble" cx="60" cy="170" r="3" style="animation-delay:1s" />
                                         <circle class="bubble" cx="140" cy="175" r="5" style="animation-delay:2s" />
                                     </g>
                                 </g>
+
+                                <!-- ガラス容器 (三角) -->
                                 <path class="glass-stroke" fill="none" 
                                       d="M80 20 L120 20 L120 70 L170 170 C175 180, 165 190, 150 190 L50 190 C35 190, 25 180, 30 170 L80 70 Z" />
+                                
+                                <!-- ハイライト -->
                                 <path d="M45 170 L75 80" stroke="rgba(255,255,255,0.3)" stroke-width="4" fill="none" />
                             </g>
                         </svg>
@@ -2426,13 +2381,6 @@
         <button onclick="closeHistoryDetail(null)" class="fixed top-5 right-5 text-white text-4xl hover:text-gray-300 z-[2100]">
             <i class="bi bi-x-circle"></i>
         </button>
-    </div>
-
-    <!-- 隠しメッセージオーバーレイ -->
-    <div id="secret-message-overlay" onclick="this.classList.remove('active')">
-        <div class="secret-text" style="animation-delay: 0.5s">天命は、あなたの掌中にあり。</div>
-        <div class="secret-text" style="animation-delay: 1.5s; font-size: 1rem;">Created by nden148</div>
-        <div class="secret-sub" style="margin-top: 30px;">(Click to close)</div>
     </div>
 
     <!-- JavaScript ロジック -->
@@ -3587,45 +3535,6 @@
         let globalHistory = [];
         let personalHistory = [];
 
-        // ==========================================
-    //  隠しコマンド管理 (Secret Logic)
-    // ==========================================
-    const secretState = {
-        flaskClicks: 0,
-        titleClicks: 0,
-        isGodMode: false, // 大吉確定モードフラグ
-        clickTimer: null
-    };
-
-    window.handleSecretCommand = function(type) {
-        // タイマーリセット (連打判定用: 1秒以内に次を押さないとリセット)
-        if (secretState.clickTimer) clearTimeout(secretState.clickTimer);
-        secretState.clickTimer = setTimeout(() => {
-            secretState.flaskClicks = 0;
-            secretState.titleClicks = 0;
-        }, 1000);
-
-        if (type === 'flask') {
-            secretState.flaskClicks++;
-            if (secretState.flaskClicks === 5) {
-                secretState.isGodMode = !secretState.isGodMode; // トグル
-                if (secretState.isGodMode) {
-                    alert("【天命解放】\n\nゴッドモードが有効になりました。\n次のおみくじは必ず……？");
-                } else {
-                    alert("ゴッドモードを解除しました。");
-                }
-                secretState.flaskClicks = 0;
-            }
-        } 
-        else if (type === 'title') {
-            secretState.titleClicks++;
-            if (secretState.titleClicks === 7) {
-                document.getElementById('secret-message-overlay').classList.add('active');
-                secretState.titleClicks = 0;
-            }
-        }
-    };
-
         // --- Lab機能の状態管理とモーダル制御 ---
         const TenmeiLab = {
             // 機能ごとの詳細データ
@@ -4173,23 +4082,161 @@
             }, 1000);
         }
 
-       function renderResultToCard(outerId, data, withFooter) {
+        async function showResultDetail(isNewDraw, dataOverride = null) {
+            let resultData, randNum, detailsList, luckyItems, unluckyItems, timestamp, username;
+
+            if (isNewDraw) {
+                // 新規抽選
+                const base = omikujiResults[Math.floor(Math.random() * omikujiResults.length)];
+                randNum = Math.floor(Math.random() * 100) + 1;
+                timestamp = Date.now();
+                username = currentState.user ? (currentState.user.username || "参拝者") : "ゲスト";
+
+                // 詳細項目: 運勢ランク連動ロジック
+                const detailIndex = 5 - base.rank;
+                const cats = ['願事','恋愛','待人','商売','旅立','学問','病気'];
+                
+                detailsList = cats.map(c => ({
+                    title: c,
+                    content: detailTexts[c][Math.min(detailIndex, detailTexts[c].length - 1)]
+                }));
+
+                // ラッキー/アンラッキー
+                luckyItems = {
+                    item: luckyItemsList[Math.floor(Math.random()*luckyItemsList.length)],
+                    spot: luckySpotsList[Math.floor(Math.random()*luckySpotsList.length)],
+                    color: luckyColorsList[Math.floor(Math.random()*luckyColorsList.length)],
+                    person: luckyPersonsList[Math.floor(Math.random()*luckyPersonsList.length)]
+                };
+                
+                let ulItem, ulSpot, ulPerson;
+                do { ulItem = luckyItemsList[Math.floor(Math.random()*luckyItemsList.length)]; } while(ulItem === luckyItems.item);
+                do { ulSpot = luckySpotsList[Math.floor(Math.random()*luckySpotsList.length)]; } while(ulSpot === luckyItems.spot);
+                do { ulPerson = luckyPersonsList[Math.floor(Math.random()*luckyPersonsList.length)]; } while(ulPerson === luckyItems.person);
+
+                unluckyItems = {
+                    item: ulItem,
+                    spot: ulSpot,
+                    person: ulPerson
+                };
+
+                resultData = { 
+                    type: base.type, 
+                    poem: base.poem, 
+                    desc: base.desc,
+                    num: randNum, 
+                    detail: detailsList,
+                    lucky: luckyItems,
+                    unlucky: unluckyItems,
+                    timestamp: timestamp,
+                    username: username
+                };
+                currentState.lastResult = resultData;
+
+                // URL更新廃止: クリーンなURLのまま
+
+                // ログイン時のみ保存・更新
+                if(currentState.user) {
+                    showLoading(true);
+                    try {
+                        const res = await fetch(`${API_BASE}/api/draw`, {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ 
+                                email: currentState.user.email,
+                                token: currentState.user.token,
+                                result: resultData.type,
+                                poem: resultData.poem,
+                                detail: detailsList,
+                                lucky: luckyItems,
+                                unlucky: unluckyItems
+                            })
+                        });
+                        
+                        if(res.ok) {
+                            const data = await res.json();
+                            if(data.success && data.count) {
+                                currentState.liveCount = data.count;
+                                document.getElementById('live-counter').textContent = currentState.liveCount.toLocaleString() + "本";
+                                fetchHistoryStats();
+                            }
+                        }
+                    } catch(e) { console.error(e); }
+                    finally { showLoading(false); }
+                }
+
+            } else {
+                // 復元
+                resultData = dataOverride;
+                randNum = dataOverride.num || 1;
+                
+                // 詳細項目の復元
+                if (Array.isArray(dataOverride.detail)) {
+                    detailsList = dataOverride.detail;
+                } else {
+                    const cats = ['願事','恋愛','待人','商売','旅立','学問','病気'];
+                    const vals = ['叶う','良し','来る','繁盛','吉','成就','治る','遅れる','待て','控','難','危'];
+                    detailsList = cats.map(c => ({
+                        title: c,
+                        content: vals[Math.floor(Math.random() * vals.length)]
+                    }));
+                }
+
+                // 助言の復元
+                let restoredDesc = dataOverride.desc;
+                if (!restoredDesc && dataOverride.poem) {
+                    const original = omikujiResults.find(r => r.poem === dataOverride.poem);
+                    if (original) {
+                        restoredDesc = original.desc;
+                    } else {
+                        restoredDesc = "心穏やかに過ごすべし。";
+                    }
+                } else if (!restoredDesc) {
+                    restoredDesc = "心穏やかに過ごすべし。";
+                }
+
+                // ラッキーアイテム等の復元
+                luckyItems = dataOverride.lucky || { item: "不明", spot: "不明", color: "不明", person: "不明" };
+                unluckyItems = dataOverride.unlucky || { item: "不明", spot: "不明", person: "不明" };
+
+                timestamp = dataOverride.timestamp;
+                username = dataOverride.username || "参拝者";
+                
+                resultData = {
+                    type: dataOverride.type || dataOverride.result,
+                    poem: dataOverride.poem,
+                    desc: restoredDesc,
+                    num: randNum,
+                    detail: detailsList,
+                    lucky: luckyItems,
+                    unlucky: unluckyItems,
+                    timestamp: timestamp,
+                    username: username
+                };
+                currentState.lastResult = resultData;
+            }
+
+            renderResultToCard('result-card-outer', resultData, true); 
+            showView('result');
+            
+            const container = document.getElementById('generated-image-container');
+            container.innerHTML = '';
+            container.classList.add('hidden');
+            document.getElementById('gen-img-status').textContent = "";
+        }
+
+        // updateURL は廃止（空関数にして互換性維持）
+        function updateURL(resultData) {}
+
+        function renderResultToCard(outerId, data, withFooter) {
             const outer = document.getElementById(outerId);
             outer.innerHTML = ''; 
 
             // スタイル適用
             outer.className = 'result-card-outer';
-            
-            // ★隠し機能: ゴッドモードのスタイル適用
-            if (data.isGod) {
-                outer.classList.add("style-god-mode");
-            } else if (data.type === "大吉") {
-                outer.classList.add("style-daikichi");
-            } else if (data.type === "大凶") {
-                outer.classList.add("style-daikyo");
-            } else {
-                outer.classList.add("style-normal");
-            }
+            if (data.type === "大吉") outer.classList.add("style-daikichi");
+            else if (data.type === "大凶") outer.classList.add("style-daikyo");
+            else outer.classList.add("style-normal");
 
             // 1. 最上部: 家紋 + タイトル
             const headerDiv = document.createElement('div');
@@ -4200,18 +4247,17 @@
             `;
             outer.appendChild(headerDiv);
 
-            // 2. 累計発行本数
+            // 2. 累計発行本数 (第〇〇番の代わり)
             const issueDiv = document.createElement('div');
             issueDiv.className = 'result-issue-num';
             let issueNum = currentState.liveCount || 15118061;
-            if(data.isGod) issueNum = 77777777; // ゴッドモードは番号も特別
             issueDiv.textContent = `累計発行本数 ${issueNum.toLocaleString()} 本`;
             outer.appendChild(issueDiv);
 
             // 3. 中央: 運勢結果（円）
             const circleBox = document.createElement('div');
             circleBox.className = 'result-circle-box accent-border';
-            circleBox.innerHTML = `<div class="result-kanji-main accent-text" style="${data.isGod ? 'font-size:4rem;' : ''}">${data.type}</div>`;
+            circleBox.innerHTML = `<div class="result-kanji-main accent-text">${data.type}</div>`;
             outer.appendChild(circleBox);
 
             // 4. 円の下: 運勢という文字
@@ -4272,7 +4318,7 @@
             uBox.className = 'unlucky-box accent-border';
             if (data.unlucky) {
                 uBox.innerHTML = `
-                    <div class="lucky-title accent-text red-text" style="color:${data.isGod ? '#8b4513' : 'red'}">不運・注意</div>
+                    <div class="lucky-title accent-text red-text" style="color:red">不運・注意</div>
                     <div class="lucky-row accent-text"><span class="lucky-icon"><i class="bi bi-exclamation-triangle"></i></span>物：${data.unlucky.item}</div>
                     <div class="lucky-row accent-text"><span class="lucky-icon"><i class="bi bi-x-octagon"></i></span>所：${data.unlucky.spot}</div>
                     <div class="lucky-row accent-text"><span class="lucky-icon"><i class="bi bi-person-x"></i></span>人：${data.unlucky.person}</div>
@@ -4281,7 +4327,7 @@
             luckyArea.appendChild(uBox);
             outer.appendChild(luckyArea);
 
-            // 8. フッター
+            // 8. フッター (日時・名前・QR)
             if (withFooter) {
                 const footer = document.createElement('div');
                 footer.className = 'result-footer-info accent-border';
@@ -4318,7 +4364,7 @@
                     });
                 }, 100);
             }
-        } // ← 【重要】この閉じ括弧が抜けていました
+        }
 
         // --- 履歴・おみくじの轍 ---
         async function loadHistory() {
