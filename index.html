@@ -1169,32 +1169,6 @@
             border-color: #d4af37 !important;
         }
 
-        /* --- Labs: 追加機能用スタイル --- */
-        
-        /* 水鏡の祓い (波紋エフェクト) */
-        .lab-ripple {
-            position: fixed;
-            border-radius: 50%;
-            background: radial-gradient(circle, rgba(255, 255, 255, 0.8) 0%, rgba(255, 255, 255, 0) 70%);
-            transform: scale(0);
-            pointer-events: none; /* クリックを邪魔しない */
-            animation: labRippleAnim 0.6s ease-out forwards;
-            z-index: 9999; /* 最前面 */
-            width: 100px;
-            height: 100px;
-            margin-left: -50px; /* 中心合わせ */
-            margin-top: -50px;
-        }
-        /* ダークモード時は少し青白く光らせる */
-        .dark .lab-ripple {
-            background: radial-gradient(circle, rgba(150, 200, 255, 0.5) 0%, rgba(150, 200, 255, 0) 70%);
-        }
-
-        @keyframes labRippleAnim {
-            0% { transform: scale(0); opacity: 1; }
-            100% { transform: scale(4); opacity: 0; }
-        }
-
     </style>
 </head>
 <body>
@@ -1688,57 +1662,6 @@
                             </div>
                             <label class="toggle-switch flex-shrink-0 ml-4" onclick="event.stopPropagation()">
                                 <input type="checkbox" onchange="TenmeiLab.toggleGold(this)" id="switch-gold">
-                                <span class="slider"></span>
-                            </label>
-                        </div>
-
-                        <!-- 追加カード 7: 神威共鳴 (振動) -->
-                        <div class="lab-card-modern" onclick="TenmeiLab.openModal('vibrate')">
-                            <div class="flex items-center gap-5 pointer-events-none">
-                                <div class="w-14 h-14 rounded-full bg-red-100 text-red-600 flex items-center justify-center text-2xl flex-shrink-0 shadow-sm">
-                                    <i class="bi bi-phone-vibrate"></i>
-                                </div>
-                                <div>
-                                    <h3 class="font-bold text-lg text-gray-800 dark:text-white">神威共鳴（しんい・きょうめい）</h3>
-                                    <p class="text-xs text-gray-500 dark:text-gray-400 mt-1 font-bold">おみくじを引く際や結果が出た瞬間に、スマホが心地よく振動し、手応えを伝えます。</p>
-                                </div>
-                            </div>
-                            <label class="toggle-switch flex-shrink-0 ml-4" onclick="event.stopPropagation()">
-                                <input type="checkbox" onchange="TenmeiLab.toggleVibrate(this)" id="switch-vibrate">
-                                <span class="slider"></span>
-                            </label>
-                        </div>
-
-                        <!-- 追加カード 8: 水鏡の祓い (波紋) -->
-                        <div class="lab-card-modern" onclick="TenmeiLab.openModal('ripple')">
-                            <div class="flex items-center gap-5 pointer-events-none">
-                                <div class="w-14 h-14 rounded-full bg-cyan-100 text-cyan-600 flex items-center justify-center text-2xl flex-shrink-0 shadow-sm">
-                                    <i class="bi bi-droplet-fill"></i>
-                                </div>
-                                <div>
-                                    <h3 class="font-bold text-lg text-gray-800 dark:text-white">水鏡の祓い（みずかがみ・のはらい）</h3>
-                                    <p class="text-xs text-gray-500 dark:text-gray-400 mt-1 font-bold">画面に触れるたびに清らかな波紋が広がり、デジタルの穢れを祓う視覚効果を追加します。</p>
-                                </div>
-                            </div>
-                            <label class="toggle-switch flex-shrink-0 ml-4" onclick="event.stopPropagation()">
-                                <input type="checkbox" onchange="TenmeiLab.toggleRipple(this)" id="switch-ripple">
-                                <span class="slider"></span>
-                            </label>
-                        </div>
-
-                        <!-- 追加カード 9: 杜の音霊 (環境音) -->
-                        <div class="lab-card-modern" onclick="TenmeiLab.openModal('sound')">
-                            <div class="flex items-center gap-5 pointer-events-none">
-                                <div class="w-14 h-14 rounded-full bg-green-100 text-green-700 flex items-center justify-center text-2xl flex-shrink-0 shadow-sm">
-                                    <i class="bi bi-volume-up-fill"></i>
-                                </div>
-                                <div>
-                                    <h3 class="font-bold text-lg text-gray-800 dark:text-white">杜の音霊（もりの・おとだま）</h3>
-                                    <p class="text-xs text-gray-500 dark:text-gray-400 mt-1 font-bold">杜の静寂な環境音（風の音）と、おみくじを引いた時の鈴の音を再生します。</p>
-                                </div>
-                            </div>
-                            <label class="toggle-switch flex-shrink-0 ml-4" onclick="event.stopPropagation()">
-                                <input type="checkbox" onchange="TenmeiLab.toggleSound(this)" id="switch-sound">
                                 <span class="slider"></span>
                             </label>
                         </div>
@@ -4209,129 +4132,7 @@
         let globalHistory = [];
         let personalHistory = [];
 
-        // --- 音響・振動・視覚効果エンジン ---
-        const SensoryEngine = {
-            audioCtx: null,
-            windNode: null,
-            windGain: null,
-
-            // バイブレーション実行 (対応端末のみ)
-            vibrate: (pattern) => {
-                if (!window.labVibrateMode || !navigator.vibrate) return;
-                // pattern: ms または [ms, ms, ...]
-                navigator.vibrate(pattern);
-            },
-
-            // 波紋エフェクト生成
-            createRipple: (x, y) => {
-                if (!window.labRippleMode) return;
-                const ripple = document.createElement('div');
-                ripple.className = 'lab-ripple';
-                ripple.style.left = `${x}px`;
-                ripple.style.top = `${y}px`;
-                document.body.appendChild(ripple);
-                // アニメーション終了後に削除
-                setTimeout(() => ripple.remove(), 600);
-            },
-
-            // Web Audio APIの初期化 (ユーザー操作必須)
-            initAudio: () => {
-                if (!window.labSoundMode) return;
-                const AudioContext = window.AudioContext || window.webkitAudioContext;
-                if (!AudioContext) return;
-                if (!SensoryEngine.audioCtx) {
-                    SensoryEngine.audioCtx = new AudioContext();
-                }
-                if (SensoryEngine.audioCtx.state === 'suspended') {
-                    SensoryEngine.audioCtx.resume();
-                }
-            },
-
-            // 風の音 (Pink Noise) の再生/停止
-            toggleWind: (play) => {
-                const ctx = SensoryEngine.audioCtx;
-                if (!ctx) return;
-
-                if (play) {
-                    if (SensoryEngine.windNode) return; // 既に再生中
-
-                    // ノイズバッファ作成
-                    const bufferSize = ctx.sampleRate * 2; // 2秒
-                    const buffer = ctx.createBuffer(1, bufferSize, ctx.sampleRate);
-                    const data = buffer.getChannelData(0);
-                    for (let i = 0; i < bufferSize; i++) {
-                        // ピンクノイズ近似
-                        const white = Math.random() * 2 - 1;
-                        data[i] = (lastOut + (0.02 * white)) / 1.02;
-                        lastOut = data[i];
-                        data[i] *= 3.5; 
-                    }
-                    let lastOut = 0;
-
-                    const noise = ctx.createBufferSource();
-                    noise.buffer = buffer;
-                    noise.loop = true;
-
-                    // ローパスフィルタで風っぽくする
-                    const filter = ctx.createBiquadFilter();
-                    filter.type = 'lowpass';
-                    filter.frequency.value = 400; // 低い音にする
-
-                    const gain = ctx.createGain();
-                    gain.gain.value = 0.05; // 非常に小さな音
-
-                    noise.connect(filter);
-                    filter.connect(gain);
-                    gain.connect(ctx.destination);
-                    
-                    noise.start(0);
-                    SensoryEngine.windNode = noise;
-                    SensoryEngine.windGain = gain;
-                } else {
-                    if (SensoryEngine.windNode) {
-                        // フェードアウトして停止
-                        const t = ctx.currentTime;
-                        SensoryEngine.windGain.gain.setValueAtTime(SensoryEngine.windGain.gain.value, t);
-                        SensoryEngine.windGain.gain.exponentialRampToValueAtTime(0.001, t + 1);
-                        SensoryEngine.windNode.stop(t + 1);
-                        SensoryEngine.windNode = null;
-                        SensoryEngine.windGain = null;
-                    }
-                }
-            },
-
-            // 鈴の音 (Sine Wave) の再生
-            playBell: () => {
-                if (!window.labSoundMode || !SensoryEngine.audioCtx) return;
-                const ctx = SensoryEngine.audioCtx;
-                const t = ctx.currentTime;
-
-                const osc = ctx.createOscillator();
-                const gain = ctx.createGain();
-
-                osc.type = 'sine';
-                osc.frequency.setValueAtTime(2000, t); // 高い音
-                osc.frequency.exponentialRampToValueAtTime(100, t + 1.5); // 余韻
-
-                gain.gain.setValueAtTime(0, t);
-                gain.gain.linearRampToValueAtTime(0.1, t + 0.01); // アタック
-                gain.gain.exponentialRampToValueAtTime(0.001, t + 1.5); // ディケイ
-
-                osc.connect(gain);
-                gain.connect(ctx.destination);
-
-                osc.start(t);
-                osc.stop(t + 1.5);
-            }
-        };
-
-        // グローバルクリックイベント (波紋用)
-        document.addEventListener('click', (e) => {
-            SensoryEngine.createRipple(e.clientX, e.clientY);
-        });
-
-
-        // --- Lab機能の状態管理とモーダル制御 (完全拡張版) ---
+        // --- Lab機能の状態管理とモーダル制御 (拡張完全版) ---
         const TenmeiLab = {
             details: {
                 newyear: {
@@ -4367,26 +4168,8 @@
                 gold: {
                     title: "黄金（おうごん）の神域",
                     icon: '<i class="bi bi-stars text-yellow-500"></i>',
-                    desc: "サイト全体のアクセントカラーを「紅」から「黄金（ゴールド）」に変更します。<br><br>ボタンやタイトルが金色に輝き、最高位の神域を彷彿とさせる豪華な装いになります。",
+                    desc: "サイト全体のアクセントカラーである「紅」を、すべて「黄金（ゴールド）」に変更します。<br><br>ボタンやタイトル、アイコンが金色に輝き、最高位の神域を彷彿とさせる豪華な装いになります。",
                     bgClass: "bg-yellow-50"
-                },
-                vibrate: {
-                    title: "神威共鳴（しんい・きょうめい）",
-                    icon: '<i class="bi bi-phone-vibrate text-red-600"></i>',
-                    desc: "【触覚機能】<br>おみくじを引くボタンを押した時や、結果が出た瞬間に、スマートフォンを振動させます。<br>物理的な手応えを感じることで、よりリアルな参拝体験を提供します。<br>※バイブレーション機能に対応した端末のみ有効です。",
-                    bgClass: "bg-red-100"
-                },
-                ripple: {
-                    title: "水鏡の祓い（みずかがみ・のはらい）",
-                    icon: '<i class="bi bi-droplet-fill text-cyan-600"></i>',
-                    desc: "【視覚機能】<br>画面をタップ（クリック）した場所に、清らかな水の波紋が広がるエフェクトを追加します。<br>手水舎の水面を触れるような感覚で、デジタルの穢れを祓いながら進むことができます。",
-                    bgClass: "bg-cyan-100"
-                },
-                sound: {
-                    title: "杜の音霊（もりの・おとだま）",
-                    icon: '<i class="bi bi-volume-up-fill text-green-700"></i>',
-                    desc: "【聴覚機能】<br>ONにすると、杜の静寂を表す微かな「風の音」が流れ始めます。<br>また、おみくじを引いた瞬間に神聖な「鈴の音」が鳴り響きます。<br>※音量にご注意ください。",
-                    bgClass: "bg-green-100"
                 }
             },
 
@@ -4412,33 +4195,17 @@
             toggleMist: (el) => {
                 const container = document.getElementById('mist-container');
                 if(!container) return;
-                if(el.checked) container.classList.add('active');
-                else container.classList.remove('active');
+
+                if(el.checked) {
+                    container.classList.add('active');
+                } else {
+                    container.classList.remove('active');
+                }
                 saveLabSettings();
             },
             toggleGold: (el) => {
                 if(el.checked) document.body.classList.add('theme-gold');
                 else document.body.classList.remove('theme-gold');
-                saveLabSettings();
-            },
-            // 追加機能のトグル
-            toggleVibrate: (el) => {
-                window.labVibrateMode = el.checked;
-                if(el.checked) SensoryEngine.vibrate(50); // テスト振動
-                saveLabSettings();
-            },
-            toggleRipple: (el) => {
-                window.labRippleMode = el.checked;
-                saveLabSettings();
-            },
-            toggleSound: (el) => {
-                window.labSoundMode = el.checked;
-                if(el.checked) {
-                    SensoryEngine.initAudio();
-                    SensoryEngine.toggleWind(true);
-                } else {
-                    SensoryEngine.toggleWind(false);
-                }
                 saveLabSettings();
             },
 
@@ -4472,6 +4239,39 @@
             }
         };
 
+        // --- 追加: テーマ適用ロジック（OS設定とLab設定の統合） ---
+        function applyTheme() {
+            let userSettings = null;
+            if (currentState.user) {
+                try {
+                    userSettings = JSON.parse(localStorage.getItem(`lab_settings_${currentState.user.email}`));
+                } catch(e) {}
+            }
+
+            // 「宵闇の刻」がONかどうか
+            const forceDark = userSettings ? userSettings.dark : false;
+            
+            // OSがダークモードかどうか
+            const systemDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+
+            // スイッチON または (スイッチOFFかつOSがダーク) の場合に dark クラスを付与
+            if (forceDark || systemDark) {
+                document.documentElement.classList.add('dark');
+            } else {
+                document.documentElement.classList.remove('dark');
+            }
+
+            // スイッチの見た目同期（ログイン時のみ）
+            const switchDark = document.getElementById('switch-dark');
+            if(switchDark && userSettings) {
+                switchDark.checked = forceDark;
+            }
+        }
+
+        // ==========================================
+    //  TENMEI Labs 設定同期ロジック (サーバー連携版)
+    // ==========================================
+
     // 1. 設定を保存する関数 (クラウド+ローカル)
     async function saveLabSettings() {
         const settings = {
@@ -4480,15 +4280,14 @@
             dark: document.getElementById('switch-dark').checked,
             bigtext: document.getElementById('switch-bigtext').checked,
             mist: document.getElementById('switch-mist').checked,
-            gold: document.getElementById('switch-gold').checked,
-            // 追加
-            vibrate: document.getElementById('switch-vibrate').checked,
-            ripple: document.getElementById('switch-ripple').checked,
-            sound: document.getElementById('switch-sound').checked
+            gold: document.getElementById('switch-gold').checked
         };
 
         if (currentState.user) {
+            // ログイン中：サーバー(KV)と同期
+            // まずローカルに保存（オフライン対策・高速化）
             localStorage.setItem(`lab_settings_${currentState.user.email}`, JSON.stringify(settings));
+            
             try {
                 const res = await fetch(`${API_BASE}/api/user/settings`, {
                     method: 'POST',
@@ -4499,8 +4298,13 @@
                         settings: settings
                     })
                 });
-            } catch (e) { console.error(e); }
+                if(!res.ok) throw new Error("Sync Failed");
+                console.log("Labs設定をクラウドに保存しました");
+            } catch (e) {
+                console.error("Labs設定のクラウド同期に失敗しました", e);
+            }
         } else {
+            // 未ログイン：ゲスト用としてローカルのみ保存
             localStorage.setItem('lab_settings_guest', JSON.stringify(settings));
         }
     }
@@ -4510,74 +4314,71 @@
         let settings = null;
 
         if (currentState.user) {
+            // ログイン中：サーバーから最新設定を取得
             try {
                 const res = await fetch(`${API_BASE}/api/user/settings?email=${encodeURIComponent(currentState.user.email)}&token=${encodeURIComponent(currentState.user.token)}`);
                 if (res.ok) {
                     const data = await res.json();
                     settings = data.settings;
+                    // クラウドから得た最新をローカルにもキャッシュ
                     if(settings) localStorage.setItem(`lab_settings_${currentState.user.email}`, JSON.stringify(settings));
                 }
             } catch (e) {
+                console.error("サーバーからの設定取得に失敗しました。ローカルデータを使用します。", e);
                 const local = localStorage.getItem(`lab_settings_${currentState.user.email}`);
                 if(local) settings = JSON.parse(local);
             }
         } else {
+            // 未ログイン：ローカルから取得
             const local = localStorage.getItem('lab_settings_guest');
             if(local) settings = JSON.parse(local);
         }
 
         // --- UI（スイッチ）とクラスの反映 ---
         if (settings) {
-            const setSwitch = (id, val) => {
-                const el = document.getElementById(id);
-                if(el) el.checked = !!val;
-            };
-
-            setSwitch('switch-newyear', settings.newyear);
+            // 雅モード
+            const swNewYear = document.getElementById('switch-newyear');
+            if(swNewYear) swNewYear.checked = !!settings.newyear;
             if(settings.newyear) document.body.classList.add('theme-newyear');
             else document.body.classList.remove('theme-newyear');
 
-            setSwitch('switch-speed', settings.speed);
+            // 神速の祈り
+            const swSpeed = document.getElementById('switch-speed');
+            if(swSpeed) swSpeed.checked = !!settings.speed;
             window.labSpeedMode = !!settings.speed;
 
-            setSwitch('switch-dark', settings.dark);
-
-            setSwitch('switch-bigtext', settings.bigtext);
+            // 言霊の増幅
+            const swBigText = document.getElementById('switch-bigtext');
+            if(swBigText) swBigText.checked = !!settings.bigtext;
             if(settings.bigtext) document.documentElement.classList.add('lab-big-text');
             else document.documentElement.classList.remove('lab-big-text');
 
-            setSwitch('switch-mist', settings.mist);
+            // 幽玄の霧
+            const swMist = document.getElementById('switch-mist');
             const mistContainer = document.getElementById('mist-container');
+            if(swMist) swMist.checked = !!settings.mist;
             if(settings.mist && mistContainer) mistContainer.classList.add('active');
             else if(mistContainer) mistContainer.classList.remove('active');
 
-            setSwitch('switch-gold', settings.gold);
+            // 黄金の神域
+            const swGold = document.getElementById('switch-gold');
+            if(swGold) swGold.checked = !!settings.gold;
             if(settings.gold) document.body.classList.add('theme-gold');
             else document.body.classList.remove('theme-gold');
 
-            // 追加機能の反映
-            setSwitch('switch-vibrate', settings.vibrate);
-            window.labVibrateMode = !!settings.vibrate;
-
-            setSwitch('switch-ripple', settings.ripple);
-            window.labRippleMode = !!settings.ripple;
-
-            setSwitch('switch-sound', settings.sound);
-            window.labSoundMode = !!settings.sound;
-            // 音声は自動再生ポリシーがあるため、ロード時はフラグ設定のみ
-            // ユーザーが何か操作したタイミングで再開判定を入れるなどの工夫が必要だが
-            // ここではスイッチ操作時にinitAudioするようにしてある
-            
+            // 宵闇の刻
+            const swDark = document.getElementById('switch-dark');
+            if(swDark) swDark.checked = !!settings.dark;
         } else {
+            // 設定データがない場合の初期化
             document.body.classList.remove('theme-newyear', 'theme-gold');
             document.documentElement.classList.remove('lab-big-text');
             const mistContainer = document.getElementById('mist-container');
             if(mistContainer) mistContainer.classList.remove('active');
             window.labSpeedMode = false;
-            window.labVibrateMode = false;
-            window.labRippleMode = false;
-            window.labSoundMode = false;
         }
+
+        // 最後に共通のテーマ適用（宵闇の刻など）を呼び出す
         applyTheme();
     }
         
@@ -4936,8 +4737,6 @@
         function drawResult(element) {
             const overlay = document.getElementById('countdown-overlay');
             const numEl = document.getElementById('countdown-number');
-            // ▼▼▼ ここを追加 (ボタンを押した瞬間の振動) ▼▼▼
-            SensoryEngine.vibrate(20); 
             overlay.style.display = 'flex';
             
             // Lab: 神速の祈りモードならカウントダウン省略
@@ -4963,9 +4762,6 @@
         }
 
         async function showResultDetail(isNewDraw, dataOverride = null) {
-            // ▼▼▼ 関数の先頭に追加 (結果表示時の振動と鈴の音) ▼▼▼
-            SensoryEngine.vibrate([30, 50, 30]); // タタン！という振動
-            if(isNewDraw) SensoryEngine.playBell(); // 鈴の音
             let resultData, randNum, detailsList, luckyItems, unluckyItems, timestamp, username;
 
             if (isNewDraw) {
