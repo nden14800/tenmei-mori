@@ -5563,11 +5563,11 @@ ${getShareUrl()}`;
             S: ["今日のあなたは、宇宙のエネルギーが完璧に調和し、あらゆる幸運を引き寄せる最強の配置にあります。", "まるで星々があなたのために輝いているかのような、奇跡的な一日が始まろうとしています。", "これまでの努力が全て報われるような、素晴らしい展開が期待できる最高の一日となるでしょう。"],
             A: ["全体的な運気は非常に好調で、心地よい追い風を感じることができるでしょう。", "星々の配置があなたの背中を押し、前向きな気持ちで一日を過ごすことができます。", "直感が冴え渡り、スムーズに物事が進む、充実した一日になりそうです。"],
             B: ["今日は安定した運気で、穏やかな時間を過ごすことができるでしょう。", "大きな波乱はなく、平穏無事な一日となりそうです。日常の小さな幸せを見つけてみてください。", "可もなく不可もなくといった運勢ですが、あなたの心がけ次第で良い方向に転がります。"],
-            C: ["今日は少し雲行きが怪しい一日となりそうです。慎重な行動を心がける必要があります。", "予期せぬトラブルや障害が発生しやすい星回りです。焦らず冷静に対処しましょう。", "全体的に運気が低迷しており、忍耐力が試される場面があるかもしれません。"]
+            C: ["今日は少し雲行きが怪しい一日となりそうです。慎重な行動を心がける必要があります。", "予期せぬトラブルや障害が発生しやすい星回りです。焦らず冷静対処しましょう。", "全体的に運気が低迷しており、忍耐力が試される場面があるかもしれません。"]
         },
         mainConclusion: {
             S: ["総じて、今日は何をやってもうまくいく無敵の一日です。感謝の心を忘れずに、最高の幸運を存分に味わってください。", "この素晴らしい運気を活かし、新しいことに挑戦するのにも最適な日です。あなたの未来は明るく輝いています。"],
-            A: ["ポジティブな姿勢を保出ことで、運気はさらに上昇します。笑顔を絶やさず、周囲への感謝を忘れずに過ごしましょう。", "自信を持って行動すれば、きっと良い結果がついてきます。今日という一日を大切に過ごしてください。"],
+            A: ["ポジティブな姿勢を保持することで、運気はさらに上昇します。笑顔を絶やさず、周囲への感謝を忘れずに過ごしましょう。", "自信を持って行動すれば、きっと良い結果がついてきます。今日という一日を大切に過ごしてください。"],
             B: ["無理をせず、自分のペースを守ることが大切です。リラックスできる時間を持ち、明日のためにエネルギーを蓄えましょう。", "焦らず着実に進むことが、最終的な成功への近道です。今日は準備期間と捉え、地道な努力を続けてください。"],
             C: ["今日は「忍耐」の日と割り切り、嵐が過ぎ去るのを静かに待ちましょう。この経験が、必ずやあなたの糧となるはずです。", "落ち込む必要はありません。運気は必ず巡ります。今日は自分自身を見つめ直す良い機会と捉え、前を向いていきましょう。"]
         },
@@ -5644,11 +5644,19 @@ ${getShareUrl()}`;
             const moneyRank = getRank(d.money.score);
             const workRank = getRank(d.work.score);
 
-            d.love.desc = luckComments.loveShorts[loveRank][Math.floor(decoRng.next() * 4)];
-            d.money.desc = luckComments.moneyShorts[moneyRank][Math.floor(decoRng.next() * 4)];
-            d.work.desc = luckComments.workShorts[workRank][Math.floor(decoRng.next() * 4)];
-            d.longDesc = luckComments.mainIntro[totalRank][Math.floor(decoRng.next() * 3)] + " " +
-                         luckComments.mainConclusion[totalRank][Math.floor(decoRng.next() * 4)];
+            // 【修正箇所】Math.floor(decoRng.next() * 固定値) ではなく、.length を使うように変更
+            const lArr = luckComments.loveShorts[loveRank];
+            const mArr = luckComments.moneyShorts[moneyRank];
+            const wArr = luckComments.workShorts[workRank];
+            const iArr = luckComments.mainIntro[totalRank];
+            const cArr = luckComments.mainConclusion[totalRank];
+
+            d.love.desc = lArr[Math.floor(decoRng.next() * lArr.length)];
+            d.money.desc = mArr[Math.floor(decoRng.next() * mArr.length)];
+            d.work.desc = wArr[Math.floor(decoRng.next() * wArr.length)];
+            
+            d.longDesc = iArr[Math.floor(decoRng.next() * iArr.length)] + " " +
+                         cArr[Math.floor(decoRng.next() * cArr.length)];
 
             d.luckyNum = Math.floor(decoRng.next() * 9) + 1;
             d.item = zodiacItemsList[Math.floor(decoRng.next() * zodiacItemsList.length)];
