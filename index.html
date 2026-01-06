@@ -1099,28 +1099,51 @@
 
         /* --- TENMEI Labs: 追加機能スタイル --- */
 
-        /* 1. 幽玄の霧 (Mist Effect) */
+        /* --- 幽玄の霧 (高精度アニメーション版) --- */
         #mist-container {
             position: fixed;
             top: 0; left: 0; width: 100%; height: 100%;
             pointer-events: none; /* クリックを邪魔しない */
-            z-index: 50; /* コンテンツの上、サイドバーの下 */
-            display: none; /* 初期は非表示 */
-            opacity: 0.4;
+            z-index: 200; /* 全てのコンテンツの上に重ねる（サイドバーよりは下） */
+            display: none;
+            overflow: hidden;
         }
+
         .mist-layer {
             position: absolute;
-            top: 0; left: 0; width: 200%; height: 100%;
-            background: url('https://www.transparenttextures.com/patterns/fog.png'); /* 霧のテクスチャ */
-            animation: mistMove 60s linear infinite;
-        }
-        .mist-layer-2 {
-            animation: mistMove 40s linear infinite reverse;
+            top: 0; left: -50%; width: 200%; height: 100%;
+            /* 外部画像ではなくCSSで濃淡のある霧を生成 */
+            background: radial-gradient(circle at 50% 50%, 
+                rgba(255, 255, 255, 0.8) 0%, 
+                rgba(255, 255, 255, 0.3) 40%, 
+                transparent 70%);
+            background-size: 600px 600px;
+            filter: blur(40px);
             opacity: 0.5;
+            animation: mistMove 20s linear infinite;
         }
+
+        .mist-layer-2 {
+            top: 10%;
+            background: radial-gradient(circle at 30% 70%, 
+                rgba(255, 255, 255, 0.6) 0%, 
+                transparent 60%);
+            background-size: 800px 800px;
+            animation: mistMove 35s linear infinite reverse;
+            opacity: 0.4;
+        }
+
+        /* ダークモード時は霧を少し暗くして「夜霧」にする */
+        .dark .mist-layer {
+            background: radial-gradient(circle at 50% 50%, 
+                rgba(200, 200, 255, 0.2) 0%, 
+                transparent 70%);
+        }
+
         @keyframes mistMove {
-            from { transform: translateX(0); }
-            to { transform: translateX(-50%); }
+            0% { transform: translate(0, 0) rotate(0deg); }
+            50% { transform: translate(5%, 2%) rotate(1deg); }
+            100% { transform: translate(0, 0) rotate(0deg); }
         }
 
         /* 2. 黄金の神域 (Gold Theme Override) */
