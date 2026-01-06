@@ -5530,9 +5530,8 @@ ${getShareUrl()}`;
             }
         }
         // ==========================================
-    //  12星座×血液型占い システム（計算ロジック統一版）
+    //  12星座×血液型占い：データ定義
     // ==========================================
-
     const zodiacSigns = [
         { id: "aries", name: "牡羊座", icon: "♈" }, { id: "taurus", name: "牡牛座", icon: "♉" }, 
         { id: "gemini", name: "双子座", icon: "♊" }, { id: "cancer", name: "蟹座", icon: "♋" }, 
@@ -5543,29 +5542,79 @@ ${getShareUrl()}`;
     ];
     const bloodTypes = ["A", "B", "O", "AB"];
 
-    // 【重要】日付から全組み合わせ(48通り)のスコアを「純粋に」計算する共通関数
+    const zodiacItemsList = [
+        "時計", "本", "水", "銀", "植物", "手帳", "香り", "靴", "音楽", "飴",
+        "鏡", "ハンカチ", "帽子", "鞄", "ペン", "写真", "石", "貝殻", "鍵", "鈴",
+        "リボン", "指輪", "お茶", "果物", "野菜", "パン", "手紙", "切手", "地図", "コンパス",
+        "ランプ", "キャンドル", "クッション", "マグカップ", "グラス", "皿", "箸", "スプーン", "フォーク", "ナイフ",
+        "石鹸", "タオル", "入浴剤", "お香", "風鈴", "扇子", "うちわ", "手袋", "マフラー", "傘"
+    ];
+
+    const zodiacColorsList = [
+        "赤", "青", "緑", "黄", "白", "黒", "金", "銀", "桃", "紺",
+        "橙", "紫", "茶", "灰", "水色", "黄緑", "深紅", "群青", "琥珀", "翡翠",
+        "瑠璃", "真紅", "漆黒", "純白", "桜色", "藤色", "山吹色", "若草色", "空色", "茜色",
+        "黄金", "白銀", "銅", "パール", "ベージュ", "クリーム", "ワインレッド", "オリーブ", "ミント", "ラベンダー",
+        "サーモン", "コーラル", "ターコイズ", "インディゴ", "マゼンタ", "シアン", "ライム", "レモン", "チャコール", "カーキ"
+    ];
+
+    const luckComments = {
+        mainIntro: {
+            S: ["今日のあなたは、宇宙のエネルギーが完璧に調和し、あらゆる幸運を引き寄せる最強の配置にあります。", "まるで星々があなたのために輝いているかのような、奇跡的な一日が始まろうとしています。", "これまでの努力が全て報われるような、素晴らしい展開が期待できる最高の一日となるでしょう。"],
+            A: ["全体的な運気は非常に好調で、心地よい追い風を感じることができるでしょう。", "星々の配置があなたの背中を押し、前向きな気持ちで一日を過ごすことができます。", "直感が冴え渡り、スムーズに物事が進む、充実した一日になりそうです。"],
+            B: ["今日は安定した運気で、穏やかな時間を過ごすことができるでしょう。", "大きな波乱はなく、平穏無事な一日となりそうです。日常の小さな幸せを見つけてみてください。", "可もなく不可もなくといった運勢ですが、あなたの心がけ次第で良い方向に転がります。"],
+            C: ["今日は少し雲行きが怪しい一日となりそうです。慎重な行動を心がける必要があります。", "予期せぬトラブルや障害が発生しやすい星回りです。焦らず冷静に対処しましょう。", "全体的に運気が低迷しており、忍耐力が試される場面があるかもしれません。"]
+        },
+        mainConclusion: {
+            S: ["総じて、今日は何をやってもうまくいく無敵の一日です。感謝の心を忘れずに、最高の幸運を存分に味わってください。", "この素晴らしい運気を活かし、新しいことに挑戦するのにも最適な日です。あなたの未来は明るく輝いています。"],
+            A: ["ポジティブな姿勢を保出ことで、運気はさらに上昇します。笑顔を絶やさず、周囲への感謝を忘れずに過ごしましょう。", "自信を持って行動すれば、きっと良い結果がついてきます。今日という一日を大切に過ごしてください。"],
+            B: ["無理をせず、自分のペースを守ることが大切です。リラックスできる時間を持ち、明日のためにエネルギーを蓄えましょう。", "焦らず着実に進むことが、最終的な成功への近道です。今日は準備期間と捉え、地道な努力を続けてください。"],
+            C: ["今日は「忍耐」の日と割り切り、嵐が過ぎ去るのを静かに待ちましょう。この経験が、必ずやあなたの糧となるはずです。", "落ち込む必要はありません。運気は必ず巡ります。今日は自分自身を見つめ直す良い機会と捉え、前を向いていきましょう。"]
+        },
+        loveShorts: {
+            S: ["運命の出会いが期待できる日", "パートナーとの愛が深まる最高の日", "アプローチするなら今がチャンス", "あなたの魅力が最高潮に達する時"],
+            A: ["穏やかで幸せな時間を過ごせそう", "素直な気持ちが相手に届く日", "良い出会いの兆しあり", "楽しいデートができる予感"],
+            B: ["現状維持を心がけると吉", "相手の話をよく聞くことが大切", "焦らずゆっくり関係を育んで", "友達感覚での交流がおすすめ"],
+            C: ["誤解を招きやすいので言動に注意", "感情的な衝突に気をつけて", "一人の時間を大切にするのが無難", "無理なアプローチは控えて"]
+        },
+        moneyShorts: {
+            S: ["臨時収入や昇給のチャンス到来", "投資や宝くじにツキがある日", "欲しかったものがお得に手に入る", "金運最高潮、財布が潤う予感"],
+            A: ["賢い買い物ができそうな日", "将来のための自己投資は吉", "お金回りが良くスムーズな一日", "予想外のプチラッキーがあるかも"],
+            B: ["収支のバランスを見直すと良い", "計画的な利用を心がけて", "衝動買いは控えたほうが無難", "堅実な節約が功を奏する日"],
+            C: ["財布の紐を固く締めるべき日", "詐欺や甘い話には要注意", "無駄遣いで後悔する可能性大", "予期せぬ出費に備えて"]
+        },
+        workShorts: {
+            S: ["大きな成果を上げて評価される日", "リーダーシップを発揮できる時", "新しいアイデアが採用されそう", "集中力抜群で作業が捗る"],
+            A: ["チームワークが成功の鍵", "効率よくタスクを消化できる日", "周囲からの信頼が高まる予感", "やりがいを感じられる一日"],
+            B: ["基本に忠実に取り組むと吉", "報告・連絡・相談を大切に", "無理せずマイペースに進めて", "準備や整理整頓に適した日"],
+            C: ["ケアレスミスに十分注意して", "確認作業を怠らないように", "無理なスケジュールは避けて", "休息を取りつつ慎重に進めて"]
+        }
+    };
+
+    // ==========================================
+    //  12星座×血液型占い：計算ロジック
+    // ==========================================
+
+    function getRank(score) {
+        if (score >= 90) return 'S';
+        if (score >= 75) return 'A';
+        if (score >= 50) return 'B';
+        return 'C';
+    }
+
     function calculateScoresForDate(dateStr) {
         let results = [];
-        // スコア計算専用のRNGを生成（アイテム等のシャッフルに影響されないようにする）
         zodiacSigns.forEach(sign => {
             bloodTypes.forEach(blood => {
-                // シード値は「日付 + 星座ID + 血液型」で完全に固定する
-                // これにより、計算の順番が変わっても結果が絶対にブレない
                 const seed = `${dateStr}_${sign.id}_${blood}`;
                 const rng = new SeededRandom(seed);
-                
-                const loveScore = Math.floor(rng.next() * 52) + 49;  // 49-100
+                const loveScore = Math.floor(rng.next() * 52) + 49;
                 const moneyScore = Math.floor(rng.next() * 52) + 49;
                 const workScore = Math.floor(rng.next() * 52) + 49;
                 const totalScore = Math.floor((loveScore + moneyScore + workScore) / 3);
-                
                 results.push({
-                    sign: sign,
-                    blood: blood,
-                    totalScore: totalScore,
-                    love: { score: loveScore },
-                    money: { score: moneyScore },
-                    work: { score: workScore }
+                    sign: sign, blood: blood, totalScore: totalScore,
+                    love: { score: loveScore }, money: { score: moneyScore }, work: { score: workScore }
                 });
             });
         });
@@ -5575,30 +5624,21 @@ ${getShareUrl()}`;
     function initZodiacSystem() {
         const dateStr = getJSTDateString();
         const dateParts = dateStr.split('-');
-        document.getElementById('current-date-display').innerHTML = 
-            `${dateParts[0]}年${dateParts[1]}月${dateParts[2]}日 <span class="text-sm font-normal ml-2 text-gray-500 dark:text-gray-400">(毎日 0:00 更新)</span>`;
-        
+        const display = document.getElementById('current-date-display');
+        if (display) {
+            display.innerHTML = `${dateParts[0]}年${dateParts[1]}月${dateParts[2]}日 <span class="text-sm font-normal ml-2 text-gray-500 dark:text-gray-400">(毎日 0:00 更新)</span>`;
+        }
         generateDailyRanking(dateStr);
         renderRanking();
     }
 
     function generateDailyRanking(dateStr) {
-        // 1. スコアを共通ロジックで取得
         let scoredData = calculateScoresForDate(dateStr);
-        
-        // 2. 装飾用（アイテム等）の乱数は別で生成
         const decoRng = new SeededRandom(dateStr + "_decoration");
         
-        // アイテムと色のリストを準備
-        let items = [...zodiacItemsList];
-        let colors = [...zodiacColorsList];
-        
-        // 3. ランキング順位の確定
         scoredData.sort((a, b) => b.totalScore - a.totalScore);
         scoredData.forEach((d, i) => { 
             d.rank = i + 1;
-            
-            // 順位確定後に、ランクに基づいたテキストやアイテムを付与
             const totalRank = getRank(d.totalScore);
             const loveRank = getRank(d.love.score);
             const moneyRank = getRank(d.money.score);
@@ -5607,26 +5647,20 @@ ${getShareUrl()}`;
             d.love.desc = luckComments.loveShorts[loveRank][Math.floor(decoRng.next() * 4)];
             d.money.desc = luckComments.moneyShorts[moneyRank][Math.floor(decoRng.next() * 4)];
             d.work.desc = luckComments.workShorts[workRank][Math.floor(decoRng.next() * 4)];
-            
-            // 長文の生成
             d.longDesc = luckComments.mainIntro[totalRank][Math.floor(decoRng.next() * 3)] + " " +
                          luckComments.mainConclusion[totalRank][Math.floor(decoRng.next() * 4)];
 
             d.luckyNum = Math.floor(decoRng.next() * 9) + 1;
-            d.item = items[Math.floor(decoRng.next() * items.length)];
-            d.color = colors[Math.floor(decoRng.next() * colors.length)];
-            
-            // 30日予測（自分自身の組み合わせに対して計算）
+            d.item = zodiacItemsList[Math.floor(decoRng.next() * zodiacItemsList.length)];
+            d.color = zodiacColorsList[Math.floor(decoRng.next() * zodiacColorsList.length)];
             d.calendar = calculateFutureLuck(d.sign.id, d.blood, dateStr);
         });
 
-        // サブランク（恋愛・金運・仕事の順位）の計算
         scoredData.forEach(d => {
             d.love.rank = [...scoredData].sort((a,b) => b.love.score - a.love.score).findIndex(x => x === d) + 1;
             d.money.rank = [...scoredData].sort((a,b) => b.money.score - a.money.score).findIndex(x => x === d) + 1;
             d.work.rank = [...scoredData].sort((a,b) => b.work.score - a.work.score).findIndex(x => x === d) + 1;
         });
-
         dailyRanking = scoredData;
     }
 
@@ -5635,14 +5669,8 @@ ${getShareUrl()}`;
         for(let i=0; i<30; i++) {
             const targetDate = getFutureDateString(baseDateStr, i);
             const dayOfMonth = new Date(targetDate).getDate();
-            
-            // その日の全48件のスコアを計算
             const dayAllData = calculateScoresForDate(targetDate);
-            
-            // その中から「自分」を探す
             const me = dayAllData.find(d => d.sign.id === signId && d.blood === bloodType);
-            
-            // 各項目の1位のスコアを特定
             const maxTotal = Math.max(...dayAllData.map(d => d.totalScore));
             const maxLove = Math.max(...dayAllData.map(d => d.love.score));
             const maxMoney = Math.max(...dayAllData.map(d => d.money.score));
@@ -5653,14 +5681,12 @@ ${getShareUrl()}`;
             if (me.love.score === maxLove) marks.push('<i class="bi bi-heart-fill text-pink-500"></i>');
             if (me.money.score === maxMoney) marks.push('<i class="bi bi-currency-yen text-yellow-600"></i>');
             if (me.work.score === maxWork) marks.push('<i class="bi bi-pencil-fill text-blue-500"></i>');
-
             calendarDays.push({ day: dayOfMonth, marks: marks });
         }
         return calendarDays;
     }
 
     function createCardHTML(data) {
-        const isMe = currentState.user ? false : false; // 拡張用
         const isFav = favoriteList.some(f => f.sign === data.sign.id && f.blood === data.blood);
         const rankClass = data.rank <= 3 ? `rank-${data.rank}` : 'rank-other';
         const borderClass = data.rank <= 3 ? 'border-l-4 border-yellow-400' : '';
@@ -5759,7 +5785,7 @@ ${getShareUrl()}`;
             if (index < 3) listContainer.insertAdjacentHTML('beforeend', html);
             else fullListContainer.insertAdjacentHTML('beforeend', html);
         });
-        renderFavorites(); // お気に入りも再描画
+        renderFavorites();
     }
 
     function showFullRanking() {
