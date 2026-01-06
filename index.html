@@ -3707,8 +3707,22 @@
             },
             toggleMist: (el) => {
                 const container = document.getElementById('mist-container');
-                if(el.checked) container.style.display = 'block';
-                else container.style.display = 'none';
+                if(!container) return; // エラー防止
+
+                if(el.checked) {
+                    container.style.display = 'block';
+                    // ふわっと出すための演出
+                    container.style.opacity = '0';
+                    setTimeout(() => {
+                        container.style.transition = 'opacity 2s ease';
+                        container.style.opacity = '1';
+                    }, 10);
+                } else {
+                    container.style.opacity = '0';
+                    setTimeout(() => {
+                        container.style.display = 'none';
+                    }, 2000); // 消えるまで2秒待機
+                }
                 saveLabSettings();
             },
             toggleGold: (el) => {
