@@ -4173,167 +4173,7 @@
             }, 1000);
         }
 
-        async function showResultDetail(isNewDraw, dataOverride = null) {
-            let resultData, randNum, detailsList, luckyItems, unluckyItems, timestamp, username;
-
-            // --- 【隠し機能】ゴッドモード判定 ---
-            if (isNewDraw && secretState.isGodMode) {
-                // 確定演出用の最強データ生成
-                resultData = {
-                    type: "天命大吉", // 通常の大吉を超える称号
-                    poem: "黄金の 光り輝く 道を行け",
-                    desc: "【神域到達】今のあなたに不可能はありません。このカードが出た瞬間、あなたの願いは天に届きました。ただし、この奇跡は内緒にしておくのが吉です。",
-                    num: 777,
-                    detail: [
-                        { title: '願事', content: '意のままに叶う' },
-                        { title: '待人', content: '運命の人が来る' },
-                        { title: '失物', content: 'すぐに見つかる' },
-                        { title: '旅行', content: 'いざ行け 大吉' },
-                        { title: '商売', content: '莫大な利益あり' },
-                        { title: '学問', content: '安心して勉めよ' },
-                        { title: '恋愛', content: '最高の縁談あり' }
-                    ],
-                    lucky: { item: "金の延べ棒", spot: "天守閣", color: "黄金", person: "大富豪" },
-                    unlucky: { item: "なし", spot: "なし", person: "なし" }, // 不運なし
-                    timestamp: Date.now(),
-                    username: currentState.user ? currentState.user.username : "選ばれし者",
-                    isGod: true // 特別フラグ
-                };
-                currentState.lastResult = resultData;
-                
-                // ★履歴保存API (fetch) をスキップして表示へ
-                renderResultToCard('result-card-outer', resultData, true); 
-                showView('result');
-                
-                // モードは1回で解除しない（リロードまで継続という要件）
-                return; 
-            }
-            // ------------------------------------
-
-            if (isNewDraw) {
-                // 新規抽選 (通常)
-                const base = omikujiResults[Math.floor(Math.random() * omikujiResults.length)];
-                randNum = Math.floor(Math.random() * 100) + 1;
-                timestamp = Date.now();
-                username = currentState.user ? (currentState.user.username || "参拝者") : "ゲスト";
-
-                // 詳細項目
-                const detailIndex = 5 - base.rank;
-                const cats = ['願事','恋愛','待人','商売','旅立','学問','病気'];
-                
-                detailsList = cats.map(c => ({
-                    title: c,
-                    content: detailTexts[c][Math.min(detailIndex, detailTexts[c].length - 1)]
-                }));
-
-                // ラッキー/アンラッキー
-                luckyItems = {
-                    item: luckyItemsList[Math.floor(Math.random()*luckyItemsList.length)],
-                    spot: luckySpotsList[Math.floor(Math.random()*luckySpotsList.length)],
-                    color: luckyColorsList[Math.floor(Math.random()*luckyColorsList.length)],
-                    person: luckyPersonsList[Math.floor(Math.random()*luckyPersonsList.length)]
-                };
-                
-                let ulItem, ulSpot, ulPerson;
-                do { ulItem = luckyItemsList[Math.floor(Math.random()*luckyItemsList.length)]; } while(ulItem === luckyItems.item);
-                do { ulSpot = luckySpotsList[Math.floor(Math.random()*luckySpotsList.length)]; } while(ulSpot === luckyItems.spot);
-                do { ulPerson = luckyPersonsList[Math.floor(Math.random()*luckyPersonsList.length)]; } while(ulPerson === luckyItems.person);
-
-                unluckyItems = {
-                    item: ulItem,
-                    spot: ulSpot,
-                    person: ulPerson
-                };
-
-                resultData = { 
-                    type: base.type, 
-                    poem: base.poem, 
-                    desc: base.desc,
-                    num: randNum, 
-                    detail: detailsList,
-                    lucky: luckyItems,
-                    unlucky: unluckyItems,
-                    timestamp: timestamp,
-                    username: username
-                };
-                currentState.lastResult = resultData;
-
-                // ログイン時のみ保存・更新
-                if(currentState.user) {
-                    showLoading(true);
-                    try {
-                        const res = await fetch(`${API_BASE}/api/draw`, {
-                            method: 'POST',
-                            headers: { 'Content-Type': 'application/json' },
-                            body: JSON.stringify({ 
-                                email: currentState.user.email,
-                                token: currentState.user.token,
-                                result: resultData.type,
-                                poem: resultData.poem,
-                                detail: detailsList,
-                                lucky: luckyItems,
-                                unlucky: unluckyItems
-                            })
-                        });
-                        
-                        if(res.ok) {
-                            const data = await res.json();
-                            if(data.success && data.count) {
-                                currentState.liveCount = data.count;
-                                document.getElementById('live-counter').textContent = currentState.liveCount.toLocaleString() + "本";
-                                fetchHistoryStats();
-                            }
-                        }
-                    } catch(e) { console.error(e); }
-                    finally { showLoading(false); }
-                }
-
-            } else {
-                // 復元 (履歴から表示など)
-                resultData = dataOverride;
-                randNum = dataOverride.num || 1;
-                
-                // 詳細項目の復元
-                if (Array.isArray(dataOverride.detail)) {
-                    detailsList = dataOverride.detail;
-                } else {
-                    const cats = ['願事','恋愛','待人','商売','旅立','学問','病気'];
-                    const vals = ['叶う','良し','来る','繁盛','吉','成就','治る','遅れる','待て','控','難','危'];
-                    detailsList = cats.map(c => ({
-                        title: c,
-                        content: vals[Math.floor(Math.random() * vals.length)]
-                    }));
-                }
-
-                // 助言復元
-                let restoredDesc = dataOverride.desc;
-                if (!restoredDesc && dataOverride.poem) {
-                    const original = omikujiResults.find(r => r.poem === dataOverride.poem);
-                    restoredDesc = original ? original.desc : "心穏やかに過ごすべし。";
-                } else if (!restoredDesc) {
-                    restoredDesc = "心穏やかに過ごすべし。";
-                }
-
-                luckyItems = dataOverride.lucky || { item: "不明", spot: "不明", color: "不明", person: "不明" };
-                unluckyItems = dataOverride.unlucky || { item: "不明", spot: "不明", person: "不明" };
-                timestamp = dataOverride.timestamp;
-                username = dataOverride.username || "参拝者";
-                
-                resultData = {
-                    type: dataOverride.type || dataOverride.result,
-                    poem: dataOverride.poem,
-                    desc: restoredDesc,
-                    num: randNum,
-                    detail: detailsList,
-                    lucky: luckyItems,
-                    unlucky: unluckyItems,
-                    timestamp: timestamp,
-                    username: username
-                };
-                currentState.lastResult = resultData;
-            }
-
-            function renderResultToCard(outerId, data, withFooter) {
+       function renderResultToCard(outerId, data, withFooter) {
             const outer = document.getElementById(outerId);
             outer.innerHTML = ''; 
 
@@ -4360,7 +4200,7 @@
             `;
             outer.appendChild(headerDiv);
 
-            // 2. 累計発行本数 (第〇〇番の代わり)
+            // 2. 累計発行本数
             const issueDiv = document.createElement('div');
             issueDiv.className = 'result-issue-num';
             let issueNum = currentState.liveCount || 15118061;
@@ -4478,7 +4318,7 @@
                     });
                 }, 100);
             }
-        }
+        } // ← 【重要】この閉じ括弧が抜けていました
 
         // --- 履歴・おみくじの轍 ---
         async function loadHistory() {
