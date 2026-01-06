@@ -4280,7 +4280,7 @@
     //  TENMEI Labs 設定同期ロジック (サーバー連携版)
     // ==========================================
 
-    // 1. 設定を保存する関数 (クラウド+ローカル)
+    // 1. 設定を保存する関数 (rippleを追加)
     async function saveLabSettings() {
         const settings = {
             newyear: document.getElementById('switch-newyear').checked,
@@ -4288,14 +4288,12 @@
             dark: document.getElementById('switch-dark').checked,
             bigtext: document.getElementById('switch-bigtext').checked,
             mist: document.getElementById('switch-mist').checked,
-            gold: document.getElementById('switch-gold').checked
+            gold: document.getElementById('switch-gold').checked,
+            ripple: document.getElementById('switch-ripple').checked // 追加
         };
 
         if (currentState.user) {
-            // ログイン中：サーバー(KV)と同期
-            // まずローカルに保存（オフライン対策・高速化）
             localStorage.setItem(`lab_settings_${currentState.user.email}`, JSON.stringify(settings));
-            
             try {
                 const res = await fetch(`${API_BASE}/api/user/settings`, {
                     method: 'POST',
@@ -4306,87 +4304,76 @@
                         settings: settings
                     })
                 });
-                if(!res.ok) throw new Error("Sync Failed");
-                console.log("Labs設定をクラウドに保存しました");
-            } catch (e) {
-                console.error("Labs設定のクラウド同期に失敗しました", e);
-            }
+            } catch (e) { console.error("Labs設定同期失敗", e); }
         } else {
-            // 未ログイン：ゲスト用としてローカルのみ保存
             localStorage.setItem('lab_settings_guest', JSON.stringify(settings));
         }
     }
 
-    // 2. 設定を読み込み、UIに反映させる関数
+    // 2. 設定を読み込む関数 (rippleを追加)
     async function loadLabSettings() {
         let settings = null;
 
         if (currentState.user) {
-            // ログイン中：サーバーから最新設定を取得
             try {
                 const res = await fetch(`${API_BASE}/api/user/settings?email=${encodeURIComponent(currentState.user.email)}&token=${encodeURIComponent(currentState.user.token)}`);
                 if (res.ok) {
                     const data = await res.json();
                     settings = data.settings;
-                    // クラウドから得た最新をローカルにもキャッシュ
                     if(settings) localStorage.setItem(`lab_settings_${currentState.user.email}`, JSON.stringify(settings));
                 }
             } catch (e) {
-                console.error("サーバーからの設定取得に失敗しました。ローカルデータを使用します。", e);
                 const local = localStorage.getItem(`lab_settings_${currentState.user.email}`);
                 if(local) settings = JSON.parse(local);
             }
         } else {
-            // 未ログイン：ローカルから取得
             const local = localStorage.getItem('lab_settings_guest');
             if(local) settings = JSON.parse(local);
         }
 
-        // --- UI（スイッチ）とクラスの反映 ---
         if (settings) {
-            // 雅モード
             const swNewYear = document.getElementById('switch-newyear');
             if(swNewYear) swNewYear.checked = !!settings.newyear;
             if(settings.newyear) document.body.classList.add('theme-newyear');
             else document.body.classList.remove('theme-newyear');
 
-            // 神速の祈り
             const swSpeed = document.getElementById('switch-speed');
             if(swSpeed) swSpeed.checked = !!settings.speed;
             window.labSpeedMode = !!settings.speed;
 
-            // 言霊の増幅
             const swBigText = document.getElementById('switch-bigtext');
             if(swBigText) swBigText.checked = !!settings.bigtext;
             if(settings.bigtext) document.documentElement.classList.add('lab-big-text');
             else document.documentElement.classList.remove('lab-big-text');
 
-            // 幽玄の霧
             const swMist = document.getElementById('switch-mist');
             const mistContainer = document.getElementById('mist-container');
             if(swMist) swMist.checked = !!settings.mist;
             if(settings.mist && mistContainer) mistContainer.classList.add('active');
             else if(mistContainer) mistContainer.classList.remove('active');
 
-            // 黄金の神域
             const swGold = document.getElementById('switch-gold');
             if(swGold) swGold.checked = !!settings.gold;
             if(settings.gold) document.body.classList.add('theme-gold');
             else document.body.classList.remove('theme-gold');
 
-            // 宵闇の刻
             const swDark = document.getElementById('switch-dark');
             if(swDark) swDark.checked = !!settings.dark;
+
+            // ▼ 今回追加 ▼
+            const swRipple = document.getElementById('switch-ripple');
+            if(swRipple) swRipple.checked = !!settings.ripple;
+            if(settings.ripple) document.body.classList.add('lab-ripple-active');
+            else document.body.classList.remove('lab-ripple-active');
+
         } else {
-            // 設定データがない場合の初期化
-            document.body.classList.remove('theme-newyear', 'theme-gold');
+            // 初期化
+            document.body.classList.remove('theme-newyear', 'theme-gold', 'lab-ripple-active'); // ripple解除追加
             document.documentElement.classList.remove('lab-big-text');
             const mistContainer = document.getElementById('mist-container');
             if(mistContainer) mistContainer.classList.remove('active');
             window.labSpeedMode = false;
         }
-
-        // 最後に共通のテーマ適用（宵闇の刻など）を呼び出す
         applyTheme();
     }
         
