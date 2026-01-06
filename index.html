@@ -2999,7 +2999,225 @@
 
     // ■ 神籤草子（コラム）データ
     const columnData = [
+
         
+        {
+            id: 13,
+            title: "【特大】天命乃杜・神域検定クイズ（全10問）",
+            date: "2026/01/06",
+            category: "クイズ",
+            icon: "bi-trophy-fill",
+            colorClass: "indigo",
+            content: `
+                <div class="article-content">
+                    <p>今回は「特別版」として、神社の歴史、作法、おみくじの深い知識を問う全10問の検定クイズを用意しました。あなたは「天命の主」となれるでしょうか？</p>
+                    
+                    <!-- スコア表示エリア -->
+                    <div id="quiz-stat-container" class="my-6 p-4 bg-indigo-50 dark:bg-indigo-900/30 border-2 border-indigo-500 rounded-xl flex justify-around text-center">
+                        <div>
+                            <div class="text-xs text-indigo-600 dark:text-indigo-300 font-bold">現在の得点</div>
+                            <div class="text-2xl font-black text-indigo-700 dark:text-indigo-100"><span id="quiz-score">0</span> <span class="text-sm">/ 10</span></div>
+                        </div>
+                        <div>
+                            <div class="text-xs text-indigo-600 dark:text-indigo-300 font-bold">正答率</div>
+                            <div class="text-2xl font-black text-indigo-700 dark:text-indigo-100"><span id="quiz-accuracy">0</span><span class="text-sm">%</span></div>
+                        </div>
+                    </div>
+
+                    <!-- Q1 -->
+                    <div class="my-8 p-6 bg-gray-50 dark:bg-zinc-800 rounded-xl border border-gray-200">
+                        <h3 class="font-bold text-lg mb-4">Q1. 鳥居の最上部にある横木。上にあるものを「笠木（かさぎ）」と言いますが、そのすぐ下にある二段目の横木の名前は何？</h3>
+                        <div class="space-y-3">
+                            <button onclick="handleQuiz(this, false, 1, 'score')" class="w-full text-left p-4 rounded-lg bg-white dark:bg-black border border-gray-300 font-bold">1. 額束（がくづか）</button>
+                            <button onclick="handleQuiz(this, true, 1, 'score')" class="w-full text-left p-4 rounded-lg bg-white dark:bg-black border border-gray-300 font-bold">2. 貫（ぬき）</button>
+                            <button onclick="handleQuiz(this, false, 1, 'score')" class="w-full text-left p-4 rounded-lg bg-white dark:bg-black border border-gray-300 font-bold">3. 島木（しまぎ）</button>
+                        </div>
+                        <div class="hidden mt-4 pt-4 border-t border-gray-300 text-sm leading-relaxed">
+                            <div class="quiz-msg text-xl font-black mb-2"></div>
+                            <span class="font-bold text-indigo-600">解説：</span>正解は「2. 貫」です。柱を貫通するように渡されているためこの名があります。
+                        </div>
+                    </div>
+
+                    <!-- Q2 -->
+                    <div class="my-8 p-6 bg-gray-50 dark:bg-zinc-800 rounded-xl border border-gray-200">
+                        <h3 class="font-bold text-lg mb-4">Q2. 二礼二拍手一礼の際、拍手を打つ時に「右手を少し手前に引く（ずらす）」理由は何？</h3>
+                        <div class="space-y-3">
+                            <button onclick="handleQuiz(this, false, 2, 'score')" class="w-full text-left p-4 rounded-lg bg-white dark:bg-black border border-gray-300 font-bold">1. 音を大きく響かせるため</button>
+                            <button onclick="handleQuiz(this, false, 2, 'score')" class="w-full text-left p-4 rounded-lg bg-white dark:bg-black border border-gray-300 font-bold">2. 利き手を強調するため</button>
+                            <button onclick="handleQuiz(this, true, 2, 'score')" class="w-full text-left p-4 rounded-lg bg-white dark:bg-black border border-gray-300 font-bold">3. 神様より一歩下がる謙虚な姿勢を示すため</button>
+                        </div>
+                        <div class="hidden mt-4 pt-4 border-t border-gray-300 text-sm leading-relaxed">
+                            <div class="quiz-msg text-xl font-black mb-2"></div>
+                            <span class="font-bold text-indigo-600">解説：</span>正解は「3」です。神様と人間がまだ一体になっていないことを示し、最後に指先を揃えることで神様と一体になるという意味があります。
+                        </div>
+                    </div>
+
+                    <!-- Q3 -->
+                    <div class="my-8 p-6 bg-gray-50 dark:bg-zinc-800 rounded-xl border border-gray-200">
+                        <h3 class="font-bold text-lg mb-4">Q3. 「おみくじ」の漢字表記として正しいものはどれ？</h3>
+                        <div class="space-y-3">
+                            <button onclick="handleQuiz(this, true, 0, 'score')" class="w-full text-left p-4 rounded-lg bg-white dark:bg-black border border-gray-300 font-bold">1. 神籤</button>
+                            <button onclick="handleQuiz(this, false, 0, 'score')" class="w-full text-left p-4 rounded-lg bg-white dark:bg-black border border-gray-300 font-bold">2. 御御籤</button>
+                            <button onclick="handleQuiz(this, false, 0, 'score')" class="w-full text-left p-4 rounded-lg bg-white dark:bg-black border border-gray-300 font-bold">3. 占籤</button>
+                        </div>
+                        <div class="hidden mt-4 pt-4 border-t border-gray-300 text-sm leading-relaxed">
+                            <div class="quiz-msg text-xl font-black mb-2"></div>
+                            <span class="font-bold text-indigo-600">解説：</span>正解は「1. 神籤」です。神様のくじという意味です。
+                        </div>
+                    </div>
+
+                    <!-- Q4 -->
+                    <div class="my-8 p-6 bg-gray-50 dark:bg-zinc-800 rounded-xl border border-gray-200">
+                        <h3 class="font-bold text-lg mb-4">Q4. お賽銭を投げる行為の本来の宗教的な意味は何？</h3>
+                        <div class="space-y-3">
+                            <button onclick="handleQuiz(this, false, 1, 'score')" class="w-full text-left p-4 rounded-lg bg-white dark:bg-black border border-gray-300 font-bold">1. 運勢を買い取る代金</button>
+                            <button onclick="handleQuiz(this, true, 1, 'score')" class="w-full text-left p-4 rounded-lg bg-white dark:bg-black border border-gray-300 font-bold">2. 日々の平穏に対する「感謝」の捧げ物</button>
+                            <button onclick="handleQuiz(this, false, 1, 'score')" class="w-full text-left p-4 rounded-lg bg-white dark:bg-black border border-gray-300 font-bold">3. お願い事を叶えてもらうための契約金</button>
+                        </div>
+                        <div class="hidden mt-4 pt-4 border-t border-gray-300 text-sm leading-relaxed">
+                            <div class="quiz-msg text-xl font-black mb-2"></div>
+                            <span class="font-bold text-indigo-600">解説：</span>正解は「2」です。古来は米（おひねり）を捧げていましたが、貨幣経済の普及によりお金になりました。
+                        </div>
+                    </div>
+
+                    <!-- Q5 -->
+                    <div class="my-8 p-6 bg-gray-50 dark:bg-zinc-800 rounded-xl border border-gray-200">
+                        <h3 class="font-bold text-lg mb-4">Q5. 手水舎で口をすすぐ際、正しい作法はどれ？</h3>
+                        <div class="space-y-3">
+                            <button onclick="handleQuiz(this, false, 2, 'score')" class="w-full text-left p-4 rounded-lg bg-white dark:bg-black border border-gray-300 font-bold">1. 柄杓に直接口をつける</button>
+                            <button onclick="handleQuiz(this, false, 2, 'score')" class="w-full text-left p-4 rounded-lg bg-white dark:bg-black border border-gray-300 font-bold">2. 水を飲んで飲み込む</button>
+                            <button onclick="handleQuiz(this, true, 2, 'score')" class="w-full text-left p-4 rounded-lg bg-white dark:bg-black border border-gray-300 font-bold">3. 左手に受けた水で口をすすぐ</button>
+                        </div>
+                        <div class="hidden mt-4 pt-4 border-t border-gray-300 text-sm leading-relaxed">
+                            <div class="quiz-msg text-xl font-black mb-2"></div>
+                            <span class="font-bold text-indigo-600">解説：</span>正解は「3」です。柄杓に口をつけるのは厳禁です。
+                        </div>
+                    </div>
+
+                    <!-- Q6 -->
+                    <div class="my-8 p-6 bg-gray-50 dark:bg-zinc-800 rounded-xl border border-gray-200">
+                        <h3 class="font-bold text-lg mb-4">Q6. 注連縄（しめなわ）にはどんな役割がある？</h3>
+                        <div class="space-y-3">
+                            <button onclick="handleQuiz(this, true, 0, 'score')" class="w-full text-left p-4 rounded-lg bg-white dark:bg-black border border-gray-300 font-bold">1. 聖域と俗世の境界線（結界）を張る</button>
+                            <button onclick="handleQuiz(this, false, 0, 'score')" class="w-full text-left p-4 rounded-lg bg-white dark:bg-black border border-gray-300 font-bold">2. 神様の洗濯物を干すため</button>
+                            <button onclick="handleQuiz(this, false, 0, 'score')" class="w-full text-left p-4 rounded-lg bg-white dark:bg-black border border-gray-300 font-bold">3. 雷よけの避雷針</button>
+                        </div>
+                        <div class="hidden mt-4 pt-4 border-t border-gray-300 text-sm leading-relaxed">
+                            <div class="quiz-msg text-xl font-black mb-2"></div>
+                            <span class="font-bold text-indigo-600">解説：</span>正解は「1」です。不浄なものが入らないようにする目印です。
+                        </div>
+                    </div>
+
+                    <!-- Q7 -->
+                    <div class="my-8 p-6 bg-gray-50 dark:bg-zinc-800 rounded-xl border border-gray-200">
+                        <h3 class="font-bold text-lg mb-4">Q7. 願い事を書く「絵馬（えま）」。なぜ「馬」の字が使われている？</h3>
+                        <div class="space-y-3">
+                            <button onclick="handleQuiz(this, false, 1, 'score')" class="w-full text-left p-4 rounded-lg bg-white dark:bg-black border border-gray-300 font-bold">1. 馬が速く願いを運ぶから</button>
+                            <button onclick="handleQuiz(this, true, 1, 'score')" class="w-full text-left p-4 rounded-lg bg-white dark:bg-black border border-gray-300 font-bold">2. 昔は本物の馬を神に奉納していた代わりだから</button>
+                            <button onclick="handleQuiz(this, false, 1, 'score')" class="w-full text-left p-4 rounded-lg bg-white dark:bg-black border border-gray-300 font-bold">3. 「馬（ま）」が「魔」を払うから</button>
+                        </div>
+                        <div class="hidden mt-4 pt-4 border-t border-gray-300 text-sm leading-relaxed">
+                            <div class="quiz-msg text-xl font-black mb-2"></div>
+                            <span class="font-bold text-indigo-600">解説：</span>正解は「2」です。本物の馬を贈るのが困難なため、板に描いた馬で代用したのが始まりです。
+                        </div>
+                    </div>
+
+                    <!-- Q8 -->
+                    <div class="my-8 p-6 bg-gray-50 dark:bg-zinc-800 rounded-xl border border-gray-200">
+                        <h3 class="font-bold text-lg mb-4">Q8. 神主（神職）が履いている袴（はかま）の色。最高位の色は何色？</h3>
+                        <div class="space-y-3">
+                            <button onclick="handleQuiz(this, false, 1, 'score')" class="w-full text-left p-4 rounded-lg bg-white dark:bg-black border border-gray-300 font-bold">1. 紫色</button>
+                            <button onclick="handleQuiz(this, true, 1, 'score')" class="w-full text-left p-4 rounded-lg bg-white dark:bg-black border border-gray-300 font-bold">2. 特級（白地に紋）</button>
+                            <button onclick="handleQuiz(this, false, 1, 'score')" class="w-full text-left p-4 rounded-lg bg-white dark:bg-black border border-gray-300 font-bold">3. 浅葱色（水色）</button>
+                        </div>
+                        <div class="hidden mt-4 pt-4 border-t border-gray-300 text-sm leading-relaxed">
+                            <div class="quiz-msg text-xl font-black mb-2"></div>
+                            <span class="font-bold text-indigo-600">解説：</span>正解は「2」です。一般的には紫が上位ですが、最高位（特級）は白地に薄い紫の紋が入った袴を履きます。
+                        </div>
+                    </div>
+
+                    <!-- Q9 -->
+                    <div class="my-8 p-6 bg-gray-50 dark:bg-zinc-800 rounded-xl border border-gray-200">
+                        <h3 class="font-bold text-lg mb-4">Q9. 参道の「真ん中」を歩いてはいけない理由は？</h3>
+                        <div class="space-y-3">
+                            <button onclick="handleQuiz(this, true, 0, 'score')" class="w-full text-left p-4 rounded-lg bg-white dark:bg-black border border-gray-300 font-bold">1. 神様が通る道（正中）だから</button>
+                            <button onclick="handleQuiz(this, false, 0, 'score')" class="w-full text-left p-4 rounded-lg bg-white dark:bg-black border border-gray-300 font-bold">2. 土を固めるため</button>
+                            <button onclick="handleQuiz(this, false, 0, 'score')" class="w-full text-left p-4 rounded-lg bg-white dark:bg-black border border-gray-300 font-bold">3. すれ違う人とぶつからないようにするため</button>
+                        </div>
+                        <div class="hidden mt-4 pt-4 border-t border-gray-300 text-sm leading-relaxed">
+                            <div class="quiz-msg text-xl font-black mb-2"></div>
+                            <span class="font-bold text-indigo-600">解説：</span>正解は「1」です。中央は神様の通り道と考え、人は端を歩くのが礼儀です。
+                        </div>
+                    </div>
+
+                    <!-- Q10 -->
+                    <div class="my-8 p-6 bg-gray-50 dark:bg-zinc-800 rounded-xl border border-gray-200">
+                        <h3 class="font-bold text-lg mb-4">Q10. 「一粒万倍日」と「大安」が重なった日に、絶対に行ってはいけないことは？</h3>
+                        <div class="space-y-3">
+                            <button onclick="handleQuiz(this, false, 2, 'score')" class="w-full text-left p-4 rounded-lg bg-white dark:bg-black border border-gray-300 font-bold">1. 宝くじを買う</button>
+                            <button onclick="handleQuiz(this, false, 2, 'score')" class="w-full text-left p-4 rounded-lg bg-white dark:bg-black border border-gray-300 font-bold">2. 結婚式を挙げる</button>
+                            <button onclick="handleQuiz(this, true, 2, 'score')" class="w-full text-left p-4 rounded-lg bg-white dark:bg-black border border-gray-300 font-bold">3. 人から借金をする</button>
+                        </div>
+                        <div class="hidden mt-4 pt-4 border-t border-gray-300 text-sm leading-relaxed">
+                            <div class="quiz-msg text-xl font-black mb-2"></div>
+                            <span class="font-bold text-indigo-600">解説：</span>正解は「3」です。一粒万倍日は良いことも悪いことも万倍になります。借金も万倍（膨れ上がる）になるため、忌むべき行動とされています。
+                        </div>
+                    </div>
+
+                    <p class="mt-8 font-bold text-center">全10問お疲れ様でした！<br>結果はどうだったでしょうか。この知識があれば、次回の参拝がより深いものになるはずです。</p>
+                </div>
+            `
+        },
+        {
+            id: 12,
+            title: "お守りの「期限」と正しい還し方",
+            date: "2026/01/06",
+            category: "作法",
+            icon: "bi-shield-check",
+            colorClass: "green",
+            content: `
+                <div class="article-content">
+                    <p>神社で授かったお守り。ずっと大切に持っているという方も多いですが、実はお守りにも「期限」があることをご存知でしょうか？正しい扱いを知り、神様への敬意を保ちましょう。</p>
+                    
+                    <h3>お守りの寿命は「約一年」</h3>
+                    <p>一般的に、お守りの加護の期限は一年間とされています。これは一年経つと効力が消えるというよりも、一年間持ち歩くことでお守りが持ち主の「身代わり」となって悪い気（穢れ）を吸収し、汚れてしまうと考えられているからです。新年に新しいお守りを授かるのは、一年の始まりに清らかな運気をいただくという意味があります。</p>
+
+                    <h3>願いが叶ったときは？</h3>
+                    <p>「合格祈願」や「安産祈願」など、特定の目的があるお守りの場合は、期間に関わらず「願いが成就したとき」が区切りです。無事に目標を達成したり、健康に子供が生まれたりした際には、感謝の気持ちとともに神社へお返ししましょう。</p>
+
+                    <h3>「古札納所」へ還す際の注意点</h3>
+                    <p>お守りを還す際は、授かった神社へ直接行くのがベストですが、遠方の場合は近くの神社の「古札納所（こさつのうしょ）」へ持参しても失礼にはあたりません。その際、必ず「一年間ありがとうございました」と感謝の言葉を添えてお参りしましょう。</p>
+                    <p>※なお、神社のお守りをお寺に返したり、その逆は避けるのがマナーです。どうしても還しに行けない場合は、白い紙に包んで塩で清め、感謝を唱えてから燃えるゴミに出すという方法もありますが、可能な限り神社へお持ちください。</p>
+                </div>
+            `
+        },
+        {
+            id: 11,
+            title: "鳥居の向こうは神の域—形と色の意味",
+            date: "2026/01/06",
+            category: "歴史",
+            icon: "bi-gate",
+            colorClass: "green",
+            content: `
+                <div class="article-content">
+                    <p>神社の入り口にそびえ立つ「鳥居」。何気なくくぐっていますが、実はその形や色には深い意味が込められています。</p>
+                    
+                    <h3>聖域と俗世を分ける「結界」</h3>
+                    <p>鳥居の最大の役割は、神様がお鎮まりになる「神域」と、人間が住む「俗界」を分ける境界線の役割です。鳥居をくぐる前に一礼するのは、「神様のお宅にお邪魔します」という挨拶の意味があります。いわば玄関のような存在です。</p>
+
+                    <h3>二つの大きな系統：神明と明神</h3>
+                    <p>鳥居は大きく分けて2つの形があります。</p>
+                    <ul class="list-disc ml-5 mb-4">
+                        <li><strong>神明（しんめい）鳥居：</strong> 伊勢神宮などに代表される、直線的でシンプルな形です。一番上の横木（笠木）が真っ直ぐなのが特徴です。</li>
+                        <li><strong>明神（みょうじん）鳥居：</strong> 最も一般的な形で、笠木の両端が空に向かって反り上がっています。仏教建築の影響を受けた華やかなデザインです。</li>
+                    </ul>
+
+                    <h3>なぜ「赤い」鳥居が多いのか？</h3>
+                    <p>朱色（赤）には、古来より「魔除け」の力があると信じられてきました。また、朱の原料である「水銀」は木材の腐食を防ぐ防腐剤としての実用的な役割もありました。一方で、伊勢神宮や明治神宮のように、あえて色を塗らず、木そのものの美しさを生かした「白木」の鳥居もあり、これはより純粋で原始的な信仰の形を伝えています。</p>
+                    <p>次に神社を訪れる際は、ぜひ鳥居の形や色に注目してみてください。その神社の歴史や系統が見えてくるはずです。</p>
+                </div>
+            `
+        },
         {
             id: 10,
             title: "【クイズ】神社の「動物」にまつわる謎（全3問）",
