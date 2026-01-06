@@ -1169,6 +1169,32 @@
             border-color: #d4af37 !important;
         }
 
+        /* --- Labs: 追加機能用スタイル --- */
+        
+        /* 水鏡の祓い (波紋エフェクト) */
+        .lab-ripple {
+            position: fixed;
+            border-radius: 50%;
+            background: radial-gradient(circle, rgba(255, 255, 255, 0.8) 0%, rgba(255, 255, 255, 0) 70%);
+            transform: scale(0);
+            pointer-events: none; /* クリックを邪魔しない */
+            animation: labRippleAnim 0.6s ease-out forwards;
+            z-index: 9999; /* 最前面 */
+            width: 100px;
+            height: 100px;
+            margin-left: -50px; /* 中心合わせ */
+            margin-top: -50px;
+        }
+        /* ダークモード時は少し青白く光らせる */
+        .dark .lab-ripple {
+            background: radial-gradient(circle, rgba(150, 200, 255, 0.5) 0%, rgba(150, 200, 255, 0) 70%);
+        }
+
+        @keyframes labRippleAnim {
+            0% { transform: scale(0); opacity: 1; }
+            100% { transform: scale(4); opacity: 0; }
+        }
+
     </style>
 </head>
 <body>
