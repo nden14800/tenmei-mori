@@ -5094,43 +5094,33 @@ ${getShareUrl()}`;
         async function sendAuthCode() { initiateAuth(currentState.authMode); }
         // 旧: performLogin / performRegister (finalizeAuthに統合)
 
-        function loginSuccess(user) {
-            currentState.user = user;
-            localStorage.setItem('omikuji_user', JSON.stringify(user));
-            updateAuthUI();
-            loadFavorites(); 
-            loadLabSettings();
-            
+        // 3. ログイン成功時の処理 (設定を即座にクラウドから取得)
+    function loginSuccess(user) {
+        currentState.user = user;
+        localStorage.setItem('omikuji_user', JSON.stringify(user));
+        updateAuthUI();
+        loadFavorites(); 
+        
+        // ログイン直後にサーバーから設定を読み込む（最優先）
+        loadLabSettings().then(() => {
             // Lab画面のロック状態を即座に更新するためにView再描画
             if(currentState.view === 'lab') {
                 showView('lab');
             }
-            
-            alert(`ようこそ、${user.username || user.email} 様！`);
+            alert(`ようこそ、${user.username || user.email} 様！クラウド設定を同期しました。`);
             showView('home');
-        }
+        });
+    }
 
-        function updateAuthUI() {
-            const badge = document.getElementById('fav-status-badge');
-            const navBtn = document.getElementById('nav-login-btn');
-            
-            if(currentState.user) {
-                navBtn.innerHTML = `<i class="bi bi-person-check-fill text-green-400"></i><span class="nav-text">会員: ${currentState.user.username}</span>`;
-                if(badge) badge.textContent = "クラウド保存済み";
-            } else {
-                navBtn.innerHTML = `<i class="bi bi-person-circle"></i><span class="nav-text">ログイン/登録</span>`;
-                if(badge) badge.textContent = "端末に保存中";
-            }
-        }
-        
-        function logout() {
-            localStorage.removeItem('omikuji_user');
-            // ラボ設定もクリア
-            if(currentState.user) localStorage.removeItem(`lab_settings_${currentState.user.email}`);
-            
-            currentState.user = null;
+    // 4. ログアウト処理
+    function logout() {
+        localStorage.removeItem('omikuji_user');
+        // ユーザー情報を消去し、loadLabSettingsを呼んで表示をゲスト用に戻す
+        currentState.user = null;
+        loadLabSettings().then(() => {
             location.reload();
-        }
+        });
+    }
 
         // --- 記事詳細 (長文版・更新版) ---
         function openArticle(type, id) {
