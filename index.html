@@ -3617,37 +3617,48 @@
         let globalHistory = [];
         let personalHistory = [];
 
-        // --- Lab機能の状態管理とモーダル制御 ---
+        // --- Lab機能の状態管理とモーダル制御 (拡張完全版) ---
         const TenmeiLab = {
-            // 機能ごとの詳細データ
             details: {
                 newyear: {
                     title: "迎春・雅（みやび）モード",
                     icon: '<i class="bi bi-flower1 text-yellow-600"></i>',
-                    desc: "サイト全体のテーマカラーを「紅白」と「金」を基調としたお正月仕様に変更します。<br><br>画面の背景には和柄の文様が浮かび上がり、ボタンやアイコンも雅な雰囲気に包まれます。新年の初詣気分をより一層高めるための特別演出です。",
+                    desc: "サイト全体のテーマカラーを「紅白」と「金」を基調としたお正月仕様に変更します。<br><br>背景に特別な和柄が浮かび上がり、おめでたい雰囲気を演出します。",
                     bgClass: "bg-yellow-100"
                 },
                 speed: {
                     title: "神速（しんそく）の祈り",
                     icon: '<i class="bi bi-lightning-charge-fill text-blue-600"></i>',
-                    desc: "おみくじを引く際の「3秒間のカウントダウン演出」を省略します。<br><br>本来必要な「心を落ち着ける時間」を省くことで、スピーディーに運勢を確認できます。なお、結果表示の直前に天命を記録（保存）するための通信時間がわずかに発生しますが、これは神様との交信時間としてご容赦ください。",
+                    desc: "おみくじ結果表示前の「3秒間のカウントダウン」を省略します。<br><br>※サーバーへの記録通信（ローディング）は数秒発生しますのでご了承ください。",
                     bgClass: "bg-blue-100"
                 },
                 dark: {
                     title: "宵闇（よいやみ）の刻",
                     icon: '<i class="bi bi-moon-stars-fill text-purple-600"></i>',
-                    desc: "端末（OS）の設定に関わらず、強制的にダークモードを適用します。<br><br>夜間の利用や、明るい画面が苦手な方に。背景は深い漆黒となり、文字は月明かりのように白く浮かび上がります。目に優しい配色です。",
+                    desc: "OSの設定に関わらず、強制的にダークモードを適用します。夜間の参拝や目に優しい画面を好む方に最適です。",
                     bgClass: "bg-purple-100"
                 },
                 bigtext: {
                     title: "言霊（ことだま）の増幅",
                     icon: '<i class="bi bi-type-h1 text-green-600"></i>',
-                    desc: "サイト内の主要な文字サイズを約1.2倍に拡大します。<br><br>特に「おみくじの結果」や「和歌（神託）」など、重要なメッセージが大きく表示されるため、細かな文字が読みづらい方でも快適にご利用いただけます。",
+                    desc: "サイト内の主要な文字サイズを大きくします。神託の言葉をより力強く、読みやすく表示します。",
                     bgClass: "bg-green-100"
+                },
+                mist: {
+                    title: "幽玄（ゆうげん）の霧",
+                    icon: '<i class="bi bi-cloud-haze2-fill text-gray-600"></i>',
+                    desc: "画面全体に流れる霧のアニメーションを重畳させます。<br><br>静かな杜の中にいるような、幻想的で神秘的な没入感を演出する視覚実験です。端末の負荷が気になる場合はOFFにしてください。",
+                    bgClass: "bg-gray-100"
+                },
+                gold: {
+                    title: "黄金（おうごん）の神域",
+                    icon: '<i class="bi bi-stars text-yellow-500"></i>',
+                    desc: "サイト全体のアクセントカラーである「紅」を、すべて「黄金（ゴールド）」に変更します。<br><br>ボタンやタイトル、アイコンが金色に輝き、最高位の神域を彷彿とさせる豪華な装いになります。",
+                    bgClass: "bg-yellow-50"
                 }
             },
 
-            // 既存のトグル関数
+            // 各スイッチの動作ロジック
             toggleNewYear: (el) => {
                 if(el.checked) document.body.classList.add('theme-newyear');
                 else document.body.classList.remove('theme-newyear');
@@ -3666,12 +3677,22 @@
                 else document.documentElement.classList.remove('lab-big-text');
                 saveLabSettings();
             },
+            toggleMist: (el) => {
+                const container = document.getElementById('mist-container');
+                if(el.checked) container.style.display = 'block';
+                else container.style.display = 'none';
+                saveLabSettings();
+            },
+            toggleGold: (el) => {
+                if(el.checked) document.body.classList.add('theme-gold');
+                else document.body.classList.remove('theme-gold');
+                saveLabSettings();
+            },
 
-            // --- 新規追加: モーダル制御 ---
+            // モーダル制御
             openModal: (key) => {
                 const data = TenmeiLab.details[key];
                 if(!data) return;
-
                 const content = document.getElementById('lab-modal-content');
                 content.innerHTML = `
                     <div class="flex flex-col items-center text-center">
@@ -3679,28 +3700,21 @@
                             ${data.icon}
                         </div>
                         <h3 class="text-2xl font-bold mb-4">${data.title}</h3>
-                        <p class="text-gray-600 dark:text-gray-300 leading-loose text-left w-full bg-gray-50 dark:bg-zinc-800 p-6 rounded-xl border border-gray-100 dark:border-gray-700">
+                        <div class="text-gray-600 dark:text-gray-300 leading-loose text-left w-full bg-gray-50 dark:bg-zinc-800 p-6 rounded-xl border border-gray-100 dark:border-gray-700">
                             ${data.desc}
-                        </p>
-                        
+                        </div>
                         <div class="mt-8 w-full">
                             <button onclick="TenmeiLab.closeModal(null)" class="btn-primary w-full py-3">閉じる</button>
                         </div>
                     </div>
                 `;
-
                 const modal = document.getElementById('lab-modal');
                 modal.classList.add('active');
-                // スクロールロック
                 document.body.style.overflow = 'hidden';
             },
-
             closeModal: (e) => {
                 if (e && e.target.id !== 'lab-modal' && !e.target.classList.contains('lab-close-btn')) return;
-                
-                const modal = document.getElementById('lab-modal');
-                modal.classList.remove('active');
-                // スクロールロック解除
+                document.getElementById('lab-modal').classList.remove('active');
                 document.body.style.overflow = '';
             }
         };
@@ -3734,54 +3748,51 @@
             }
         }
 
-        // --- 修正版: 設定保存 ---
+        // --- 設定保存ロジックの更新 ---
         function saveLabSettings() {
             if (currentState.user) {
                 const settings = {
                     newyear: document.getElementById('switch-newyear').checked,
                     speed: document.getElementById('switch-speed').checked,
                     dark: document.getElementById('switch-dark').checked,
-                    bigtext: document.getElementById('switch-bigtext').checked
+                    bigtext: document.getElementById('switch-bigtext').checked,
+                    mist: document.getElementById('switch-mist').checked,
+                    gold: document.getElementById('switch-gold').checked
                 };
                 localStorage.setItem(`lab_settings_${currentState.user.email}`, JSON.stringify(settings));
             }
         }
 
-        // --- 修正版: 設定読み込み ---
+        // --- 設定読み込みロジックの更新 ---
         function loadLabSettings() {
             if (currentState.user) {
                 const settings = JSON.parse(localStorage.getItem(`lab_settings_${currentState.user.email}`));
                 if (settings) {
-                    if (settings.newyear) {
-                        document.getElementById('switch-newyear').checked = true;
-                        TenmeiLab.toggleNewYear(document.getElementById('switch-newyear'));
-                    }
-                    if (settings.speed) {
-                        document.getElementById('switch-speed').checked = true;
-                        TenmeiLab.toggleSpeed(document.getElementById('switch-speed'));
-                    }
-                    // 【修正点】文字サイズ設定の復元ロジック
-                    if (settings.bigtext) {
-                        document.getElementById('switch-bigtext').checked = true;
-                        document.documentElement.classList.add('lab-big-text');
-                    }
-                    if (settings.dark) {
-                        document.getElementById('switch-dark').checked = true;
-                    }
+                    // 雅モード
+                    document.getElementById('switch-newyear').checked = !!settings.newyear;
+                    if(settings.newyear) document.body.classList.add('theme-newyear');
+                    // 神速
+                    document.getElementById('switch-speed').checked = !!settings.speed;
+                    window.labSpeedMode = !!settings.speed;
+                    // 言霊
+                    document.getElementById('switch-bigtext').checked = !!settings.bigtext;
+                    if(settings.bigtext) document.documentElement.classList.add('lab-big-text');
+                    // 宵闇
+                    document.getElementById('switch-dark').checked = !!settings.dark;
+                    // 霧
+                    document.getElementById('switch-mist').checked = !!settings.mist;
+                    document.getElementById('mist-container').style.display = settings.mist ? 'block' : 'none';
+                    // 黄金
+                    document.getElementById('switch-gold').checked = !!settings.gold;
+                    if(settings.gold) document.body.classList.add('theme-gold');
                 }
             } else {
-                // 未ログイン時のリセット
-                document.getElementById('switch-newyear').checked = false;
-                document.body.classList.remove('theme-newyear');
-                document.getElementById('switch-speed').checked = false;
-                window.labSpeedMode = false;
-                document.getElementById('switch-dark').checked = false;
-                
-                // 【修正点】文字サイズのリセット
-                document.getElementById('switch-bigtext').checked = false;
+                // リセット
+                document.body.classList.remove('theme-newyear', 'theme-gold');
                 document.documentElement.classList.remove('lab-big-text');
+                document.getElementById('mist-container').style.display = 'none';
+                window.labSpeedMode = false;
             }
-            
             applyTheme();
         }
         
