@@ -3815,23 +3815,28 @@
                     if(settings.bigtext) document.documentElement.classList.add('lab-big-text');
                     // 宵闇
                     document.getElementById('switch-dark').checked = !!settings.dark;
-                    // 霧の設定読み込み（ここを追加・上書き）
+                    // --- 霧の設定反映 ---
                     const switchMist = document.getElementById('switch-mist');
                     const mistContainer = document.getElementById('mist-container');
                     if(switchMist && mistContainer) {
                         switchMist.checked = !!settings.mist;
-                        mistContainer.style.display = settings.mist ? 'block' : 'none';
-                        mistContainer.style.opacity = settings.mist ? '1' : '0';
+                        if(settings.mist) mistContainer.classList.add('active');
+                        else mistContainer.classList.remove('active');
                     }
-                    // 黄金
-                    document.getElementById('switch-gold').checked = !!settings.gold;
-                    if(settings.gold) document.body.classList.add('theme-gold');
+
+                    // --- 黄金の設定反映 ---
+                    const switchGold = document.getElementById('switch-gold');
+                    if(switchGold) {
+                        switchGold.checked = !!settings.gold;
+                        if(settings.gold) document.body.classList.add('theme-gold');
+                    }
                 }
             } else {
-                // リセット
+                // 未ログイン時のリセット処理
                 document.body.classList.remove('theme-newyear', 'theme-gold');
                 document.documentElement.classList.remove('lab-big-text');
-                document.getElementById('mist-container').style.display = 'none';
+                const mistContainer = document.getElementById('mist-container');
+                if(mistContainer) mistContainer.classList.remove('active');
                 window.labSpeedMode = false;
             }
             applyTheme();
