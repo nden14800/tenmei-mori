@@ -3821,9 +3821,13 @@
                     if(settings.bigtext) document.documentElement.classList.add('lab-big-text');
                     // 宵闇
                     document.getElementById('switch-dark').checked = !!settings.dark;
-                    // 霧
-                    document.getElementById('switch-mist').checked = !!settings.mist;
-                    document.getElementById('mist-container').style.display = settings.mist ? 'block' : 'none';
+                    // 霧の設定読み込み（ここを追加・上書き）
+                    const switchMist = document.getElementById('switch-mist');
+                    const mistContainer = document.getElementById('mist-container');
+                    if(switchMist && mistContainer) {
+                        switchMist.checked = !!settings.mist;
+                        mistContainer.style.display = settings.mist ? 'block' : 'none';
+                        mistContainer.style.opacity = settings.mist ? '1' : '0';
                     // 黄金
                     document.getElementById('switch-gold').checked = !!settings.gold;
                     if(settings.gold) document.body.classList.add('theme-gold');
