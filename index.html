@@ -5094,6 +5094,33 @@ ${getShareUrl()}`;
         async function sendAuthCode() { initiateAuth(currentState.authMode); }
         // 旧: performLogin / performRegister (finalizeAuthに統合)
 
+        // ==========================================
+    //  認証状態のUI更新ロジック (復旧版)
+    // ==========================================
+    function updateAuthUI() {
+        const badge = document.getElementById('fav-status-badge');
+        const navBtn = document.getElementById('nav-login-btn');
+        
+        if (currentState.user) {
+            // ログイン中：ナビゲーションボタンを会員名に変更
+            if (navBtn) {
+                navBtn.innerHTML = `<i class="bi bi-person-check-fill text-green-400"></i><span class="nav-text">会員: ${currentState.user.username}</span>`;
+            }
+            // お気に入りの同期状態バッジを更新
+            if (badge) {
+                badge.textContent = "クラウド保存済み";
+            }
+        } else {
+            // 未ログイン：デフォルトの状態
+            if (navBtn) {
+                navBtn.innerHTML = `<i class="bi bi-person-circle"></i><span class="nav-text">ログイン/登録</span>`;
+            }
+            if (badge) {
+                badge.textContent = "端末に保存中";
+            }
+        }
+    }
+
         // 3. ログイン成功時の処理 (設定を即座にクラウドから取得)
     function loginSuccess(user) {
         currentState.user = user;
