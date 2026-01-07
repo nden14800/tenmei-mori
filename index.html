@@ -5401,6 +5401,80 @@ ${getShareUrl()}`;
             window.open(intent, '_blank');
         }
 
+        async function shareToBluesky() {
+            if(!currentState.lastResult) return;
+            const fullText = generateUnifiedShareText(currentState.lastResult);
+
+            // 1. Web Share API (アプリ連携) トライ
+            if (navigator.share && currentState.lastImageBlob) {
+                try {
+                    const file = new File([currentState.lastImageBlob], "tenmei_omikuji.png", { type: "image/png" });
+                    if (navigator.canShare && navigator.canShare({ files: [file] })) {
+                        await navigator.share({
+                            text: fullText,
+                            files: [file]
+                        });
+                        return;
+                    }
+                } catch (e) {
+                    console.log("Web Share API failed for Bluesky", e);
+                }
+            }
+
+            // 2. PC/フォールバック: 画像ダウンロード + 投稿画面
+            if (currentState.lastImageBlob) {
+                const url = URL.createObjectURL(currentState.lastImageBlob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `tenmei_omikuji_${Date.now()}.png`;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                URL.revokeObjectURL(url);
+            }
+
+            // Blueskyの投稿画面を開く
+            const intent = `https://bsky.app/intent/compose?text=${encodeURIComponent(fullText)}`;
+            window.open(intent, '_blank');
+        }
+
+        async function shareToMisskey() {
+            if(!currentState.lastResult) return;
+            const fullText = generateUnifiedShareText(currentState.lastResult);
+
+            // 1. Web Share API (アプリ連携) トライ
+            if (navigator.share && currentState.lastImageBlob) {
+                try {
+                    const file = new File([currentState.lastImageBlob], "tenmei_omikuji.png", { type: "image/png" });
+                    if (navigator.canShare && navigator.canShare({ files: [file] })) {
+                        await navigator.share({
+                            text: fullText,
+                            files: [file]
+                        });
+                        return;
+                    }
+                } catch (e) {
+                    console.log("Web Share API failed for Misskey", e);
+                }
+            }
+
+            // 2. PC/フォールバック: 画像ダウンロード + 投稿画面
+            if (currentState.lastImageBlob) {
+                const url = URL.createObjectURL(currentState.lastImageBlob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `tenmei_omikuji_${Date.now()}.png`;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                URL.revokeObjectURL(url);
+            }
+
+            // Misskey.ioの投稿画面を開く
+            const intent = `https://misskey.io/share?text=${encodeURIComponent(fullText)}`;
+            window.open(intent, '_blank');
+        }
+
         // --- プロフィール機能 ---
         function handleProfileClick() {
             if(currentState.user) {
