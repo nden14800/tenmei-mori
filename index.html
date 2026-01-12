@@ -4603,6 +4603,54 @@
     renderFullColumnView();
         };
 
+        // ■ 入力式クイズの判定関数
+// button: クリックされたボタン要素
+// correctAnswers: 正解の文字列リスト（配列）例: ['鳥居', 'とりい']
+// questionId: 問題番号（入力欄の特定に使用）
+function handleInputQuiz(button, correctAnswers, questionId) {
+    // 入力欄を取得
+    const inputField = button.parentElement.querySelector('input');
+    const userValue = inputField.value.trim(); // 空白除去
+    
+    // 結果表示エリアを取得
+    const parent = button.closest('.my-8'); // 親コンテナを探す
+    const resultArea = parent.querySelector('.quiz-result');
+    const msgArea = resultArea.querySelector('.quiz-msg');
+    
+    // すでに回答済みなら処理しない（連打防止）
+    if (!resultArea.classList.contains('hidden') && resultArea.dataset.answered === "true") {
+        return;
+    }
+
+    // 正誤判定（ひらがな・カタカナ・漢字の完全一致を確認）
+    // ユーザーの入力を正規化（全角・半角などを揃える処理を入れても良いが、今回は単純比較）
+    const isCorrect = correctAnswers.some(ans => ans === userValue);
+
+    // 結果表示
+    resultArea.classList.remove('hidden');
+    resultArea.dataset.answered = "true"; // 回答済みフラグ
+    
+    if (isCorrect) {
+        msgArea.innerHTML = '<span class="text-green-600">正解！</span>';
+        msgArea.classList.add('text-green-600');
+        // 入力欄を正解色に
+        inputField.classList.add('border-green-500', 'bg-green-900', 'text-green-100');
+        inputField.classList.remove('bg-gray-800');
+    } else {
+        msgArea.innerHTML = '<span class="text-red-500">残念...</span>';
+        msgArea.classList.add('text-red-500');
+        // 入力欄を不正解色に
+        inputField.classList.add('border-red-500', 'bg-red-900', 'text-red-100');
+        inputField.classList.remove('bg-gray-800');
+    }
+    
+    // 入力欄を無効化（書き換え防止）
+    inputField.disabled = true;
+    button.disabled = true;
+    button.classList.add('opacity-50', 'cursor-not-allowed');
+    button.innerText = '回答済み';
+}
+
         function showLoading(show) {
             const overlay = document.getElementById('loading-overlay');
             if(show) {
