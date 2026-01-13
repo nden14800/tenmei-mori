@@ -6656,39 +6656,98 @@ function changeHistoryPage(newPage) {
         }
     }
 
-    // 3. PDFダウンロード関数
+    // 3. PDFダウンロード関数 (高画質・表見切れ修正版)
     function downloadPDF(viewId) {
         const elementId = viewId === 'about' ? 'about-content-area' : 'privacy-content-area';
-        const element = document.getElementById(elementId);
-        const btn = event.target.closest('button'); // ボタン自体を取得
+        const sourceElement = document.getElementById(elementId);
+        const btn = event.target.closest('button');
 
-        if(!element) return;
+        if(!sourceElement) return;
 
-        // ボタンを一時的にローディング状態に
+        // ボタンをローディング状態に
         const originalText = btn.innerHTML;
         btn.innerHTML = '<i class="bi bi-hourglass-split"></i> 生成中...';
         btn.disabled = true;
 
-        // ファイル名
+        // ファイル名生成
         const dateStr = new Date().toISOString().slice(0, 10).replace(/-/g, '');
         const fileName = viewId === 'about' ? `tenmei_terms_${dateStr}.pdf` : `tenmei_privacy_${dateStr}.pdf`;
 
+        // 【重要】PDF生成専用のクローン要素を作成してスタイル調整を行う
+        // これにより、画面上の表示（横スクロール）はそのままに、PDFだけA4に収めます。
+        const clone = sourceElement.cloneNode(true);
+        
+        // クローンに対するスタイル強制適用（A4幅に合わせて調整）
+        clone.style.width = '750px'; // A4の印字領域相当の幅に固定
+        clone.style.position = 'fixed'; // 画面外に配置（ユーザーには見せない）
+        clone.style.top = '-10000px';
+        clone.style.left = '-10000px';
+        clone.style.zIndex = '-1000';
+        clone.style.background = '#ffffff'; // PDFは常に白背景
+        clone.style.color = '#000000';      // 文字は黒
+        
+        // ダークモードのクラスを除去（白紙に印刷するため）
+        clone.classList.remove('dark', 'bg-zinc-800');
+        clone.classList.add('bg-white');
+
+        // ▼ 表（テーブル）の見切れ対策 ▼
+        // 1. 横スクロールコンテナの制限解除
+        const scrollContainers = clone.querySelectorAll('.overflow-x-auto');
+        scrollContainers.forEach(div => {
+            div.style.overflow = 'visible';
+            div.style.display = 'block';
+        });
+
+        // 2. テーブル自体の幅固定を解除し、文字を折り返して収める
+        const tables = clone.querySelectorAll('table');
+        tables.forEach(table => {
+            table.style.minWidth = 'auto'; // 900pxの強制を解除
+            table.style.width = '100%';    // 親要素(A4)に合わせる
+            table.style.whiteSpace = 'normal'; // 折り返しを許可
+            table.style.fontSize = '9px';  // フォントを小さくして情報量を確保
+            table.style.borderCollapse = 'collapse'; // 罫線を綺麗に
+            
+            // セルごとの調整
+            const cells = table.querySelectorAll('th, td');
+            cells.forEach(cell => {
+                cell.style.padding = '4px'; // 余白を詰める
+                cell.style.wordBreak = 'break-word'; // 長い単語も折り返す
+                cell.style.whiteSpace = 'normal';
+                cell.classList.remove('whitespace-nowrap'); // Tailwindのクラスも除去
+            });
+        });
+
+        // 目次エリアやボタンはPDFに含めない
+        const toc = clone.querySelector(`#${viewId}-toc-container`);
+        if(toc) toc.remove();
+
+        // 一時的にbodyに追加（html2pdfが描画できるようにするため）
+        document.body.appendChild(clone);
+
         // オプション設定
         const opt = {
-            margin:       10,
+            margin:       [10, 10, 10, 10], // 余白(mm)
             filename:     fileName,
-            image:        { type: 'jpeg', quality: 0.98 },
-            html2canvas:  { scale: 2, useCORS: true },
-            jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' }
+            image:        { type: 'jpeg', quality: 1.0 }, // 最高画質
+            html2canvas:  { 
+                scale: 4,       // 【高画質化】解像度を4倍に設定
+                useCORS: true, 
+                scrollY: 0,
+                windowWidth: 800 // ウィンドウ幅を偽装してレスポンシブ崩れ防止
+            },
+            jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' },
+            pagebreak:    { mode: ['avoid-all', 'css', 'legacy'] } // ページ送りを綺麗に
         };
 
         // PDF生成実行
-        html2pdf().set(opt).from(element).save().then(() => {
-            // 完了後にボタンを戻す
+        html2pdf().set(opt).from(clone).save().then(() => {
+            // 成功時：クローンを削除してボタンを戻す
+            document.body.removeChild(clone);
             btn.innerHTML = originalText;
             btn.disabled = false;
         }).catch(err => {
             console.error(err);
+            if(document.body.contains(clone)) document.body.removeChild(clone);
             alert("PDF生成に失敗しました。");
             btn.innerHTML = originalText;
             btn.disabled = false;
