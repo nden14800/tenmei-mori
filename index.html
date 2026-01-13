@@ -6656,74 +6656,91 @@ function changeHistoryPage(newPage) {
         }
     }
 
-    // 3. PDFダウンロード関数 (高画質・ベクター形式・表見切れ対応版)
+  // 3. PDFダウンロード関数 (iPad対応・Hidden Iframe方式・高画質版)
     function downloadPDF(viewId) {
         const elementId = viewId === 'about' ? 'about-content-area' : 'privacy-content-area';
         const targetElement = document.getElementById(elementId);
-        
+        const btn = event.target.closest('button');
+
         if (!targetElement) return;
 
-        // 1. 印刷用の新しいウィンドウを作成
-        const printWindow = window.open('', '_blank');
-        
-        // 2. 印刷用HTMLの構築
-        const doc = printWindow.document;
+        // ボタンをローディング状態に
+        const originalText = btn.innerHTML;
+        btn.innerHTML = '<i class="bi bi-hourglass-split"></i> 準備中...';
+        btn.disabled = true;
+
+        // 1. 既存の印刷用フレームがあれば削除（掃除）
+        const oldIframe = document.getElementById('print-iframe');
+        if (oldIframe) document.body.removeChild(oldIframe);
+
+        // 2. 新しい印刷用iframeを作成（画面外に隠す）
+        const iframe = document.createElement('iframe');
+        iframe.id = 'print-iframe';
+        iframe.style.position = 'fixed';
+        iframe.style.right = '0';
+        iframe.style.bottom = '0';
+        iframe.style.width = '0';
+        iframe.style.height = '0';
+        iframe.style.border = '0';
+        document.body.appendChild(iframe);
+
+        // 3. iframe内にHTMLを書き込む
+        const doc = iframe.contentWindow.document;
         doc.open();
-        
         doc.write(`
             <html>
             <head>
                 <title>${viewId === 'about' ? '利用規約・当サイトについて' : 'プライバシーポリシー'}</title>
-                <!-- フォント読み込み (明朝体) -->
                 <link href="https://fonts.googleapis.com/css2?family=Zen+Old+Mincho:wght@400;700;900&display=swap" rel="stylesheet">
-                <!-- アイコン読み込み -->
                 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
                 <style>
-                    /* --- 印刷（PDF）専用スタイル --- */
+                    /* --- A4印刷専用スタイル --- */
                     body {
                         font-family: 'Zen Old Mincho', serif;
                         color: #000;
                         background: #fff;
                         padding: 20px;
-                        line-height: 1.8;
-                        font-size: 10.5pt; /* 一般的な文書サイズ */
+                        line-height: 1.6;
+                        font-size: 10pt;
+                        width: 100%;
+                        margin: 0;
+                        -webkit-print-color-adjust: exact; /* 背景色などを強制印刷 */
                     }
                     h2 {
                         text-align: center;
-                        font-size: 18pt;
+                        font-size: 16pt;
                         border-bottom: 2px solid #000;
-                        margin-bottom: 20px;
-                        padding-bottom: 10px;
+                        margin-bottom: 15px;
+                        padding-bottom: 5px;
                     }
                     h3 {
-                        font-size: 14pt;
-                        margin-top: 30px;
-                        border-left: 5px solid #b91c1c; /* 紅色 */
+                        font-size: 13pt;
+                        margin-top: 25px;
+                        border-left: 5px solid #b91c1c;
                         padding-left: 10px;
                         background: #f9f9f9;
                     }
                     h4 {
-                        font-size: 12pt;
-                        margin-top: 20px;
+                        font-size: 11pt;
+                        margin-top: 15px;
                         border-bottom: 1px solid #ccc;
+                        font-weight: bold;
                     }
-                    p, li {
-                        text-align: justify;
-                    }
+                    p, li { text-align: justify; }
                     
-                    /* 不要な要素を消す */
-                    button, .btn-primary, .btn-outline {
-                        display: none !important;
-                    }
-                    /* 目次エリアの見た目を文書用に調整 */
+                    /* 不要なボタンや目次エリアの装飾を隠す */
+                    button, .btn-primary, .btn-outline { display: none !important; }
+                    
+                    /* 目次エリアを文書っぽく */
                     #about-toc-container, #privacy-toc-container {
                         border: 1px solid #000;
-                        padding: 15px;
+                        padding: 10px;
                         background: #fff !important;
-                        margin-bottom: 30px;
+                        margin-bottom: 20px;
+                        display: block !important; /* hiddenクラスを無視して表示 */
                     }
                     
-                    /* --- 【重要】表（テーブル）の見切れ防止・縮小スタイル --- */
+                    /* --- 【重要】表の強制縮小スタイル --- */
                     .overflow-x-auto {
                         overflow: visible !important;
                         display: block;
@@ -6731,31 +6748,29 @@ function changeHistoryPage(newPage) {
                     }
                     table {
                         width: 100% !important;
-                        min-width: 0 !important; /* 元の900px制限を解除 */
                         border-collapse: collapse;
-                        font-size: 8pt; /* 表の中だけ文字を小さくしてA4に収める */
+                        font-size: 7pt; /* 文字を小さくして収める */
                         margin: 10px 0;
-                        table-layout: fixed; /* 列幅を強制的に収める */
-                        word-wrap: break-word; /* 長い単語で改行させる */
+                        table-layout: fixed; /* 列幅を固定してはみ出し防止 */
+                        word-wrap: break-word; /* 長い単語を強制改行 */
                     }
                     th, td {
                         border: 1px solid #000;
-                        padding: 6px;
-                        vertical-align: top;
+                        padding: 4px;
+                        vertical-align: middle;
+                        word-break: break-all; /* はみ出し対策 */
                     }
                     th {
                         background-color: #f0f0f0;
                         font-weight: bold;
                         text-align: center;
                     }
-                    /* 強調セルのスタイル維持 */
+                    /* 強調セル */
                     .highlight {
                         background-color: #fff0f0;
                         font-weight: bold;
                         color: #b91c1c;
                     }
-                    
-                    /* リンクの色を印刷用に黒くする */
                     a { color: #000; text-decoration: none; }
                 </style>
             </head>
@@ -6766,13 +6781,23 @@ function changeHistoryPage(newPage) {
         `);
         doc.close();
 
-        // 3. 画像やフォントの読み込みを待ってから印刷ダイアログを起動
-        // (これをしないとアイコンやフォントが反映されない場合がある)
-        printWindow.focus();
+        // 4. 画像などの読み込みを待ってから印刷実行
+        // iPadでのクラッシュを防ぐため、少し長めに待機してから実行します
         setTimeout(() => {
-            printWindow.print();
-            printWindow.close();
-        }, 500); // 0.5秒待機
+            try {
+                iframe.contentWindow.focus();
+                iframe.contentWindow.print();
+            } catch (e) {
+                console.error(e);
+                alert("印刷機能の呼び出しに失敗しました。");
+            } finally {
+                // ボタンを戻す
+                btn.innerHTML = originalText;
+                btn.disabled = false;
+                // ※重要: iPad対策として、iframeを削除せずそのまま残します。
+                // (削除すると印刷プレビューが消えてしまうことがあるため)
+            }
+        }, 1000);
     }
 
     // 既存の showView 関数を少し修正して、画面表示時に目次を生成するようにする
