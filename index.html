@@ -4385,43 +4385,49 @@ let historyPageState = {
         let globalHistory = [];
         let personalHistory = [];
 
-        // --- Lab機能の状態管理とモーダル制御 (拡張完全版) ---
+        // --- Lab機能の状態管理とモーダル制御 (理由付き完全版) ---
         const TenmeiLab = {
             details: {
                 newyear: {
                     title: "迎春・雅（みやび）モード",
                     icon: '<i class="bi bi-flower1 text-yellow-600"></i>',
                     desc: "サイト全体のテーマカラーを「紅白」と「金」を基調としたお正月仕様に変更します。<br><br>背景に特別な和柄が浮かび上がり、おめでたい雰囲気を演出します。",
+                    reason: "配色のコントラストが非常に強いため、長時間の閲覧において目の疲れを招く可能性があります。また、専用の背景パターン画像がネットワーク環境によっては読み込み遅延を起こす事例が確認されています。",
                     bgClass: "bg-yellow-100"
                 },
                 speed: {
                     title: "神速（しんそく）の祈り",
                     icon: '<i class="bi bi-lightning-charge-fill text-blue-600"></i>',
                     desc: "おみくじ結果表示前の「3秒間のカウントダウン」を省略します。<br><br>※サーバーへの記録通信（ローディング）は数秒発生しますのでご了承ください。",
+                    reason: "おみくじ本来の「待つ間の緊張感」や「情緒」が損なわれるため、UX（ユーザー体験）の観点から非推奨としています。また、連打が可能になることでAPIリクエスト制限（Rate Limit）に抵触しやすくなるリスクがあります。",
                     bgClass: "bg-blue-100"
                 },
                 dark: {
                     title: "宵闇（よいやみ）の刻",
                     icon: '<i class="bi bi-moon-stars-fill text-purple-600"></i>',
                     desc: "OSの設定に関わらず、強制的にダークモードを適用します。夜間の参拝や目に優しい画面を好む方に最適です。",
+                    reason: "CSS変数の強制上書きを行うため、一部のブラウザや古い端末において、切り替え時に一瞬画面が白飛びする「フラッシュ現象」が発生する可能性があります。",
                     bgClass: "bg-purple-100"
                 },
                 bigtext: {
                     title: "言霊（ことだま）の増幅",
                     icon: '<i class="bi bi-type-h1 text-green-600"></i>',
                     desc: "サイト内の主要な文字サイズを大きくします。神託の言葉をより力強く、読みやすく表示します。",
+                    reason: "全体のレイアウト計算を無視してフォントサイズを拡大するため、スマートフォンなどの画面幅が狭い端末では、文字の改行位置が不自然になったり、枠からはみ出したりする（レイアウト崩れ）現象が避けられません。",
                     bgClass: "bg-green-100"
                 },
                 mist: {
                     title: "幽玄（ゆうげん）の霧",
                     icon: '<i class="bi bi-cloud-haze2-fill text-gray-600"></i>',
-                    desc: "画面全体に流れる霧のアニメーションを重畳させます。<br><br>静かな杜の中にいるような、幻想的で神秘的な没入感を演出する視覚実験です。端末の負荷が気になる場合はOFFにしてください。",
+                    desc: "画面全体に流れる霧のアニメーションを重畳させます。<br><br>静かな杜の中にいるような、幻想的で神秘的な没入感を演出する視覚実験です。",
+                    reason: "広範囲にぼかしフィルター（Blur）とアニメーションを常時適用するため、GPU（描画処理装置）への負荷が極めて高く、古いスマートフォンの動作が重くなったり、バッテリー消費が激しくなる問題があります。",
                     bgClass: "bg-gray-100"
                 },
                 gold: {
                     title: "黄金（おうごん）の神域",
                     icon: '<i class="bi bi-stars text-yellow-500"></i>',
                     desc: "サイト全体のアクセントカラーである「紅」を、すべて「黄金（ゴールド）」に変更します。<br><br>ボタンやタイトル、アイコンが金色に輝き、最高位の神域を彷彿とさせる豪華な装いになります。",
+                    reason: "白背景に金色の文字を使用するため、視認性（アクセシビリティ）のガイドライン基準を満たしておらず、屋外や明るい場所では文字が読みづらくなるという欠陥を抱えています。",
                     bgClass: "bg-yellow-50"
                 }
             },
@@ -4462,20 +4468,34 @@ let historyPageState = {
                 saveLabSettings();
             },
 
-            // モーダル制御
+            // モーダル制御（理由エリアを追加）
             openModal: (key) => {
                 const data = TenmeiLab.details[key];
                 if(!data) return;
                 const content = document.getElementById('lab-modal-content');
+                
+                // HTML生成部分：理由（Reason）を表示する赤いボックスを追加
                 content.innerHTML = `
                     <div class="flex flex-col items-center text-center">
                         <div class="w-20 h-20 rounded-full ${data.bgClass} flex items-center justify-center text-4xl mb-6 shadow-sm">
                             ${data.icon}
                         </div>
                         <h3 class="text-2xl font-bold mb-4">${data.title}</h3>
-                        <div class="text-gray-600 dark:text-gray-300 leading-loose text-left w-full bg-gray-50 dark:bg-zinc-800 p-6 rounded-xl border border-gray-100 dark:border-gray-700">
+                        
+                        <div class="text-gray-600 dark:text-gray-300 leading-loose text-left w-full bg-gray-50 dark:bg-zinc-800 p-6 rounded-xl border border-gray-100 dark:border-gray-700 mb-4">
                             ${data.desc}
                         </div>
+
+                        <!-- ▼ 追加: 実験的な理由エリア -->
+                        <div class="w-full bg-red-50 dark:bg-red-900/20 p-5 rounded-xl border border-red-100 dark:border-red-800 text-left text-sm">
+                            <p class="font-bold text-red-600 dark:text-red-300 mb-2 flex items-center">
+                                <i class="bi bi-cone-striped mr-2"></i>なぜ「実験的」なのか？
+                            </p>
+                            <p class="text-gray-700 dark:text-gray-300 leading-relaxed text-xs">
+                                ${data.reason}
+                            </p>
+                        </div>
+
                         <div class="mt-8 w-full">
                             <button onclick="TenmeiLab.closeModal(null)" class="btn-primary w-full py-3">閉じる</button>
                         </div>
