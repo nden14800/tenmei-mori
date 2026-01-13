@@ -6656,85 +6656,81 @@ function changeHistoryPage(newPage) {
         }
     }
 
-  // 3. PDFダウンロード関数 (iPad対応・高画質プレビュー版)
+  // 3. PDFダウンロード関数 (iPad対応・安定版)
     function downloadPDF(viewId) {
-        // 対象のエリアIDを特定
+        // 対象エリアを取得
         const elementId = viewId === 'about' ? 'about-content-area' : 'privacy-content-area';
         const sourceElement = document.getElementById(elementId);
         if (!sourceElement) return;
 
-        // ボタンを一時的にローディング表示
+        // ボタンをローディング表示
         const btn = event.target.closest('button');
         const originalText = btn.innerHTML;
         btn.innerHTML = '<i class="bi bi-hourglass-split"></i> PDF作成中...';
         btn.disabled = true;
 
-        // ファイル名生成
+        // ファイル名
         const dateStr = new Date().toISOString().slice(0, 10).replace(/-/g, '');
         const fileName = viewId === 'about' ? `tenmei_terms_${dateStr}.pdf` : `tenmei_privacy_${dateStr}.pdf`;
 
-        // PDF生成オプション（高画質・レイアウト補正）
+        // PDF生成オプション
         const opt = {
-            margin:       [10, 10, 10, 10], // 上下左右の余白(mm)
+            margin:       [10, 10, 10, 10], 
             filename:     fileName,
-            image:        { type: 'jpeg', quality: 0.98 }, // 最高画質設定
+            image:        { type: 'jpeg', quality: 0.98 },
             html2canvas:  { 
-                scale: 3,       // ★重要: 解像度を3倍にして文字をくっきりさせる
-                useCORS: true,  // 画像読み込み許可
-                // ▼ ここでPDF用に見た目を整形します（表の見切れ防止など）
+                scale: 2,       // ★修正: iPadのメモリ落ちを防ぐため「2」に設定（十分高画質です）
+                useCORS: true,
+                scrollY: 0,     // ★修正: スクロール位置による白紙化を防止
+                // PDF用レイアウト調整
                 onclone: (clonedDoc) => {
                     const el = clonedDoc.getElementById(elementId);
                     
-                    // 1. ダークモードや背景色を強制リセット（白紙に黒文字）
+                    // 見た目の強制リセット（白紙に黒文字）
                     el.style.backgroundColor = '#ffffff';
                     el.style.color = '#000000';
-                    el.classList.remove('themed-card', 'dark'); // テーマ解除
+                    el.classList.remove('themed-card', 'dark');
                     
-                    // 2. 不要なボタンや目次エリアを隠す
+                    // 不要な要素を消す
                     const buttons = el.querySelectorAll('button, .btn-primary, #about-toc-container, #privacy-toc-container');
                     buttons.forEach(b => b.style.display = 'none');
 
-                    // 3. 全体の幅をA4サイズ(約800px)に強制固定して、はみ出しを防ぐ
-                    el.style.width = '780px';
+                    // A4幅に合わせる
+                    el.style.width = '750px'; 
                     el.style.padding = '20px';
                     
-                    // 4. 表（テーブル）がはみ出さないように強制縮小
+                    // 全テキストを黒にする
+                    const allText = el.querySelectorAll('*');
+                    allText.forEach(t => t.style.color = '#000000');
+
+                    // 表の調整
                     const tables = el.querySelectorAll('table');
                     tables.forEach(tbl => {
                         tbl.style.width = '100%';
-                        tbl.style.tableLayout = 'fixed'; // 幅を固定
-                        tbl.style.fontSize = '9px';      // 文字を小さくして収める
-                        tbl.style.wordWrap = 'break-word'; // 長い単語を改行
+                        tbl.style.tableLayout = 'fixed';
+                        tbl.style.fontSize = '9px';
+                        tbl.style.wordWrap = 'break-word';
                         
-                        // ヘッダーやセルのスタイル調整
                         const cells = tbl.querySelectorAll('th, td');
                         cells.forEach(c => {
-                            c.style.border = '1px solid #000'; // 黒枠線
+                            c.style.border = '1px solid #000';
                             c.style.padding = '4px';
-                            c.style.whiteSpace = 'normal'; // 折り返し許可
+                            c.style.whiteSpace = 'normal';
                         });
                     });
-
-                    // 5. リンクの色を黒にする（印刷用）
-                    const links = el.querySelectorAll('a');
-                    links.forEach(a => a.style.color = '#000000');
                 }
             },
             jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
         };
 
-        // PDFを生成し、BlobURLとして新しいタブで開く（プレビュー）
-        html2pdf().set(opt).from(sourceElement).output('bloburl').then(function(blobUrl) {
-            // ボタンを戻す
+        // ★修正: iPadで最も安定する .save() を使用
+        html2pdf().set(opt).from(sourceElement).save().then(() => {
+            // 完了時の処理
             btn.innerHTML = originalText;
             btn.disabled = false;
-            
-            // 新しいタブでPDFプレビューを開く
-            // (iPadではこれでPDFビューワーが起動します)
-            window.open(blobUrl, '_blank');
         }).catch(err => {
             console.error(err);
-            alert("PDFの生成に失敗しました。");
+            alert("PDFの作成に失敗しました。");
             btn.innerHTML = originalText;
             btn.disabled = false;
         });
