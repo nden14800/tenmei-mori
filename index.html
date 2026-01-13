@@ -6485,6 +6485,63 @@ ${getShareUrl()}`;
         const myData = dailyRanking.find(d => d.sign.id === signId && d.blood === bloodId);
         if (myData) { resultDiv.innerHTML = createCardHTML(myData); resultDiv.classList.remove('hidden'); }
     } 
+
+        // --- 新規追加: ページネーション制御付き描画関数 ---
+function renderHistoryWithPagination() {
+    const paginationEl = document.getElementById('history-pagination');
+    const countEl = document.getElementById('search-result-count');
+    
+    const totalItems = historyPageState.filteredData.length;
+    countEl.textContent = totalItems; // 件数表示更新
+
+    // ページ数計算
+    const totalPages = Math.ceil(totalItems / historyPageState.perPage) || 1;
+    
+    // ページ番号の範囲是正
+    if (historyPageState.page > totalPages) historyPageState.page = totalPages;
+    if (historyPageState.page < 1) historyPageState.page = 1;
+
+    // データの切り出し (Slice)
+    const startIndex = (historyPageState.page - 1) * historyPageState.perPage;
+    const endIndex = startIndex + historyPageState.perPage;
+    const slicedData = historyPageState.filteredData.slice(startIndex, endIndex);
+
+    // 既存のリスト描画関数を呼び出す（切り出したデータだけ渡す）
+    renderHistoryList(slicedData);
+
+    // ページネーションボタンの生成
+    if (totalItems <= historyPageState.perPage) {
+        paginationEl.innerHTML = ''; // 1ページのみならボタン不要
+        return;
+    }
+
+    let html = '';
+    // 前へボタン
+    html += `<button onclick="changeHistoryPage(${historyPageState.page - 1})" 
+             class="px-4 py-2 rounded border bg-white dark:bg-zinc-800 hover:bg-gray-100 dark:hover:bg-zinc-700 disabled:opacity-50 transition"
+             ${historyPageState.page === 1 ? 'disabled' : ''}>
+             <i class="bi bi-chevron-left"></i> 前へ</button>`;
+
+    // ページ番号表示
+    html += `<span class="font-bold font-mono mx-4">Page ${historyPageState.page} / ${totalPages}</span>`;
+
+    // 次へボタン
+    html += `<button onclick="changeHistoryPage(${historyPageState.page + 1})" 
+             class="px-4 py-2 rounded border bg-white dark:bg-zinc-800 hover:bg-gray-100 dark:hover:bg-zinc-700 disabled:opacity-50 transition"
+             ${historyPageState.page === totalPages ? 'disabled' : ''}>
+             次へ <i class="bi bi-chevron-right"></i></button>`;
+
+    paginationEl.innerHTML = html;
+}
+
+// ページ切り替えハンドラ
+function changeHistoryPage(newPage) {
+    historyPageState.page = newPage;
+    renderHistoryWithPagination();
+    // リストの一番上へスクロール
+    const listTop = document.getElementById('history-container');
+    if(listTop) listTop.scrollIntoView({ behavior: 'smooth' });
+}
     </script>
 </body>
 </html>
