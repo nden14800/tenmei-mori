@@ -6656,123 +6656,88 @@ function changeHistoryPage(newPage) {
         }
     }
 
-  // 3. PDFダウンロード関数 (iPad対応・クラッシュ防止・高画質版)
+  // 3. PDFダウンロード関数 (iPad対応・高画質プレビュー版)
     function downloadPDF(viewId) {
         // 対象のエリアIDを特定
         const elementId = viewId === 'about' ? 'about-content-area' : 'privacy-content-area';
-        const targetElement = document.getElementById(elementId);
-        if (!targetElement) return;
+        const sourceElement = document.getElementById(elementId);
+        if (!sourceElement) return;
 
-        // ボタンを一時的にローディング表示（すぐ戻ります）
+        // ボタンを一時的にローディング表示
         const btn = event.target.closest('button');
         const originalText = btn.innerHTML;
-        btn.innerHTML = '<i class="bi bi-printer"></i> 準備中...';
+        btn.innerHTML = '<i class="bi bi-hourglass-split"></i> PDF作成中...';
         btn.disabled = true;
 
-        // ■ 印刷用スタイルを動的に生成して追加
-        // (別ウィンドウではなく、今の画面に一時的に「印刷用の見た目」を適用します)
-        const styleId = 'print-dynamic-style';
-        let styleTag = document.getElementById(styleId);
-        if (styleTag) styleTag.remove(); // 古いのがあれば消す
+        // ファイル名生成
+        const dateStr = new Date().toISOString().slice(0, 10).replace(/-/g, '');
+        const fileName = viewId === 'about' ? `tenmei_terms_${dateStr}.pdf` : `tenmei_privacy_${dateStr}.pdf`;
 
-        styleTag = document.createElement('style');
-        styleTag.id = styleId;
-        styleTag.innerHTML = `
-            @media print {
-                /* --- 不要なものを消す --- */
-                #sidebar, #mist-container, #loading-overlay, #countdown-overlay, 
-                .nav-btn, button, .btn-primary, .btn-outline, 
-                #about-toc-container, #privacy-toc-container {
-                    display: none !important;
-                }
-                
-                /* --- 全体をリセット --- */
-                body, html, #main-content, .view-section {
-                    background: #fff !important;
-                    color: #000 !important;
-                    margin: 0 !important;
-                    padding: 0 !important;
-                    width: 100% !important;
-                    height: auto !important;
-                    overflow: visible !important;
-                    visibility: visible !important;
-                }
+        // PDF生成オプション（高画質・レイアウト補正）
+        const opt = {
+            margin:       [10, 10, 10, 10], // 上下左右の余白(mm)
+            filename:     fileName,
+            image:        { type: 'jpeg', quality: 0.98 }, // 最高画質設定
+            html2canvas:  { 
+                scale: 3,       // ★重要: 解像度を3倍にして文字をくっきりさせる
+                useCORS: true,  // 画像読み込み許可
+                // ▼ ここでPDF用に見た目を整形します（表の見切れ防止など）
+                onclone: (clonedDoc) => {
+                    const el = clonedDoc.getElementById(elementId);
+                    
+                    // 1. ダークモードや背景色を強制リセット（白紙に黒文字）
+                    el.style.backgroundColor = '#ffffff';
+                    el.style.color = '#000000';
+                    el.classList.remove('themed-card', 'dark'); // テーマ解除
+                    
+                    // 2. 不要なボタンや目次エリアを隠す
+                    const buttons = el.querySelectorAll('button, .btn-primary, #about-toc-container, #privacy-toc-container');
+                    buttons.forEach(b => b.style.display = 'none');
 
-                /* --- 全てのセクションを非表示にし、対象だけを表示 --- */
-                .view-section {
-                    display: none !important;
-                }
-                /* 対象のセクションだけ強制表示 */
-                #view-${viewId} {
-                    display: block !important;
-                    position: absolute !important;
-                    top: 0 !important;
-                    left: 0 !important;
-                    width: 100% !important;
-                }
+                    // 3. 全体の幅をA4サイズ(約800px)に強制固定して、はみ出しを防ぐ
+                    el.style.width = '780px';
+                    el.style.padding = '20px';
+                    
+                    // 4. 表（テーブル）がはみ出さないように強制縮小
+                    const tables = el.querySelectorAll('table');
+                    tables.forEach(tbl => {
+                        tbl.style.width = '100%';
+                        tbl.style.tableLayout = 'fixed'; // 幅を固定
+                        tbl.style.fontSize = '9px';      // 文字を小さくして収める
+                        tbl.style.wordWrap = 'break-word'; // 長い単語を改行
+                        
+                        // ヘッダーやセルのスタイル調整
+                        const cells = tbl.querySelectorAll('th, td');
+                        cells.forEach(c => {
+                            c.style.border = '1px solid #000'; // 黒枠線
+                            c.style.padding = '4px';
+                            c.style.whiteSpace = 'normal'; // 折り返し許可
+                        });
+                    });
 
-                /* --- コンテンツの見た目を「書類」にする --- */
-                .themed-card {
-                    border: none !important;
-                    box-shadow: none !important;
-                    padding: 0 !important;
-                    margin: 0 !important;
-                    font-family: 'Zen Old Mincho', serif !important;
+                    // 5. リンクの色を黒にする（印刷用）
+                    const links = el.querySelectorAll('a');
+                    links.forEach(a => a.style.color = '#000000');
                 }
+            },
+            jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+        };
 
-                /* --- 表（テーブル）の見切れ防止・自動縮小 --- */
-                .overflow-x-auto {
-                    overflow: visible !important;
-                    display: block !important;
-                }
-                table {
-                    width: 100% !important;
-                    table-layout: fixed !important; /* 幅を固定してはみ出し防止 */
-                    font-size: 7pt !important; /* 文字を小さくして収める */
-                    word-wrap: break-word !important; /* 長い単語を改行 */
-                }
-                th, td {
-                    padding: 4px !important;
-                    border: 1px solid #333 !important;
-                }
-                
-                /* --- 文字サイズの調整 --- */
-                h2 { font-size: 16pt !important; border-bottom: 2px solid #000 !important; }
-                h3 { font-size: 12pt !important; margin-top: 20px !important; }
-                p, li { font-size: 9pt !important; line-height: 1.6 !important; }
-                
-                /* リンクの装飾を消す */
-                a { text-decoration: none !important; color: #000 !important; }
-            }
-        `;
-        document.head.appendChild(styleTag);
-
-        // 少し待ってからプリントダイアログを起動 (スタイルの適用待ち)
-        setTimeout(() => {
-            window.print();
+        // PDFを生成し、BlobURLとして新しいタブで開く（プレビュー）
+        html2pdf().set(opt).from(sourceElement).output('bloburl').then(function(blobUrl) {
+            // ボタンを戻す
+            btn.innerHTML = originalText;
+            btn.disabled = false;
             
-            // ダイアログが出た後にボタンを戻す
-            // (iPadではダイアログが出ている間スクリプトが止まることがあるため)
-            setTimeout(() => {
-                btn.innerHTML = originalText;
-                btn.disabled = false;
-                // 使い終わったスタイルタグは削除しないと画面が崩れる可能性があるが、
-                // @media print なので画面表示には影響しません。
-                // 念のため afterprint イベントで消すのが行儀が良いですが、
-                // iOSの挙動安定のためあえて残すか、長めの遅延で消します。
-                
-                // クリーンアップ用イベントリスナ
-                const cleanup = () => {
-                    if(styleTag) styleTag.remove();
-                    window.removeEventListener('afterprint', cleanup);
-                };
-                window.addEventListener('afterprint', cleanup);
-                
-                // 万が一 afterprint が発火しない環境（一部のiOS）用にタイマーでも消す
-                setTimeout(cleanup, 5000); 
-                
-            }, 500);
-        }, 100);
+            // 新しいタブでPDFプレビューを開く
+            // (iPadではこれでPDFビューワーが起動します)
+            window.open(blobUrl, '_blank');
+        }).catch(err => {
+            console.error(err);
+            alert("PDFの生成に失敗しました。");
+            btn.innerHTML = originalText;
+            btn.disabled = false;
+        });
     }
 
     // 既存の showView 関数を少し修正して、画面表示時に目次を生成するようにする
