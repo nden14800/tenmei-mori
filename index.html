@@ -5454,51 +5454,57 @@ async function loadHistory() {
             });
         }
 
-        // 検索ロジック
-        function filterHistory() {
-            const type = document.getElementById('search-type').value;
-            const keyword = document.getElementById('search-keyword').value.toLowerCase();
-            const dateStart = document.getElementById('search-date-start').value;
-            const dateEnd = document.getElementById('search-date-end').value;
+        // 検索ロジック (修正版: ページ機能対応)
+function filterHistory() {
+    const type = document.getElementById('search-type').value;
+    const keyword = document.getElementById('search-keyword').value.toLowerCase();
+    const dateStart = document.getElementById('search-date-start').value;
+    const dateEnd = document.getElementById('search-date-end').value;
 
-            // 検索対象は現在表示中のグローバル履歴全体とする（タブ切り替え等は実装していないため）
-            // もし個人履歴だけにしたい場合は要件定義が必要だが、一旦グローバル全体から検索する仕様とする
-            let targetList = globalHistory;
+    let targetList = globalHistory;
 
-            const filtered = targetList.filter(item => {
-                const itemDate = new Date(item.timestamp);
-                
-                // 運勢タイプフィルタ
-                if (type !== 'all' && item.result !== type) return false;
+    const filtered = targetList.filter(item => {
+        const itemDate = new Date(item.timestamp);
+        
+        // 運勢タイプフィルタ
+        if (type !== 'all' && item.result !== type) return false;
 
-                // キーワードフィルタ (ユーザー名)
-                if (keyword && !item.username.toLowerCase().includes(keyword)) return false;
+        // キーワードフィルタ (ユーザー名)
+        if (keyword && !item.username.toLowerCase().includes(keyword)) return false;
 
-                // 日付範囲フィルタ
-                if (dateStart) {
-                    const start = new Date(dateStart);
-                    start.setHours(0, 0, 0, 0);
-                    if (itemDate < start) return false;
-                }
-                if (dateEnd) {
-                    const end = new Date(dateEnd);
-                    end.setHours(23, 59, 59, 999);
-                    if (itemDate > end) return false;
-                }
-
-                return true;
-            });
-
-            renderHistoryList(filtered);
+        // 日付範囲フィルタ
+        if (dateStart) {
+            const start = new Date(dateStart);
+            start.setHours(0, 0, 0, 0);
+            if (itemDate < start) return false;
+        }
+        if (dateEnd) {
+            const end = new Date(dateEnd);
+            end.setHours(23, 59, 59, 999);
+            if (itemDate > end) return false;
         }
 
-        function resetSearch() {
-            document.getElementById('search-type').value = 'all';
-            document.getElementById('search-keyword').value = '';
-            document.getElementById('search-date-start').value = '';
-            document.getElementById('search-date-end').value = '';
-            renderHistoryList(globalHistory);
-        }
+        return true;
+    });
+
+    // ★修正: フィルタ結果をセットして1ページ目を表示
+    historyPageState.filteredData = filtered;
+    historyPageState.page = 1;
+    renderHistoryWithPagination();
+}
+
+// リセット機能も修正
+function resetSearch() {
+    document.getElementById('search-type').value = 'all';
+    document.getElementById('search-keyword').value = '';
+    document.getElementById('search-date-start').value = '';
+    document.getElementById('search-date-end').value = '';
+    
+    // 全件に戻す
+    historyPageState.filteredData = globalHistory;
+    historyPageState.page = 1;
+    renderHistoryWithPagination();
+}
 
         // モーダル機能は使わなくなったので削除または無効化
         function openHistoryDetail(index) {
