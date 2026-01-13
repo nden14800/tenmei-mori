@@ -5436,12 +5436,13 @@ async function loadHistory() {
     }
 }
 
-        // 履歴リストのレンダリング関数 (検索機能から再利用するため分離)
+        // 履歴リストのレンダリング関数 (修正版: 件数表示の上書きを削除)
         function renderHistoryList(historyData) {
             const list = document.getElementById('history-list');
             list.innerHTML = '';
             
-            document.getElementById('search-result-count').textContent = historyData.length;
+            // 【削除】ここで件数を上書きしていたため、ページごとの件数になってしまっていました。
+            // document.getElementById('search-result-count').textContent = historyData.length;
 
             if(historyData.length === 0) {
                 list.innerHTML = '<p class="text-gray-400 text-center">該当する履歴がありません。</p>';
