@@ -6598,6 +6598,149 @@ function changeHistoryPage(newPage) {
     const listTop = document.getElementById('history-container');
     if(listTop) listTop.scrollIntoView({ behavior: 'smooth' });
 }
+
+        // --- 新規追加: 目次生成とPDFダウンロード機能 ---
+
+    // 1. 目次生成関数
+    function initTOC(viewId) {
+        const contentAreaId = viewId === 'about' ? 'about-content-area' : 'privacy-content-area';
+        const tocContainer = document.getElementById(`${viewId}-toc-container`);
+        const tocList = document.getElementById(`${viewId}-toc-list`);
+        
+        if(!tocContainer || !tocList) return;
+
+        // すでに生成済みなら何もしない（重複防止）
+        if(tocList.children.length > 0) {
+            tocContainer.classList.remove('hidden');
+            return;
+        }
+
+        const area = document.getElementById(contentAreaId);
+        // H3とH4タグを収集
+        const headers = area.querySelectorAll('h3, h4');
+        
+        if(headers.length === 0) return;
+
+        let tocHTML = '';
+        headers.forEach((header, index) => {
+            // IDがなければ付与する
+            if(!header.id) {
+                header.id = `${viewId}-header-${index}`;
+            }
+
+            const isH3 = header.tagName.toLowerCase() === 'h3';
+            const indent = isH3 ? '' : 'ml-4';
+            const icon = isH3 ? 'bi-caret-right-fill' : 'bi-dot';
+            const fontSize = isH3 ? 'font-bold' : 'text-xs text-gray-600 dark:text-gray-400';
+
+            tocHTML += `
+                <li class="${indent} ${fontSize}">
+                    <a href="#${header.id}" class="hover:text-red-500 hover:underline flex items-start transition" onclick="smoothScroll(event, '${header.id}')">
+                        <i class="bi ${icon} mt-1 mr-1 flex-shrink-0"></i>
+                        <span>${header.textContent}</span>
+                    </a>
+                </li>
+            `;
+        });
+
+        tocList.innerHTML = tocHTML;
+        tocContainer.classList.remove('hidden');
+    }
+
+    // 2. スムーズスクロール用
+    function smoothScroll(e, targetId) {
+        e.preventDefault();
+        const target = document.getElementById(targetId);
+        if(target) {
+            target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+    }
+
+    // 3. PDFダウンロード関数
+    function downloadPDF(viewId) {
+        const elementId = viewId === 'about' ? 'about-content-area' : 'privacy-content-area';
+        const element = document.getElementById(elementId);
+        const btn = event.target.closest('button'); // ボタン自体を取得
+
+        if(!element) return;
+
+        // ボタンを一時的にローディング状態に
+        const originalText = btn.innerHTML;
+        btn.innerHTML = '<i class="bi bi-hourglass-split"></i> 生成中...';
+        btn.disabled = true;
+
+        // ファイル名
+        const dateStr = new Date().toISOString().slice(0, 10).replace(/-/g, '');
+        const fileName = viewId === 'about' ? `tenmei_terms_${dateStr}.pdf` : `tenmei_privacy_${dateStr}.pdf`;
+
+        // オプション設定
+        const opt = {
+            margin:       10,
+            filename:     fileName,
+            image:        { type: 'jpeg', quality: 0.98 },
+            html2canvas:  { scale: 2, useCORS: true },
+            jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' }
+        };
+
+        // PDF生成実行
+        html2pdf().set(opt).from(element).save().then(() => {
+            // 完了後にボタンを戻す
+            btn.innerHTML = originalText;
+            btn.disabled = false;
+        }).catch(err => {
+            console.error(err);
+            alert("PDF生成に失敗しました。");
+            btn.innerHTML = originalText;
+            btn.disabled = false;
+        });
+    }
+
+    // 既存の showView 関数を少し修正して、画面表示時に目次を生成するようにする
+    const originalShowView = window.showView; // 既存の関数を退避（または直接書き換え）
+    
+    // showView関数を上書き（既存のロジック + 目次生成呼び出し）
+    window.showView = function(viewId) {
+        // --- 既存のshowViewの中身 ---
+        // Lab機能へのアクセス制限処理
+        if(viewId === 'lab') {
+            const lock = document.getElementById('lab-lock');
+            const wrapper = document.getElementById('lab-content-wrapper');
+            
+            if(!currentState.user) {
+                lock.classList.remove('hidden');
+                wrapper.classList.add('lab-blurred');
+            } else {
+                lock.classList.add('hidden');
+                wrapper.classList.remove('lab-blurred');
+            }
+        }
+
+        // 画面の切り替え
+        document.querySelectorAll('.view-section').forEach(el => {
+            el.classList.remove('active');
+            setTimeout(() => {
+                if(!el.classList.contains('active')) el.style.display = 'none';
+            }, 500);
+        });
+        
+        const target = document.getElementById(`view-${viewId}`);
+        if (target) {
+            target.style.display = 'block';
+            void target.offsetWidth; 
+            target.classList.add('active');
+        }
+        currentState.view = viewId;
+
+        // 各ビューごとの初期化ロジック
+        if(viewId === 'draw') resetOmikujiPool();
+        if(viewId === 'history') loadHistory();
+        if(viewId === 'prefecture') renderPrefectureRanking();
+
+        // ★追加: 規約・ポリシー画面を開いた時に目次を生成
+        if(viewId === 'about' || viewId === 'privacy') {
+            initTOC(viewId);
+        }
+    };
     </script>
 </body>
 </html>
