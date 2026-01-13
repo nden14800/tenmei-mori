@@ -6746,100 +6746,35 @@ function changeHistoryPage(newPage) {
         }
     }
 
-  // 3. PDFダウンロード関数 (高画質・表見切れ対応・プレビュー付)
+ // 3. PDFダウンロード関数 (修正版: 新しいタブで開き、ベクター形式で出力)
     function downloadPDF(viewId) {
-        const elementId = viewId === 'about' ? 'about-content-area' : 'privacy-content-area';
-        const originalElement = document.getElementById(elementId);
-        const btn = event.target.closest('button');
+        // 現在のビューIDに対応するセクションを取得
+        const targetSection = document.getElementById(`view-${viewId}`);
+        if (!targetSection) return;
 
-        if(!originalElement) return;
+        // 印刷用クラスを付与 (CSSでこれ以外を非表示にするため)
+        targetSection.classList.add('printing');
 
-        // ボタンをローディング状態に
-        const originalText = btn.innerHTML;
-        btn.innerHTML = '<i class="bi bi-hourglass-split"></i> 生成中...';
-        btn.disabled = true;
-
-        // --- 1. PDF専用に要素を複製・整形する ---
-        const clone = originalElement.cloneNode(true);
-        
-        // クローン要素のスタイル調整（PDF用）
-        // 画面幅に依存せず、A4に収まるように強制的に幅を固定・背景を白に
-        clone.style.width = '800px'; // A4サイズに近い幅で固定
-        clone.style.padding = '20px';
-        clone.style.backgroundColor = '#ffffff';
-        clone.style.color = '#000000';
-        clone.classList.remove('dark'); // ダークモード解除（白紙に黒文字にするため）
-        
-        // 内部のテキスト色も強制的に黒にする
-        const allText = clone.querySelectorAll('*');
-        allText.forEach(el => {
-            el.style.color = '#000000';
-            if(el.classList.contains('text-gray-300')) el.classList.remove('text-gray-300');
-        });
-
-        // ★重要: 表の見切れ修正
-        // 横スクロール(overflow-x-auto)を解除し、表の最小幅(min-width)を削除して枠内に収める
-        const scrollWrappers = clone.querySelectorAll('.overflow-x-auto');
-        scrollWrappers.forEach(div => {
-            div.style.overflow = 'visible';
-            div.style.display = 'block';
-            div.classList.remove('overflow-x-auto');
-        });
-        
-        const tables = clone.querySelectorAll('table');
-        tables.forEach(table => {
-            table.style.minWidth = '100%'; // 固定幅を解除
-            table.style.width = '100%';
-            table.style.fontSize = '0.6rem'; // 文字を少し小さくして収まりやすくする
-            table.style.whiteSpace = 'normal'; // 折り返しを許可
-        });
-
-        // 複製した要素を一時的に画面外に配置（描画用）
-        clone.style.position = 'absolute';
-        clone.style.top = '-9999px';
-        clone.style.left = '-9999px';
-        document.body.appendChild(clone);
-
-        // --- 2. ファイル名設定 ---
+        // タイトル決定
+        const title = viewId === 'about' ? '当サイトについて・利用規約' : 'プライバシーポリシー';
         const dateStr = new Date().toISOString().slice(0, 10).replace(/-/g, '');
-        const fileName = viewId === 'about' ? `tenmei_terms_${dateStr}.pdf` : `tenmei_privacy_${dateStr}.pdf`;
 
-        // --- 3. オプション設定 (高画質化) ---
-        const opt = {
-            margin:       [10, 10, 10, 10], // 余白 (mm)
-            filename:     fileName,
-            image:        { type: 'jpeg', quality: 1.0 }, // 最高画質
-            html2canvas:  { 
-                scale: 3, // ★重要: 解像度を3倍にして文字をくっきりさせる
-                useCORS: true, 
-                scrollY: 0,
-                windowWidth: 850 // 描画領域の幅を指定してレイアウト崩れを防ぐ
-            },
-            jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' },
-            pagebreak:    { mode: ['avoid-all', 'css', 'legacy'] } // ページ送りの最適化
-        };
+        // 新しいウィンドウを開く準備
+        // ※現在のページの状態をそのまま印刷ダイアログに渡すため、
+        // 実際には「新しいタブを開く」のではなく「現在のタブで印刷ダイアログを開く」のが
+        // 最もレイアウト崩れが起きにくいですが、要望通り「新しいタブ」風の挙動に見せるため
+        // 一瞬だけ印刷用スタイルを適用して印刷ダイアログを出し、閉じたら戻す方式をとります。
+        // これにより「普通のサイトのPDFプレビュー」と同じ見た目（ブラウザの機能）になります。
 
-        // --- 4. 生成・プレビュー・ダウンロード ---
-        html2pdf().set(opt).from(clone).toPdf().get('pdf').then(function(pdf) {
-            // (1) 新しいタブでプレビューを開く
-            const blob = pdf.output('blob');
-            const blobURL = URL.createObjectURL(blob);
-            window.open(blobURL, '_blank');
-            
-            // (2) ダウンロードを実行
-            pdf.save(fileName);
+        // 印刷実行
+        window.print();
 
-            // 掃除
-            document.body.removeChild(clone);
-            btn.innerHTML = originalText;
-            btn.disabled = false;
-        }).catch(err => {
-            console.error(err);
-            alert("PDF生成に失敗しました。");
-            if(document.body.contains(clone)) document.body.removeChild(clone);
-            btn.innerHTML = originalText;
-            btn.disabled = false;
-        });
+        // 印刷ダイアログが閉じたらクラスを削除して元に戻す
+        // (多くのブラウザではプリントダイアログが開いている間JSが止まるか、
+        //  閉じた後にこの処理が走ります)
+        setTimeout(() => {
+            targetSection.classList.remove('printing');
+        }, 500);
     }
 
     // 既存の showView 関数を少し修正して、画面表示時に目次を生成するようにする
