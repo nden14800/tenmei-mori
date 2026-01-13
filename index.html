@@ -1171,6 +1171,96 @@
             border-color: #d4af37 !important;
         }
 
+        /* --- PDF・印刷用スタイル (ベクター出力・表見切れ防止) --- */
+        @media print {
+            @page {
+                size: A4;
+                margin: 20mm;
+            }
+            body {
+                background: #fff !important;
+                color: #000 !important;
+                display: block !important;
+                height: auto !important;
+                overflow: visible !important;
+            }
+            /* 不要な要素を消す */
+            #sidebar, #mist-container, #loading-overlay, 
+            .nav-btn, .btn-primary, .btn-outline, 
+            #about-toc-container, #privacy-toc-container,
+            #result-capture-container, button {
+                display: none !important;
+            }
+            /* メインコンテンツの調整 */
+            #main-content {
+                margin: 0 !important;
+                padding: 0 !important;
+                width: 100% !important;
+            }
+            .view-section {
+                display: none !important; /* 一旦全部消す */
+            }
+            /* 印刷対象のセクションだけ表示 */
+            .view-section.printing {
+                display: block !important;
+                opacity: 1 !important;
+            }
+            
+            /* カードの枠などを消して文書らしくする */
+            .themed-card {
+                border: none !important;
+                box-shadow: none !important;
+                padding: 0 !important;
+                background: transparent !important;
+                color: #000 !important;
+            }
+            
+            /* 表の見切れ防止・最適化 */
+            .overflow-x-auto {
+                overflow: visible !important;
+                display: block !important;
+                width: 100% !important;
+            }
+            table, .comparison-table {
+                width: 100% !important;
+                min-width: 0 !important; /* 横幅強制解除 */
+                table-layout: fixed !important; /* 列幅を均等または指定通りに */
+                border-collapse: collapse !important;
+                font-size: 8pt !important; /* 表の文字を少し小さくして収める */
+                page-break-inside: auto;
+            }
+            tr { 
+                page-break-inside: avoid; 
+                page-break-after: auto; 
+            }
+            th, td {
+                border: 1px solid #000 !important; /* 枠線を黒く鮮明に */
+                padding: 4px !important;
+                color: #000 !important;
+                word-wrap: break-word !important; /* 長い文字を折り返す */
+                white-space: normal !important; /* 改行を許可 */
+            }
+            /* 背景色があるセル */
+            .bg-gray-200, .bg-gray-50, .bg-red-100 {
+                background-color: #f0f0f0 !important; /* 薄いグレーに統一 */
+                -webkit-print-color-adjust: exact; /* 背景色を強制印刷 */
+                print-color-adjust: exact;
+            }
+            /* リンクのURL表示を消す */
+            a[href]:after {
+                content: none !important;
+            }
+            /* テキスト調整 */
+            h2, h3, h4 {
+                page-break-after: avoid;
+                color: #000 !important;
+                border-bottom: 1px solid #000 !important;
+            }
+            p, li {
+                color: #000 !important;
+            }
+        }
+
     </style>
 </head>
 <body>
