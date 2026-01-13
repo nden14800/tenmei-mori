@@ -5346,69 +5346,73 @@ function handleInputQuiz(button, correctAnswers, questionId) {
             }
         }
 
-        // --- 履歴・おみくじの轍 ---
-        async function loadHistory() {
-            const list = document.getElementById('history-list');
-            const container = document.getElementById('history-container');
-            const overlay = document.getElementById('history-login-overlay');
-            const viewMode = document.getElementById('history-view-mode');
-            const myCountEl = document.getElementById('personal-history-count');
-            const globalCountEl = document.getElementById('global-history-count');
+       // --- 履歴・おみくじの轍 (修正版: ページ機能対応) ---
+async function loadHistory() {
+    const list = document.getElementById('history-list');
+    const container = document.getElementById('history-container');
+    const overlay = document.getElementById('history-login-overlay');
+    const viewMode = document.getElementById('history-view-mode');
+    const myCountEl = document.getElementById('personal-history-count');
+    const globalCountEl = document.getElementById('global-history-count');
+    const pagination = document.getElementById('history-pagination'); // 追加
 
-            list.innerHTML = '';
+    list.innerHTML = '';
+    pagination.innerHTML = ''; // リセット
 
-            if(!currentState.user) {
-                container.classList.add('history-blurred');
-                overlay.classList.remove('hidden');
-                viewMode.textContent = "";
-                myCountEl.textContent = "-";
-                globalCountEl.textContent = "-";
-
-                let html = '';
-                for(let i=0; i<10; i++) {
-                    html += `
-                        <div class="bg-gray-50 dark:bg-zinc-800 p-3 rounded flex justify-between items-center border-l-4 border-gray-300">
-                            <div class="flex flex-col">
-                                <span class="text-xs themed-text-sub">??? 様</span>
-                                <span class="text-xs text-gray-400">----/--/--</span>
-                            </div>
-                            <span class="font-bold text-lg">???</span>
-                        </div>
-                    `;
-                }
-                list.innerHTML = html;
-                return;
-            }
-
-            container.classList.remove('history-blurred');
-            overlay.classList.add('hidden');
-            viewMode.textContent = "全参拝者の記録 (全期間)";
-            list.innerHTML = '<p class="text-center text-sm themed-text-sub">読み込み中...</p>';
-            showLoading(true);
-
-            try {
-                const res = await fetch(`${API_BASE}/api/history/global?token=${encodeURIComponent(currentState.user.token)}`);
-                if(res.ok) {
-                    const data = await res.json();
-                    globalHistory = data.global || [];
-                    personalHistory = data.personal || [];
-                    
-                    myCountEl.textContent = personalHistory.length + "回";
-                    globalCountEl.textContent = globalHistory.length + "回";
-
-                    // 初回レンダリング (全件)
-                    renderHistoryList(globalHistory);
-                    
-                } else {
-                    list.innerHTML = '<p class="text-center text-red-500">取得失敗</p>';
-                }
-            } catch(e) {
-                console.error(e);
-                list.innerHTML = '<p class="text-center text-red-500">通信エラー</p>';
-            } finally {
-                showLoading(false);
-            }
+    if(!currentState.user) {
+        container.classList.add('history-blurred');
+        overlay.classList.remove('hidden');
+        viewMode.textContent = "";
+        myCountEl.textContent = "-";
+        globalCountEl.textContent = "-";
+        // 非ログイン時のダミー表示
+        let html = '';
+        for(let i=0; i<10; i++) {
+            html += `
+                <div class="bg-gray-50 dark:bg-zinc-800 p-3 rounded flex justify-between items-center border-l-4 border-gray-300">
+                    <div class="flex flex-col">
+                        <span class="text-xs themed-text-sub">??? 様</span>
+                        <span class="text-xs text-gray-400">----/--/--</span>
+                    </div>
+                    <span class="font-bold text-lg">???</span>
+                </div>
+            `;
         }
+        list.innerHTML = html;
+        return;
+    }
+
+    container.classList.remove('history-blurred');
+    overlay.classList.add('hidden');
+    viewMode.textContent = "全参拝者の記録 (全期間)";
+    list.innerHTML = '<p class="text-center text-sm themed-text-sub">読み込み中...</p>';
+    showLoading(true);
+
+    try {
+        const res = await fetch(`${API_BASE}/api/history/global?token=${encodeURIComponent(currentState.user.token)}`);
+        if(res.ok) {
+            const data = await res.json();
+            globalHistory = data.global || [];
+            personalHistory = data.personal || [];
+            
+            myCountEl.textContent = personalHistory.length + "回";
+            globalCountEl.textContent = globalHistory.length + "回";
+
+            // ★修正: データをセットしてページ表示関数を呼ぶ
+            historyPageState.filteredData = globalHistory;
+            historyPageState.page = 1;
+            renderHistoryWithPagination();
+            
+        } else {
+            list.innerHTML = '<p class="text-center text-red-500">取得失敗</p>';
+        }
+    } catch(e) {
+        console.error(e);
+        list.innerHTML = '<p class="text-center text-red-500">通信エラー</p>';
+    } finally {
+        showLoading(false);
+    }
+}
 
         // 履歴リストのレンダリング関数 (検索機能から再利用するため分離)
         function renderHistoryList(historyData) {
