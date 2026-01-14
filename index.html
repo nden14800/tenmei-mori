@@ -6747,7 +6747,7 @@ function changeHistoryPage(newPage) {
         }
     }
 
- // 3. PDFダウンロード関数 (修正版: 安定CDN・完全ベクター・新タブプレビュー)
+// 3. PDFダウンロード関数 (修正版: 安定フォントURL・完全ベクター・新タブプレビュー)
     async function downloadPDF(viewId) {
         const { jsPDF } = window.jspdf;
         
@@ -6773,11 +6773,12 @@ function changeHistoryPage(newPage) {
             const contentWidth = pdfWidth - (margin * 2);
 
             // ---------------------------------------------------------
-            // 2. 日本語フォントの取得 (JSDelivr CDNを使用)
+            // 2. 日本語フォントの取得 (IPAex明朝)
             // ---------------------------------------------------------
-            // ※「しっぽり明朝」の正規TTFファイルをCDNから取得
-            const fontUrl = 'https://cdn.jsdelivr.net/gh/googlefonts/shippori-mincho@main/fonts/ttf/ShipporiMincho-Regular.ttf';
-            const fontFilename = 'ShipporiMincho-Regular.ttf';
+            // ※先ほどのURLが404だったため、より確実な「IPAex明朝」のURLに変更しました。
+            // GitHubのRawデータサーバーから取得します。
+            const fontUrl = 'https://raw.githubusercontent.com/minoryorg/ipaex-font/master/ipaexm.ttf';
+            const fontFilename = 'ipaexm.ttf';
 
             const response = await fetch(fontUrl);
             if (!response.ok) {
@@ -6786,7 +6787,7 @@ function changeHistoryPage(newPage) {
             
             const buffer = await response.arrayBuffer();
             
-            // バイナリデータ変換 (jsPDF互換)
+            // バイナリデータ変換 (jsPDF互換処理)
             let binary = '';
             const bytes = new Uint8Array(buffer);
             const len = bytes.byteLength;
@@ -6795,9 +6796,10 @@ function changeHistoryPage(newPage) {
             }
 
             // フォントをPDFに追加・登録
+            // フォント名を 'MyFont' として登録します
             doc.addFileToVFS(fontFilename, binary);
-            doc.addFont(fontFilename, 'Shippori', 'normal');
-            doc.setFont('Shippori'); 
+            doc.addFont(fontFilename, 'MyFont', 'normal');
+            doc.setFont('MyFont'); 
 
             btn.innerHTML = '<i class="bi bi-file-earmark-pdf"></i> PDF作成中...';
 
@@ -6806,14 +6808,16 @@ function changeHistoryPage(newPage) {
             // ---------------------------------------------------------
             const clone = sourceElement.cloneNode(true);
             
-            // A4文書用スタイル調整 (レスポンシブ崩れ防止)
+            // A4文書用スタイル調整
             clone.style.width = contentWidth + 'px';
             clone.style.padding = '0';
             clone.style.background = '#ffffff';
             clone.style.color = '#000000';
-            // 登録したフォント名をCSSにも適用
-            clone.style.fontFamily = "'Shippori', serif"; 
-            clone.style.fontSize = '10.5pt'; // 一般的な文書サイズ
+            
+            // ★重要: PDF内で使うフォント名を、先ほど登録した 'MyFont' に指定
+            // これにより、HTML内の文字が正しくPDFの埋め込みフォントに紐付きます
+            clone.style.fontFamily = "'MyFont', serif"; 
+            clone.style.fontSize = '10.5pt';
             clone.style.lineHeight = '1.6';
             
             // 不要要素削除
@@ -6830,10 +6834,10 @@ function changeHistoryPage(newPage) {
                 
                 const cells = table.querySelectorAll('th, td');
                 cells.forEach(cell => {
-                    cell.style.border = '1px solid #000'; // 黒枠でくっきり
+                    cell.style.border = '1px solid #000'; // 黒枠
                     cell.style.padding = '4px';
                     cell.style.wordBreak = 'break-all'; // はみ出し防止
-                    cell.style.backgroundColor = 'transparent'; // 背景クリア
+                    cell.style.backgroundColor = 'transparent'; 
                 });
             });
 
@@ -6846,7 +6850,6 @@ function changeHistoryPage(newPage) {
             // ---------------------------------------------------------
             // 4. ベクター形式でPDF化実行
             // ---------------------------------------------------------
-            // jsPDFのhtmlメソッドは、フォントがあればテキストをテキストとして出力します
             await doc.html(clone, {
                 callback: function(doc) {
                     // クローン削除
@@ -6863,19 +6866,17 @@ function changeHistoryPage(newPage) {
                 },
                 x: margin,
                 y: margin,
-                width: contentWidth, // コンテンツ幅指定 (重要)
-                windowWidth: contentWidth, // ウィンドウ幅偽装 (重要)
-                autoPaging: 'text', // 文字途中でのページ送り防止
-                margin: [40, 40, 40, 40],
+                width: contentWidth, 
+                windowWidth: contentWidth, 
+                autoPaging: 'text', 
                 html2canvas: {
-                    scale: 0.8, // 文字サイズ調整
+                    scale: 0.8,
                     useCORS: true
                 }
             });
 
         } catch (e) {
             console.error(e);
-            // 具体的なエラー内容をアラート表示
             alert("PDF生成エラー: " + e.message);
             btn.innerHTML = originalText;
             btn.disabled = false;
