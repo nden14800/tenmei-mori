@@ -6747,8 +6747,9 @@ function changeHistoryPage(newPage) {
         }
     }
 
- // 3. PDFダウンロード関数 (修正版: ベクター形式・新タブプレビュー・表見切れ防止)
+ // 3. PDFダウンロード関数 (修正版: 高画質画像化・新タブプレビュー・表見切れ防止)
     async function downloadPDF(viewId) {
+        // jsPDFのインスタンス作成
         const { jsPDF } = window.jspdf;
         
         // 対象エリアの取得
@@ -6765,80 +6766,106 @@ function changeHistoryPage(newPage) {
 
         try {
             // A4サイズのPDFドキュメントを作成 (pt単位)
-            // A4 = 595.28pt x 841.89pt
             const doc = new jsPDF('p', 'pt', 'a4');
-            const pdfWidth = 595.28;
-            const margin = 40; // 左右マージン
+            const pdfWidth = 595.28; // A4幅
+            const pageHeight = 841.89; // A4高さ
+            const margin = 30; // 余白
             const contentWidth = pdfWidth - (margin * 2);
 
-            // PDF生成用に一時的なクローンを作成（画面表示には影響させないため）
+            // 1. レンダリング用のクローンを作成（画面表示に影響を与えないため）
             const clone = sourceElement.cloneNode(true);
             
-            // クローンのスタイル調整（PDF用に見やすく、表が見切れないように）
-            clone.style.width = contentWidth + 'px'; // A4幅に強制
-            clone.style.padding = '0';
+            // クローンのスタイルをA4印刷用に強制調整
+            // ここで幅を固定することで、表の見切れを防ぎます
+            clone.style.width = '750px'; // A4幅に収まる適切なピクセル幅（高解像度用）
+            clone.style.padding = '40px';
             clone.style.background = '#ffffff';
             clone.style.color = '#000000';
+            clone.style.position = 'absolute';
+            clone.style.top = '-9999px'; // 画面外に配置
+            clone.style.left = '-9999px';
             
-            // 不要な要素（目次コンテナなど）を削除
-            const toc = clone.querySelector(`#${viewId}-toc-container`);
-            if(toc) toc.remove();
+            // 不要な要素（目次ボタンなど）を削除
+            const tocBtn = clone.querySelector(`#${viewId}-toc-container`);
+            if(tocBtn) tocBtn.remove();
 
-            // 表のスタイル強制調整（文字を小さくして枠内に収める）
+            // 表（Table）のスタイル最適化
             const tables = clone.querySelectorAll('table');
             tables.forEach(table => {
                 table.style.width = '100%';
-                table.style.tableLayout = 'fixed'; // 列幅を固定
-                table.style.fontSize = '8px'; // 表内の文字を縮小
-                table.style.wordBreak = 'break-all'; // 長い単語を折り返す
+                table.style.tableLayout = 'fixed';
+                table.style.fontSize = '10px'; // 文字を少し小さくして収める
+                table.style.borderCollapse = 'collapse';
                 
-                // セルのパディング調整
+                // セルの枠線をくっきり黒に
                 const cells = table.querySelectorAll('th, td');
                 cells.forEach(cell => {
-                    cell.style.padding = '4px';
-                    cell.style.border = '1px solid #000'; // 枠線をくっきり黒に
+                    cell.style.border = '1px solid #000';
+                    cell.style.padding = '6px';
+                    cell.style.wordBreak = 'break-word'; // 長い文字を折り返す
+                    cell.classList.remove('bg-gray-200', 'bg-gray-50', 'dark:bg-zinc-700', 'dark:bg-zinc-800'); // 背景色リセット
                 });
+                // ヘッダー背景を薄いグレーに
+                const headers = table.querySelectorAll('th');
+                headers.forEach(h => h.style.backgroundColor = '#f0f0f0');
             });
 
-            // 本文のフォント調整
-            clone.style.fontSize = '10pt';
+            // 本文フォント調整
             clone.style.fontFamily = "'Shippori Mincho', serif";
+            clone.style.lineHeight = '1.6';
 
-            // 一時的にbodyに追加（レンダリングのため。不可視にする）
-            clone.style.position = 'absolute';
-            clone.style.top = '-9999px';
-            clone.style.left = '-9999px';
+            // bodyに追加してレンダリング準備
             document.body.appendChild(clone);
 
-            // jsPDFのhtmlメソッドで変換実行
-            // これが「ベクター形式」でPDF化する機能です
-            await doc.html(clone, {
-                callback: function(doc) {
-                    // クローンを削除
-                    document.body.removeChild(clone);
-
-                    // Blob URLを生成
-                    const blob = doc.output('blob');
-                    const url = URL.createObjectURL(blob);
-
-                    // 新しいタブで開く (プレビュー)
-                    window.open(url, '_blank');
-
-                    // ボタンを戻す
-                    btn.innerHTML = originalText;
-                    btn.disabled = false;
-                },
-                x: margin,
-                y: margin,
-                width: contentWidth, // コンテンツ幅を指定して自動改行させる
-                windowWidth: contentWidth, // ウィンドウ幅を偽装してレスポンシブ崩れを防ぐ
-                autoPaging: 'text', // テキストの途中でのページ送りを最適化
-                margin: [40, 40, 40, 40]
+            // 2. html2canvasで高画質画像化 (scale: 2〜3 でくっきりさせる)
+            const canvas = await html2canvas(clone, {
+                scale: 2.5, // 高画質設定
+                useCORS: true,
+                logging: false,
+                backgroundColor: '#ffffff',
+                windowWidth: clone.scrollWidth,
+                windowHeight: clone.scrollHeight
             });
+
+            // クローンを削除
+            document.body.removeChild(clone);
+
+            // 3. Canvas画像をPDFに追加（ページ分割処理）
+            const imgData = canvas.toDataURL('image/jpeg', 0.95);
+            const imgProps = doc.getImageProperties(imgData);
+            const pdfHeight = (imgProps.height * contentWidth) / imgProps.width;
+            
+            let heightLeft = pdfHeight;
+            let position = margin;
+            let page = 1;
+
+            // 1ページ目
+            doc.addImage(imgData, 'JPEG', margin, position, contentWidth, pdfHeight);
+            heightLeft -= (pageHeight - margin * 2);
+
+            // 2ページ目以降があれば追加
+            while (heightLeft > 0) {
+                position = heightLeft - pdfHeight + margin; // 位置調整は簡易的
+                doc.addPage();
+                // 画像の表示位置をずらして次ページ分を表示させる（マスキング的な処理）
+                // ※jsPDFのaddImageはクロッピングが難しいため、ここでは簡易的に全体をずらして配置
+                // 厳密なページ送りが必要な場合は複雑になりますが、規約文程度ならこれで読めます
+                doc.addImage(imgData, 'JPEG', margin, margin - (pdfHeight - heightLeft), contentWidth, pdfHeight);
+                heightLeft -= (pageHeight - margin * 2);
+            }
+
+            // 4. Blob URLを生成して新しいタブで開く
+            const blob = doc.output('blob');
+            const url = URL.createObjectURL(blob);
+            window.open(url, '_blank');
+
+            // ボタンを元に戻す
+            btn.innerHTML = originalText;
+            btn.disabled = false;
 
         } catch (e) {
             console.error(e);
-            alert("PDF生成中にエラーが発生しました。");
+            alert("PDF生成エラーが発生しました。");
             btn.innerHTML = originalText;
             btn.disabled = false;
         }
