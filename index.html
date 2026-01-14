@@ -6230,26 +6230,29 @@ ${getShareUrl()}`;
             showView('article-detail');
         }
 
-        // --- お気に入り、ランキングなど既存機能 (省略なし) ---
         async function loadFavorites() {
-            const badge = document.getElementById('fav-status-badge');
-            if(currentState.user) {
-                if(badge) badge.textContent = "同期中...";
-                try {
-                    const res = await fetch(`${API_BASE}/api/favorites?email=${encodeURIComponent(currentState.user.email)}&token=${encodeURIComponent(currentState.user.token)}`);
-                    if(res.ok) {
-                        const data = await res.json();
-                        favoriteList = data.favorites || [];
-                        if(badge) badge.textContent = "クラウド保存済み";
-                    }
-                } catch(e) { console.error(e); }
-            } else {
-                const stored = localStorage.getItem('fortuneFavorites');
-                if (stored) favoriteList = JSON.parse(stored);
-                if(badge) badge.textContent = "端末に保存中";
-            }
-            renderFavorites();
+        const badge = document.getElementById('fav-status-badge');
+        
+        if (currentState.user) {
+            // ログイン時: サーバーからデータを取得
+            if(badge) badge.textContent = "同期中...";
+            try {
+                const res = await fetch(`${API_BASE}/api/favorites?email=${encodeURIComponent(currentState.user.email)}&token=${encodeURIComponent(currentState.user.token)}`);
+                if(res.ok) {
+                    const data = await res.json();
+                    favoriteList = data.favorites || [];
+                    if(badge) badge.textContent = "クラウド保存済み";
+                }
+            } catch(e) { console.error(e); }
+        } else {
+            // 未ログイン時: リストを空にする (端末内データは読み込まない)
+            favoriteList = [];
+            if(badge) badge.textContent = "";
         }
+        
+        // 描画更新 (リストが空ならセクションごと非表示になります)
+        renderFavorites();
+    }
 
         // 12星座ロジック
         function initZodiacSystem() {
