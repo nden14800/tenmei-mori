@@ -2681,7 +2681,7 @@
         title: "只今、メンテナンス中です"
     };
 
-    // メンテナンスチェック関数 (簡潔・スクロール対応版)
+    // メンテナンスチェック関数 (日またぎ対応・簡潔版)
     function checkMaintenance() {
         if (!maintenanceConfig.enabled) return;
 
@@ -2695,10 +2695,37 @@
         }
 
         if (now >= start && now < end) {
-            // 日付表示用のフォーマット作成 (例: 2026年 1月14日 18:00 ～ 19:00)
+            // ヘルパー関数: 時間を "18:00" 形式に
             const formatTime = (d) => `${d.getHours()}:${String(d.getMinutes()).padStart(2, '0')}`;
-            const dateStr = `${start.getFullYear()}年 ${start.getMonth()+1}月${start.getDate()}日`;
-            const timeRange = `${formatTime(start)} ～ ${formatTime(end)}`;
+            // ヘルパー関数: 日付を "2026年 1月14日" 形式に
+            const formatDate = (d) => `${d.getFullYear()}年 ${d.getMonth()+1}月${d.getDate()}日`;
+
+            // 日またぎ判定 (年月日が全て同じかチェック)
+            const isSameDay = (start.getFullYear() === end.getFullYear()) &&
+                              (start.getMonth() === end.getMonth()) &&
+                              (start.getDate() === end.getDate());
+
+            let dateDisplayStr = "";
+            if (isSameDay) {
+                // 同じ日の場合: 日付は最初に1回だけ表示
+                // 例: 2026年 1月14日 18:00 ～ 19:00
+                dateDisplayStr = `${formatDate(start)} ${formatTime(start)} ～ ${formatTime(end)}`;
+            } else {
+                // 日付をまたぐ場合: 両方の日付を表示
+                // 例: 2026年 1月14日 23:00 ～ 2026年 1月15日 02:00
+                dateDisplayStr = `${formatDate(start)} ${formatTime(start)} ～ ${formatDate(end)} ${formatTime(end)}`;
+            }
+
+            // 曜日の追加 (任意ですが、あると丁寧です)
+            const days = ['日', '月', '火', '水', '木', '金', '土'];
+            const startDay = days[start.getDay()];
+            // 最終的な表示文字列に曜日を挿入 (正規表現で "日" の後ろに入れる)
+            dateDisplayStr = dateDisplayStr.replace(/(\d+日)/, `$1（${startDay}）`);
+            if (!isSameDay) {
+                const endDay = days[end.getDay()];
+                // 2つ目の日付にも曜日を入れる
+                dateDisplayStr = dateDisplayStr.replace(/～ (\d+年 \d+月\d+日)/, `～ $1（${endDay}）`);
+            }
 
             document.body.innerHTML = `
                 <div style="
@@ -2727,7 +2754,7 @@
                             
                             <div style="background: rgba(255,255,255,0.05); padding: 20px; border-radius: 8px; margin-bottom: 20px;">
                                 <div style="font-weight: bold; margin-bottom: 5px;">
-                                    【日時】${dateStr} ${timeRange}
+                                    【日時】${dateDisplayStr}
                                 </div>
                                 <div style="font-size: 0.85rem; color: #ffadad;">
                                     ※メンテナンス時間は、延長される可能性がございます
@@ -2751,7 +2778,6 @@
                     </div>
                 </div>
             `;
-            // 元サイトのスクロールを無効化
             document.body.style.overflow = 'hidden';
             throw new Error("Maintenance Mode Active");
         }
