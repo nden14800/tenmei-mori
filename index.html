@@ -6747,7 +6747,7 @@ function changeHistoryPage(newPage) {
         }
     }
 
- // 3. PDFダウンロード関数 (修正版: バイナリ変換対応・完全ベクター・新タブプレビュー)
+ // 3. PDFダウンロード関数 (修正版: 安定CDN・完全ベクター・新タブプレビュー)
     async function downloadPDF(viewId) {
         const { jsPDF } = window.jspdf;
         
@@ -6760,31 +6760,33 @@ function changeHistoryPage(newPage) {
 
         // ボタンをローディング状態に
         const originalText = btn.innerHTML;
-        btn.innerHTML = '<i class="bi bi-hourglass-split"></i> 準備中...';
+        btn.innerHTML = '<i class="bi bi-hourglass-split"></i> フォント取得中...';
         btn.disabled = true;
 
         try {
-            // 1. A4サイズのPDFドキュメントを作成
+            // ---------------------------------------------------------
+            // 1. PDFドキュメントの初期化 (A4)
+            // ---------------------------------------------------------
             const doc = new jsPDF('p', 'pt', 'a4');
             const pdfWidth = 595.28; 
             const margin = 40; 
             const contentWidth = pdfWidth - (margin * 2);
 
             // ---------------------------------------------------------
-            // 1. 日本語フォントの取得と変換 (ここが修正の肝です)
+            // 2. 日本語フォントの取得 (JSDelivr CDNを使用)
             // ---------------------------------------------------------
-            // 安定性の高い「IPAex明朝」を使用します
-            const fontUrl = 'https://raw.githubusercontent.com/minoryorg/ipaex-font/master/ipaexm.ttf';
-            const fontFilename = 'ipaexm.ttf';
+            // ※「しっぽり明朝」の正規TTFファイルをCDNから取得
+            const fontUrl = 'https://cdn.jsdelivr.net/gh/googlefonts/shippori-mincho@main/fonts/ttf/ShipporiMincho-Regular.ttf';
+            const fontFilename = 'ShipporiMincho-Regular.ttf';
 
-            btn.innerHTML = '<i class="bi bi-cloud-download"></i> フォント取得...';
-            
             const response = await fetch(fontUrl);
-            if (!response.ok) throw new Error("フォントの取得に失敗しました");
+            if (!response.ok) {
+                throw new Error(`フォントのダウンロードに失敗しました (Status: ${response.status})`);
+            }
             
             const buffer = await response.arrayBuffer();
             
-            // ★重要: ArrayBufferをBinaryStringに変換 (エラー回避)
+            // バイナリデータ変換 (jsPDF互換)
             let binary = '';
             const bytes = new Uint8Array(buffer);
             const len = bytes.byteLength;
@@ -6792,31 +6794,33 @@ function changeHistoryPage(newPage) {
                 binary += String.fromCharCode(bytes[i]);
             }
 
-            // フォントを登録
+            // フォントをPDFに追加・登録
             doc.addFileToVFS(fontFilename, binary);
-            doc.addFont(fontFilename, 'MyMincho', 'normal');
-            doc.setFont('MyMincho');
+            doc.addFont(fontFilename, 'Shippori', 'normal');
+            doc.setFont('Shippori'); 
 
             btn.innerHTML = '<i class="bi bi-file-earmark-pdf"></i> PDF作成中...';
 
             // ---------------------------------------------------------
-            // 2. PDF生成用の一時的なクローン作成
+            // 3. PDF生成用の一時的なクローン作成
             // ---------------------------------------------------------
             const clone = sourceElement.cloneNode(true);
             
-            // スタイル調整 (A4ベクター出力用)
+            // A4文書用スタイル調整 (レスポンシブ崩れ防止)
             clone.style.width = contentWidth + 'px';
             clone.style.padding = '0';
             clone.style.background = '#ffffff';
             clone.style.color = '#000000';
             // 登録したフォント名をCSSにも適用
-            clone.style.fontFamily = "'MyMincho', serif"; 
+            clone.style.fontFamily = "'Shippori', serif"; 
+            clone.style.fontSize = '10.5pt'; // 一般的な文書サイズ
+            clone.style.lineHeight = '1.6';
             
             // 不要要素削除
             const tocBtn = clone.querySelector(`#${viewId}-toc-container`);
             if(tocBtn) tocBtn.remove();
 
-            // 表スタイルの最適化
+            // 表(Table)のスタイル最適化 (見切れ防止)
             const tables = clone.querySelectorAll('table, .comparison-table');
             tables.forEach(table => {
                 table.style.width = '100%';
@@ -6826,29 +6830,29 @@ function changeHistoryPage(newPage) {
                 
                 const cells = table.querySelectorAll('th, td');
                 cells.forEach(cell => {
-                    cell.style.border = '1px solid #000';
+                    cell.style.border = '1px solid #000'; // 黒枠でくっきり
                     cell.style.padding = '4px';
-                    cell.style.wordBreak = 'break-all';
-                    cell.style.backgroundColor = 'transparent';
+                    cell.style.wordBreak = 'break-all'; // はみ出し防止
+                    cell.style.backgroundColor = 'transparent'; // 背景クリア
                 });
             });
 
-            // 画面外に配置
+            // 画面外に配置 (レンダリング用)
             clone.style.position = 'absolute';
             clone.style.top = '-10000px';
             clone.style.left = '-10000px';
             document.body.appendChild(clone);
 
             // ---------------------------------------------------------
-            // 3. ベクター形式でPDF化実行
+            // 4. ベクター形式でPDF化実行
             // ---------------------------------------------------------
+            // jsPDFのhtmlメソッドは、フォントがあればテキストをテキストとして出力します
             await doc.html(clone, {
                 callback: function(doc) {
                     // クローン削除
                     document.body.removeChild(clone);
 
                     // Blob URLを生成して新しいタブで開く
-                    // これにより普通のサイトと同じプレビュー画面になります
                     const blob = doc.output('blob');
                     const url = URL.createObjectURL(blob);
                     window.open(url, '_blank');
@@ -6859,20 +6863,23 @@ function changeHistoryPage(newPage) {
                 },
                 x: margin,
                 y: margin,
-                width: contentWidth,
-                windowWidth: contentWidth,
-                autoPaging: 'text',
+                width: contentWidth, // コンテンツ幅指定 (重要)
+                windowWidth: contentWidth, // ウィンドウ幅偽装 (重要)
+                autoPaging: 'text', // 文字途中でのページ送り防止
+                margin: [40, 40, 40, 40],
                 html2canvas: {
-                    scale: 0.8, // 文字の大きさを調整
+                    scale: 0.8, // 文字サイズ調整
                     useCORS: true
                 }
             });
 
         } catch (e) {
             console.error(e);
-            alert("エラーが発生しました: " + e.message);
+            // 具体的なエラー内容をアラート表示
+            alert("PDF生成エラー: " + e.message);
             btn.innerHTML = originalText;
             btn.disabled = false;
+            // 残骸のクリーンアップ
             const clone = document.querySelector('.themed-card[style*="-10000px"]');
             if(clone) document.body.removeChild(clone);
         }
