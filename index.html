@@ -6746,18 +6746,18 @@ function changeHistoryPage(newPage) {
     }
 
 
-     async function downloadPDF(viewId) {
-        // ライブラリの読み込み確認
+     // ==========================================
+    //  PDFダウンロード機能 (修正版)
+    // ==========================================
+    async function downloadPDF(viewId) {
         if (!window.jspdf) {
             alert("PDF生成機能の読み込みに失敗しました。画面を更新してください。");
             return;
         }
         const { jsPDF } = window.jspdf;
         
-        // 対象エリアの取得
         const sourceId = viewId === 'about' ? 'about-content-area' : 'privacy-content-area';
         const sourceElement = document.getElementById(sourceId);
-        // クリックされたボタン（ローディング表示用）
         const btn = event.target.closest('button');
 
         if (!sourceElement) {
@@ -6765,242 +6765,189 @@ function changeHistoryPage(newPage) {
             return;
         }
 
-        // ボタンの状態変更
         const originalText = btn.innerHTML;
         btn.innerHTML = '<i class="bi bi-hourglass-split"></i> 準備中...';
         btn.disabled = true;
 
         try {
-            // ------------------------------------------------
-            // 1. 日本語フォント (Shippori Mincho) の取得
-            // ------------------------------------------------
+            // 1. 日本語フォント取得
             const fontUrl = 'https://raw.githubusercontent.com/google/fonts/main/ofl/shipporimincho/ShipporiMincho-Regular.ttf';
             const fontName = 'ShipporiMincho';
-            
             const fontRes = await fetch(fontUrl);
-            if (!fontRes.ok) throw new Error("フォントの取得に失敗しました");
+            if (!fontRes.ok) throw new Error("フォント取得失敗");
             const fontBuffer = await fontRes.arrayBuffer();
             const fontBase64 = arrayBufferToBase64(fontBuffer);
 
-            // ------------------------------------------------
-            // 2. PDFドキュメント設定
-            // ------------------------------------------------
+            // 2. PDF設定
             btn.innerHTML = '<i class="bi bi-hourglass-split"></i> レイアウト調整中...';
-            
-            // A4サイズ (pt単位: 595.28 x 841.89)
-            const doc = new jsPDF({
-                orientation: 'p',
-                unit: 'pt',
-                format: 'a4'
-            });
-
-            // フォント登録
+            // A4縦 (595.28pt x 841.89pt)
+            const doc = new jsPDF({ orientation: 'p', unit: 'pt', format: 'a4' });
             doc.addFileToVFS('ShipporiMincho.ttf', fontBase64);
             doc.addFont('ShipporiMincho.ttf', fontName, 'normal');
             doc.setFont(fontName);
 
-            // ------------------------------------------------
-            // 3. 印刷用クローンの作成とスタイル完全再構築
-            // ------------------------------------------------
+            // 3. 印刷用クローンの作成・整形
             const clone = sourceElement.cloneNode(true);
 
-            // 不要な要素（目次コンテナ、ボタンなど）を削除
-            const removeSelectors = [
-                `#${viewId}-toc-container`, // 目次
-                'button',                   // ボタン類
-                '.article-meta',            // 日付などのメタ情報（必要なら残す）
-                '.text-right'               // 右寄せの署名など（必要なら残す）
-            ];
-            removeSelectors.forEach(sel => {
-                const els = clone.querySelectorAll(sel);
-                els.forEach(el => el.remove());
-            });
+            // 不要要素削除
+            const removeSelectors = [`#${viewId}-toc-container`, 'button', '.article-meta', '.text-right'];
+            removeSelectors.forEach(sel => clone.querySelectorAll(sel).forEach(el => el.remove()));
 
-            // ■ 仮想描画幅の設定
-            // 表を収めるために、少し広めの幅(800px)で描画し、それをA4幅に縮小してPDF化します
-            const virtualWidth = 800;
+            // ■ 仮想幅を大きくして表を収める (1000px)
+            const virtualWidth = 1000;
 
-            // --- クローン全体のスタイルを強制リセット ---
-            // 「外枠」や「背景色」を消すため、CSSを直接書き込みます
-            clone.removeAttribute('class'); // 元のクラスを全削除
+            // クローンのスタイルリセット
+            clone.removeAttribute('class');
             Object.assign(clone.style, {
-                width: virtualWidth + 'px',
-                padding: '40px',          // 紙の余白に相当
+                width: virtualWidth + 'px', // 幅固定
+                padding: '0',               // パディングなし（PDFのmarginで制御）
                 margin: '0',
-                background: '#ffffff',    // 真っ白な背景
-                color: '#000000',         // 真っ黒な文字
+                background: '#ffffff',
+                color: '#000000',
                 fontFamily: "'ShipporiMincho', serif",
-                fontSize: '12px',         // 本文の基本サイズ
-                lineHeight: '2.0',        // 行間を広く（線の重なり防止）
-                border: 'none',           // ★外枠を消す
-                boxShadow: 'none',        // ★影を消す
-                boxSizing: 'border-box'
+                fontSize: '14px',           // 縮小されるので少し大きめに定義
+                lineHeight: '1.8',
+                border: 'none',
+                boxShadow: 'none'
             });
 
-            // --- 子要素すべてのスタイルをリセット ---
+            // 全要素リセット
             const allElements = clone.querySelectorAll('*');
             allElements.forEach(el => {
-                // 赤線や背景色を消す
                 el.style.backgroundColor = 'transparent';
                 el.style.boxShadow = 'none';
                 el.style.color = '#000000';
-                el.style.border = 'none'; // ★一度すべての線を消す
+                // ★ここで一度すべてのボーダー（赤い線含む）を消す
+                el.style.border = 'none'; 
                 el.style.margin = '0';
                 el.style.padding = '0';
                 
-                // 特定のクラス（赤線など）の影響を消すためにクラス属性も削除
-                // ただし、表のセル判定などに使うなら慎重に
-                if(el.tagName !== 'TABLE' && el.tagName !== 'TR' && el.tagName !== 'TD' && el.tagName !== 'TH') {
+                if(!['TABLE','TR','TD','TH'].includes(el.tagName)) {
                     el.removeAttribute('class');
                 }
             });
 
-            // --- 見出し (H2, H3, H4) の再設定 ---
+            // 見出し再設定 (h3の左線はここで確実に消えている状態から、下線だけ足す)
             const headings = clone.querySelectorAll('h2, h3, h4');
             headings.forEach(h => {
                 h.style.display = 'block';
                 h.style.fontWeight = 'bold';
-                h.style.marginTop = '30px';
+                h.style.marginTop = '40px';
                 h.style.marginBottom = '15px';
-                h.style.borderBottom = '1px solid #000000'; // 黒い下線のみ
-                h.style.paddingBottom = '10px'; // ★文字と線の間隔を広げる
+                h.style.borderBottom = '1px solid #000000'; // 黒い下線
+                h.style.paddingBottom = '8px';
+                h.style.borderLeft = 'none'; // ★念押しで左線を消す
                 h.style.pageBreakAfter = 'avoid';
             });
-            // H2は中央揃え・大文字
-            const h2s = clone.querySelectorAll('h2');
-            h2s.forEach(h => {
+            
+            // H2は中央揃え
+            clone.querySelectorAll('h2').forEach(h => {
                 h.style.textAlign = 'center';
-                h.style.fontSize = '18px';
-                h.style.marginBottom = '40px';
-                h.style.borderBottom = '2px solid #000000'; // H2だけ少し太く
+                h.style.fontSize = '24px';
+                h.style.borderBottom = '2px solid #000000';
+                h.style.marginBottom = '50px';
             });
 
-            // --- 段落 (P, LI) の調整 ---
-            const paras = clone.querySelectorAll('p, li');
-            paras.forEach(p => {
-                p.style.marginBottom = '10px';
-                p.style.textAlign = 'justify'; // 両端揃えできれいに
+            // 文章の整列
+            clone.querySelectorAll('p, li').forEach(p => {
+                p.style.marginBottom = '12px';
+                p.style.textAlign = 'justify';
             });
-            // リストのインデント
-            const lists = clone.querySelectorAll('ul, ol');
-            lists.forEach(l => {
-                l.style.paddingLeft = '20px';
-                l.style.marginBottom = '10px';
+            clone.querySelectorAll('ul, ol').forEach(l => {
+                l.style.paddingLeft = '30px';
+                l.style.marginBottom = '15px';
                 l.style.listStyleType = 'disc';
             });
 
-            // --- 【重要】表 (Table) の見切れ防止・縮小 ---
-            // 横スクロールの解除
-            const scrollWrappers = clone.querySelectorAll('.overflow-x-auto');
-            scrollWrappers.forEach(w => {
+            // ■ 表の強制調整 (見切れ対策)
+            clone.querySelectorAll('.overflow-x-auto').forEach(w => {
                 w.style.display = 'block';
                 w.style.width = '100%';
                 w.style.overflow = 'visible';
             });
 
-            const tables = clone.querySelectorAll('table');
-            tables.forEach(table => {
-                table.removeAttribute('class'); // Tailwindのクラスを削除
+            clone.querySelectorAll('table').forEach(table => {
+                table.removeAttribute('class');
                 Object.assign(table.style, {
                     width: '100%',
                     borderCollapse: 'collapse',
-                    marginBottom: '20px',
-                    tableLayout: 'fixed', // ★列幅を強制固定
-                    fontSize: '8px',      // ★表の中だけ文字を極小にする
-                    lineHeight: '1.4'     // 表の中は行間詰める
+                    marginBottom: '30px',
+                    tableLayout: 'fixed', // 列幅固定
+                    fontSize: '10px'      // 文字を小さくして収める
                 });
 
-                const cells = table.querySelectorAll('th, td');
-                cells.forEach(cell => {
+                table.querySelectorAll('th, td').forEach(cell => {
                     cell.removeAttribute('class');
                     Object.assign(cell.style, {
-                        border: '1px solid #000000', // 黒い枠線
-                        padding: '4px',
-                        wordBreak: 'break-all',      // ★単語の途中でも強制改行
+                        border: '1px solid #000000', // 黒枠必須
+                        padding: '6px',
+                        wordBreak: 'break-all',      // 強制改行
                         overflowWrap: 'break-word',
                         verticalAlign: 'middle',
                         color: '#000000'
                     });
-
-                    // ヘッダー背景（グレー）
                     if(cell.tagName === 'TH') {
-                        cell.style.backgroundColor = '#f0f0f0';
+                        cell.style.backgroundColor = '#f0f0f0'; // ヘッダーはグレー
                         cell.style.fontWeight = 'bold';
                         cell.style.textAlign = 'center';
                     }
                 });
             });
 
-            // --- レンダリング用コンテナへの配置 ---
-            // 画面外に配置して描画させる
+            // 描画用コンテナ
             const hiddenContainer = document.createElement('div');
             Object.assign(hiddenContainer.style, {
                 position: 'absolute',
                 left: '-9999px',
                 top: '0',
                 width: virtualWidth + 'px',
-                backgroundColor: '#ffffff' // ここも白にしておく
+                backgroundColor: '#ffffff'
             });
             hiddenContainer.appendChild(clone);
             document.body.appendChild(hiddenContainer);
 
-            // ------------------------------------------------
-            // 4. PDF生成と保存
-            // ------------------------------------------------
+            // 4. PDF生成
             btn.innerHTML = '<i class="bi bi-hourglass-split"></i> 生成中...';
 
-            const margin = 30; // PDF上の余白 (pt)
-            const pdfWidth = 595.28 - (margin * 2); // PDFの本文幅
+            const margin = 30; // 左右余白
+            const pdfWidth = 595.28 - (margin * 2); // PDF本文幅 (約535pt)
 
             await doc.html(clone, {
                 callback: function(doc) {
-                    // クリーンアップ
                     document.body.removeChild(hiddenContainer);
-
-                    // ファイル名
                     const timestamp = new Date().toISOString().slice(0,10).replace(/-/g,'');
-                    const fileName = `Tenmei_${viewId}_${timestamp}.pdf`;
-
                     try {
-                        // ★修正点: doc.save() で強制ダウンロード
-                        doc.save(fileName);
-                        
+                        doc.save(`Tenmei_${viewId}_${timestamp}.pdf`);
                         btn.innerHTML = originalText;
                         btn.disabled = false;
-                        
                     } catch (e) {
-                        console.error("保存エラー:", e);
-                        alert("ファイルの保存に失敗しました。");
+                        alert("保存失敗");
                         btn.innerHTML = originalText;
                         btn.disabled = false;
                     }
                 },
-                x: margin,
+                x: margin, // 左端から30ptの位置に配置（これで左寄り過ぎを解消）
                 y: margin,
-                // ★スケーリングの魔法
-                // PDF上の幅(約535pt)に対して、HTML上の幅(800px)を割り当てることで
-                // 全体が自動的に縮小され、表が見切れずに収まります。
-                width: pdfWidth, 
-                windowWidth: virtualWidth,
-                
-                autoPaging: 'text', // 文章の途中でのページ分割をきれいに
-                margin: [margin, margin, margin, margin],
+                width: pdfWidth, // PDF上の幅
+                windowWidth: virtualWidth, // HTML上の幅 (1000px -> 535pt に縮小)
+                autoPaging: 'text',
+                margin: [margin, margin, margin, margin], // 上下左右マージン
                 html2canvas: {
                     scale: 1,
                     letterRendering: true,
                     useCORS: true,
-                    backgroundColor: '#ffffff' // 背景白を強制
+                    backgroundColor: '#ffffff'
                 }
             });
 
         } catch (e) {
             console.error(e);
-            alert("PDF生成中にエラーが発生しました。\n" + e.message);
+            alert("エラー: " + e.message);
             btn.innerHTML = originalText;
             btn.disabled = false;
-            // 残骸削除
-            const remnant = document.querySelector('div[style*="left: -9999px"]');
-            if(remnant) remnant.remove();
+            if(document.querySelector('div[style*="left: -9999px"]')) {
+                document.querySelector('div[style*="left: -9999px"]').remove();
+            }
         }
     }
         
