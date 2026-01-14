@@ -6745,71 +6745,92 @@ function changeHistoryPage(newPage) {
         }
     }
 
-// 3. PDFダウンロード関数 (修正版: サイトの見た目維持・スケーリング方式・ベクター)
+
     async function downloadPDF(viewId) {
+        // window.jspdf が読み込まれているか確認
+        if (!window.jspdf) {
+            alert("PDF生成ライブラリの読み込みに失敗しました。ページをリロードしてください。");
+            return;
+        }
         const { jsPDF } = window.jspdf;
         
+        // 対象エリアの特定
         const sourceId = viewId === 'about' ? 'about-content-area' : 'privacy-content-area';
         const sourceElement = document.getElementById(sourceId);
+        // クリックされたボタン（ローディング表示用）
         const btn = event.target.closest('button');
 
         if (!sourceElement) return;
 
+        // ボタンの状態変更
         const originalText = btn.innerHTML;
         btn.innerHTML = '<i class="bi bi-hourglass-split"></i> フォント準備中...';
         btn.disabled = true;
 
         try {
-            // --- 1. 日本語フォント (Shippori Mincho) の取得 ---
+            // ------------------------------------------------
+            // 1. 日本語フォント (Shippori Mincho) の取得と埋め込み
+            // ------------------------------------------------
+            // ※これがないと日本語が文字化けしたり消えたりします
             const fontUrl = 'https://raw.githubusercontent.com/google/fonts/main/ofl/shipporimincho/ShipporiMincho-Regular.ttf';
             const fontName = 'ShipporiMincho';
             
             const fontRes = await fetch(fontUrl);
-            if (!fontRes.ok) throw new Error("フォント読み込みエラー");
+            if (!fontRes.ok) throw new Error("フォントファイルの取得に失敗しました");
             const fontBuffer = await fontRes.arrayBuffer();
             const fontBase64 = arrayBufferToBase64(fontBuffer);
 
-            // --- 2. PDF初期化 ---
+            // ------------------------------------------------
+            // 2. PDFドキュメントの初期化
+            // ------------------------------------------------
             btn.innerHTML = '<i class="bi bi-hourglass-split"></i> レイアウト計算中...';
             
-            // A4サイズ (pt単位)
-            // 1pt = 1/72 inch. A4 = 595.28 x 841.89 pt
-            const doc = new jsPDF('p', 'pt', 'a4');
+            // A4サイズ (pt単位: 595.28 x 841.89)
+            const doc = new jsPDF({
+                orientation: 'p',
+                unit: 'pt',
+                format: 'a4'
+            });
+
+            // フォント登録
             doc.addFileToVFS('ShipporiMincho.ttf', fontBase64);
             doc.addFont('ShipporiMincho.ttf', fontName, 'normal');
             doc.setFont(fontName);
 
-            // PDF上の描画領域設定
+            // PDF上の余白と描画可能幅の設定
             const margin = 30; 
-            const pdfContentWidth = 595.28 - (margin * 2); // 約535pt
+            const pdfPageWidth = 595.28;
+            const pdfContentWidth = pdfPageWidth - (margin * 2); // 約535pt
 
-            // --- 3. HTMLクローンの作成と整形 ---
+            // ------------------------------------------------
+            // 3. HTMLクローンの作成とスタイル強制上書き (ここが重要)
+            // ------------------------------------------------
+            // 画面表示用のHTMLをそのまま使うと崩れるため、PDF専用に複製して整形します
             const clone = sourceElement.cloneNode(true);
             
-            // 不要要素の削除
+            // 不要な要素（目次ボタンなど）を削除
             const toc = clone.querySelector(`#${viewId}-toc-container`);
             if(toc) toc.remove();
 
-            // ■ 重要な変更点: 「論理幅」の設定
-            // A4幅に無理やり合わせるのではなく、読みやすい幅(750px)でレイアウトさせる
-            // これをPDF側で縮小して配置することで、改行位置や中央揃えが崩れません
+            // ■ HTML描画時の仮想幅 (Virtual Width)
+            // この幅でブラウザ上にレンダリングし、それを縮小してPDFに入れます。
+            // 750pxくらいがA4縦で読みやすいバランスです。
             const virtualWidth = 750; 
-            
-            // クローンのスタイルリセットと調整
-            clone.removeAttribute('class');
-            clone.style.width = virtualWidth + 'px'; // 固定幅にする
-            clone.style.padding = '0';
-            clone.style.margin = '0';
-            clone.style.background = '#ffffff';
-            clone.style.color = '#000000';
-            clone.style.fontFamily = "'ShipporiMincho', serif";
-            clone.style.fontSize = '12px'; // 基本文字サイズ
-            clone.style.lineHeight = '1.8'; // 行間を広めに確保（重なり防止）
 
-            // 全要素のスタイル正規化
+            // クローン全体のスタイル初期化
+            clone.style.width = virtualWidth + 'px'; // 幅を固定
+            clone.style.padding = '20px'; // 内部余白
+            clone.style.margin = '0';
+            clone.style.background = '#ffffff'; // 背景白
+            clone.style.color = '#000000'; // 文字黒
+            clone.style.fontFamily = "'ShipporiMincho', serif"; // フォント指定
+            clone.style.fontSize = '12px'; // 基本文字サイズ
+            clone.style.lineHeight = '1.6'; 
+            clone.style.boxSizing = 'border-box';
+
+            // 全要素のスタイル正規化（背景色や影をリセット）
             const allElements = clone.querySelectorAll('*');
             allElements.forEach(el => {
-                // 背景色と影の除去（表のヘッダーなどは後で再設定）
                 if(el.tagName !== 'TH' && !el.classList.contains('highlight')) {
                     el.style.backgroundColor = 'transparent';
                 }
@@ -6817,40 +6838,19 @@ function changeHistoryPage(newPage) {
                 el.style.color = '#000000';
             });
 
-            // ■ タイトル・見出しの整形（中央揃えを維持）
-            // 元のサイトで text-center クラスがついているものは中央揃えにする
-            const centeredElements = sourceElement.querySelectorAll('.text-center');
-            centeredElements.forEach((el, i) => {
-                // クローン側で対応する要素を探す（簡易的にインデックスで同期）
-                // ※構造が変わっていない前提
-                const cloneEl = clone.querySelectorAll('.text-center')[i];
-                if(cloneEl) cloneEl.style.textAlign = 'center';
+            // --- 見出しの整形 ---
+            const headings = clone.querySelectorAll('h2, h3, h4');
+            headings.forEach(h => {
+                h.style.color = '#000000';
+                h.style.borderBottom = '1px solid #000'; // 下線を黒く
+                h.style.pageBreakAfter = 'avoid'; // 見出しの直後で改ページしない
             });
-            
-            // 見出し (H2) 個別調整
+            // H2は中央揃え
             const h2s = clone.querySelectorAll('h2');
-            h2s.forEach(h2 => {
-                h2.style.textAlign = 'center'; // H2は必ず中央
-                h2.style.borderBottom = '1pt solid #000';
-                h2.style.paddingBottom = '10px';
-                h2.style.marginBottom = '20px';
-                h2.style.fontSize = '18px';
-                h2.style.fontWeight = 'bold';
-            });
+            h2s.forEach(h => h.style.textAlign = 'center');
 
-            // 見出し (H3, H4) 個別調整
-            const subHeads = clone.querySelectorAll('h3, h4');
-            subHeads.forEach(h => {
-                h.style.marginTop = '25px';
-                h.style.marginBottom = '10px';
-                h.style.fontWeight = 'bold';
-                h.style.borderLeft = 'none'; // 左線はPDFだと太すぎることがあるので消すか調整
-                h.style.borderBottom = '1px solid #ccc'; // 下線に変更して見やすく
-                h.style.paddingBottom = '5px';
-            });
-
-            // ■ 表 (Table) の整形（枠線くっきり・スクロール解除）
-            // スクロールコンテナ解除
+            // --- 【重要】表 (Table) の見切れ対策 ---
+            // 横スクロールコンテナを無効化
             const scrollWrappers = clone.querySelectorAll('.overflow-x-auto');
             scrollWrappers.forEach(w => {
                 w.style.display = 'block';
@@ -6858,88 +6858,98 @@ function changeHistoryPage(newPage) {
                 w.style.width = '100%';
             });
 
-            const tables = clone.querySelectorAll('table');
+            // 表自体のスタイル強制
+            const tables = clone.querySelectorAll('table, .comparison-table');
             tables.forEach(table => {
-                table.removeAttribute('class');
-                table.style.width = '100%';
+                table.style.width = '100% !important';
+                table.style.minWidth = '0 !important'; // 元の900pxを打ち消す
+                table.style.maxWidth = '100% !important';
+                table.style.tableLayout = 'fixed'; // 列幅を均等に（はみ出し防止）
                 table.style.borderCollapse = 'collapse';
-                table.style.marginBottom = '20px';
-                table.style.tableLayout = 'fixed'; // 列幅固定
-                table.style.fontSize = '10px'; // 表内は少し小さく
-
-                const cells = table.querySelectorAll('th, td');
-                cells.forEach(cell => {
-                    cell.removeAttribute('class');
-                    cell.style.border = '1px solid #000000'; // 黒枠完全適用
-                    cell.style.padding = '8px';
-                    cell.style.wordBreak = 'break-all'; // はみ出し防止
-                    cell.style.verticalAlign = 'middle';
-                    
-                    // ヘッダー
-                    if(cell.tagName === 'TH') {
-                        cell.style.backgroundColor = '#f0f0f0';
-                        cell.style.fontWeight = 'bold';
-                        cell.style.textAlign = 'center';
-                    }
-                    // ハイライトセル
-                    if(cell.classList.contains('highlight')) {
-                        cell.style.fontWeight = 'bold';
-                        cell.style.backgroundColor = '#ffeeee';
-                    }
-                });
+                table.style.fontSize = '10px'; // 文字を少し小さくして収める
+                table.style.margin = '0 auto 20px auto';
             });
 
-            // 右寄せの日付エリアなど
-            const rightElements = clone.querySelectorAll('.text-right');
-            rightElements.forEach(el => el.style.textAlign = 'right');
+            // セル (th, td) のスタイル強制
+            const cells = clone.querySelectorAll('th, td');
+            cells.forEach(cell => {
+                cell.style.border = '1px solid #000000'; // 黒枠
+                cell.style.padding = '4px';
+                cell.style.wordBreak = 'break-all'; // 長い単語を強制的に折り返す
+                cell.style.wordWrap = 'break-word';
+                cell.style.whiteSpace = 'normal';   // 改行を許可
+                
+                // ヘッダー背景
+                if(cell.tagName === 'TH') {
+                    cell.style.backgroundColor = '#f0f0f0';
+                    cell.style.color = '#000';
+                }
+            });
 
-            // レンダリング用コンテナ（見えない場所に配置）
-            const hiddenDiv = document.createElement('div');
-            hiddenDiv.style.position = 'fixed';
-            hiddenDiv.style.left = '-10000px';
-            hiddenDiv.style.top = '0';
-            hiddenDiv.style.zIndex = '-9999';
-            hiddenDiv.appendChild(clone);
-            document.body.appendChild(hiddenDiv);
+            // --- レンダリング用コンテナへの配置 ---
+            // 画面外の見えない場所に配置して html2canvas に撮らせる
+            const hiddenContainer = document.createElement('div');
+            hiddenContainer.style.position = 'absolute';
+            hiddenContainer.style.left = '-9999px';
+            hiddenContainer.style.top = '0';
+            hiddenContainer.style.width = virtualWidth + 'px'; // 親コンテナも幅固定
+            hiddenContainer.appendChild(clone);
+            document.body.appendChild(hiddenContainer);
 
-            // --- 4. HTML => PDF ベクター変換実行 ---
-            btn.innerHTML = '<i class="bi bi-hourglass-split"></i> 生成中...';
+            // ------------------------------------------------
+            // 4. PDF生成と保存実行
+            // ------------------------------------------------
+            btn.innerHTML = '<i class="bi bi-hourglass-split"></i> 生成・保存中...';
 
+            // htmlメソッドの設定
+            // width: PDF上の幅 (535pt) に合わせる
+            // windowWidth: HTML描画時の幅 (750px) に合わせる
+            // これにより、750pxのHTMLが535ptのPDF幅に縮小されて綺麗に収まります
             await doc.html(clone, {
                 callback: function(doc) {
-                    // クリーンアップ
-                    document.body.removeChild(hiddenDiv);
+                    // クリーンアップ（非表示要素の削除）
+                    document.body.removeChild(hiddenContainer);
 
-                    // Blob URL生成 (application/pdf)
-                    const blob = doc.output('blob');
-                    const url = URL.createObjectURL(blob);
+                    // ファイル名決定
+                    const timestamp = new Date().toISOString().slice(0,10).replace(/-/g,'');
+                    const fileName = `Tenmei_${viewId}_${timestamp}.pdf`;
 
-                    // 新しいタブでプレビューを開く
-                    // ※Blob URLで開けば、ブラウザ標準のPDFビューワーが起動し、
-                    // 右上などに必ず「ダウンロード(保存)ボタン」が表示されます。
-                    window.open(url, '_blank');
-
-                    btn.innerHTML = originalText;
-                    btn.disabled = false;
+                    // 【修正】doc.save() を使用して強制ダウンロード
+                    try {
+                        doc.save(fileName);
+                        
+                        // 成功メッセージ
+                        btn.innerHTML = originalText;
+                        btn.disabled = false;
+                        alert("PDFのダウンロードを開始しました。\n保存されたファイルをご確認ください。");
+                        
+                    } catch (e) {
+                        console.error("Save Error:", e);
+                        alert("保存処理に失敗しました。");
+                        btn.innerHTML = originalText;
+                        btn.disabled = false;
+                    }
                 },
                 x: margin,
                 y: margin,
-                // 【重要】ここでスケーリングを行う
-                // HTMLは virtualWidth(750px) で描画し、
-                // PDF上では pdfContentWidth(約535pt) の幅に縮小して配置する
                 width: pdfContentWidth, 
-                windowWidth: virtualWidth, 
-                
-                autoPaging: 'text', // テキストが途切れないようにページ送り
-                margin: [margin, margin, margin, margin]
+                windowWidth: virtualWidth,
+                margin: [margin, margin, margin, margin],
+                autoPaging: 'text', // テキストの途中で行が切れないように調整
+                html2canvas: {
+                    scale: 1, // 基本スケール
+                    letterRendering: true, // 文字間隔の精度向上
+                    useCORS: true // 外部画像/フォント許可
+                }
             });
 
         } catch (e) {
             console.error(e);
-            alert("PDF生成エラーが発生しました。\n" + e.message);
+            alert("エラーが発生しました: " + e.message);
             btn.innerHTML = originalText;
             btn.disabled = false;
-            const remnant = document.querySelector('div[style*="left: -10000px"]');
+            // 残骸の削除
+            const remnant = document.querySelector('div[style*="left: -9999px"]');
             if(remnant) remnant.remove();
         }
     }
