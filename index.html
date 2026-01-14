@@ -6602,14 +6602,16 @@ ${getShareUrl()}`;
     }
 
     // ==========================================
-    //  お気に入り機能 (修正版: ログイン必須化)
+    //  お気に入り機能 (修正版: モーダル表示)
     // ==========================================
 
     function toggleFavorite(signId, bloodType) {
-        // 1. 未ログインチェック: ログインしていない場合は警告を出して認証画面へ誘導
+        // 1. 未ログインチェック: ログインしていない場合は専用モーダルを表示
         if (!currentState.user) {
-            if (confirm("お気に入り機能を利用するには、会員ログインが必要です。\nログイン・登録画面へ移動しますか？")) {
-                showView('auth');
+            const modal = document.getElementById('zodiac-login-modal');
+            if(modal) {
+                modal.classList.remove('hidden');
+                modal.classList.add('flex'); // Flexboxで中央寄せ表示
             }
             return;
         }
@@ -6623,7 +6625,7 @@ ${getShareUrl()}`;
             favoriteList.push({ sign: signId, blood: bloodType }); 
         }
 
-        // 3. サーバー同期のみ実行 (ローカルストレージへの保存処理を削除)
+        // 3. サーバー同期のみ実行
         fetch(`${API_BASE}/api/favorites`, { 
             method: 'POST', 
             headers: {'Content-Type': 'application/json'}, 
@@ -6635,6 +6637,18 @@ ${getShareUrl()}`;
         }).catch(e => console.error("Sync Error:", e));
         
         renderFavorites();
+    }
+
+    // 追加: モーダルを閉じる関数
+    function closeZodiacModal(e) {
+        // 背景クリックまたは閉じるボタンの場合のみ閉じる
+        if(e && e.target.id !== 'zodiac-login-modal' && e.target.tagName !== 'BUTTON') return;
+        
+        const modal = document.getElementById('zodiac-login-modal');
+        if(modal) {
+            modal.classList.add('hidden');
+            modal.classList.remove('flex');
+        }
     }
       
     function renderFavorites() {
