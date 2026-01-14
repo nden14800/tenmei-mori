@@ -6745,7 +6745,7 @@ function changeHistoryPage(newPage) {
         }
     }
 
-// 3. PDFダウンロード関数 (修正版: レイアウト維持・文字サイズ調整・完全ベクター)
+// 3. PDFダウンロード関数 (修正版: サイトの見た目維持・スケーリング方式・ベクター)
     async function downloadPDF(viewId) {
         const { jsPDF } = window.jspdf;
         
@@ -6755,13 +6755,12 @@ function changeHistoryPage(newPage) {
 
         if (!sourceElement) return;
 
-        // ボタンをローディング状態に
         const originalText = btn.innerHTML;
-        btn.innerHTML = '<i class="bi bi-hourglass-split"></i> 準備中...';
+        btn.innerHTML = '<i class="bi bi-hourglass-split"></i> フォント準備中...';
         btn.disabled = true;
 
         try {
-            // --- 1. 日本語フォント取得 ---
+            // --- 1. 日本語フォント (Shippori Mincho) の取得 ---
             const fontUrl = 'https://raw.githubusercontent.com/google/fonts/main/ofl/shipporimincho/ShipporiMincho-Regular.ttf';
             const fontName = 'ShipporiMincho';
             
@@ -6771,129 +6770,153 @@ function changeHistoryPage(newPage) {
             const fontBase64 = arrayBufferToBase64(fontBuffer);
 
             // --- 2. PDF初期化 ---
-            btn.innerHTML = '<i class="bi bi-hourglass-split"></i> 生成中...';
+            btn.innerHTML = '<i class="bi bi-hourglass-split"></i> レイアウト計算中...';
             
-            // A4サイズ設定
+            // A4サイズ (pt単位)
+            // 1pt = 1/72 inch. A4 = 595.28 x 841.89 pt
             const doc = new jsPDF('p', 'pt', 'a4');
             doc.addFileToVFS('ShipporiMincho.ttf', fontBase64);
             doc.addFont('ShipporiMincho.ttf', fontName, 'normal');
             doc.setFont(fontName);
 
-            // コンテンツ幅の計算 (A4 = 595.28pt)
-            const pdfWidth = 595.28;
-            const margin = 40; 
-            const contentWidth = pdfWidth - (margin * 2);
+            // PDF上の描画領域設定
+            const margin = 30; 
+            const pdfContentWidth = 595.28 - (margin * 2); // 約535pt
 
-            // --- 3. クローン作成とスタイル調整 ---
-            // ※クラスを削除せず、上書きで調整することでレイアウト崩れを防ぐ
+            // --- 3. HTMLクローンの作成と整形 ---
             const clone = sourceElement.cloneNode(true);
             
-            // 不要な要素（目次ボタン等）を削除
+            // 不要要素の削除
             const toc = clone.querySelector(`#${viewId}-toc-container`);
             if(toc) toc.remove();
 
-            // ■ 親コンテナ調整
-            clone.style.width = contentWidth + 'px'; // A4幅に強制
-            clone.style.padding = '0'; 
+            // ■ 重要な変更点: 「論理幅」の設定
+            // A4幅に無理やり合わせるのではなく、読みやすい幅(750px)でレイアウトさせる
+            // これをPDF側で縮小して配置することで、改行位置や中央揃えが崩れません
+            const virtualWidth = 750; 
+            
+            // クローンのスタイルリセットと調整
+            clone.removeAttribute('class');
+            clone.style.width = virtualWidth + 'px'; // 固定幅にする
+            clone.style.padding = '0';
             clone.style.margin = '0';
             clone.style.background = '#ffffff';
             clone.style.color = '#000000';
             clone.style.fontFamily = "'ShipporiMincho', serif";
-            // 文字サイズを少し小さく、行間を広げて重なり防止
-            clone.style.fontSize = '9.5pt'; 
-            clone.style.lineHeight = '1.8'; 
+            clone.style.fontSize = '12px'; // 基本文字サイズ
+            clone.style.lineHeight = '1.8'; // 行間を広めに確保（重なり防止）
 
-            // ■ 全要素の共通リセット（背景色や影を消す）
+            // 全要素のスタイル正規化
             const allElements = clone.querySelectorAll('*');
             allElements.forEach(el => {
-                // 文字色は黒、影なし
-                el.style.color = '#000000';
-                el.style.boxShadow = 'none';
-                // 特定の背景色クラス以外は透明に
-                if (!el.classList.contains('bg-gray-200') && !el.classList.contains('bg-red-100')) {
+                // 背景色と影の除去（表のヘッダーなどは後で再設定）
+                if(el.tagName !== 'TH' && !el.classList.contains('highlight')) {
                     el.style.backgroundColor = 'transparent';
                 }
+                el.style.boxShadow = 'none';
+                el.style.color = '#000000';
             });
 
-            // ■ レイアウト（位置）の補正
-            // Tailwindのクラスが効かない場合のために、インラインスタイルで補強
+            // ■ タイトル・見出しの整形（中央揃えを維持）
+            // 元のサイトで text-center クラスがついているものは中央揃えにする
+            const centeredElements = sourceElement.querySelectorAll('.text-center');
+            centeredElements.forEach((el, i) => {
+                // クローン側で対応する要素を探す（簡易的にインデックスで同期）
+                // ※構造が変わっていない前提
+                const cloneEl = clone.querySelectorAll('.text-center')[i];
+                if(cloneEl) cloneEl.style.textAlign = 'center';
+            });
             
-            // タイトル (h2) -> 中央揃え
-            const h2 = clone.querySelector('h2');
-            if(h2) {
-                h2.style.textAlign = 'center';
-                h2.style.borderBottom = '1px solid #000';
+            // 見出し (H2) 個別調整
+            const h2s = clone.querySelectorAll('h2');
+            h2s.forEach(h2 => {
+                h2.style.textAlign = 'center'; // H2は必ず中央
+                h2.style.borderBottom = '1pt solid #000';
                 h2.style.paddingBottom = '10px';
                 h2.style.marginBottom = '20px';
-            }
+                h2.style.fontSize = '18px';
+                h2.style.fontWeight = 'bold';
+            });
 
-            // 日付エリア (text-right) -> 右寄せ
-            const rightAligns = clone.querySelectorAll('.text-right');
-            rightAligns.forEach(el => el.style.textAlign = 'right');
-
-            // 中央揃えテキスト
-            const centerAligns = clone.querySelectorAll('.text-center');
-            centerAligns.forEach(el => el.style.textAlign = 'center');
-
-            // 見出し (h3, h4)
-            const headings = clone.querySelectorAll('h3, h4');
-            headings.forEach(h => {
-                h.style.borderBottom = '1px solid #000';
-                h.style.paddingBottom = '5px';
+            // 見出し (H3, H4) 個別調整
+            const subHeads = clone.querySelectorAll('h3, h4');
+            subHeads.forEach(h => {
                 h.style.marginTop = '25px';
                 h.style.marginBottom = '10px';
                 h.style.fontWeight = 'bold';
-                h.style.pageBreakAfter = 'avoid';
+                h.style.borderLeft = 'none'; // 左線はPDFだと太すぎることがあるので消すか調整
+                h.style.borderBottom = '1px solid #ccc'; // 下線に変更して見やすく
+                h.style.paddingBottom = '5px';
             });
 
-            // ■ 表 (Table) の見切れ防止
+            // ■ 表 (Table) の整形（枠線くっきり・スクロール解除）
+            // スクロールコンテナ解除
+            const scrollWrappers = clone.querySelectorAll('.overflow-x-auto');
+            scrollWrappers.forEach(w => {
+                w.style.display = 'block';
+                w.style.overflow = 'visible';
+                w.style.width = '100%';
+            });
+
             const tables = clone.querySelectorAll('table');
             tables.forEach(table => {
+                table.removeAttribute('class');
                 table.style.width = '100%';
-                table.style.tableLayout = 'fixed'; // 列幅を固定
                 table.style.borderCollapse = 'collapse';
                 table.style.marginBottom = '20px';
-                table.style.fontSize = '8pt'; // 表の中はさらに小さく
+                table.style.tableLayout = 'fixed'; // 列幅固定
+                table.style.fontSize = '10px'; // 表内は少し小さく
 
                 const cells = table.querySelectorAll('th, td');
                 cells.forEach(cell => {
-                    cell.style.border = '1px solid #000'; // 枠線
-                    cell.style.padding = '5px';
-                    cell.style.wordBreak = 'break-all'; // 強制折り返し
+                    cell.removeAttribute('class');
+                    cell.style.border = '1px solid #000000'; // 黒枠完全適用
+                    cell.style.padding = '8px';
+                    cell.style.wordBreak = 'break-all'; // はみ出し防止
                     cell.style.verticalAlign = 'middle';
                     
-                    // ヘッダー背景
+                    // ヘッダー
                     if(cell.tagName === 'TH') {
                         cell.style.backgroundColor = '#f0f0f0';
                         cell.style.fontWeight = 'bold';
+                        cell.style.textAlign = 'center';
+                    }
+                    // ハイライトセル
+                    if(cell.classList.contains('highlight')) {
+                        cell.style.fontWeight = 'bold';
+                        cell.style.backgroundColor = '#ffeeee';
                     }
                 });
             });
 
-            // ■ レンダリング用の隠し領域へ配置
-            // 画面外すぎると描画されないことがあるため、z-indexで背面に隠す
+            // 右寄せの日付エリアなど
+            const rightElements = clone.querySelectorAll('.text-right');
+            rightElements.forEach(el => el.style.textAlign = 'right');
+
+            // レンダリング用コンテナ（見えない場所に配置）
             const hiddenDiv = document.createElement('div');
             hiddenDiv.style.position = 'fixed';
+            hiddenDiv.style.left = '-10000px';
             hiddenDiv.style.top = '0';
-            hiddenDiv.style.left = '0';
             hiddenDiv.style.zIndex = '-9999';
-            hiddenDiv.style.background = '#fff';
-            hiddenDiv.style.width = contentWidth + 'px'; // 幅を合わせる
             hiddenDiv.appendChild(clone);
             document.body.appendChild(hiddenDiv);
 
-            // --- 4. 変換実行 ---
+            // --- 4. HTML => PDF ベクター変換実行 ---
+            btn.innerHTML = '<i class="bi bi-hourglass-split"></i> 生成中...';
+
             await doc.html(clone, {
                 callback: function(doc) {
                     // クリーンアップ
                     document.body.removeChild(hiddenDiv);
 
-                    // Blob URL生成
+                    // Blob URL生成 (application/pdf)
                     const blob = doc.output('blob');
                     const url = URL.createObjectURL(blob);
 
                     // 新しいタブでプレビューを開く
-                    // ※ブラウザのPDFビューワーが起動し、そこに保存ボタンがあります
+                    // ※Blob URLで開けば、ブラウザ標準のPDFビューワーが起動し、
+                    // 右上などに必ず「ダウンロード(保存)ボタン」が表示されます。
                     window.open(url, '_blank');
 
                     btn.innerHTML = originalText;
@@ -6901,18 +6924,22 @@ function changeHistoryPage(newPage) {
                 },
                 x: margin,
                 y: margin,
-                width: contentWidth,
-                windowWidth: contentWidth, // これにより改行位置を正確に計算
-                autoPaging: 'text',
+                // 【重要】ここでスケーリングを行う
+                // HTMLは virtualWidth(750px) で描画し、
+                // PDF上では pdfContentWidth(約535pt) の幅に縮小して配置する
+                width: pdfContentWidth, 
+                windowWidth: virtualWidth, 
+                
+                autoPaging: 'text', // テキストが途切れないようにページ送り
                 margin: [margin, margin, margin, margin]
             });
 
         } catch (e) {
             console.error(e);
-            alert("PDF生成エラー: " + e.message);
+            alert("PDF生成エラーが発生しました。\n" + e.message);
             btn.innerHTML = originalText;
             btn.disabled = false;
-            const remnant = document.querySelector('div[style*="z-index: -9999"]');
+            const remnant = document.querySelector('div[style*="left: -10000px"]');
             if(remnant) remnant.remove();
         }
     }
