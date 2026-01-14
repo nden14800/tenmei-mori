@@ -1262,6 +1262,133 @@
             }
         }
 
+        /* --- 御守授与所スタイル --- */
+        
+        /* 御守本体 */
+        .omamori-body {
+            width: 200px;
+            height: 320px;
+            position: relative;
+            margin: 0 auto;
+            /* 御守特有の形状 (上部が斜めにカットされた形) */
+            clip-path: polygon(15% 0, 85% 0, 100% 15%, 100% 100%, 0 100%, 0 15%);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.3); /* clip-pathを使うとshadowが効かないため親要素で調整が必要だが、今回は画像化前提で内部に影を描画 */
+            font-family: 'Zen Old Mincho', serif;
+            overflow: hidden;
+            z-index: 10;
+        }
+
+        /* 生地の質感（織物風） */
+        .omamori-texture {
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background-image: repeating-linear-gradient(45deg, rgba(255,255,255,0.05) 0px, rgba(255,255,255,0.05) 1px, transparent 1px, transparent 4px);
+            z-index: 0;
+            pointer-events: none;
+        }
+
+        /* 中央の文字札 */
+        .omamori-label {
+            background: #fff;
+            color: #333;
+            writing-mode: vertical-rl;
+            padding: 20px 10px;
+            font-size: 2rem;
+            font-weight: 900;
+            letter-spacing: 0.2em;
+            border-radius: 4px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+            z-index: 2;
+            min-height: 180px;
+            border: 1px solid rgba(0,0,0,0.1);
+        }
+
+        /* 紐（叶結び）のSVGコンテナ */
+        .omamori-knot {
+            position: absolute;
+            top: 40px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 100px;
+            height: 80px;
+            z-index: 5;
+            filter: drop-shadow(0 2px 3px rgba(0,0,0,0.3));
+        }
+
+        /* 飾り枠（金糸など） */
+        .omamori-border {
+            position: absolute;
+            top: 10px; left: 10px; right: 10px; bottom: 10px;
+            border: 2px solid rgba(255,255,255,0.3);
+            border-radius: 4px;
+            z-index: 1;
+            clip-path: polygon(15% 0, 85% 0, 100% 15%, 100% 100%, 0 100%, 0 15%);
+        }
+        
+        /* 選択ボタンのグリッド */
+        .wish-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+            gap: 15px;
+            margin-top: 20px;
+        }
+        .wish-btn {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            background: var(--card-bg);
+            border: 2px solid var(--card-border);
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.3s;
+            height: 140px;
+        }
+        .wish-btn:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+            border-color: var(--accent-red);
+        }
+        .wish-icon {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+        }
+        .wish-name {
+            font-weight: bold;
+            font-size: 1.1rem;
+        }
+
+        /* 祈祷アニメーション */
+        .prayer-overlay {
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(255,255,255,0.9);
+            z-index: 50;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            font-family: 'Zen Old Mincho', serif;
+        }
+        .dark .prayer-overlay { background: rgba(0,0,0,0.9); }
+        
+        .prayer-light {
+            width: 100px; height: 100px;
+            background: radial-gradient(circle, #ffd700 0%, transparent 70%);
+            animation: pulseLight 1.5s infinite;
+            border-radius: 50%;
+        }
+        @keyframes pulseLight {
+            0% { transform: scale(0.8); opacity: 0.5; }
+            50% { transform: scale(1.2); opacity: 1; }
+            100% { transform: scale(0.8); opacity: 0.5; }
+        }
+
     </style>
 </head>
 <body>
