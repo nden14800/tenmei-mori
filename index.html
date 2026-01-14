@@ -4553,6 +4553,10 @@ let historyPageState = {
     //  統合された初期化処理 (window.onload)
     // ==========================================
     window.onload = function() {
+        // ▼▼ 追加: メンテナンスチェックを最優先で実行 ▼▼
+        checkMaintenance(); 
+        // ▲▲ ここで期間内なら処理が止まり、画面が切り替わります ▲▲
+
         // 基本初期化
         initHomeAnimation();
         initZodiacSystem();
@@ -4581,10 +4585,10 @@ let historyPageState = {
             window.history.replaceState({}, '', url);
         }
 
-        // ▼ 記事リストの描画（ここでエラーが出ていた箇所を修正）
-        renderHomeLists();      // ホーム画面用
-        renderFullNewsView();   // 一覧画面用（ニュース）
-        renderFullColumnView(); // 一覧画面用（コラム）
+        // 記事リストの描画
+        renderHomeLists();      
+        renderFullNewsView();   
+        renderFullColumnView(); 
     };
 
         // --- 状態管理 ---
