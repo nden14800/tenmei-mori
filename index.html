@@ -6745,7 +6745,7 @@ function changeHistoryPage(newPage) {
         }
     }
 
-// --- 3. PDFダウンロード関数 (最終修正版: 文字消え・表見切れ・DLボタン問題を全解決) ---
+// 3. PDFダウンロード関数 (修正版: サイトの見た目維持・スケーリング方式・ベクター)
     async function downloadPDF(viewId) {
         const { jsPDF } = window.jspdf;
         
@@ -6755,140 +6755,201 @@ function changeHistoryPage(newPage) {
 
         if (!sourceElement) return;
 
-        // ボタンをローディング状態に
         const originalText = btn.innerHTML;
-        btn.innerHTML = '<i class="bi bi-hourglass-split"></i> 準備中...';
+        btn.innerHTML = '<i class="bi bi-hourglass-split"></i> フォント準備中...';
         btn.disabled = true;
 
         try {
-            // --- 1. 日本語フォント (Shippori Mincho) を確実にロード ---
-            // ※文字が表示されない問題を解決するため、信頼性の高いCDNから取得
-            const fontUrl = 'https://cdn.jsdelivr.net/gh/google/fonts@main/ofl/shipporimincho/ShipporiMincho-Regular.ttf';
+            // --- 1. 日本語フォント (Shippori Mincho) の取得 ---
+            const fontUrl = 'https://raw.githubusercontent.com/google/fonts/main/ofl/shipporimincho/ShipporiMincho-Regular.ttf';
+            const fontName = 'ShipporiMincho';
+            
             const fontRes = await fetch(fontUrl);
-            if (!fontRes.ok) throw new Error("フォントデータの取得に失敗しました。");
+            if (!fontRes.ok) throw new Error("フォント読み込みエラー");
             const fontBuffer = await fontRes.arrayBuffer();
             const fontBase64 = arrayBufferToBase64(fontBuffer);
 
-            // --- 2. PDFドキュメントの基本設定 ---
-            const doc = new jsPDF({
-                orientation: 'p',
-                unit: 'pt',
-                format: 'a4',
-                putOnlyUsedFonts: true
-            });
-
-            // フォントの登録
+            // --- 2. PDF初期化 ---
+            btn.innerHTML = '<i class="bi bi-hourglass-split"></i> レイアウト計算中...';
+            
+            // A4サイズ (pt単位)
+            // 1pt = 1/72 inch. A4 = 595.28 x 841.89 pt
+            const doc = new jsPDF('p', 'pt', 'a4');
             doc.addFileToVFS('ShipporiMincho.ttf', fontBase64);
-            doc.addFont('ShipporiMincho.ttf', 'ShipporiMincho', 'normal');
-            doc.setFont('ShipporiMincho');
+            doc.addFont('ShipporiMincho.ttf', fontName, 'normal');
+            doc.setFont(fontName);
 
-            const pdfWidth = doc.internal.pageSize.getWidth();
-            const margin = 35; 
-            const contentWidth = pdfWidth - (margin * 2);
+            // PDF上の描画領域設定
+            const margin = 30; 
+            const pdfContentWidth = 595.28 - (margin * 2); // 約535pt
 
-            // --- 3. HTMLクローンの作成と「PDF専用スタイル」の強制適用 ---
+            // --- 3. HTMLクローンの作成と整形 ---
             const clone = sourceElement.cloneNode(true);
             
-            // 目次などを削除
+            // 不要要素の削除
             const toc = clone.querySelector(`#${viewId}-toc-container`);
             if(toc) toc.remove();
 
-            // クローン全体の見た目を「普通の文書」に強制変更
-            clone.style.width = '800px'; // 計算用の基準幅
-            clone.style.padding = '20px';
+            // ■ 重要な変更点: 「論理幅」の設定
+            // A4幅に無理やり合わせるのではなく、読みやすい幅(750px)でレイアウトさせる
+            // これをPDF側で縮小して配置することで、改行位置や中央揃えが崩れません
+            const virtualWidth = 750; 
+            
+            // クローンのスタイルリセットと調整
+            clone.removeAttribute('class');
+            clone.style.width = virtualWidth + 'px'; // 固定幅にする
+            clone.style.padding = '0';
+            clone.style.margin = '0';
             clone.style.background = '#ffffff';
-            clone.style.fontFamily = "'ShipporiMincho', serif";
             clone.style.color = '#000000';
-            clone.style.lineHeight = '1.7';
+            clone.style.fontFamily = "'ShipporiMincho', serif";
+            clone.style.fontSize = '12px'; // 基本文字サイズ
+            clone.style.lineHeight = '1.8'; // 行間を広めに確保（重なり防止）
 
-            // 全要素のTailwindスタイルをPDF用に上書き
-            const allNodes = clone.querySelectorAll('*');
-            allNodes.forEach(node => {
-                node.style.color = '#000000';
-                node.style.boxShadow = 'none';
-                node.style.textShadow = 'none';
-                
-                // 元のサイトで center 指定されているものを維持
-                if (node.classList.contains('text-center') || node.tagName === 'H2') {
-                    node.style.textAlign = 'center';
+            // 全要素のスタイル正規化
+            const allElements = clone.querySelectorAll('*');
+            allElements.forEach(el => {
+                // 背景色と影の除去（表のヘッダーなどは後で再設定）
+                if(el.tagName !== 'TH' && !el.classList.contains('highlight')) {
+                    el.style.backgroundColor = 'transparent';
                 }
-                if (node.classList.contains('text-right')) {
-                    node.style.textAlign = 'right';
-                }
+                el.style.boxShadow = 'none';
+                el.style.color = '#000000';
             });
 
-            // ■ 表 (Table) の見切れ対策 [最重要]
+            // ■ タイトル・見出しの整形（中央揃えを維持）
+            // 元のサイトで text-center クラスがついているものは中央揃えにする
+            const centeredElements = sourceElement.querySelectorAll('.text-center');
+            centeredElements.forEach((el, i) => {
+                // クローン側で対応する要素を探す（簡易的にインデックスで同期）
+                // ※構造が変わっていない前提
+                const cloneEl = clone.querySelectorAll('.text-center')[i];
+                if(cloneEl) cloneEl.style.textAlign = 'center';
+            });
+            
+            // 見出し (H2) 個別調整
+            const h2s = clone.querySelectorAll('h2');
+            h2s.forEach(h2 => {
+                h2.style.textAlign = 'center'; // H2は必ず中央
+                h2.style.borderBottom = '1pt solid #000';
+                h2.style.paddingBottom = '10px';
+                h2.style.marginBottom = '20px';
+                h2.style.fontSize = '18px';
+                h2.style.fontWeight = 'bold';
+            });
+
+            // 見出し (H3, H4) 個別調整
+            const subHeads = clone.querySelectorAll('h3, h4');
+            subHeads.forEach(h => {
+                h.style.marginTop = '25px';
+                h.style.marginBottom = '10px';
+                h.style.fontWeight = 'bold';
+                h.style.borderLeft = 'none'; // 左線はPDFだと太すぎることがあるので消すか調整
+                h.style.borderBottom = '1px solid #ccc'; // 下線に変更して見やすく
+                h.style.paddingBottom = '5px';
+            });
+
+            // ■ 表 (Table) の整形（枠線くっきり・スクロール解除）
+            // スクロールコンテナ解除
+            const scrollWrappers = clone.querySelectorAll('.overflow-x-auto');
+            scrollWrappers.forEach(w => {
+                w.style.display = 'block';
+                w.style.overflow = 'visible';
+                w.style.width = '100%';
+            });
+
             const tables = clone.querySelectorAll('table');
             tables.forEach(table => {
+                table.removeAttribute('class');
                 table.style.width = '100%';
-                table.style.tableLayout = 'fixed'; // 列幅を固定してはみ出しを強制阻止
                 table.style.borderCollapse = 'collapse';
-                table.style.fontSize = '7pt'; // 比較表は列が多いため、文字を小さく設定
-                
+                table.style.marginBottom = '20px';
+                table.style.tableLayout = 'fixed'; // 列幅固定
+                table.style.fontSize = '10px'; // 表内は少し小さく
+
                 const cells = table.querySelectorAll('th, td');
                 cells.forEach(cell => {
-                    cell.style.border = '0.5pt solid #000000';
-                    cell.style.padding = '3pt';
-                    cell.style.wordBreak = 'break-all'; // 長い単語を強制折り返し
-                    cell.style.backgroundColor = cell.tagName === 'TH' ? '#f5f5f5' : '#ffffff';
+                    cell.removeAttribute('class');
+                    cell.style.border = '1px solid #000000'; // 黒枠完全適用
+                    cell.style.padding = '8px';
+                    cell.style.wordBreak = 'break-all'; // はみ出し防止
+                    cell.style.verticalAlign = 'middle';
+                    
+                    // ヘッダー
+                    if(cell.tagName === 'TH') {
+                        cell.style.backgroundColor = '#f0f0f0';
+                        cell.style.fontWeight = 'bold';
+                        cell.style.textAlign = 'center';
+                    }
+                    // ハイライトセル
+                    if(cell.classList.contains('highlight')) {
+                        cell.style.fontWeight = 'bold';
+                        cell.style.backgroundColor = '#ffeeee';
+                    }
                 });
             });
 
-            // 見えない場所に配置してレンダリング準備
-            const container = document.createElement('div');
-            container.style.position = 'fixed';
-            container.style.left = '-10000px';
-            container.style.top = '0';
-            container.appendChild(clone);
-            document.body.appendChild(container);
+            // 右寄せの日付エリアなど
+            const rightElements = clone.querySelectorAll('.text-right');
+            rightElements.forEach(el => el.style.textAlign = 'right');
 
-            // --- 4. HTMLからPDFへのベクター変換 ---
-            btn.innerHTML = '<i class="bi bi-hourglass-split"></i> 書き出し中...';
+            // レンダリング用コンテナ（見えない場所に配置）
+            const hiddenDiv = document.createElement('div');
+            hiddenDiv.style.position = 'fixed';
+            hiddenDiv.style.left = '-10000px';
+            hiddenDiv.style.top = '0';
+            hiddenDiv.style.zIndex = '-9999';
+            hiddenDiv.appendChild(clone);
+            document.body.appendChild(hiddenDiv);
+
+            // --- 4. HTML => PDF ベクター変換実行 ---
+            btn.innerHTML = '<i class="bi bi-hourglass-split"></i> 生成中...';
 
             await doc.html(clone, {
-                x: margin,
-                y: margin,
-                width: contentWidth, // PDF上の表示幅
-                windowWidth: 800,    // HTMLを解釈する幅
-                autoPaging: 'text',
-                margin: [margin, margin, margin, margin],
                 callback: function(doc) {
                     // クリーンアップ
-                    document.body.removeChild(container);
+                    document.body.removeChild(hiddenDiv);
 
-                    // --- 5. 新しいタブで「PDFとして」開く (DLボタン表示対策) ---
-                    const pdfBlob = doc.output('blob');
-                    const fileName = viewId === 'about' ? 'tenmei_terms.pdf' : 'tenmei_privacy.pdf';
-                    
-                    // BlobからURLを生成（Typeを明示）
-                    const fileURL = URL.createObjectURL(new Blob([pdfBlob], { type: 'application/pdf' }));
-                    
-                    // 新しいタブを開く
-                    const newWindow = window.open(fileURL, '_blank');
-                    
-                    // タブのタイトルを設定（一部ブラウザでダウンロード名に反映される）
-                    if (newWindow) {
-                        newWindow.document.title = fileName;
-                    }
+                    // Blob URL生成 (application/pdf)
+                    const blob = doc.output('blob');
+                    const url = URL.createObjectURL(blob);
+
+                    // 新しいタブでプレビューを開く
+                    // ※Blob URLで開けば、ブラウザ標準のPDFビューワーが起動し、
+                    // 右上などに必ず「ダウンロード(保存)ボタン」が表示されます。
+                    window.open(url, '_blank');
 
                     btn.innerHTML = originalText;
                     btn.disabled = false;
-                }
+                },
+                x: margin,
+                y: margin,
+                // 【重要】ここでスケーリングを行う
+                // HTMLは virtualWidth(750px) で描画し、
+                // PDF上では pdfContentWidth(約535pt) の幅に縮小して配置する
+                width: pdfContentWidth, 
+                windowWidth: virtualWidth, 
+                
+                autoPaging: 'text', // テキストが途切れないようにページ送り
+                margin: [margin, margin, margin, margin]
             });
 
         } catch (e) {
             console.error(e);
-            alert("PDFの生成に失敗しました。ブラウザの制限を確認してください。");
+            alert("PDF生成エラーが発生しました。\n" + e.message);
             btn.innerHTML = originalText;
             btn.disabled = false;
+            const remnant = document.querySelector('div[style*="left: -10000px"]');
+            if(remnant) remnant.remove();
         }
     }
 
-    // ヘルパー: ArrayBufferをBase64に変換
+    // ArrayBuffer -> Base64 変換
     function arrayBufferToBase64(buffer) {
         let binary = '';
         const bytes = new Uint8Array(buffer);
-        for (let i = 0; i < bytes.byteLength; i++) {
+        const len = bytes.byteLength;
+        for (let i = 0; i < len; i++) {
             binary += String.fromCharCode(bytes[i]);
         }
         return window.btoa(binary);
