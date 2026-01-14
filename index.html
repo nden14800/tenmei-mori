@@ -6747,9 +6747,8 @@ function changeHistoryPage(newPage) {
         }
     }
 
- // 3. PDFダウンロード関数 (修正版: 高画質画像化・新タブプレビュー・表見切れ防止)
+ // 3. PDFダウンロード関数 (修正版: 日本語フォント対応・完全ベクター・表最適化)
     async function downloadPDF(viewId) {
-        // jsPDFのインスタンス作成
         const { jsPDF } = window.jspdf;
         
         // 対象エリアの取得
@@ -6761,113 +6760,109 @@ function changeHistoryPage(newPage) {
 
         // ボタンをローディング状態に
         const originalText = btn.innerHTML;
-        btn.innerHTML = '<i class="bi bi-hourglass-split"></i> 生成中...';
+        btn.innerHTML = '<i class="bi bi-hourglass-split"></i> フォント取得中...';
         btn.disabled = true;
 
         try {
-            // A4サイズのPDFドキュメントを作成 (pt単位)
+            // 1. A4サイズのPDFドキュメントを作成 (pt単位)
             const doc = new jsPDF('p', 'pt', 'a4');
-            const pdfWidth = 595.28; // A4幅
-            const pageHeight = 841.89; // A4高さ
-            const margin = 30; // 余白
+            const pdfWidth = 595.28; // A4幅 (pt)
+            const margin = 40; // 余白
             const contentWidth = pdfWidth - (margin * 2);
 
-            // 1. レンダリング用のクローンを作成（画面表示に影響を与えないため）
+            // 2. 日本語フォント(Shippori Mincho)をFetchしてVFSに追加
+            // ※これがないとjsPDFは日本語をレンダリングできず白紙になります
+            const fontUrl = 'https://raw.githubusercontent.com/google/fonts/main/ofl/shipporimincho/ShipporiMincho-Regular.ttf';
+            const fontBytes = await fetch(fontUrl).then(res => res.arrayBuffer());
+            
+            // フォントをPDFに追加
+            const filename = 'ShipporiMincho-Regular.ttf';
+            doc.addFileToVFS(filename, new Uint8Array(fontBytes));
+            doc.addFont(filename, 'Shippori', 'normal');
+            doc.setFont('Shippori'); // フォントセット
+
+            btn.innerHTML = '<i class="bi bi-hourglass-split"></i> レイアウト計算中...';
+
+            // 3. PDF生成用にクローンを作成し、印刷用にスタイルを強制変更
             const clone = sourceElement.cloneNode(true);
             
-            // クローンのスタイルをA4印刷用に強制調整
-            // ここで幅を固定することで、表の見切れを防ぎます
-            clone.style.width = '750px'; // A4幅に収まる適切なピクセル幅（高解像度用）
-            clone.style.padding = '40px';
+            // A4幅に合わせてスタイル調整 (レスポンシブ対応)
+            clone.style.width = contentWidth + 'px';
+            clone.style.padding = '0';
             clone.style.background = '#ffffff';
             clone.style.color = '#000000';
-            clone.style.position = 'absolute';
-            clone.style.top = '-9999px'; // 画面外に配置
-            clone.style.left = '-9999px';
+            clone.style.fontFamily = "'Shippori', serif"; // 追加したフォントを指定
             
             // 不要な要素（目次ボタンなど）を削除
             const tocBtn = clone.querySelector(`#${viewId}-toc-container`);
             if(tocBtn) tocBtn.remove();
 
-            // 表（Table）のスタイル最適化
-            const tables = clone.querySelectorAll('table');
+            // 表（Table）のスタイルを「見切れない」ように強制調整
+            const tables = clone.querySelectorAll('table, .comparison-table');
             tables.forEach(table => {
                 table.style.width = '100%';
-                table.style.tableLayout = 'fixed';
-                table.style.fontSize = '10px'; // 文字を少し小さくして収める
+                table.style.minWidth = '0'; // 横幅強制解除
+                table.style.tableLayout = 'fixed'; // 列幅を固定してはみ出し防止
                 table.style.borderCollapse = 'collapse';
+                table.style.fontSize = '8pt'; // フォントサイズを下げて収める
                 
-                // セルの枠線をくっきり黒に
+                // セルの調整
                 const cells = table.querySelectorAll('th, td');
                 cells.forEach(cell => {
-                    cell.style.border = '1px solid #000';
-                    cell.style.padding = '6px';
-                    cell.style.wordBreak = 'break-word'; // 長い文字を折り返す
-                    cell.classList.remove('bg-gray-200', 'bg-gray-50', 'dark:bg-zinc-700', 'dark:bg-zinc-800'); // 背景色リセット
+                    cell.style.border = '1px solid #000'; // 黒枠
+                    cell.style.padding = '4px';
+                    cell.style.wordBreak = 'break-all'; // 長い単語を強制折り返し
+                    cell.style.whiteSpace = 'normal'; // 改行許可
+                    // 背景色を印刷向きに薄く
+                    if(cell.classList.contains('bg-red-100')) cell.style.backgroundColor = '#ffe5e5';
+                    else if(cell.classList.contains('bg-gray-50') || cell.classList.contains('bg-gray-200')) cell.style.backgroundColor = '#f5f5f5';
+                    else cell.style.backgroundColor = 'transparent';
                 });
-                // ヘッダー背景を薄いグレーに
-                const headers = table.querySelectorAll('th');
-                headers.forEach(h => h.style.backgroundColor = '#f0f0f0');
             });
 
-            // 本文フォント調整
-            clone.style.fontFamily = "'Shippori Mincho', serif";
-            clone.style.lineHeight = '1.6';
+            // 本文フォントサイズ調整
+            const texts = clone.querySelectorAll('p, li, h2, h3, h4');
+            texts.forEach(el => {
+                el.style.wordBreak = 'break-all'; // 日本語の折り返しを確実に
+            });
 
-            // bodyに追加してレンダリング準備
+            // 画面外に配置してレンダリング
+            clone.style.position = 'absolute';
+            clone.style.top = '-10000px';
+            clone.style.left = '-10000px';
             document.body.appendChild(clone);
 
-            // 2. html2canvasで高画質画像化 (scale: 2〜3 でくっきりさせる)
-            const canvas = await html2canvas(clone, {
-                scale: 2.5, // 高画質設定
-                useCORS: true,
-                logging: false,
-                backgroundColor: '#ffffff',
-                windowWidth: clone.scrollWidth,
-                windowHeight: clone.scrollHeight
+            // 4. HTMLをPDFのベクターデータとして描画
+            await doc.html(clone, {
+                callback: function(doc) {
+                    // クローン削除
+                    document.body.removeChild(clone);
+
+                    // Blob URLを生成して新しいタブで開く (普通のサイトと同じ挙動)
+                    const blob = doc.output('blob');
+                    const url = URL.createObjectURL(blob);
+                    window.open(url, '_blank');
+
+                    // ボタン戻す
+                    btn.innerHTML = originalText;
+                    btn.disabled = false;
+                },
+                x: margin,
+                y: margin,
+                width: contentWidth, // コンテンツ幅を指定して自動改行させる
+                windowWidth: contentWidth, // ウィンドウ幅を偽装
+                autoPaging: 'text', // 文章の途中でのページ送りを最適化
+                margin: [40, 40, 40, 40]
             });
-
-            // クローンを削除
-            document.body.removeChild(clone);
-
-            // 3. Canvas画像をPDFに追加（ページ分割処理）
-            const imgData = canvas.toDataURL('image/jpeg', 0.95);
-            const imgProps = doc.getImageProperties(imgData);
-            const pdfHeight = (imgProps.height * contentWidth) / imgProps.width;
-            
-            let heightLeft = pdfHeight;
-            let position = margin;
-            let page = 1;
-
-            // 1ページ目
-            doc.addImage(imgData, 'JPEG', margin, position, contentWidth, pdfHeight);
-            heightLeft -= (pageHeight - margin * 2);
-
-            // 2ページ目以降があれば追加
-            while (heightLeft > 0) {
-                position = heightLeft - pdfHeight + margin; // 位置調整は簡易的
-                doc.addPage();
-                // 画像の表示位置をずらして次ページ分を表示させる（マスキング的な処理）
-                // ※jsPDFのaddImageはクロッピングが難しいため、ここでは簡易的に全体をずらして配置
-                // 厳密なページ送りが必要な場合は複雑になりますが、規約文程度ならこれで読めます
-                doc.addImage(imgData, 'JPEG', margin, margin - (pdfHeight - heightLeft), contentWidth, pdfHeight);
-                heightLeft -= (pageHeight - margin * 2);
-            }
-
-            // 4. Blob URLを生成して新しいタブで開く
-            const blob = doc.output('blob');
-            const url = URL.createObjectURL(blob);
-            window.open(url, '_blank');
-
-            // ボタンを元に戻す
-            btn.innerHTML = originalText;
-            btn.disabled = false;
 
         } catch (e) {
             console.error(e);
-            alert("PDF生成エラーが発生しました。");
+            alert("PDF生成エラー: ネットワーク状況を確認してください。\n(日本語フォントのダウンロードに失敗した可能性があります)");
             btn.innerHTML = originalText;
             btn.disabled = false;
+            // クローンが残っていたら消す
+            const clone = document.querySelector('.themed-card[style*="-10000px"]');
+            if(clone) document.body.removeChild(clone);
         }
     }
 
