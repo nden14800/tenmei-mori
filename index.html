@@ -6581,16 +6581,42 @@ ${getShareUrl()}`;
         `;
     }
 
+    // ==========================================
+    //  お気に入り機能 (修正版: ログイン必須化)
+    // ==========================================
+
     function toggleFavorite(signId, bloodType) {
+        // 1. 未ログインチェック: ログインしていない場合は警告を出して認証画面へ誘導
+        if (!currentState.user) {
+            if (confirm("お気に入り機能を利用するには、会員ログインが必要です。\nログイン・登録画面へ移動しますか？")) {
+                showView('auth');
+            }
+            return;
+        }
+
+        // 2. 登録・解除のロジック
         const existsIndex = favoriteList.findIndex(f => f.sign === signId && f.blood === bloodType);
-        if (existsIndex >= 0) { favoriteList.splice(existsIndex, 1); } 
-        else { if (favoriteList.length >= 5) return alert('最大5つまで'); favoriteList.push({ sign: signId, blood: bloodType }); }
-        if(currentState.user) {
-            fetch(`${API_BASE}/api/favorites`, { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({email:currentState.user.email, token:currentState.user.token, favorites:favoriteList}) });
-        } else { localStorage.setItem('fortuneFavorites', JSON.stringify(favoriteList)); }
+        if (existsIndex >= 0) { 
+            favoriteList.splice(existsIndex, 1); 
+        } else { 
+            if (favoriteList.length >= 5) return alert('お気に入りは最大5件までです'); 
+            favoriteList.push({ sign: signId, blood: bloodType }); 
+        }
+
+        // 3. サーバー同期のみ実行 (ローカルストレージへの保存処理を削除)
+        fetch(`${API_BASE}/api/favorites`, { 
+            method: 'POST', 
+            headers: {'Content-Type': 'application/json'}, 
+            body: JSON.stringify({
+                email: currentState.user.email, 
+                token: currentState.user.token, 
+                favorites: favoriteList
+            }) 
+        }).catch(e => console.error("Sync Error:", e));
+        
         renderFavorites();
     }
-
+      
     function renderFavorites() {
         const container = document.getElementById('favorites-list');
         const section = document.getElementById('favorites-section');
