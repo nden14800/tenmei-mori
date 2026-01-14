@@ -4889,6 +4889,113 @@ let historyPageState = {
 
         return selectedText + " " + advice;
     }
+
+// ==========================================
+    //  御守授与所システム
+    // ==========================================
+    const OmamoriSystem = {
+        // 願い事データ定義
+        types: {
+            safety:  { label: "交通安全", color: "#2e7d32", text: "#fff", pattern: "seigaiha" }, // 緑
+            health:  { label: "健康長寿", color: "#00695c", text: "#fff", pattern: "kikkou" },   // 深緑
+            love:    { label: "良縁成就", color: "#f48fb1", text: "#fff", pattern: "shippo" },   // ピンク
+            money:   { label: "金運上昇", color: "#fbc02d", text: "#3e2723", pattern: "ichimatsu" }, // 金
+            study:   { label: "学業成就", color: "#1565c0", text: "#fff", pattern: "yagasuri" }, // 青
+            victory: { label: "必勝祈願", color: "#d32f2f", text: "#fff", pattern: "hishi" },    // 赤
+            protect: { label: "厄除け",   color: "#212121", text: "#fff", pattern: "kikkou" },   // 黒
+            success: { label: "大願成就", color: "#7b1fa2", text: "#fff", pattern: "seigaiha" }  // 紫
+        },
+
+        // 祈祷開始（アニメーション）
+        startPrayer: function(typeKey) {
+            document.getElementById('omamori-step-1').classList.add('hidden');
+            document.getElementById('omamori-step-2').classList.remove('hidden');
+            
+            // 2.5秒後に完成
+            setTimeout(() => {
+                this.renderOmamori(typeKey);
+            }, 2500);
+        },
+
+        // 御守の描画
+        renderOmamori: function(typeKey) {
+            const data = this.types[typeKey];
+            const display = document.getElementById('omamori-display');
+            const userName = currentState.user ? currentState.user.username : "天命乃杜";
+            
+            // 紐（叶結び）のSVGパス
+            const knotSVG = `
+                <svg viewBox="0 0 100 80" fill="none" stroke="#f0f0f0" stroke-width="4" stroke-linecap="round" stroke-linejoin="round" style="filter: drop-shadow(0 2px 2px rgba(0,0,0,0.5));">
+                    <path d="M50 10 Q30 30 20 20 T20 40 Q30 50 50 40 Q70 50 80 40 T80 20 Q70 30 50 10 Z" fill="none" />
+                    <path d="M50 40 V 70" />
+                    <circle cx="50" cy="25" r="5" fill="#f0f0f0" stroke="none" />
+                </svg>
+            `;
+
+            // HTML生成
+            display.innerHTML = `
+                <div class="omamori-body" style="background-color: ${data.color};">
+                    <!-- テクスチャ -->
+                    <div class="omamori-texture"></div>
+                    
+                    <!-- 飾り枠 -->
+                    <div class="omamori-border"></div>
+                    
+                    <!-- 紐 -->
+                    <div class="omamori-knot">${knotSVG}</div>
+
+                    <!-- 札 -->
+                    <div class="omamori-label" style="color: #333; font-family: 'Zen Old Mincho', serif;">
+                        ${data.label}
+                    </div>
+
+                    <!-- 名前刻印 -->
+                    <div style="
+                        position: absolute; bottom: 15px; font-size: 0.7rem; 
+                        color: rgba(255,255,255,0.8); writing-mode: horizontal-tb;
+                        letter-spacing: 0.1em; font-weight: bold;
+                    ">
+                        ${userName} 拝受
+                    </div>
+                </div>
+            `;
+
+            document.getElementById('omamori-step-2').classList.add('hidden');
+            document.getElementById('omamori-step-3').classList.remove('hidden');
+        },
+
+        // 画像保存
+        saveImage: function() {
+            const target = document.querySelector('.omamori-body'); // 御守本体のみを切り抜く
+            if(!target) return;
+            
+            const btn = event.target.closest('button');
+            const originalText = btn.innerHTML;
+            btn.innerHTML = '<i class="bi bi-hourglass-split"></i> 生成中...';
+            btn.disabled = true;
+
+            html2canvas(target, {
+                scale: 3, // 高画質
+                backgroundColor: null,
+                useCORS: true
+            }).then(canvas => {
+                const link = document.createElement('a');
+                link.download = `omamori_${Date.now()}.png`;
+                link.href = canvas.toDataURL('image/png');
+                link.click();
+                
+                btn.innerHTML = originalText;
+                btn.disabled = false;
+                alert("御守を授かりました。\n端末の画像フォルダをご確認ください。");
+            }).catch(e => {
+                console.error(e);
+                alert("保存に失敗しました。");
+                btn.innerHTML = originalText;
+                btn.disabled = false;
+            });
+        }
+    };
+        
     // ==========================================
     //  統合された初期化処理 (window.onload)
     // ==========================================
