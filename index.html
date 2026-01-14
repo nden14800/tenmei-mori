@@ -6746,44 +6746,46 @@ function changeHistoryPage(newPage) {
     }
 
 
-    async function downloadPDF(viewId) {
-        // window.jspdf が読み込まれているか確認
+     async function downloadPDF(viewId) {
+        // ライブラリの読み込み確認
         if (!window.jspdf) {
-            alert("PDF生成ライブラリの読み込みに失敗しました。ページをリロードしてください。");
+            alert("PDF生成機能の読み込みに失敗しました。画面を更新してください。");
             return;
         }
         const { jsPDF } = window.jspdf;
         
-        // 対象エリアの特定
+        // 対象エリアの取得
         const sourceId = viewId === 'about' ? 'about-content-area' : 'privacy-content-area';
         const sourceElement = document.getElementById(sourceId);
         // クリックされたボタン（ローディング表示用）
         const btn = event.target.closest('button');
 
-        if (!sourceElement) return;
+        if (!sourceElement) {
+            alert("出力対象が見つかりません。");
+            return;
+        }
 
         // ボタンの状態変更
         const originalText = btn.innerHTML;
-        btn.innerHTML = '<i class="bi bi-hourglass-split"></i> フォント準備中...';
+        btn.innerHTML = '<i class="bi bi-hourglass-split"></i> 準備中...';
         btn.disabled = true;
 
         try {
             // ------------------------------------------------
-            // 1. 日本語フォント (Shippori Mincho) の取得と埋め込み
+            // 1. 日本語フォント (Shippori Mincho) の取得
             // ------------------------------------------------
-            // ※これがないと日本語が文字化けしたり消えたりします
             const fontUrl = 'https://raw.githubusercontent.com/google/fonts/main/ofl/shipporimincho/ShipporiMincho-Regular.ttf';
             const fontName = 'ShipporiMincho';
             
             const fontRes = await fetch(fontUrl);
-            if (!fontRes.ok) throw new Error("フォントファイルの取得に失敗しました");
+            if (!fontRes.ok) throw new Error("フォントの取得に失敗しました");
             const fontBuffer = await fontRes.arrayBuffer();
             const fontBase64 = arrayBufferToBase64(fontBuffer);
 
             // ------------------------------------------------
-            // 2. PDFドキュメントの初期化
+            // 2. PDFドキュメント設定
             // ------------------------------------------------
-            btn.innerHTML = '<i class="bi bi-hourglass-split"></i> レイアウト計算中...';
+            btn.innerHTML = '<i class="bi bi-hourglass-split"></i> レイアウト調整中...';
             
             // A4サイズ (pt単位: 595.28 x 841.89)
             const doc = new jsPDF({
@@ -6797,163 +6799,211 @@ function changeHistoryPage(newPage) {
             doc.addFont('ShipporiMincho.ttf', fontName, 'normal');
             doc.setFont(fontName);
 
-            // PDF上の余白と描画可能幅の設定
-            const margin = 30; 
-            const pdfPageWidth = 595.28;
-            const pdfContentWidth = pdfPageWidth - (margin * 2); // 約535pt
-
             // ------------------------------------------------
-            // 3. HTMLクローンの作成とスタイル強制上書き (ここが重要)
+            // 3. 印刷用クローンの作成とスタイル完全再構築
             // ------------------------------------------------
-            // 画面表示用のHTMLをそのまま使うと崩れるため、PDF専用に複製して整形します
             const clone = sourceElement.cloneNode(true);
-            
-            // 不要な要素（目次ボタンなど）を削除
-            const toc = clone.querySelector(`#${viewId}-toc-container`);
-            if(toc) toc.remove();
 
-            // ■ HTML描画時の仮想幅 (Virtual Width)
-            // この幅でブラウザ上にレンダリングし、それを縮小してPDFに入れます。
-            // 750pxくらいがA4縦で読みやすいバランスです。
-            const virtualWidth = 750; 
+            // 不要な要素（目次コンテナ、ボタンなど）を削除
+            const removeSelectors = [
+                `#${viewId}-toc-container`, // 目次
+                'button',                   // ボタン類
+                '.article-meta',            // 日付などのメタ情報（必要なら残す）
+                '.text-right'               // 右寄せの署名など（必要なら残す）
+            ];
+            removeSelectors.forEach(sel => {
+                const els = clone.querySelectorAll(sel);
+                els.forEach(el => el.remove());
+            });
 
-            // クローン全体のスタイル初期化
-            clone.style.width = virtualWidth + 'px'; // 幅を固定
-            clone.style.padding = '20px'; // 内部余白
-            clone.style.margin = '0';
-            clone.style.background = '#ffffff'; // 背景白
-            clone.style.color = '#000000'; // 文字黒
-            clone.style.fontFamily = "'ShipporiMincho', serif"; // フォント指定
-            clone.style.fontSize = '12px'; // 基本文字サイズ
-            clone.style.lineHeight = '1.6'; 
-            clone.style.boxSizing = 'border-box';
+            // ■ 仮想描画幅の設定
+            // 表を収めるために、少し広めの幅(800px)で描画し、それをA4幅に縮小してPDF化します
+            const virtualWidth = 800;
 
-            // 全要素のスタイル正規化（背景色や影をリセット）
+            // --- クローン全体のスタイルを強制リセット ---
+            // 「外枠」や「背景色」を消すため、CSSを直接書き込みます
+            clone.removeAttribute('class'); // 元のクラスを全削除
+            Object.assign(clone.style, {
+                width: virtualWidth + 'px',
+                padding: '40px',          // 紙の余白に相当
+                margin: '0',
+                background: '#ffffff',    // 真っ白な背景
+                color: '#000000',         // 真っ黒な文字
+                fontFamily: "'ShipporiMincho', serif",
+                fontSize: '12px',         // 本文の基本サイズ
+                lineHeight: '2.0',        // 行間を広く（線の重なり防止）
+                border: 'none',           // ★外枠を消す
+                boxShadow: 'none',        // ★影を消す
+                boxSizing: 'border-box'
+            });
+
+            // --- 子要素すべてのスタイルをリセット ---
             const allElements = clone.querySelectorAll('*');
             allElements.forEach(el => {
-                if(el.tagName !== 'TH' && !el.classList.contains('highlight')) {
-                    el.style.backgroundColor = 'transparent';
-                }
+                // 赤線や背景色を消す
+                el.style.backgroundColor = 'transparent';
                 el.style.boxShadow = 'none';
                 el.style.color = '#000000';
+                el.style.border = 'none'; // ★一度すべての線を消す
+                el.style.margin = '0';
+                el.style.padding = '0';
+                
+                // 特定のクラス（赤線など）の影響を消すためにクラス属性も削除
+                // ただし、表のセル判定などに使うなら慎重に
+                if(el.tagName !== 'TABLE' && el.tagName !== 'TR' && el.tagName !== 'TD' && el.tagName !== 'TH') {
+                    el.removeAttribute('class');
+                }
             });
 
-            // --- 見出しの整形 ---
+            // --- 見出し (H2, H3, H4) の再設定 ---
             const headings = clone.querySelectorAll('h2, h3, h4');
             headings.forEach(h => {
-                h.style.color = '#000000';
-                h.style.borderBottom = '1px solid #000'; // 下線を黒く
-                h.style.pageBreakAfter = 'avoid'; // 見出しの直後で改ページしない
+                h.style.display = 'block';
+                h.style.fontWeight = 'bold';
+                h.style.marginTop = '30px';
+                h.style.marginBottom = '15px';
+                h.style.borderBottom = '1px solid #000000'; // 黒い下線のみ
+                h.style.paddingBottom = '10px'; // ★文字と線の間隔を広げる
+                h.style.pageBreakAfter = 'avoid';
             });
-            // H2は中央揃え
+            // H2は中央揃え・大文字
             const h2s = clone.querySelectorAll('h2');
-            h2s.forEach(h => h.style.textAlign = 'center');
+            h2s.forEach(h => {
+                h.style.textAlign = 'center';
+                h.style.fontSize = '18px';
+                h.style.marginBottom = '40px';
+                h.style.borderBottom = '2px solid #000000'; // H2だけ少し太く
+            });
 
-            // --- 【重要】表 (Table) の見切れ対策 ---
-            // 横スクロールコンテナを無効化
+            // --- 段落 (P, LI) の調整 ---
+            const paras = clone.querySelectorAll('p, li');
+            paras.forEach(p => {
+                p.style.marginBottom = '10px';
+                p.style.textAlign = 'justify'; // 両端揃えできれいに
+            });
+            // リストのインデント
+            const lists = clone.querySelectorAll('ul, ol');
+            lists.forEach(l => {
+                l.style.paddingLeft = '20px';
+                l.style.marginBottom = '10px';
+                l.style.listStyleType = 'disc';
+            });
+
+            // --- 【重要】表 (Table) の見切れ防止・縮小 ---
+            // 横スクロールの解除
             const scrollWrappers = clone.querySelectorAll('.overflow-x-auto');
             scrollWrappers.forEach(w => {
                 w.style.display = 'block';
-                w.style.overflow = 'visible';
                 w.style.width = '100%';
+                w.style.overflow = 'visible';
             });
 
-            // 表自体のスタイル強制
-            const tables = clone.querySelectorAll('table, .comparison-table');
+            const tables = clone.querySelectorAll('table');
             tables.forEach(table => {
-                table.style.width = '100% !important';
-                table.style.minWidth = '0 !important'; // 元の900pxを打ち消す
-                table.style.maxWidth = '100% !important';
-                table.style.tableLayout = 'fixed'; // 列幅を均等に（はみ出し防止）
-                table.style.borderCollapse = 'collapse';
-                table.style.fontSize = '10px'; // 文字を少し小さくして収める
-                table.style.margin = '0 auto 20px auto';
-            });
+                table.removeAttribute('class'); // Tailwindのクラスを削除
+                Object.assign(table.style, {
+                    width: '100%',
+                    borderCollapse: 'collapse',
+                    marginBottom: '20px',
+                    tableLayout: 'fixed', // ★列幅を強制固定
+                    fontSize: '8px',      // ★表の中だけ文字を極小にする
+                    lineHeight: '1.4'     // 表の中は行間詰める
+                });
 
-            // セル (th, td) のスタイル強制
-            const cells = clone.querySelectorAll('th, td');
-            cells.forEach(cell => {
-                cell.style.border = '1px solid #000000'; // 黒枠
-                cell.style.padding = '4px';
-                cell.style.wordBreak = 'break-all'; // 長い単語を強制的に折り返す
-                cell.style.wordWrap = 'break-word';
-                cell.style.whiteSpace = 'normal';   // 改行を許可
-                
-                // ヘッダー背景
-                if(cell.tagName === 'TH') {
-                    cell.style.backgroundColor = '#f0f0f0';
-                    cell.style.color = '#000';
-                }
+                const cells = table.querySelectorAll('th, td');
+                cells.forEach(cell => {
+                    cell.removeAttribute('class');
+                    Object.assign(cell.style, {
+                        border: '1px solid #000000', // 黒い枠線
+                        padding: '4px',
+                        wordBreak: 'break-all',      // ★単語の途中でも強制改行
+                        overflowWrap: 'break-word',
+                        verticalAlign: 'middle',
+                        color: '#000000'
+                    });
+
+                    // ヘッダー背景（グレー）
+                    if(cell.tagName === 'TH') {
+                        cell.style.backgroundColor = '#f0f0f0';
+                        cell.style.fontWeight = 'bold';
+                        cell.style.textAlign = 'center';
+                    }
+                });
             });
 
             // --- レンダリング用コンテナへの配置 ---
-            // 画面外の見えない場所に配置して html2canvas に撮らせる
+            // 画面外に配置して描画させる
             const hiddenContainer = document.createElement('div');
-            hiddenContainer.style.position = 'absolute';
-            hiddenContainer.style.left = '-9999px';
-            hiddenContainer.style.top = '0';
-            hiddenContainer.style.width = virtualWidth + 'px'; // 親コンテナも幅固定
+            Object.assign(hiddenContainer.style, {
+                position: 'absolute',
+                left: '-9999px',
+                top: '0',
+                width: virtualWidth + 'px',
+                backgroundColor: '#ffffff' // ここも白にしておく
+            });
             hiddenContainer.appendChild(clone);
             document.body.appendChild(hiddenContainer);
 
             // ------------------------------------------------
-            // 4. PDF生成と保存実行
+            // 4. PDF生成と保存
             // ------------------------------------------------
-            btn.innerHTML = '<i class="bi bi-hourglass-split"></i> 生成・保存中...';
+            btn.innerHTML = '<i class="bi bi-hourglass-split"></i> 生成中...';
 
-            // htmlメソッドの設定
-            // width: PDF上の幅 (535pt) に合わせる
-            // windowWidth: HTML描画時の幅 (750px) に合わせる
-            // これにより、750pxのHTMLが535ptのPDF幅に縮小されて綺麗に収まります
+            const margin = 30; // PDF上の余白 (pt)
+            const pdfWidth = 595.28 - (margin * 2); // PDFの本文幅
+
             await doc.html(clone, {
                 callback: function(doc) {
-                    // クリーンアップ（非表示要素の削除）
+                    // クリーンアップ
                     document.body.removeChild(hiddenContainer);
 
-                    // ファイル名決定
+                    // ファイル名
                     const timestamp = new Date().toISOString().slice(0,10).replace(/-/g,'');
                     const fileName = `Tenmei_${viewId}_${timestamp}.pdf`;
 
-                    // 【修正】doc.save() を使用して強制ダウンロード
                     try {
+                        // ★修正点: doc.save() で強制ダウンロード
                         doc.save(fileName);
                         
-                        // 成功メッセージ
                         btn.innerHTML = originalText;
                         btn.disabled = false;
-                        alert("PDFのダウンロードを開始しました。\n保存されたファイルをご確認ください。");
                         
                     } catch (e) {
-                        console.error("Save Error:", e);
-                        alert("保存処理に失敗しました。");
+                        console.error("保存エラー:", e);
+                        alert("ファイルの保存に失敗しました。");
                         btn.innerHTML = originalText;
                         btn.disabled = false;
                     }
                 },
                 x: margin,
                 y: margin,
-                width: pdfContentWidth, 
+                // ★スケーリングの魔法
+                // PDF上の幅(約535pt)に対して、HTML上の幅(800px)を割り当てることで
+                // 全体が自動的に縮小され、表が見切れずに収まります。
+                width: pdfWidth, 
                 windowWidth: virtualWidth,
+                
+                autoPaging: 'text', // 文章の途中でのページ分割をきれいに
                 margin: [margin, margin, margin, margin],
-                autoPaging: 'text', // テキストの途中で行が切れないように調整
                 html2canvas: {
-                    scale: 1, // 基本スケール
-                    letterRendering: true, // 文字間隔の精度向上
-                    useCORS: true // 外部画像/フォント許可
+                    scale: 1,
+                    letterRendering: true,
+                    useCORS: true,
+                    backgroundColor: '#ffffff' // 背景白を強制
                 }
             });
 
         } catch (e) {
             console.error(e);
-            alert("エラーが発生しました: " + e.message);
+            alert("PDF生成中にエラーが発生しました。\n" + e.message);
             btn.innerHTML = originalText;
             btn.disabled = false;
-            // 残骸の削除
+            // 残骸削除
             const remnant = document.querySelector('div[style*="left: -9999px"]');
             if(remnant) remnant.remove();
         }
     }
-
+        
     // ArrayBuffer -> Base64 変換
     // ==========================================
     //  PDFダウンロード機能 (修正・完全版)
