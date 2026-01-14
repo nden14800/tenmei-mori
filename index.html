@@ -2671,12 +2671,12 @@
         // ==========================================
     //  設定: メンテナンスモード
     // ==========================================
-    // メンテナンスを行う場合は enabled を true にし、時間を設定してください。
-    // 日時は "YYYY/MM/DD HH:MM:00" 形式で記述します。
+    // 日時は必ず "YYYY-MM-DDTHH:MM:SS" (ISO形式) で記述してください。
+    // ※スラッシュ(/)ではなくハイフン(-)を使い、日付と時間の間に T を入れます。
     const maintenanceConfig = {
-        enabled: true, // trueにすると期間判定が有効になります
-        startTime: "2026/01/14 18:00:00", 
-        endTime:   "2026/01/14 18:05:00",
+        enabled: true, // trueで有効化
+        startTime: "2026-01-14T18:00:00", // 開始時間
+        endTime:   "2026-01-14T18:30:00", // 終了時間 (テスト用に少し延ばしました)
         title: "臨時メンテナンス中",
         message: "現在、サーバーの調整および機能更新作業を行っております。<br>参拝者の皆様にはご不便をおかけしますが、<br>終了まで今しばらくお待ちください。"
     };
@@ -2689,8 +2689,15 @@
         const start = new Date(maintenanceConfig.startTime);
         const end = new Date(maintenanceConfig.endTime);
 
+        // 日付設定ミスがないかコンソールで確認用
+        if (isNaN(start.getTime()) || isNaN(end.getTime())) {
+            console.error("メンテナンス日時の形式が正しくありません。'YYYY-MM-DDTHH:MM:SS'形式で指定してください。");
+            return;
+        }
+
         if (now >= start && now < end) {
             // メンテナンス画面でサイト全体を覆う
+            // ※innerHTMLを上書きすることで、元のコンテンツを一瞬で消去します
             document.body.innerHTML = `
                 <div style="position:fixed; top:0; left:0; width:100%; height:100%; background:#1a1a1a; color:#f0f0f0; display:flex; flex-direction:column; align-items:center; justify-content:center; z-index:999999; font-family:'Zen Old Mincho', serif; text-align:center; padding:20px;">
                     <div style="font-size:4rem; margin-bottom:20px; color:#b91c1c;">
@@ -2701,18 +2708,22 @@
                         ${maintenanceConfig.message}
                     </p>
                     <div style="font-family:monospace; background:#333; padding:10px 20px; border-radius:8px;">
-                        終了予定: ${maintenanceConfig.endTime.slice(0, -3)}
+                        終了予定: ${maintenanceConfig.endTime.replace('T', ' ').slice(0, -3)}
                     </div>
                     <button onclick="location.reload()" style="margin-top:40px; padding:10px 30px; background:#b91c1c; color:white; border:none; border-radius:30px; cursor:pointer; font-weight:bold; transition:opacity 0.2s;">
                         <i class="bi bi-arrow-clockwise"></i> 再読み込み
                     </button>
                 </div>
             `;
-            // スクロール停止
             document.body.style.overflow = 'hidden';
-            throw new Error("Maintenance Mode Active"); // 以降のスクリプト実行を停止
+            
+            // 処理をここで強制停止させるためのエラー送出
+            throw new Error("Maintenance Mode Active"); 
         }
     }
+
+    // ★重要: 読み込み直後に即座にチェックを実行（onloadを待たない）
+    checkMaintenance();
 
         // ==========================================
     //  データ管理: 社務所だより & 神籤草子 (強制上書き版)
