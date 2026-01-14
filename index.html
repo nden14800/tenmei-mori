@@ -2669,19 +2669,53 @@
         const SITE_URL = "https://fortune-telling-at-tenmei-no-mori-authentic-today-s-fortun.pages.dev";
 
         // ==========================================
-    //  設定: メンテナンスモード
+    //  設定: サーバーメンテナンスモード
     // ==========================================
-    // 日時は必ず "YYYY-MM-DDTHH:MM:SS" (ISO形式) で記述してください。
-    // ※スラッシュ(/)ではなくハイフン(-)を使い、日付と時間の間に T を入れます。
     const maintenanceConfig = {
-        enabled: true, // trueで有効化
-        startTime: "2026-01-14T18:00:00", // 開始時間
-        endTime:   "2026-01-14T18:11:00", // 終了時間 (テスト用に少し延ばしました)
-        title: "臨時メンテナンス中",
-        message: "現在、サーバーの調整および機能更新作業を行っております。<br>参拝者の皆様にはご不便をおかけしますが、<br>終了まで今しばらくお待ちください。"
+        // ▼ メンテナンスを無効化（通常稼働）にするには、ここを false にしてください
+        enabled: true, 
+
+        // 期間設定 (形式: YYYY-MM-DDTHH:MM:SS)
+        // ハイフン(-)区切りで、時間との間に T を入れます
+        startTime: "2026-01-14T18:00:00", 
+        endTime:   "2026-01-14T19:00:00", // テスト用に長めに設定しています
+
+        title: "システムメンテナンス実施中",
+        
+        // ▼ 詳細メッセージ (HTML記述可)
+        message: `
+            <div style="text-align: left; display: inline-block; max-width: 600px; font-weight: 500;">
+                <p style="margin-bottom: 1.5em; font-weight: bold; color: #fff;">
+                    いつも「運勢・天命乃杜」をご利用いただき、誠にありがとうございます。
+                </p>
+                <p style="margin-bottom: 1em;">
+                    現在、<strong>サーバーの調整、機能更新作業、バグ修正、または緊急の対応等</strong>に伴い、サーバーメンテナンスを実施しております。
+                </p>
+                
+                <p style="margin-bottom: 0.5em;">メンテナンス作業中は、以下の機能を含む本サイトのすべてのサービスをご利用いただけません。</p>
+                <ul style="margin: 0 0 1.5em 0; padding: 15px 25px; background: rgba(255,255,255,0.05); border-radius: 8px; list-style-type: square; color: #ccc;">
+                    <li style="margin-bottom: 5px;">おみくじの抽選および結果の閲覧</li>
+                    <li style="margin-bottom: 5px;">会員ログイン、新規登録、プロフィール編集</li>
+                    <li style="margin-bottom: 5px;">おみくじの轍（履歴データ）の同期・検索</li>
+                    <li>TENMEI Labs（実験機能）の設定変更</li>
+                </ul>
+
+                <p style="margin-bottom: 1em; font-size: 0.95em; line-height: 1.6;">
+                    データの整合性を保護するため、アクセスを一時的に制限させていただいております。<br>
+                    作業は下記終了予定時刻を目処に進めておりますが、進捗状況により時間が前後する場合がございます。
+                </p>
+                
+                <p style="font-size: 0.85em; color: #ffadad; margin-top: 1.5em;">
+                    ※メンテナンス中にブラウザを開いたままにされていた場合、終了後に画面の再読み込み（リロード）をお願いいたします。
+                </p>
+                <p style="margin-top: 2em; text-align: center;">
+                    ご不便をおかけいたしますが、何卒ご理解とご協力を賜りますようお願い申し上げます。
+                </p>
+            </div>
+        `
     };
 
-    // メンテナンスチェック関数
+    // メンテナンスチェック関数 (即時実行＆確実な日付判定)
     function checkMaintenance() {
         if (!maintenanceConfig.enabled) return;
 
@@ -2689,40 +2723,60 @@
         const start = new Date(maintenanceConfig.startTime);
         const end = new Date(maintenanceConfig.endTime);
 
-        // 日付設定ミスがないかコンソールで確認用
         if (isNaN(start.getTime()) || isNaN(end.getTime())) {
-            console.error("メンテナンス日時の形式が正しくありません。'YYYY-MM-DDTHH:MM:SS'形式で指定してください。");
+            console.error("メンテナンス日時の形式エラー: 'YYYY-MM-DDTHH:MM:SS' で指定してください。");
             return;
         }
 
         if (now >= start && now < end) {
-            // メンテナンス画面でサイト全体を覆う
-            // ※innerHTMLを上書きすることで、元のコンテンツを一瞬で消去します
             document.body.innerHTML = `
-                <div style="position:fixed; top:0; left:0; width:100%; height:100%; background:#1a1a1a; color:#f0f0f0; display:flex; flex-direction:column; align-items:center; justify-content:center; z-index:999999; font-family:'Zen Old Mincho', serif; text-align:center; padding:20px;">
-                    <div style="font-size:4rem; margin-bottom:20px; color:#b91c1c;">
+                <div style="
+                    position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+                    background: #121212; color: #e0e0e0;
+                    display: flex; flex-direction: column; align-items: center; justify-content: center;
+                    z-index: 2147483647; font-family: 'Zen Old Mincho', serif;
+                    padding: 20px; box-sizing: border-box; line-height: 1.8;
+                ">
+                    <div style="font-size: 3.5rem; margin-bottom: 20px; color: #b91c1c; animation: pulse 2s infinite;">
                         <i class="bi bi-cone-striped"></i>
                     </div>
-                    <h1 style="font-size:2rem; font-weight:bold; margin-bottom:20px; letter-spacing:0.1em;">${maintenanceConfig.title}</h1>
-                    <p style="font-size:1rem; line-height:2; margin-bottom:30px; opacity:0.8;">
+                    <h1 style="font-size: 2rem; font-weight: 900; margin-bottom: 25px; letter-spacing: 0.1em; color: #fff; text-shadow: 0 2px 10px rgba(0,0,0,0.5);">
+                        ${maintenanceConfig.title}
+                    </h1>
+                    
+                    <div style="margin-bottom: 30px;">
                         ${maintenanceConfig.message}
-                    </p>
-                    <div style="font-family:monospace; background:#333; padding:10px 20px; border-radius:8px;">
-                        終了予定: ${maintenanceConfig.endTime.replace('T', ' ').slice(0, -3)}
                     </div>
-                    <button onclick="location.reload()" style="margin-top:40px; padding:10px 30px; background:#b91c1c; color:white; border:none; border-radius:30px; cursor:pointer; font-weight:bold; transition:opacity 0.2s;">
-                        <i class="bi bi-arrow-clockwise"></i> 再読み込み
+
+                    <div style="
+                        font-family: monospace; background: #2a2a2a; color: #fff;
+                        padding: 12px 24px; border-radius: 8px; border: 1px solid #444;
+                        margin-bottom: 30px; font-size: 1.1rem; box-shadow: 0 2px 5px rgba(0,0,0,0.3);
+                    ">
+                        <i class="bi bi-clock-history"></i> 終了予定: ${maintenanceConfig.endTime.replace('T', ' ').slice(0, -3)}
+                    </div>
+
+                    <button onclick="location.reload()" style="
+                        padding: 12px 40px; background: linear-gradient(135deg, #b91c1c, #8a1c1c);
+                        color: white; border: none; border-radius: 50px; cursor: pointer;
+                        font-weight: bold; font-size: 1rem; box-shadow: 0 4px 15px rgba(185, 28, 28, 0.4);
+                        transition: transform 0.2s, box-shadow 0.2s;
+                    " onmouseover="this.style.transform='scale(1.05)';this.style.boxShadow='0 6px 20px rgba(185, 28, 28, 0.6)'" 
+                      onmouseout="this.style.transform='scale(1)';this.style.boxShadow='0 4px 15px rgba(185, 28, 28, 0.4)'">
+                        <i class="bi bi-arrow-clockwise"></i> 最新の状態を確認する
                     </button>
+                    
+                    <style>
+                        @keyframes pulse { 0% { opacity: 1; transform: scale(1); } 50% { opacity: 0.7; transform: scale(0.95); } 100% { opacity: 1; transform: scale(1); } }
+                    </style>
                 </div>
             `;
             document.body.style.overflow = 'hidden';
-            
-            // 処理をここで強制停止させるためのエラー送出
-            throw new Error("Maintenance Mode Active"); 
+            throw new Error("Maintenance Mode Active: Access Denied");
         }
     }
 
-    // ★重要: 読み込み直後に即座にチェックを実行（onloadを待たない）
+    // 読み込み直後にチェック実行
     checkMaintenance();
 
         // ==========================================
