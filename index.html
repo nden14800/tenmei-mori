@@ -6747,7 +6747,7 @@ function changeHistoryPage(newPage) {
         }
     }
 
-// 3. PDFダウンロード関数 (完全版: ベクター形式・日本語フォント対応・新タブプレビュー)
+// 3. PDFダウンロード関数 (修正版: 日本語フォント対応・完全ベクター・新タブプレビュー)
     async function downloadPDF(viewId) {
         const { jsPDF } = window.jspdf;
         
@@ -6760,98 +6760,141 @@ function changeHistoryPage(newPage) {
 
         // ボタンをローディング状態に
         const originalText = btn.innerHTML;
-        btn.innerHTML = '<i class="bi bi-hourglass-split"></i> フォント読込中...';
+        btn.innerHTML = '<i class="bi bi-hourglass-split"></i> フォント取得中...';
         btn.disabled = true;
 
         try {
-            // A4サイズのPDFドキュメントを作成
+            // --- A. 日本語フォント（しっぽり明朝）を読み込む ---
+            // ※これがないと文字が消えます。CDNからフォントファイル(TTF)を取得します。
+            const fontUrl = 'https://raw.githubusercontent.com/google/fonts/main/ofl/shipporimincho/ShipporiMincho-Regular.ttf';
+            const fontName = 'ShipporiMincho';
+            
+            // フォントをバイナリとして取得
+            const fontRes = await fetch(fontUrl);
+            if (!fontRes.ok) throw new Error("フォントの読み込みに失敗しました");
+            const fontBuffer = await fontRes.arrayBuffer();
+            
+            // バイナリをBase64文字列に変換
+            const fontBase64 = arrayBufferToBase64(fontBuffer);
+
+            // --- B. PDFドキュメントの準備 ---
+            btn.innerHTML = '<i class="bi bi-hourglass-split"></i> PDF生成中...';
+            
+            // A4サイズ (pt単位: 595.28 x 841.89)
             const doc = new jsPDF('p', 'pt', 'a4');
+            
+            // フォントをPDFに追加・登録
+            doc.addFileToVFS('ShipporiMincho.ttf', fontBase64);
+            doc.addFont('ShipporiMincho.ttf', fontName, 'normal');
+            doc.setFont(fontName);
+
+            // PDFの基本設定
             const pdfWidth = 595.28;
             const margin = 40;
             const contentWidth = pdfWidth - (margin * 2);
 
-            // 1. 日本語フォント（Shippori Mincho）を外部から取得
-            // ※これがないと日本語が白紙になります
-            const fontUrl = 'https://raw.githubusercontent.com/googlefonts/shippori-mincho/main/fonts/ttf/ShipporiMincho-Regular.ttf';
-            const fontBytes = await fetch(fontUrl).then(res => res.arrayBuffer());
-            
-            // フォントをPDFに追加
-            const filename = 'ShipporiMincho-Regular.ttf';
-            const base64Font = arrayBufferToBase64(fontBytes);
-            doc.addFileToVFS(filename, base64Font);
-            doc.addFont(filename, 'ShipporiMincho', 'normal');
-            doc.setFont('ShipporiMincho');
-
-            btn.innerHTML = '<i class="bi bi-hourglass-split"></i> PDF生成中...';
-
-            // 2. PDF用に要素をクローン＆整形
+            // --- C. HTMLクローンの作成と整形 ---
             const clone = sourceElement.cloneNode(true);
             
-            // スタイル強制適用（A4幅に合わせる・表の折り返し制御）
+            // クローンのスタイルをPDF用に強制調整
+            // ※ここで幅をcontentWidthに合わせることで、表の見切れを防止します
             clone.style.width = contentWidth + 'px';
             clone.style.padding = '0';
             clone.style.background = '#ffffff';
             clone.style.color = '#000000';
-            clone.style.fontFamily = "'ShipporiMincho', serif"; // フォント指定
+            
+            // フォント指定をPDF登録名と合わせる
+            clone.style.fontFamily = "'ShipporiMincho', serif"; 
+            clone.style.fontSize = '10.5pt';
+            clone.style.lineHeight = '1.6';
 
-            // 不要要素削除
-            const toc = clone.querySelector(`#${viewId}-toc-container`);
-            if(toc) toc.remove();
+            // 不要な要素（目次コンテナなど）を削除
+            const tocBtn = clone.querySelector(`#${viewId}-toc-container`);
+            if(tocBtn) tocBtn.remove();
 
-            // 表スタイルの最適化（見切れ防止）
+            // 表（Table）のスタイル最適化（見切れ防止）
             const tables = clone.querySelectorAll('table');
             tables.forEach(table => {
                 table.style.width = '100%';
-                table.style.tableLayout = 'fixed';
-                table.style.fontSize = '9px';
-                table.style.wordBreak = 'break-all';
+                table.style.tableLayout = 'fixed'; // 列幅を固定してはみ出し防止
+                table.style.fontSize = '8pt'; // 文字サイズを小さく
                 table.style.borderCollapse = 'collapse';
                 
+                // セルのスタイル
                 const cells = table.querySelectorAll('th, td');
                 cells.forEach(cell => {
-                    cell.style.border = '1px solid #000';
-                    cell.style.padding = '4px';
-                    cell.classList.remove('bg-gray-200', 'bg-gray-50', 'dark:bg-zinc-700');
+                    cell.style.border = '0.5pt solid #000'; // 細くくっきりした線
+                    cell.style.padding = '4pt';
+                    cell.style.wordBreak = 'break-all'; // 強制折り返し
+                    // 背景色リセット
+                    cell.classList.remove('bg-gray-200', 'bg-gray-50', 'dark:bg-zinc-700', 'dark:bg-zinc-800'); 
                 });
+                
+                // ヘッダー背景（グレー）
+                const headers = table.querySelectorAll('th');
+                headers.forEach(h => {
+                    h.style.backgroundColor = '#f0f0f0';
+                    h.style.color = '#000000';
+                });
+                
+                // 強調セル（赤文字など）
+                const highlights = table.querySelectorAll('.highlight');
+                highlights.forEach(h => h.style.fontWeight = 'bold');
             });
 
-            // bodyに追加（不可視）
+            // 見出しの調整
+            const headings = clone.querySelectorAll('h2, h3, h4');
+            headings.forEach(h => {
+                h.style.color = '#000000';
+                h.style.borderBottom = '1pt solid #000';
+                h.style.paddingBottom = '5pt';
+                h.style.marginBottom = '10pt';
+                h.style.marginTop = '15pt';
+            });
+
+            // 一時的に画面外へ配置
             clone.style.position = 'absolute';
             clone.style.top = '-10000px';
+            clone.style.left = '-10000px';
             document.body.appendChild(clone);
 
-            // 3. HTMLをベクターPDFとして描画
+            // --- D. jsPDFのhtmlメソッドでベクター変換 ---
             await doc.html(clone, {
                 callback: function(doc) {
                     // クローン削除
                     document.body.removeChild(clone);
 
-                    // Blob URL生成 & 新しいタブで開く
+                    // Blob URLを生成
                     const blob = doc.output('blob');
                     const url = URL.createObjectURL(blob);
+
+                    // 新しいタブでPDFプレビューを開く
                     window.open(url, '_blank');
 
-                    // ボタン復帰
+                    // ボタンを元に戻す
                     btn.innerHTML = originalText;
                     btn.disabled = false;
                 },
                 x: margin,
                 y: margin,
-                width: contentWidth,
-                windowWidth: contentWidth,
-                autoPaging: 'text',
+                width: contentWidth, // これにより自動で改行計算が行われます
+                windowWidth: contentWidth, // 重要: レンダリング幅をA4内側に合わせる
+                autoPaging: 'text', // テキストが途切れないようにページ送り
                 margin: [40, 40, 40, 40]
             });
 
         } catch (e) {
             console.error(e);
-            alert("PDF生成エラー: フォントの読み込み等に失敗しました。");
+            alert("PDF生成エラー: " + e.message);
             btn.innerHTML = originalText;
             btn.disabled = false;
+            // 失敗時にクローンが残っていたら消す
+            const remnant = document.querySelector('.result-card-outer[style*="-10000px"]'); 
+            if(remnant) remnant.remove();
         }
     }
 
-    // バイナリデータをBase64に変換するヘルパー関数
+    // ArrayBufferをBase64に変換するヘルパー関数
     function arrayBufferToBase64(buffer) {
         let binary = '';
         const bytes = new Uint8Array(buffer);
