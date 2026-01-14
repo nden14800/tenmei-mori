@@ -1262,31 +1262,56 @@
             }
         }
 
-        /* --- 御守授与所スタイル --- */
+        /* --- 御守授与所スタイル (修正版) --- */
         
         /* 御守本体 */
         .omamori-body {
-            width: 200px;
-            height: 320px;
+            width: 220px;
+            height: 360px; /* 高さを少し増やしてバランス調整 */
             position: relative;
             margin: 0 auto;
-            /* 御守特有の形状 (上部が斜めにカットされた形) */
-            clip-path: polygon(15% 0, 85% 0, 100% 15%, 100% 100%, 0 100%, 0 15%);
+            /* clip-pathをやめて、border-radiusで形を作る（画像保存対策） */
+            border-radius: 20px 20px 8px 8px; 
             display: flex;
             flex-direction: column;
             align-items: center;
-            justify-content: center;
-            box-shadow: 0 10px 25px rgba(0,0,0,0.3); /* clip-pathを使うとshadowが効かないため親要素で調整が必要だが、今回は画像化前提で内部に影を描画 */
+            justify-content: flex-start; /* 上寄せに変更 */
+            padding-top: 90px; /* 紐のスペースを確保（ここ重要） */
+            box-shadow: 0 10px 25px rgba(0,0,0,0.3);
             font-family: 'Zen Old Mincho', serif;
             overflow: hidden;
             z-index: 10;
+            box-sizing: border-box;
         }
 
-        /* 生地の質感（織物風） */
+        /* 御守の「肩」の部分を表現する三角形 */
+        .omamori-body::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0;
+            width: 0; height: 0;
+            border-style: solid;
+            border-width: 40px 40px 0 0;
+            border-color: var(--bg-color) transparent transparent transparent;
+            z-index: 20;
+        }
+        .omamori-body::after {
+            content: '';
+            position: absolute;
+            top: 0; right: 0;
+            width: 0; height: 0;
+            border-style: solid;
+            border-width: 0 40px 40px 0;
+            border-color: transparent var(--bg-color) transparent transparent;
+            z-index: 20;
+        }
+        /* ※背景色がダークモードなどで変わる場合の対策はJSで行います */
+
+        /* 生地の質感 */
         .omamori-texture {
             position: absolute;
             top: 0; left: 0; width: 100%; height: 100%;
-            background-image: repeating-linear-gradient(45deg, rgba(255,255,255,0.05) 0px, rgba(255,255,255,0.05) 1px, transparent 1px, transparent 4px);
+            background-image: repeating-linear-gradient(45deg, rgba(255,255,255,0.08) 0px, rgba(255,255,255,0.08) 1px, transparent 1px, transparent 4px);
             z-index: 0;
             pointer-events: none;
         }
@@ -1296,37 +1321,52 @@
             background: #fff;
             color: #333;
             writing-mode: vertical-rl;
-            padding: 20px 10px;
+            padding: 15px 12px;
             font-size: 2rem;
             font-weight: 900;
-            letter-spacing: 0.2em;
+            letter-spacing: 0.3em;
             border-radius: 4px;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
             z-index: 2;
-            min-height: 180px;
+            height: 200px; /* 固定高さ */
+            display: flex;
+            align-items: center;
+            justify-content: center;
             border: 1px solid rgba(0,0,0,0.1);
         }
 
-        /* 紐（叶結び）のSVGコンテナ */
+        /* 紐（叶結び） */
         .omamori-knot {
             position: absolute;
-            top: 40px;
+            top: 45px; /* 位置調整 */
             left: 50%;
             transform: translateX(-50%);
-            width: 100px;
-            height: 80px;
-            z-index: 5;
-            filter: drop-shadow(0 2px 3px rgba(0,0,0,0.3));
+            width: 120px;
+            height: 90px;
+            z-index: 30; /* 文字より上に */
+            filter: drop-shadow(0 4px 4px rgba(0,0,0,0.4));
         }
 
-        /* 飾り枠（金糸など） */
+        /* 飾り枠 */
         .omamori-border {
             position: absolute;
-            top: 10px; left: 10px; right: 10px; bottom: 10px;
-            border: 2px solid rgba(255,255,255,0.3);
-            border-radius: 4px;
+            top: 12px; left: 12px; right: 12px; bottom: 12px;
+            border: 2px solid rgba(255,255,255,0.4);
+            border-radius: 12px;
             z-index: 1;
-            clip-path: polygon(15% 0, 85% 0, 100% 15%, 100% 100%, 0 100%, 0 15%);
+        }
+
+        /* 名前刻印 */
+        .omamori-name {
+            position: absolute; 
+            bottom: 20px; 
+            font-size: 0.8rem; 
+            color: rgba(255,255,255,0.9); 
+            writing-mode: horizontal-tb;
+            letter-spacing: 0.1em; 
+            font-weight: bold;
+            text-shadow: 0 1px 2px rgba(0,0,0,0.5);
+            z-index: 5;
         }
         
         /* 選択ボタンのグリッド */
@@ -1354,14 +1394,8 @@
             box-shadow: 0 10px 20px rgba(0,0,0,0.1);
             border-color: var(--accent-red);
         }
-        .wish-icon {
-            font-size: 2.5rem;
-            margin-bottom: 10px;
-        }
-        .wish-name {
-            font-weight: bold;
-            font-size: 1.1rem;
-        }
+        .wish-icon { font-size: 2.5rem; margin-bottom: 10px; }
+        .wish-name { font-weight: bold; font-size: 1.1rem; }
 
         /* 祈祷アニメーション */
         .prayer-overlay {
