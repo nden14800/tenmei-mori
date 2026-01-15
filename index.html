@@ -6793,8 +6793,12 @@ async function logout() {
             // ログイン時: サーバーからデータを取得
             if(badge) badge.textContent = "同期中...";
             try {
-                const res = await fetch(`${API_BASE}/api/favorites?email=${encodeURIComponent(currentState.user.email)}&token=${encodeURIComponent(currentState.user.token)}`);
-                if(res.ok) {
+                // ★修正: クエリパラメータ削除
+            const res = await fetch(`${API_BASE}/api/favorites`, {
+                method: 'GET',
+                credentials: 'include'
+            });
+                  if(res.ok) {
                     const data = await res.json();
                     favoriteList = data.favorites || [];
                     if(badge) badge.textContent = "クラウド保存済み";
