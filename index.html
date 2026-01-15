@@ -6046,7 +6046,12 @@ async function loadHistory() {
     showLoading(true);
 
     try {
-        const res = await fetch(`${API_BASE}/api/history/global?token=${encodeURIComponent(currentState.user.token)}`);
+        // ★修正: クエリパラメータから token を削除、credentials追加
+        const res = await fetch(`${API_BASE}/api/history/global`, {
+            method: 'GET',
+            credentials: 'include'
+        });
+        
         if(res.ok) {
             const data = await res.json();
             globalHistory = data.global || [];
