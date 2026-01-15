@@ -3354,8 +3354,12 @@
                     <p>当サイトのデータベースには<strong>「Cloudflare Workers KV」</strong>という技術を使用しております。このシステムには無料プランにおける利用制限があり、データの読み取り（Read）は<strong>「1日あたり10万回まで」</strong>と定められています。</p>
                     <p>この制限を超過するとサイトが閲覧できなくなる恐れがあるため、バックグラウンドでの通信頻度を見直しました。</p>
 
-                    <h3>検証結果（1タブ放置時のKV読取数と許容人数）</h3>
-                    <p>サイトを「1つのタブ」で開き、操作せずに放置した場合の<strong>データベース読み取り回数</strong>と、その利用時間で計算した場合に<strong>1日に何人までアクセス可能か</strong>の試算です。</p>
+                    <h3>検証条件</h3>
+                    <p>当サイトを<strong>「1つのタブで開き、バックグラウンド（他のアプリやサイトを見ている状態）で放置した際」</strong>のKV読み取り回数を計測・比較しました。</p>
+                    <p>※おみくじを引くなどの操作を行うと、これに加えて都度書き込み（Write）や読み取りが発生します。</p>
+
+                    <h3>負荷削減の成果（KV読取数比較）</h3>
+                    <p>更新間隔を「5秒」から「1分」に変更した結果、アイドリング時のKVへの負荷が<strong>約10分の1</strong>に激減しました。</p>
 
                     <div class="overflow-x-auto mb-8">
                         <table class="comparison-table" style="min-width: 100%; font-size: 0.75rem;">
@@ -3363,13 +3367,14 @@
                                 <tr>
                                     <th class="p-2 border border-gray-300" rowspan="2">利用<br>時間</th>
                                     <th class="p-2 border border-gray-300 text-red-700 dark:text-red-300 bg-red-50 dark:bg-red-900/10" colspan="2">修正前 (2.0回/秒)</th>
-                                    <th class="p-2 border border-gray-300 text-blue-700 dark:text-blue-300 bg-blue-50 dark:bg-blue-900/10" colspan="2">修正後 (0.217回/秒)</th>
+                                    <th class="p-2 border border-gray-300 text-blue-700 dark:text-blue-300 bg-blue-50 dark:bg-blue-900/10" colspan="3">修正後 (0.217回/秒)</th>
                                 </tr>
                                 <tr>
-                                    <th class="p-2 border border-gray-300 text-xs">消費数/人</th>
-                                    <th class="p-2 border border-gray-300 text-xs">1日許容人数</th>
-                                    <th class="p-2 border border-gray-300 text-xs">消費数/人</th>
-                                    <th class="p-2 border border-gray-300 text-xs">1日許容人数</th>
+                                    <th class="p-2 border border-gray-300 text-xs">消費数</th>
+                                    <th class="p-2 border border-gray-300 text-xs">許容人数/日</th>
+                                    <th class="p-2 border border-gray-300 text-xs">消費数</th>
+                                    <th class="p-2 border border-gray-300 text-xs">許容人数/日</th>
+                                    <th class="p-2 border border-gray-300 text-xs">安全性</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -3379,6 +3384,7 @@
                                     <td class="p-2 border border-gray-300 font-mono font-bold">833人</td>
                                     <td class="p-2 border border-gray-300 font-mono">約 13回</td>
                                     <td class="p-2 border border-gray-300 font-mono font-bold text-green-600">7,680人</td>
+                                    <td class="p-2 border border-gray-300 text-green-600 text-xs font-bold">安全</td>
                                 </tr>
                                 <tr class="bg-gray-50 dark:bg-zinc-800">
                                     <td class="p-2 border border-gray-300 font-bold">10分間</td>
@@ -3386,6 +3392,7 @@
                                     <td class="p-2 border border-gray-300 font-mono font-bold">83人</td>
                                     <td class="p-2 border border-gray-300 font-mono">約 130回</td>
                                     <td class="p-2 border border-gray-300 font-mono font-bold text-green-600">768人</td>
+                                    <td class="p-2 border border-gray-300 text-green-600 text-xs font-bold">安全</td>
                                 </tr>
                                 <tr>
                                     <td class="p-2 border border-gray-300 font-bold">1時間</td>
@@ -3393,6 +3400,7 @@
                                     <td class="p-2 border border-gray-300 font-mono font-bold text-red-600">13人</td>
                                     <td class="p-2 border border-gray-300 font-mono">約 781回</td>
                                     <td class="p-2 border border-gray-300 font-mono font-bold text-blue-600">128人</td>
+                                    <td class="p-2 border border-gray-300 text-green-600 text-xs font-bold">安全</td>
                                 </tr>
                                 <tr class="bg-red-50 dark:bg-red-900/10">
                                     <td class="p-2 border border-gray-300 font-bold">24時間</td>
@@ -3400,7 +3408,7 @@
                                         172,800回
                                     </td>
                                     <td class="p-2 border border-gray-300 font-mono font-black text-red-600 text-lg">
-                                        0人<br><span class="text-[10px] font-normal">※1人で超過</span>
+                                        0人
                                     </td>
                                     <td class="p-2 border border-gray-300 font-mono text-blue-600 font-bold">
                                         約 18,749回
@@ -3408,15 +3416,17 @@
                                     <td class="p-2 border border-gray-300 font-mono font-bold text-blue-600">
                                         5人
                                     </td>
+                                    <td class="p-2 border border-gray-300 text-blue-600 text-xs font-bold">
+                                        余裕あり
+                                    </td>
                                 </tr>
                             </tbody>
                         </table>
                     </div>
 
                     <h3>解説</h3>
-                    <p>修正前の設定（5秒更新）では、もし1時間サイトを開きっぱなしにするユーザーが14人いただけで、その日のデータベース上限（10万回）を超えてしまい、サイトが停止する危険な状態でした。24時間放置に至っては、たった1人でも枠を大幅に超過します。</p>
-                    <p>今回の修正（1分更新）により、負荷は劇的に改善されました。仮に24時間開きっぱなしにする熱心な参拝者様が5名いらっしゃっても、サーバーは正常に稼働し続けます。</p>
-                    <p>これにより、より多くの皆様に安心してご利用いただける環境が整いました。</p>
+                    <p>修正前の設定（5秒更新）では、たったお一人が24時間ページを開きっぱなしにするだけで、Cloudflare Workers KVの無料枠（10万回）をすべて使い切ってしまう危険な状態でした。</p>
+                    <p>今回の修正（1分更新）により、KVへの平均アクセス頻度が<strong>0.217回/秒</strong>まで低下しました。これにより、24時間開きっぱなしにしても消費量は枠の約19%に収まり、より多くの参拝者様に快適にご利用いただける設計となりました。</p>
                 </div>
             `
         },
