@@ -3354,51 +3354,59 @@
                     <p>当サイトのデータベースには<strong>「Cloudflare Workers KV」</strong>という技術を使用しております。このシステムには無料プランにおける利用制限があり、データの読み取り（Read）は<strong>「1日あたり10万回まで」</strong>と定められています。</p>
                     <p>この制限を超過するとサイトが閲覧できなくなる恐れがあるため、バックグラウンドでの通信頻度を見直しました。</p>
 
-                    <h3>検証結果（1タブ放置時のKV読取数）</h3>
-                    <p>サイトを「1つのタブ」で開き、操作せずに放置した場合のデータベース読み取り回数の比較です。<br>
-                    <strong>修正前（2.0回/秒）</strong>と<strong>修正後（0.217回/秒）</strong>の実測値に基づき算出しました。</p>
+                    <h3>検証結果（1タブ放置時のKV読取数と許容人数）</h3>
+                    <p>サイトを「1つのタブ」で開き、操作せずに放置した場合の<strong>データベース読み取り回数</strong>と、その利用時間で計算した場合に<strong>1日に何人までアクセス可能か</strong>の試算です。</p>
 
                     <div class="overflow-x-auto mb-8">
-                        <table class="comparison-table" style="min-width: 100%; font-size: 0.85rem;">
+                        <table class="comparison-table" style="min-width: 100%; font-size: 0.75rem;">
                             <thead class="bg-gray-100 dark:bg-zinc-700 font-bold">
                                 <tr>
-                                    <th class="p-3 border border-gray-300">放置時間</th>
-                                    <th class="p-3 border border-gray-300 text-red-700 dark:text-red-300">修正前<br><span class="text-xs">(2.0回/秒)</span></th>
-                                    <th class="p-3 border border-gray-300 text-blue-700 dark:text-blue-300">修正後<br><span class="text-xs">(0.217回/秒)</span></th>
-                                    <th class="p-3 border border-gray-300">修正後の状態<br><span class="text-xs">(枠10万回/日)</span></th>
+                                    <th class="p-2 border border-gray-300" rowspan="2">利用<br>時間</th>
+                                    <th class="p-2 border border-gray-300 text-red-700 dark:text-red-300 bg-red-50 dark:bg-red-900/10" colspan="2">修正前 (2.0回/秒)</th>
+                                    <th class="p-2 border border-gray-300 text-blue-700 dark:text-blue-300 bg-blue-50 dark:bg-blue-900/10" colspan="2">修正後 (0.217回/秒)</th>
+                                </tr>
+                                <tr>
+                                    <th class="p-2 border border-gray-300 text-xs">消費数/人</th>
+                                    <th class="p-2 border border-gray-300 text-xs">1日許容人数</th>
+                                    <th class="p-2 border border-gray-300 text-xs">消費数/人</th>
+                                    <th class="p-2 border border-gray-300 text-xs">1日許容人数</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 <tr>
-                                    <td class="p-3 border border-gray-300 font-bold">1分間</td>
-                                    <td class="p-3 border border-gray-300 font-mono">120回</td>
-                                    <td class="p-3 border border-gray-300 font-mono">約 13回</td>
-                                    <td class="p-3 border border-gray-300 text-green-600 font-bold"><i class="bi bi-check-circle-fill"></i> 安全</td>
+                                    <td class="p-2 border border-gray-300 font-bold">1分間</td>
+                                    <td class="p-2 border border-gray-300 font-mono">120回</td>
+                                    <td class="p-2 border border-gray-300 font-mono font-bold">833人</td>
+                                    <td class="p-2 border border-gray-300 font-mono">約 13回</td>
+                                    <td class="p-2 border border-gray-300 font-mono font-bold text-green-600">7,680人</td>
                                 </tr>
                                 <tr class="bg-gray-50 dark:bg-zinc-800">
-                                    <td class="p-3 border border-gray-300 font-bold">10分間</td>
-                                    <td class="p-3 border border-gray-300 font-mono">1,200回</td>
-                                    <td class="p-3 border border-gray-300 font-mono">約 130回</td>
-                                    <td class="p-3 border border-gray-300 text-green-600 font-bold"><i class="bi bi-check-circle-fill"></i> 安全</td>
+                                    <td class="p-2 border border-gray-300 font-bold">10分間</td>
+                                    <td class="p-2 border border-gray-300 font-mono">1,200回</td>
+                                    <td class="p-2 border border-gray-300 font-mono font-bold">83人</td>
+                                    <td class="p-2 border border-gray-300 font-mono">約 130回</td>
+                                    <td class="p-2 border border-gray-300 font-mono font-bold text-green-600">768人</td>
                                 </tr>
                                 <tr>
-                                    <td class="p-3 border border-gray-300 font-bold">1時間</td>
-                                    <td class="p-3 border border-gray-300 font-mono">7,200回</td>
-                                    <td class="p-3 border border-gray-300 font-mono">約 781回</td>
-                                    <td class="p-3 border border-gray-300 text-green-600 font-bold"><i class="bi bi-check-circle-fill"></i> 安全</td>
+                                    <td class="p-2 border border-gray-300 font-bold">1時間</td>
+                                    <td class="p-2 border border-gray-300 font-mono">7,200回</td>
+                                    <td class="p-2 border border-gray-300 font-mono font-bold text-red-600">13人</td>
+                                    <td class="p-2 border border-gray-300 font-mono">約 781回</td>
+                                    <td class="p-2 border border-gray-300 font-mono font-bold text-blue-600">128人</td>
                                 </tr>
                                 <tr class="bg-red-50 dark:bg-red-900/10">
-                                    <td class="p-3 border border-gray-300 font-bold">24時間</td>
-                                    <td class="p-3 border border-gray-300 font-mono text-red-600 font-bold">
-                                        172,800回<br>
-                                        <span class="text-xs text-red-500">※枠を超過</span>
+                                    <td class="p-2 border border-gray-300 font-bold">24時間</td>
+                                    <td class="p-2 border border-gray-300 font-mono text-red-600 font-bold">
+                                        172,800回
                                     </td>
-                                    <td class="p-3 border border-gray-300 font-mono text-blue-600 font-bold">
+                                    <td class="p-2 border border-gray-300 font-mono font-black text-red-600 text-lg">
+                                        0人<br><span class="text-[10px] font-normal">※1人で超過</span>
+                                    </td>
+                                    <td class="p-2 border border-gray-300 font-mono text-blue-600 font-bold">
                                         約 18,749回
                                     </td>
-                                    <td class="p-3 border border-gray-300 text-blue-600 font-bold">
-                                        <i class="bi bi-shield-check"></i> 余裕あり<br>
-                                        <span class="text-xs text-gray-500 dark:text-gray-400">消費率 約19%</span>
+                                    <td class="p-2 border border-gray-300 font-mono font-bold text-blue-600">
+                                        5人
                                     </td>
                                 </tr>
                             </tbody>
@@ -3406,8 +3414,9 @@
                     </div>
 
                     <h3>解説</h3>
-                    <p>修正前の設定（5秒更新）では、たったお一人が24時間ページを開きっぱなしにするだけで、<strong>17万回以上</strong>の読み取りが発生し、Cloudflare Workers KVの無料枠（10万回）をすべて使い切ってしまう危険な状態でした。</p>
-                    <p>今回の修正（1分更新）により、24時間開きっぱなしにしても消費量は<strong>約1.8万回（枠の19%以下）</strong>に収まることが確認できました。これにより、システムダウンのリスクを回避し、より多くの参拝者様に安心してご利用いただける設計となりました。</p>
+                    <p>修正前の設定（5秒更新）では、もし1時間サイトを開きっぱなしにするユーザーが14人いただけで、その日のデータベース上限（10万回）を超えてしまい、サイトが停止する危険な状態でした。24時間放置に至っては、たった1人でも枠を大幅に超過します。</p>
+                    <p>今回の修正（1分更新）により、負荷は劇的に改善されました。仮に24時間開きっぱなしにする熱心な参拝者様が5名いらっしゃっても、サーバーは正常に稼働し続けます。</p>
+                    <p>これにより、より多くの皆様に安心してご利用いただける環境が整いました。</p>
                 </div>
             `
         },
