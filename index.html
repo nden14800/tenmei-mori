@@ -4936,45 +4936,68 @@ let historyPageState = {
     };
         
     // ==========================================
-    //  統合された初期化処理 (window.onload)
-    // ==========================================
-    window.onload = function() {
-        // 念のためここでもチェック（スクリプト読み込みタイミング対策）
-        checkMaintenance();
+//  統合された初期化処理 (window.onload) - 修正版
+// ==========================================
+window.onload = async function() {
+    // メンテナンスチェック
+    checkMaintenance();
 
-        // 基本初期化
-        initHomeAnimation();
-        initZodiacSystem();
-        
-        // 認証状態の復元
-        const storedUser = localStorage.getItem('omikuji_user');
-        if(storedUser) {
-            try { currentState.user = JSON.parse(storedUser); } catch(e){ console.error(e); }
+    // 基本初期化
+    initHomeAnimation();
+    initZodiacSystem();
+    
+    // ダークモード監視
+    window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', applyTheme);
+
+    // ★修正: サーバーにセッション状態を問い合わせる
+    // localStorage からの復元は廃止
+    await checkSession();
+
+    // 各種データ取得・定期実行
+    startLiveCounter();
+    fetchHistoryStats();
+    setInterval(fetchHistoryStats, 60000); 
+    loadFavorites();
+
+    // URLクリーンアップ
+    const url = new URL(window.location);
+    if (url.searchParams.has('d')) {
+        url.searchParams.delete('d');
+        window.history.replaceState({}, '', url);
+    }
+
+    // 記事リストの描画
+    renderHomeLists();      
+    renderFullNewsView();   
+    renderFullColumnView(); 
+};
+
+// ★追加: セッションチェック関数
+async function checkSession() {
+    try {
+        const res = await fetch(`${API_BASE}/api/auth/check`, {
+            method: 'GET',
+            credentials: 'include' // Cookie送信
+        });
+        if (res.ok) {
+            const data = await res.json();
+            if (data.loggedIn) {
+                currentState.user = { username: data.username, email: data.email };
+                updateAuthUI();
+                loadLabSettings();
+                console.log("Session restored via Cookie");
+            } else {
+                currentState.user = null;
+                updateAuthUI();
+                loadLabSettings(); // ゲスト設定をロード
+            }
         }
+    } catch (e) {
+        console.error("Session check failed", e);
+        currentState.user = null;
         updateAuthUI();
-        loadLabSettings();
-
-        // ダークモード監視
-        window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', applyTheme);
-
-        // 各種データ取得・定期実行
-        startLiveCounter();
-        fetchHistoryStats();
-        setInterval(fetchHistoryStats, 60000); 
-        loadFavorites();
-
-        // URLクリーンアップ
-        const url = new URL(window.location);
-        if (url.searchParams.has('d')) {
-            url.searchParams.delete('d');
-            window.history.replaceState({}, '', url);
-        }
-
-        // 記事リストの描画
-        renderHomeLists();      
-        renderFullNewsView();   
-        renderFullColumnView(); 
-    };
+    }
+}
 
         // --- 状態管理 ---
         let currentState = {
