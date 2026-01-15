@@ -6589,36 +6589,70 @@ ${getShareUrl()}`;
             document.getElementById('auth-step-1').classList.remove('hidden');
         }
 
-        async function finalizeAuth() {
-            const code = document.getElementById('auth-code-input').value;
-            if(!code || code.length !== 6) return alert("6桁の認証コードを入力してください");
+        // --- 認証完了 (finalizeAuth) - 修正版 ---
+async function finalizeAuth() {
+    const code = document.getElementById('auth-code-input').value;
+    if(!code || code.length !== 6) return alert("6桁の認証コードを入力してください");
 
-            const mode = currentState.authMode;
-            const email = document.getElementById(mode === 'login' ? 'login-email' : 'reg-email').value;
-            const pass = document.getElementById(mode === 'login' ? 'login-password' : 'reg-password').value;
-            const username = document.getElementById('reg-username').value;
+    const mode = currentState.authMode;
+    const email = document.getElementById(mode === 'login' ? 'login-email' : 'reg-email').value;
+    const pass = document.getElementById(mode === 'login' ? 'login-password' : 'reg-password').value;
+    const username = document.getElementById('reg-username').value;
 
-            showLoading(true);
-            try {
-                const endpoint = (mode === 'login') ? '/api/auth/login' : '/api/auth/register';
-                const body = { email, password: pass, code };
-                if (mode === 'register') body.username = username;
+    showLoading(true);
+    try {
+        const endpoint = (mode === 'login') ? '/api/auth/login' : '/api/auth/register';
+        const body = { email, password: pass, code };
+        if (mode === 'register') body.username = username;
 
-                const res = await fetch(`${API_BASE}${endpoint}`, {
-                    method: 'POST',
-                    headers: {'Content-Type': 'application/json'},
-                    body: JSON.stringify(body)
-                });
-                const data = await res.json();
-                
-                if(res.ok && data.success) {
-                    loginSuccess({ email, username: data.username, token: data.token });
-                } else {
-                    alert(`${mode === 'login' ? 'ログイン' : '登録'}失敗: ${data.message || data.error}`);
-                }
-            } catch(e) { alert("通信エラー"); }
-            finally { showLoading(false); }
+        const res = await fetch(`${API_BASE}${endpoint}`, {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            credentials: 'include', // ★追加: Cookieを受け取るために必須
+            body: JSON.stringify(body)
+        });
+        const data = await res.json();
+        
+        if(res.ok && data.success) {
+            // トークンはCookieに入ったのでJSでは扱わない
+            loginSuccess({ email, username: data.username });
+        } else {
+            alert(`${mode === 'login' ? 'ログイン' : '登録'}失敗: ${data.message || data.error}`);
         }
+    } catch(e) { alert("通信エラー"); }
+    finally { showLoading(false); }
+}
+
+// --- ログイン成功時 (loginSuccess) - 修正版 ---
+function loginSuccess(user) {
+    currentState.user = user;
+    // localStorageへの保存は行わない（セキュリティ強化）
+    updateAuthUI();
+    loadFavorites(); 
+    
+    loadLabSettings().then(() => {
+        if(currentState.view === 'lab') {
+            showView('lab');
+        }
+        alert(`ようこそ、${user.username || user.email} 様！`);
+        showView('home');
+    });
+}
+
+// --- ログアウト (logout) - 修正版 ---
+async function logout() {
+    try {
+        await fetch(`${API_BASE}/api/auth/logout`, {
+            method: 'POST',
+            credentials: 'include' // Cookie削除リクエスト
+        });
+    } catch(e) { console.error(e); }
+
+    currentState.user = null;
+    loadLabSettings().then(() => {
+        location.reload();
+    });
+}
 
         // 旧: sendAuthCode (削除せず互換性のため残すが使用しない)
         async function sendAuthCode() { initiateAuth(currentState.authMode); }
