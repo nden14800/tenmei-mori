@@ -4826,26 +4826,24 @@ let historyPageState = {
             // 背景色によるマスクの調整（保存時に四角くならないように、CSS疑似要素で角を隠す方式に変更）
             // 保存用には透明度を含む特殊なスタイルを適用
             
-            display.innerHTML = `
-                <div class="omamori-body" style="background-color: ${data.color};">
-                    <div class="omamori-texture"></div>
-                    <div class="omamori-border"></div>
-                    
-                    <div class="omamori-knot">${knotSVG}</div>
-
-                    <div class="omamori-label" style="color: #333; font-family: 'Zen Old Mincho', serif;">
-                        ${data.label}
-                    </div>
-
-                    <div class="omamori-name">
-                        ${userName} 拝受
-                    </div>
+            // ★修正: userName を escapeHtml で無害化
+        display.innerHTML = `
+            <div class="omamori-body" style="background-color: ${data.color};">
+                <div class="omamori-texture"></div>
+                <div class="omamori-border"></div>
+                <div class="omamori-knot">${knotSVG}</div>
+                <div class="omamori-label" style="color: #333; font-family: 'Zen Old Mincho', serif;">
+                    ${data.label}
                 </div>
-            `;
+                <div class="omamori-name">
+                    ${escapeHtml(userName)} 拝受
+                </div>
+            </div>
+        `;
 
-            document.getElementById('omamori-step-2').classList.add('hidden');
-            document.getElementById('omamori-step-3').classList.remove('hidden');
-        },
+        document.getElementById('omamori-step-2').classList.add('hidden');
+        document.getElementById('omamori-step-3').classList.remove('hidden');
+    },
 
         // 画像保存（修正版）
         saveImage: function() {
