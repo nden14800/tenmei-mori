@@ -6008,46 +6008,48 @@ async function loadHistory() {
     }
 }
 
-        // 履歴リストのレンダリング関数 (修正版: 件数表示の上書きを削除)
-        function renderHistoryList(historyData) {
-            const list = document.getElementById('history-list');
-            list.innerHTML = '';
-            
-            // 【削除】ここで件数を上書きしていたため、ページごとの件数になってしまっていました。
-            // document.getElementById('search-result-count').textContent = historyData.length;
-
-            if(historyData.length === 0) {
-                list.innerHTML = '<p class="text-gray-400 text-center">該当する履歴がありません。</p>';
-                return;
-            }
-
-            historyData.forEach((item) => {
-                const div = document.createElement('div');
-                const isMe = item.username === currentState.user.username;
-                const borderColor = item.result.includes('凶') ? 'border-gray-500' : 'border-red-500';
-                const bgClass = isMe ? 'bg-red-50 dark:bg-red-900/20' : 'bg-gray-50 dark:bg-zinc-800';
-
-                div.className = `${bgClass} p-3 rounded flex justify-between items-center border-l-4 ${borderColor} cursor-pointer hover:opacity-80 transition shadow-sm`;
-                
-                div.onclick = () => {
-                    showResultDetail(false, item);
-                }; 
-
-                const date = new Date(item.timestamp);
-                const dateStr = `${date.getMonth()+1}/${date.getDate()} ${date.getHours()}:${String(date.getMinutes()).padStart(2, '0')}`;
-                
-                div.innerHTML = `
-                    <div class="flex flex-col text-left">
-                        <span class="text-xs font-bold ${isMe ? 'text-red-600' : 'themed-text-sub'}">${item.username} 様</span>
-                        <span class="text-xs text-gray-400">${dateStr}</span>
-                    </div>
-                    <div class="flex items-center gap-4">
-                        <span class="font-bold text-red-700 dark:text-red-400 text-lg w-16 text-right">${item.result}</span>
-                    </div>
-                `;
-                list.appendChild(div);
-            });
+        // 履歴リストのレンダリング関数 (XSS対策版)
+    function renderHistoryList(historyData) {
+        const list = document.getElementById('history-list');
+        list.innerHTML = '';
+        
+        if(historyData.length === 0) {
+            list.innerHTML = '<p class="text-gray-400 text-center">該当する履歴がありません。</p>';
+            return;
         }
+
+        historyData.forEach((item) => {
+            const div = document.createElement('div');
+            const isMe = item.username === currentState.user.username;
+            const borderColor = item.result.includes('凶') ? 'border-gray-500' : 'border-red-500';
+            const bgClass = isMe ? 'bg-red-50 dark:bg-red-900/20' : 'bg-gray-50 dark:bg-zinc-800';
+
+            div.className = `${bgClass} p-3 rounded flex justify-between items-center border-l-4 ${borderColor} cursor-pointer hover:opacity-80 transition shadow-sm`;
+            
+            div.onclick = () => {
+                showResultDetail(false, item);
+            }; 
+
+            const date = new Date(item.timestamp);
+            const dateStr = `${date.getMonth()+1}/${date.getDate()} ${date.getHours()}:${String(date.getMinutes()).padStart(2, '0')}`;
+            
+            // ★修正: username を escapeHtml で囲んで無害化
+            div.innerHTML = `
+                <div class="flex flex-col text-left">
+                    <span class="text-xs font-bold ${isMe ? 'text-red-600' : 'themed-text-sub'}">
+                        ${escapeHtml(item.username)} 様
+                    </span>
+                    <span class="text-xs text-gray-400">${dateStr}</span>
+                </div>
+                <div class="flex items-center gap-4">
+                    <span class="font-bold text-red-700 dark:text-red-400 text-lg w-16 text-right">
+                        ${item.result}
+                    </span>
+                </div>
+            `;
+            list.appendChild(div);
+        });
+    }
 
         // 検索ロジック (修正版: ページ機能対応)
 function filterHistory() {
