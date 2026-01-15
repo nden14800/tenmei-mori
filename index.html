@@ -5778,9 +5778,8 @@ function handleInputQuiz(button, correctAnswers, questionId) {
                         const res = await fetch(`${API_BASE}/api/draw`, {
                             method: 'POST',
                             headers: { 'Content-Type': 'application/json' },
+                            credentials: 'include', // ★追加
                             body: JSON.stringify({ 
-                                email: currentState.user.email,
-                                token: currentState.user.token,
                                 result: resultData.type,
                                 poem: resultData.poem,
                                 detail: detailsList,
