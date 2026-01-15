@@ -5219,7 +5219,11 @@ async function checkSession() {
         if (currentState.user) {
             // ログイン中：サーバーから最新設定を取得
             try {
-                const res = await fetch(`${API_BASE}/api/user/settings?email=${encodeURIComponent(currentState.user.email)}&token=${encodeURIComponent(currentState.user.token)}`);
+                // ★修正: クエリパラメータ削除
+            const res = await fetch(`${API_BASE}/api/user/settings`, {
+                method: 'GET',
+                credentials: 'include'
+            });
                 if (res.ok) {
                     const data = await res.json();
                     settings = data.settings;
