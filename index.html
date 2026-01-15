@@ -5899,22 +5899,24 @@ function handleInputQuiz(button, correctAnswers, questionId) {
             luckyArea.appendChild(uBox);
             outer.appendChild(luckyArea);
 
-            // 8. フッター (日時・名前・QR)
-            if (withFooter) {
-                const footer = document.createElement('div');
-                footer.className = 'result-footer-info accent-border';
-                
-                const metaDiv = document.createElement('div');
-                metaDiv.style.textAlign = 'left';
-                
-                const name = data.username || "参拝者";
-                const date = new Date(data.timestamp || Date.now());
-                const dateStr = `${date.getFullYear()}年${date.getMonth()+1}月${date.getDate()}日 ${date.getHours()}:${String(date.getMinutes()).padStart(2,'0')}`;
+            // 8. フッター部分の修正 (XSS対策)
+    // 関数内の最後の方にある footer 生成部分を以下のように修正
+        if (withFooter) {
+            const footer = document.createElement('div');
+            footer.className = 'result-footer-info accent-border';
+            
+            const metaDiv = document.createElement('div');
+            metaDiv.style.textAlign = 'left';
+            
+            const name = data.username || "参拝者";
+            const date = new Date(data.timestamp || Date.now());
+            const dateStr = `${date.getFullYear()}年${date.getMonth()+1}月${date.getDate()}日 ${date.getHours()}:${String(date.getMinutes()).padStart(2,'0')}`;
 
-                metaDiv.innerHTML = `
-                    <div class="result-user-name accent-text">${name} 様の運勢</div>
-                    <div class="result-date accent-text">参拝日: ${dateStr}</div>
-                `;
+            // ★修正: name を escapeHtml で無害化
+            metaDiv.innerHTML = `
+                <div class="result-user-name accent-text">${escapeHtml(name)} 様の運勢</div>
+                <div class="result-date accent-text">参拝日: ${dateStr}</div>
+            `;
 
                 const qrDiv = document.createElement('div');
                 qrDiv.className = 'result-qr-container';
