@@ -6495,13 +6495,11 @@ ${getShareUrl()}`;
             showLoading(true);
             try {
                 const res = await fetch(`${API_BASE}/api/user/delete`, {
-                    method: 'POST',
-                    headers: {'Content-Type': 'application/json'},
-                    body: JSON.stringify({
-                        token: currentState.user.token,
-                        email: currentState.user.email
-                    })
-                });
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            credentials: 'include', // ★追加
+            body: JSON.stringify({}) // tokenは送らない
+        });
                 
                 // レスポンスがJSONかどうか確認
                 const contentType = res.headers.get("content-type");
