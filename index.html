@@ -5193,14 +5193,14 @@ async function checkSession() {
             
             try {
                 const res = await fetch(`${API_BASE}/api/user/settings`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        email: currentState.user.email,
-                        token: currentState.user.token,
-                        settings: settings
-                    })
-                });
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                credentials: 'include', // ★追加
+                body: JSON.stringify({
+                    // email, token 削除
+                    settings: settings
+                })
+            });
                 if(!res.ok) throw new Error("Sync Failed");
                 console.log("Labs設定をクラウドに保存しました");
             } catch (e) {
