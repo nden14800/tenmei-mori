@@ -6467,15 +6467,15 @@ ${getShareUrl()}`;
             showLoading(true);
             try {
                 const res = await fetch(`${API_BASE}/api/user/update`, {
-                    method: 'POST',
-                    headers: {'Content-Type': 'application/json'},
-                    body: JSON.stringify({
-                        token: currentState.user.token,
-                        email: currentState.user.email,
-                        newUsername: newName || undefined,
-                        newPassword: newPass || undefined
-                    })
-                });
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            credentials: 'include', // ★追加
+            body: JSON.stringify({
+                // token, email 削除
+                newUsername: newName || undefined,
+                newPassword: newPass || undefined
+            })
+        });
                 const data = await res.json();
                 if(data.success) {
                     alert("更新しました");
