@@ -6507,89 +6507,99 @@ function handleInputQuiz(button, correctAnswers, questionId) {
             }, 1000);
         }
 
-        async function showResultDetail(isNewDraw, dataOverride = null) {
-            let resultData, randNum, detailsList, luckyItems, unluckyItems, timestamp, username;
+        // 結果表示＆保存処理 (ここが重要：保存ロジックの修正)
+    async function showResultDetail(isNewDraw, dataOverride = null) {
+        let resultData;
 
-            if (isNewDraw) {
-                // 新規抽選
-                const base = omikujiResults[Math.floor(Math.random() * omikujiResults.length)];
-                randNum = Math.floor(Math.random() * 100) + 1;
-                timestamp = Date.now();
-                username = currentState.user ? (currentState.user.username || "参拝者") : "ゲスト";
+        if (isNewDraw) {
+            // --- 新規抽選ロジック ---
+            const base = omikujiResults[Math.floor(Math.random() * omikujiResults.length)];
+            const randNum = Math.floor(Math.random() * 100) + 1;
+            const timestamp = Date.now();
+            const username = currentState.user ? (currentState.user.username || "参拝者") : "ゲスト";
 
-                // 詳細項目: 運勢ランク連動ロジック
-                const detailIndex = 5 - base.rank;
-                const cats = ['願事','恋愛','待人','商売','旅立','学問','病気'];
+            // 詳細項目の生成
+            const detailIndex = 5 - base.rank;
+            const cats = ['願事','恋愛','待人','商売','旅立','学問','病気'];
+            const detailsList = cats.map(c => ({
+                title: c,
+                content: detailTexts[c][Math.min(detailIndex, detailTexts[c].length - 1)]
+            }));
+
+            // ラッキーアイテム生成
+            const luckyItems = {
+                item: luckyItemsList[Math.floor(Math.random()*luckyItemsList.length)],
+                spot: luckySpotsList[Math.floor(Math.random()*luckySpotsList.length)],
+                color: luckyColorsList[Math.floor(Math.random()*luckyColorsList.length)],
+                person: luckyPersonsList[Math.floor(Math.random()*luckyPersonsList.length)]
+            };
+            
+            // アンラッキー生成 (重複排除)
+            let ulItem, ulSpot, ulPerson;
+            do { ulItem = luckyItemsList[Math.floor(Math.random()*luckyItemsList.length)]; } while(ulItem === luckyItems.item);
+            do { ulSpot = luckySpotsList[Math.floor(Math.random()*luckySpotsList.length)]; } while(ulSpot === luckyItems.spot);
+            do { ulPerson = luckyPersonsList[Math.floor(Math.random()*luckyPersonsList.length)]; } while(ulPerson === luckyItems.person);
+
+            const unluckyItems = { item: ulItem, spot: ulSpot, person: ulPerson };
+
+            resultData = { 
+                type: base.type, 
+                poem: base.poem, 
+                desc: base.desc,
+                num: randNum, 
+                detail: detailsList,
+                lucky: luckyItems,
+                unlucky: unluckyItems,
+                timestamp: timestamp,
+                username: username
+            };
+            currentState.lastResult = resultData;
+
+            // --- ★保存処理 (ログイン時のみ) ---
+            if(currentState.user) {
+                // ローディングは出さずに裏で実行 (UX向上)
+                // showLoading(true); 
                 
-                detailsList = cats.map(c => ({
-                    title: c,
-                    content: detailTexts[c][Math.min(detailIndex, detailTexts[c].length - 1)]
-                }));
-
-                // ラッキー/アンラッキー
-                luckyItems = {
-                    item: luckyItemsList[Math.floor(Math.random()*luckyItemsList.length)],
-                    spot: luckySpotsList[Math.floor(Math.random()*luckySpotsList.length)],
-                    color: luckyColorsList[Math.floor(Math.random()*luckyColorsList.length)],
-                    person: luckyPersonsList[Math.floor(Math.random()*luckyPersonsList.length)]
-                };
-                
-                let ulItem, ulSpot, ulPerson;
-                do { ulItem = luckyItemsList[Math.floor(Math.random()*luckyItemsList.length)]; } while(ulItem === luckyItems.item);
-                do { ulSpot = luckySpotsList[Math.floor(Math.random()*luckySpotsList.length)]; } while(ulSpot === luckyItems.spot);
-                do { ulPerson = luckyPersonsList[Math.floor(Math.random()*luckyPersonsList.length)]; } while(ulPerson === luckyItems.person);
-
-                unluckyItems = {
-                    item: ulItem,
-                    spot: ulSpot,
-                    person: ulPerson
-                };
-
-                resultData = { 
-                    type: base.type, 
-                    poem: base.poem, 
-                    desc: base.desc,
-                    num: randNum, 
-                    detail: detailsList,
-                    lucky: luckyItems,
-                    unlucky: unluckyItems,
-                    timestamp: timestamp,
-                    username: username
-                };
-                currentState.lastResult = resultData;
-
-                // URL更新廃止: クリーンなURLのまま
-
-                // ログイン時のみ保存・更新
-                if(currentState.user) {
-                    showLoading(true);
-                    try {
-                        // ★修正: authFetchに変更
-                        const res = await authFetch(`${API_BASE}/api/draw`, {
-                            method: 'POST',
-                            headers: { 'Content-Type': 'application/json' },
-                            body: JSON.stringify({ 
-                                result: resultData.type,
-                                poem: resultData.poem,
-                                detail: detailsList,
-                                lucky: luckyItems,
-                                unlucky: unluckyItems
-                            })
-                        });
-                        
-                        if(res.ok) {
-                            const data = await res.json();
-                            if(data.success && data.count) {
-                                currentState.liveCount = data.count;
-                                document.getElementById('live-counter').textContent = currentState.liveCount.toLocaleString() + "本";
-                                fetchHistoryStats();
-                            }
+                try {
+                    // APIへ送信
+                    const res = await authFetch(`${API_BASE}/api/draw`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ 
+                            result: resultData.type,
+                            poem: resultData.poem,
+                            detail: detailsList,
+                            lucky: luckyItems,
+                            unlucky: unluckyItems
+                        })
+                    });
+                    
+                    if(res.ok) {
+                        const data = await res.json();
+                        if(data.success && data.count) {
+                            // カウンター即時更新
+                            currentState.liveCount = data.count;
+                            const counterEl = document.getElementById('live-counter');
+                            if(counterEl) counterEl.textContent = currentState.liveCount.toLocaleString() + "本";
+                            
+                            // 成功トースト (控えめに)
+                            // showToast("参拝記録を台帳に記しました", "success");
+                            
+                            // 統計も更新
+                            fetchHistoryStats();
                         }
-                    } catch(e) { console.error(e); }
-                    finally { showLoading(false); }
+                    } else {
+                        console.error("Save failed:", res.status);
+                        showToast("通信エラーにより、記録の一部が保存されませんでした。", "error");
+                    }
+                } catch(e) { 
+                    console.error("Save Error:", e);
+                    showToast("通信エラーが発生しました。", "error");
                 }
+            }
 
-            } else {
+        } else {
+            // --- 履歴からの復元表示ロジック (変更なし) ---
                 // 復元
                 resultData = dataOverride;
                 randNum = dataOverride.num || 1;
