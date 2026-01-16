@@ -1482,138 +1482,6 @@
             100% { transform: scale(0.8); opacity: 0.5; }
         }
 
-        /* --- Windows 11風 Fluent Design 通知 --- */
-    #toast-container {
-        position: fixed;
-        bottom: 24px; /* Windows 11に合わせて右下に配置（上の方が良ければ top: 80px に戻してください） */
-        right: 24px;
-        z-index: 99999;
-        display: flex;
-        flex-direction: column;
-        gap: 12px;
-        pointer-events: none;
-    }
-
-    .toast-notification {
-        position: relative;
-        min-width: 340px;
-        max-width: 420px;
-        padding: 16px;
-        border-radius: 8px; /* Win11の標準R */
-        
-        /* Fluent Design: Acrylic Material (Light) */
-        background: rgba(255, 255, 255, 0.75);
-        backdrop-filter: blur(20px) saturate(180%);
-        -webkit-backdrop-filter: blur(20px) saturate(180%);
-        
-        /* 極細の境界線と影 */
-        border: 1px solid rgba(0, 0, 0, 0.05);
-        box-shadow: 0 8px 16px rgba(0, 0, 0, 0.14);
-        
-        /* アニメーション */
-        transform: translateX(120%);
-        opacity: 0;
-        transition: all 0.4s cubic-bezier(0.1, 0.9, 0.2, 1); /* Win11風のバネのような動き */
-        
-        pointer-events: auto;
-        display: flex;
-        align-items: flex-start;
-        overflow: hidden;
-        
-        /* フォント設定 */
-        font-family: 'Segoe UI', 'Zen Old Mincho', sans-serif;
-        color: #1a1a1a;
-    }
-
-    /* ダークモード時のAcrylic (Dark) */
-    .dark .toast-notification {
-        background: rgba(32, 32, 32, 0.7);
-        border: 1px solid rgba(255, 255, 255, 0.08);
-        color: #ffffff;
-        box-shadow: 0 8px 16px rgba(0, 0, 0, 0.4);
-    }
-
-    /* 表示状態 */
-    .toast-visible {
-        transform: translateX(0) !important;
-        opacity: 1 !important;
-    }
-
-    /* アイコンエリア */
-    .toast-icon-area {
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        width: 32px;
-        height: 32px;
-        margin-right: 12px;
-        flex-shrink: 0;
-        font-size: 1.2rem;
-    }
-
-    /* テキストエリア */
-    .toast-content {
-        flex: 1;
-        padding-right: 24px; /* 閉じるボタンのスペース */
-    }
-
-    .toast-title {
-        font-weight: 600;
-        font-size: 0.95rem;
-        margin-bottom: 4px;
-        line-height: 1.4;
-    }
-
-    .toast-msg {
-        font-size: 0.85rem;
-        opacity: 0.8;
-        line-height: 1.5;
-    }
-
-    /* 閉じるボタン */
-    .toast-close {
-        position: absolute;
-        top: 12px;
-        right: 12px;
-        width: 24px;
-        height: 24px;
-        border: none;
-        background: transparent;
-        color: inherit;
-        opacity: 0.5;
-        cursor: pointer;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        border-radius: 4px;
-        transition: all 0.2s;
-    }
-    .toast-close:hover {
-        background: rgba(0,0,0,0.05);
-        opacity: 1;
-    }
-    .dark .toast-close:hover {
-        background: rgba(255,255,255,0.1);
-    }
-
-    /* タイムバー（プログレスバー） */
-    .toast-progress {
-        position: absolute;
-        bottom: 0;
-        left: 0;
-        height: 3px;
-        background: currentColor;
-        opacity: 0.3;
-        width: 100%;
-        transform-origin: left;
-    }
-
-    /* タイプ別の色定義 */
-    .toast-info .toast-icon-area, .toast-info .toast-progress { color: #0078d4; } /* Windows Blue */
-    .toast-success .toast-icon-area, .toast-success .toast-progress { color: #107c10; } /* Windows Green */
-    .toast-warning .toast-icon-area, .toast-warning .toast-progress { color: #d83b01; } /* Windows Orange */
-    .toast-error .toast-icon-area, .toast-error .toast-progress { color: #c50f1f; } /* Windows Red */
-
     </style>
 </head>
 <body>
@@ -3166,80 +3034,6 @@ function escapeHtml(str) {
         .replace(/"/g, '&quot;')
         .replace(/'/g, '&#039;');
 }
-    
-    // ==========================================
-    //  通知システム (Windows 11 Fluent Design版)
-    // ==========================================
-    
-    window.showToast = function(message, type = 'info', title = '') {
-        let container = document.getElementById('toast-container');
-        if (!container) {
-            container = document.createElement('div');
-            container.id = 'toast-container';
-            document.body.appendChild(container);
-        }
-
-        // タイトルの自動設定
-        if (!title) {
-            if (type === 'success') title = '完了';
-            else if (type === 'warning') title = '注意';
-            else if (type === 'error') title = '問題が発生しました';
-            else title = 'お知らせ';
-        }
-
-        // アイコン設定
-        let iconClass = 'bi-info-circle';
-        if (type === 'success') iconClass = 'bi-check-circle-fill';
-        if (type === 'warning') iconClass = 'bi-exclamation-triangle-fill';
-        if (type === 'error') iconClass = 'bi-x-circle-fill';
-
-        const toast = document.createElement('div');
-        toast.className = `toast-notification toast-${type}`;
-        
-        // HTML構造
-        toast.innerHTML = `
-            <div class="toast-icon-area"><i class="bi ${iconClass}"></i></div>
-            <div class="toast-content">
-                <div class="toast-title">${title}</div>
-                <div class="toast-msg">${message.replace(/\n/g, '<br>')}</div>
-            </div>
-            <button class="toast-close" onclick="this.parentElement.remove()"><i class="bi bi-x"></i></button>
-            <div class="toast-progress"></div>
-        `;
-
-        container.appendChild(toast);
-
-        // プログレスバーのアニメーション
-        const progressBar = toast.querySelector('.toast-progress');
-        const duration = 5000; // 5秒
-        
-        progressBar.animate([
-            { transform: 'scaleX(1)' },
-            { transform: 'scaleX(0)' }
-        ], {
-            duration: duration,
-            easing: 'linear',
-            fill: 'forwards'
-        });
-
-        // 表示アニメーション（少し遅らせて発火）
-        requestAnimationFrame(() => {
-            toast.classList.add('toast-visible');
-        });
-
-        // 自動消去
-        setTimeout(() => {
-            toast.classList.remove('toast-visible');
-            toast.addEventListener('transitionend', () => {
-                if(toast.parentElement) toast.remove();
-            });
-        }, duration);
-    };
-
-    // 既存のalertを上書き
-    window.alert = function(msg) {
-        showToast(msg, 'info');
-    };
 
        // ==========================================
     //  設定: サーバーメンテナンスモード
@@ -3369,38 +3163,6 @@ function escapeHtml(str) {
     const newsData = [
         
 
-        {
-            id: 25,
-            title: "【重要・お詫び】「連打制限」の緊急導入と、方針転換のご報告",
-            date: "2026/1/16",
-            time: "21:36",
-            tag: "重要・仕様変更",
-            tagColor: "text-red-700",
-            borderColor: "border-red-600",
-            desc: "先ほどの案内を撤回し、システムの整合性を守るために「参拝間隔の制限」を導入いたしました。深くお詫び申し上げます。",
-            content: `
-                <div class="article-content">
-                    <p>いつも「運勢・天命乃杜」をご利用いただき、誠にありがとうございます。</p>
-                    <p>先ほど（本日21:02）の記事にて、「連打による参拝も情熱として歓迎する」旨をお伝えしたばかりではございますが、その後のシステム監視において、想定を遥かに超える負荷とデータの不整合（個人記録の欠落）が確認されました。</p>
-                    <p>このままでは、「おみくじの轍（履歴）」という皆様の大切な記録を正確に守り抜くことが困難であると判断いたしました。そのため、断腸の思いで方針を転換し、緊急の仕様変更を実施いたしました。</p>
-
-                    <h3>変更内容：10秒間の「心の冷却期間」</h3>
-                    <p>現在より、おみくじを一度引いた後、次の参拝を行うまでに<strong>「10秒間」の待機時間（インターバル）</strong>を設けさせていただきました。</p>
-                    <p>連続して引こうとされた場合、「心を静めてお待ちください」という案内が表示され、操作がブロックされます。この制限により、以下の問題が完全に解決されます。</p>
-                    <ul class="list-disc ml-5 mb-4">
-                        <li>ご自身の参拝履歴（轍）が正しく保存されない問題の解消</li>
-                        <li>累計カウンターと履歴数のズレの完全な修正</li>
-                        <li>データベースへの過剰な書き込み負荷の防止</li>
-                    </ul>
-
-                    <h3>「一拝一魂」への回帰</h3>
-                    <p>「制限はしない」と宣言した舌の根も乾かぬうちの変更となり、連打を楽しんでおられた皆様には、多大なる失望を与えてしまいましたことを深くお詫び申し上げます。</p>
-                    <p>しかし、本来の神社のあり方に立ち返れば、おみくじは「数を撃つ」ものではなく、一度の祈りに全神経を集中させる「一拝一魂」の儀式であるはずです。</p>
-                    <p>今回の制限は、システムの保護だけでなく、皆様に今一度、静かな呼吸で天命と向き合っていただくための「必要な間（ま）」であると、運営一同、前向きに捉え直しております。</p>
-                    <p>運営の方針が二転三転いたしましたこと、重ねてお詫び申し上げますとともに、より厳かになった杜での参拝を引き続きよろしくお願いいたします。</p>
-                </div>
-            `
-        },
         {
             id: 24,
             title: "【技術解説】「連打参拝」における記録の整合性修正と、個人記録に関する仕様について",
@@ -6360,51 +6122,37 @@ function handleInputQuiz(button, correctAnswers, questionId) {
             window.scrollBy({ top: 200, behavior: 'smooth' });
         }
 
-        // ==========================================
-    //  おみくじ機能 (連打制限・保存修正版)
-    // ==========================================
-
-    // 連打制限用のタイムスタンプ
-    let lastDrawTimestamp = 0;
-    const DRAW_COOLDOWN_MS = 10000; // 10秒制限
-
-    // おみくじ生成 (クリックイベント修正)
-    function addOmikujiBatch(count, isInitial) {
-        const pool = document.getElementById('omikuji-pool');
-        
-        for(let i=0; i<count; i++) {
-            const stick = document.createElement('div');
-            stick.className = 'omikuji-stick';
+        function addOmikujiBatch(count, isInitial) {
+            const pool = document.getElementById('omikuji-pool');
             
-            stick.innerHTML = `
-                <div class="stick-icon"><i class="bi bi-flower1"></i></div>
-                <div class="stick-text">おみくじ</div>
-                <div class="stick-footer">天命乃杜</div>
-            `;
-            
-            const rot = Math.random() * 12 - 6; 
-            stick.style.transform = `rotate(${rot}deg)`;
-            stick.style.animation = `fadeInStickMargin 0.6s ease-out forwards ${i * 0.03}s`;
-            
-            stick.onclick = function() {
-                const now = Date.now();
+            for(let i=0; i<count; i++) {
+                const stick = document.createElement('div');
+                stick.className = 'omikuji-stick';
                 
-                // 連打制限チェック
-                if (now - lastDrawTimestamp < DRAW_COOLDOWN_MS) {
-                    const remaining = Math.ceil((DRAW_COOLDOWN_MS - (now - lastDrawTimestamp)) / 1000);
-                    // Alertの代わりにトーストを表示
-                    showToast(`続けてのおみくじは心の乱れに通じます。\n呼吸を整え、あと ${remaining}秒 お待ちください。`, 'warning', '心を静めてお待ちください');
-                    return; 
-                }
-
-                // 制限クリア -> 実行
-                lastDrawTimestamp = now;
-                drawResult(this);
-            };
-            
-            pool.appendChild(stick);
+                // デザイン構成: アイコン、メイン文字、サイト名
+                // アイコンは結果画面と同じ bi-flower1 を使用
+                stick.innerHTML = `
+                    <div class="stick-icon"><i class="bi bi-flower1"></i></div>
+                    <div class="stick-text">おみくじ</div>
+                    <div class="stick-footer">天命乃杜</div>
+                `;
+                
+                // ランダムな傾き (±6度程度で自然に)
+                const rot = Math.random() * 12 - 6; 
+                
+                // 回転を適用
+                stick.style.transform = `rotate(${rot}deg)`;
+                
+                // アニメーション適用 (margin-topを操作するものに変更したため、transform: rotate が消えない)
+                stick.style.animation = `fadeInStickMargin 0.6s ease-out forwards ${i * 0.03}s`;
+                
+                stick.onclick = function() {
+                    drawResult(this);
+                };
+                
+                pool.appendChild(stick);
+            }
         }
-    }
 
         // 12種類のおみくじ結果定義
         const omikujiResults = [
@@ -6480,6 +6228,10 @@ function handleInputQuiz(button, correctAnswers, questionId) {
             return shuffled.slice(0, count);
         }
 
+        // --- 【追加】連打制限用の変数定義 ---
+    let lastDrawTimestamp = 0;
+    const DRAW_COOLDOWN_MS = 10000; // 制限時間：10秒（ここはお好みで調整してください）
+
         function drawResult(element) {
             const overlay = document.getElementById('countdown-overlay');
             const numEl = document.getElementById('countdown-number');
@@ -6507,99 +6259,89 @@ function handleInputQuiz(button, correctAnswers, questionId) {
             }, 1000);
         }
 
-        // 結果表示＆保存処理 (ここが重要：保存ロジックの修正)
-    async function showResultDetail(isNewDraw, dataOverride = null) {
-        let resultData;
+        async function showResultDetail(isNewDraw, dataOverride = null) {
+            let resultData, randNum, detailsList, luckyItems, unluckyItems, timestamp, username;
 
-        if (isNewDraw) {
-            // --- 新規抽選ロジック ---
-            const base = omikujiResults[Math.floor(Math.random() * omikujiResults.length)];
-            const randNum = Math.floor(Math.random() * 100) + 1;
-            const timestamp = Date.now();
-            const username = currentState.user ? (currentState.user.username || "参拝者") : "ゲスト";
+            if (isNewDraw) {
+                // 新規抽選
+                const base = omikujiResults[Math.floor(Math.random() * omikujiResults.length)];
+                randNum = Math.floor(Math.random() * 100) + 1;
+                timestamp = Date.now();
+                username = currentState.user ? (currentState.user.username || "参拝者") : "ゲスト";
 
-            // 詳細項目の生成
-            const detailIndex = 5 - base.rank;
-            const cats = ['願事','恋愛','待人','商売','旅立','学問','病気'];
-            const detailsList = cats.map(c => ({
-                title: c,
-                content: detailTexts[c][Math.min(detailIndex, detailTexts[c].length - 1)]
-            }));
-
-            // ラッキーアイテム生成
-            const luckyItems = {
-                item: luckyItemsList[Math.floor(Math.random()*luckyItemsList.length)],
-                spot: luckySpotsList[Math.floor(Math.random()*luckySpotsList.length)],
-                color: luckyColorsList[Math.floor(Math.random()*luckyColorsList.length)],
-                person: luckyPersonsList[Math.floor(Math.random()*luckyPersonsList.length)]
-            };
-            
-            // アンラッキー生成 (重複排除)
-            let ulItem, ulSpot, ulPerson;
-            do { ulItem = luckyItemsList[Math.floor(Math.random()*luckyItemsList.length)]; } while(ulItem === luckyItems.item);
-            do { ulSpot = luckySpotsList[Math.floor(Math.random()*luckySpotsList.length)]; } while(ulSpot === luckyItems.spot);
-            do { ulPerson = luckyPersonsList[Math.floor(Math.random()*luckyPersonsList.length)]; } while(ulPerson === luckyItems.person);
-
-            const unluckyItems = { item: ulItem, spot: ulSpot, person: ulPerson };
-
-            resultData = { 
-                type: base.type, 
-                poem: base.poem, 
-                desc: base.desc,
-                num: randNum, 
-                detail: detailsList,
-                lucky: luckyItems,
-                unlucky: unluckyItems,
-                timestamp: timestamp,
-                username: username
-            };
-            currentState.lastResult = resultData;
-
-            // --- ★保存処理 (ログイン時のみ) ---
-            if(currentState.user) {
-                // ローディングは出さずに裏で実行 (UX向上)
-                // showLoading(true); 
+                // 詳細項目: 運勢ランク連動ロジック
+                const detailIndex = 5 - base.rank;
+                const cats = ['願事','恋愛','待人','商売','旅立','学問','病気'];
                 
-                try {
-                    // APIへ送信
-                    const res = await authFetch(`${API_BASE}/api/draw`, {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ 
-                            result: resultData.type,
-                            poem: resultData.poem,
-                            detail: detailsList,
-                            lucky: luckyItems,
-                            unlucky: unluckyItems
-                        })
-                    });
-                    
-                    if(res.ok) {
-                        const data = await res.json();
-                        if(data.success && data.count) {
-                            // カウンター即時更新
-                            currentState.liveCount = data.count;
-                            const counterEl = document.getElementById('live-counter');
-                            if(counterEl) counterEl.textContent = currentState.liveCount.toLocaleString() + "本";
-                            
-                            // 成功トースト (控えめに)
-                            // showToast("参拝記録を台帳に記しました", "success");
-                            
-                            // 統計も更新
-                            fetchHistoryStats();
-                        }
-                    } else {
-                        console.error("Save failed:", res.status);
-                        showToast("通信エラーにより、記録の一部が保存されませんでした。", "error");
-                    }
-                } catch(e) { 
-                    console.error("Save Error:", e);
-                    showToast("通信エラーが発生しました。", "error");
-                }
-            }
+                detailsList = cats.map(c => ({
+                    title: c,
+                    content: detailTexts[c][Math.min(detailIndex, detailTexts[c].length - 1)]
+                }));
 
-        } else {
-            // --- 履歴からの復元表示ロジック (変更なし) ---
+                // ラッキー/アンラッキー
+                luckyItems = {
+                    item: luckyItemsList[Math.floor(Math.random()*luckyItemsList.length)],
+                    spot: luckySpotsList[Math.floor(Math.random()*luckySpotsList.length)],
+                    color: luckyColorsList[Math.floor(Math.random()*luckyColorsList.length)],
+                    person: luckyPersonsList[Math.floor(Math.random()*luckyPersonsList.length)]
+                };
+                
+                let ulItem, ulSpot, ulPerson;
+                do { ulItem = luckyItemsList[Math.floor(Math.random()*luckyItemsList.length)]; } while(ulItem === luckyItems.item);
+                do { ulSpot = luckySpotsList[Math.floor(Math.random()*luckySpotsList.length)]; } while(ulSpot === luckyItems.spot);
+                do { ulPerson = luckyPersonsList[Math.floor(Math.random()*luckyPersonsList.length)]; } while(ulPerson === luckyItems.person);
+
+                unluckyItems = {
+                    item: ulItem,
+                    spot: ulSpot,
+                    person: ulPerson
+                };
+
+                resultData = { 
+                    type: base.type, 
+                    poem: base.poem, 
+                    desc: base.desc,
+                    num: randNum, 
+                    detail: detailsList,
+                    lucky: luckyItems,
+                    unlucky: unluckyItems,
+                    timestamp: timestamp,
+                    username: username
+                };
+                currentState.lastResult = resultData;
+
+                // URL更新廃止: クリーンなURLのまま
+
+                // ログイン時のみ保存・更新
+                if(currentState.user) {
+                    showLoading(true);
+                    try {
+                        // ★修正: authFetchに変更
+                        const res = await authFetch(`${API_BASE}/api/draw`, {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ 
+                                result: resultData.type,
+                                poem: resultData.poem,
+                                detail: detailsList,
+                                lucky: luckyItems,
+                                unlucky: unluckyItems
+                            })
+                        });
+                        
+                        if(res.ok) {
+                            const data = await res.json();
+                            if(data.success && data.count) {
+                                currentState.liveCount = data.count;
+                                document.getElementById('live-counter').textContent = currentState.liveCount.toLocaleString() + "本";
+                                fetchHistoryStats();
+                            }
+                        }
+                    } catch(e) { console.error(e); }
+                    finally { showLoading(false); }
+                }
+
+            } else {
                 // 復元
                 resultData = dataOverride;
                 randNum = dataOverride.num || 1;
