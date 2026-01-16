@@ -6506,14 +6506,13 @@ ${getShareUrl()}`;
             
             showLoading(true);
             try {
-                const res = await fetch(`${API_BASE}/api/user/delete`, {
-            method: 'POST',
-            headers: {'Content-Type': 'application/json'},
-            credentials: 'include', // ★追加
-            body: JSON.stringify({}) // tokenは送らない
-        });
+                // ★修正: authFetchに変更
+                const res = await authFetch(`${API_BASE}/api/user/delete`, {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({})
+                });
                 
-                // レスポンスがJSONかどうか確認
                 const contentType = res.headers.get("content-type");
                 if (contentType && contentType.indexOf("application/json") !== -1) {
                     const data = await res.json();
@@ -6524,7 +6523,6 @@ ${getShareUrl()}`;
                         alert("削除失敗: " + (data.message || data.error));
                     }
                 } else {
-                    // JSONでない場合（サーバーエラーなど）
                     const text = await res.text();
                     console.error("Delete Error:", text);
                     alert("削除処理中にエラーが発生しました。");
