@@ -6355,32 +6355,62 @@ function handleInputQuiz(button, correctAnswers, questionId) {
             luckyArea.appendChild(uBox);
             outer.appendChild(luckyArea);
 
-            // 8. フッター部分の修正 (XSS対策)
-    // 関数内の最後の方にある footer 生成部分を以下のように修正
-        if (withFooter) {
-            const footer = document.createElement('div');
-            footer.className = 'result-footer-info accent-border';
-            
-            const metaDiv = document.createElement('div');
-            metaDiv.style.textAlign = 'left';
-            
-            const name = data.username || "参拝者";
-            const date = new Date(data.timestamp || Date.now());
-            const dateStr = `${date.getFullYear()}年${date.getMonth()+1}月${date.getDate()}日 ${date.getHours()}:${String(date.getMinutes()).padStart(2,'0')}`;
+            // 8. フッター部分の修正 (注釈・リンク付き)
+            if (withFooter) {
+                const footer = document.createElement('div');
+                footer.className = 'result-footer-info accent-border';
+                
+                // レイアウト調整: 縦並び（上段:情報/QR、下段:注釈）に変更
+                footer.style.display = 'flex';
+                footer.style.flexDirection = 'column';
+                footer.style.gap = '12px'; // 上下間隔
 
-            // ★修正: name を escapeHtml で無害化
-            metaDiv.innerHTML = `
-                <div class="result-user-name accent-text">${escapeHtml(name)} 様の運勢</div>
-                <div class="result-date accent-text">参拝日: ${dateStr}</div>
-            `;
+                // --- 上段: 名前・日付・QRコード ---
+                const topRow = document.createElement('div');
+                topRow.style.width = '100%';
+                topRow.style.display = 'flex';
+                topRow.style.justifyContent = 'space-between';
+                topRow.style.alignItems = 'flex-end';
+
+                const metaDiv = document.createElement('div');
+                metaDiv.style.textAlign = 'left';
+                
+                const name = data.username || "参拝者";
+                const date = new Date(data.timestamp || Date.now());
+                const dateStr = `${date.getFullYear()}年${date.getMonth()+1}月${date.getDate()}日 ${date.getHours()}:${String(date.getMinutes()).padStart(2,'0')}`;
+
+                metaDiv.innerHTML = `
+                    <div class="result-user-name accent-text">${escapeHtml(name)} 様の運勢</div>
+                    <div class="result-date accent-text">参拝日: ${dateStr}</div>
+                `;
 
                 const qrDiv = document.createElement('div');
                 qrDiv.className = 'result-qr-container';
                 const qrTarget = document.createElement('div');
                 qrDiv.appendChild(qrTarget);
                 
-                footer.appendChild(metaDiv);
-                footer.appendChild(qrDiv);
+                topRow.appendChild(metaDiv);
+                topRow.appendChild(qrDiv);
+
+                // --- 下段: 注釈・リンク ---
+                const noteDiv = document.createElement('div');
+                noteDiv.className = 'accent-text';
+                noteDiv.style.fontSize = '0.6rem'; // 少し小さめに
+                noteDiv.style.textAlign = 'center';
+                noteDiv.style.width = '100%';
+                noteDiv.style.opacity = '0.85';
+                noteDiv.style.lineHeight = '1.6';
+                noteDiv.style.borderTop = '1px dashed currentColor'; // 区切り線
+                noteDiv.style.paddingTop = '8px';
+
+                // ここでリンクを設定
+                noteDiv.innerHTML = `
+                    おみくじの結果は、必ずしもその内容通りになるとは限りません。<br>
+                    詳細は<span style="text-decoration: underline; cursor: pointer; font-weight: bold;" onclick="showView('about'); window.scrollTo(0,0);">「当サイトについて・利用規約」</span>をご確認ください。
+                `;
+
+                footer.appendChild(topRow);
+                footer.appendChild(noteDiv);
                 outer.appendChild(footer);
 
                 setTimeout(() => {
