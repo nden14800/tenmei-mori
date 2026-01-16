@@ -4990,20 +4990,26 @@ window.onload = async function() {
     renderFullColumnView(); 
 };
 
-// ★追加: セッションチェック関数
+// ★修正: checkSession関数 (authFetch使用 & トークン保存追加)
 async function checkSession() {
     try {
-        const res = await fetch(`${API_BASE}/api/auth/check`, {
-            method: 'GET',
-            credentials: 'include' // Cookie送信
+        // authFetchに変更
+        const res = await authFetch(`${API_BASE}/api/auth/check`, {
+            method: 'GET'
         });
         if (res.ok) {
             const data = await res.json();
             if (data.loggedIn) {
                 currentState.user = { username: data.username, email: data.email };
+                
+                // ★追加: サーバーからトークンが返ってきたら保存
+                if (data.token) {
+                    localStorage.setItem('auth_token', data.token);
+                }
+
                 updateAuthUI();
                 loadLabSettings();
-                console.log("Session restored via Cookie");
+                console.log("Session restored");
             } else {
                 currentState.user = null;
                 updateAuthUI();
