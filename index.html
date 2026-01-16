@@ -6019,7 +6019,7 @@ function handleInputQuiz(button, correctAnswers, questionId) {
             }
         }
 
-       // --- 履歴・おみくじの轍 (修正版: ページ機能対応 & Cookie対応) ---
+       // --- 履歴・おみくじの轍 (修正版: authFetch使用) ---
 async function loadHistory() {
     const list = document.getElementById('history-list');
     const container = document.getElementById('history-container');
@@ -6032,7 +6032,6 @@ async function loadHistory() {
     list.innerHTML = '';
     pagination.innerHTML = '';
 
-    // ログインしていなければぼかし表示
     if(!currentState.user) {
         container.classList.add('history-blurred');
         overlay.classList.remove('hidden');
@@ -6062,10 +6061,9 @@ async function loadHistory() {
     showLoading(true);
 
     try {
-        // ★修正ポイント: URLからtokenを削除し、credentials: 'include' を追加
-        const res = await fetch(`${API_BASE}/api/history/global`, {
-            method: 'GET',
-            credentials: 'include' // これが「Cookieを送る」という合図です
+        // ★修正: authFetchに変更
+        const res = await authFetch(`${API_BASE}/api/history/global`, {
+            method: 'GET'
         });
         
         if(res.ok) {
@@ -6081,7 +6079,6 @@ async function loadHistory() {
             renderHistoryWithPagination();
             
         } else {
-            // 認証切れなどの場合
             console.error("Load failed:", res.status);
             list.innerHTML = '<p class="text-center text-red-500">情報の取得に失敗しました。<br>再ログインをお試しください。</p>';
         }
