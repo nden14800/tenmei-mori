@@ -6041,22 +6041,22 @@ function handleInputQuiz(button, correctAnswers, questionId) {
                 const stick = document.createElement('div');
                 stick.className = 'omikuji-stick';
                 
-                // 中央の文字要素を作成（CSS擬似要素だけでなく、メイン文字を入れるため）
-                const textSpan = document.createElement('span');
-                textSpan.className = 'omikuji-stick-text';
-                textSpan.textContent = "おみくじ";
-                stick.appendChild(textSpan);
+                // デザイン構成: アイコン、メイン文字、サイト名
+                // アイコンは結果画面と同じ bi-flower1 を使用
+                stick.innerHTML = `
+                    <div class="stick-icon"><i class="bi bi-flower1"></i></div>
+                    <div class="stick-text">おみくじ</div>
+                    <div class="stick-footer">天命乃杜</div>
+                `;
                 
-                // ランダムな傾きを与える (±8度くらいで自然なバラつきを)
-                const rot = Math.random() * 16 - 8; 
+                // ランダムな傾き (±6度程度で自然に)
+                const rot = Math.random() * 12 - 6; 
                 
-                // スタイル適用
-                // 注意: hover時のscaleリセットと競合しないよう、変数を活用するのがベストだが
-                // 今回はシンプルにinline styleで設定し、CSSの !important でホバーを制御
+                // 回転を適用
                 stick.style.transform = `rotate(${rot}deg)`;
                 
-                // 登場アニメーション (少しずつずらす)
-                stick.style.animation = `fadeInStick 0.5s ease forwards ${i * 0.05}s`;
+                // アニメーション適用 (margin-topを操作するものに変更したため、transform: rotate が消えない)
+                stick.style.animation = `fadeInStickMargin 0.6s ease-out forwards ${i * 0.03}s`;
                 
                 stick.onclick = function() {
                     drawResult(this);
