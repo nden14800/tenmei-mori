@@ -3166,12 +3166,11 @@ function escapeHtml(str) {
         .replace(/"/g, '&quot;')
         .replace(/'/g, '&#039;');
 }
-
-        // ==========================================
-    //  通知システム (Alert廃止・トースト実装)
+    
+    // ==========================================
+    //  通知システム (Windows 11 Fluent Design版)
     // ==========================================
     
-    // トースト表示関数
     window.showToast = function(message, type = 'info', title = '') {
         let container = document.getElementById('toast-container');
         if (!container) {
@@ -3180,47 +3179,64 @@ function escapeHtml(str) {
             document.body.appendChild(container);
         }
 
-        // タイトル自動設定
+        // タイトルの自動設定
         if (!title) {
-            if (type === 'success') title = '成功';
-            else if (type === 'warning') title = 'ご注意';
-            else if (type === 'error') title = 'エラー';
+            if (type === 'success') title = '完了';
+            else if (type === 'warning') title = '注意';
+            else if (type === 'error') title = '問題が発生しました';
             else title = 'お知らせ';
         }
 
-        // アイコン決定
-        let iconClass = 'bi-info-circle-fill';
+        // アイコン設定
+        let iconClass = 'bi-info-circle';
         if (type === 'success') iconClass = 'bi-check-circle-fill';
         if (type === 'warning') iconClass = 'bi-exclamation-triangle-fill';
         if (type === 'error') iconClass = 'bi-x-circle-fill';
 
         const toast = document.createElement('div');
         toast.className = `toast-notification toast-${type}`;
+        
+        // HTML構造
         toast.innerHTML = `
-            <div class="toast-icon"><i class="bi ${iconClass}"></i></div>
+            <div class="toast-icon-area"><i class="bi ${iconClass}"></i></div>
             <div class="toast-content">
                 <div class="toast-title">${title}</div>
                 <div class="toast-msg">${message.replace(/\n/g, '<br>')}</div>
             </div>
+            <button class="toast-close" onclick="this.parentElement.remove()"><i class="bi bi-x"></i></button>
+            <div class="toast-progress"></div>
         `;
 
         container.appendChild(toast);
 
-        // アニメーション用 (少し遅らせてクラス付与)
+        // プログレスバーのアニメーション
+        const progressBar = toast.querySelector('.toast-progress');
+        const duration = 5000; // 5秒
+        
+        progressBar.animate([
+            { transform: 'scaleX(1)' },
+            { transform: 'scaleX(0)' }
+        ], {
+            duration: duration,
+            easing: 'linear',
+            fill: 'forwards'
+        });
+
+        // 表示アニメーション（少し遅らせて発火）
         requestAnimationFrame(() => {
             toast.classList.add('toast-visible');
         });
 
-        // 自動消去 (5秒後)
+        // 自動消去
         setTimeout(() => {
             toast.classList.remove('toast-visible');
             toast.addEventListener('transitionend', () => {
-                toast.remove();
+                if(toast.parentElement) toast.remove();
             });
-        }, 5000);
+        }, duration);
     };
 
-    // 既存のalertを上書き（互換性維持のため）
+    // 既存のalertを上書き
     window.alert = function(msg) {
         showToast(msg, 'info');
     };
