@@ -6814,18 +6814,21 @@ function handleInputQuiz(button, correctAnswers, questionId) {
             }
         }
 
-       // --- 履歴・おみくじの轍 (修正版: authFetch使用) ---
-async function loadHistory() {
+       // --- 履歴・おみくじの轍 (サーバーサイドページネーション対応版) ---
+async function loadHistory(page = 1) {
     const list = document.getElementById('history-list');
     const container = document.getElementById('history-container');
     const overlay = document.getElementById('history-login-overlay');
     const viewMode = document.getElementById('history-view-mode');
     const myCountEl = document.getElementById('personal-history-count');
     const globalCountEl = document.getElementById('global-history-count');
-    const pagination = document.getElementById('history-pagination');
+    const searchResultCount = document.getElementById('search-result-count');
 
-    list.innerHTML = '';
-    pagination.innerHTML = '';
+    // 検索条件の取得
+    const type = document.getElementById('search-type').value;
+    const keyword = document.getElementById('search-keyword').value;
+    const dateStart = document.getElementById('search-date-start').value;
+    const dateEnd = document.getElementById('search-date-end').value;
 
     if(!currentState.user) {
         container.classList.add('history-blurred');
@@ -6856,29 +6859,39 @@ async function loadHistory() {
     showLoading(true);
 
     try {
-        // ★修正: authFetchに変更
-        const res = await authFetch(`${API_BASE}/api/history/global`, {
+        // クエリパラメータの作成
+        const params = new URLSearchParams({
+            page: page,
+            type: type,
+            keyword: keyword,
+            dateStart: dateStart,
+            dateEnd: dateEnd
+        });
+
+        const res = await authFetch(`${API_BASE}/api/history/global?${params.toString()}`, {
             method: 'GET'
         });
         
         if(res.ok) {
             const data = await res.json();
-            globalHistory = data.global || [];
-            personalHistory = data.personal || [];
             
-            // 配列の長さではなく、サーバーから返ってきた「正確な総数」を表示する
-myCountEl.textContent = (data.personalTotal || personalHistory.length).toLocaleString() + "回";
-            // ■ 修正後（追加）
-// 履歴リストの数ではなく、正確な「累計発行本数」の値をそのまま表示する
-globalCountEl.textContent = (currentState.liveCount || globalHistory.length).toLocaleString() + "本";
+            // カウンター更新
+            myCountEl.textContent = (data.personalTotal || 0).toLocaleString() + "回";
+            globalCountEl.textContent = (currentState.liveCount || 0).toLocaleString() + "本";
+            searchResultCount.textContent = (data.totalItems || 0).toLocaleString();
 
-            historyPageState.filteredData = globalHistory;
-            historyPageState.page = 1;
-            renderHistoryWithPagination();
+            // 状態の更新
+            historyPageState.page = data.page;
+            historyPageState.totalItems = data.totalItems;
+            historyPageState.filteredData = data.global; // 現在のページのデータ
+
+            // 描画
+            renderHistoryList(data.global);
+            renderServerPagination(data.page, data.totalItems, 100);
             
         } else {
             console.error("Load failed:", res.status);
-            list.innerHTML = '<p class="text-center text-red-500">情報の取得に失敗しました。<br>再ログインをお試しください。</p>';
+            list.innerHTML = '<p class="text-center text-red-500">情報の取得に失敗しました。</p>';
         }
     } catch(e) {
         console.error(e);
