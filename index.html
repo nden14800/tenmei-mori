@@ -5212,19 +5212,17 @@ async function checkSession() {
 
         if (currentState.user) {
             // ログイン中：サーバー(KV)と同期
-            // まずローカルに保存（オフライン対策・高速化）
             localStorage.setItem(`lab_settings_${currentState.user.email}`, JSON.stringify(settings));
             
             try {
-                const res = await fetch(`${API_BASE}/api/user/settings`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                credentials: 'include', // ★追加
-                body: JSON.stringify({
-                    // email, token 削除
-                    settings: settings
-                })
-            });
+                // ★修正: authFetchに変更
+                const res = await authFetch(`${API_BASE}/api/user/settings`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        settings: settings
+                    })
+                });
                 if(!res.ok) throw new Error("Sync Failed");
                 console.log("Labs設定をクラウドに保存しました");
             } catch (e) {
@@ -5236,22 +5234,20 @@ async function checkSession() {
         }
     }
 
-    // 2. 設定を読み込み、UIに反映させる関数
+// 2. 設定を読み込み、UIに反映させる関数
     async function loadLabSettings() {
         let settings = null;
 
         if (currentState.user) {
             // ログイン中：サーバーから最新設定を取得
             try {
-                // ★修正: クエリパラメータ削除
-            const res = await fetch(`${API_BASE}/api/user/settings`, {
-                method: 'GET',
-                credentials: 'include'
-            });
+                // ★修正: authFetchに変更
+                const res = await authFetch(`${API_BASE}/api/user/settings`, {
+                    method: 'GET'
+                });
                 if (res.ok) {
                     const data = await res.json();
                     settings = data.settings;
-                    // クラウドから得た最新をローカルにもキャッシュ
                     if(settings) localStorage.setItem(`lab_settings_${currentState.user.email}`, JSON.stringify(settings));
                 }
             } catch (e) {
@@ -5267,41 +5263,34 @@ async function checkSession() {
 
         // --- UI（スイッチ）とクラスの反映 ---
         if (settings) {
-            // 雅モード
             const swNewYear = document.getElementById('switch-newyear');
             if(swNewYear) swNewYear.checked = !!settings.newyear;
             if(settings.newyear) document.body.classList.add('theme-newyear');
             else document.body.classList.remove('theme-newyear');
 
-            // 神速の祈り
             const swSpeed = document.getElementById('switch-speed');
             if(swSpeed) swSpeed.checked = !!settings.speed;
             window.labSpeedMode = !!settings.speed;
 
-            // 言霊の増幅
             const swBigText = document.getElementById('switch-bigtext');
             if(swBigText) swBigText.checked = !!settings.bigtext;
             if(settings.bigtext) document.documentElement.classList.add('lab-big-text');
             else document.documentElement.classList.remove('lab-big-text');
 
-            // 幽玄の霧
             const swMist = document.getElementById('switch-mist');
             const mistContainer = document.getElementById('mist-container');
             if(swMist) swMist.checked = !!settings.mist;
             if(settings.mist && mistContainer) mistContainer.classList.add('active');
             else if(mistContainer) mistContainer.classList.remove('active');
 
-            // 黄金の神域
             const swGold = document.getElementById('switch-gold');
             if(swGold) swGold.checked = !!settings.gold;
             if(settings.gold) document.body.classList.add('theme-gold');
             else document.body.classList.remove('theme-gold');
 
-            // 宵闇の刻
             const swDark = document.getElementById('switch-dark');
             if(swDark) swDark.checked = !!settings.dark;
         } else {
-            // 設定データがない場合の初期化
             document.body.classList.remove('theme-newyear', 'theme-gold');
             document.documentElement.classList.remove('lab-big-text');
             const mistContainer = document.getElementById('mist-container');
@@ -5309,7 +5298,6 @@ async function checkSession() {
             window.labSpeedMode = false;
         }
 
-        // 最後に共通のテーマ適用（宵闇の刻など）を呼び出す
         applyTheme();
     }
         
