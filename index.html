@@ -5942,17 +5942,28 @@ function handleInputQuiz(button, correctAnswers, questionId) {
             showView('home'); 
         }
 
-        // --- ホームアニメーション ---
+        // --- ホームアニメーション (増量・デザイン統一版) ---
         function initHomeAnimation() {
             const container = document.getElementById('home-anim-container');
-            const paperCount = 20;
+            container.innerHTML = ''; // リセット
+            const paperCount = 60; // 20 -> 60に大幅増量
+            
             for(let i=0; i<paperCount; i++) {
                 const paper = document.createElement('div');
                 paper.className = 'flying-paper';
-                paper.style.left = Math.random() * 260 + 'px';
-                paper.style.animationDelay = Math.random() * 4 + 's';
-                paper.style.animationDuration = (3 + Math.random() * 3) + 's';
-                paper.textContent = "天命乃杜";
+                
+                // 出現位置をランダムに (コンテナ幅300px内)
+                const leftPos = Math.random() * 270;
+                paper.style.left = leftPos + 'px';
+                
+                // アニメーションのバラつき設定
+                paper.style.animationDelay = (Math.random() * 5) + 's'; // 開始時間をバラす
+                paper.style.animationDuration = (4 + Math.random() * 4) + 's'; // 速度をバラす
+                
+                // 中身の文字（ランダムでバリエーションを持たせる）
+                const texts = ["天命", "御籤", "運勢", "吉凶", "祈願", "成就"];
+                paper.textContent = texts[Math.floor(Math.random() * texts.length)];
+                
                 container.appendChild(paper);
             }
         }
