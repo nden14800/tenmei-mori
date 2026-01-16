@@ -6360,11 +6360,15 @@ function handleInputQuiz(button, correctAnswers, questionId) {
             window.scrollBy({ top: 200, behavior: 'smooth' });
         }
 
-        // --- 【重要】連打制限用の変数は、関数の外側（一番上）に定義してください ---
+        // ==========================================
+    //  おみくじ機能 (連打制限・保存修正版)
+    // ==========================================
+
+    // 連打制限用のタイムスタンプ
     let lastDrawTimestamp = 0;
     const DRAW_COOLDOWN_MS = 10000; // 10秒制限
-        
-        // --- おみくじ生成ロジック（クリックイベント部分を修正） ---
+
+    // おみくじ生成 (クリックイベント修正)
     function addOmikujiBatch(count, isInitial) {
         const pool = document.getElementById('omikuji-pool');
         
@@ -6382,29 +6386,25 @@ function handleInputQuiz(button, correctAnswers, questionId) {
             stick.style.transform = `rotate(${rot}deg)`;
             stick.style.animation = `fadeInStickMargin 0.6s ease-out forwards ${i * 0.03}s`;
             
-            // ▼▼▼ 修正箇所：クリック時に制限チェックを行う ▼▼▼
             stick.onclick = function() {
-                // 現在時刻
                 const now = Date.now();
                 
-                // 前回から制限時間（10秒）経っていない場合
+                // 連打制限チェック
                 if (now - lastDrawTimestamp < DRAW_COOLDOWN_MS) {
                     const remaining = Math.ceil((DRAW_COOLDOWN_MS - (now - lastDrawTimestamp)) / 1000);
-                    
-                    // 警告アラート（またはモーダル）を表示
-                    alert(`【心を静めてお待ちください】\n\n続けてのおみくじは、心の乱れに通じます。\n呼吸を整え、あと ${remaining}秒 お待ちください。`);
-                    return; // 処理をここで止める（引かせない）
+                    // Alertの代わりにトーストを表示
+                    showToast(`続けてのおみくじは心の乱れに通じます。\n呼吸を整え、あと ${remaining}秒 お待ちください。`, 'warning', '心を静めてお待ちください');
+                    return; 
                 }
 
-                // 制限をクリアしたら時刻を更新して実行
+                // 制限クリア -> 実行
                 lastDrawTimestamp = now;
                 drawResult(this);
             };
-            // ▲▲▲ 修正ここまで ▲▲▲
-                
-                pool.appendChild(stick);
-            }
+            
+            pool.appendChild(stick);
         }
+    }
 
         // 12種類のおみくじ結果定義
         const omikujiResults = [
