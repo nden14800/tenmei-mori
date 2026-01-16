@@ -3372,6 +3372,68 @@ function escapeHtml(str) {
         
 
         {
+            id: 25,
+            title: "【重要】データベースシステムの刷新と、それに伴う制限撤廃のお知らせ",
+            date: "2026/1/16",
+            time: "23:00",
+            tag: "システム更新",
+            tagColor: "text-indigo-600",
+            borderColor: "border-indigo-500",
+            desc: "データベースを「Cloudflare D1」へ完全移行いたしました。これにより書き込み制限が撤廃され、どなたでも制限なく参拝いただけるようになりました。",
+            content: `
+                <div class="article-content">
+                    <p>いつも「運勢・天命乃杜」をご利用いただき、誠にありがとうございます。</p>
+                    <p>本日21時頃より発生しておりました「KV put() limit exceeded（書き込み制限超過）」によるエラー、およびそれに伴うデータの保存不具合につきまして、抜本的な対策を実施いたしました。</p>
+
+                    <h3>データベースの完全移行（KV → D1）</h3>
+                    <p>これまでのシステムでは、データベースに「Cloudflare Workers KV」を採用しておりましたが、無料プランにおける「1日あたり1,000回」という書き込み制限がボトルネックとなり、皆様の熱心な参拝（連打）に耐えきれずエラーが発生しておりました。</p>
+                    <p>この問題を解決するため、より高性能なSQLデータベース<strong>「Cloudflare D1」</strong>への完全移行作業を完了いたしました。</p>
+
+                    <h3>新旧システムの比較</h3>
+                    <p>今回の移行により、システムの耐久性は以下のように劇的に向上いたしました。</p>
+                    
+                    <div class="overflow-x-auto mb-8">
+                        <table class="comparison-table" style="min-width: 100%; font-size: 0.8rem;">
+                            <thead class="bg-gray-100 dark:bg-zinc-700 font-bold">
+                                <tr>
+                                    <th class="p-2 border border-gray-300">項目</th>
+                                    <th class="p-2 border border-gray-300 bg-red-50 dark:bg-red-900/10 text-red-700 dark:text-red-300">旧システム (KV)</th>
+                                    <th class="p-2 border border-gray-300 bg-blue-50 dark:bg-blue-900/10 text-blue-700 dark:text-blue-300">新システム (D1)</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td class="p-2 border border-gray-300 font-bold">書き込み制限</td>
+                                    <td class="p-2 border border-gray-300">1,000回 / 日</td>
+                                    <td class="p-2 border border-gray-300 font-bold text-green-600">100,000回 / 日 (100倍)</td>
+                                </tr>
+                                <tr>
+                                    <td class="p-2 border border-gray-300 font-bold">読み取り制限</td>
+                                    <td class="p-2 border border-gray-300">100,000回 / 日</td>
+                                    <td class="p-2 border border-gray-300 font-bold text-green-600">5,000,000回 / 日 (50倍)</td>
+                                </tr>
+                                <tr>
+                                    <td class="p-2 border border-gray-300 font-bold">データの整合性</td>
+                                    <td class="p-2 border border-gray-300">結果整合性 (ズレる)</td>
+                                    <td class="p-2 border border-gray-300 font-bold text-green-600">強整合性 (ズレない)</td>
+                                </tr>
+                                <tr>
+                                    <td class="p-2 border border-gray-300 font-bold">連打への耐性</td>
+                                    <td class="p-2 border border-gray-300">弱い (すぐパンクする)</td>
+                                    <td class="p-2 border border-gray-300 font-bold text-green-600">極めて強い</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <h3>これからの参拝について</h3>
+                    <p>この移行により、以前の記事でお伝えしていた「連打による個人記録の欠落」という問題も技術的に解決されました。また、1日の回数制限も事実上撤廃されました。</p>
+                    <p>これからは、エラー画面を気にすることなく、またデータのズレを心配することもなく、心ゆくまで何度でもおみくじを引いていただけます。</p>
+                    <p>移行に伴い、過去のデータ（カウンターや履歴）は一度リセットされましたが、ここからまた新たな歴史（轍）を皆様と共に刻んでいけることを楽しみにしております。</p>
+                </div>
+            `
+        },
+        {
             id: 24,
             title: "【技術解説】「連打参拝」における記録の整合性修正と、個人記録に関する仕様について",
             date: "2026/1/16",
