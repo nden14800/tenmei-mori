@@ -6007,7 +6007,7 @@ function handleInputQuiz(button, correctAnswers, questionId) {
             }
         }
 
-       // --- 履歴・おみくじの轍 (修正版: ページ機能対応) ---
+       // --- 履歴・おみくじの轍 (修正版: ページ機能対応 & Cookie対応) ---
 async function loadHistory() {
     const list = document.getElementById('history-list');
     const container = document.getElementById('history-container');
@@ -6015,18 +6015,18 @@ async function loadHistory() {
     const viewMode = document.getElementById('history-view-mode');
     const myCountEl = document.getElementById('personal-history-count');
     const globalCountEl = document.getElementById('global-history-count');
-    const pagination = document.getElementById('history-pagination'); // 追加
+    const pagination = document.getElementById('history-pagination');
 
     list.innerHTML = '';
-    pagination.innerHTML = ''; // リセット
+    pagination.innerHTML = '';
 
+    // ログインしていなければぼかし表示
     if(!currentState.user) {
         container.classList.add('history-blurred');
         overlay.classList.remove('hidden');
         viewMode.textContent = "";
         myCountEl.textContent = "-";
         globalCountEl.textContent = "-";
-        // 非ログイン時のダミー表示
         let html = '';
         for(let i=0; i<10; i++) {
             html += `
@@ -6050,10 +6050,10 @@ async function loadHistory() {
     showLoading(true);
 
     try {
-        // ★修正: クエリパラメータから token を削除、credentials追加
+        // ★修正ポイント: URLからtokenを削除し、credentials: 'include' を追加
         const res = await fetch(`${API_BASE}/api/history/global`, {
             method: 'GET',
-            credentials: 'include'
+            credentials: 'include' // これが「Cookieを送る」という合図です
         });
         
         if(res.ok) {
@@ -6064,17 +6064,18 @@ async function loadHistory() {
             myCountEl.textContent = personalHistory.length + "回";
             globalCountEl.textContent = globalHistory.length + "回";
 
-            // ★修正: データをセットしてページ表示関数を呼ぶ
             historyPageState.filteredData = globalHistory;
             historyPageState.page = 1;
             renderHistoryWithPagination();
             
         } else {
-            list.innerHTML = '<p class="text-center text-red-500">取得失敗</p>';
+            // 認証切れなどの場合
+            console.error("Load failed:", res.status);
+            list.innerHTML = '<p class="text-center text-red-500">情報の取得に失敗しました。<br>再ログインをお試しください。</p>';
         }
     } catch(e) {
         console.error(e);
-        list.innerHTML = '<p class="text-center text-red-500">通信エラー</p>';
+        list.innerHTML = '<p class="text-center text-red-500">通信エラーが発生しました。</p>';
     } finally {
         showLoading(false);
     }
