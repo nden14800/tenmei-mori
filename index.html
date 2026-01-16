@@ -6944,12 +6944,11 @@ async function loadHistory(page = 1) {
         });
     }
 
-        // 検索ロジック (修正版: ページ機能対応)
+        // 検索ボタン: 1ページ目をロード
 function filterHistory() {
-    const type = document.getElementById('search-type').value;
-    const keyword = document.getElementById('search-keyword').value.toLowerCase();
-    const dateStart = document.getElementById('search-date-start').value;
-    const dateEnd = document.getElementById('search-date-end').value;
+    loadHistory(1);
+}
+
 
     let targetList = globalHistory;
 
@@ -6983,17 +6982,13 @@ function filterHistory() {
     renderHistoryWithPagination();
 }
 
-// リセット機能も修正
+// リセットボタン: 条件クリアして1ページ目をロード
 function resetSearch() {
     document.getElementById('search-type').value = 'all';
     document.getElementById('search-keyword').value = '';
     document.getElementById('search-date-start').value = '';
     document.getElementById('search-date-end').value = '';
-    
-    // 全件に戻す
-    historyPageState.filteredData = globalHistory;
-    historyPageState.page = 1;
-    renderHistoryWithPagination();
+    loadHistory(1);
 }
 
         // モーダル機能は使わなくなったので削除または無効化
