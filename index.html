@@ -335,8 +335,10 @@
             width: 52px;
             height: 160px;
             background-color: #fff;
-            /* ▼▼ 変更: 2本線(double)にして結果カードと合わせる ▼▼ */
+            
+            /* ▼▼ 修正: 4pxの二重線 (結果カードと統一) ▼▼ */
             border: 4px double var(--accent-red);
+            
             box-shadow: 3px 3px 8px rgba(0,0,0,0.15);
             cursor: pointer;
             
@@ -344,8 +346,11 @@
             display: flex;
             flex-direction: column;
             align-items: center;
-            justify-content: space-between;
-            padding: 12px 0;
+            
+            /* ▼▼ 修正: 端に寄せず、均等に配置してはみ出し防止 ▼▼ */
+            justify-content: space-evenly; 
+            
+            padding: 8px 0; /* 上下の余白を確保 */
             user-select: none;
             
             /* ホバー時の挙動設定 */
@@ -360,19 +365,21 @@
         }
 
         .omikuji-stick:hover {
-            transform: scale(1.15) rotate(0deg) !important; /* 回転をリセットして拡大 */
+            transform: scale(1.15) rotate(0deg) !important;
             z-index: 100;
             box-shadow: 0 15px 30px rgba(185, 28, 28, 0.25);
-            border-color: #d4af37; /* ホバー時は金色に */
+            border-color: #d4af37;
             background-color: #fffcf5;
         }
 
         /* 札内のパーツスタイル */
         .stick-icon {
-            font-size: 1.4rem;
+            font-size: 1.2rem; /* 少し小さくしてバランス調整 */
             color: var(--accent-red);
             line-height: 1;
+            flex-shrink: 0; /* 縮まないようにする */
         }
+        
         .stick-text {
             writing-mode: vertical-rl;
             font-family: 'Zen Old Mincho', serif;
@@ -380,17 +387,25 @@
             font-weight: 900;
             color: var(--accent-red);
             letter-spacing: 0.2em;
-            white-space: nowrap; /* 改行を禁止してバランスを保つ */
-            line-height: 1;      /* 行間を詰める */
+            
+            /* ▼▼ 修正: 絶対に改行させない ▼▼ */
+            white-space: nowrap; 
+            line-height: 1;
         }
+        
         .stick-footer {
             writing-mode: vertical-rl;
             font-family: 'Zen Old Mincho', serif;
-            font-size: 0.65rem;
+            font-size: 0.6rem; /* 文字サイズを調整 */
             color: var(--accent-red);
-            opacity: 0.7;
+            opacity: 0.8;
             font-weight: bold;
             letter-spacing: 0.1em;
+            
+            /* ▼▼ 修正: 絶対に改行させない＆はみ出し防止 ▼▼ */
+            white-space: nowrap;
+            line-height: 1;
+            flex-shrink: 0;
         }
 
         /* --- カウントダウン --- */
