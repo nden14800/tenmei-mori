@@ -6866,7 +6866,8 @@ async function loadHistory() {
             globalHistory = data.global || [];
             personalHistory = data.personal || [];
             
-            myCountEl.textContent = personalHistory.length + "回";
+            // 配列の長さではなく、サーバーから返ってきた「正確な総数」を表示する
+myCountEl.textContent = (data.personalTotal || personalHistory.length).toLocaleString() + "回";
             // ■ 修正後（追加）
 // 履歴リストの数ではなく、正確な「累計発行本数」の値をそのまま表示する
 globalCountEl.textContent = (currentState.liveCount || globalHistory.length).toLocaleString() + "本";
