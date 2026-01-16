@@ -4934,6 +4934,25 @@ let historyPageState = {
             });
         }
     };
+
+        
+// --- 認証付きFetchラッパー (Cookie & Header 両対応) ---
+async function authFetch(url, options = {}) {
+    // デフォルトヘッダー設定
+    if (!options.headers) options.headers = {};
+    
+    // localStorageからトークンを取得してヘッダーに付与
+    const token = localStorage.getItem('auth_token');
+    if (token) {
+        options.headers['Authorization'] = `Bearer ${token}`;
+    }
+
+    // Cookie送信用設定
+    options.credentials = 'include';
+
+    return fetch(url, options);
+}
+
         
     // ==========================================
 //  統合された初期化処理 (window.onload) - 修正版
