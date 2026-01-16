@@ -6663,13 +6663,19 @@ function loginSuccess(user) {
 // --- ログアウト (logout) - 修正版 ---
 async function logout() {
     try {
-        await fetch(`${API_BASE}/api/auth/logout`, {
-            method: 'POST',
-            credentials: 'include' // Cookie削除リクエスト
+        // ★修正: authFetchに変更
+        await authFetch(`${API_BASE}/api/auth/logout`, {
+            method: 'POST'
         });
     } catch(e) { console.error(e); }
 
+    // ★追加: トークンを削除
+    localStorage.removeItem('auth_token');
+    
+    // 既存のユーザー情報削除
+    localStorage.removeItem('omikuji_user');
     currentState.user = null;
+    
     loadLabSettings().then(() => {
         location.reload();
     });
