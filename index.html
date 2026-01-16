@@ -1482,6 +1482,67 @@
             100% { transform: scale(0.8); opacity: 0.5; }
         }
 
+        /* --- トースト通知 (右からスライド・すりガラス) --- */
+        #toast-container {
+            position: fixed;
+            top: 80px; /* サイドバーやヘッダーを避ける位置 */
+            right: 20px;
+            z-index: 10000;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            pointer-events: none; /* 下の要素をクリック可能に */
+        }
+        
+        .toast-notification {
+            min-width: 300px;
+            max-width: 400px;
+            padding: 16px 20px;
+            border-radius: 12px;
+            background: rgba(255, 255, 255, 0.85); /* ライトモードのすりガラスベース */
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+            border-left: 6px solid;
+            transform: translateX(120%); /* 初期状態は画面外(右) */
+            transition: transform 0.4s cubic-bezier(0.2, 0.8, 0.2, 1), opacity 0.4s;
+            pointer-events: auto;
+            font-family: 'Zen Old Mincho', serif;
+            display: flex;
+            align-items: flex-start;
+            opacity: 0;
+        }
+        
+        .dark .toast-notification {
+            background: rgba(30, 30, 30, 0.85); /* ダークモード */
+            color: #f0f0f0;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+        }
+
+        /* 表示時のクラス */
+        .toast-visible {
+            transform: translateX(0) !important;
+            opacity: 1 !important;
+        }
+
+        .toast-icon { font-size: 1.5rem; margin-right: 12px; }
+        .toast-content { flex: 1; }
+        .toast-title { font-weight: bold; margin-bottom: 4px; font-size: 0.95rem; }
+        .toast-msg { font-size: 0.85rem; opacity: 0.9; line-height: 1.5; }
+
+        /* タイプ別カラー */
+        .toast-info { border-color: #3b82f6; } /* 青 */
+        .toast-info .toast-icon { color: #3b82f6; }
+        
+        .toast-success { border-color: #10b981; } /* 緑 */
+        .toast-success .toast-icon { color: #10b981; }
+        
+        .toast-warning { border-color: #f59e0b; } /* 黄 */
+        .toast-warning .toast-icon { color: #f59e0b; }
+        
+        .toast-error { border-color: #ef4444; } /* 赤 */
+        .toast-error .toast-icon { color: #ef4444; }
+
     </style>
 </head>
 <body>
