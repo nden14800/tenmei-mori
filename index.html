@@ -276,7 +276,7 @@
             100% { transform: rotate(360deg); }
         }
 
-        /* --- ホーム画面 --- */
+        /* --- ホーム画面 (札デザイン統一版) --- */
         .home-circle-container {
             width: 300px;
             height: 300px;
@@ -285,37 +285,42 @@
             margin: 20px auto;
             position: relative;
             overflow: hidden;
-            background: rgba(128,128,128,0.1);
+            background: rgba(255,255,255,0.5); /* 少し明るく */
         }
         .flying-paper {
             position: absolute;
-            width: 30px;
-            height: 60px;
-            background: var(--omi-paper);
-            border: 1px solid #ccc;
+            width: 24px;  /* 以前より細長く、比率を札に合わせる */
+            height: 70px;
+            background-color: #fff;
+            border: 1px solid var(--accent-red); /* 赤枠 (カクカク) */
+            box-shadow: 1px 1px 3px rgba(0,0,0,0.1);
             opacity: 0;
-            animation: paperFly 4s infinite linear;
+            animation: paperFly 5s infinite linear; /* 時間を少し長くして優雅に */
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 8px;
+            font-family: 'Zen Old Mincho', serif;
             writing-mode: vertical-rl;
-            color: #b91c1c;
+            color: var(--accent-red);
+            font-weight: bold;
+            font-size: 9px;
+            user-select: none;
+            z-index: 1;
         }
         @keyframes paperFly {
             0% { transform: translateY(350px) rotate(0deg); opacity: 0; }
-            20% { opacity: 1; }
-            80% { opacity: 1; }
+            10% { opacity: 1; }
+            90% { opacity: 1; }
             100% { transform: translateY(-50px) rotate(360deg); opacity: 0; }
         }
 
-        /* --- おみくじ選択画面 (画像風レイアウト修正版) --- */
+        /* --- おみくじ選択画面 (修正・統一版) --- */
         .omikuji-pool {
             display: flex;
             flex-wrap: wrap;
             justify-content: center;
             align-content: flex-start;
-            gap: 15px; /* 札同士の間隔 */
+            gap: 15px;
             padding-bottom: 200px;
             width: 100%;
             max-width: 1200px;
@@ -323,66 +328,66 @@
         }
 
         .omikuji-stick {
-            position: relative; /* absoluteから変更して自動整列させる */
-            width: 50px;
-            height: 160px; /* 少し縦長に */
-            background-color: #fff; /* 真っ白 */
-            border: 2px solid var(--accent-red); /* 赤い枠線 */
-            /* カクカクにするためborder-radiusは削除 */
-            box-shadow: 2px 4px 6px rgba(0,0,0,0.15); /* 紙の厚みを感じる影 */
+            /* 共通カードスタイル */
+            position: relative;
+            width: 52px;
+            height: 160px;
+            background-color: #fff;
+            border: 2px solid var(--accent-red);
+            box-shadow: 3px 3px 8px rgba(0,0,0,0.15);
             cursor: pointer;
-            transition: transform 0.2s, box-shadow 0.2s;
+            
+            /* 中身の配置 */
             display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: space-between;
-            padding: 10px 0;
+            padding: 12px 0;
             user-select: none;
-            /* 独自の揺らぎを与えるための初期状態 */
+            
+            /* ホバー時の挙動設定 */
+            transition: transform 0.2s cubic-bezier(0.25, 0.46, 0.45, 0.94), box-shadow 0.2s, border-color 0.2s;
             transform-origin: center center;
         }
 
-        /* 札のデザイン詳細 */
-        .omikuji-stick::before {
-            /* 上部の家紋風マーク */
-            content: '\F3E4'; /* Bootstrap Icons の flower1 */
-            font-family: 'bootstrap-icons';
-            color: var(--accent-red);
-            font-size: 1.2rem;
-        }
-        
-        .omikuji-stick::after {
-            /* 下部のサイト名 */
-            content: '天命乃杜';
-            writing-mode: vertical-rl;
-            font-family: 'Zen Old Mincho', serif;
-            font-size: 0.7rem;
-            color: var(--accent-red);
-            font-weight: bold;
-            letter-spacing: 0.1em;
-        }
-
-        /* 中央の文字 */
-        .omikuji-stick-text {
-            writing-mode: vertical-rl;
-            font-family: 'Zen Old Mincho', serif;
-            font-size: 1rem;
-            font-weight: 900;
-            color: var(--accent-red);
-            letter-spacing: 0.3em;
+        /* アニメーション競合対策: transformを使わず margin-top で出現させる */
+        @keyframes fadeInStickMargin {
+            from { opacity: 0; margin-top: 30px; }
+            to { opacity: 1; margin-top: 0; }
         }
 
         .omikuji-stick:hover {
-            transform: scale(1.1) rotate(0deg) !important; /* ホバー時は正位置で拡大 */
-            z-index: 50;
-            box-shadow: 0 10px 25px rgba(185, 28, 28, 0.3);
-            border-color: #d4af37; /* ホバー時に枠が金になる演出 */
+            transform: scale(1.15) rotate(0deg) !important; /* 回転をリセットして拡大 */
+            z-index: 100;
+            box-shadow: 0 15px 30px rgba(185, 28, 28, 0.25);
+            border-color: #d4af37; /* ホバー時は金色に */
+            background-color: #fffcf5;
         }
 
-        /* 登場アニメーション */
-        @keyframes fadeInStick {
-            from { opacity: 0; transform: translateY(20px); }
-            to { opacity: 1; transform: translateY(0); }
+        /* 札内のパーツスタイル */
+        .stick-icon {
+            font-size: 1.4rem;
+            color: var(--accent-red);
+            line-height: 1;
+        }
+        .stick-text {
+            writing-mode: vertical-rl;
+            font-family: 'Zen Old Mincho', serif;
+            font-size: 1.1rem;
+            font-weight: 900;
+            color: var(--accent-red);
+            letter-spacing: 0.2em;
+            white-space: nowrap; /* 改行を禁止してバランスを保つ */
+            line-height: 1;      /* 行間を詰める */
+        }
+        .stick-footer {
+            writing-mode: vertical-rl;
+            font-family: 'Zen Old Mincho', serif;
+            font-size: 0.65rem;
+            color: var(--accent-red);
+            opacity: 0.7;
+            font-weight: bold;
+            letter-spacing: 0.1em;
         }
 
         /* --- カウントダウン --- */
