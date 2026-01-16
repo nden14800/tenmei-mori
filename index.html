@@ -5791,10 +5791,10 @@ function handleInputQuiz(button, correctAnswers, questionId) {
                 if(currentState.user) {
                     showLoading(true);
                     try {
-                        const res = await fetch(`${API_BASE}/api/draw`, {
+                        // ★修正: authFetchに変更
+                        const res = await authFetch(`${API_BASE}/api/draw`, {
                             method: 'POST',
                             headers: { 'Content-Type': 'application/json' },
-                            credentials: 'include', // ★追加
                             body: JSON.stringify({ 
                                 result: resultData.type,
                                 poem: resultData.poem,
