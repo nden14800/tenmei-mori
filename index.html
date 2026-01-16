@@ -3096,6 +3096,64 @@ function escapeHtml(str) {
         .replace(/'/g, '&#039;');
 }
 
+        // ==========================================
+    //  通知システム (Alert廃止・トースト実装)
+    // ==========================================
+    
+    // トースト表示関数
+    window.showToast = function(message, type = 'info', title = '') {
+        let container = document.getElementById('toast-container');
+        if (!container) {
+            container = document.createElement('div');
+            container.id = 'toast-container';
+            document.body.appendChild(container);
+        }
+
+        // タイトル自動設定
+        if (!title) {
+            if (type === 'success') title = '成功';
+            else if (type === 'warning') title = 'ご注意';
+            else if (type === 'error') title = 'エラー';
+            else title = 'お知らせ';
+        }
+
+        // アイコン決定
+        let iconClass = 'bi-info-circle-fill';
+        if (type === 'success') iconClass = 'bi-check-circle-fill';
+        if (type === 'warning') iconClass = 'bi-exclamation-triangle-fill';
+        if (type === 'error') iconClass = 'bi-x-circle-fill';
+
+        const toast = document.createElement('div');
+        toast.className = `toast-notification toast-${type}`;
+        toast.innerHTML = `
+            <div class="toast-icon"><i class="bi ${iconClass}"></i></div>
+            <div class="toast-content">
+                <div class="toast-title">${title}</div>
+                <div class="toast-msg">${message.replace(/\n/g, '<br>')}</div>
+            </div>
+        `;
+
+        container.appendChild(toast);
+
+        // アニメーション用 (少し遅らせてクラス付与)
+        requestAnimationFrame(() => {
+            toast.classList.add('toast-visible');
+        });
+
+        // 自動消去 (5秒後)
+        setTimeout(() => {
+            toast.classList.remove('toast-visible');
+            toast.addEventListener('transitionend', () => {
+                toast.remove();
+            });
+        }, 5000);
+    };
+
+    // 既存のalertを上書き（互換性維持のため）
+    window.alert = function(msg) {
+        showToast(msg, 'info');
+    };
+
        // ==========================================
     //  設定: サーバーメンテナンスモード
     // ==========================================
