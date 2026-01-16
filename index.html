@@ -6122,33 +6122,43 @@ function handleInputQuiz(button, correctAnswers, questionId) {
             window.scrollBy({ top: 200, behavior: 'smooth' });
         }
 
-        function addOmikujiBatch(count, isInitial) {
-            const pool = document.getElementById('omikuji-pool');
+        // --- おみくじ生成ロジック（クリックイベント部分を修正） ---
+    function addOmikujiBatch(count, isInitial) {
+        const pool = document.getElementById('omikuji-pool');
+        
+        for(let i=0; i<count; i++) {
+            const stick = document.createElement('div');
+            stick.className = 'omikuji-stick';
             
-            for(let i=0; i<count; i++) {
-                const stick = document.createElement('div');
-                stick.className = 'omikuji-stick';
+            stick.innerHTML = `
+                <div class="stick-icon"><i class="bi bi-flower1"></i></div>
+                <div class="stick-text">おみくじ</div>
+                <div class="stick-footer">天命乃杜</div>
+            `;
+            
+            const rot = Math.random() * 12 - 6; 
+            stick.style.transform = `rotate(${rot}deg)`;
+            stick.style.animation = `fadeInStickMargin 0.6s ease-out forwards ${i * 0.03}s`;
+            
+            // ▼▼▼ 修正箇所：クリック時に制限チェックを行う ▼▼▼
+            stick.onclick = function() {
+                // 現在時刻
+                const now = Date.now();
                 
-                // デザイン構成: アイコン、メイン文字、サイト名
-                // アイコンは結果画面と同じ bi-flower1 を使用
-                stick.innerHTML = `
-                    <div class="stick-icon"><i class="bi bi-flower1"></i></div>
-                    <div class="stick-text">おみくじ</div>
-                    <div class="stick-footer">天命乃杜</div>
-                `;
-                
-                // ランダムな傾き (±6度程度で自然に)
-                const rot = Math.random() * 12 - 6; 
-                
-                // 回転を適用
-                stick.style.transform = `rotate(${rot}deg)`;
-                
-                // アニメーション適用 (margin-topを操作するものに変更したため、transform: rotate が消えない)
-                stick.style.animation = `fadeInStickMargin 0.6s ease-out forwards ${i * 0.03}s`;
-                
-                stick.onclick = function() {
-                    drawResult(this);
-                };
+                // 前回から制限時間（10秒）経っていない場合
+                if (now - lastDrawTimestamp < DRAW_COOLDOWN_MS) {
+                    const remaining = Math.ceil((DRAW_COOLDOWN_MS - (now - lastDrawTimestamp)) / 1000);
+                    
+                    // 警告アラート（またはモーダル）を表示
+                    alert(`【心を静めてお待ちください】\n\n続けてのおみくじは、心の乱れに通じます。\n呼吸を整え、あと ${remaining}秒 お待ちください。`);
+                    return; // 処理をここで止める（引かせない）
+                }
+
+                // 制限をクリアしたら時刻を更新して実行
+                lastDrawTimestamp = now;
+                drawResult(this);
+            };
+            // ▲▲▲ 修正ここまで ▲▲▲
                 
                 pool.appendChild(stick);
             }
