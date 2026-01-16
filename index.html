@@ -3167,6 +3167,80 @@ function escapeHtml(str) {
         .replace(/'/g, '&#039;');
 }
 
+        // ==========================================
+    //  通知システム (Windows 11 Fluent Design版)
+    // ==========================================
+    
+    window.showToast = function(message, type = 'info', title = '') {
+        let container = document.getElementById('toast-container');
+        if (!container) {
+            container = document.createElement('div');
+            container.id = 'toast-container';
+            document.body.appendChild(container);
+        }
+
+        // タイトルの自動設定
+        if (!title) {
+            if (type === 'success') title = '完了';
+            else if (type === 'warning') title = '注意';
+            else if (type === 'error') title = '問題が発生しました';
+            else title = 'お知らせ';
+        }
+
+        // アイコン設定
+        let iconClass = 'bi-info-circle';
+        if (type === 'success') iconClass = 'bi-check-circle-fill';
+        if (type === 'warning') iconClass = 'bi-exclamation-triangle-fill';
+        if (type === 'error') iconClass = 'bi-x-circle-fill';
+
+        const toast = document.createElement('div');
+        toast.className = `toast-notification toast-${type}`;
+        
+        // HTML構造
+        toast.innerHTML = `
+            <div class="toast-icon-area"><i class="bi ${iconClass}"></i></div>
+            <div class="toast-content">
+                <div class="toast-title">${title}</div>
+                <div class="toast-msg">${message.replace(/\n/g, '<br>')}</div>
+            </div>
+            <button class="toast-close" onclick="this.parentElement.remove()"><i class="bi bi-x"></i></button>
+            <div class="toast-progress"></div>
+        `;
+
+        container.appendChild(toast);
+
+        // プログレスバーのアニメーション
+        const progressBar = toast.querySelector('.toast-progress');
+        const duration = 5000; // 5秒
+        
+        progressBar.animate([
+            { transform: 'scaleX(1)' },
+            { transform: 'scaleX(0)' }
+        ], {
+            duration: duration,
+            easing: 'linear',
+            fill: 'forwards'
+        });
+
+        // 表示アニメーション（少し遅らせて発火）
+        requestAnimationFrame(() => {
+            toast.classList.add('toast-visible');
+        });
+
+        // 自動消去
+        setTimeout(() => {
+            toast.classList.remove('toast-visible');
+            toast.addEventListener('transitionend', () => {
+                if(toast.parentElement) toast.remove();
+            });
+        }, duration);
+    };
+
+    // 既存のalertを上書き
+    window.alert = function(msg) {
+        showToast(msg, 'info');
+    };
+
        // ==========================================
     //  設定: サーバーメンテナンスモード
     // ==========================================
