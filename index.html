@@ -6566,7 +6566,9 @@ async function loadHistory() {
             personalHistory = data.personal || [];
             
             myCountEl.textContent = personalHistory.length + "回";
-            globalCountEl.textContent = globalHistory.length + "回";
+            // ■ 修正後（追加）
+// 履歴リストの数ではなく、正確な「累計発行本数」の値をそのまま表示する
+globalCountEl.textContent = (currentState.liveCount || globalHistory.length).toLocaleString() + "本";
 
             historyPageState.filteredData = globalHistory;
             historyPageState.page = 1;
