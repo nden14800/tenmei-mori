@@ -7182,15 +7182,14 @@ async function logout() {
         }
 
         // サーバー同期部分のみ修正
-    fetch(`${API_BASE}/api/favorites`, { 
-        method: 'POST', 
-        headers: {'Content-Type': 'application/json'}, 
-        credentials: 'include', // ★追加
-        body: JSON.stringify({
-            // email, token は削除
-            favorites: favoriteList
-        }) 
-    }).catch(e => console.error("Sync Error:", e));
+        // ★修正: authFetchに変更
+        authFetch(`${API_BASE}/api/favorites`, { 
+            method: 'POST', 
+            headers: {'Content-Type': 'application/json'}, 
+            body: JSON.stringify({
+                favorites: favoriteList
+            }) 
+        }).catch(e => console.error("Sync Error:", e));
         
         renderFavorites();
     }
