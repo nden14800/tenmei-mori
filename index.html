@@ -6154,6 +6154,10 @@ function handleInputQuiz(button, correctAnswers, questionId) {
             window.scrollBy({ top: 200, behavior: 'smooth' });
         }
 
+        // --- 【重要】連打制限用の変数は、関数の外側（一番上）に定義してください ---
+    let lastDrawTimestamp = 0;
+    const DRAW_COOLDOWN_MS = 10000; // 10秒制限
+        
         // --- おみくじ生成ロジック（クリックイベント部分を修正） ---
     function addOmikujiBatch(count, isInitial) {
         const pool = document.getElementById('omikuji-pool');
@@ -6269,10 +6273,6 @@ function handleInputQuiz(button, correctAnswers, questionId) {
             const shuffled = [...list].sort(() => 0.5 - Math.random());
             return shuffled.slice(0, count);
         }
-
-        // --- 【追加】連打制限用の変数定義 ---
-    let lastDrawTimestamp = 0;
-    const DRAW_COOLDOWN_MS = 10000; // 制限時間：10秒（ここはお好みで調整してください）
 
         function drawResult(element) {
             const overlay = document.getElementById('countdown-overlay');
