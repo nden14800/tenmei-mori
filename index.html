@@ -309,44 +309,80 @@
             100% { transform: translateY(-50px) rotate(360deg); opacity: 0; }
         }
 
-        /* --- おみくじ選択画面 --- */
+        /* --- おみくじ選択画面 (画像風レイアウト修正版) --- */
         .omikuji-pool {
-            position: relative;
-            width: 100%;
-            min-height: 100vh;
-            overflow-y: visible;
-            perspective: 1000px;
-            padding-bottom: 200px;
-        }
-        .omikuji-stick {
-            position: absolute;
-            width: 50px;
-            height: 140px;
-            background-color: var(--omi-paper);
-            border: 1px solid #ccc;
-            box-shadow: 3px 3px 8px rgba(0,0,0,0.2);
-            cursor: pointer;
-            transition: transform 0.3s, box-shadow 0.3s;
             display: flex;
-            align-items: center;
+            flex-wrap: wrap;
             justify-content: center;
-            font-size: 0.9rem;
-            font-weight: bold;
-            font-family: 'Zen Old Mincho', serif;
-            writing-mode: vertical-rl;
-            color: var(--accent-red);
+            align-content: flex-start;
+            gap: 15px; /* 札同士の間隔 */
+            padding-bottom: 200px;
+            width: 100%;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .omikuji-stick {
+            position: relative; /* absoluteから変更して自動整列させる */
+            width: 50px;
+            height: 160px; /* 少し縦長に */
+            background-color: #fff; /* 真っ白 */
+            border: 2px solid var(--accent-red); /* 赤い枠線 */
+            /* カクカクにするためborder-radiusは削除 */
+            box-shadow: 2px 4px 6px rgba(0,0,0,0.15); /* 紙の厚みを感じる影 */
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: space-between;
+            padding: 10px 0;
             user-select: none;
-            border-radius: 4px;
+            /* 独自の揺らぎを与えるための初期状態 */
+            transform-origin: center center;
         }
+
+        /* 札のデザイン詳細 */
+        .omikuji-stick::before {
+            /* 上部の家紋風マーク */
+            content: '\F3E4'; /* Bootstrap Icons の flower1 */
+            font-family: 'bootstrap-icons';
+            color: var(--accent-red);
+            font-size: 1.2rem;
+        }
+        
+        .omikuji-stick::after {
+            /* 下部のサイト名 */
+            content: '天命乃杜';
+            writing-mode: vertical-rl;
+            font-family: 'Zen Old Mincho', serif;
+            font-size: 0.7rem;
+            color: var(--accent-red);
+            font-weight: bold;
+            letter-spacing: 0.1em;
+        }
+
+        /* 中央の文字 */
+        .omikuji-stick-text {
+            writing-mode: vertical-rl;
+            font-family: 'Zen Old Mincho', serif;
+            font-size: 1rem;
+            font-weight: 900;
+            color: var(--accent-red);
+            letter-spacing: 0.3em;
+        }
+
         .omikuji-stick:hover {
-            transform: scale(1.15) !important;
+            transform: scale(1.1) rotate(0deg) !important; /* ホバー時は正位置で拡大 */
             z-index: 50;
-            box-shadow: 0 15px 30px rgba(0,0,0,0.4);
-            background-color: #fff;
+            box-shadow: 0 10px 25px rgba(185, 28, 28, 0.3);
+            border-color: #d4af37; /* ホバー時に枠が金になる演出 */
         }
-        @keyframes slideInRandom {
-            from { transform: translateY(100vh) rotate(0deg); opacity: 0; }
-            to { opacity: 1; }
+
+        /* 登場アニメーション */
+        @keyframes fadeInStick {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
         }
 
         /* --- カウントダウン --- */
