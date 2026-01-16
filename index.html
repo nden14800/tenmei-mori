@@ -1482,6 +1482,138 @@
             100% { transform: scale(0.8); opacity: 0.5; }
         }
 
+        /* --- Windows 11風 Fluent Design 通知 --- */
+    #toast-container {
+        position: fixed;
+        bottom: 24px; /* Windows 11に合わせて右下に配置（上の方が良ければ top: 80px に戻してください） */
+        right: 24px;
+        z-index: 99999;
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+        pointer-events: none;
+    }
+
+    .toast-notification {
+        position: relative;
+        min-width: 340px;
+        max-width: 420px;
+        padding: 16px;
+        border-radius: 8px; /* Win11の標準R */
+        
+        /* Fluent Design: Acrylic Material (Light) */
+        background: rgba(255, 255, 255, 0.75);
+        backdrop-filter: blur(20px) saturate(180%);
+        -webkit-backdrop-filter: blur(20px) saturate(180%);
+        
+        /* 極細の境界線と影 */
+        border: 1px solid rgba(0, 0, 0, 0.05);
+        box-shadow: 0 8px 16px rgba(0, 0, 0, 0.14);
+        
+        /* アニメーション */
+        transform: translateX(120%);
+        opacity: 0;
+        transition: all 0.4s cubic-bezier(0.1, 0.9, 0.2, 1); /* Win11風のバネのような動き */
+        
+        pointer-events: auto;
+        display: flex;
+        align-items: flex-start;
+        overflow: hidden;
+        
+        /* フォント設定 */
+        font-family: 'Segoe UI', 'Zen Old Mincho', sans-serif;
+        color: #1a1a1a;
+    }
+
+    /* ダークモード時のAcrylic (Dark) */
+    .dark .toast-notification {
+        background: rgba(32, 32, 32, 0.7);
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        color: #ffffff;
+        box-shadow: 0 8px 16px rgba(0, 0, 0, 0.4);
+    }
+
+    /* 表示状態 */
+    .toast-visible {
+        transform: translateX(0) !important;
+        opacity: 1 !important;
+    }
+
+    /* アイコンエリア */
+    .toast-icon-area {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 32px;
+        height: 32px;
+        margin-right: 12px;
+        flex-shrink: 0;
+        font-size: 1.2rem;
+    }
+
+    /* テキストエリア */
+    .toast-content {
+        flex: 1;
+        padding-right: 24px; /* 閉じるボタンのスペース */
+    }
+
+    .toast-title {
+        font-weight: 600;
+        font-size: 0.95rem;
+        margin-bottom: 4px;
+        line-height: 1.4;
+    }
+
+    .toast-msg {
+        font-size: 0.85rem;
+        opacity: 0.8;
+        line-height: 1.5;
+    }
+
+    /* 閉じるボタン */
+    .toast-close {
+        position: absolute;
+        top: 12px;
+        right: 12px;
+        width: 24px;
+        height: 24px;
+        border: none;
+        background: transparent;
+        color: inherit;
+        opacity: 0.5;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 4px;
+        transition: all 0.2s;
+    }
+    .toast-close:hover {
+        background: rgba(0,0,0,0.05);
+        opacity: 1;
+    }
+    .dark .toast-close:hover {
+        background: rgba(255,255,255,0.1);
+    }
+
+    /* タイムバー（プログレスバー） */
+    .toast-progress {
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        height: 3px;
+        background: currentColor;
+        opacity: 0.3;
+        width: 100%;
+        transform-origin: left;
+    }
+
+    /* タイプ別の色定義 */
+    .toast-info .toast-icon-area, .toast-info .toast-progress { color: #0078d4; } /* Windows Blue */
+    .toast-success .toast-icon-area, .toast-success .toast-progress { color: #107c10; } /* Windows Green */
+    .toast-warning .toast-icon-area, .toast-warning .toast-progress { color: #d83b01; } /* Windows Orange */
+    .toast-error .toast-icon-area, .toast-error .toast-progress { color: #c50f1f; } /* Windows Red */
+
     </style>
 </head>
 <body>
