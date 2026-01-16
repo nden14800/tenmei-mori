@@ -6010,7 +6010,7 @@ function handleInputQuiz(button, correctAnswers, questionId) {
             } catch(e) { console.error(e); }
         }
 
-        // --- おみくじロジック ---
+        // --- おみくじロジック (画像風・敷き詰めレイアウト版) ---
         function startOmikuji() {
             showView('draw');
         }
@@ -6018,40 +6018,40 @@ function handleInputQuiz(button, correctAnswers, questionId) {
         function resetOmikujiPool() {
             const pool = document.getElementById('omikuji-pool');
             pool.innerHTML = '';
-            addOmikujiBatch(100, true); 
+            // 最初は画面を埋めるくらい多めに生成
+            addOmikujiBatch(40, true); 
         }
 
         function addOmikuji() {
-            addOmikujiBatch(50, false);
-            const section = document.getElementById('view-draw');
-            section.scrollBy({ top: 400, behavior: 'smooth' });
+            addOmikujiBatch(20, false);
+            // Flexboxレイアウトなので、追加すれば自動的に下に伸びる
+            // 少しだけスクロールして追加されたことを気付かせる
+            window.scrollBy({ top: 200, behavior: 'smooth' });
         }
 
         function addOmikujiBatch(count, isInitial) {
             const pool = document.getElementById('omikuji-pool');
-            let lastBottom = 0;
-            if (!isInitial && pool.childElementCount > 0) {
-                lastBottom = pool.childElementCount * 25; 
-            }
-
+            
             for(let i=0; i<count; i++) {
                 const stick = document.createElement('div');
-                stick.className = 'omikuji-stick shadow-md rounded';
-                stick.textContent = `天命乃杜`; 
+                stick.className = 'omikuji-stick';
                 
-                const left = Math.random() * 90 + 5; 
-                let top;
-                if (isInitial) {
-                    top = (i * 20) + (Math.random() * 100); 
-                } else {
-                    top = lastBottom + (i * 20) + (Math.random() * 100);
-                }
-                const rot = Math.random() * 360;
+                // 中央の文字要素を作成（CSS擬似要素だけでなく、メイン文字を入れるため）
+                const textSpan = document.createElement('span');
+                textSpan.className = 'omikuji-stick-text';
+                textSpan.textContent = "おみくじ";
+                stick.appendChild(textSpan);
                 
-                stick.style.left = `calc(${left}% - 25px)`;
-                stick.style.top = `${top}px`;
+                // ランダムな傾きを与える (±8度くらいで自然なバラつきを)
+                const rot = Math.random() * 16 - 8; 
+                
+                // スタイル適用
+                // 注意: hover時のscaleリセットと競合しないよう、変数を活用するのがベストだが
+                // 今回はシンプルにinline styleで設定し、CSSの !important でホバーを制御
                 stick.style.transform = `rotate(${rot}deg)`;
-                stick.style.animation = `slideInRandom 0.5s ease forwards ${Math.random() * 0.3}s`;
+                
+                // 登場アニメーション (少しずつずらす)
+                stick.style.animation = `fadeInStick 0.5s ease forwards ${i * 0.05}s`;
                 
                 stick.onclick = function() {
                     drawResult(this);
