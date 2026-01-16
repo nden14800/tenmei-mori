@@ -6362,23 +6362,12 @@ function handleInputQuiz(button, correctAnswers, questionId) {
             luckyArea.appendChild(uBox);
             outer.appendChild(luckyArea);
 
-            // 8. フッター部分の修正 (注釈・リンク付き)
+            // 8. フッター部分（紙の中は名前とQRコードのみにする）
             if (withFooter) {
                 const footer = document.createElement('div');
                 footer.className = 'result-footer-info accent-border';
                 
-                // レイアウト調整: 縦並び（上段:情報/QR、下段:注釈）に変更
-                footer.style.display = 'flex';
-                footer.style.flexDirection = 'column';
-                footer.style.gap = '12px'; // 上下間隔
-
-                // --- 上段: 名前・日付・QRコード ---
-                const topRow = document.createElement('div');
-                topRow.style.width = '100%';
-                topRow.style.display = 'flex';
-                topRow.style.justifyContent = 'space-between';
-                topRow.style.alignItems = 'flex-end';
-
+                // --- 名前・日付 ---
                 const metaDiv = document.createElement('div');
                 metaDiv.style.textAlign = 'left';
                 
@@ -6391,33 +6380,14 @@ function handleInputQuiz(button, correctAnswers, questionId) {
                     <div class="result-date accent-text">参拝日: ${dateStr}</div>
                 `;
 
+                // --- QRコード ---
                 const qrDiv = document.createElement('div');
                 qrDiv.className = 'result-qr-container';
                 const qrTarget = document.createElement('div');
                 qrDiv.appendChild(qrTarget);
                 
-                topRow.appendChild(metaDiv);
-                topRow.appendChild(qrDiv);
-
-                // --- 下段: 注釈・リンク ---
-                const noteDiv = document.createElement('div');
-                noteDiv.className = 'accent-text';
-                noteDiv.style.fontSize = '0.6rem'; // 少し小さめに
-                noteDiv.style.textAlign = 'center';
-                noteDiv.style.width = '100%';
-                noteDiv.style.opacity = '0.85';
-                noteDiv.style.lineHeight = '1.6';
-                noteDiv.style.borderTop = '1px dashed currentColor'; // 区切り線
-                noteDiv.style.paddingTop = '8px';
-
-                // ここでリンクを設定
-                noteDiv.innerHTML = `
-                    おみくじの結果は、必ずしもその内容通りになるとは限りません。<br>
-                    詳細は<span style="text-decoration: underline; cursor: pointer; font-weight: bold;" onclick="showView('about'); window.scrollTo(0,0);">「当サイトについて・利用規約」</span>をご確認ください。
-                `;
-
-                footer.appendChild(topRow);
-                footer.appendChild(noteDiv);
+                footer.appendChild(metaDiv);
+                footer.appendChild(qrDiv);
                 outer.appendChild(footer);
 
                 setTimeout(() => {
