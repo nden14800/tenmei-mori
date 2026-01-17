@@ -8807,7 +8807,7 @@ function changeHistoryPage(newPage) {
             }
         }
 
-        // プロフィール描画 (修正版：ボタン判定強化)
+        // プロフィール描画 (修正版：フォロー解除ボタンの明示化)
         function renderProfilePage(data) {
             showView('profile-public');
             
@@ -8824,30 +8824,30 @@ function changeHistoryPage(newPage) {
             const date = new Date(data.joinDate);
             const joined = `${date.getFullYear()}/${date.getMonth()+1}/${date.getDate()}`;
 
-            // --- ボタン出し分けロジックの修正 ---
+            // --- ボタン出し分けロジック ---
             let actionBtnHtml = '';
             
-            // 自分かどうかの判定（サーバー判定 OR クライアント判定）
+            // 自分かどうか（サーバー判定 または ローカル判定）
             const isSelf = data.isMe || (currentState.user && currentState.user.username === data.username);
 
             if (isSelf) {
-                // 自分自身の場合：編集ボタン
+                // パターンA: 自分自身 (編集ボタン)
                 actionBtnHtml = `
                     <button onclick="openEditProfileModal('${escapeHtml(data.bio)}', '${escapeHtml(data.title)}')" 
                             class="px-4 py-2 bg-indigo-600 text-white rounded-lg font-bold text-sm hover:opacity-90 shadow-md">
                         <i class="bi bi-pencil-square"></i> プロフィール編集
                     </button>`;
             } else if (currentState.user) {
-                // 他人かつログイン中
+                // パターンB: 他人かつログイン中
                 if (data.isFollowing) {
-                    // 既にフォローしている場合：解除ボタン（赤色系のボーダーで警告色）
+                    // 既にフォローしている場合 -> 【フォロー解除ボタン (赤)】
                     actionBtnHtml = `
                         <button onclick="toggleFollow('${data.username}', 'unfollow')" 
-                                class="px-4 py-2 bg-white dark:bg-zinc-800 text-red-600 border border-red-500 rounded-lg font-bold text-sm hover:bg-red-50 dark:hover:bg-red-900/20 transition">
+                                class="px-4 py-2 bg-red-50 text-red-600 border border-red-200 rounded-lg font-bold text-sm hover:bg-red-100 hover:shadow-md transition">
                             <i class="bi bi-person-dash-fill"></i> フォロー解除
                         </button>`;
                 } else {
-                    // フォローしていない場合：フォローボタン（黒/白）
+                    // まだフォローしていない場合 -> 【フォローするボタン (黒)】
                     actionBtnHtml = `
                         <button onclick="toggleFollow('${data.username}', 'follow')" 
                                 class="px-4 py-2 bg-black text-white dark:bg-white dark:text-black rounded-lg font-bold text-sm hover:opacity-80 shadow-md transition">
@@ -8855,7 +8855,7 @@ function changeHistoryPage(newPage) {
                         </button>`;
                 }
             } else {
-                // 未ログイン
+                // パターンC: 未ログイン
                 actionBtnHtml = `<button onclick="showView('auth')" class="px-4 py-2 bg-gray-500 text-white rounded-lg font-bold text-sm hover:opacity-80">ログインしてフォロー</button>`;
             }
 
