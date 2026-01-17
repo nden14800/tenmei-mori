@@ -498,26 +498,28 @@
             color: #ffffff !important; /* ハンコ内の文字：白 */
         }
 
-        /* 2. 大吉: 画像の「リアルな繊維の凹凸」と「濃厚な山吹色」を完全再現 */
+        /* 2. 大吉: 画像の「和紙の繊維感」と「濃厚な山吹色」を完全再現 */
         .style-daikichi {
-            /* 画像に近い、赤みを帯びた濃厚な山吹色 */
-            background-color: #ffb300;
+            /* 画像に近い、少し赤みを含んだ濃い黄金色（山吹色） */
+            background-color: #faa61a;
             
-            /* 【改良版】照明効果(Lighting)を用いて、和紙の繊維のうねりと陰影を計算する特殊フィルター */
-            /* baseFrequency='0.03' -> 粒ではなく「繊維」に見えるよう模様を大きく設定 */
-            /* surfaceScale='4' -> 凹凸を深くして、ザラザラ感を強調 */
-            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 400 400' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='real-washi'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.03' numOctaves='5' result='noise'/%3E%3CfeDiffuseLighting in='noise' lighting-color='white' surfaceScale='4'%3E%3CfeDistantLight azimuth='45' elevation='50'/%3E%3C/feDiffuseLighting%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23real-washi)' opacity='0.5'/%3E%3C/svg%3E");
+            /* 【修正ポイント】
+               baseFrequencyを '0.5' から '0.03' に大幅に下げました。
+               これにより、細かい砂嵐ではなく、和紙特有の「繊維の絡まり」や「紙のムラ」のような
+               大きくて自然な模様が浮かび上がります。
+            */
+            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 600 600' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='washi'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.03' numOctaves='5' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23washi)' opacity='0.5'/%3E%3C/svg%3E");
             
-            /* 陰影を背景色に柔らかく焼き付けて、紙の質感として一体化させる */
-            background-blend-mode: soft-light;
+            /* 背景色と繊維模様をなじませて、紙の質感（テクスチャ）にする */
+            background-blend-mode: overlay;
             
-            border: 8px double #fff; /* 外枠 */
-            color: #b91c1c; /* 文字色 */
+            border: 8px double #fff; /* 枠線はそのまま */
+            color: #b91c1c; /* 文字色は赤 */
         }
         
         .style-daikichi .result-circle-box {
             background-color: transparent;
-            border: 2px solid #b91c1c; /* ハンコの線 */
+            border: 2px solid #b91c1c;
             color: #b91c1c !important;
         }
 
