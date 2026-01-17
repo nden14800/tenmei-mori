@@ -8950,27 +8950,30 @@ function changeHistoryPage(newPage) {
             finally { showLoading(false); }
         }
 
-        // --- フォロー機能 (アクション指定対応版) ---
+        // --- フォロー機能 (修正版) ---
         async function toggleFollow(username, action) {
             if(!currentState.user) return showView('auth');
             
-            // ボタンを一時的に無効化するなどのUI処理を入れると親切ですが、今回はローディングで対応
+            // ローディング表示
             showLoading(true);
+            
             try {
                 const res = await authFetch(`${API_BASE}/api/user/follow`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ 
                         targetUsername: username, 
-                        action: action // 'follow' または 'unfollow' を送信
+                        action: action // 'follow' か 'unfollow' を送信
                     })
                 });
                 
                 if(res.ok) {
-                    // 成功したら画面をリロードして最新状態（ボタンの切り替わり含む）を反映
-                    loadUserProfile(username);
+                    // 成功通知
                     const msg = action === 'follow' ? 'フォローしました' : 'フォローを解除しました';
                     showToast(msg, 'success');
+                    
+                    // 【重要】プロフィールを再読み込みして、ボタン表示を更新する
+                    await loadUserProfile(username);
                 } else {
                     const data = await res.json();
                     alert(data.error || "操作に失敗しました");
