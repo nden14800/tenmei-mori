@@ -489,56 +489,74 @@
             opacity: 0.8;
         }
         
-        /* --- 運勢ハンコ（円形・縦書き）の新デザイン --- */
+        /* --- 運勢ハンコ（最新デザイン） --- */
         .result-circle-box {
-            width: 160px; /* 少し小さくして余白を確保 */
+            width: 160px;
             height: 160px;
             border-radius: 50%;
             display: flex;
             align-items: center;
             justify-content: center;
             margin: 0 auto 15px;
-            border: none !important; /* 二重線を廃止 */
-            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
             overflow: hidden;
-            padding: 10px; /* 内側にスペース */
+            padding: 10px;
+            box-sizing: border-box;
+            border: 3px solid transparent; /* デフォルト */
         }
 
-        /* 運勢文字のスタイル（縦書き） */
         .result-kanji-main {
-            writing-mode: vertical-rl; /* 縦書き */
-            text-orientation: upright; /* 文字を正立させる */
-            font-size: 3.2rem; /* 少し小さめに調整 */
+            writing-mode: vertical-rl;
+            text-orientation: upright;
             font-weight: 900;
             line-height: 1;
-            letter-spacing: -0.05em; /* 3文字（末小吉）でも収まるように微調整 */
+            letter-spacing: -0.05em;
             display: block;
         }
 
-        /* スタイル1: 標準（大吉・大凶以外）- 赤塗りつぶし・白文字 */
+        /* --- スタイル別定義 --- */
+
+        /* 1. 標準（中吉・小吉・吉など）: 二重線カード、赤塗りハンコ、白文字 */
+        .style-normal {
+            background-color: #fffcf2;
+            border: 8px double #b91c1c; /* カード外枠：赤二重線 */
+            color: #333;
+        }
         .style-normal .result-circle-box {
-            background-color: #b91c1c;
-            color: #ffffff !important;
+            background-color: #b91c1c; /* ハンコ塗りつぶし：赤 */
+            color: #ffffff !important; /* 文字：白 */
         }
 
-        /* スタイル2: 大吉 - 黄金ザラザラ塗りつぶし・赤文字 */
-        .style-daikichi .result-circle-box {
+        /* 2. 大吉: 黄金カード、白二重線、背景同色ハンコ、赤縁、赤文字 */
+        .style-daikichi {
             background-color: #f3c845;
-            /* ザラザラしたテクスチャの重畳 */
-            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='0.4'/%3E%3C/svg%3E");
-            color: #b91c1c !important;
+            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.25'/%3E%3C/svg%3E");
+            border: 8px double #fff; /* カード外枠：白二重線 */
+            color: #3e1e00;
+        }
+        .style-daikichi .result-circle-box {
+            background-color: transparent; /* 背景と同色に見せる */
+            border: 4px solid #b91c1c; /* ハンコの縁：赤 */
+            color: #b91c1c !important; /* 文字：赤 */
         }
 
-        /* スタイル3: 大凶 - 黒塗りつぶし・白文字 */
+        /* 3. 大凶: 白カード、黒二重線、黒ハンコ（縁のみ）、黒文字 */
+        .style-daikyo {
+            background-color: #ffffff; /* 背景：白 */
+            border: 8px double #000000; /* カード外枠：黒二重線 */
+            color: #000;
+        }
         .style-daikyo .result-circle-box {
-            background-color: #000000;
-            color: #ffffff !important;
+            background-color: transparent;
+            border: 4px solid #000000; /* ハンコ：黒縁 */
+            color: #000000 !important; /* 文字：黒 */
         }
+        /* 大凶の時は他のアクセントカラーも黒に統一 */
+        .style-daikyo .accent-border { border-color: #000 !important; }
+        .style-daikyo .accent-text { color: #000 !important; }
+        .style-daikyo .red-text { color: #000 !important; }
 
-        /* 結果カード内の左右余白調整 */
         .result-card-outer {
-            padding-left: 40px !important;
-            padding-right: 40px !important;
+            padding: 30px 40px !important;
         }
         
         .result-label-sub {
