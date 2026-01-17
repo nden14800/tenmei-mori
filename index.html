@@ -489,22 +489,58 @@
             opacity: 0.8;
         }
         
+        /* --- 運勢ハンコ（円形・縦書き）の新デザイン --- */
         .result-circle-box {
-            width: 200px;
-            height: 200px;
-            border: 4px solid currentColor;
+            width: 160px; /* 少し小さくして余白を確保 */
+            height: 160px;
             border-radius: 50%;
             display: flex;
             align-items: center;
             justify-content: center;
-            margin: 0 auto 10px;
-            background: rgba(255,255,255,0.1);
+            margin: 0 auto 15px;
+            border: none !important; /* 二重線を廃止 */
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+            overflow: hidden;
+            padding: 10px; /* 内側にスペース */
         }
+
+        /* 運勢文字のスタイル（縦書き） */
         .result-kanji-main {
-            font-size: 6rem;
+            writing-mode: vertical-rl; /* 縦書き */
+            text-orientation: upright; /* 文字を正立させる */
+            font-size: 3.2rem; /* 少し小さめに調整 */
             font-weight: 900;
             line-height: 1;
+            letter-spacing: -0.05em; /* 3文字（末小吉）でも収まるように微調整 */
+            display: block;
         }
+
+        /* スタイル1: 標準（大吉・大凶以外）- 赤塗りつぶし・白文字 */
+        .style-normal .result-circle-box {
+            background-color: #b91c1c;
+            color: #ffffff !important;
+        }
+
+        /* スタイル2: 大吉 - 黄金ザラザラ塗りつぶし・赤文字 */
+        .style-daikichi .result-circle-box {
+            background-color: #f3c845;
+            /* ザラザラしたテクスチャの重畳 */
+            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='0.4'/%3E%3C/svg%3E");
+            color: #b91c1c !important;
+        }
+
+        /* スタイル3: 大凶 - 黒塗りつぶし・白文字 */
+        .style-daikyo .result-circle-box {
+            background-color: #000000;
+            color: #ffffff !important;
+        }
+
+        /* 結果カード内の左右余白調整 */
+        .result-card-outer {
+            padding-left: 40px !important;
+            padding-right: 40px !important;
+        }
+        
         .result-label-sub {
             font-size: 1.2rem;
             margin-bottom: 20px;
