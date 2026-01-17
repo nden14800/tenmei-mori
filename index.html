@@ -9554,37 +9554,52 @@ function changeHistoryPage(newPage) {
         }
 
         
-// ==========================================
-    //  参拝掲示板システム (定型文・リアクション対応版)
+
+    // ==========================================
+    //  参拝掲示板システム (X風・定型文選択式)
     // ==========================================
     
-    // 定型文データ（スパム防止のためこれのみ許可）
     const BOARD_PHRASES = {
-        "挨拶": ["本日の参拝に参りました。", "おはようございます。", "今週も良い一週間になりますように。", "心を静めて、祈ります。", "皆様に幸多からんことを。"],
+        "挨拶": ["おはようございます。", "参拝に参りました。", "今週も良い一週間になりますように。", "お疲れ様です。", "静かな夜の参拝。", "皆様に幸多からんことを。"],
         "祈願": ["家内安全を祈ります。", "良縁に恵まれますように。", "試験合格！全力を尽くします。", "健康第一。平穏無事を願います。", "大願成就。夢が叶いますように。", "世界が平和でありますように。"],
-        "感謝": ["神恩感謝。いつもありがとうございます。", "無事に一日を終えられました。", "良いことがありました。感謝。", "ピンチを乗り越えました。お守りください。", "すべての巡り合わせに感謝します。"],
-        "おみくじ": ["大吉でした！精進します。", "凶でした...気を引き締めます。", "神託を胸に刻みます。", "待ち人、早く来て。", "意外な結果に驚いています。", "厳しいお言葉、真摯に受け止めます。"],
-        "決意": ["明日から本気出します。", "迷いを断ち切りました。", "新しい一歩を踏み出します。", "自分を信じて進みます。", "過去は振り返りません。"]
+        "感謝": ["神恩感謝。いつもありがとうございます。", "無事に一日を終えられました。", "良いことがありました。感謝。", "ピンチを乗り越えました。お守りください。", "すべての巡り合わせに感謝します。", "美味しいご飯に感謝。"],
+        "おみくじ": ["大吉でした！精進します。", "凶でした...気を引き締めます。", "神託を胸に刻みます。", "待ち人、早く来て。", "意外な結果に驚いています。", "厳しいお言葉、真摯に受け止めます。", "この結果を信じて進みます。"],
+        "独り言": ["明日から本気出します。", "迷いを断ち切りました。", "新しい一歩を踏み出します。", "自分を信じて進みます。", "お腹すいた...", "今日はよく眠れそう。", "雨の杜も風情がありますね。"]
     };
 
     const BoardSystem = {
         selectedCategory: "挨拶",
         selectedContent: null,
         attachedOmikuji: null,
+        isInitialized: false,
 
-        // 初期化（カテゴリボタン生成など）
+        // 初期化（タブとボタン生成）
+        // ★修正: 画面が開かれるたびに確実に実行されるように改善
         init: function() {
-            const catContainer = document.getElementById('phrase-categories');
-            if(!catContainer) return; // 存在しないページでのエラー防止
+            if(this.isInitialized) return; // 既に生成済みならスキップ
 
+            const catContainer = document.getElementById('phrase-categories');
+            if(!catContainer) return;
+
+            // カテゴリタブ生成
             catContainer.innerHTML = Object.keys(BOARD_PHRASES).map((cat, i) => `
                 <button onclick="BoardSystem.selectCategory('${cat}')" 
-                    class="px-4 py-1 rounded-full text-sm font-bold whitespace-nowrap transition border ${i===0 ? 'bg-red-600 text-white border-red-600' : 'bg-white dark:bg-zinc-800 text-gray-600 border-gray-300'}">
+                    class="px-4 py-1.5 rounded-full text-sm font-bold whitespace-nowrap transition border ${i===0 ? 'bg-black dark:bg-white text-white dark:text-black border-transparent' : 'bg-transparent text-gray-500 border-gray-200 dark:border-zinc-700 hover:bg-gray-100 dark:hover:bg-zinc-800'}">
                     ${cat}
                 </button>
             `).join('');
             
             this.selectCategory("挨拶");
+            
+            // 自分のアイコンを表示
+            if(currentState.user) {
+                // 仮のアイコン処理（プロフィール実装に合わせて調整可）
+                // 本来は user_profiles から取るが、簡易的に
+                const myIcon = document.getElementById('my-post-icon');
+                if(myIcon) myIcon.innerHTML = `<i class="bi bi-person-circle text-2xl"></i>`;
+            }
+
+            this.isInitialized = true;
         },
 
         // カテゴリ切り替え
@@ -9595,17 +9610,17 @@ function changeHistoryPage(newPage) {
             const btns = document.getElementById('phrase-categories').querySelectorAll('button');
             btns.forEach(b => {
                 if(b.innerText === cat) {
-                    b.className = "px-4 py-1 rounded-full text-sm font-bold whitespace-nowrap transition border bg-red-600 text-white border-red-600 shadow";
+                    b.className = "px-4 py-1.5 rounded-full text-sm font-bold whitespace-nowrap transition border bg-black dark:bg-white text-white dark:text-black border-transparent";
                 } else {
-                    b.className = "px-4 py-1 rounded-full text-sm font-bold whitespace-nowrap transition border bg-white dark:bg-zinc-800 text-gray-600 border-gray-300 hover:bg-gray-100";
+                    b.className = "px-4 py-1.5 rounded-full text-sm font-bold whitespace-nowrap transition border bg-transparent text-gray-500 border-gray-200 dark:border-zinc-700 hover:bg-gray-100 dark:hover:bg-zinc-800";
                 }
             });
 
-            // グリッド更新
+            // グリッド更新（タグ風ボタン）
             const grid = document.getElementById('phrase-grid');
             grid.innerHTML = BOARD_PHRASES[cat].map(text => `
                 <button onclick="BoardSystem.selectPhrase('${text}')" 
-                    class="text-left text-sm p-3 rounded border bg-white dark:bg-zinc-800 hover:bg-red-50 dark:hover:bg-red-900/30 transition border-gray-200 dark:border-gray-700">
+                    class="px-3 py-1.5 rounded-full border border-indigo-200 dark:border-indigo-900 text-indigo-600 dark:text-indigo-300 text-sm hover:bg-indigo-50 dark:hover:bg-indigo-900/30 transition text-left">
                     ${text}
                 </button>
             `).join('');
@@ -9617,7 +9632,7 @@ function changeHistoryPage(newPage) {
             const display = document.getElementById('selected-phrase-display');
             display.textContent = text;
             display.classList.remove('text-gray-400');
-            display.classList.add('text-gray-800', 'dark:text-white', 'font-bold');
+            display.classList.add('text-gray-900', 'dark:text-white');
             
             // 送信ボタン有効化
             const btn = document.getElementById('board-submit-btn');
@@ -9625,11 +9640,10 @@ function changeHistoryPage(newPage) {
             btn.classList.remove('opacity-50', 'cursor-not-allowed');
         },
 
-        // おみくじ結果からシェアする（画面遷移付き）
+        // おみくじ結果からシェアする
         shareResultToBoard: function() {
             if(!currentState.lastResult) return alert("結果がありません");
             
-            // データをセット
             this.attachedOmikuji = {
                 type: currentState.lastResult.type,
                 poem: currentState.lastResult.poem
@@ -9641,13 +9655,16 @@ function changeHistoryPage(newPage) {
             // プレビュー表示
             const preview = document.getElementById('post-omikuji-preview');
             const content = document.getElementById('post-omikuji-content');
-            content.innerHTML = `【${this.attachedOmikuji.type}】 ${this.attachedOmikuji.poem}`;
+            
+            content.innerHTML = `
+                <div class="font-bold text-lg mb-1">【${this.attachedOmikuji.type}】</div>
+                <div class="font-serif text-gray-600 dark:text-gray-300">"${this.attachedOmikuji.poem}"</div>
+            `;
             preview.classList.remove('hidden');
             
             // 「おみくじ」カテゴリを自動選択
             this.selectCategory("おみくじ");
             
-            // ページ上部へ
             window.scrollTo(0, 0);
         },
 
@@ -9663,10 +9680,9 @@ function changeHistoryPage(newPage) {
 
             const btn = document.getElementById('board-submit-btn');
             btn.disabled = true;
-            btn.innerHTML = '<span class="spinner-border spinner-border-sm"></span> 奉納中...';
+            btn.innerHTML = '<span class="spinner-border spinner-border-sm"></span>';
 
             try {
-                // authFetch は既存の認証付きfetch関数を使用
                 const res = await authFetch(`${API_BASE}/api/board/post`, {
                     method: 'POST',
                     headers: {'Content-Type': 'application/json'},
@@ -9677,47 +9693,238 @@ function changeHistoryPage(newPage) {
                     })
                 });
 
-                if(res.ok) {
-                    showToast("掲示板に奉納しました", "success");
+                if(res.status === 429) {
+                    const data = await res.json();
+                    showToast(data.message, "warning", "連投制限");
+                } else if(res.ok) {
+                    showToast("奉納しました", "success");
                     this.resetForm();
-                    this.load(1);
+                    this.load(1); // リロード
                 } else {
                     const data = await res.json();
-                    showToast(data.message || "奉納に失敗しました", "warning");
+                    showToast(data.message || "エラーが発生しました", "error");
                 }
             } catch(e) {
                 console.error(e);
                 alert("通信エラーが発生しました");
             } finally {
                 btn.disabled = false;
-                btn.innerHTML = '<i class="bi bi-send-fill"></i> 奉納する';
+                btn.innerHTML = '奉納する';
             }
         },
 
         resetForm: function() {
             this.selectedContent = null;
             this.attachedOmikuji = null;
-            document.getElementById('selected-phrase-display').textContent = "（上のリストから選んでください）";
-            document.getElementById('selected-phrase-display').classList.add('text-gray-400');
-            document.getElementById('board-submit-btn').classList.add('opacity-50', 'cursor-not-allowed');
+            const display = document.getElementById('selected-phrase-display');
+            display.textContent = "言の葉を選んで奉納...";
+            display.classList.remove('text-gray-900', 'dark:text-white');
+            display.classList.add('text-gray-400');
+            document.getElementById('board-submit-btn').disabled = true;
             document.getElementById('post-omikuji-preview').classList.add('hidden');
         },
 
         // タイムライン読み込み
         load: async function(page = 1) {
             const list = document.getElementById('board-list');
-            if(page === 1) list.innerHTML = '<div class="text-center py-8"><div class="spinner-border text-red-500" role="status"></div> 読み込み中...</div>';
+            if(page === 1) list.innerHTML = '<div class="text-center py-10"><div class="spinner-border text-indigo-500" role="status"></div></div>';
 
             try {
-                // ハイブリッド認証用にヘッダーをつける（自分のリアクション判定のため）
                 const res = await authFetch(`${API_BASE}/api/board/list?page=${page}`, { method: 'GET' });
-                
                 if(res.ok) {
                     const data = await res.json();
                     this.renderList(data);
                 }
             } catch(e) { console.error(e); }
         },
+
+        // X風リスト描画
+        renderList: function(data) {
+            const list = document.getElementById('board-list');
+            const pagination = document.getElementById('board-pagination');
+            
+            if(data.posts.length === 0) {
+                list.innerHTML = '<div class="text-center text-gray-500 py-10">まだ奉納はありません。<br>最初の一言を奉納しましょう。</div>';
+                pagination.innerHTML = '';
+                return;
+            }
+
+            list.innerHTML = data.posts.map(post => {
+                const date = new Date(post.created_at);
+                // X風の日付表示（2時間前、1月18日など）
+                const now = new Date();
+                const diffMs = now - date;
+                const diffMins = Math.floor(diffMs / 60000);
+                const diffHours = Math.floor(diffMins / 60);
+                
+                let timeStr = "";
+                if(diffMins < 1) timeStr = "今";
+                else if(diffMins < 60) timeStr = `${diffMins}分`;
+                else if(diffHours < 24) timeStr = `${diffHours}時間`;
+                else timeStr = `${date.getMonth()+1}月${date.getDate()}日`;
+
+                // おみくじ引用 (引用リポスト風デザイン)
+                let omikujiHtml = '';
+                if(post.omikuji_data) {
+                    const omi = JSON.parse(post.omikuji_data);
+                    omikujiHtml = `
+                        <div class="mt-3 border border-gray-200 dark:border-zinc-700 rounded-xl overflow-hidden cursor-pointer hover:bg-gray-50 dark:hover:bg-white/5 transition">
+                            <div class="p-3">
+                                <div class="flex items-center gap-1 mb-1">
+                                    <div class="w-4 h-4 rounded-full bg-red-100 flex items-center justify-center text-[10px] text-red-600"><i class="bi bi-flower1"></i></div>
+                                    <span class="font-bold text-sm">運勢・天命乃杜</span>
+                                    <span class="text-gray-500 text-xs">@tenmei_omikuji</span>
+                                </div>
+                                <div class="text-sm">
+                                    運勢は<span class="font-bold">【${omi.type}】</span>でした。<br>
+                                    <span class="font-serif text-gray-600 dark:text-gray-400">"${omi.poem || ''}"</span>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                }
+
+                // アイコン色
+                const iconColorMap = { 'gray':'#9ca3af', 'red':'#ef4444', 'blue':'#3b82f6', 'green':'#10b981', 'yellow':'#eab308', 'purple':'#a855f7', 'pink':'#ec4899', 'black':'#1f2937' };
+                const iconColor = iconColorMap[post.user_color] || '#9ca3af';
+
+                // 認証バッジ
+                let verifiedBadge = '';
+                if(post.user_verified === 'gold') verifiedBadge = '<i class="bi bi-patch-check-fill text-yellow-500 ml-1" title="運営"></i>';
+                else if(post.user_verified === 'blue') verifiedBadge = '<i class="bi bi-patch-check-fill text-blue-500 ml-1" title="公式"></i>';
+
+                // リアクション
+                const heartClass = post.my_reaction ? 'bi-heart-fill text-pink-600' : 'bi-heart';
+                const countClass = post.my_reaction ? 'text-pink-600' : 'text-gray-500';
+
+                return `
+                    <article class="p-4 hover:bg-gray-50 dark:hover:bg-zinc-900 transition cursor-pointer border-b border-gray-100 dark:border-zinc-800">
+                        <div class="flex gap-3">
+                            <!-- アバター -->
+                            <div class="flex-shrink-0 cursor-pointer" onclick="loadUserProfile('${post.username}')">
+                                <div class="w-10 h-10 rounded-full flex items-center justify-center text-xl bg-white border" style="color:${iconColor}; border-color:${iconColor}">
+                                    <i class="bi ${post.user_icon || 'bi-person'}"></i>
+                                </div>
+                            </div>
+                            
+                            <div class="flex-1 min-w-0">
+                                <!-- ヘッダー -->
+                                <div class="flex items-baseline justify-between">
+                                    <div class="flex items-center gap-1 overflow-hidden">
+                                        <span class="font-bold text-gray-900 dark:text-gray-100 hover:underline cursor-pointer truncate" onclick="loadUserProfile('${post.username}')">
+                                            ${escapeHtml(post.username)}
+                                        </span>
+                                        ${verifiedBadge}
+                                        <span class="text-gray-500 text-sm truncate">@${escapeHtml(post.username)}</span>
+                                        <span class="text-gray-500 text-sm mx-1">·</span>
+                                        <span class="text-gray-500 text-sm hover:underline">${timeStr}</span>
+                                    </div>
+                                    <!-- メニュー（ダミー） -->
+                                    <button class="text-gray-400 hover:bg-blue-50 dark:hover:bg-blue-900/30 hover:text-blue-500 rounded-full w-8 h-8 flex items-center justify-center transition">
+                                        <i class="bi bi-three-dots"></i>
+                                    </button>
+                                </div>
+
+                                <!-- 本文 -->
+                                <div class="text-gray-900 dark:text-gray-100 mt-0.5 text-[15px] leading-relaxed whitespace-pre-wrap font-medium">
+                                    ${escapeHtml(post.content)}
+                                </div>
+
+                                <!-- おみくじ引用 -->
+                                ${omikujiHtml}
+
+                                <!-- アクションバー (X風) -->
+                                <div class="flex justify-between items-center mt-3 max-w-md">
+                                    <!-- コメント (ダミー) -->
+                                    <button class="group flex items-center gap-1 text-gray-500 hover:text-blue-500 transition text-sm">
+                                        <div class="w-8 h-8 rounded-full flex items-center justify-center group-hover:bg-blue-50 dark:group-hover:bg-blue-900/30 transition">
+                                            <i class="bi bi-chat"></i>
+                                        </div>
+                                        <span>0</span>
+                                    </button>
+                                    
+                                    <!-- リポスト (ダミー) -->
+                                    <button class="group flex items-center gap-1 text-gray-500 hover:text-green-500 transition text-sm">
+                                        <div class="w-8 h-8 rounded-full flex items-center justify-center group-hover:bg-green-50 dark:group-hover:bg-green-900/30 transition">
+                                            <i class="bi bi-repeat"></i>
+                                        </div>
+                                        <span>0</span>
+                                    </button>
+
+                                    <!-- いいね (機能あり) -->
+                                    <button onclick="BoardSystem.react(${post.id}, this)" class="group flex items-center gap-1 transition text-sm ${countClass}">
+                                        <div class="w-8 h-8 rounded-full flex items-center justify-center group-hover:bg-pink-50 dark:group-hover:bg-pink-900/30 transition">
+                                            <i class="bi ${heartClass} group-hover:text-pink-600 transition-transform group-active:scale-125"></i>
+                                        </div>
+                                        <span class="count group-hover:text-pink-600">${post.reaction_count}</span>
+                                    </button>
+
+                                    <!-- シェア (ダミー) -->
+                                    <button class="group flex items-center gap-1 text-gray-500 hover:text-blue-500 transition text-sm">
+                                        <div class="w-8 h-8 rounded-full flex items-center justify-center group-hover:bg-blue-50 dark:group-hover:bg-blue-900/30 transition">
+                                            <i class="bi bi-share"></i>
+                                        </div>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </article>
+                `;
+            }).join('');
+
+            // ページネーション
+            if(data.total > data.perPage) {
+                const totalPages = Math.ceil(data.total / data.perPage);
+                pagination.innerHTML = `
+                    <div class="flex gap-4">
+                        <button onclick="BoardSystem.load(${data.page - 1})" class="px-4 py-2 border rounded-full hover:bg-gray-100 dark:hover:bg-zinc-800 disabled:opacity-50" ${data.page === 1 ? 'disabled' : ''}>前へ</button>
+                        <button onclick="BoardSystem.load(${data.page + 1})" class="px-4 py-2 border rounded-full hover:bg-gray-100 dark:hover:bg-zinc-800 disabled:opacity-50" ${data.page === totalPages ? 'disabled' : ''}>次へ</button>
+                    </div>
+                `;
+            } else {
+                pagination.innerHTML = "";
+            }
+        },
+
+        // リアクション (楽観的更新)
+        react: async function(postId, btn) {
+            if(!currentState.user) return showView('auth');
+
+            const icon = btn.querySelector('i');
+            const countSpan = btn.querySelector('.count');
+            let currentCount = parseInt(countSpan.innerText);
+            
+            const isLiked = icon.classList.contains('bi-heart-fill');
+            
+            // UI即時反映
+            if(isLiked) {
+                icon.className = 'bi bi-heart group-hover:text-pink-600';
+                btn.classList.remove('text-pink-600');
+                btn.classList.add('text-gray-500');
+                countSpan.innerText = Math.max(0, currentCount - 1);
+            } else {
+                icon.className = 'bi bi-heart-fill text-pink-600';
+                btn.classList.remove('text-gray-500');
+                btn.classList.add('text-pink-600');
+                // ポップアニメーション
+                icon.animate([{transform:'scale(1)'}, {transform:'scale(1.5)'}, {transform:'scale(1)'}], {duration: 300});
+                countSpan.innerText = currentCount + 1;
+            }
+
+            try {
+                // authFetchは既存のものを使用
+                const res = await authFetch(`${API_BASE}/api/board/react`, {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({ post_id: postId })
+                });
+                if(res.ok) {
+                    const data = await res.json();
+                    countSpan.innerText = data.count; // サーバー値と同期
+                }
+            } catch(e) { console.error(e); }
+        }
+    };
 
         // 描画
         renderList: function(data) {
