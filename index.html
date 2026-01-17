@@ -8916,7 +8916,7 @@ function changeHistoryPage(newPage) {
             }
         }
 
-       // プロフィール描画 (シンプル版：フォロー数表示削除)
+       // プロフィール描画 (最終版：編集ボタンのみ表示)
         function renderProfilePage(data) {
             showView('profile-public');
             const container = document.getElementById('public-profile-content');
@@ -8940,47 +8940,20 @@ function changeHistoryPage(newPage) {
                 verifiedHtml = `<span class="verified-badge verified-blue" onclick="openVerifiedModal('blue', '${escapeHtml(data.username)}')"><i class="bi bi-patch-check-fill text-xl"></i></span>`;
             }
 
-            // --- ボタン・メニュー制御 ---
-            let actionAreaHtml = ''; 
+            // --- ボタン出し分けロジック (編集ボタンのみ) ---
+            let actionBtnHtml = '';
             
+            // 自分かどうか（サーバー判定 または ローカル判定）
             const isMe = data.isMe || (currentState.user && currentState.user.username === data.username);
-            const isLoggedIn = !!currentState.user;
 
             if (isMe) {
-                // 自分: 編集ボタン
-                actionAreaHtml = `
+                // 自分自身の場合のみ「編集ボタン」を表示
+                // 他人の場合は何も表示しない (空文字のまま)
+                actionBtnHtml = `
                     <button onclick="openEditProfileModal('${escapeHtml(data.bio)}', '${escapeHtml(data.title)}', '${data.icon}', '${data.color}')" 
                             class="px-4 py-2 bg-indigo-600 text-white rounded-lg font-bold text-sm hover:opacity-90 shadow-md">
                         <i class="bi bi-pencil-square"></i> 編集
                     </button>`;
-            } else if (isLoggedIn) {
-                // 他人: 3点リーダーメニュー
-                const followAction = data.isFollowing ? 'unfollow' : 'follow';
-                const followText   = data.isFollowing ? 'フォロー解除' : 'フォローする';
-                const followIcon   = data.isFollowing ? 'bi-person-dash' : 'bi-person-plus';
-                const followColor  = data.isFollowing ? 'text-red-500' : 'text-blue-500';
-
-                const blockAction = data.isBlocked ? 'unblock' : 'block';
-                const blockText   = data.isBlocked ? 'ブロック解除' : 'ブロックする';
-                
-                actionAreaHtml = `
-                    <div class="profile-menu-container">
-                        <button class="profile-menu-btn" onclick="toggleProfileMenu()">
-                            <i class="bi bi-three-dots"></i>
-                        </button>
-                        <div id="profile-menu-dropdown" class="profile-menu-dropdown">
-                            <button class="menu-item ${followColor}" onclick="toggleFollow('${data.username}', '${followAction}')">
-                                <i class="bi ${followIcon}"></i> ${followText}
-                            </button>
-                            <button class="menu-item danger" onclick="toggleBlock('${data.username}', '${blockAction}')">
-                                <i class="bi bi-slash-circle"></i> ${blockText}
-                            </button>
-                        </div>
-                    </div>
-                `;
-            } else {
-                // 未ログイン
-                actionAreaHtml = `<button onclick="showView('auth')" class="px-4 py-2 bg-gray-500 text-white rounded-lg font-bold text-sm hover:opacity-80">ログイン</button>`;
             }
 
             // アイコン色設定
@@ -9009,10 +8982,9 @@ function changeHistoryPage(newPage) {
                                 <span class="bg-yellow-100 text-yellow-800 px-2 py-0.5 rounded mr-2">${escapeHtml(data.title)}</span>
                                 <i class="bi bi-calendar-event"></i> 開始: ${joined}
                             </p>
-                            <!-- ▼▼▼ ここにあった数字表示（profile-social-stats）を削除しました ▼▼▼ -->
                         </div>
                         <div class="mt-4 md:mt-0 relative">
-                            ${actionAreaHtml}
+                            ${actionBtnHtml}
                         </div>
                     </div>
 
