@@ -9376,6 +9376,56 @@ function changeHistoryPage(newPage) {
             
             modal.style.display = 'flex';
         }
+
+        // --- 実績一覧表示機能 ---
+        async function showAllBadgesModal() {
+            const modal = document.getElementById('all-badges-modal');
+            const listEl = document.getElementById('all-badges-list');
+            
+            modal.style.display = 'flex';
+            listEl.innerHTML = '<div class="col-span-full text-center py-8"><div class="spinner-border text-yellow-500" role="status"></div> 読み込み中...</div>';
+
+            try {
+                // マスターデータを取得
+                const res = await fetch(`${API_BASE}/api/badges`);
+                if(res.ok) {
+                    const data = await res.json();
+                    const allBadges = data.badges;
+                    
+                    // 自分の持っているバッジID（renderProfilePageで保存したもの、なければ空）
+                    const myOwnedIds = window.myBadges || [];
+
+                    let html = '';
+                    allBadges.forEach(b => {
+                        const isUnlocked = myOwnedIds.includes(b.id);
+                        // 未獲得ならグレーアウト
+                        const opacity = isUnlocked ? 'opacity-100' : 'opacity-50 grayscale';
+                        const statusIcon = isUnlocked ? '<i class="bi bi-check-circle-fill text-green-500"></i>' : '<i class="bi bi-lock-fill text-gray-400"></i>';
+                        const bgClass = isUnlocked ? 'bg-yellow-50 dark:bg-yellow-900/20 border-yellow-200' : 'bg-gray-100 dark:bg-zinc-800 border-gray-300';
+                        
+                        html += `
+                            <div class="flex items-center gap-4 p-4 rounded-lg border ${bgClass} ${opacity} transition hover:opacity-100">
+                                <div class="w-12 h-12 flex-shrink-0 flex items-center justify-center rounded-full bg-white dark:bg-black text-2xl text-yellow-600 shadow-sm">
+                                    <i class="bi ${b.icon}"></i>
+                                </div>
+                                <div class="flex-1">
+                                    <div class="flex justify-between items-start">
+                                        <h4 class="font-bold text-sm">${b.name}</h4>
+                                        ${statusIcon}
+                                    </div>
+                                    <p class="text-xs text-gray-600 dark:text-gray-400 mt-1">${b.description}</p>
+                                    <p class="text-[10px] text-gray-400 mt-1 font-mono">条件: ${b.condition_type} >= ${b.condition_value}</p>
+                                </div>
+                            </div>
+                        `;
+                    });
+                    listEl.innerHTML = html;
+                }
+            } catch(e) {
+                console.error(e);
+                listEl.innerHTML = '<p class="text-center text-red-500">読み込みに失敗しました</p>';
+            }
+        }
             
     </script>
 </body>
