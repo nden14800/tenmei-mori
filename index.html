@@ -6172,6 +6172,10 @@ async function checkSession() {
             const data = await res.json();
             if (data.loggedIn) {
                 currentState.user = { username: data.username, email: data.email };
+                // window.onload内の最後の方に追加
+    if (currentState.user) {
+        checkGoshuin();
+    }
                 
                 // ★追加: サーバーからトークンが返ってきたら保存
                 if (data.token) {
