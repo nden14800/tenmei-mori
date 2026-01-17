@@ -6661,26 +6661,40 @@ function handleInputQuiz(button, correctAnswers, questionId) {
             showView('home'); 
         }
 
-        // --- ホームアニメーション (増量・デザイン統一版) ---
+        // --- ホームアニメーション (ランダム性・多様性強化版) ---
         function initHomeAnimation() {
             const container = document.getElementById('home-anim-container');
-            container.innerHTML = ''; // リセット
-            const paperCount = 60; // 20 -> 60に大幅増量
+            container.innerHTML = ''; 
+            const paperCount = 70; // 枚数
+            
+            // 縁起の良い二字熟語リスト（大幅増量）
+            const texts = [
+                "天命", "御籤", "運勢", "吉凶", "祈願", "成就", "開運", "吉祥", 
+                "招福", "平安", "健康", "繁栄", "飛躍", "安泰", "円満", "厄除",
+                "大吉", "守護", "浄化", "良縁", "金運", "必勝", "合格", "福徳",
+                "神恩", "感謝", "希望", "光明", "泰平", "至福", "瑞兆", "吉兆"
+            ];
             
             for(let i=0; i<paperCount; i++) {
                 const paper = document.createElement('div');
                 paper.className = 'flying-paper';
                 
-                // 出現位置をランダムに (コンテナ幅300px内)
+                // 位置のランダム化
                 const leftPos = Math.random() * 270;
                 paper.style.left = leftPos + 'px';
                 
-                // アニメーションのバラつき設定
-                paper.style.animationDelay = (Math.random() * 5) + 's'; // 開始時間をバラす
-                paper.style.animationDuration = (4 + Math.random() * 4) + 's'; // 速度をバラす
+                // ★修正: アニメーション開始時間を大幅にずらす (-15秒〜0秒)
+                // これにより、ページを開いた瞬間から「すでにバラバラに飛んでいる」状態を作る
+                const delay = (Math.random() * -15) + 's';
+                const duration = (4 + Math.random() * 6) + 's'; // 4〜10秒で速度差をつける
                 
-                // 中身の文字（ランダムでバリエーションを持たせる）
-                const texts = ["天命", "御籤", "運勢", "吉凶", "祈願", "成就"];
+                paper.style.animationDelay = delay;
+                paper.style.animationDuration = duration;
+                
+                // サイズも微妙に変える
+                const scale = 0.7 + Math.random() * 0.5;
+                paper.style.transform = `scale(${scale})`;
+                
                 paper.textContent = texts[Math.floor(Math.random() * texts.length)];
                 
                 container.appendChild(paper);
