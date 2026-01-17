@@ -3483,24 +3483,20 @@ function escapeHtml(str) {
         },
         {
             id: 25,
-            title: "【重要】データベースシステムの刷新と、それに伴う制限撤廃のお知らせ",
+            title: "【重要】データベースシステムの刷新と、それに伴う制限撤廃の詳細報告",
             date: "2026/1/16",
             time: "23:34",
             tag: "システム更新",
             tagColor: "text-indigo-600",
             borderColor: "border-indigo-500",
-            desc: "データベースを「Cloudflare D1」へ完全移行いたしました。これにより書き込み制限が撤廃され、どなたでも制限なく参拝いただけるようになりました。",
+            desc: "データベース基盤を「Cloudflare D1」へ完全移行いたしました。KV時代の書き込み制限（1日1,000回）を突破し、神速の10万回書き込みを実現した詳細な技術比較を公開いたします。",
             content: `
                 <div class="article-content">
                     <p>いつも「運勢・天命乃杜」をご利用いただき、誠にありがとうございます。</p>
-                    <p>本日21時頃より発生しておりました「KV put() limit exceeded（書き込み制限超過）」によるエラー、およびそれに伴うデータの保存不具合につきまして、抜本的な対策を実施いたしました。</p>
+                    <p>本日実施いたしましたデータベース基盤の「Cloudflare D1」への完全移行に伴い、旧来のシステム（Workers KV）と比較して、当杜の耐久性がどれほど向上したかを数値でご報告申し上げます。</p>
 
-                    <h3>データベースの完全移行（KV → D1）</h3>
-                    <p>これまでのシステムでは、データベースに「Cloudflare Workers KV」を採用しておりましたが、無料プランにおける「1日あたり1,000回」という書き込み制限がボトルネックとなり、皆様の熱心な参拝（連打）に耐えきれずエラーが発生しておりました。</p>
-                    <p>この問題を解決するため、より高性能なSQLデータベース<strong>「Cloudflare D1」</strong>への完全移行作業を完了いたしました。</p>
-
-                    <h3>新旧システムの比較</h3>
-                    <p>今回の移行により、システムの耐久性は以下のように劇的に向上いたしました。</p>
+                    <h3>1. 基本性能と「1日の上限」比較</h3>
+                    <p>Cloudflare Workersの無料枠における公式制限に基づき、正確に算出した比較表です。リセットは毎日<strong>JST 午前9:00（UTC 0:00）</strong>に行われます。</p>
                     
                     <div class="overflow-x-auto mb-8">
                         <table class="comparison-table" style="min-width: 100%; font-size: 0.8rem;">
@@ -3513,33 +3509,89 @@ function escapeHtml(str) {
                             </thead>
                             <tbody>
                                 <tr>
-                                    <td class="p-2 border border-gray-300 font-bold">書き込み制限</td>
-                                    <td class="p-2 border border-gray-300">1,000回 / 日</td>
-                                    <td class="p-2 border border-gray-300 font-bold text-green-600">100,000回 / 日 (100倍)</td>
+                                    <td class="p-2 border border-gray-300 font-bold">1日の書き込み上限</td>
+                                    <td class="p-2 border border-gray-300 text-red-600 font-mono">1,000回</td>
+                                    <td class="p-2 border border-gray-300 text-green-600 font-mono">100,000回 (100倍)</td>
                                 </tr>
                                 <tr>
-                                    <td class="p-2 border border-gray-300 font-bold">読み取り制限</td>
-                                    <td class="p-2 border border-gray-300">100,000回 / 日</td>
-                                    <td class="p-2 border border-gray-300 font-bold text-green-600">5,000,000回 / 日 (50倍)</td>
+                                    <td class="p-2 border border-gray-300 font-bold">1日の読み取り上限</td>
+                                    <td class="p-2 border border-gray-300 text-red-600 font-mono">100,000回</td>
+                                    <td class="p-2 border border-gray-300 text-green-600 font-mono">5,000,000回 (50倍)</td>
                                 </tr>
                                 <tr>
-                                    <td class="p-2 border border-gray-300 font-bold">データの整合性</td>
-                                    <td class="p-2 border border-gray-300">結果整合性 (ズレる)</td>
-                                    <td class="p-2 border border-gray-300 font-bold text-green-600">強整合性 (ズレない)</td>
+                                    <td class="p-2 border border-gray-300 font-bold">最大参拝可能数（1日）</td>
+                                    <td class="p-2 border border-gray-300 font-mono">約 333 本</td>
+                                    <td class="p-2 border border-gray-300 font-mono text-blue-600">約 33,333 本</td>
                                 </tr>
                                 <tr>
-                                    <td class="p-2 border border-gray-300 font-bold">連打への耐性</td>
-                                    <td class="p-2 border border-gray-300">弱い (すぐパンクする)</td>
-                                    <td class="p-2 border border-gray-300 font-bold text-green-600">極めて強い</td>
+                                    <td class="p-2 border border-gray-300 font-bold">認証（登録・ログイン）</td>
+                                    <td class="p-2 border border-gray-300 font-mono">計 1,000 回まで</td>
+                                    <td class="p-2 border border-gray-300 font-mono text-blue-600">計 100,000 回まで</td>
                                 </tr>
                             </tbody>
                         </table>
                     </div>
 
-                    <h3>これからの参拝について</h3>
-                    <p>この移行により、以前の記事でお伝えしていた「連打による個人記録の欠落」という問題も技術的に解決されました。また、1日の回数制限も事実上撤廃されました。</p>
-                    <p>これからは、エラー画面を気にすることなく、またデータのズレを心配することもなく、心ゆくまで何度でもおみくじを引いていただけます。</p>
-                    <p>移行に伴い、過去のデータ（カウンターや履歴）は一度リセットされましたが、ここからまた新たな歴史（轍）を皆様と共に刻んでいけることを楽しみにしております。</p>
+                    <h3>2. 1タブ放置時の「読み取り負荷」詳細分析</h3>
+                    <p>当杜では1分間に1回、カウンター（1行）と統計（12行）の計13行を読み取ります。負荷（0.217回/秒）は変わりませんが、制限枠の拡大により、耐用時間が飛躍的に伸びました。</p>
+
+                    <div class="overflow-x-auto mb-8">
+                        <table class="comparison-table" style="min-width: 100%; font-size: 0.8rem;">
+                            <thead class="bg-gray-100 dark:bg-zinc-700 font-bold">
+                                <tr>
+                                    <th class="p-2 border border-gray-300" rowspan="2">経過時間</th>
+                                    <th class="p-2 border border-gray-300" rowspan="2">総読取行数</th>
+                                    <th class="p-2 border border-gray-300 bg-red-50 dark:bg-red-900/10" colspan="2">旧システム (KV)</th>
+                                    <th class="p-2 border border-gray-300 bg-blue-50 dark:bg-blue-900/10" colspan="2">新システム (D1)</th>
+                                </tr>
+                                <tr>
+                                    <th class="p-2 border border-gray-300">消費率</th>
+                                    <th class="p-2 border border-gray-300">同時放置可能数</th>
+                                    <th class="p-2 border border-gray-300">消費率</th>
+                                    <th class="p-2 border border-gray-300">同時放置可能数</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td class="p-2 border border-gray-300 font-bold">1分間</td>
+                                    <td class="p-2 border border-gray-300 font-mono">13行</td>
+                                    <td class="p-2 border border-gray-300 font-mono">0.013%</td>
+                                    <td class="p-2 border border-gray-300 font-mono">7,692人</td>
+                                    <td class="p-2 border border-gray-300 font-mono text-blue-600">0.00026%</td>
+                                    <td class="p-2 border border-gray-300 font-mono text-blue-600">384,615人</td>
+                                </tr>
+                                <tr>
+                                    <td class="p-2 border border-gray-300 font-bold">10分間</td>
+                                    <td class="p-2 border border-gray-300 font-mono">130行</td>
+                                    <td class="p-2 border border-gray-300 font-mono">0.13%</td>
+                                    <td class="p-2 border border-gray-300 font-mono">769人</td>
+                                    <td class="p-2 border border-gray-300 font-mono text-blue-600">0.0026%</td>
+                                    <td class="p-2 border border-gray-300 font-mono text-blue-600">38,461人</td>
+                                </tr>
+                                <tr>
+                                    <td class="p-2 border border-gray-300 font-bold">1時間</td>
+                                    <td class="p-2 border border-gray-300 font-mono">780行</td>
+                                    <td class="p-2 border border-gray-300 font-mono">0.78%</td>
+                                    <td class="p-2 border border-gray-300 font-mono text-red-500">128人</td>
+                                    <td class="p-2 border border-gray-300 font-mono text-blue-600">0.0156%</td>
+                                    <td class="p-2 border border-gray-300 font-mono text-blue-600">6,410人</td>
+                                </tr>
+                                <tr class="bg-blue-50/30 dark:bg-blue-900/10">
+                                    <td class="p-2 border border-gray-300 font-bold">24時間</td>
+                                    <td class="p-2 border border-gray-300 font-mono">18,720行</td>
+                                    <td class="p-2 border border-gray-300 font-mono text-red-600 font-bold">18.72%</td>
+                                    <td class="p-2 border border-gray-300 font-mono text-red-600 font-black">5人</td>
+                                    <td class="p-2 border border-gray-300 font-mono text-blue-600 font-bold">0.37%</td>
+                                    <td class="p-2 border border-gray-300 font-mono text-blue-600 font-black">267人</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <h3>3. 結論としての「制限撤廃」</h3>
+                    <p>旧システム（KV）では、わずか5名の参拝者がページを開きっぱなしにするだけで、その日の杜の機能が停止する極めて脆い状態にありました。</p>
+                    <p>新システム（D1）への移行により、同じ条件下でも<strong>最大267名</strong>の同時参拝（24時間連続放置）に耐えうる堅牢性を獲得いたしました。短時間の滞在であれば、1日に数万人規模の参拝を受け入れることが可能です。</p>
+                    <p>また、以前お伝えしておりました「連打による記録の不整合」についても、D1の持つ「強整合性（トランザクション処理）」により解決しております。猛烈な連打を行っても、数字が逆転したり、記録が消失したりすることはございません。どうぞ、安心して己が天命をお受け取りください。</p>
                 </div>
             `
         },
