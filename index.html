@@ -8916,12 +8916,12 @@ function changeHistoryPage(newPage) {
             }
         }
 
-       // プロフィール描画 (修正完全版)
+       // プロフィール描画 (修正版：ボタンをメニューに統合＆実績一覧ボタン)
         function renderProfilePage(data) {
             showView('profile-public');
             const container = document.getElementById('public-profile-content');
             
-            // バッジHTML生成
+            // 獲得済みバッジ一覧 (プロフィール表示用)
             const badgesHtml = data.badges.map(b => `
                 <div class="badge-item unlocked" title="${b.description}">
                     <div class="badge-icon"><i class="bi ${b.icon}"></i></div>
@@ -8940,65 +8940,49 @@ function changeHistoryPage(newPage) {
                 verifiedHtml = `<span class="verified-badge verified-blue" onclick="openVerifiedModal('blue', '${escapeHtml(data.username)}')"><i class="bi bi-patch-check-fill text-xl"></i></span>`;
             }
 
-            // --- ボタン出し分けロジック ---
-            let actionBtnHtml = '';
+            // --- ボタン・メニュー制御 ---
+            let actionAreaHtml = ''; // ここにボタンまたはメニューが入る
             
-            // 判定基準
             const isMe = data.isMe || (currentState.user && currentState.user.username === data.username);
             const isLoggedIn = !!currentState.user;
 
             if (isMe) {
-                // 【自分自身】 -> 編集ボタン
-                actionBtnHtml = `
+                // 【自分自身】 -> 編集ボタン (単独で表示)
+                actionAreaHtml = `
                     <button onclick="openEditProfileModal('${escapeHtml(data.bio)}', '${escapeHtml(data.title)}', '${data.icon}', '${data.color}')" 
                             class="px-4 py-2 bg-indigo-600 text-white rounded-lg font-bold text-sm hover:opacity-90 shadow-md">
-                        <i class="bi bi-pencil-square"></i> プロフィール編集
+                        <i class="bi bi-pencil-square"></i> 編集
                     </button>`;
             } else if (isLoggedIn) {
-                // 【他人 & ログイン中】
-                if (data.isFollowing) {
-                    // ★フォロー中なら「フォロー解除」を確実に表示
-                    actionBtnHtml = `
-                        <button onclick="toggleFollow('${data.username}', 'unfollow')" 
-                                class="px-4 py-2 bg-white dark:bg-zinc-800 text-red-600 border-2 border-red-500 rounded-lg font-bold text-sm hover:bg-red-50 transition">
-                            <i class="bi bi-person-dash-fill"></i> フォロー解除
-                        </button>`;
-                } else {
-                    // ★フォローしてないなら「フォローする」
-                    actionBtnHtml = `
-                        <button onclick="toggleFollow('${data.username}', 'follow')" 
-                                class="px-4 py-2 bg-black text-white dark:bg-white dark:text-black rounded-lg font-bold text-sm hover:opacity-80 shadow-md transition">
-                            <i class="bi bi-person-plus-fill"></i> フォローする
-                        </button>`;
-                }
-            } else {
-                // 【未ログイン】
-                actionBtnHtml = `<button onclick="showView('auth')" class="px-4 py-2 bg-gray-500 text-white rounded-lg font-bold text-sm hover:opacity-80">ログインしてフォロー</button>`;
-            }
-
-            // 3点リーダーメニュー（他人 かつ ログイン中のみ表示）
-            let menuHtml = '';
-            if (isLoggedIn && !isMe) {
+                // 【他人】 -> 3点リーダーメニューのみ表示 (ここに全機能を集約)
                 const followAction = data.isFollowing ? 'unfollow' : 'follow';
-                const followText = data.isFollowing ? 'フォロー解除' : 'フォローする';
-                const blockAction = data.isBlocked ? 'unblock' : 'block';
-                const blockText = data.isBlocked ? 'ブロック解除' : 'ブロックする';
+                const followText   = data.isFollowing ? 'フォロー解除' : 'フォローする';
+                const followIcon   = data.isFollowing ? 'bi-person-dash' : 'bi-person-plus';
+                const followColor  = data.isFollowing ? 'text-red-500' : 'text-blue-500';
 
-                menuHtml = `
-                    <div class="profile-menu-container ml-2">
+                const blockAction = data.isBlocked ? 'unblock' : 'block';
+                const blockText   = data.isBlocked ? 'ブロック解除' : 'ブロックする';
+                
+                actionAreaHtml = `
+                    <div class="profile-menu-container">
                         <button class="profile-menu-btn" onclick="toggleProfileMenu()">
                             <i class="bi bi-three-dots"></i>
                         </button>
                         <div id="profile-menu-dropdown" class="profile-menu-dropdown">
-                            <button class="menu-item" onclick="toggleFollow('${data.username}', '${followAction}')">
-                                <i class="bi bi-person-plus"></i> ${followText}
+                            <!-- フォロー/解除 -->
+                            <button class="menu-item ${followColor}" onclick="toggleFollow('${data.username}', '${followAction}')">
+                                <i class="bi ${followIcon}"></i> ${followText}
                             </button>
+                            <!-- ブロック/解除 -->
                             <button class="menu-item danger" onclick="toggleBlock('${data.username}', '${blockAction}')">
                                 <i class="bi bi-slash-circle"></i> ${blockText}
                             </button>
                         </div>
                     </div>
                 `;
+            } else {
+                // 【未ログイン】
+                actionAreaHtml = `<button onclick="showView('auth')" class="px-4 py-2 bg-gray-500 text-white rounded-lg font-bold text-sm hover:opacity-80">ログイン</button>`;
             }
 
             // アイコン色
@@ -9036,13 +9020,13 @@ function changeHistoryPage(newPage) {
                                 </span>
                             </div>
                         </div>
-                        <div class="mt-4 md:mt-0 flex items-center justify-center md:justify-end">
-                            ${actionBtnHtml}
-                            ${menuHtml}
+                        <div class="mt-4 md:mt-0 relative">
+                            ${actionAreaHtml}
                         </div>
                     </div>
-                    
+
                     ${data.isBlocked ? '<div class="mb-4 text-center text-red-500 font-bold border border-red-500 p-2 rounded">このユーザーをブロックしています</div>' : ''}
+                    ${data.isBlockedBy ? '<div class="mb-4 text-center text-gray-500 font-bold bg-gray-100 p-2 rounded">ユーザーからブロックされています</div>' : ''}
 
                     <div class="mb-6 p-4 rounded-xl bg-gray-50 dark:bg-zinc-800 border border-gray-200 dark:border-gray-700 text-sm leading-relaxed text-left">
                         <h4 class="font-bold mb-2 text-gray-500">自己紹介</h4>
@@ -9065,13 +9049,24 @@ function changeHistoryPage(newPage) {
                         </div>
                     </div>
 
-                    <h3 class="font-bold text-lg mb-4 border-l-4 border-yellow-500 pl-3 text-left">功徳の証 (実績)</h3>
+                    <div class="flex justify-between items-end mb-4 border-b border-gray-200 dark:border-gray-700 pb-2">
+                        <h3 class="font-bold text-lg border-l-4 border-yellow-500 pl-3 text-left">功徳の証 (実績)</h3>
+                        <button onclick="showAllBadgesModal()" class="text-xs text-blue-500 hover:underline">
+                            すべての実績を見る <i class="bi bi-chevron-right"></i>
+                        </button>
+                    </div>
+                    
                     <div class="badges-grid p-4 rounded-xl bg-white dark:bg-zinc-900 border border-gray-200 dark:border-gray-700 shadow-inner">
                         ${badgesHtml}
                         ${badgesHtml.length === 0 ? '<p class="col-span-full text-center text-gray-400 text-xs">まだ功徳の証はありません</p>' : ''}
                     </div>
                 </div>
             `;
+            
+            // 自分の実績データをグローバル変数に保存（実績一覧での判定用）
+            if(isMe) {
+                window.myBadges = data.badges.map(b => b.id);
+            }
         }
 
         // --- メニュー表示 ---
