@@ -498,17 +498,26 @@
             color: #ffffff !important; /* ハンコ内の文字：白 */
         }
 
-        /* 2. 大吉: 黄金カード、白二重線、背景同色ハンコ、赤縁、赤文字 */
+        /* 2. 大吉: 画像のような鮮やかな黄金色と、和紙の強いザラザラ感を再現 */
         .style-daikichi {
-            background-color: #f3c845;
-            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.25'/%3E%3C/svg%3E");
-            border: 8px double #fff; /* カード外枠：白二重線 */
-            color: #b91c1c; /* ▼修正: ここを #3e1e00 から #b91c1c (赤) に変更 */
+            /* 画像から抽出した、赤みの入った濃厚な山吹色 */
+            background-color: #ffb700;
+            
+            /* ザラザラ感（和紙の繊維）を表現するノイズ画像 */
+            /* 粒子を少し粗く(0.5)し、不透明度を高く(0.4)して、質感をくっきりと出しています */
+            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 400 400' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='washi'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.5' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23washi)' opacity='0.4'/%3E%3C/svg%3E");
+            
+            /* 背景色とノイズを合成して、深みのある質感にする */
+            background-blend-mode: overlay;
+            
+            border: 8px double #fff; /* 外枠はそのまま */
+            color: #b91c1c; /* 文字色は赤 */
         }
+        
         .style-daikichi .result-circle-box {
-            background-color: transparent; /* 背景と同色に見せる */
-            border: 2px solid #b91c1c; /* ▼さきほど調整した2pxの赤線 */
-            color: #b91c1c !important; /* 文字：赤 */
+            background-color: transparent;
+            border: 2px solid #b91c1c; /* ハンコの線（2px） */
+            color: #b91c1c !important;
         }
 
         /* 3. 大凶: 白カード、黒二重線、黒ハンコ（縁のみ）、黒文字 */
