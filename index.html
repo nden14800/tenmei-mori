@@ -8899,7 +8899,7 @@ function changeHistoryPage(newPage) {
     // 既存の showView 関数を少し修正して、画面表示時に目次を生成するようにする
     const originalShowView = window.showView; // 既存の関数を退避（または直接書き換え）
     
-    // showView関数を上書き（既存のロジック + 目次生成呼び出し）
+    // 画面切り替え関数 (修正版)
     window.showView = function(viewId) {
         // Lab機能へのアクセス制限処理
         if(viewId === 'lab') {
@@ -8915,7 +8915,7 @@ function changeHistoryPage(newPage) {
             }
         }
 
-        // 画面の切り替え
+        // 画面の切り替えアニメーション
         document.querySelectorAll('.view-section').forEach(el => {
             el.classList.remove('active');
             setTimeout(() => {
@@ -8926,30 +8926,42 @@ function changeHistoryPage(newPage) {
         const target = document.getElementById(`view-${viewId}`);
         if (target) {
             target.style.display = 'block';
-            void target.offsetWidth; 
+            void target.offsetWidth; // リフロー発生
             target.classList.add('active');
         }
         currentState.view = viewId;
 
-        // 各ビューごとの初期化ロジック
-        if(viewId === 'draw') resetOmikujiPool();
-        if(viewId === 'history') loadHistory();
-        if(viewId === 'prefecture') renderPrefectureRanking();
+        // --- 各ビューごとの初期化ロジック ---
         
-        // 御守授与所のリセット
+        // おみくじ選択画面
+        if(viewId === 'draw') {
+            resetOmikujiPool();
+        }
+        
+        // おみくじの轍
+        if(viewId === 'history') {
+            loadHistory();
+        }
+        
+        // 都道府県ランキング
+        if(viewId === 'prefecture') {
+            renderPrefectureRanking();
+        }
+        
+        // 御守授与所（リセット）
         if(viewId === 'omamori') {
             document.getElementById('omamori-step-1').classList.remove('hidden');
             document.getElementById('omamori-step-2').classList.add('hidden');
             document.getElementById('omamori-step-3').classList.add('hidden');
         }
 
-        // ★重要: 掲示板を開いたときの処理
+        // ★掲示板（初期化と読み込み）
         if(viewId === 'board') {
-            BoardSystem.init(); // リスト生成
-            BoardSystem.load(1); // 投稿読み込み
+            BoardSystem.init(); 
+            BoardSystem.load(1); 
         }
 
-        // ★追加: 規約・ポリシー画面を開いた時に目次を生成
+        // 規約・ポリシー（目次生成）
         if(viewId === 'about' || viewId === 'privacy') {
             initTOC(viewId);
         }
