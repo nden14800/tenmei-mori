@@ -8871,10 +8871,9 @@ function changeHistoryPage(newPage) {
             }
         }
 
-        // プロフィール描画 (修正版：フォロー解除ボタンの明示化)
+       // プロフィール描画 (3点リーダー・認証バッジ・アイコン対応版)
         function renderProfilePage(data) {
             showView('profile-public');
-            
             const container = document.getElementById('public-profile-content');
             
             // バッジ一覧
@@ -8888,57 +8887,84 @@ function changeHistoryPage(newPage) {
             const date = new Date(data.joinDate);
             const joined = `${date.getFullYear()}/${date.getMonth()+1}/${date.getDate()}`;
 
-            // --- ボタン出し分けロジック ---
-            let actionBtnHtml = '';
-            
-            // 自分かどうか（サーバー判定 または ローカル判定）
+            // --- 認証バッジ ---
+            let verifiedHtml = '';
+            if (data.verified === 'gold') {
+                verifiedHtml = `<span class="verified-badge verified-gold" onclick="showVerifiedModal('gold', '${escapeHtml(data.username)}')"><i class="bi bi-patch-check-fill text-xl"></i></span>`;
+            } else if (data.verified === 'blue') {
+                verifiedHtml = `<span class="verified-badge verified-blue" onclick="showVerifiedModal('blue', '${escapeHtml(data.username)}')"><i class="bi bi-patch-check-fill text-xl"></i></span>`;
+            }
+
+            // --- ボタン・メニュー出し分け ---
+            let actionAreaHtml = '';
             const isSelf = data.isMe || (currentState.user && currentState.user.username === data.username);
 
             if (isSelf) {
-                // パターンA: 自分自身 (編集ボタン)
-                actionBtnHtml = `
-                    <button onclick="openEditProfileModal('${escapeHtml(data.bio)}', '${escapeHtml(data.title)}')" 
+                // 自分: 編集ボタン
+                actionAreaHtml = `
+                    <button onclick="openEditProfileModal('${escapeHtml(data.bio)}', '${escapeHtml(data.title)}', '${data.icon}', '${data.color}')" 
                             class="px-4 py-2 bg-indigo-600 text-white rounded-lg font-bold text-sm hover:opacity-90 shadow-md">
-                        <i class="bi bi-pencil-square"></i> プロフィール編集
+                        <i class="bi bi-pencil-square"></i> 編集
                     </button>`;
             } else if (currentState.user) {
-                // パターンB: 他人かつログイン中
-                if (data.isFollowing) {
-                    // 既にフォローしている場合 -> 【フォロー解除ボタン (赤)】
-                    actionBtnHtml = `
-                        <button onclick="toggleFollow('${data.username}', 'unfollow')" 
-                                class="px-4 py-2 bg-red-50 text-red-600 border border-red-200 rounded-lg font-bold text-sm hover:bg-red-100 hover:shadow-md transition">
-                            <i class="bi bi-person-dash-fill"></i> フォロー解除
-                        </button>`;
-                } else {
-                    // まだフォローしていない場合 -> 【フォローするボタン (黒)】
-                    actionBtnHtml = `
-                        <button onclick="toggleFollow('${data.username}', 'follow')" 
-                                class="px-4 py-2 bg-black text-white dark:bg-white dark:text-black rounded-lg font-bold text-sm hover:opacity-80 shadow-md transition">
-                            <i class="bi bi-person-plus-fill"></i> フォローする
-                        </button>`;
+                // 他人: 3点リーダーメニュー
+                // フォロー状態によってメニューの中身を変える
+                const followText = data.isFollowing ? 'フォロー解除' : 'フォローする';
+                const followAction = data.isFollowing ? 'unfollow' : 'follow';
+                const blockText = data.isBlocked ? 'ブロック解除' : 'ブロックする';
+                const blockAction = data.isBlocked ? 'unblock' : 'block';
+
+                actionAreaHtml = `
+                    <div class="profile-menu-container">
+                        <button class="profile-menu-btn" onclick="toggleProfileMenu()">
+                            <i class="bi bi-three-dots"></i>
+                        </button>
+                        <div id="profile-menu-dropdown" class="profile-menu-dropdown">
+                            <button class="menu-item" onclick="toggleFollow('${data.username}', '${followAction}')">
+                                <i class="bi bi-person-plus"></i> ${followText}
+                            </button>
+                            <button class="menu-item danger" onclick="toggleBlock('${data.username}', '${blockAction}')">
+                                <i class="bi bi-slash-circle"></i> ${blockText}
+                            </button>
+                        </div>
+                    </div>
+                `;
+                
+                // ブロックされている場合
+                if (data.isBlockedBy) {
+                    actionAreaHtml += `<div class="mt-2 text-xs text-red-500 font-bold"><i class="bi bi-exclamation-circle"></i> ブロックされています</div>`;
                 }
             } else {
-                // パターンC: 未ログイン
-                actionBtnHtml = `<button onclick="showView('auth')" class="px-4 py-2 bg-gray-500 text-white rounded-lg font-bold text-sm hover:opacity-80">ログインしてフォロー</button>`;
+                // 未ログイン
+                actionAreaHtml = `<button onclick="showView('auth')" class="px-4 py-2 bg-gray-500 text-white rounded-lg font-bold text-sm hover:opacity-80">ログイン</button>`;
             }
+
+            // アイコンの色スタイル
+            const iconColorMap = {
+                'gray': '#6b7280', 'red': '#ef4444', 'blue': '#3b82f6', 'green': '#10b981', 'yellow': '#eab308', 
+                'purple': '#a855f7', 'pink': '#ec4899', 'black': '#1f2937'
+            };
+            const iconStyle = `color: ${iconColorMap[data.color] || '#6b7280'}; border-color: ${iconColorMap[data.color] || '#e5e7eb'}`;
 
             container.innerHTML = `
                 <div class="profile-header-bg">
                     <div class="profile-avatar-container">
-                        <div class="profile-avatar-img"><i class="bi bi-person"></i></div>
+                        <div class="profile-avatar-img" style="${iconStyle}">
+                            <i class="bi ${data.icon}"></i>
+                        </div>
                     </div>
                 </div>
                 
                 <div class="px-6 pb-8 mt-12 text-center md:text-left">
                     <div class="flex flex-col md:flex-row justify-between items-center md:items-start mb-4">
                         <div>
-                            <h2 class="text-3xl font-black mb-1">${escapeHtml(data.username)}</h2>
+                            <h2 class="text-3xl font-black mb-1 flex items-center justify-center md:justify-start">
+                                ${escapeHtml(data.username)} ${verifiedHtml}
+                            </h2>
                             <p class="text-sm themed-text-sub font-bold mb-2">
                                 <span class="bg-yellow-100 text-yellow-800 px-2 py-0.5 rounded mr-2">${escapeHtml(data.title)}</span>
-                                <i class="bi bi-calendar-event"></i> 参拝開始日: ${joined}
+                                <i class="bi bi-calendar-event"></i> 開始: ${joined}
                             </p>
-                            <!-- クリック可能なフォロー数 -->
                             <div class="profile-social-stats">
                                 <span class="social-stat" onclick="loadFollowList('following', '${data.username}', 1)">
                                     <strong>${data.stats.following}</strong> フォロー中
@@ -8948,8 +8974,8 @@ function changeHistoryPage(newPage) {
                                 </span>
                             </div>
                         </div>
-                        <div class="mt-4 md:mt-0">
-                            ${actionBtnHtml}
+                        <div class="mt-4 md:mt-0 relative">
+                            ${actionAreaHtml}
                         </div>
                     </div>
 
@@ -8981,6 +9007,32 @@ function changeHistoryPage(newPage) {
                     </div>
                 </div>
             `;
+        }
+
+        // --- メニュー表示 ---
+        function toggleProfileMenu() {
+            const menu = document.getElementById('profile-menu-dropdown');
+            if(menu) menu.classList.toggle('active');
+            // 他をクリックしたら閉じるイベントを追加
+            document.addEventListener('click', function closeMenu(e) {
+                if (!e.target.closest('.profile-menu-container')) {
+                    if(menu) menu.classList.remove('active');
+                    document.removeEventListener('click', closeMenu);
+                }
+            });
+        }
+
+        // --- 認証モーダル表示 ---
+        function showVerifiedModal(type, username) {
+            let title = "", desc = "";
+            if (type === 'gold') {
+                title = "黄金の認証ユーザー";
+                desc = `${username} は、この「運勢・天命乃杜」の運営者、または開発に深く関わる特別なアカウントであることを証明します。<br><br>※このバッジは運営者のみに付与されます。`;
+            } else {
+                title = "認証済みユーザー";
+                desc = `${username} は、所定の手続きを経て本人確認が完了した、信頼できる公式アカウントであることを証明します。`;
+            }
+            showToast(`<div class="text-left"><h4 class="font-bold mb-1">${title}</h4><p class="text-xs">${desc}</p></div>`, 'info', '認証情報');
         }
 
         // --- 編集モーダルを開く ---
