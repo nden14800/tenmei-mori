@@ -8020,7 +8020,7 @@ async function logout() {
         if (myData) { resultDiv.innerHTML = createCardHTML(myData); resultDiv.classList.remove('hidden'); }
     } 
 
-   // サーバーサイドページネーション用のボタン描画（最初・最後へボタン追加版）
+  // サーバーサイドページネーション用のボタン描画
 function renderServerPagination(currentPage, totalItems, perPage) {
     const paginationEl = document.getElementById('history-pagination');
     const totalPages = Math.ceil(totalItems / perPage) || 1;
@@ -8030,38 +8030,34 @@ function renderServerPagination(currentPage, totalItems, perPage) {
         return;
     }
 
-    let html = '<div class="flex flex-wrap justify-center items-center gap-2 mt-4">';
+    let html = '';
     
-    // --- 最初へボタン ---
+    // 最初へボタン
     html += `<button onclick="loadHistory(1)" 
-             class="px-3 py-2 rounded border bg-white dark:bg-zinc-800 hover:bg-gray-100 dark:hover:bg-zinc-700 disabled:opacity-30 transition"
-             ${currentPage === 1 ? 'disabled' : ''} title="最初へ">
-             <i class="bi bi-chevron-double-left"></i></button>`;
+             class="px-4 py-2 rounded border bg-white dark:bg-zinc-800 hover:bg-gray-100 dark:hover:bg-zinc-700 disabled:opacity-50 transition mr-2"
+             ${currentPage === 1 ? 'disabled' : ''}>
+             <i class="bi bi-chevron-double-left"></i> 最初へ</button>`;
 
-    // --- 前へボタン ---
+    // 前へボタン
     html += `<button onclick="loadHistory(${currentPage - 1})" 
-             class="px-4 py-2 rounded border bg-white dark:bg-zinc-800 hover:bg-gray-100 dark:hover:bg-zinc-700 disabled:opacity-30 transition"
+             class="px-4 py-2 rounded border bg-white dark:bg-zinc-800 hover:bg-gray-100 dark:hover:bg-zinc-700 disabled:opacity-50 transition"
              ${currentPage === 1 ? 'disabled' : ''}>
              <i class="bi bi-chevron-left"></i> 前へ</button>`;
 
-    // --- ページ番号表示 ---
-    html += `<span class="font-bold font-mono px-4 py-2 bg-red-50 dark:bg-red-900/20 rounded-lg border border-red-100 dark:border-red-900 text-red-700 dark:text-red-300">
-             ${currentPage} / ${totalPages} 頁
-             </span>`;
+    // ページ番号 (元の Page X / Y 形式を維持)
+    html += `<span class="font-bold font-mono mx-4">Page ${currentPage} / ${totalPages}</span>`;
 
-    // --- 次へボタン ---
+    // 次へボタン
     html += `<button onclick="loadHistory(${currentPage + 1})" 
-             class="px-4 py-2 rounded border bg-white dark:bg-zinc-800 hover:bg-gray-100 dark:hover:bg-zinc-700 disabled:opacity-30 transition"
+             class="px-4 py-2 rounded border bg-white dark:bg-zinc-800 hover:bg-gray-100 dark:hover:bg-zinc-700 disabled:opacity-50 transition"
              ${currentPage === totalPages ? 'disabled' : ''}>
              次へ <i class="bi bi-chevron-right"></i></button>`;
 
-    // --- 最後へボタン ---
+    // 最後へボタン
     html += `<button onclick="loadHistory(${totalPages})" 
-             class="px-3 py-2 rounded border bg-white dark:bg-zinc-800 hover:bg-gray-100 dark:hover:bg-zinc-700 disabled:opacity-30 transition"
-             ${currentPage === totalPages ? 'disabled' : ''} title="最後へ">
-             <i class="bi bi-chevron-double-right"></i></button>`;
-
-    html += '</div>';
+             class="px-4 py-2 rounded border bg-white dark:bg-zinc-800 hover:bg-gray-100 dark:hover:bg-zinc-700 disabled:opacity-50 transition ml-2"
+             ${currentPage === totalPages ? 'disabled' : ''}>
+             最後へ <i class="bi bi-chevron-double-right"></i></button>`;
 
     paginationEl.innerHTML = html;
 }
