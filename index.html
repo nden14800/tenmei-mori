@@ -8970,6 +8970,75 @@ function changeHistoryPage(newPage) {
             }
         }
         
+        // リストの状態管理
+        let followListState = { type: 'followers', username: '', page: 1 };
+
+        // リスト読み込み
+        async function loadFollowList(type, username, page = 1) {
+            followListState = { type, username, page };
+            const modal = document.getElementById('follow-list-modal');
+            const titleEl = document.getElementById('follow-list-title');
+            const contentEl = document.getElementById('follow-list-content');
+            const pagingEl = document.getElementById('follow-list-pagination');
+            
+            modal.style.display = 'flex';
+            titleEl.textContent = type === 'followers' ? 'フォロワー' : 'フォロー中';
+            contentEl.innerHTML = '<div class="text-center py-4"><div class="spinner-border text-red-500" role="status"></div> 読み込み中...</div>';
+            pagingEl.innerHTML = '';
+
+            try {
+                const res = await fetch(`${API_BASE}/api/user/follow_list?username=${encodeURIComponent(username)}&type=${type}&page=${page}`);
+                if (res.ok) {
+                    const data = await res.json();
+                    renderFollowListContent(data);
+                } else {
+                    contentEl.innerHTML = '<p class="text-center text-gray-500">読み込みに失敗しました</p>';
+                }
+            } catch (e) {
+                console.error(e);
+                contentEl.innerHTML = '<p class="text-center text-gray-500">通信エラー</p>';
+            }
+        }
+
+        // リスト描画
+        function renderFollowListContent(data) {
+            const contentEl = document.getElementById('follow-list-content');
+            const pagingEl = document.getElementById('follow-list-pagination');
+
+            if (data.users.length === 0) {
+                contentEl.innerHTML = '<p class="text-center text-gray-500 py-4">ユーザーがいません</p>';
+                return;
+            }
+
+            contentEl.innerHTML = data.users.map(u => `
+                <div class="follow-user-item" onclick="loadUserProfile('${u.username}'); document.getElementById('follow-list-modal').style.display='none';">
+                    <div class="flex items-center">
+                        <i class="bi bi-person-circle text-2xl mr-3 text-gray-400"></i>
+                        <span class="font-bold text-lg">${escapeHtml(u.username)}</span>
+                    </div>
+                    <i class="bi bi-chevron-right text-gray-400"></i>
+                </div>
+            `).join('');
+            
+            // ページネーション（既存の共通関数を使用するために、カスタムボタンを生成）
+            if (data.total > data.perPage) {
+                const totalPages = Math.ceil(data.total / data.perPage);
+                pagingEl.innerHTML = `
+                    <div class="flex justify-center gap-2 items-center">
+                        <button onclick="changeFollowListPage(${data.page - 1})" class="px-3 py-1 rounded border disabled:opacity-50" ${data.page === 1 ? 'disabled' : ''}>前へ</button>
+                        <span class="text-sm font-bold">${data.page} / ${totalPages}</span>
+                        <button onclick="changeFollowListPage(${data.page + 1})" class="px-3 py-1 rounded border disabled:opacity-50" ${data.page === totalPages ? 'disabled' : ''}>次へ</button>
+                    </div>
+                `;
+            } else {
+                pagingEl.innerHTML = '';
+            }
+        }
+
+        // リストのページ切り替え
+        function changeFollowListPage(newPage) {
+            loadFollowList(followListState.type, followListState.username, newPage);
+        }
             
     </script>
 </body>
