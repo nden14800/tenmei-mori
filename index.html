@@ -6925,9 +6925,13 @@ function handleInputQuiz(button, correctAnswers, questionId) {
             const circleBox = document.createElement('div');
             circleBox.className = 'result-circle-box';
             let fs = "4.2rem"; 
-            if (data.type.length === 3) fs = "3.2rem";
-            if (data.type.length >= 4) fs = "2.6rem";
-            circleBox.innerHTML = `<div class="result-kanji-main" style="font-size: ${fs}">${data.type}</div>`;
+            
+            // ▼▼ 修正: 3文字（末小吉など）のサイズを小さく調整 ▼▼
+            if (data.type.length === 3) fs = "2.9rem"; 
+            if (data.type.length >= 4) fs = "2.4rem";
+            
+            // ▼▼ 修正: styleに white-space: nowrap を追加して改行を強制禁止 ▼▼
+            circleBox.innerHTML = `<div class="result-kanji-main" style="font-size: ${fs}; white-space: nowrap;">${data.type}</div>`;
             outer.appendChild(circleBox);
 
             // 4. ラベル
