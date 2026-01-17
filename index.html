@@ -9111,11 +9111,10 @@ function changeHistoryPage(newPage) {
             finally { showLoading(false); }
         }
 
-        // --- フォロー機能 (修正版) ---
+       // --- フォロー機能 (エラー詳細表示版) ---
         async function toggleFollow(username, action) {
             if(!currentState.user) return showView('auth');
             
-            // ローディング表示
             showLoading(true);
             
             try {
@@ -9124,24 +9123,30 @@ function changeHistoryPage(newPage) {
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ 
                         targetUsername: username, 
-                        action: action // 'follow' か 'unfollow' を送信
+                        action: action 
                     })
                 });
                 
-                if(res.ok) {
-                    // 成功通知
-                    const msg = action === 'follow' ? 'フォローしました' : 'フォローを解除しました';
-                    showToast(msg, 'success');
-                    
-                    // 【重要】プロフィールを再読み込みして、ボタン表示を更新する
-                    await loadUserProfile(username);
-                } else {
+                // レスポンスがJSONかどうか確認
+                const contentType = res.headers.get("content-type");
+                if (contentType && contentType.includes("application/json")) {
                     const data = await res.json();
-                    alert(data.error || "操作に失敗しました");
+                    if(res.ok) {
+                        const msg = action === 'follow' ? 'フォローしました' : 'フォローを解除しました';
+                        showToast(msg, 'success');
+                        await loadUserProfile(username);
+                    } else {
+                        alert(data.error || "操作に失敗しました");
+                    }
+                } else {
+                    // JSONじゃないエラー（Workerがクラッシュした場合など）
+                    const text = await res.text();
+                    console.error("Server Error:", text);
+                    alert("サーバーエラーが発生しました。\n(詳細はコンソールを確認してください)");
                 }
             } catch(e) { 
                 console.error(e);
-                alert("通信エラー"); 
+                alert("通信エラーが発生しました: " + e.message); 
             } finally { 
                 showLoading(false); 
             }
