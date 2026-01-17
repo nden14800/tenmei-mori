@@ -8916,12 +8916,12 @@ function changeHistoryPage(newPage) {
             }
         }
 
-       // プロフィール描画 (修正版：ボタンをメニューに統合＆実績一覧ボタン)
+       // プロフィール描画 (シンプル版：フォロー数表示削除)
         function renderProfilePage(data) {
             showView('profile-public');
             const container = document.getElementById('public-profile-content');
             
-            // 獲得済みバッジ一覧 (プロフィール表示用)
+            // バッジ一覧
             const badgesHtml = data.badges.map(b => `
                 <div class="badge-item unlocked" title="${b.description}">
                     <div class="badge-icon"><i class="bi ${b.icon}"></i></div>
@@ -8941,20 +8941,20 @@ function changeHistoryPage(newPage) {
             }
 
             // --- ボタン・メニュー制御 ---
-            let actionAreaHtml = ''; // ここにボタンまたはメニューが入る
+            let actionAreaHtml = ''; 
             
             const isMe = data.isMe || (currentState.user && currentState.user.username === data.username);
             const isLoggedIn = !!currentState.user;
 
             if (isMe) {
-                // 【自分自身】 -> 編集ボタン (単独で表示)
+                // 自分: 編集ボタン
                 actionAreaHtml = `
                     <button onclick="openEditProfileModal('${escapeHtml(data.bio)}', '${escapeHtml(data.title)}', '${data.icon}', '${data.color}')" 
                             class="px-4 py-2 bg-indigo-600 text-white rounded-lg font-bold text-sm hover:opacity-90 shadow-md">
                         <i class="bi bi-pencil-square"></i> 編集
                     </button>`;
             } else if (isLoggedIn) {
-                // 【他人】 -> 3点リーダーメニューのみ表示 (ここに全機能を集約)
+                // 他人: 3点リーダーメニュー
                 const followAction = data.isFollowing ? 'unfollow' : 'follow';
                 const followText   = data.isFollowing ? 'フォロー解除' : 'フォローする';
                 const followIcon   = data.isFollowing ? 'bi-person-dash' : 'bi-person-plus';
@@ -8969,11 +8969,9 @@ function changeHistoryPage(newPage) {
                             <i class="bi bi-three-dots"></i>
                         </button>
                         <div id="profile-menu-dropdown" class="profile-menu-dropdown">
-                            <!-- フォロー/解除 -->
                             <button class="menu-item ${followColor}" onclick="toggleFollow('${data.username}', '${followAction}')">
                                 <i class="bi ${followIcon}"></i> ${followText}
                             </button>
-                            <!-- ブロック/解除 -->
                             <button class="menu-item danger" onclick="toggleBlock('${data.username}', '${blockAction}')">
                                 <i class="bi bi-slash-circle"></i> ${blockText}
                             </button>
@@ -8981,11 +8979,11 @@ function changeHistoryPage(newPage) {
                     </div>
                 `;
             } else {
-                // 【未ログイン】
+                // 未ログイン
                 actionAreaHtml = `<button onclick="showView('auth')" class="px-4 py-2 bg-gray-500 text-white rounded-lg font-bold text-sm hover:opacity-80">ログイン</button>`;
             }
 
-            // アイコン色
+            // アイコン色設定
             const iconColorMap = {
                 'gray': '#6b7280', 'red': '#ef4444', 'blue': '#3b82f6', 'green': '#10b981', 'yellow': '#eab308', 
                 'purple': '#a855f7', 'pink': '#ec4899', 'black': '#1f2937'
@@ -9011,14 +9009,7 @@ function changeHistoryPage(newPage) {
                                 <span class="bg-yellow-100 text-yellow-800 px-2 py-0.5 rounded mr-2">${escapeHtml(data.title)}</span>
                                 <i class="bi bi-calendar-event"></i> 開始: ${joined}
                             </p>
-                            <div class="profile-social-stats">
-                                <span class="social-stat" onclick="loadFollowList('following', '${data.username}', 1)">
-                                    <strong>${data.stats.following}</strong> フォロー中
-                                </span>
-                                <span class="social-stat" onclick="loadFollowList('followers', '${data.username}', 1)">
-                                    <strong>${data.stats.followers}</strong> フォロワー
-                                </span>
-                            </div>
+                            <!-- ▼▼▼ ここにあった数字表示（profile-social-stats）を削除しました ▼▼▼ -->
                         </div>
                         <div class="mt-4 md:mt-0 relative">
                             ${actionAreaHtml}
@@ -9063,7 +9054,6 @@ function changeHistoryPage(newPage) {
                 </div>
             `;
             
-            // 自分の実績データをグローバル変数に保存（実績一覧での判定用）
             if(isMe) {
                 window.myBadges = data.badges.map(b => b.id);
             }
