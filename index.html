@@ -8030,11 +8030,12 @@ function renderServerPagination(currentPage, totalItems, perPage) {
         return;
     }
 
-    let html = '';
+    let html = '<div class="flex flex-col items-center gap-4">';
+    html += '<div class="flex items-center justify-center flex-wrap gap-2">';
     
     // 最初へボタン
     html += `<button onclick="loadHistory(1)" 
-             class="px-4 py-2 rounded border bg-white dark:bg-zinc-800 hover:bg-gray-100 dark:hover:bg-zinc-700 disabled:opacity-50 transition mr-2"
+             class="px-4 py-2 rounded border bg-white dark:bg-zinc-800 hover:bg-gray-100 dark:hover:bg-zinc-700 disabled:opacity-50 transition"
              ${currentPage === 1 ? 'disabled' : ''}>
              <i class="bi bi-chevron-double-left"></i> 最初へ</button>`;
 
@@ -8044,7 +8045,7 @@ function renderServerPagination(currentPage, totalItems, perPage) {
              ${currentPage === 1 ? 'disabled' : ''}>
              <i class="bi bi-chevron-left"></i> 前へ</button>`;
 
-    // ページ番号 (元の Page X / Y 形式を維持)
+    // ページ番号
     html += `<span class="font-bold font-mono mx-4">Page ${currentPage} / ${totalPages}</span>`;
 
     // 次へボタン
@@ -8055,10 +8056,25 @@ function renderServerPagination(currentPage, totalItems, perPage) {
 
     // 最後へボタン
     html += `<button onclick="loadHistory(${totalPages})" 
-             class="px-4 py-2 rounded border bg-white dark:bg-zinc-800 hover:bg-gray-100 dark:hover:bg-zinc-700 disabled:opacity-50 transition ml-2"
+             class="px-4 py-2 rounded border bg-white dark:bg-zinc-800 hover:bg-gray-100 dark:hover:bg-zinc-700 disabled:opacity-50 transition"
              ${currentPage === totalPages ? 'disabled' : ''}>
              最後へ <i class="bi bi-chevron-double-right"></i></button>`;
 
+    html += '</div>';
+
+    // ページジャンプ入力欄
+    html += `
+        <div class="flex items-center gap-2 text-sm themed-text-sub">
+            <input type="number" id="history-jump-input" min="1" max="${totalPages}" value="${currentPage}" 
+                   class="w-16 p-1 text-center border rounded themed-input appearance-none" 
+                   onkeydown="if(event.key==='Enter') loadHistory(parseInt(this.value))">
+            <span>/ ${totalPages} ページへ</span>
+            <button onclick="loadHistory(parseInt(document.getElementById('history-jump-input').value))"
+                    class="px-3 py-1 rounded bg-gray-200 dark:bg-gray-700 hover:opacity-80 transition">移動</button>
+        </div>
+    `;
+
+    html += '</div>';
     paginationEl.innerHTML = html;
 }
 
