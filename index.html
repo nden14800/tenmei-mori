@@ -440,73 +440,72 @@
             font-family: 'Zen Old Mincho', serif;
         }
 
-        /* スタイル1: 大吉 (金・和紙) */
+       /* --- 大吉：より深く濃い黄金のデザイン --- */
         .style-daikichi {
-            background-color: #f3c845;
-            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.25'/%3E%3C/svg%3E");
-            border: 8px double #fff;
-            color: #3e1e00;
-        }
-        .style-daikichi .accent-border { border-color: #3e1e00; }
-        .style-daikichi .accent-text { color: #8a1c1c; }
-
-        /* スタイル2: 大凶 (黒白・重厚) */
-        .style-daikyo {
-            background-color: #1a1a1a;
-            border: 8px solid #333;
-            color: #f0f0f0;
-        }
-        .style-daikyo .accent-border { border-color: #f0f0f0; }
-        .style-daikyo .accent-text { color: #fff; }
-        .style-daikyo .red-text { color: #fff !important; }
-
-        /* --- スタイル別定義（背景色・外枠） --- */
-
-        /* 1. 標準（大吉・大凶以外）: 真っ白背景、赤二重線、赤ハンコ、白文字 */
-        .style-normal {
-            background-color: #ffffff; /* 真っ白に変更 */
-            background-image: none;    /* テクスチャを消してスッキリさせる */
-            border: 8px double #b91c1c; /* 外枠：赤の二重線 */
-            color: #333;
-        }
-        .style-normal .result-circle-box {
-            background-color: #b91c1c; /* ハンコ：赤塗りつぶし */
-            color: #ffffff !important; /* 文字：白 */
-            border: none;
-        }
-
-        /* 2. 大吉: 濃い黄金グラデーション、白二重線、赤縁ハンコ、赤文字 */
-        .style-daikichi {
+            /* より深みのある黄金色 (#d4af37) と輝きを演出するグラデーション */
             background: linear-gradient(135deg, #f1c40f 0%, #d4af37 50%, #b8860b 100%);
             background-image: 
                 linear-gradient(135deg, #f1c40f 0%, #d4af37 50%, #b8860b 100%),
                 url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.15'/%3E%3C/svg%3E");
             background-blend-mode: overlay;
-            border: 8px double #ffffff; /* 外枠：白の二重線 */
+            border: 8px double #ffffff; /* 外枠は白の二重線 */
             color: #3e1e00;
-        }
-        .style-daikichi .result-circle-box {
-            background-color: rgba(255, 255, 255, 0.15);
-            border: 1.5px solid #b91c1c; /* 極細の赤線 */
-            color: #b91c1c !important;
+            box-shadow: inset 0 0 50px rgba(0,0,0,0.1);
         }
 
-        /* 3. 大凶: 真っ白背景、黒二重線、黒縁ハンコ、黒文字 */
+        /* 大吉のハンコ：細い赤線 */
+        .style-daikichi .result-circle-box {
+            background-color: rgba(255, 255, 255, 0.15); /* わずかに背景を明るくして文字を浮かせる */
+            border: 1.5px solid #b91c1c; /* 細い赤線 */
+            color: #b91c1c !important;
+            backdrop-filter: blur(2px);
+        }
+
+        /* --- 大凶：白背景・黒二重線 --- */
         .style-daikyo {
-            background-color: #ffffff; /* 真っ白 */
+            background-color: #ffffff;
             background-image: none;
-            border: 8px double #000000; /* 外枠：黒の二重線 */
+            border: 8px double #000000;
             color: #000000;
         }
+
         .style-daikyo .result-circle-box {
             background-color: transparent;
-            border: 4px solid #000000; /* 黒縁 */
+            border: 4px solid #000000;
             color: #000000 !important;
         }
-        /* 大凶専用：アクセントカラーをすべて黒へ */
-        .style-daikyo .accent-border { border-color: #000 !important; }
-        .style-daikyo .accent-text { color: #000 !important; }
-        .style-daikyo .red-text { color: #000 !important; }
+
+        /* 標準スタイル */
+        .style-normal {
+            background-color: #fffcf2;
+            border: 8px double #b91c1c;
+        }
+
+        .style-normal .result-circle-box {
+            background-color: #b91c1c;
+            border: none;
+            color: #ffffff !important;
+        }
+
+        .result-logo-area {
+            text-align: center;
+            margin-bottom: 10px;
+        }
+        .result-kamon {
+            font-size: 3rem;
+            margin-bottom: 5px;
+        }
+        .result-title-text {
+            font-size: 1.5rem;
+            font-weight: 900;
+            letter-spacing: 0.3em;
+        }
+        .result-issue-num {
+            font-size: 0.9rem;
+            margin-bottom: 20px;
+            font-family: monospace;
+            opacity: 0.8;
+        }
         
         /* --- 運勢ハンコ（最新デザイン） --- */
         .result-circle-box {
@@ -6780,7 +6779,7 @@ function handleInputQuiz(button, correctAnswers, questionId) {
             const outer = document.getElementById(outerId);
             outer.innerHTML = ''; 
 
-            // スタイルクラスの適用
+            // クラスの付与
             outer.className = 'result-card-outer';
             if (data.type === "大吉") {
                 outer.classList.add("style-daikichi");
@@ -6790,7 +6789,7 @@ function handleInputQuiz(button, correctAnswers, questionId) {
                 outer.classList.add("style-normal");
             }
 
-            // 1. ロゴ・タイトル
+            // 1. ロゴエリア
             const headerDiv = document.createElement('div');
             headerDiv.className = 'result-logo-area';
             headerDiv.innerHTML = `
@@ -6799,19 +6798,21 @@ function handleInputQuiz(button, correctAnswers, questionId) {
             `;
             outer.appendChild(headerDiv);
 
-            // 2. 本数カウンター
+            // 2. 発行本数
             const issueDiv = document.createElement('div');
             issueDiv.className = 'result-issue-num';
             let issueNum = currentState.liveCount || 0;
             issueDiv.textContent = `累計発行本数 ${issueNum.toLocaleString()} 本`;
             outer.appendChild(issueDiv);
 
-            // 3. 運勢ハンコ（縦書き）
+            // 3. 運勢ハンコ
             const circleBox = document.createElement('div');
             circleBox.className = 'result-circle-box';
+            // 文字数によるサイズ調整
             let fs = "3.2rem";
-            if (data.type.length >= 3) fs = "2.6rem";
+            if (data.type.length >= 3) fs = "2.6rem"; // 末小吉など
             if (data.type.length >= 4) fs = "2.2rem";
+            
             circleBox.innerHTML = `<div class="result-kanji-main" style="font-size: ${fs}">${data.type}</div>`;
             outer.appendChild(circleBox);
 
@@ -6821,12 +6822,13 @@ function handleInputQuiz(button, correctAnswers, questionId) {
             labelSub.textContent = '運勢';
             outer.appendChild(labelSub);
 
-            // 5. メッセージエリア
+            // 5. メインメッセージ
             const msgArea = document.createElement('div');
             msgArea.className = 'result-main-message-area';
             const adviceBox = document.createElement('div');
             adviceBox.className = 'result-advice-box accent-border';
-            adviceBox.innerHTML = `<span class="advice-label accent-text">助言</span> <span class="accent-text">${data.desc || "心穏やかに過ごすべし。"}</span>`;
+            const adviceText = data.desc || "心穏やかに過ごすべし。";
+            adviceBox.innerHTML = `<span class="advice-label accent-text">助言</span> <span class="accent-text">${adviceText}</span>`;
             const poemDiv = document.createElement('div');
             poemDiv.className = 'result-poem-vertical accent-text';
             poemDiv.textContent = data.poem;
@@ -6834,7 +6836,7 @@ function handleInputQuiz(button, correctAnswers, questionId) {
             msgArea.appendChild(poemDiv);
             outer.appendChild(msgArea);
 
-            // 6. 詳細項目
+            // 6. 詳細リスト
             const detailGrid = document.createElement('div');
             detailGrid.className = 'result-details-grid accent-border';
             if (data.detail) {
@@ -6847,7 +6849,7 @@ function handleInputQuiz(button, correctAnswers, questionId) {
             }
             outer.appendChild(detailGrid);
 
-            // 7. ラッキー・アンラッキー
+            // 7. ラッキーエリア
             const luckyArea = document.createElement('div');
             luckyArea.className = 'lucky-area';
             const lBox = document.createElement('div');
@@ -6875,7 +6877,7 @@ function handleInputQuiz(button, correctAnswers, questionId) {
             luckyArea.appendChild(uBox);
             outer.appendChild(luckyArea);
 
-            // 8. フッター（名前・日付・QR）
+            // 8. フッター
             if (withFooter) {
                 const footer = document.createElement('div');
                 footer.className = 'result-footer-info accent-border';
