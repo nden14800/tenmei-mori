@@ -9259,6 +9259,26 @@ function changeHistoryPage(newPage) {
             } catch(e) { console.error(e); }
             finally { showLoading(false); }
         }
+
+        async function toggleBlock(username, action) {
+            if(!confirm(`${username} を${action === 'block' ? 'ブロック' : 'ブロック解除'}しますか？`)) return;
+            
+            showLoading(true);
+            try {
+                const res = await authFetch(`${API_BASE}/api/user/block`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ targetUsername: username, action: action })
+                });
+                if(res.ok) {
+                    showToast(action === 'block' ? 'ブロックしました' : 'ブロックを解除しました', 'success');
+                    loadUserProfile(username);
+                } else {
+                    alert("操作に失敗しました");
+                }
+            } catch(e) { console.error(e); }
+            finally { showLoading(false); }
+        }
             
     </script>
 </body>
