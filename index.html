@@ -6440,15 +6440,24 @@ function handleInputQuiz(button, correctAnswers, questionId) {
 
         function showLoading(show) {
             const overlay = document.getElementById('loading-overlay');
-            if(show) {
+            if (!overlay) return;
+
+            if (show) {
+                // まず表示状態にする
                 overlay.style.display = 'flex';
-                // わずかに遅らせてopacityを変更しフェードインさせる
-                requestAnimationFrame(() => overlay.classList.add('visible'));
-            } else {
-                overlay.classList.remove('visible');
-                // フェードアウト後に非表示
+                // ブラウザに描画を認識させるため、わずかに待ってから透明度を変更
                 setTimeout(() => {
-                    if(!overlay.classList.contains('visible')) overlay.style.display = 'none';
+                    overlay.classList.add('visible');
+                }, 10);
+            } else {
+                // 透明度を0にする
+                overlay.classList.remove('visible');
+                // フェードアウトのアニメーション時間(0.3s)待ってから非表示にする
+                setTimeout(() => {
+                    // もし待っている間に再度 showLoading(true) が呼ばれていたら消さない
+                    if (!overlay.classList.contains('visible')) {
+                        overlay.style.display = 'none';
+                    }
                 }, 300);
             }
         }
