@@ -9931,6 +9931,76 @@ function changeHistoryPage(newPage) {
     // 初期化実行 (window.onload内などで呼ぶ)
     // BoardSystem.init();
 
+        
+// 画面切り替え関数 (修正版)
+    window.showView = function(viewId) {
+        // Lab機能へのアクセス制限処理
+        if(viewId === 'lab') {
+            const lock = document.getElementById('lab-lock');
+            const wrapper = document.getElementById('lab-content-wrapper');
+            
+            if(!currentState.user) {
+                lock.classList.remove('hidden');
+                wrapper.classList.add('lab-blurred');
+            } else {
+                lock.classList.add('hidden');
+                wrapper.classList.remove('lab-blurred');
+            }
+        }
+
+        // 画面の切り替えアニメーション
+        document.querySelectorAll('.view-section').forEach(el => {
+            el.classList.remove('active');
+            setTimeout(() => {
+                if(!el.classList.contains('active')) el.style.display = 'none';
+            }, 500);
+        });
+        
+        const target = document.getElementById(`view-${viewId}`);
+        if (target) {
+            target.style.display = 'block';
+            void target.offsetWidth; // リフロー発生
+            target.classList.add('active');
+        }
+        currentState.view = viewId;
+
+        // --- 各ビューごとの初期化ロジック ---
+        
+        // おみくじ選択画面
+        if(viewId === 'draw') {
+            resetOmikujiPool();
+        }
+        
+        // おみくじの轍
+        if(viewId === 'history') {
+            loadHistory();
+        }
+        
+        // 都道府県ランキング
+        if(viewId === 'prefecture') {
+            renderPrefectureRanking();
+        }
+        
+        // 御守授与所（リセット）
+        if(viewId === 'omamori') {
+            document.getElementById('omamori-step-1').classList.remove('hidden');
+            document.getElementById('omamori-step-2').classList.add('hidden');
+            document.getElementById('omamori-step-3').classList.add('hidden');
+        }
+
+        // ★掲示板（初期化と読み込み）
+        if(viewId === 'board') {
+            BoardSystem.init(); 
+            BoardSystem.load(1); 
+        }
+
+        // 規約・ポリシー（目次生成）
+        if(viewId === 'about' || viewId === 'privacy') {
+            initTOC(viewId);
+        }
+    };
+
+
             
     </script>
 </body>
