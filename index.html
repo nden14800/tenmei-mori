@@ -8950,23 +8950,37 @@ function changeHistoryPage(newPage) {
             finally { showLoading(false); }
         }
 
-        // --- フォロー機能 ---
+        // --- フォロー機能 (アクション指定対応版) ---
         async function toggleFollow(username, action) {
             if(!currentState.user) return showView('auth');
             
+            // ボタンを一時的に無効化するなどのUI処理を入れると親切ですが、今回はローディングで対応
             showLoading(true);
             try {
                 const res = await authFetch(`${API_BASE}/api/user/follow`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ targetUsername: username, action: action })
+                    body: JSON.stringify({ 
+                        targetUsername: username, 
+                        action: action // 'follow' または 'unfollow' を送信
+                    })
                 });
+                
                 if(res.ok) {
-                    // リロードして反映
+                    // 成功したら画面をリロードして最新状態（ボタンの切り替わり含む）を反映
                     loadUserProfile(username);
+                    const msg = action === 'follow' ? 'フォローしました' : 'フォローを解除しました';
+                    showToast(msg, 'success');
+                } else {
+                    const data = await res.json();
+                    alert(data.error || "操作に失敗しました");
                 }
-            } catch(e) { console.error(e); }
-            finally { showLoading(false); }
+            } catch(e) { 
+                console.error(e);
+                alert("通信エラー"); 
+            } finally { 
+                showLoading(false); 
+            }
         }
         
         // --- 「参拝者台帳」ボタンを押した時の挙動修正 ---
