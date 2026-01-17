@@ -9188,6 +9188,77 @@ function changeHistoryPage(newPage) {
         function changeFollowListPage(newPage) {
             loadFollowList(followListState.type, followListState.username, newPage);
         }
+
+        // アイコン・色データ
+        const profileIcons = ['bi-person', 'bi-flower1', 'bi-star', 'bi-heart', 'bi-moon-stars', 'bi-sun', 'bi-tree', 'bi-cloud', 'bi-droplet', 'bi-lightning'];
+        const profileColors = ['gray', 'red', 'blue', 'green', 'yellow', 'purple', 'pink', 'black'];
+        let selectedIcon = 'bi-person';
+        let selectedColor = 'gray';
+
+        // 編集モーダルを開く
+        function openEditProfileModal(bio, title, icon, color) {
+            document.getElementById('edit-bio').value = bio === "自己紹介はまだありません。" ? "" : bio;
+            document.getElementById('edit-title').value = title;
+            
+            selectedIcon = icon || 'bi-person';
+            selectedColor = color || 'gray';
+            
+            renderIconSelector();
+            renderColorSelector();
+            
+            document.getElementById('edit-profile-modal').style.display = 'flex';
+        }
+
+        function renderIconSelector() {
+            const container = document.getElementById('icon-selector');
+            container.innerHTML = profileIcons.map(ic => `
+                <div class="icon-option ${ic === selectedIcon ? 'selected' : ''}" onclick="selectedIcon='${ic}'; renderIconSelector()">
+                    <i class="bi ${ic}"></i>
+                </div>
+            `).join('');
+        }
+
+        function renderColorSelector() {
+            const container = document.getElementById('color-selector');
+            const colorMap = { 'gray':'#9ca3af', 'red':'#ef4444', 'blue':'#3b82f6', 'green':'#10b981', 'yellow':'#eab308', 'purple':'#a855f7', 'pink':'#ec4899', 'black':'#1f2937' };
+            container.innerHTML = profileColors.map(c => `
+                <div class="color-option ${c === selectedColor ? 'selected' : ''}" style="background-color: ${colorMap[c]}" onclick="selectedColor='${c}'; renderColorSelector()"></div>
+            `).join('');
+        }
+
+        // リセット機能
+        function resetProfileEdit() {
+            if(!confirm("プロフィールを初期状態に戻しますか？")) return;
+            document.getElementById('edit-bio').value = "";
+            document.getElementById('edit-title').value = "初詣の旅人";
+            selectedIcon = 'bi-person';
+            selectedColor = 'gray';
+            renderIconSelector();
+            renderColorSelector();
+        }
+
+        // 保存
+        async function saveProfileChanges() {
+            const bio = document.getElementById('edit-bio').value;
+            const title = document.getElementById('edit-title').value || "初詣の旅人";
+
+            showLoading(true);
+            try {
+                const res = await authFetch(`${API_BASE}/api/user/update_details`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ bio, title, icon: selectedIcon, color: selectedColor })
+                });
+                if (res.ok) {
+                    showToast("プロフィールを更新しました", "success");
+                    document.getElementById('edit-profile-modal').style.display = 'none';
+                    loadUserProfile(currentState.user.username);
+                } else {
+                    alert("更新に失敗しました");
+                }
+            } catch(e) { console.error(e); }
+            finally { showLoading(false); }
+        }
             
     </script>
 </body>
