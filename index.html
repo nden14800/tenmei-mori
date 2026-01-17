@@ -6761,13 +6761,17 @@ function handleInputQuiz(button, correctAnswers, questionId) {
             const outer = document.getElementById(outerId);
             outer.innerHTML = ''; 
 
-            // スタイルクラスの適用
+            // クラスの付与
             outer.className = 'result-card-outer';
-            if (data.type === "大吉") outer.classList.add("style-daikichi");
-            else if (data.type === "大凶") outer.classList.add("style-daikyo");
-            else outer.classList.add("style-normal");
+            if (data.type === "大吉") {
+                outer.classList.add("style-daikichi");
+            } else if (data.type === "大凶") {
+                outer.classList.add("style-daikyo");
+            } else {
+                outer.classList.add("style-normal");
+            }
 
-            // 1. 最上部: 家紋 + タイトル
+            // 1. ロゴエリア
             const headerDiv = document.createElement('div');
             headerDiv.className = 'result-logo-area';
             headerDiv.innerHTML = `
@@ -6776,48 +6780,47 @@ function handleInputQuiz(button, correctAnswers, questionId) {
             `;
             outer.appendChild(headerDiv);
 
-            // 2. 累計発行本数
+            // 2. 発行本数
             const issueDiv = document.createElement('div');
             issueDiv.className = 'result-issue-num';
             let issueNum = currentState.liveCount || 0;
             issueDiv.textContent = `累計発行本数 ${issueNum.toLocaleString()} 本`;
             outer.appendChild(issueDiv);
 
-            // 3. 中央: 運勢結果（円形ハンコ・縦書き）
+            // 3. 運勢ハンコ
             const circleBox = document.createElement('div');
-            circleBox.className = 'result-circle-box'; // CSSで色を制御
-            // 4文字（末小吉など）でも確実に収まるようフォントサイズを微調整
-            const fontSize = data.type.length >= 3 ? '2.8rem' : '3.5rem';
-            circleBox.innerHTML = `<div class="result-kanji-main" style="font-size: ${fontSize}">${data.type}</div>`;
+            circleBox.className = 'result-circle-box';
+            // 文字数によるサイズ調整
+            let fs = "3.2rem";
+            if (data.type.length >= 3) fs = "2.6rem"; // 末小吉など
+            if (data.type.length >= 4) fs = "2.2rem";
+            
+            circleBox.innerHTML = `<div class="result-kanji-main" style="font-size: ${fs}">${data.type}</div>`;
             outer.appendChild(circleBox);
 
-            // 4. 円の下: 運勢という文字
+            // 4. ラベル
             const labelSub = document.createElement('div');
             labelSub.className = 'result-label-sub accent-text';
             labelSub.textContent = '運勢';
             outer.appendChild(labelSub);
 
-            // 5. メインメッセージ + 助言
+            // 5. メインメッセージ
             const msgArea = document.createElement('div');
             msgArea.className = 'result-main-message-area';
-            
             const adviceBox = document.createElement('div');
             adviceBox.className = 'result-advice-box accent-border';
             const adviceText = data.desc || "心穏やかに過ごすべし。";
             adviceBox.innerHTML = `<span class="advice-label accent-text">助言</span> <span class="accent-text">${adviceText}</span>`;
-            
             const poemDiv = document.createElement('div');
             poemDiv.className = 'result-poem-vertical accent-text';
             poemDiv.textContent = data.poem;
-
             msgArea.appendChild(adviceBox);
             msgArea.appendChild(poemDiv);
             outer.appendChild(msgArea);
 
-            // 6. 詳細運勢リスト
+            // 6. 詳細リスト
             const detailGrid = document.createElement('div');
             detailGrid.className = 'result-details-grid accent-border';
-            
             if (data.detail) {
                 data.detail.forEach(d => {
                     const col = document.createElement('div');
@@ -6828,10 +6831,9 @@ function handleInputQuiz(button, correctAnswers, questionId) {
             }
             outer.appendChild(detailGrid);
 
-            // 7. 開運・不運項目
+            // 7. ラッキーエリア
             const luckyArea = document.createElement('div');
             luckyArea.className = 'lucky-area';
-            
             const lBox = document.createElement('div');
             lBox.className = 'lucky-box accent-border';
             if (data.lucky) {
@@ -6843,18 +6845,17 @@ function handleInputQuiz(button, correctAnswers, questionId) {
                     <div class="lucky-row accent-text"><span class="lucky-icon"><i class="bi bi-person"></i></span>人：${data.lucky.person}</div>
                 `;
             }
-            luckyArea.appendChild(lBox);
-
             const uBox = document.createElement('div');
             uBox.className = 'unlucky-box accent-border';
             if (data.unlucky) {
                 uBox.innerHTML = `
-                    <div class="lucky-title accent-text red-text" style="color:red">不運・注意</div>
+                    <div class="lucky-title accent-text red-text">不運・注意</div>
                     <div class="lucky-row accent-text"><span class="lucky-icon"><i class="bi bi-exclamation-triangle"></i></span>物：${data.unlucky.item}</div>
                     <div class="lucky-row accent-text"><span class="lucky-icon"><i class="bi bi-x-octagon"></i></span>所：${data.unlucky.spot}</div>
                     <div class="lucky-row accent-text"><span class="lucky-icon"><i class="bi bi-person-x"></i></span>人：${data.unlucky.person}</div>
                 `;
             }
+            luckyArea.appendChild(lBox);
             luckyArea.appendChild(uBox);
             outer.appendChild(luckyArea);
 
@@ -6880,8 +6881,7 @@ function handleInputQuiz(button, correctAnswers, questionId) {
                 outer.appendChild(footer);
                 setTimeout(() => {
                     new QRCode(qrTarget, {
-                        text: SITE_URL,
-                        width: 60, height: 60,
+                        text: SITE_URL, width: 60, height: 60,
                         colorDark : "#000000", colorLight : "#ffffff",
                         correctLevel : QRCode.CorrectLevel.H
                     });
