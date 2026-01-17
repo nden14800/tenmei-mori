@@ -8901,7 +8901,6 @@ function changeHistoryPage(newPage) {
     
     // showView関数を上書き（既存のロジック + 目次生成呼び出し）
     window.showView = function(viewId) {
-        // --- 既存のshowViewの中身 ---
         // Lab機能へのアクセス制限処理
         if(viewId === 'lab') {
             const lock = document.getElementById('lab-lock');
@@ -8936,8 +8935,15 @@ function changeHistoryPage(newPage) {
         if(viewId === 'draw') resetOmikujiPool();
         if(viewId === 'history') loadHistory();
         if(viewId === 'prefecture') renderPrefectureRanking();
+        
+        // 御守授与所のリセット
+        if(viewId === 'omamori') {
+            document.getElementById('omamori-step-1').classList.remove('hidden');
+            document.getElementById('omamori-step-2').classList.add('hidden');
+            document.getElementById('omamori-step-3').classList.add('hidden');
+        }
 
-         // ★重要: 掲示板を開いたときの処理
+        // ★重要: 掲示板を開いたときの処理
         if(viewId === 'board') {
             BoardSystem.init(); // リスト生成
             BoardSystem.load(1); // 投稿読み込み
