@@ -9324,6 +9324,38 @@ function changeHistoryPage(newPage) {
             } catch(e) { console.error(e); }
             finally { showLoading(false); }
         }
+
+        // 認証詳細モーダルを開く
+        function openVerifiedModal(type, username) {
+            const modal = document.getElementById('verified-modal');
+            const iconArea = document.getElementById('verified-icon-area');
+            const titleEl = document.getElementById('verified-title');
+            const descEl = document.getElementById('verified-desc');
+            
+            if (type === 'gold') {
+                iconArea.innerHTML = '<i class="bi bi-patch-check-fill text-yellow-500" style="filter: drop-shadow(0 0 10px rgba(212, 175, 55, 0.6));"></i>';
+                titleEl.textContent = "黄金の認証ユーザー";
+                titleEl.className = "text-2xl font-black mb-2 text-yellow-600";
+                descEl.innerHTML = `
+                    <strong>${escapeHtml(username)}</strong> 様は、<br>
+                    「運勢・天命乃杜」の運営者、<br>
+                    または開発・管理に深く携わる特別なアカウントです。<br><br>
+                    この黄金の輝きは、杜を護る者の証です。
+                `;
+            } else {
+                iconArea.innerHTML = '<i class="bi bi-patch-check-fill text-blue-500"></i>';
+                titleEl.textContent = "認証済みユーザー";
+                titleEl.className = "text-2xl font-black mb-2 text-blue-600";
+                descEl.innerHTML = `
+                    <strong>${escapeHtml(username)}</strong> 様は、<br>
+                    所定の手続きを経て本人確認が完了した、<br>
+                    信頼できる公式アカウントであることを証明します。<br><br>
+                    なりすましではない、本物の証です。
+                `;
+            }
+            
+            modal.style.display = 'flex';
+        }
             
     </script>
 </body>
