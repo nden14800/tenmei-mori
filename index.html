@@ -498,20 +498,18 @@
             color: #ffffff !important; /* ハンコ内の文字：白 */
         }
 
-        /* 2. 大吉: 画像の「リアルな和紙の繊維感」と「濃厚な山吹色」を完全再現 */
+        /* 2. 大吉: 画像の「リアルな繊維の凹凸」と「濃厚な山吹色」を完全再現 */
         .style-daikichi {
-            /* 画像から抽出した、赤みがかった濃厚な黄金色（山吹色） */
-            background-color: #ffaf00;
+            /* 画像に近い、赤みを帯びた濃厚な山吹色 */
+            background-color: #ffb300;
             
-            /* 【重要】照明効果フィルターを使ったリアルな和紙テクスチャ */
-            /* 
-               feTurbulence: 雲のようなムラを生成 (周波数を下げて繊維を大きく)
-               feDiffuseLighting: そのムラに光を当てて、リアルな紙の凹凸(陰影)を作り出す
-            */
-            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 500 500' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='washi-texture'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.03' numOctaves='5' seed='5' result='noise'/%3E%3CfeDiffuseLighting in='noise' lighting-color='%23ffffff' surfaceScale='4'%3E%3CfeDistantLight azimuth='45' elevation='60'/%3E%3C/feDiffuseLighting%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23washi-texture)' opacity='0.6'/%3E%3C/svg%3E");
+            /* 【改良版】照明効果(Lighting)を用いて、和紙の繊維のうねりと陰影を計算する特殊フィルター */
+            /* baseFrequency='0.03' -> 粒ではなく「繊維」に見えるよう模様を大きく設定 */
+            /* surfaceScale='4' -> 凹凸を深くして、ザラザラ感を強調 */
+            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 400 400' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='real-washi'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.03' numOctaves='5' result='noise'/%3E%3CfeDiffuseLighting in='noise' lighting-color='white' surfaceScale='4'%3E%3CfeDistantLight azimuth='45' elevation='50'/%3E%3C/feDiffuseLighting%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23real-washi)' opacity='0.5'/%3E%3C/svg%3E");
             
-            /* 背景色とテクスチャを「オーバーレイ」で合成し、深みと輝きを出す */
-            background-blend-mode: overlay;
+            /* 陰影を背景色に柔らかく焼き付けて、紙の質感として一体化させる */
+            background-blend-mode: soft-light;
             
             border: 8px double #fff; /* 外枠 */
             color: #b91c1c; /* 文字色 */
@@ -519,7 +517,7 @@
         
         .style-daikichi .result-circle-box {
             background-color: transparent;
-            border: 2px solid #b91c1c;
+            border: 2px solid #b91c1c; /* ハンコの線 */
             color: #b91c1c !important;
         }
 
