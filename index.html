@@ -8896,12 +8896,12 @@ function changeHistoryPage(newPage) {
             }
         }
 
-       // プロフィール描画 (3点リーダー・認証バッジ・アイコン対応版)
+       // プロフィール描画 (修正完全版)
         function renderProfilePage(data) {
             showView('profile-public');
             const container = document.getElementById('public-profile-content');
             
-            // バッジ一覧
+            // バッジHTML生成
             const badgesHtml = data.badges.map(b => `
                 <div class="badge-item unlocked" title="${b.description}">
                     <div class="badge-icon"><i class="bi ${b.icon}"></i></div>
@@ -8915,32 +8915,57 @@ function changeHistoryPage(newPage) {
             // --- 認証バッジ ---
             let verifiedHtml = '';
             if (data.verified === 'gold') {
-                verifiedHtml = `<span class="verified-badge verified-gold" onclick="showVerifiedModal('gold', '${escapeHtml(data.username)}')"><i class="bi bi-patch-check-fill text-xl"></i></span>`;
+                verifiedHtml = `<span class="verified-badge verified-gold" onclick="openVerifiedModal('gold', '${escapeHtml(data.username)}')"><i class="bi bi-patch-check-fill text-xl"></i></span>`;
             } else if (data.verified === 'blue') {
-                verifiedHtml = `<span class="verified-badge verified-blue" onclick="showVerifiedModal('blue', '${escapeHtml(data.username)}')"><i class="bi bi-patch-check-fill text-xl"></i></span>`;
+                verifiedHtml = `<span class="verified-badge verified-blue" onclick="openVerifiedModal('blue', '${escapeHtml(data.username)}')"><i class="bi bi-patch-check-fill text-xl"></i></span>`;
             }
 
-            // --- ボタン・メニュー出し分け ---
-            let actionAreaHtml = '';
-            const isSelf = data.isMe || (currentState.user && currentState.user.username === data.username);
+            // --- ボタン出し分けロジック ---
+            let actionBtnHtml = '';
+            
+            // 判定基準
+            const isMe = data.isMe || (currentState.user && currentState.user.username === data.username);
+            const isLoggedIn = !!currentState.user;
 
-            if (isSelf) {
-                // 自分: 編集ボタン
-                actionAreaHtml = `
+            if (isMe) {
+                // 【自分自身】 -> 編集ボタン
+                actionBtnHtml = `
                     <button onclick="openEditProfileModal('${escapeHtml(data.bio)}', '${escapeHtml(data.title)}', '${data.icon}', '${data.color}')" 
                             class="px-4 py-2 bg-indigo-600 text-white rounded-lg font-bold text-sm hover:opacity-90 shadow-md">
-                        <i class="bi bi-pencil-square"></i> 編集
+                        <i class="bi bi-pencil-square"></i> プロフィール編集
                     </button>`;
-            } else if (currentState.user) {
-                // 他人: 3点リーダーメニュー
-                // フォロー状態によってメニューの中身を変える
-                const followText = data.isFollowing ? 'フォロー解除' : 'フォローする';
-                const followAction = data.isFollowing ? 'unfollow' : 'follow';
-                const blockText = data.isBlocked ? 'ブロック解除' : 'ブロックする';
-                const blockAction = data.isBlocked ? 'unblock' : 'block';
+            } else if (isLoggedIn) {
+                // 【他人 & ログイン中】
+                if (data.isFollowing) {
+                    // ★フォロー中なら「フォロー解除」を確実に表示
+                    actionBtnHtml = `
+                        <button onclick="toggleFollow('${data.username}', 'unfollow')" 
+                                class="px-4 py-2 bg-white dark:bg-zinc-800 text-red-600 border-2 border-red-500 rounded-lg font-bold text-sm hover:bg-red-50 transition">
+                            <i class="bi bi-person-dash-fill"></i> フォロー解除
+                        </button>`;
+                } else {
+                    // ★フォローしてないなら「フォローする」
+                    actionBtnHtml = `
+                        <button onclick="toggleFollow('${data.username}', 'follow')" 
+                                class="px-4 py-2 bg-black text-white dark:bg-white dark:text-black rounded-lg font-bold text-sm hover:opacity-80 shadow-md transition">
+                            <i class="bi bi-person-plus-fill"></i> フォローする
+                        </button>`;
+                }
+            } else {
+                // 【未ログイン】
+                actionBtnHtml = `<button onclick="showView('auth')" class="px-4 py-2 bg-gray-500 text-white rounded-lg font-bold text-sm hover:opacity-80">ログインしてフォロー</button>`;
+            }
 
-                actionAreaHtml = `
-                    <div class="profile-menu-container">
+            // 3点リーダーメニュー（他人 かつ ログイン中のみ表示）
+            let menuHtml = '';
+            if (isLoggedIn && !isMe) {
+                const followAction = data.isFollowing ? 'unfollow' : 'follow';
+                const followText = data.isFollowing ? 'フォロー解除' : 'フォローする';
+                const blockAction = data.isBlocked ? 'unblock' : 'block';
+                const blockText = data.isBlocked ? 'ブロック解除' : 'ブロックする';
+
+                menuHtml = `
+                    <div class="profile-menu-container ml-2">
                         <button class="profile-menu-btn" onclick="toggleProfileMenu()">
                             <i class="bi bi-three-dots"></i>
                         </button>
@@ -8954,17 +8979,9 @@ function changeHistoryPage(newPage) {
                         </div>
                     </div>
                 `;
-                
-                // ブロックされている場合
-                if (data.isBlockedBy) {
-                    actionAreaHtml += `<div class="mt-2 text-xs text-red-500 font-bold"><i class="bi bi-exclamation-circle"></i> ブロックされています</div>`;
-                }
-            } else {
-                // 未ログイン
-                actionAreaHtml = `<button onclick="showView('auth')" class="px-4 py-2 bg-gray-500 text-white rounded-lg font-bold text-sm hover:opacity-80">ログイン</button>`;
             }
 
-            // アイコンの色スタイル
+            // アイコン色
             const iconColorMap = {
                 'gray': '#6b7280', 'red': '#ef4444', 'blue': '#3b82f6', 'green': '#10b981', 'yellow': '#eab308', 
                 'purple': '#a855f7', 'pink': '#ec4899', 'black': '#1f2937'
@@ -8983,7 +9000,7 @@ function changeHistoryPage(newPage) {
                 <div class="px-6 pb-8 mt-12 text-center md:text-left">
                     <div class="flex flex-col md:flex-row justify-between items-center md:items-start mb-4">
                         <div>
-                            <h2 class="text-3xl font-black mb-1 flex items-center justify-center md:justify-start">
+                            <h2 class="text-3xl font-black mb-1 flex items-center justify-center md:justify-start gap-2">
                                 ${escapeHtml(data.username)} ${verifiedHtml}
                             </h2>
                             <p class="text-sm themed-text-sub font-bold mb-2">
@@ -8999,10 +9016,13 @@ function changeHistoryPage(newPage) {
                                 </span>
                             </div>
                         </div>
-                        <div class="mt-4 md:mt-0 relative">
-                            ${actionAreaHtml}
+                        <div class="mt-4 md:mt-0 flex items-center justify-center md:justify-end">
+                            ${actionBtnHtml}
+                            ${menuHtml}
                         </div>
                     </div>
+                    
+                    ${data.isBlocked ? '<div class="mb-4 text-center text-red-500 font-bold border border-red-500 p-2 rounded">このユーザーをブロックしています</div>' : ''}
 
                     <div class="mb-6 p-4 rounded-xl bg-gray-50 dark:bg-zinc-800 border border-gray-200 dark:border-gray-700 text-sm leading-relaxed text-left">
                         <h4 class="font-bold mb-2 text-gray-500">自己紹介</h4>
