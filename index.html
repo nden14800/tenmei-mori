@@ -6824,6 +6824,14 @@ function handleInputQuiz(button, correctAnswers, questionId) {
                                 fetchHistoryStats();
                             }
                         }
+                        // ▼▼▼ 追加: レート制限（429）の通知ハンドリング ▼▼▼
+                        else if (res.status === 429) {
+                            const errData = await res.json();
+                            // タイトル: 「天命の戒め」 タイプ: warning (黄色い三角アイコン)
+                            showToast(errData.message, 'warning', '天命の戒め');
+                        }
+                        // ▲▲▲ 追加ここまで ▲▲▲
+                        
                     } catch(e) { console.error(e); }
                     finally { showLoading(false); }
                 }
