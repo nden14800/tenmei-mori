@@ -498,25 +498,27 @@
             color: #ffffff !important; /* ハンコ内の文字：白 */
         }
 
-        /* 2. 大吉: 画像のような鮮やかな黄金色と、和紙の強いザラザラ感を再現 */
+        /* 2. 大吉: 画像のような「深い繊維感」と「リアルな凹凸」を再現 */
         .style-daikichi {
-            /* 画像から抽出した、赤みの入った濃厚な山吹色 */
-            background-color: #ffb700;
+            /* ベースの色：画像から抽出した濃厚な山吹色 */
+            background-color: #ffab00;
             
-            /* ザラザラ感（和紙の繊維）を表現するノイズ画像 */
-            /* 粒子を少し粗く(0.5)し、不透明度を高く(0.4)して、質感をくっきりと出しています */
-            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 400 400' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='washi'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.5' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23washi)' opacity='0.4'/%3E%3C/svg%3E");
+            /* 【ここがポイント】 */
+            /* 単なるノイズではなく、光の反射(SpecularLighting)を計算して、 */
+            /* 紙のシワや繊維の凹凸を立体的に表現するSVGフィルタを使用 */
+            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='washi'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.04' numOctaves='5' result='noise'/%3E%3CfeSpecularLighting in='noise' surfaceScale='6' specularConstant='0.7' specularExponent='20' lighting-color='white'%3E%3CfeDistantLight azimuth='45' elevation='45'/%3E%3C/feSpecularLighting%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23washi)' opacity='0.5'/%3E%3C/svg%3E");
             
-            /* 背景色とノイズを合成して、深みのある質感にする */
-            background-blend-mode: overlay;
+            /* 背景色に、光沢のある和紙の質感を「ソフトライト」で合成 */
+            /* これにより、色が濁らずに紙の質感だけが浮き上がります */
+            background-blend-mode: soft-light;
             
-            border: 8px double #fff; /* 外枠はそのまま */
-            color: #b91c1c; /* 文字色は赤 */
+            border: 8px double #fff;
+            color: #b91c1c;
         }
         
         .style-daikichi .result-circle-box {
             background-color: transparent;
-            border: 2px solid #b91c1c; /* ハンコの線（2px） */
+            border: 2px solid #b91c1c;
             color: #b91c1c !important;
         }
 
