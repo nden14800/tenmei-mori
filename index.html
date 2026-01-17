@@ -5192,28 +5192,57 @@ let historyPageState = {
         return { data: slicedData, totalPages, currentPage: state.page, totalItems };
     }
 
-    // 共通: ページネーションボタンのHTML生成
-    function createPaginationHTML(type, current, total) {
-        if (total <= 1) return ''; // 1ページのみなら非表示
+    // 共通: ページネーションボタンのHTML生成 (最初・最後・ジャンプ機能付き)
+function createPaginationHTML(type, current, total) {
+    if (total <= 1) return ''; 
 
-        let html = '';
-        // 前へボタン
-        html += `<button onclick="changePage('${type}', ${current - 1})" 
-                 class="px-4 py-2 rounded border bg-white dark:bg-zinc-800 hover:bg-gray-100 dark:hover:bg-zinc-700 disabled:opacity-50 transition"
-                 ${current === 1 ? 'disabled' : ''}>
-                 <i class="bi bi-chevron-left"></i> 前へ</button>`;
+    let html = '<div class="flex flex-col items-center gap-4 w-full">';
+    html += '<div class="flex items-center justify-center flex-wrap gap-2">';
+    
+    // 最初へ
+    html += `<button onclick="changePage('${type}', 1)" 
+             class="px-4 py-2 rounded border bg-white dark:bg-zinc-800 hover:bg-gray-100 dark:hover:bg-zinc-700 disabled:opacity-50 transition"
+             ${current === 1 ? 'disabled' : ''}>
+             <i class="bi bi-chevron-double-left"></i> 最初へ</button>`;
 
-        // ページ番号
-        html += `<span class="font-bold font-mono mx-4">${current} / ${total}</span>`;
+    // 前へ
+    html += `<button onclick="changePage('${type}', ${current - 1})" 
+             class="px-4 py-2 rounded border bg-white dark:bg-zinc-800 hover:bg-gray-100 dark:hover:bg-zinc-700 disabled:opacity-50 transition"
+             ${current === 1 ? 'disabled' : ''}>
+             <i class="bi bi-chevron-left"></i> 前へ</button>`;
 
-        // 次へボタン
-        html += `<button onclick="changePage('${type}', ${current + 1})" 
-                 class="px-4 py-2 rounded border bg-white dark:bg-zinc-800 hover:bg-gray-100 dark:hover:bg-zinc-700 disabled:opacity-50 transition"
-                 ${current === total ? 'disabled' : ''}>
-                 次へ <i class="bi bi-chevron-right"></i></button>`;
+    // ページ番号
+    html += `<span class="font-bold font-mono mx-4">Page ${current} / ${total}</span>`;
 
-        return html;
-    }
+    // 次へ
+    html += `<button onclick="changePage('${type}', ${current + 1})" 
+             class="px-4 py-2 rounded border bg-white dark:bg-zinc-800 hover:bg-gray-100 dark:hover:bg-zinc-700 disabled:opacity-50 transition"
+             ${current === total ? 'disabled' : ''}>
+             次へ <i class="bi bi-chevron-right"></i></button>`;
+
+    // 最後へ
+    html += `<button onclick="changePage('${type}', ${total})" 
+             class="px-4 py-2 rounded border bg-white dark:bg-zinc-800 hover:bg-gray-100 dark:hover:bg-zinc-700 disabled:opacity-50 transition"
+             ${current === total ? 'disabled' : ''}>
+             最後へ <i class="bi bi-chevron-double-right"></i></button>`;
+
+    html += '</div>';
+
+    // ページジャンプ入力欄
+    html += `
+        <div class="flex items-center gap-2 text-sm themed-text-sub">
+            <input type="number" id="${type}-jump-input" min="1" max="${total}" value="${current}" 
+                   class="w-16 p-1 text-center border rounded themed-input appearance-none" 
+                   onkeydown="if(event.key==='Enter') changePage('${type}', parseInt(this.value))">
+            <span>/ ${total} ページへ</span>
+            <button onclick="changePage('${type}', parseInt(document.getElementById('${type}-jump-input').value))"
+                    class="px-3 py-1 rounded bg-gray-200 dark:bg-gray-700 hover:opacity-80 transition">移動</button>
+        </div>
+    `;
+
+    html += '</div>';
+    return html;
+}
 
     // ==========================================
     //  描画ロジック (一覧・ホーム・詳細)
