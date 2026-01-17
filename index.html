@@ -8807,10 +8807,9 @@ function changeHistoryPage(newPage) {
             }
         }
 
-        // プロフィール描画 (Roblox風・完全版)
+        // プロフィール描画 (Roblox風・修正版)
         function renderProfilePage(data) {
             showView('profile-public');
-            
             const container = document.getElementById('public-profile-content');
             
             // バッジ一覧
@@ -8824,16 +8823,24 @@ function changeHistoryPage(newPage) {
             const date = new Date(data.joinDate);
             const joined = `${date.getFullYear()}/${date.getMonth()+1}/${date.getDate()}`;
 
-            // ボタンの出し分け（自分なら編集、他人ならフォロー）
+            // ボタン出し分けロジック
             let actionBtnHtml = '';
+            
             if (data.isMe) {
-                actionBtnHtml = `<button onclick="openEditProfileModal('${escapeHtml(data.bio)}', '${escapeHtml(data.title)}')" class="px-4 py-2 bg-gray-200 dark:bg-gray-700 rounded-lg font-bold text-sm hover:opacity-80"><i class="bi bi-pencil-fill"></i> プロフィール編集</button>`;
-            } else {
+                // 自分自身の場合：編集ボタンのみ
+                actionBtnHtml = `<button onclick="openEditProfileModal('${escapeHtml(data.bio)}', '${escapeHtml(data.title)}')" class="px-4 py-2 bg-gray-200 dark:bg-gray-700 rounded-lg font-bold text-sm hover:opacity-80 border border-gray-300 dark:border-gray-600"><i class="bi bi-pencil-fill"></i> プロフィール編集</button>`;
+            } else if (currentState.user) {
+                // 他人かつログイン中
                 if (data.isFollowing) {
-                    actionBtnHtml = `<button onclick="toggleFollow('${data.username}', 'unfollow')" class="px-4 py-2 bg-gray-200 dark:bg-gray-700 rounded-lg font-bold text-sm hover:opacity-80"><i class="bi bi-person-check-fill"></i> フォロー中</button>`;
-                } else if(currentState.user) {
-                    actionBtnHtml = `<button onclick="toggleFollow('${data.username}', 'follow')" class="px-4 py-2 bg-black text-white dark:bg-white dark:text-black rounded-lg font-bold text-sm hover:opacity-80"><i class="bi bi-person-plus-fill"></i> フォローする</button>`;
+                    // フォロー中 → 解除ボタン（グレー）
+                    actionBtnHtml = `<button onclick="toggleFollow('${data.username}', 'unfollow')" class="px-4 py-2 bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-200 rounded-lg font-bold text-sm hover:opacity-80 border border-gray-300 dark:border-gray-600"><i class="bi bi-person-check-fill"></i> フォロー中</button>`;
+                } else {
+                    // 未フォロー → フォローボタン（黒/白）
+                    actionBtnHtml = `<button onclick="toggleFollow('${data.username}', 'follow')" class="px-4 py-2 bg-black text-white dark:bg-white dark:text-black rounded-lg font-bold text-sm hover:opacity-80 shadow-md"><i class="bi bi-person-plus-fill"></i> フォローする</button>`;
                 }
+            } else {
+                // 未ログイン
+                actionBtnHtml = `<button onclick="showView('auth')" class="px-4 py-2 bg-red-600 text-white rounded-lg font-bold text-sm hover:opacity-80">ログインしてフォロー</button>`;
             }
 
             container.innerHTML = `
@@ -8851,10 +8858,14 @@ function changeHistoryPage(newPage) {
                                 <span class="bg-yellow-100 text-yellow-800 px-2 py-0.5 rounded mr-2">${escapeHtml(data.title)}</span>
                                 <i class="bi bi-calendar-event"></i> 参拝開始日: ${joined}
                             </p>
-                            <!-- フォロー数表示 -->
+                            <!-- クリック可能なフォロー数 -->
                             <div class="profile-social-stats">
-                                <span class="social-stat"><strong>${data.stats.following}</strong> フォロー中</span>
-                                <span class="social-stat"><strong>${data.stats.followers}</strong> フォロワー</span>
+                                <span class="social-stat" onclick="loadFollowList('following', '${data.username}', 1)">
+                                    <strong>${data.stats.following}</strong> フォロー中
+                                </span>
+                                <span class="social-stat" onclick="loadFollowList('followers', '${data.username}', 1)">
+                                    <strong>${data.stats.followers}</strong> フォロワー
+                                </span>
                             </div>
                         </div>
                         <div class="mt-4 md:mt-0">
