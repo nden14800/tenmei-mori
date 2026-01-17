@@ -440,61 +440,67 @@
             font-family: 'Zen Old Mincho', serif;
         }
 
-      /* --- 大吉：参考画像を再現した極限デザイン --- */
+      /* --- スタイル別定義（配色・文字色・枠線） --- */
+
+        /* 1. 標準（中吉・小吉・吉・末吉など）: 白背景、赤二重線、赤ハンコ、赤文字 */
+        .style-normal {
+            background-color: #ffffff;
+            border: 8px double #b91c1c;
+            color: #b91c1c; /* 基本の文字色を赤に */
+        }
+        .style-normal .result-circle-box {
+            background-color: #b91c1c;
+            border: none;
+            color: #ffffff !important; /* ハンコの中だけ白 */
+        }
+        /* 標準時のパーツ色固定 */
+        .style-normal .accent-border { border-color: #b91c1c !important; }
+        .style-normal .accent-text { color: #b91c1c !important; }
+        .style-normal .red-text { color: #b91c1c !important; }
+        .style-normal .result-kanji-main { font-family: 'Zen Old Mincho', serif; font-weight: 900; }
+
+        /* 2. 大吉: 鮮やか黄金、白二重線、極細赤縁ハンコ、赤文字 */
         .style-daikichi {
-            /* 画像のような明るく鮮やかな黄金背景 */
             background: #f1c40f;
             background-image: 
                 linear-gradient(135deg, #f39c12 0%, #f1c40f 50%, #f39c12 100%),
                 url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.1'/%3E%3C/svg%3E");
             background-blend-mode: overlay;
             border: 8px double #ffffff;
-            color: #e60012; /* 画像のような鮮やかな赤 */
+            color: #e60012; /* 画像と同じ鮮やかな赤 */
         }
-
-        /* 大吉のハンコ：極細の赤線と専用フォント設定 */
         .style-daikichi .result-circle-box {
             background-color: transparent;
-            border: 1px solid #e60012; /* マジで細い線（1px） */
+            border: 1px solid #e60012; /* マジで細い線 */
             color: #e60012 !important;
-            padding: 5px; /* 文字を大きく見せるため内側余白を削る */
         }
-
+        /* 大吉時のパーツ色固定 */
+        .style-daikichi .accent-border { border-color: #e60012 !important; }
+        .style-daikichi .accent-text { color: #e60012 !important; }
+        .style-daikichi .red-text { color: #e60012 !important; }
+        /* 大吉専用：画像のような極太フォント再現 */
         .style-daikichi .result-kanji-main {
             font-family: 'Zen Old Mincho', serif;
-            font-weight: 900; /* 画像のような極太感 */
-            letter-spacing: -0.1em; /* 文字をくっつけて印影らしく */
+            font-weight: 900;
+            letter-spacing: -0.1em;
             line-height: 0.9;
-            filter: drop-shadow(0.5px 0.5px 0px rgba(0,0,0,0.1)); /* わずかな立体感 */
         }
 
-        /* 大凶のデザイン（変更なし、黒一色） */
+        /* 3. 大凶: 白背景、黒二重線、黒縁ハンコ、黒文字 */
         .style-daikyo {
             background-color: #ffffff;
             border: 8px double #000000;
-            color: #000000;
+            color: #000000; /* 大凶だけは黒 */
         }
         .style-daikyo .result-circle-box {
             background-color: transparent;
             border: 4px solid #000000;
             color: #000000 !important;
         }
-
-        /* 標準スタイル（大吉の変更に合わせてフォントのみ強化） */
-        .style-normal {
-            background-color: #ffffff;
-            border: 8px double #b91c1c;
-            color: #b91c1c;
-        }
-        .style-normal .result-circle-box {
-            background-color: #b91c1c;
-            border: none;
-            color: #ffffff !important;
-        }
-        .style-normal .result-kanji-main {
-            font-family: 'Zen Old Mincho', serif;
-            font-weight: 900;
-        }
+        .style-daikyo .accent-border { border-color: #000000 !important; }
+        .style-daikyo .accent-text { color: #000000 !important; }
+        .style-daikyo .red-text { color: #000000 !important; }
+        .style-daikyo .result-kanji-main { font-family: 'Zen Old Mincho', serif; font-weight: 900; }
 
         .result-logo-area {
             text-align: center;
