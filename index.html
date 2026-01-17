@@ -6818,7 +6818,7 @@ function handleInputQuiz(button, correctAnswers, questionId) {
             const outer = document.getElementById(outerId);
             outer.innerHTML = ''; 
 
-            // スタイルクラスの適用
+            // クラスの適用
             outer.className = 'result-card-outer';
             if (data.type === "大吉") {
                 outer.classList.add("style-daikichi");
@@ -6844,10 +6844,10 @@ function handleInputQuiz(button, correctAnswers, questionId) {
             issueDiv.textContent = `累計発行本数 ${issueNum.toLocaleString()} 本`;
             outer.appendChild(issueDiv);
 
-            // 3. 運勢ハンコ（縦書き）
+            // 3. 運勢ハンコ（縦書き・画像風）
             const circleBox = document.createElement('div');
             circleBox.className = 'result-circle-box';
-            let fs = "4.2rem"; // 画像風の特大サイズ
+            let fs = "4.2rem"; 
             if (data.type.length === 3) fs = "3.2rem";
             if (data.type.length >= 4) fs = "2.6rem";
             circleBox.innerHTML = `<div class="result-kanji-main" style="font-size: ${fs}">${data.type}</div>`;
@@ -6903,7 +6903,7 @@ function handleInputQuiz(button, correctAnswers, questionId) {
             uBox.className = 'unlucky-box accent-border';
             if (data.unlucky) {
                 uBox.innerHTML = `
-                    <div class="lucky-title accent-text red-text">不運・注意</div>
+                    <div class="lucky-title accent-text red-text" style="color:inherit">不運・注意</div>
                     <div class="lucky-row accent-text"><span class="lucky-icon"><i class="bi bi-exclamation-triangle"></i></span>物：${data.unlucky.item}</div>
                     <div class="lucky-row accent-text"><span class="lucky-icon"><i class="bi bi-x-octagon"></i></span>所：${data.unlucky.spot}</div>
                     <div class="lucky-row accent-text"><span class="lucky-icon"><i class="bi bi-person-x"></i></span>人：${data.unlucky.person}</div>
@@ -6913,7 +6913,7 @@ function handleInputQuiz(button, correctAnswers, questionId) {
             luckyArea.appendChild(uBox);
             outer.appendChild(luckyArea);
 
-            // 8. フッター（名前・日付・QR）
+            // 8. フッター情報
             if (withFooter) {
                 const footer = document.createElement('div');
                 footer.className = 'result-footer-info accent-border';
