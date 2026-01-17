@@ -9416,6 +9416,77 @@ function changeHistoryPage(newPage) {
                 listEl.innerHTML = '<p class="text-center text-red-500">読み込みに失敗しました</p>';
             }
         }
+
+        // 掲示板データの読み込み
+        async function loadBoard(page = 1) {
+            const list = document.getElementById('board-list');
+            try {
+                const res = await fetch(`${API_BASE}/api/board/list?page=${page}`);
+                if(res.ok) {
+                    const data = await res.json();
+                    renderBoardList(data);
+                }
+            } catch(e) { console.error(e); }
+        }
+
+        function renderBoardList(data) {
+            const container = document.getElementById('board-list');
+            container.innerHTML = data.posts.map(p => {
+                const date = new Date(p.created_at).toLocaleString();
+                // おみくじ引用がある場合
+                const omikuji = p.omikuji_result ? JSON.parse(p.omikuji_result) : null;
+                const omikujiHtml = omikuji ? `<div class="bg-red-50 dark:bg-red-900/10 p-2 rounded border-l-4 border-red-500 text-sm mb-2">引用運勢: <strong>${omikuji.type}</strong></div>` : '';
+
+                return `
+                    <div class="themed-card p-4 rounded-xl shadow-sm border border-gray-100">
+                        <div class="flex justify-between items-center mb-2">
+                            <span class="font-bold text-indigo-600" onclick="loadUserProfile('${p.username}')" style="cursor:pointer">@${escapeHtml(p.username)}</span>
+                            <span class="text-[10px] text-gray-400">${date}</span>
+                        </div>
+                        ${omikujiHtml}
+                        <p class="text-sm mb-4" style="white-space: pre-wrap;">${escapeHtml(p.content)}</p>
+                        <div class="flex gap-4 border-t pt-3">
+                            <button onclick="reactPost(${p.id}, 'like')" class="text-xs themed-text-sub hover:text-red-500">
+                                <i class="bi bi-heart"></i> ${p.reaction_count || 0}
+                            </button>
+                            <button onclick="openCommentModal(${p.id})" class="text-xs themed-text-sub hover:text-blue-500">
+                                <i class="bi bi-chat"></i> ${p.comment_count || 0}
+                            </button>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+            
+            // ページネーション描画
+            renderServerPaginationForBoard(data.page, data.total, 10);
+        }
+
+        async function submitBoardPost() {
+            const content = document.getElementById('board-post-input').value;
+            if(!content) return;
+            
+            // 直近のおみくじ結果を引用するかどうか（任意）
+            let omikuji_result = null;
+            if (currentState.lastResult) {
+                omikuji_result = JSON.stringify({ type: currentState.lastResult.type });
+            }
+
+            try {
+                const res = await authFetch(`${API_BASE}/api/board/post`, {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({ content, omikuji_result })
+                });
+                if(res.ok) {
+                    showToast("掲示板に奉納しました", "success");
+                    document.getElementById('board-post-input').value = "";
+                    loadBoard(1);
+                } else {
+                    const data = await res.json();
+                    showToast(data.message, "warning");
+                }
+            } catch(e) { console.error(e); }
+        }
             
     </script>
 </body>
