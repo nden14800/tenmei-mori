@@ -8748,15 +8748,13 @@ function changeHistoryPage(newPage) {
             }
         }
 
-        // プロフィール描画 (Roblox風)
+        // プロフィール描画 (Roblox風・完全版)
         function renderProfilePage(data) {
-            // プロフィールビューを表示
-            showView('profile-public'); // 新しいビューを作成する必要があります
+            showView('profile-public');
             
             const container = document.getElementById('public-profile-content');
             
-            // バッジ一覧のHTML生成
-            // マスタデータはサーバーから貰うのが理想ですが、ここでは簡易表示
+            // バッジ一覧
             const badgesHtml = data.badges.map(b => `
                 <div class="badge-item unlocked" title="${b.description}">
                     <div class="badge-icon"><i class="bi ${b.icon}"></i></div>
@@ -8764,16 +8762,20 @@ function changeHistoryPage(newPage) {
                 </div>
             `).join('');
 
-            // 未獲得バッジのプレースホルダー（雰囲気出し）
-            const lockedHtml = `
-                <div class="badge-item">
-                    <div class="badge-icon"><i class="bi bi-lock-fill"></i></div>
-                    <div class="badge-name">???</div>
-                </div>
-            `.repeat(3);
-
             const date = new Date(data.joinDate);
             const joined = `${date.getFullYear()}/${date.getMonth()+1}/${date.getDate()}`;
+
+            // ボタンの出し分け（自分なら編集、他人ならフォロー）
+            let actionBtnHtml = '';
+            if (data.isMe) {
+                actionBtnHtml = `<button onclick="openEditProfileModal('${escapeHtml(data.bio)}', '${escapeHtml(data.title)}')" class="px-4 py-2 bg-gray-200 dark:bg-gray-700 rounded-lg font-bold text-sm hover:opacity-80"><i class="bi bi-pencil-fill"></i> プロフィール編集</button>`;
+            } else {
+                if (data.isFollowing) {
+                    actionBtnHtml = `<button onclick="toggleFollow('${data.username}', 'unfollow')" class="px-4 py-2 bg-gray-200 dark:bg-gray-700 rounded-lg font-bold text-sm hover:opacity-80"><i class="bi bi-person-check-fill"></i> フォロー中</button>`;
+                } else if(currentState.user) {
+                    actionBtnHtml = `<button onclick="toggleFollow('${data.username}', 'follow')" class="px-4 py-2 bg-black text-white dark:bg-white dark:text-black rounded-lg font-bold text-sm hover:opacity-80"><i class="bi bi-person-plus-fill"></i> フォローする</button>`;
+                }
+            }
 
             container.innerHTML = `
                 <div class="profile-header-bg">
@@ -8782,26 +8784,31 @@ function changeHistoryPage(newPage) {
                     </div>
                 </div>
                 
-                <div class="px-6 pb-8 mt-12">
-                    <div class="flex justify-between items-start mb-4">
+                <div class="px-6 pb-8 mt-12 text-center md:text-left">
+                    <div class="flex flex-col md:flex-row justify-between items-center md:items-start mb-4">
                         <div>
                             <h2 class="text-3xl font-black mb-1">${escapeHtml(data.username)}</h2>
                             <p class="text-sm themed-text-sub font-bold mb-2">
-                                <span class="bg-yellow-100 text-yellow-800 px-2 py-0.5 rounded mr-2">${data.title}</span>
+                                <span class="bg-yellow-100 text-yellow-800 px-2 py-0.5 rounded mr-2">${escapeHtml(data.title)}</span>
                                 <i class="bi bi-calendar-event"></i> 参拝開始日: ${joined}
                             </p>
+                            <!-- フォロー数表示 -->
+                            <div class="profile-social-stats">
+                                <span class="social-stat"><strong>${data.stats.following}</strong> フォロー中</span>
+                                <span class="social-stat"><strong>${data.stats.followers}</strong> フォロワー</span>
+                            </div>
                         </div>
-                        <!-- もし自分なら編集ボタンなどを出す -->
-                        ${currentState.user && currentState.user.username === data.username ? 
-                            '<button onclick="showView(\'profile\')" class="btn-outline text-xs">編集</button>' : ''}
+                        <div class="mt-4 md:mt-0">
+                            ${actionBtnHtml}
+                        </div>
                     </div>
 
-                    <div class="mb-6 p-4 rounded-xl bg-gray-50 dark:bg-zinc-800 border border-gray-200 dark:border-gray-700 text-sm leading-relaxed">
+                    <div class="mb-6 p-4 rounded-xl bg-gray-50 dark:bg-zinc-800 border border-gray-200 dark:border-gray-700 text-sm leading-relaxed text-left">
                         <h4 class="font-bold mb-2 text-gray-500">自己紹介</h4>
-                        ${escapeHtml(data.bio)}
+                        <div style="white-space: pre-wrap;">${escapeHtml(data.bio)}</div>
                     </div>
 
-                    <h3 class="font-bold text-lg mb-4 border-l-4 border-red-500 pl-3">参拝記録</h3>
+                    <h3 class="font-bold text-lg mb-4 border-l-4 border-red-500 pl-3 text-left">参拝記録</h3>
                     <div class="profile-stats-grid">
                         <div class="profile-stat-box">
                             <div class="profile-stat-val text-red-600">${data.stats.totalDraws}</div>
@@ -8813,19 +8820,19 @@ function changeHistoryPage(newPage) {
                         </div>
                         <div class="profile-stat-box">
                             <div class="profile-stat-val text-purple-600">${data.stats.goshuinCount}</div>
-                            <div class="profile-stat-label">御朱印数</div>
+                            <div class="profile-stat-label">参拝日数<br><span class="text-xs">(御朱印)</span></div>
                         </div>
                     </div>
 
-                    <h3 class="font-bold text-lg mb-4 border-l-4 border-yellow-500 pl-3">功徳の証 (実績)</h3>
+                    <h3 class="font-bold text-lg mb-4 border-l-4 border-yellow-500 pl-3 text-left">功徳の証 (実績)</h3>
                     <div class="badges-grid p-4 rounded-xl bg-white dark:bg-zinc-900 border border-gray-200 dark:border-gray-700 shadow-inner">
                         ${badgesHtml}
                         ${badgesHtml.length === 0 ? '<p class="col-span-full text-center text-gray-400 text-xs">まだ功徳の証はありません</p>' : ''}
-                        ${lockedHtml}
                     </div>
                 </div>
             `;
         }
+            
 
     </script>
 </body>
