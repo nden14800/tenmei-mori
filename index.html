@@ -3553,6 +3553,46 @@
     </div>
 
 
+    <!-- アカウント詳細モーダル -->
+    <div id="account-details-modal" onclick="if(event.target === this) this.style.display='none'" 
+         style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 4500; display: none; align-items: flex-end; justify-content: center; sm:align-items:center;">
+        <div class="bg-white dark:bg-zinc-900 w-full max-w-sm mx-auto sm:rounded-2xl rounded-t-2xl shadow-[0_-10px_40px_rgba(0,0,0,0.3)] border-t border-gray-200 dark:border-gray-700 overflow-hidden transform transition-transform" onclick="event.stopPropagation()">
+            <!-- ハンドルバー -->
+            <div class="flex justify-center pt-3 pb-2 sm:hidden"><div class="w-12 h-1.5 bg-gray-300 rounded-full"></div></div>
+            
+            <div class="p-6">
+                <div class="text-center mb-6">
+                    <div id="acc-detail-icon" class="text-6xl mb-3"></div>
+                    <h3 id="acc-detail-name" class="text-2xl font-black mb-1"></h3>
+                    <div id="acc-detail-badge" class="flex justify-center mb-2"></div>
+                </div>
+
+                <div class="space-y-4 text-sm">
+                    <!-- 認証ステータス -->
+                    <div class="flex justify-between items-center p-3 bg-gray-50 dark:bg-zinc-800 rounded-lg">
+                        <span class="text-gray-500">認証</span>
+                        <span id="acc-detail-verified" class="font-bold"></span>
+                    </div>
+                    <!-- 開始日 -->
+                    <div class="flex justify-between items-center p-3 bg-gray-50 dark:bg-zinc-800 rounded-lg">
+                        <span class="text-gray-500">開始日</span>
+                        <span id="acc-detail-joined" class="font-mono"></span>
+                    </div>
+                    <!-- 更新日 -->
+                    <div class="flex justify-between items-center p-3 bg-gray-50 dark:bg-zinc-800 rounded-lg">
+                        <span class="text-gray-500">プロフィール更新</span>
+                        <span id="acc-detail-updated" class="font-mono"></span>
+                    </div>
+                </div>
+
+                <button onclick="document.getElementById('account-details-modal').style.display='none'" class="mt-6 w-full py-3 bg-gray-100 dark:bg-zinc-800 hover:bg-gray-200 text-gray-800 dark:text-white font-bold rounded-lg transition">
+                    閉じる
+                </button>
+            </div>
+        </div>
+    </div>
+
+
     <!-- JavaScript ロジック -->
     <script>
         // ==========================================
