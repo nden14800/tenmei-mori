@@ -9075,55 +9075,48 @@ function changeHistoryPage(newPage) {
             `;
         }
 
-        // --- 【追加】アイコン出し分け用関数（和風カスタムSVG対応） ---
-        function getBadgeIconHTML(iconStr) {
-            // 1. 初参拝（芽吹き）: 力強く地面から出る双葉
-            if (iconStr === 'custom-sprout') {
-                return `
-                <svg viewBox="0 0 16 16" fill="currentColor" width="1em" height="1em" xmlns="http://www.w3.org/2000/svg">
-                    <path d="M8 15a.5.5 0 0 1-.5-.5V12c0-1.5.5-3 2.5-3.5a3 3 0 0 1 3.5 2 .5.5 0 0 1-.9.4 2 2 0 0 0-2.1-1.3C9.3 9.8 9 10.7 9 12v2.5a.5.5 0 0 1-.5.5z"/>
-                    <path d="M7.5 12c0-2-1.5-4-4-4a3.5 3.5 0 0 0-3 3 .5.5 0 0 1-.9-.4A4.5 4.5 0 0 1 3.5 7c3.5 0 5 2.5 5 5v.5a.5.5 0 0 1-1 0V12z"/>
-                </svg>`;
-            }
-            // 2. 三度の幸運（桜）: 日本伝統の桜紋（先端が割れている花弁）
-            if (iconStr === 'custom-sakura') {
-                return `
-                <svg viewBox="0 0 512 512" fill="currentColor" width="1em" height="1em" xmlns="http://www.w3.org/2000/svg">
-                    <path d="M256 512c-20.7 0-39.7-11.9-49.6-31.1-14.7-28.5-6.6-63.5 19.3-83.3 22.1-16.9 30.3-25.1 30.3-25.1s8.2 8.2 30.3 25.1c25.9 19.8 34 54.8 19.3 83.3-9.9 19.2-28.9 31.1-49.6 31.1zm-86.2-70.3c-23.7-10.8-37.1-36.9-32.3-63.4 4.1-22.6 19.8-49.3 46.1-70.8 22.4-18.4 30.8-27.1 30.8-27.1s-1.8 11.4-1.8 39.3c0 32.7 6.2 59.8-19.6 97.4-5.3 7.8-13.4 17.7-23.2 24.6zm-104-100.3c-16.7-16.3-19.8-41.9-7.7-61.9 10.3-17.1 31.9-36.9 60.1-47.5 24-9.1 35.1-12.7 35.1-12.7s-5.8 9.9-18.4 34c-14.7 28.3-21.7 56.1-21.7 78.4 0 11.2.9 22 2.7 32.2-18.4-4.2-36.9-11.2-50.1-22.5zm37.2-132.6c-4.1-22.9 6.2-46.1 25.4-57.2 16.4-9.5 43.1-11.2 72.8-5.8 25.4 4.6 37.1 7.1 37.1 7.1s-10.9 3.5-36.5 12.3c-30 10.3-54.8 24.8-71.2 41.5-8 8.1-14.9 17.2-20.5 26.9-3-8-5.7-16.4-7.1-24.8zM239.3 40.6c10.3-17.1 31.9-36.9 60.1-47.5 24-9.1 35.1-12.7 35.1-12.7s5.8 9.9 18.4 34c14.7 28.3 21.7 56.1 21.7 78.4 0 11.2-.9 22-2.7 32.2 18.4-4.2 36.9-11.2 50.1-22.5 16.7-16.3 19.8-41.9 7.7-61.9zm135.2 39.7c25.4-4.6 37.1-7.1 37.1-7.1s10.9 3.5 36.5 12.3c30 10.3 54.8 24.8 71.2 41.5 8 8.1 14.9 17.2 20.5 26.9 3-8 5.7-16.4 7.1-24.8 4.1-22.9-6.2-46.1-25.4-57.2-16.4-9.5-43.1-11.2-72.8-5.8zm-22.4 163c4.1 22.6 19.8 49.3 46.1 70.8 22.4 18.4 30.8 27.1 30.8 27.1s-1.8-11.4-1.8-39.3c0-32.7 6.2-59.8-19.6-97.4-5.3-7.8-13.4-17.7-23.2-24.6-23.7 10.8-37.1 36.9-32.3 63.4z"/>
-                </svg>`;
-            }
-            // 3. その他（通常のBootstrap Icons）
-            return `<i class="bi ${iconStr}"></i>`;
-        }
 
-
-   // プロフィール描画
+    // プロフィール描画 (進捗バー・数字削除版)
         function renderProfilePage(data) {
             showView('profile-public');
             const container = document.getElementById('public-profile-content');
             
+            // 1. バッジ一覧の生成
             const badgesHtml = data.badges.map(b => {
+                // 解除済みかどうか
                 const isUnlocked = b.unlocked;
+                
+                // アイコン・背景色
                 const iconColor = isUnlocked ? 'text-yellow-600' : 'text-gray-300';
                 const bgClass = isUnlocked 
                     ? 'bg-yellow-50 dark:bg-yellow-900/20 border-yellow-200' 
                     : 'bg-gray-100 dark:bg-zinc-800 border-gray-200 dark:border-gray-700';
                 const grayscale = isUnlocked ? '' : 'grayscale opacity-75';
 
+                // ▼▼▼ 修正: 進捗バーと数字の計算を削除し、結果のみ表示 ▼▼▼
                 let statusHtml = '';
-                if (isUnlocked) {
-                    statusHtml = `<div class="badge-progress-text text-yellow-600 font-bold mt-2"><i class="bi bi-check-circle-fill"></i> 解除済み</div>`;
-                } else {
-                    statusHtml = `<div class="badge-progress-text text-gray-400 mt-2"><i class="bi bi-lock-fill"></i> 未獲得</div>`;
-                }
 
-                // ▼▼▼ 修正: ここで getBadgeIconHTML を呼び出す ▼▼▼
-                const iconHtml = getBadgeIconHTML(b.icon);
+                if (isUnlocked) {
+                    // 達成時
+                    statusHtml = `
+                        <div class="badge-progress-text text-yellow-600 font-bold mt-2">
+                            <i class="bi bi-check-circle-fill"></i> 解除済み
+                        </div>
+                    `;
+                } else {
+                    // 未達成時（バーと数字は消し、シンプルに未獲得と表示）
+                    statusHtml = `
+                        <div class="badge-progress-text text-gray-400 mt-2">
+                            <i class="bi bi-lock-fill"></i> 未獲得
+                        </div>
+                    `;
+                }
+                // ▲▲▲ 修正ここまで ▲▲▲
 
                 return `
                 <div class="flex items-center gap-3 p-3 rounded-lg border ${bgClass} transition">
                     <div class="w-12 h-12 flex-shrink-0 flex items-center justify-center rounded-full bg-white dark:bg-black text-2xl ${iconColor} shadow-sm ${grayscale}">
-                        ${iconHtml}
+                        <i class="bi ${b.icon}"></i>
                     </div>
                     <div class="flex-1 min-w-0">
                         <div class="flex justify-between items-start">
@@ -9136,12 +9129,11 @@ function changeHistoryPage(newPage) {
                 `;
             }).join('');
 
-            // ... (以下の日付フォーマットや認証バッジ、HTML組み立て処理は既存のまま) ...
-            
-            // HTML組み立て部分（省略なし）
+            // 2. 日付フォーマット
             const date = new Date(data.joinDate);
             const joined = `${date.getFullYear()}/${date.getMonth()+1}/${date.getDate()}`;
 
+            // 3. 認証バッジ表示
             let verifiedHtml = '';
             if (data.verified === 'gold') {
                 verifiedHtml = `<span class="verified-badge cursor-pointer hover:scale-110 transition" onclick="openVerifiedModal('gold', '${escapeHtml(data.username)}')">${getGoldBadgeIcon("w-6 h-6")}</span>`;
@@ -9149,6 +9141,7 @@ function changeHistoryPage(newPage) {
                 verifiedHtml = `<span class="verified-badge verified-blue" onclick="openVerifiedModal('blue', '${escapeHtml(data.username)}')"><i class="bi bi-patch-check-fill text-xl"></i></span>`;
             }
 
+            // 4. アクションボタン
             let actionBtnHtml = '';
             const isMe = data.isMe || (currentState.user && currentState.user.username === data.username);
 
@@ -9171,12 +9164,14 @@ function changeHistoryPage(newPage) {
                 actionBtnHtml += `</div>`;
             }
 
+            // 5. アイコン色設定
             const iconColorMap = {
                 'gray': '#6b7280', 'red': '#ef4444', 'blue': '#3b82f6', 'green': '#10b981', 'yellow': '#eab308', 
                 'purple': '#a855f7', 'pink': '#ec4899', 'black': '#1f2937'
             };
             const iconStyle = `color: ${iconColorMap[data.color] || '#6b7280'}; border-color: ${iconColorMap[data.color] || '#e5e7eb'}`;
 
+            // 6. HTML組み立て
             container.innerHTML = `
                 <div class="profile-header-bg">
                     <div class="profile-avatar-container">
@@ -9197,7 +9192,10 @@ function changeHistoryPage(newPage) {
                                 <i class="bi bi-calendar-event"></i> 開始: ${joined}
                             </p>
                         </div>
-                        <div class="mt-2 md:mt-0">${actionBtnHtml}</div>
+                        
+                        <div class="mt-2 md:mt-0">
+                            ${actionBtnHtml}
+                        </div>
                     </div>
 
                     ${data.isBlocked ? '<div class="mb-4 text-center text-red-500 font-bold border border-red-500 p-2 rounded">このユーザーをブロックしています</div>' : ''}
@@ -9593,7 +9591,7 @@ function changeHistoryPage(newPage) {
             modal.style.display = 'flex';
         }
 
-        // 実績一覧表示機能
+        // --- 実績一覧表示機能 ---
         async function showAllBadgesModal() {
             const modal = document.getElementById('all-badges-modal');
             const listEl = document.getElementById('all-badges-list');
@@ -9602,26 +9600,27 @@ function changeHistoryPage(newPage) {
             listEl.innerHTML = '<div class="col-span-full text-center py-8"><div class="spinner-border text-yellow-500" role="status"></div> 読み込み中...</div>';
 
             try {
+                // マスターデータを取得
                 const res = await fetch(`${API_BASE}/api/badges`);
                 if(res.ok) {
                     const data = await res.json();
                     const allBadges = data.badges;
+                    
+                    // 自分の持っているバッジID（renderProfilePageで保存したもの、なければ空）
                     const myOwnedIds = window.myBadges || [];
 
                     let html = '';
                     allBadges.forEach(b => {
                         const isUnlocked = myOwnedIds.includes(b.id);
+                        // 未獲得ならグレーアウト
                         const opacity = isUnlocked ? 'opacity-100' : 'opacity-50 grayscale';
                         const statusIcon = isUnlocked ? '<i class="bi bi-check-circle-fill text-green-500"></i>' : '<i class="bi bi-lock-fill text-gray-400"></i>';
                         const bgClass = isUnlocked ? 'bg-yellow-50 dark:bg-yellow-900/20 border-yellow-200' : 'bg-gray-100 dark:bg-zinc-800 border-gray-300';
                         
-                        // ▼▼▼ 修正: ここでも getBadgeIconHTML を使用 ▼▼▼
-                        const iconHtml = getBadgeIconHTML(b.icon);
-
                         html += `
                             <div class="flex items-center gap-4 p-4 rounded-lg border ${bgClass} ${opacity} transition hover:opacity-100">
                                 <div class="w-12 h-12 flex-shrink-0 flex items-center justify-center rounded-full bg-white dark:bg-black text-2xl text-yellow-600 shadow-sm">
-                                    ${iconHtml}
+                                    <i class="bi ${b.icon}"></i>
                                 </div>
                                 <div class="flex-1">
                                     <div class="flex justify-between items-start">
