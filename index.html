@@ -8983,7 +8983,7 @@ function changeHistoryPage(newPage) {
         }
 
 
-     // プロフィール描画 (修正版：認証ボタン追加)
+     // プロフィール描画 (フォロー数、3点リーダー対応版)
         function renderProfilePage(data) {
             showView('profile-public');
             const container = document.getElementById('public-profile-content');
@@ -8999,48 +8999,58 @@ function changeHistoryPage(newPage) {
             const date = new Date(data.joinDate);
             const joined = `${date.getFullYear()}/${date.getMonth()+1}/${date.getDate()}`;
 
-            // --- 認証バッジ（高画質版に修正） ---
+            // --- 認証バッジ ---
             let verifiedHtml = '';
             if (data.verified === 'gold') {
-                // 黄金：SVG関数を使用
                 verifiedHtml = `<span class="verified-badge cursor-pointer hover:scale-110 transition" onclick="openVerifiedModal('gold', '${escapeHtml(data.username)}')">${getGoldBadgeIcon("w-6 h-6")}</span>`;
             } else if (data.verified === 'blue') {
-                // ブルー：既存のまま（BootStrap Iconは単色なら綺麗なのでそのままでもOKですが、統一感のため調整しても可）
                 verifiedHtml = `<span class="verified-badge verified-blue" onclick="openVerifiedModal('blue', '${escapeHtml(data.username)}')"><i class="bi bi-patch-check-fill text-xl"></i></span>`;
             }
 
-            // --- ボタンエリア（自分なら編集＆認証ボタンを表示） ---
-            let actionBtnHtml = '';
+            // --- アクションエリア（自分or他人） ---
+            let actionAreaHtml = '';
             const isMe = data.isMe || (currentState.user && currentState.user.username === data.username);
 
             if (isMe) {
-                // 編集ボタン
-                actionBtnHtml += `
-                    <div class="flex gap-2 flex-wrap justify-center md:justify-end">
+                // 自分：編集ボタン
+                actionAreaHtml = `
+                    <div class="flex gap-2">
                         <button onclick="openEditProfileModal('${escapeHtml(data.bio)}', '${escapeHtml(data.title)}', '${data.icon}', '${data.color}')" 
-                                class="px-4 py-2 bg-indigo-600 text-white rounded-lg font-bold text-sm hover:opacity-90 shadow-md whitespace-nowrap">
+                                class="px-4 py-2 bg-indigo-600 text-white rounded-lg font-bold text-sm hover:opacity-90 shadow-md">
                             <i class="bi bi-pencil-square"></i> 編集
                         </button>
+                        ${data.verified === 'none' ? `<button onclick="document.getElementById('verification-apply-modal').style.display='flex'" class="px-4 py-2 bg-white dark:bg-zinc-800 text-gray-700 dark:text-gray-200 border border-gray-300 dark:border-gray-600 rounded-lg font-bold text-sm hover:bg-gray-50 dark:hover:bg-zinc-700 shadow-md transition"><i class="bi bi-patch-check"></i> 認証</button>` : ''}
+                    </div>
                 `;
-
-                // 未認証なら「認証を開始」ボタンを追加
-                if (data.verified === 'none') {
-                    actionBtnHtml += `
-                        <button onclick="document.getElementById('verification-apply-modal').style.display='flex'" 
-                                class="px-4 py-2 bg-white dark:bg-zinc-800 text-gray-700 dark:text-gray-200 border border-gray-300 dark:border-gray-600 rounded-lg font-bold text-sm hover:bg-gray-50 dark:hover:bg-zinc-700 shadow-md whitespace-nowrap transition">
-                            <i class="bi bi-patch-check"></i> 認証を開始
-                        </button>
-                    `;
-                }
+            } else {
+                // 他人：3点リーダーメニュー
+                const followText = data.isFollowing ? 'フォロー解除' : 'フォローする';
+                const followAction = data.isFollowing ? 'unfollow' : 'follow';
+                const followIcon = data.isFollowing ? 'bi-person-dash' : 'bi-person-plus';
                 
-                actionBtnHtml += `</div>`;
+                const blockText = data.isBlocked ? 'ブロック解除' : 'ブロックする';
+                const blockAction = data.isBlocked ? 'unblock' : 'block';
+                const blockClass = data.isBlocked ? '' : 'danger'; // ブロックする時だけ赤く
+
+                actionAreaHtml = `
+                    <div class="profile-menu-container">
+                        <button class="profile-menu-btn" onclick="toggleProfileMenu()">
+                            <i class="bi bi-three-dots"></i>
+                        </button>
+                        <div id="profile-menu-dropdown" class="profile-menu-dropdown">
+                            <button class="menu-item" onclick="toggleFollow('${escapeHtml(data.username)}', '${followAction}')">
+                                <i class="bi ${followIcon}"></i> ${followText}
+                            </button>
+                            <button class="menu-item ${blockClass}" onclick="toggleBlock('${escapeHtml(data.username)}', '${blockAction}')">
+                                <i class="bi bi-slash-circle"></i> ${blockText}
+                            </button>
+                        </div>
+                    </div>
+                `;
             }
 
-            // アイコン色設定
-            const iconColorMap = {
-                'gray': '#6b7280', 'red': '#ef4444', 'blue': '#3b82f6', 'green': '#10b981', 'yellow': '#eab308', 
-                'purple': '#a855f7', 'pink': '#ec4899', 'black': '#1f2937'
-            };
+            // アイコン色
+            const iconColorMap = { 'gray':'#6b7280', 'red':'#ef4444', 'blue':'#3b82f6', 'green':'#10b981', 'yellow':'#eab308', 'purple':'#a855f7', 'pink':'#ec4899', 'black':'#1f2937' };
             const iconStyle = `color: ${iconColorMap[data.color] || '#6b7280'}; border-color: ${iconColorMap[data.color] || '#e5e7eb'}`;
 
             container.innerHTML = `
@@ -9063,10 +9073,9 @@ function changeHistoryPage(newPage) {
                                 <i class="bi bi-calendar-event"></i> 開始: ${joined}
                             </p>
                         </div>
-                        
-                        <!-- ボタンエリア -->
-                        <div class="mt-2 md:mt-0">
-                            ${actionBtnHtml}
+                        <!-- アクションボタンエリア -->
+                        <div class="mt-2 md:mt-0 relative z-10">
+                            ${actionAreaHtml}
                         </div>
                     </div>
 
@@ -9079,18 +9088,29 @@ function changeHistoryPage(newPage) {
                     </div>
 
                     <h3 class="font-bold text-lg mb-4 border-l-4 border-red-500 pl-3 text-left">参拝記録</h3>
-                    <div class="profile-stats-grid">
+                    <!-- 統計グリッド（フォロー数追加） -->
+                    <div class="grid grid-cols-3 md:grid-cols-5 gap-3 mb-6">
                         <div class="profile-stat-box">
                             <div class="profile-stat-val text-red-600">${data.stats.totalDraws}</div>
-                            <div class="profile-stat-label">総参拝数</div>
+                            <div class="profile-stat-label">総参拝</div>
                         </div>
                         <div class="profile-stat-box">
                             <div class="profile-stat-val text-yellow-600">${data.stats.daikichiCount}</div>
-                            <div class="profile-stat-label">大吉獲得</div>
+                            <div class="profile-stat-label">大吉</div>
                         </div>
                         <div class="profile-stat-box">
                             <div class="profile-stat-val text-purple-600">${data.stats.goshuinCount}</div>
-                            <div class="profile-stat-label">参拝日数<br><span class="text-xs">(御朱印)</span></div>
+                            <div class="profile-stat-label">御朱印</div>
+                        </div>
+                        
+                        <!-- フォロー・フォロワー（クリック可能） -->
+                        <div class="profile-stat-box cursor-pointer hover:bg-gray-100 dark:hover:bg-zinc-700 transition" onclick="loadFollowList('following', '${escapeHtml(data.username)}')">
+                            <div class="profile-stat-val text-blue-600">${data.stats.following}</div>
+                            <div class="profile-stat-label">フォロー中</div>
+                        </div>
+                        <div class="profile-stat-box cursor-pointer hover:bg-gray-100 dark:hover:bg-zinc-700 transition" onclick="loadFollowList('followers', '${escapeHtml(data.username)}')">
+                            <div class="profile-stat-val text-green-600">${data.stats.followers}</div>
+                            <div class="profile-stat-label">フォロワー</div>
                         </div>
                     </div>
 
