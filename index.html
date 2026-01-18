@@ -9122,7 +9122,7 @@ function changeHistoryPage(newPage) {
             };
             const iconStyle = `color: ${iconColorMap[data.color] || '#6b7280'}; border-color: ${iconColorMap[data.color] || '#e5e7eb'}`;
 
-            // 6. HTML組み立て
+            // 6. HTML組み立て (全体進捗バーを追加)
             container.innerHTML = `
                 <div class="profile-header-bg">
                     <div class="profile-avatar-container">
@@ -9133,6 +9133,7 @@ function changeHistoryPage(newPage) {
                 </div>
                 
                 <div class="px-6 pb-8 mt-12 text-center md:text-left">
+                    <!-- (ユーザー名・ボタンエリア・自己紹介・参拝記録エリアは変更なし...そのまま記述) -->
                     <div class="flex flex-col md:flex-row justify-between items-center md:items-start mb-4 gap-4">
                         <div>
                             <h2 class="text-3xl font-black mb-1 flex items-center justify-center md:justify-start gap-2">
@@ -9143,13 +9144,9 @@ function changeHistoryPage(newPage) {
                                 <i class="bi bi-calendar-event"></i> 開始: ${joined}
                             </p>
                         </div>
-                        
-                        <!-- ボタンエリア -->
-                        <div class="mt-2 md:mt-0">
-                            ${actionBtnHtml}
-                        </div>
+                        <div class="mt-2 md:mt-0">${actionBtnHtml}</div>
                     </div>
-
+                    
                     ${data.isBlocked ? '<div class="mb-4 text-center text-red-500 font-bold border border-red-500 p-2 rounded">このユーザーをブロックしています</div>' : ''}
                     ${data.isBlockedBy ? '<div class="mb-4 text-center text-gray-500 font-bold bg-gray-100 p-2 rounded">ユーザーからブロックされています</div>' : ''}
 
@@ -9168,6 +9165,13 @@ function changeHistoryPage(newPage) {
                             <div class="profile-stat-val text-yellow-600">${data.stats.daikichiCount}</div>
                             <div class="profile-stat-label">大吉獲得</div>
                         </div>
+                        <div class="profile-stat-box">
+                            <div class="profile-stat-val text-purple-600">${data.stats.goshuinCount}</div>
+                            <div class="profile-stat-label">参拝日数<br><span class="text-xs">(御朱印)</span></div>
+                        </div>
+                    </div>
+
+                    <!-- ▼▼▼ ここから修正：全体進捗バーエリア ▼▼▼ -->
                     <div class="mt-10 mb-4">
                          <div class="flex justify-between items-end border-b border-gray-200 dark:border-gray-700 pb-2 mb-2">
                             <h3 class="font-bold text-lg border-l-4 border-yellow-500 pl-3 text-left">功徳の証 (実績)</h3>
@@ -9182,15 +9186,7 @@ function changeHistoryPage(newPage) {
                             <div class="h-full bg-gradient-to-r from-yellow-400 to-yellow-600 transition-all duration-1000 ease-out" style="width: ${totalPercent}%"></div>
                         </div>
                     </div>
-                        <div class="profile-stat-box">
-                            <div class="profile-stat-val text-purple-600">${data.stats.goshuinCount}</div>
-                            <div class="profile-stat-label">参拝日数<br><span class="text-xs">(御朱印)</span></div>
-                        </div>
-                    </div>
-
-                    <div class="flex justify-between items-end mb-4 border-b border-gray-200 dark:border-gray-700 pb-2 mt-8">
-                        <h3 class="font-bold text-lg border-l-4 border-yellow-500 pl-3 text-left">功徳の証 (実績)</h3>
-                    </div>
+                    <!-- ▲▲▲ 修正ここまで ▲▲▲ -->
                     
                     <!-- バッジリスト (進捗バー付き・2カラムグリッド) -->
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
@@ -9200,7 +9196,6 @@ function changeHistoryPage(newPage) {
                 </div>
             `;
             
-            // 7. 自分のバッジ情報をグローバル変数に保存
             if(isMe && data.badges) {
                 window.myBadges = data.badges.filter(b => b.unlocked).map(b => b.id);
             }
