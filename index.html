@@ -10036,6 +10036,47 @@ function changeHistoryPage(newPage) {
             finally { showLoading(false); }
         }
 
+       // アカウント詳細モーダルを開く
+        function openAccountDetailsModal(username, verifiedType, joinDate, updateDate, icon, iconStyle) {
+            const modal = document.getElementById('account-details-modal');
+            const nameEl = document.getElementById('acc-detail-name');
+            const iconEl = document.getElementById('acc-detail-icon');
+            const badgeEl = document.getElementById('acc-detail-badge');
+            const verifiedEl = document.getElementById('acc-detail-verified');
+            const joinedEl = document.getElementById('acc-detail-joined');
+            const updatedEl = document.getElementById('acc-detail-updated');
+
+            // 名前
+            nameEl.textContent = username;
+            
+            // アイコン
+            iconEl.innerHTML = `<i class="bi ${icon}"></i>`;
+            iconEl.style = iconStyle; // 色スタイルを適用
+
+            // バッジ情報
+            if(verifiedType === 'gold') {
+                badgeEl.innerHTML = getGoldBadgeIcon("w-8 h-8");
+                verifiedEl.innerHTML = '<span class="text-yellow-600"><i class="bi bi-patch-check-fill"></i> 黄金認証済み</span>';
+            } else if(verifiedType === 'blue') {
+                badgeEl.innerHTML = '<i class="bi bi-patch-check-fill text-blue-500 text-4xl"></i>';
+                verifiedEl.innerHTML = '<span class="text-blue-600"><i class="bi bi-patch-check-fill"></i> 認証済み</span>';
+            } else {
+                badgeEl.innerHTML = '';
+                verifiedEl.textContent = '未認証';
+            }
+
+            // 日付フォーマット
+            const fmtDate = (d) => {
+                const date = new Date(d);
+                return `${date.getFullYear()}年${date.getMonth()+1}月${date.getDate()}日`;
+            };
+
+            joinedEl.textContent = fmtDate(joinDate);
+            updatedEl.textContent = fmtDate(updateDate);
+
+            modal.style.display = 'flex';
+        } 
+
             
     </script>
 </body>
