@@ -8908,22 +8908,32 @@ function changeHistoryPage(newPage) {
 
         // --- プロフィール検索 & 表示 ---
         
-        // 検索入力ハンドラ
+        // 検索入力ハンドラ（バッジ表示対応版）
         async function handleUserSearch(val) {
             const list = document.getElementById('search-suggestions');
-            if(val.length < 2) {
-                list.style.display = 'none';
-                return;
-            }
+            // 空文字でも呼び出せるように条件緩和
+            // if(val.length < 1) ... は削除
+
             try {
                 const res = await fetch(`${API_BASE}/api/user/search?q=${encodeURIComponent(val)}`);
                 if(res.ok) {
                     const users = await res.json();
-                    list.innerHTML = users.map(u => `
-                        <div class="suggestion-item" onclick="loadUserProfile('${u.username}')">
-                            <i class="bi bi-person-circle mr-2"></i> ${escapeHtml(u.username)}
+                    
+                    list.innerHTML = users.map(u => {
+                        // バッジHTML生成
+                        let badge = '';
+                        if(u.verified_type === 'gold') badge = '<i class="bi bi-patch-check-fill text-yellow-500 ml-1"></i>';
+                        else if(u.verified_type === 'blue') badge = '<i class="bi bi-patch-check-fill text-blue-500 ml-1"></i>';
+                        
+                        return `
+                        <div class="suggestion-item" onclick="loadUserProfile('${escapeHtml(u.username)}')">
+                            <i class="bi bi-person-circle mr-2 text-gray-400"></i> 
+                            <span class="font-bold">${escapeHtml(u.username)}</span>
+                            ${badge}
                         </div>
-                    `).join('');
+                        `;
+                    }).join('');
+                    
                     list.style.display = users.length ? 'block' : 'none';
                 }
             } catch(e) { console.error(e); }
