@@ -7620,12 +7620,16 @@ function handleInputQuiz(button, correctAnswers, questionId) {
             }
         }
 
-       // --- 履歴・おみくじの轍 (通信キャンセル対応版) ---
+       // --- 履歴・おみくじの轍 (連打フリーズ完全対策版) ---
         
-        // 通信制御用の変数をグローバルに定義
+        // 通信管理用の変数
         let historyAbortController = null;
+        let currentHistoryRequestId = 0; // 最新のリクエストIDを管理
 
         async function loadHistory(page = 1) {
+            // リクエストIDを更新（これが「今回の注文番号」になる）
+            const requestId = ++currentHistoryRequestId;
+
             const list = document.getElementById('history-list');
             const container = document.getElementById('history-container');
             const overlay = document.getElementById('history-login-overlay');
@@ -7634,37 +7638,39 @@ function handleInputQuiz(button, correctAnswers, questionId) {
             const globalCountEl = document.getElementById('global-history-count');
             const searchResultCount = document.getElementById('search-result-count');
 
-            // 検索条件の取得
+            // 検索条件
             const type = document.getElementById('search-type').value;
             const keyword = document.getElementById('search-keyword').value;
             const dateStart = document.getElementById('search-date-start').value;
             const dateEnd = document.getElementById('search-date-end').value;
 
             if(!currentState.user) {
-                // ... (未ログイン時の処理はそのまま) ...
                 container.classList.add('history-blurred');
                 overlay.classList.remove('hidden');
                 viewMode.textContent = "";
                 myCountEl.textContent = "-";
                 globalCountEl.textContent = "-";
-                // ダミー表示など...
+                // ダミー表示
+                let html = '';
+                for(let i=0; i<10; i++) html += `<div class="bg-gray-50 dark:bg-zinc-800 p-3 rounded mb-2 h-12 border-l-4 border-gray-300"></div>`;
+                list.innerHTML = html;
                 return;
             }
 
-            // ▼▼▼ 修正: 前回の通信があればキャンセルする ▼▼▼
+            // 前回の通信が生きていればキャンセル
             if (historyAbortController) {
                 historyAbortController.abort();
             }
             historyAbortController = new AbortController();
             const signal = historyAbortController.signal;
-            // ▲▲▲ 修正ここまで ▲▲▲
 
+            // UI初期化
             container.classList.remove('history-blurred');
             overlay.classList.add('hidden');
             viewMode.textContent = "全参拝者の記録 (全期間)";
             list.innerHTML = '<div class="text-center py-8"><div class="spinner-border text-red-500" role="status"></div> 読み込み中...</div>';
             
-            // ローディングを表示
+            // ★重要: 強制的にローディングを出す
             showLoading(true);
 
             try {
@@ -7676,12 +7682,15 @@ function handleInputQuiz(button, correctAnswers, questionId) {
                     dateEnd: dateEnd
                 });
 
-                // ★ signal を渡して、キャンセル可能にする
+                // 通信実行
                 const res = await authFetch(`${API_BASE}/api/history/global?${params.toString()}`, {
                     method: 'GET',
                     signal: signal 
                 });
                 
+                // 通信が終わった時点で、このリクエストが「最新」かチェック
+                if (requestId !== currentHistoryRequestId) return; 
+
                 if(res.ok) {
                     const data = await res.json();
                     
@@ -7696,25 +7705,21 @@ function handleInputQuiz(button, correctAnswers, questionId) {
                     renderHistoryList(data.global);
                     renderServerPagination(data.page, data.totalItems, 100);
                 } else {
-                    // キャンセルされた場合はエラー扱いしない
                     console.error("Load failed:", res.status);
                     list.innerHTML = '<p class="text-center text-red-500">情報の取得に失敗しました。</p>';
                 }
             } catch(e) {
-                // キャンセルエラー（AbortError）は無視する
-                if (e.name === 'AbortError') {
-                    console.log('Fetch aborted');
-                    return; // ここで終了することで、finallyのshowLoading(false)に行かせない手もあるが、
-                            // 新しいリクエストがshowLoading(true)してるので、
-                            // ここでfalseにすると新しいリクエストのローディングも消えてしまう可能性がある。
-                            // なので、Abortの時は何もしないのが正解。
-                } else {
+                // キャンセル以外のエラーなら表示
+                if (e.name !== 'AbortError') {
                     console.error(e);
-                    list.innerHTML = '<p class="text-center text-red-500">通信エラーが発生しました。</p>';
+                    if (requestId === currentHistoryRequestId) {
+                        list.innerHTML = '<p class="text-center text-red-500">通信エラーが発生しました。</p>';
+                    }
                 }
             } finally {
-                // ▼▼▼ 修正: キャンセルされていない場合のみローディングを消す ▼▼▼
-                if (!signal.aborted) {
+                // ★最重要修正: 「自分が最新のリクエストである場合のみ」ローディングを消す
+                // これにより、連打しても最後の一回が終わるまで消えたり残ったりしなくなる
+                if (requestId === currentHistoryRequestId) {
                     showLoading(false);
                 }
             }
