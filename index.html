@@ -8625,7 +8625,7 @@ async function logout() {
         dailyRanking = scoredData;
     }
 
-    // 未来30日間の運勢予報ロジック（修正版：完全1位のみマーク）
+    // 未来30日間の運勢予報ロジック（修正版：ランキング表記と完全一致させる）
     function calculateFutureLuck(signId, bloodType, baseDateStr) {
         let calendarDays = [];
         for(let i=0; i<30; i++) {
@@ -8635,15 +8635,18 @@ async function logout() {
             // 1. その日の全48通りの運勢を計算
             let dayAllData = calculateScoresForDate(targetDate);
             
-            // 2. 自分のデータを特定
+            // 2. 自分のデータを特定（オブジェクトの参照を取得）
             const me = dayAllData.find(d => d.sign.id === signId && d.blood === bloodType);
             
             let marks = [];
 
             // --- 総合運 1位チェック ---
-            // 全員を総合得点でソート（ランキング表と同じロジック）
+            // 全員を総合得点でソート（ランキング表示と同じロジック）
+            // ※JavaScriptのsortは安定ソートなので、同点時の並び順もランキング表と一致します
             const sortedByTotal = [...dayAllData].sort((a, b) => b.totalScore - a.totalScore);
-            // ソート後、配列の先頭(index 0)が自分なら「真の1位」
+            
+            // 配列の先頭（index 0）が自分である場合のみマークを付与
+            // これにより、同点でも「2位」と判定された場合はマークが付きません
             if (sortedByTotal[0] === me) {
                 marks.push('<i class="bi bi-star-fill text-yellow-500"></i>');
             }
