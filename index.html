@@ -9303,32 +9303,47 @@ function changeHistoryPage(newPage) {
             finally { showLoading(false); }
         }
 
-        // 認証詳細モーダルを開く
+        // 認証詳細モーダルを開く（Meta風デザイン修正版）
         function openVerifiedModal(type, username) {
             const modal = document.getElementById('verified-modal');
             const iconArea = document.getElementById('verified-icon-area');
             const titleEl = document.getElementById('verified-title');
             const descEl = document.getElementById('verified-desc');
             
+            // ユーザー名を安全にエスケープ
+            const safeName = escapeHtml(username);
+
             if (type === 'gold') {
+                // --- 黄金認証（運営・開発者） ---
                 iconArea.innerHTML = '<i class="bi bi-patch-check-fill text-yellow-500" style="filter: drop-shadow(0 0 10px rgba(212, 175, 55, 0.6));"></i>';
-                titleEl.textContent = "黄金の認証ユーザー";
-                titleEl.className = "text-2xl font-black mb-2 text-yellow-600";
+                
+                titleEl.textContent = "黄金認証済みユーザー";
+                titleEl.className = "text-xl font-black mb-4 text-gray-900 dark:text-white"; // 色を黒/白に戻し、タイトルをシンプルに
+                
                 descEl.innerHTML = `
-                    <strong>${escapeHtml(username)}</strong> 様は、<br>
-                    「運勢・天命乃杜」の運営者、<br>
-                    または開発・管理に深く携わる特別なアカウントです。<br><br>
-                    この黄金の輝きは、杜を護る者の証です。
+                    <div class="text-left text-sm leading-relaxed">
+                        <strong class="block text-base mb-2 text-gray-800 dark:text-gray-200">${safeName}さんは黄金認証済みです</strong>
+                        この黄金のバッジは、運勢・天命乃杜の運営者、またはシステムの開発・管理に深く携わる特別なアカウントであることを証明します。<br>
+                        <br>
+                        <span class="text-xs text-gray-500">※このバッジは手動で付与されます。</span>
+                    </div>
                 `;
             } else {
+                // --- ブルー認証（Meta風テキスト） ---
                 iconArea.innerHTML = '<i class="bi bi-patch-check-fill text-blue-500"></i>';
+                
                 titleEl.textContent = "認証済みユーザー";
-                titleEl.className = "text-2xl font-black mb-2 text-blue-600";
+                titleEl.className = "text-xl font-black mb-4 text-gray-900 dark:text-white";
+                
                 descEl.innerHTML = `
-                    <strong>${escapeHtml(username)}</strong> 様は、<br>
-                    所定の手続きを経て本人確認が完了した、<br>
-                    信頼できる公式アカウントであることを証明します。<br><br>
-                    なりすましではない、本物の証です。
+                    <div class="text-left text-sm leading-relaxed">
+                        <strong class="block text-base mb-2 text-gray-800 dark:text-gray-200">${safeName}さんは天命認証済みです</strong>
+                        認証バッジを持つアカウントは認証済みであり、天命乃杜への特別貢献者、または著名な人物や公認アカウントである場合があります。
+                        <br><br>
+                        <a href="#" onclick="showView('about'); return false;" class="text-blue-500 font-bold hover:underline">
+                            認証について詳細を見る
+                        </a>
+                    </div>
                 `;
             }
             
