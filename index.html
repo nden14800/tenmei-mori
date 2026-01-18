@@ -10077,6 +10077,90 @@ function changeHistoryPage(newPage) {
             modal.style.display = 'flex';
         } 
 
+       // バナーの定義
+        const profileBanners = ['default', 'red', 'blue', 'green', 'gold', 'sunrise', 'ocean', 'night'];
+        let selectedBanner = 'default';
+
+        // 編集モーダルを開く (修正版)
+        function openEditProfileModal(bio, title, icon, color, banner) {
+            document.getElementById('edit-bio').value = bio === "自己紹介はまだありません。" ? "" : bio;
+            document.getElementById('edit-title').value = title;
+            
+            selectedIcon = icon || 'bi-person';
+            selectedColor = color || 'gray';
+            selectedBanner = banner || 'default'; // バナー初期値
+            
+            renderIconSelector();
+            renderColorSelector();
+            renderBannerSelector(); // 追加
+            
+            document.getElementById('edit-profile-modal').style.display = 'flex';
+        }
+
+        // バナー選択肢の描画
+        function renderBannerSelector() {
+            // HTMLに <div id="banner-selector" class="..."></div> が必要なので、
+            // 動的に追加するか、あらかじめHTMLに書いておく必要があります。
+            // ここではJSで動的に挿入する方式を取ります。
+            
+            let container = document.getElementById('banner-selector');
+            if(!container) {
+                // コンテナがなければ作成して挿入
+                const label = document.createElement('label');
+                label.className = "block text-sm font-bold mb-2 mt-4";
+                label.textContent = "ヘッダー画像 (バナー)";
+                
+                container = document.createElement('div');
+                container.id = 'banner-selector';
+                container.className = "grid grid-cols-4 gap-2 mb-6";
+                
+                const parent = document.getElementById('edit-bio').parentNode; // textareaの親
+                parent.insertBefore(container, document.getElementById('edit-bio').nextSibling); // bioの下に挿入
+                parent.insertBefore(label, container);
+            }
+
+            const bannerMap = {
+                'default': 'linear-gradient(135deg, #1a1a1a 0%, #4a4a4a 100%)',
+                'red': 'linear-gradient(135deg, #b91c1c 0%, #7f1d1d 100%)',
+                'blue': 'linear-gradient(135deg, #1d4ed8 0%, #1e3a8a 100%)',
+                'green': 'linear-gradient(135deg, #047857 0%, #064e3b 100%)',
+                'gold': 'linear-gradient(135deg, #d4af37 0%, #8a6e2f 100%)',
+                'sunrise': 'linear-gradient(to right, #f2994a, #f2c94c)',
+                'ocean': 'linear-gradient(to right, #2193b0, #6dd5ed)',
+                'night': 'linear-gradient(to right, #232526, #414345)'
+            };
+
+            container.innerHTML = profileBanners.map(b => `
+                <div class="h-10 rounded cursor-pointer border-2 ${b === selectedBanner ? 'border-blue-500' : 'border-transparent'}" 
+                     style="background: ${bannerMap[b]}"
+                     onclick="selectedBanner='${b}'; renderBannerSelector()">
+                </div>
+            `).join('');
+        }
+
+        // 保存ロジック更新
+        async function saveProfileChanges() {
+            const bio = document.getElementById('edit-bio').value;
+            const title = document.getElementById('edit-title').value || "初詣の旅人";
+
+            showLoading(true);
+            try {
+                const res = await authFetch(`${API_BASE}/api/user/update_details`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ bio, title, icon: selectedIcon, color: selectedColor, banner: selectedBanner })
+                });
+                if (res.ok) {
+                    showToast("プロフィールを更新しました", "success");
+                    document.getElementById('edit-profile-modal').style.display = 'none';
+                    loadUserProfile(currentState.user.username);
+                } else {
+                    alert("更新に失敗しました");
+                }
+            } catch(e) { console.error(e); }
+            finally { showLoading(false); }
+        } 
+
             
     </script>
 </body>
