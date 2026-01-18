@@ -9019,31 +9019,79 @@ function changeHistoryPage(newPage) {
         }
 
 
-     // プロフィール描画 (ソーシャル機能削除版)
+    // プロフィール描画 (ソーシャル削除・進捗バー対応・認証ボタン付き完全版)
         function renderProfilePage(data) {
             showView('profile-public');
             const container = document.getElementById('public-profile-content');
             
-            // バッジ一覧
-            const badgesHtml = data.badges.map(b => `
-                <div class="badge-item unlocked" title="${b.description}">
-                    <div class="badge-icon"><i class="bi ${b.icon}"></i></div>
-                    <div class="badge-name">${b.name}</div>
-                </div>
-            `).join('');
+            // 1. バッジ一覧の生成（進捗バー付き）
+            const badgesHtml = data.badges.map(b => {
+                // 解除済みかどうか
+                const isUnlocked = b.unlocked;
+                
+                // アイコン・背景色
+                const iconColor = isUnlocked ? 'text-yellow-600' : 'text-gray-300';
+                const bgClass = isUnlocked 
+                    ? 'bg-yellow-50 dark:bg-yellow-900/20 border-yellow-200' 
+                    : 'bg-gray-100 dark:bg-zinc-800 border-gray-200 dark:border-gray-700';
+                const grayscale = isUnlocked ? '' : 'grayscale opacity-75';
 
+                // 進捗情報の表示内容
+                let progressHtml = '';
+                
+                // バックエンドが progress オブジェクトを返している前提
+                const current = b.progress ? b.progress.current : 0;
+                const target = b.progress ? b.progress.target : b.condition_value || 0;
+                const percent = b.progress ? b.progress.percent : 0;
+
+                if (!isUnlocked) {
+                    progressHtml = `
+                        <div class="badge-progress-container">
+                            <div class="badge-progress-bar" style="width: ${percent}%"></div>
+                        </div>
+                        <div class="badge-progress-text">
+                            ${current} / ${target} (${percent}%)
+                        </div>
+                    `;
+                } else {
+                    progressHtml = `
+                        <div class="badge-progress-text text-yellow-600 font-bold mt-2">
+                            <i class="bi bi-check-circle-fill"></i> 解除済み
+                        </div>
+                    `;
+                }
+
+                return `
+                <div class="flex items-center gap-3 p-3 rounded-lg border ${bgClass} transition">
+                    <div class="w-12 h-12 flex-shrink-0 flex items-center justify-center rounded-full bg-white dark:bg-black text-2xl ${iconColor} shadow-sm ${grayscale}">
+                        <i class="bi ${b.icon}"></i>
+                    </div>
+                    <div class="flex-1 min-w-0">
+                        <div class="flex justify-between items-start">
+                            <h4 class="font-bold text-sm truncate ${isUnlocked ? 'text-gray-800 dark:text-gray-100' : 'text-gray-500'}">${b.name}</h4>
+                        </div>
+                        <p class="text-[10px] text-gray-500 truncate">${b.description}</p>
+                        ${progressHtml}
+                    </div>
+                </div>
+                `;
+            }).join('');
+
+            // 2. 日付フォーマット
             const date = new Date(data.joinDate);
             const joined = `${date.getFullYear()}/${date.getMonth()+1}/${date.getDate()}`;
 
-            // --- 認証バッジ ---
+            // 3. 認証バッジ表示
             let verifiedHtml = '';
             if (data.verified === 'gold') {
+                // 黄金（高画質SVG関数を使用）
                 verifiedHtml = `<span class="verified-badge cursor-pointer hover:scale-110 transition" onclick="openVerifiedModal('gold', '${escapeHtml(data.username)}')">${getGoldBadgeIcon("w-6 h-6")}</span>`;
             } else if (data.verified === 'blue') {
+                // ブルー
                 verifiedHtml = `<span class="verified-badge verified-blue" onclick="openVerifiedModal('blue', '${escapeHtml(data.username)}')"><i class="bi bi-patch-check-fill text-xl"></i></span>`;
             }
 
-            // --- ボタンエリア（自分なら編集＆認証ボタンを表示） ---
+            // 4. アクションボタン（自分なら編集・認証、他人はなし）
             let actionBtnHtml = '';
             const isMe = data.isMe || (currentState.user && currentState.user.username === data.username);
 
@@ -9055,7 +9103,7 @@ function changeHistoryPage(newPage) {
                             <i class="bi bi-pencil-square"></i> 編集
                         </button>
                 `;
-                // 未認証なら認証ボタン追加
+                // 未認証なら認証申請ボタンを追加
                 if (data.verified === 'none') {
                     actionBtnHtml += `
                         <button onclick="document.getElementById('verification-apply-modal').style.display='flex'" 
@@ -9066,15 +9114,15 @@ function changeHistoryPage(newPage) {
                 }
                 actionBtnHtml += `</div>`;
             }
-            // ※他人の場合は何も表示しない
 
-            // アイコン色設定
+            // 5. アイコン色設定
             const iconColorMap = {
                 'gray': '#6b7280', 'red': '#ef4444', 'blue': '#3b82f6', 'green': '#10b981', 'yellow': '#eab308', 
                 'purple': '#a855f7', 'pink': '#ec4899', 'black': '#1f2937'
             };
             const iconStyle = `color: ${iconColorMap[data.color] || '#6b7280'}; border-color: ${iconColorMap[data.color] || '#e5e7eb'}`;
 
+            // 6. HTML組み立て
             container.innerHTML = `
                 <div class="profile-header-bg">
                     <div class="profile-avatar-container">
@@ -9102,6 +9150,9 @@ function changeHistoryPage(newPage) {
                         </div>
                     </div>
 
+                    ${data.isBlocked ? '<div class="mb-4 text-center text-red-500 font-bold border border-red-500 p-2 rounded">このユーザーをブロックしています</div>' : ''}
+                    ${data.isBlockedBy ? '<div class="mb-4 text-center text-gray-500 font-bold bg-gray-100 p-2 rounded">ユーザーからブロックされています</div>' : ''}
+
                     <div class="mb-6 p-4 rounded-xl bg-gray-50 dark:bg-zinc-800 border border-gray-200 dark:border-gray-700 text-sm leading-relaxed text-left">
                         <h4 class="font-bold mb-2 text-gray-500">自己紹介</h4>
                         <div style="white-space: pre-wrap;">${escapeHtml(data.bio)}</div>
@@ -9123,22 +9174,21 @@ function changeHistoryPage(newPage) {
                         </div>
                     </div>
 
-                    <div class="flex justify-between items-end mb-4 border-b border-gray-200 dark:border-gray-700 pb-2">
+                    <div class="flex justify-between items-end mb-4 border-b border-gray-200 dark:border-gray-700 pb-2 mt-8">
                         <h3 class="font-bold text-lg border-l-4 border-yellow-500 pl-3 text-left">功徳の証 (実績)</h3>
-                        <button onclick="showAllBadgesModal()" class="text-xs text-blue-500 hover:underline">
-                            すべての実績を見る <i class="bi bi-chevron-right"></i>
-                        </button>
                     </div>
                     
-                    <div class="badges-grid p-4 rounded-xl bg-white dark:bg-zinc-900 border border-gray-200 dark:border-gray-700 shadow-inner">
+                    <!-- バッジリスト (進捗バー付き・2カラムグリッド) -->
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
                         ${badgesHtml}
-                        ${badgesHtml.length === 0 ? '<p class="col-span-full text-center text-gray-400 text-xs">まだ功徳の証はありません</p>' : ''}
                     </div>
+                    ${badgesHtml.length === 0 ? '<p class="text-center text-gray-400 text-xs">まだ功徳の証はありません</p>' : ''}
                 </div>
             `;
             
-            if(isMe) {
-                window.myBadges = data.badges.map(b => b.id);
+            // 7. 自分のバッジ情報をグローバル変数に保存
+            if(isMe && data.badges) {
+                window.myBadges = data.badges.filter(b => b.unlocked).map(b => b.id);
             }
         }
 
