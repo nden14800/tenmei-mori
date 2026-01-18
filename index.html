@@ -8625,23 +8625,47 @@ async function logout() {
         dailyRanking = scoredData;
     }
 
+    // 未来30日間の運勢予報ロジック（修正版：完全1位のみマーク）
     function calculateFutureLuck(signId, bloodType, baseDateStr) {
         let calendarDays = [];
         for(let i=0; i<30; i++) {
             const targetDate = getFutureDateString(baseDateStr, i);
             const dayOfMonth = new Date(targetDate).getDate();
-            const dayAllData = calculateScoresForDate(targetDate);
+            
+            // 1. その日の全48通りの運勢を計算
+            let dayAllData = calculateScoresForDate(targetDate);
+            
+            // 2. 自分のデータを特定
             const me = dayAllData.find(d => d.sign.id === signId && d.blood === bloodType);
-            const maxTotal = Math.max(...dayAllData.map(d => d.totalScore));
-            const maxLove = Math.max(...dayAllData.map(d => d.love.score));
-            const maxMoney = Math.max(...dayAllData.map(d => d.money.score));
-            const maxWork = Math.max(...dayAllData.map(d => d.work.score));
-
+            
             let marks = [];
-            if (me.totalScore === maxTotal) marks.push('<i class="bi bi-star-fill text-yellow-500"></i>');
-            if (me.love.score === maxLove) marks.push('<i class="bi bi-heart-fill text-pink-500"></i>');
-            if (me.money.score === maxMoney) marks.push('<i class="bi bi-currency-yen text-yellow-600"></i>');
-            if (me.work.score === maxWork) marks.push('<i class="bi bi-pencil-fill text-blue-500"></i>');
+
+            // --- 総合運 1位チェック ---
+            // 全員を総合得点でソート（ランキング表と同じロジック）
+            const sortedByTotal = [...dayAllData].sort((a, b) => b.totalScore - a.totalScore);
+            // ソート後、配列の先頭(index 0)が自分なら「真の1位」
+            if (sortedByTotal[0] === me) {
+                marks.push('<i class="bi bi-star-fill text-yellow-500"></i>');
+            }
+
+            // --- 恋愛運 1位チェック ---
+            const sortedByLove = [...dayAllData].sort((a, b) => b.love.score - a.love.score);
+            if (sortedByLove[0] === me) {
+                marks.push('<i class="bi bi-heart-fill text-pink-500"></i>');
+            }
+
+            // --- 金運 1位チェック ---
+            const sortedByMoney = [...dayAllData].sort((a, b) => b.money.score - a.money.score);
+            if (sortedByMoney[0] === me) {
+                marks.push('<i class="bi bi-currency-yen text-yellow-600"></i>');
+            }
+
+            // --- 仕事/勉強運 1位チェック ---
+            const sortedByWork = [...dayAllData].sort((a, b) => b.work.score - a.work.score);
+            if (sortedByWork[0] === me) {
+                marks.push('<i class="bi bi-pencil-fill text-blue-500"></i>');
+            }
+
             calendarDays.push({ day: dayOfMonth, marks: marks });
         }
         return calendarDays;
