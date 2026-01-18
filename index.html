@@ -9341,48 +9341,60 @@ function changeHistoryPage(newPage) {
             finally { showLoading(false); }
         }
 
-        // 認証詳細モーダルを開く（Meta風デザイン修正版）
+        // 認証詳細モーダル（Meta風 + 申請機能付き）
         function openVerifiedModal(type, username) {
             const modal = document.getElementById('verified-modal');
             const iconArea = document.getElementById('verified-icon-area');
             const titleEl = document.getElementById('verified-title');
             const descEl = document.getElementById('verified-desc');
-            
-            // ユーザー名を安全にエスケープ
             const safeName = escapeHtml(username);
 
+            // 自分かどうかチェック
+            const isMe = currentState.user && currentState.user.username === username;
+
             if (type === 'gold') {
-                // --- 黄金認証（運営・開発者） ---
+                // 黄金（運営）
                 iconArea.innerHTML = '<i class="bi bi-patch-check-fill text-yellow-500" style="filter: drop-shadow(0 0 10px rgba(212, 175, 55, 0.6));"></i>';
-                
                 titleEl.textContent = "黄金認証済みユーザー";
-                titleEl.className = "text-xl font-black mb-4 text-gray-900 dark:text-white"; // 色を黒/白に戻し、タイトルをシンプルに
-                
+                titleEl.className = "text-xl font-black mb-4 text-gray-900 dark:text-white";
                 descEl.innerHTML = `
                     <div class="text-left text-sm leading-relaxed">
                         <strong class="block text-base mb-2 text-gray-800 dark:text-gray-200">${safeName}さんは黄金認証済みです</strong>
-                        この黄金のバッジは、運勢・天命乃杜の運営者、またはシステムの開発・管理に深く携わる特別なアカウントであることを証明します。<br>
-                        <br>
-                        <span class="text-xs text-gray-500">※このバッジは手動で付与されます。</span>
+                        この黄金のバッジは、運勢・天命乃杜の運営者、またはシステムの開発・管理に深く携わる特別なアカウントであることを証明します。
+                        ${isMe ? '<br><br><button onclick="openAdminVerifyPanel()" class="w-full py-2 bg-yellow-600 text-white font-bold rounded shadow text-sm">管理者：認証審査パネルを開く</button>' : ''}
                     </div>
                 `;
-            } else {
-                // --- ブルー認証（Meta風テキスト） ---
+            } else if (type === 'blue') {
+                // ブルー（公式）
                 iconArea.innerHTML = '<i class="bi bi-patch-check-fill text-blue-500"></i>';
-                
                 titleEl.textContent = "認証済みユーザー";
                 titleEl.className = "text-xl font-black mb-4 text-gray-900 dark:text-white";
-                
                 descEl.innerHTML = `
                     <div class="text-left text-sm leading-relaxed">
                         <strong class="block text-base mb-2 text-gray-800 dark:text-gray-200">${safeName}さんは天命認証済みです</strong>
                         認証バッジを持つアカウントは認証済みであり、天命乃杜への特別貢献者、または著名な人物や公認アカウントである場合があります。
-                        <br><br>
-                        <a href="#" onclick="showView('about'); return false;" class="text-blue-500 font-bold hover:underline">
-                            認証について詳細を見る
-                        </a>
                     </div>
                 `;
+            } else {
+                // バッジなし（自分が見た時だけ申請ボタンを出す）
+                if (isMe) {
+                    iconArea.innerHTML = '<i class="bi bi-person-circle text-gray-400"></i>';
+                    titleEl.textContent = "未認証アカウント";
+                    titleEl.className = "text-xl font-black mb-4 text-gray-500";
+                    descEl.innerHTML = `
+                        <div class="text-left text-sm leading-relaxed">
+                            <strong class="block text-base mb-2 text-gray-800 dark:text-gray-200">認証バッジを取得しませんか？</strong>
+                            認証バッジを持つアカウントは、信頼できる公式アカウントであることを証明します。<br>
+                            <br>
+                            <button onclick="document.getElementById('verification-apply-modal').style.display='flex'; document.getElementById('verified-modal').style.display='none';" 
+                                class="w-full py-3 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-lg shadow transition">
+                                認証を開始する
+                            </button>
+                        </div>
+                    `;
+                } else {
+                    return; // 他人の未認証は何も出さない
+                }
             }
             
             modal.style.display = 'flex';
