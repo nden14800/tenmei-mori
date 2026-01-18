@@ -7352,6 +7352,16 @@ function handleInputQuiz(button, correctAnswers, questionId) {
                                 currentState.liveCount = data.count;
                                 document.getElementById('live-counter').textContent = currentState.liveCount.toLocaleString() + "本";
                                 fetchHistoryStats();
+
+        
+// ▼▼▼ 追加: 新しいバッジがあれば通知 ▼▼▼
+                                if (data.newBadges && data.newBadges.length > 0) {
+                                    data.newBadges.forEach(badgeName => {
+                                        showToast(`実績解除: 「${badgeName}」を獲得しました！`, 'success', '功徳の証');
+                                    });
+                                }
+                                // ▲▲▲ 追加ここまで ▲▲▲
+
                             }
                         }
                     } catch(e) { 
