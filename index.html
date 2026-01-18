@@ -9390,18 +9390,35 @@ function changeHistoryPage(newPage) {
             // 自分かどうかチェック
             const isMe = currentState.user && currentState.user.username === username;
 
+            // 認証詳細モーダル
+        function openVerifiedModal(type, username) {
+            const modal = document.getElementById('verified-modal');
+            const iconArea = document.getElementById('verified-icon-area');
+            const titleEl = document.getElementById('verified-title');
+            const descEl = document.getElementById('verified-desc');
+            const safeName = escapeHtml(username);
+            
+            // 自分かどうかチェック
+            const isMe = currentState.user && currentState.user.username === username;
+
             if (type === 'gold') {
-                // 黄金（運営）
-                iconArea.innerHTML = '<i class="bi bi-patch-check-fill text-yellow-500" style="filter: drop-shadow(0 0 10px rgba(212, 175, 55, 0.6));"></i>';
+                // --- 黄金認証（高画質SVG） ---
+                // アイコンエリアに巨大なSVGを表示
+                iconArea.innerHTML = getGoldBadgeIcon("w-20 h-20"); // 80px四方の高解像度
+                
                 titleEl.textContent = "黄金認証済みユーザー";
                 titleEl.className = "text-xl font-black mb-4 text-gray-900 dark:text-white";
                 descEl.innerHTML = `
                     <div class="text-left text-sm leading-relaxed">
                         <strong class="block text-base mb-2 text-gray-800 dark:text-gray-200">${safeName}さんは黄金認証済みです</strong>
                         この黄金のバッジは、運勢・天命乃杜の運営者、またはシステムの開発・管理に深く携わる特別なアカウントであることを証明します。
-                        ${isMe ? '<br><br><button onclick="openAdminVerifyPanel()" class="w-full py-2 bg-yellow-600 text-white font-bold rounded shadow text-sm">管理者：認証審査パネルを開く</button>' : ''}
+                        <br><br>
+                        <span class="text-xs text-gray-500">※金属光沢を持つこのバッジは、最高位の権限者のみに表示されます。</span>
+                        ${isMe ? '<br><br><button onclick="openAdminVerifyPanel()" class="w-full py-2 bg-yellow-600 text-white font-bold rounded shadow text-sm hover:bg-yellow-700 transition">管理者：認証審査パネルを開く</button>' : ''}
                     </div>
                 `;
+            } 
+        
             } else if (type === 'blue') {
                 // ブルー（公式）
                 iconArea.innerHTML = '<i class="bi bi-patch-check-fill text-blue-500"></i>';
