@@ -9201,19 +9201,25 @@ function changeHistoryPage(newPage) {
             }
         }
         
-        // --- 「参拝者台帳」ボタンを押した時の挙動修正 ---
-        // ログインしていたら自分のプロフィール、そうでなければ検索（おすすめ）を表示
+        // --- 「参拝者台帳」ボタンの挙動 ---
         function openWorshipperBook() {
             showView('profile-public');
             
             if (currentState.user) {
-                // 自分のプロフィールを読み込む
+                // ログイン中：自分のプロフィールを表示
                 loadUserProfile(currentState.user.username);
             } else {
-                // 未ログイン時はおすすめ（最近のユーザー）を表示させるため、空検索を実行
-                handleUserSearch(''); 
-                // UI調整：検索候補を常に表示状態にするなどの工夫が必要ですが、
-                // ここでは「検索バーにフォーカス」させるだけでも親切です
+                // 未ログイン：空の検索を実行して「最近のユーザー」を表示させる
+                // さらに、まだ誰も選択していない状態の画面を表示
+                const container = document.getElementById('public-profile-content');
+                container.innerHTML = `
+                    <div class="flex flex-col items-center justify-center h-[500px] text-gray-500">
+                        <i class="bi bi-people-fill text-6xl mb-4 text-gray-300"></i>
+                        <p class="text-lg font-bold">参拝者台帳</p>
+                        <p class="text-sm mt-2">上の検索バーからユーザーを探すか、<br>表示される候補から選択してください。</p>
+                    </div>
+                `;
+                handleUserSearch(''); // おすすめユーザーを検索候補に出す
                 document.querySelector('.user-search-container input').focus();
             }
         }
