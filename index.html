@@ -8966,19 +8966,25 @@ function changeHistoryPage(newPage) {
             const date = new Date(data.joinDate);
             const joined = `${date.getFullYear()}/${date.getMonth()+1}/${date.getDate()}`;
 
-            // --- 認証バッジ ---
+            // --- 認証バッジ（修正版） ---
             let verifiedHtml = '';
+            
+            // 自分かどうか
+            const isMe = data.isMe || (currentState.user && currentState.user.username === data.username);
+
             if (data.verified === 'gold') {
+                // 黄金
                 verifiedHtml = `<span class="verified-badge verified-gold" onclick="openVerifiedModal('gold', '${escapeHtml(data.username)}')"><i class="bi bi-patch-check-fill text-xl"></i></span>`;
             } else if (data.verified === 'blue') {
+                // ブルー
                 verifiedHtml = `<span class="verified-badge verified-blue" onclick="openVerifiedModal('blue', '${escapeHtml(data.username)}')"><i class="bi bi-patch-check-fill text-xl"></i></span>`;
+            } else if (isMe) {
+                // 【追加】なし（自分のみ）：薄いグレーのマークを表示して、クリックで申請できるようにする
+                verifiedHtml = `<span class="verified-badge text-gray-300 hover:text-gray-500 cursor-pointer transition" onclick="openVerifiedModal('none', '${escapeHtml(data.username)}')"><i class="bi bi-patch-check-fill text-xl"></i></span>`;
             }
 
             // --- ボタン出し分けロジック (編集ボタンのみ) ---
             let actionBtnHtml = '';
-            
-            // 自分かどうか（サーバー判定 または ローカル判定）
-            const isMe = data.isMe || (currentState.user && currentState.user.username === data.username);
 
             if (isMe) {
                 // 自分自身の場合のみ「編集ボタン」を表示
