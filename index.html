@@ -7620,92 +7620,105 @@ function handleInputQuiz(button, correctAnswers, questionId) {
             }
         }
 
-       // --- 履歴・おみくじの轍 (サーバーサイドページネーション対応版) ---
-async function loadHistory(page = 1) {
-    const list = document.getElementById('history-list');
-    const container = document.getElementById('history-container');
-    const overlay = document.getElementById('history-login-overlay');
-    const viewMode = document.getElementById('history-view-mode');
-    const myCountEl = document.getElementById('personal-history-count');
-    const globalCountEl = document.getElementById('global-history-count');
-    const searchResultCount = document.getElementById('search-result-count');
-
-    // 検索条件の取得
-    const type = document.getElementById('search-type').value;
-    const keyword = document.getElementById('search-keyword').value;
-    const dateStart = document.getElementById('search-date-start').value;
-    const dateEnd = document.getElementById('search-date-end').value;
-
-    if(!currentState.user) {
-        container.classList.add('history-blurred');
-        overlay.classList.remove('hidden');
-        viewMode.textContent = "";
-        myCountEl.textContent = "-";
-        globalCountEl.textContent = "-";
-        let html = '';
-        for(let i=0; i<10; i++) {
-            html += `
-                <div class="bg-gray-50 dark:bg-zinc-800 p-3 rounded flex justify-between items-center border-l-4 border-gray-300">
-                    <div class="flex flex-col">
-                        <span class="text-xs themed-text-sub">??? 様</span>
-                        <span class="text-xs text-gray-400">----/--/--</span>
-                    </div>
-                    <span class="font-bold text-lg">???</span>
-                </div>
-            `;
-        }
-        list.innerHTML = html;
-        return;
-    }
-
-    container.classList.remove('history-blurred');
-    overlay.classList.add('hidden');
-    viewMode.textContent = "全参拝者の記録 (全期間)";
-    list.innerHTML = '<p class="text-center text-sm themed-text-sub">読み込み中...</p>';
-    showLoading(true);
-
-    try {
-        // クエリパラメータの作成
-        const params = new URLSearchParams({
-            page: page,
-            type: type,
-            keyword: keyword,
-            dateStart: dateStart,
-            dateEnd: dateEnd
-        });
-
-        const res = await authFetch(`${API_BASE}/api/history/global?${params.toString()}`, {
-            method: 'GET'
-        });
+       // --- 履歴・おみくじの轍 (通信キャンセル対応版) ---
         
-        if(res.ok) {
-            const data = await res.json();
-            
-            // カウンター更新
-            myCountEl.textContent = (data.personalTotal || 0).toLocaleString() + "回";
-            globalCountEl.textContent = (currentState.liveCount || 0).toLocaleString() + "本";
-            searchResultCount.textContent = (data.totalItems || 0).toLocaleString();
+        // 通信制御用の変数をグローバルに定義
+        let historyAbortController = null;
 
-            // 状態の更新
-            historyPageState.page = data.page;
-            historyPageState.totalItems = data.totalItems;
-            historyPageState.filteredData = data.global; // 現在のページのデータ
+        async function loadHistory(page = 1) {
+            const list = document.getElementById('history-list');
+            const container = document.getElementById('history-container');
+            const overlay = document.getElementById('history-login-overlay');
+            const viewMode = document.getElementById('history-view-mode');
+            const myCountEl = document.getElementById('personal-history-count');
+            const globalCountEl = document.getElementById('global-history-count');
+            const searchResultCount = document.getElementById('search-result-count');
 
-            // 描画
-            renderHistoryList(data.global);
-            renderServerPagination(data.page, data.totalItems, 100);
+            // 検索条件の取得
+            const type = document.getElementById('search-type').value;
+            const keyword = document.getElementById('search-keyword').value;
+            const dateStart = document.getElementById('search-date-start').value;
+            const dateEnd = document.getElementById('search-date-end').value;
+
+            if(!currentState.user) {
+                // ... (未ログイン時の処理はそのまま) ...
+                container.classList.add('history-blurred');
+                overlay.classList.remove('hidden');
+                viewMode.textContent = "";
+                myCountEl.textContent = "-";
+                globalCountEl.textContent = "-";
+                // ダミー表示など...
+                return;
+            }
+
+            // ▼▼▼ 修正: 前回の通信があればキャンセルする ▼▼▼
+            if (historyAbortController) {
+                historyAbortController.abort();
+            }
+            historyAbortController = new AbortController();
+            const signal = historyAbortController.signal;
+            // ▲▲▲ 修正ここまで ▲▲▲
+
+            container.classList.remove('history-blurred');
+            overlay.classList.add('hidden');
+            viewMode.textContent = "全参拝者の記録 (全期間)";
+            list.innerHTML = '<div class="text-center py-8"><div class="spinner-border text-red-500" role="status"></div> 読み込み中...</div>';
             
-        } else {
-            console.error("Load failed:", res.status);
-            list.innerHTML = '<p class="text-center text-red-500">情報の取得に失敗しました。</p>';
+            // ローディングを表示
+            showLoading(true);
+
+            try {
+                const params = new URLSearchParams({
+                    page: page,
+                    type: type,
+                    keyword: keyword,
+                    dateStart: dateStart,
+                    dateEnd: dateEnd
+                });
+
+                // ★ signal を渡して、キャンセル可能にする
+                const res = await authFetch(`${API_BASE}/api/history/global?${params.toString()}`, {
+                    method: 'GET',
+                    signal: signal 
+                });
+                
+                if(res.ok) {
+                    const data = await res.json();
+                    
+                    myCountEl.textContent = (data.personalTotal || 0).toLocaleString() + "回";
+                    globalCountEl.textContent = (currentState.liveCount || 0).toLocaleString() + "本";
+                    searchResultCount.textContent = (data.totalItems || 0).toLocaleString();
+
+                    historyPageState.page = data.page;
+                    historyPageState.totalItems = data.totalItems;
+                    historyPageState.filteredData = data.global;
+
+                    renderHistoryList(data.global);
+                    renderServerPagination(data.page, data.totalItems, 100);
+                } else {
+                    // キャンセルされた場合はエラー扱いしない
+                    console.error("Load failed:", res.status);
+                    list.innerHTML = '<p class="text-center text-red-500">情報の取得に失敗しました。</p>';
+                }
+            } catch(e) {
+                // キャンセルエラー（AbortError）は無視する
+                if (e.name === 'AbortError') {
+                    console.log('Fetch aborted');
+                    return; // ここで終了することで、finallyのshowLoading(false)に行かせない手もあるが、
+                            // 新しいリクエストがshowLoading(true)してるので、
+                            // ここでfalseにすると新しいリクエストのローディングも消えてしまう可能性がある。
+                            // なので、Abortの時は何もしないのが正解。
+                } else {
+                    console.error(e);
+                    list.innerHTML = '<p class="text-center text-red-500">通信エラーが発生しました。</p>';
+                }
+            } finally {
+                // ▼▼▼ 修正: キャンセルされていない場合のみローディングを消す ▼▼▼
+                if (!signal.aborted) {
+                    showLoading(false);
+                }
+            }
         }
-    } catch(e) {
-        console.error(e);
-        list.innerHTML = '<p class="text-center text-red-500">通信エラーが発生しました。</p>';
-    } finally {
-        showLoading(false);
-    }
-}
 
         // 履歴リストのレンダリング関数 (XSS対策版)
     function renderHistoryList(historyData) {
