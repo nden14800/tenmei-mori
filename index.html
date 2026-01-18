@@ -8989,11 +8989,13 @@ function changeHistoryPage(newPage) {
             const date = new Date(data.joinDate);
             const joined = `${date.getFullYear()}/${date.getMonth()+1}/${date.getDate()}`;
 
-            // --- 認証バッジ（バッジがある場合のみ表示） ---
+            // --- 認証バッジ（高画質版に修正） ---
             let verifiedHtml = '';
             if (data.verified === 'gold') {
-                verifiedHtml = `<span class="verified-badge verified-gold" onclick="openVerifiedModal('gold', '${escapeHtml(data.username)}')"><i class="bi bi-patch-check-fill text-xl"></i></span>`;
+                // 黄金：SVG関数を使用
+                verifiedHtml = `<span class="verified-badge cursor-pointer hover:scale-110 transition" onclick="openVerifiedModal('gold', '${escapeHtml(data.username)}')">${getGoldBadgeIcon("w-6 h-6")}</span>`;
             } else if (data.verified === 'blue') {
+                // ブルー：既存のまま（BootStrap Iconは単色なら綺麗なのでそのままでもOKですが、統一感のため調整しても可）
                 verifiedHtml = `<span class="verified-badge verified-blue" onclick="openVerifiedModal('blue', '${escapeHtml(data.username)}')"><i class="bi bi-patch-check-fill text-xl"></i></span>`;
             }
 
