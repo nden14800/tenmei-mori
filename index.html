@@ -7004,13 +7004,23 @@ function handleInputQuiz(button, correctAnswers, questionId) {
             const overlay = document.getElementById('loading-overlay');
             if(show) {
                 overlay.style.display = 'flex';
-                // わずかに遅らせてopacityを変更しフェードインさせる
                 requestAnimationFrame(() => overlay.classList.add('visible'));
+                
+                // ★追加: 10秒経っても消えなかったら、クリックで消せるようにする（救済措置）
+                overlay.onclick = null; // 一旦リセット
+                setTimeout(() => {
+                    if(overlay.style.display === 'flex') {
+                        overlay.onclick = () => showLoading(false); // タップで消去可能に
+                    }
+                }, 10000); // 10秒後有効化
+
             } else {
                 overlay.classList.remove('visible');
-                // フェードアウト後に非表示
                 setTimeout(() => {
-                    if(!overlay.classList.contains('visible')) overlay.style.display = 'none';
+                    if(!overlay.classList.contains('visible')) {
+                        overlay.style.display = 'none';
+                        overlay.onclick = null; // クリックイベント解除
+                    }
                 }, 300);
             }
         }
