@@ -3187,14 +3187,16 @@
                                 <td>Social Login</td>
                                 <td>OS依存</td>
                             </tr>
-                            <tr>
-                                <td class="font-bold">DB堅牢性</td>
-                                <td class="highlight">分散SQL (高耐久)</td>
-                                <td>ファイル (脆弱)</td>
-                                <td>保存しない</td>
-                                <td>RDB</td>
-                                <td>RDB / SQLite</td>
-                            </tr>
+                            <!-- 比較表の tbody 内 -->
+<tr>
+    <td class="font-bold">DB堅牢性</td>
+    <!-- ここを変更 -->
+    <td class="highlight">Supabase (無制限)</td>
+    <td>ファイル (脆弱)</td>
+    <td>保存しない</td>
+    <td>RDB</td>
+    <td>RDB / SQLite</td>
+</tr>
                             <tr>
                                 <td class="font-bold">パスワード</td>
                                 <td class="highlight">SHA-256ハッシュ</td>
@@ -3257,12 +3259,13 @@
                 <p class="mb-4">
                     当サイトの更新頻度は、他のニュースサイトやブログメディアと比較して低く設定されています。これは開発の停滞を意味するものではなく、<strong>「初期リリースの段階で、予定されていた主要機能の実装が完了しており、システムとして完成されている」</strong>ためです。現在は安定稼働フェーズにあり、バグ修正やサーバーメンテナンスを除き、頻繁なコード変更は行われません。皆様には、変わらぬ品質で永続的にサービスを提供し続けます。
                 </p>
-                <h4 class="font-bold mt-4 border-b border-gray-300 dark:border-gray-600 pb-1">2. サーバーレス技術による堅牢性（D1 Databaseへの移行）</h4>
-                <p class="mb-4">
-                    当サイトは、物理的なサーバーを持たない「サーバーレス・アーキテクチャ（Cloudflare Workers）」上で動作しています。
-    データベース基盤には、堅牢でスケーラブルなSQLデータベース<strong>「Cloudflare D1」</strong>を採用し、完全移行いたしました。
-    これにより、データの整合性が飛躍的に向上し、アクセス集中時でも安定した書き込みが可能となりました。某老舗サイトで見られるような「サーバー移転に伴うカウンターの巻き戻り」といった事故は、本システムの構造上発生しません。
-                </p>
+                <!-- 書き換え後 -->
+<h4 class="font-bold mt-4 border-b border-gray-300 dark:border-gray-600 pb-1">2. サーバーレス技術による堅牢性（Supabaseへの移行）</h4>
+<p class="mb-4">
+    当サイトは、物理的なサーバーを持たない「サーバーレス・アーキテクチャ（Cloudflare Workers）」上で動作しています。
+    データベース基盤には、オープンソースのBaaS（Backend as a Service）であり、極めて高い堅牢性と拡張性を持つ<strong>「Supabase（PostgreSQL）」</strong>を採用いたしました。
+    これにより、旧来のCloudflare D1で課題となっていた「1日の書き込み回数制限」が撤廃され、事実上無制限の参拝者を受け入れることが可能となりました。アクセス集中時でもデータの不整合は発生しません。
+</p>
                 <h4 class="font-bold mt-4 border-b border-gray-300 dark:border-gray-600 pb-1">3. 真正性への取り組みと日付更新</h4>
                 <p class="mb-4">
                     占いの結果生成において、当サイトは「真正性」を重視しています。12星座×血液型占いおよび全国運気ランキングにおいては、その日の日付（日本時間 JST 0:00基準）をシード値（種）とした決定論的乱数生成アルゴリズム（Seeded Random）を採用しており、リロードを繰り返して良い結果が出るまでやり直す「リセマラ」を防止しています。これは、占いを単なるゲームではなく、その日の運命（天命）として受け入れていただくための仕様です。
@@ -3392,10 +3395,11 @@
                     <strong>1. 技術的保護措置：</strong><br>
                     当サイトは、通信経路における第三者の盗聴を防止するため、全ての通信に対してSSL/TLS（Transport Layer Security）暗号化技術を使用しています。また、ユーザーのパスワードについては、サーバー上で平文（そのままの状態）で保存することは一切なく、<strong>SHA-256アルゴリズムを用いて不可逆的なハッシュ値に変換</strong>した上でデータベースに格納しております。これにより、万が一データベースへの不正アクセスが発生した場合でも、運営者を含め第三者が元のパスワードを知ることは不可能な仕組みとなっております。
                 </p>
-                <p class="mb-4 text-sm">
-                    <strong>2. インフラストラクチャの安全性：</strong><br>
-                    本サービスのサーバーサイド処理およびデータベースには、世界的なセキュリティ基準を満たす <strong>Cloudflare Workers</strong> および <strong>Cloudflare D1</strong> を採用しています。データは分散ネットワーク上で冗長化されて保管され、物理的な障害やDDoS攻撃などの脅威から保護されています。
-                </p>
+                <!-- 書き換え後 -->
+<p class="mb-4 text-sm">
+    <strong>2. インフラストラクチャの安全性：</strong><br>
+    本サービスのサーバーサイド処理には <strong>Cloudflare Workers</strong> を、データベースには高度なセキュリティ対策が施された <strong>Supabase (PostgreSQL)</strong> を採用しています。データは暗号化された状態で分散保管され、物理的な障害や外部攻撃から保護されています。
+</p>
 
                 <h4 class="font-bold mt-6 text-lg border-b border-gray-300 dark:border-gray-600 pb-1">第5条（外部サービスとの連携とデータ移転）</h4>
                 <p class="mb-4 text-sm">
@@ -3407,10 +3411,17 @@
                     <p class="mb-1">送信される情報：メールアドレス、認証コード、ユーザー名</p>
                     <p>特記事項：当サイトのシステムは、メール送信リクエストをGoogleのサーバーに送信します。Google側でメール送信処理が完了した後、当該個人情報がGoogleスプレッドシート等のストレージに永続的に蓄積されることはありません。</p>
                 </div>
-                <div class="mb-4 text-sm border-l-2 border-gray-300 pl-4">
+                <!-- 書き換え後（D1の記述を削除・修正し、Supabaseを追加） -->
+<div class="mb-4 text-sm border-l-2 border-gray-300 pl-4">
     <p class="font-bold">2. Cloudflare (Cloudflare, Inc.)</p>
-    <p class="mb-1">利用目的：コンテンツ配信（CDN）、サーバーレスコンピューティング、データベース機能（D1）</p>
-    <p>送信される情報：アクセスログ、ユーザー登録情報、利用履歴等の全てのデータ</p>
+    <p class="mb-1">利用目的：コンテンツ配信（CDN）、サーバーレスコンピューティング（Workers）</p>
+    <p>送信される情報：アクセスログ、通信リクエスト</p>
+</div>
+<div class="mb-4 text-sm border-l-2 border-gray-300 pl-4">
+    <p class="font-bold">3. Supabase (Supabase, Inc.)</p>
+    <p class="mb-1">利用目的：ユーザー情報、履歴データ、統計データの保管および認証管理</p>
+    <p>送信される情報：メールアドレス、パスワード（ハッシュ化済）、ユーザー名、利用履歴</p>
+    <p>特記事項：データベースサーバーは業界標準のセキュリティ基準に準拠して管理されています。</p>
 </div>
 
                 <h4 class="font-bold mt-6 text-lg border-b border-gray-300 dark:border-gray-600 pb-1">第6条（個人情報の第三者提供）</h4>
