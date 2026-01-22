@@ -9366,9 +9366,16 @@ function changeHistoryPage(newPage) {
                 `;
             }).join('');
 
-            // 2. 日付フォーマット
-            const date = new Date(data.joinDate);
-            const joined = `${date.getFullYear()}/${date.getMonth()+1}/${date.getDate()}`;
+            
+// 2. 日付フォーマット (安全策追加版)
+let joined = "----/--/--";
+if (data.joinDate) {
+    const date = new Date(data.joinDate);
+    // 日付が有効な場合のみフォーマットする
+    if (!isNaN(date.getTime())) {
+        joined = `${date.getFullYear()}/${date.getMonth()+1}/${date.getDate()}`;
+    }
+}
 
             // 3. 認証バッジ表示
             let verifiedHtml = '';
