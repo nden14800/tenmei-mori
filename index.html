@@ -9179,185 +9179,100 @@ function changeHistoryPage(newPage) {
     // 既存の showView 関数を少し修正して、画面表示時に目次を生成するようにする
     const originalShowView = window.showView; // 既存の関数を退避（または直接書き換え）
     
-    // showView関数を上書き（既存のロジック + 目次生成呼び出し）
-    window.showView = function(viewId) {
-        // --- 既存のshowViewの中身 ---
-        // Lab機能へのアクセス制限処理
-        if(viewId === 'lab') {
-            const lock = document.getElementById('lab-lock');
-            const wrapper = document.getElementById('lab-content-wrapper');
+    // --- 修正後の showView 関数 (stats対応) ---
+window.showView = function(viewId) {
+    // Labsのロック処理 (既存)
+    if(viewId === 'lab') {
+        const lock = document.getElementById('lab-lock');
+        const wrapper = document.getElementById('lab-content-wrapper');
+        if(!currentState.user) {
+            lock.classList.remove('hidden');
+            wrapper.classList.add('lab-blurred');
+        } else {
+            lock.classList.add('hidden');
+            wrapper.classList.remove('lab-blurred');
+        }
+    }
+
+    // ▼▼ 新規: 統計ページのロック処理 ▼▼
+    if(viewId === 'stats') {
+        const lock = document.getElementById('stats-lock');
+        const wrapper = document.getElementById('stats-content-wrapper');
+        
+        if(!currentState.user) {
+            // 未ログイン：ロック表示 & 背景ぼかし
+            lock.classList.remove('hidden');
+            wrapper.classList.add('lab-blurred'); // 既存のぼかしクラスを流用
+            // ダミー表示（空っぽだと寂しいので）
+            document.getElementById('stat-total').textContent = "-";
+            document.getElementById('stat-daikichi').textContent = "-";
+            document.getElementById('stat-streak').textContent = "-";
+            document.getElementById('stats-badge-list').innerHTML = '<div class="col-span-2 text-center text-gray-400 py-10">記録がありません</div>';
+        } else {
+            // ログイン済み：ロック解除 & データ読み込み
+            lock.classList.add('hidden');
+            wrapper.classList.remove('lab-blurred');
+            loadMyStats(); // データを取得して表示
+        }
+    }
+
+    // 画面切り替え (既存)
+    document.querySelectorAll('.view-section').forEach(el => {
+        el.classList.remove('active');
+        setTimeout(() => {
+            if(!el.classList.contains('active')) el.style.display = 'none';
+        }, 500);
+    });
+    
+    const target = document.getElementById(`view-${viewId}`);
+    if (target) {
+        target.style.display = 'block';
+        void target.offsetWidth; 
+        target.classList.add('active');
+    }
+    currentState.view = viewId;
+
+    if(viewId === 'draw') resetOmikujiPool();
+    if(viewId === 'history') loadHistory();
+    if(viewId === 'prefecture') renderPrefectureRanking();
+    if(viewId === 'about' || viewId === 'privacy') initTOC(viewId);
+    if(viewId === 'omamori') OmamoriSystem.reset();
+};
+
+// ▼▼ 新規: 統計データの読み込み & 描画関数 ▼▼
+async function loadMyStats() {
+    if (!currentState.user) return;
+
+    // 既存の profile API を流用 (statsとbadgesが含まれているため)
+    // エラーの原因だった icon や date は無視して数字だけ使います
+    try {
+        const res = await fetch(`${API_BASE}/api/user/profile?username=${encodeURIComponent(currentState.user.username)}`);
+        if (res.ok) {
+            const data = await res.json();
             
-            if(!currentState.user) {
-                lock.classList.remove('hidden');
-                wrapper.classList.add('lab-blurred');
-            } else {
-                lock.classList.add('hidden');
-                wrapper.classList.remove('lab-blurred');
+            // 1. 数値の反映
+            document.getElementById('stat-total').textContent = data.stats.totalDraws.toLocaleString();
+            document.getElementById('stat-daikichi').textContent = data.stats.daikichiCount.toLocaleString();
+            document.getElementById('stat-streak').textContent = data.stats.goshuinCount.toLocaleString();
+
+            // 2. バッジリストの描画
+            const badgeContainer = document.getElementById('stats-badge-list');
+            if (data.badges.length === 0) {
+                badgeContainer.innerHTML = '<p class="text-center text-gray-500 col-span-2">まだ実績はありません</p>';
+                return;
             }
-        }
 
-        // 画面の切り替え
-        document.querySelectorAll('.view-section').forEach(el => {
-            el.classList.remove('active');
-            setTimeout(() => {
-                if(!el.classList.contains('active')) el.style.display = 'none';
-            }, 500);
-        });
-        
-        const target = document.getElementById(`view-${viewId}`);
-        if (target) {
-            target.style.display = 'block';
-            void target.offsetWidth; 
-            target.classList.add('active');
-        }
-        currentState.view = viewId;
-
-        // 各ビューごとの初期化ロジック
-        if(viewId === 'draw') resetOmikujiPool();
-        if(viewId === 'history') loadHistory();
-        if(viewId === 'prefecture') renderPrefectureRanking();
-
-        // ★追加: 規約・ポリシー画面を開いた時に目次を生成
-        if(viewId === 'about' || viewId === 'privacy') {
-            initTOC(viewId);
-        }
-    };
-
-        
-// --- 御朱印（ログインボーナス）チェック ---
-        async function checkGoshuin() {
-            if(!currentState.user) return;
-            try {
-                const res = await authFetch(`${API_BASE}/api/goshuin`, { method: 'POST' });
-                if(res.ok) {
-                    const data = await res.json();
-                    if(data.isNewStamp) {
-                        // 御朱印モーダル表示 (トーストで代用、または専用モーダル作成)
-                        showToast(`
-                            <div class="text-center">
-                                <div class="text-3xl text-red-600 mb-2">💮 御朱印記帳</div>
-                                <p class="font-bold">本日の参拝を受け付けました</p>
-                                <p class="text-sm mt-1">連続参拝: ${data.streak}日目<br>通算参拝: ${data.total}回</p>
-                            </div>
-                        `, 'success', 'ログインボーナス');
-                    }
-                }
-            } catch(e) { console.error(e); }
-        }
-
-        // --- プロフィール検索 & 表示 ---
-        
-        // 検索入力ハンドラ（バッジ表示対応版）
-        async function handleUserSearch(val) {
-            const list = document.getElementById('search-suggestions');
-            // 空文字でも呼び出せるように条件緩和
-            // if(val.length < 1) ... は削除
-
-            try {
-                const res = await fetch(`${API_BASE}/api/user/search?q=${encodeURIComponent(val)}`);
-                if(res.ok) {
-                    const users = await res.json();
-                    
-                    list.innerHTML = users.map(u => {
-                        // バッジHTML生成
-                        let badge = '';
-                        if(u.verified_type === 'gold') badge = '<i class="bi bi-patch-check-fill text-yellow-500 ml-1"></i>';
-                        else if(u.verified_type === 'blue') badge = '<i class="bi bi-patch-check-fill text-blue-500 ml-1"></i>';
-                        
-                        return `
-                        <div class="suggestion-item" onclick="loadUserProfile('${escapeHtml(u.username)}')">
-                            <i class="bi bi-person-circle mr-2 text-gray-400"></i> 
-                            <span class="font-bold">${escapeHtml(u.username)}</span>
-                            ${badge}
-                        </div>
-                        `;
-                    }).join('');
-                    
-                    list.style.display = users.length ? 'block' : 'none';
-                }
-            } catch(e) { console.error(e); }
-        }
-
-        // プロフィール読み込み
-        async function loadUserProfile(username) {
-            showLoading(true);
-            // 検索候補を隠す
-            document.getElementById('search-suggestions').style.display = 'none';
-            
-            try {
-                const res = await fetch(`${API_BASE}/api/user/profile?username=${encodeURIComponent(username)}`);
-                if(res.ok) {
-                    const data = await res.json();
-                    renderProfilePage(data);
-                } else {
-                    alert("ユーザーが見つかりませんでした");
-                }
-            } catch(e) { 
-                alert("通信エラー"); 
-            } finally {
-                showLoading(false);
-            }
-        }
-
-        
-// 【追加】高画質・黄金バッジSVG生成関数
-        function getGoldBadgeIcon(sizeClass = "w-6 h-6") {
-            // 定義IDを一意にする
-            const uniqueId = "goldGrad_" + Math.floor(Math.random() * 10000);
-            
-            return `
-            <svg class="${sizeClass}" viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg" style="display:inline-block; vertical-align:text-bottom; filter: drop-shadow(0 1px 2px rgba(180, 140, 20, 0.3));">
-                <defs>
-                    <linearGradient id="${uniqueId}" x1="0%" y1="0%" x2="100%" y2="100%">
-                        <stop offset="0%" style="stop-color:#FDB931; stop-opacity:1" />
-                        <stop offset="25%" style="stop-color:#FFFFE0; stop-opacity:1" />
-                        <stop offset="50%" style="stop-color:#FFD700; stop-opacity:1" />
-                        <stop offset="75%" style="stop-color:#D1913C; stop-opacity:1" />
-                        <stop offset="100%" style="stop-color:#B8860B; stop-opacity:1" />
-                    </linearGradient>
-                </defs>
-                <path fill="url(#${uniqueId})" d="M10.067.87a2.89 2.89 0 0 0-4.134 0l-.622.638-.89-.011a2.89 2.89 0 0 0-2.924 2.924l.01.89-.636.622a2.89 2.89 0 0 0 0 4.134l.637.622-.011.89a2.89 2.89 0 0 0 2.924 2.924l.89-.01.622.636a2.89 2.89 0 0 0 4.134 0l.622-.637.89.011a2.89 2.89 0 0 0 2.924-2.924l-.01-.89.636-.622a2.89 2.89 0 0 0 0-4.134l-.637-.622.011-.89a2.89 2.89 0 0 0-2.924-2.924l-.89.01-.622-.636zm.287 5.984-3 3a.5.5 0 0 1-.708 0l-1.5-1.5a.5.5 0 1 1 .708-.708L7 8.793l2.646-2.647a.5.5 0 0 1 .708.708z"/>
-            </svg>
-            `;
-        }
-
-
-    // プロフィール描画 (進捗バー・数字削除版)
-        function renderProfilePage(data) {
-            showView('profile-public');
-            const container = document.getElementById('public-profile-content');
-            
-            // 1. バッジ一覧の生成
-            const badgesHtml = data.badges.map(b => {
-                // 解除済みかどうか
+            badgeContainer.innerHTML = data.badges.map(b => {
                 const isUnlocked = b.unlocked;
-                
-                // アイコン・背景色
                 const iconColor = isUnlocked ? 'text-yellow-600' : 'text-gray-300';
                 const bgClass = isUnlocked 
                     ? 'bg-yellow-50 dark:bg-yellow-900/20 border-yellow-200' 
                     : 'bg-gray-100 dark:bg-zinc-800 border-gray-200 dark:border-gray-700';
-                const grayscale = isUnlocked ? '' : 'grayscale opacity-75';
-
-                // ▼▼▼ 修正: 進捗バーと数字の計算を削除し、結果のみ表示 ▼▼▼
-                let statusHtml = '';
-
-                if (isUnlocked) {
-                    // 達成時
-                    statusHtml = `
-                        <div class="badge-progress-text text-yellow-600 font-bold mt-2">
-                            <i class="bi bi-check-circle-fill"></i> 解除済み
-                        </div>
-                    `;
-                } else {
-                    // 未達成時（バーと数字は消し、シンプルに未獲得と表示）
-                    statusHtml = `
-                        <div class="badge-progress-text text-gray-400 mt-2">
-                            <i class="bi bi-lock-fill"></i> 未獲得
-                        </div>
-                    `;
-                }
-                // ▲▲▲ 修正ここまで ▲▲▲
+                const grayscale = isUnlocked ? '' : 'grayscale opacity-50';
+                
+                const statusText = isUnlocked 
+                    ? `<span class="text-yellow-600 font-bold"><i class="bi bi-check-circle-fill"></i> 解除済み</span>`
+                    : `<span class="text-gray-400"><i class="bi bi-lock-fill"></i> 未獲得</span>`;
 
                 return `
                 <div class="flex items-center gap-3 p-3 rounded-lg border ${bgClass} transition">
@@ -9365,15 +9280,32 @@ function changeHistoryPage(newPage) {
                         <i class="bi ${b.icon}"></i>
                     </div>
                     <div class="flex-1 min-w-0">
-                        <div class="flex justify-between items-start">
-                            <h4 class="font-bold text-sm truncate ${isUnlocked ? 'text-gray-800 dark:text-gray-100' : 'text-gray-500'}">${b.name}</h4>
-                        </div>
-                        <p class="text-[10px] text-gray-500 truncate">${b.description}</p>
-                        ${statusHtml}
+                        <h4 class="font-bold text-sm truncate ${isUnlocked ? 'text-gray-800 dark:text-gray-100' : 'text-gray-500'}">${b.name}</h4>
+                        <p class="text-[10px] text-gray-500 truncate mb-1">${b.description}</p>
+                        <div class="text-[10px]">${statusText}</div>
                     </div>
                 </div>
                 `;
             }).join('');
+        }
+    } catch (e) {
+        console.error("Stats load failed", e);
+    }
+}
+
+// ※ 以前の loadUserProfile, renderProfilePage, handleUserSearch などの関数は削除してOKです。
+// ※ handleProfileClick は「ログイン画面へ行く」か「ログアウト画面へ行く」ように単純化します。
+
+function handleProfileClick() {
+    if(currentState.user) {
+        // ログイン中はログアウト確認画面へ (簡易的)
+        if(confirm(`現在「${currentState.user.username}」としてログイン中です。\nログアウトしますか？`)) {
+            logout();
+        }
+    } else {
+        showView('auth');
+    }
+}
 
             
 // 2. 日付フォーマット (安全策追加版)
