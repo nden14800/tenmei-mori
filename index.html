@@ -3261,11 +3261,11 @@
                     当サイトの更新頻度は、他のニュースサイトやブログメディアと比較して低く設定されています。これは開発の停滞を意味するものではなく、<strong>「初期リリースの段階で、予定されていた主要機能の実装が完了しており、システムとして完成されている」</strong>ためです。現在は安定稼働フェーズにあり、バグ修正やサーバーメンテナンスを除き、頻繁なコード変更は行われません。皆様には、変わらぬ品質で永続的にサービスを提供し続けます。
                 </p>
                 <!-- 書き換え後 -->
-<h4 class="font-bold mt-4 border-b border-gray-300 dark:border-gray-600 pb-1">2. サーバーレス技術による堅牢性（Supabaseへの移行）</h4>
+<h4 class="font-bold mt-4 border-b border-gray-300 dark:border-gray-600 pb-1">2. 分散型データベース「TiDB」による無限の拡張性</h4>
 <p class="mb-4">
-    当サイトは、物理的なサーバーを持たない「サーバーレス・アーキテクチャ（Cloudflare Workers）」上で動作しています。
-    データベース基盤には、オープンソースのBaaS（Backend as a Service）であり、極めて高い堅牢性と拡張性を持つ<strong>「Supabase（PostgreSQL）」</strong>を採用いたしました。
-    これにより、旧来のCloudflare D1で課題となっていた「1日の書き込み回数制限」が撤廃され、事実上無制限の参拝者を受け入れることが可能となりました。アクセス集中時でもデータの不整合は発生しません。
+    当サイトは、物理的なサーバーの制約から完全に解き放たれた<strong>分散型SQLデータベース「TiDB Serverless」</strong>を採用いたしました。
+    従来のデータベース（PostgreSQL等）とは異なり、TiDBはストレージと計算リソースを分離し、負荷に応じて水平方向に無限にスケールするアーキテクチャを持っています。
+    これにより、事実上上限のない書き込み・読み込みが可能となり、世界中からのアクセスが集中するような事態においても、データの整合性を保ちながら遅延なく応答し続ける「真の可用性」を実現しています。
 </p>
                 <h4 class="font-bold mt-4 border-b border-gray-300 dark:border-gray-600 pb-1">3. 真正性への取り組みと日付更新</h4>
                 <p class="mb-4">
@@ -3419,10 +3419,10 @@
     <p>送信される情報：アクセスログ、通信リクエスト</p>
 </div>
 <div class="mb-4 text-sm border-l-2 border-gray-300 pl-4">
-    <p class="font-bold">3. Supabase (Supabase, Inc.)</p>
+    <p class="font-bold">3. TiDB Cloud (PingCAP, Inc.)</p>
     <p class="mb-1">利用目的：ユーザー情報、履歴データ、統計データの保管および認証管理</p>
     <p>送信される情報：メールアドレス、パスワード（ハッシュ化済）、ユーザー名、利用履歴</p>
-    <p>特記事項：データベースサーバーは業界標準のセキュリティ基準に準拠して管理されています。</p>
+    <p>特記事項：データは高度に暗号化された分散ストレージ（TiKV）上に断片化して保存され、単一障害点が存在しない堅牢な環境で管理されています。</p>
 </div>
 
                 <h4 class="font-bold mt-6 text-lg border-b border-gray-300 dark:border-gray-600 pb-1">第6条（個人情報の第三者提供）</h4>
@@ -3844,6 +3844,64 @@ function escapeHtml(str) {
 
 
         
+        {
+            id: 35, // 新規記事
+            title: "【極致】宇宙最強のデータベース『TiDB（タイタン）』への到達と、真の無限について",
+            date: "2026/1/22",
+            time: "17:30",
+            tag: "システム刷新",
+            tagColor: "text-purple-600",
+            borderColor: "border-purple-600",
+            desc: "Supabaseの限界を超え、理論上の上限が存在しない分散型SQL「TiDB」へ完全移行しました。これにより、もはや物理的な制約は消滅しました。",
+            content: `
+                <div class="article-content">
+                    <p>いつも「運勢・天命乃杜」をご利用いただき、誠にありがとうございます。</p>
+                    <p>本日、当サイトはデータベース基盤をSupabaseから、分散型SQLデータベースの頂点である<strong>「TiDB Serverless（タイタン・デービー）」</strong>へと完全移行いたしました。</p>
+
+                    <h3>なぜSupabaseではダメだったのか</h3>
+                    <p>先日導入したSupabaseは確かに強力でしたが、それでも「物理的なサーバーの箱」の中にデータが入っていることには変わりありませんでした。接続数（コネクション）の上限や、CPUの限界、そしてディスク容量の壁……。皆様の熱狂的な参拝（アクセス）が集中すれば、いつかはその箱が溢れてしまうリスクが残っていました。</p>
+
+                    <h3>「TiDB」— それは銀河のようなデータベース</h3>
+                    <p>今回採用したTiDBは、従来のデータベースとは概念が異なります。データが増えれば自動的に細胞分裂のように保存領域（TiKV）が増殖し、計算能力（TiDB）も無限に横へと広がっていきます。</p>
+                    <p>そこには「1つのサーバーの限界」という概念が存在しません。ペタバイト（1000テラバイト）級のデータであろうと、秒間数百万回の書き込みであろうと、銀河が星々を飲み込むように平然と処理し続けます。</p>
+
+                    <h3>歴代システムの性能比較表（最終版）</h3>
+                    <p>当サイトが辿り着いた、データベース進化の終着点をご覧ください。</p>
+
+                    <div class="overflow-x-auto mb-8">
+                        <table class="comparison-table" style="min-width: 100%; font-size: 0.8rem;">
+                            <thead class="bg-gray-100 dark:bg-zinc-700 font-bold">
+                                <tr>
+                                    <th class="p-2 border border-gray-300">項目</th>
+                                    <th class="p-2 border border-gray-300 bg-gray-200 dark:bg-zinc-800 text-gray-500">Supabase (Postgres)</th>
+                                    <th class="p-2 border border-gray-300 bg-purple-100 dark:bg-purple-900/30 text-purple-800 dark:text-purple-200 border-b-4 border-purple-500">TiDB (Distributed SQL)</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td class="p-2 border border-gray-300 font-bold">スケーラビリティ</td>
+                                    <td class="p-2 border border-gray-300">垂直 (箱を大きくする限界あり)</td>
+                                    <td class="p-2 border border-gray-300 font-black text-lg text-purple-700 dark:text-purple-300">水平・無限<br><span class="text-xs font-normal">※ノード自動追加で青天井</span></td>
+                                </tr>
+                                <tr>
+                                    <td class="p-2 border border-gray-300 font-bold">同時接続数</td>
+                                    <td class="p-2 border border-gray-300">プール上限あり</td>
+                                    <td class="p-2 border border-gray-300 font-bold">制限なし<br><span class="text-xs font-normal">(サーバーレスアーキテクチャ)</span></td>
+                                </tr>
+                                <tr>
+                                    <td class="p-2 border border-gray-300 font-bold">ストレージ上限</td>
+                                    <td class="p-2 border border-gray-300">ディスクサイズに依存</td>
+                                    <td class="p-2 border border-gray-300 font-bold">事実上の無限<br><span class="text-xs font-normal">(分散ストレージ TiKV)</span></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <p>この移行により、天命乃杜は「システム的な限界」という言葉から解放されました。どれだけ多くの人が同時に参拝し、どれだけ長い年月データを蓄積しても、この杜が揺らぐことは二度とありません。</p>
+                    <p>真の永遠を手に入れた神域で、心ゆくまでお過ごしください。</p>
+                </div>
+            `
+        }, 
         {
             id: 34, // 新規記事
             title: "【聖域拡張】「Supabase（無尽蔵の書庫）」への遷宮完了と、制限の完全撤廃について",
