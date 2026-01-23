@@ -8351,10 +8351,11 @@ ${getShareUrl()}`;
     }
 
      // ==========================================
-    //  プロフィール設定機能 (シンプル版)
+    //  プロフィール設定機能 (シンプル版・復旧)
     // ==========================================
 
     // ナビゲーションの「会員:〇〇」ボタンを押した時の挙動
+    // ※リッチなプロフィール画面ではなく、シンプルな設定画面を開きます
     function handleProfileClick() {
         if(currentState.user) {
             // 現在の情報を画面にセット
@@ -8404,7 +8405,8 @@ ${getShareUrl()}`;
                 // ユーザー名を変更した場合は画面と状態を即時更新
                 if(newName) {
                     currentState.user.username = newName;
-                    document.getElementById('profile-current-username').textContent = newName;
+                    const nameEl = document.getElementById('profile-current-username');
+                    if(nameEl) nameEl.textContent = newName;
                     updateAuthUI(); // ナビバーの表示も更新
                 }
                 
@@ -8421,40 +8423,33 @@ ${getShareUrl()}`;
         finally { 
             showLoading(false); 
         }
-    }  
+    }
 
-        async function deleteAccount() {
-            if(!confirm("本当にアカウントを削除しますか？\n履歴やお気に入りデータも完全に消去されます。")) return;
+    // アカウント削除処理
+    async function deleteAccount() {
+        if(!confirm("本当にアカウントを削除しますか？\n履歴やお気に入りデータも完全に消去されます。")) return;
+        
+        showLoading(true);
+        try {
+            const res = await authFetch(`${API_BASE}/api/user/delete`, {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({})
+            });
             
-            showLoading(true);
-            try {
-                // ★修正: authFetchに変更
-                const res = await authFetch(`${API_BASE}/api/user/delete`, {
-                    method: 'POST',
-                    headers: {'Content-Type': 'application/json'},
-                    body: JSON.stringify({})
-                });
-                
-                const contentType = res.headers.get("content-type");
-                if (contentType && contentType.indexOf("application/json") !== -1) {
-                    const data = await res.json();
-                    if(data.success) {
-                        alert("アカウントを削除しました。ご利用ありがとうございました。");
-                        logout();
-                    } else {
-                        alert("削除失敗: " + (data.message || data.error));
-                    }
-                } else {
-                    const text = await res.text();
-                    console.error("Delete Error:", text);
-                    alert("削除処理中にエラーが発生しました。");
-                }
-            } catch(e) { 
-                console.error(e);
-                alert("通信エラーが発生しました。"); 
+            if(res.ok) {
+                alert("アカウントを削除しました。ご利用ありがとうございました。");
+                logout();
+            } else {
+                const data = await res.json();
+                alert("削除失敗: " + (data.message || data.error));
             }
-            finally { showLoading(false); }
+        } catch(e) { 
+            console.error(e);
+            alert("通信エラーが発生しました。"); 
         }
+        finally { showLoading(false); }
+    }
 
         // --- 認証系 (新: 選択 -> 入力 -> 認証) ---
         function startAuthFlow(mode) {
