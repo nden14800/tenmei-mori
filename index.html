@@ -10492,6 +10492,57 @@ function handleProfileClick() {
             finally { showLoading(false); }
         }
 
+        // アカウント情報（ユーザー名・パスワード）の更新処理
+async function updateAccountSettings() {
+    const newUsername = document.getElementById('setting-new-username').value.trim();
+    const newPassword = document.getElementById('setting-new-password').value.trim();
+
+    if (!newUsername && !newPassword) {
+        return alert("変更する項目を入力してください");
+    }
+
+    if (!confirm("入力した内容でアカウント情報を更新しますか？")) return;
+
+    showLoading(true);
+    try {
+        const res = await authFetch(`${API_BASE}/api/user/update`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ 
+                newUsername: newUsername || undefined, // 空なら送信しない
+                newPassword: newPassword || undefined 
+            })
+        });
+
+        if (res.ok) {
+            const data = await res.json();
+            if (data.success) {
+                showToast("アカウント情報を更新しました", "success");
+                
+                // ユーザー名を更新した場合、ローカルの状態も更新
+                if (newUsername) {
+                    currentState.user.username = newUsername;
+                    document.getElementById('setting-current-username').textContent = newUsername;
+                    updateAuthUI(); // ナビバーの表示更新
+                }
+                
+                // 入力欄クリア
+                document.getElementById('setting-new-username').value = '';
+                document.getElementById('setting-new-password').value = '';
+            } else {
+                alert("更新失敗: " + (data.message || data.error));
+            }
+        } else {
+            alert("通信エラーが発生しました");
+        }
+    } catch (e) {
+        console.error(e);
+        alert("エラーが発生しました");
+    } finally {
+        showLoading(false);
+    }
+}
+
             
     </script>
 </body>
