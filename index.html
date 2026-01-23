@@ -8386,7 +8386,7 @@ ${getShareUrl()}`;
         }
 
         
-// 1. 「参拝の記録」：記事数を削除し、実績達成率のみを表示するように修正
+// 1. 「参拝の記録」：大吉カウントをバッジデータから取得するように修正
 async function loadMyStats() {
     if (!currentState.user) return;
 
@@ -8396,13 +8396,37 @@ async function loadMyStats() {
         if (res.ok) {
             const data = await res.json();
             
+            // ▼▼▼ 修正: バッジデータから大吉のカウントを抽出して同期させる処理 ▼▼▼
+            
+            // デフォルトは統計データを使うが...
+            let correctDaikichiCount = data.stats.daikichiCount || 0;
+
+            // バッジリストの中に「大吉」の回数を計測しているものがあれば、その値を正とする
+            // (バッジデータの方が正確であるための処置)
+            if (data.badges && data.badges.length > 0) {
+                // 条件タイプが 'daikichi' または名前に '大吉' を含むバッジを探す
+                const daikichiBadge = data.badges.find(b => 
+                    (b.condition_type && b.condition_type === 'daikichi') || 
+                    (b.name && b.name.includes('大吉'))
+                );
+
+                // 見つかった場合、その current_val (現在値) を採用
+                if (daikichiBadge && typeof daikichiBadge.current_val === 'number') {
+                    correctDaikichiCount = daikichiBadge.current_val;
+                }
+            }
+            // ▲▲▲ 修正ここまで ▲▲▲
+
             // 数値データの反映
             const statTotal = document.getElementById('stat-total');
             const statDaikichi = document.getElementById('stat-daikichi');
             const statStreak = document.getElementById('stat-streak');
 
             if (statTotal) statTotal.textContent = (data.stats.totalDraws || 0).toLocaleString();
-            if (statDaikichi) statDaikichi.textContent = (data.stats.daikichiCount || 0).toLocaleString();
+            
+            // ★修正した値をここに適用
+            if (statDaikichi) statDaikichi.textContent = correctDaikichiCount.toLocaleString();
+            
             if (statStreak) {
                 statStreak.innerHTML = `${(data.stats.goshuinCount || 0).toLocaleString()}<span class="text-xs font-normal text-gray-400 ml-1">日</span>`;
             }
@@ -8410,7 +8434,7 @@ async function loadMyStats() {
             // 実績達成率のみを表示するエリア（記事数は削除）
             const unlockedCount = data.badges.filter(b => b.unlocked).length;
             const totalBadges = data.badges.length;
-            const percent = Math.round((unlockedCount / totalBadges) * 100);
+            const percent = totalBadges > 0 ? Math.round((unlockedCount / totalBadges) * 100) : 0;
 
             const extraStatsHtml = `
                 <div class="mb-8 text-center">
@@ -8438,61 +8462,52 @@ async function loadMyStats() {
             const statGrid = statsWrapper.querySelector('.grid');
             statGrid.parentNode.insertBefore(div, statGrid.nextSibling);
 
-            // バッジリストの描画
+             // バッジリストの描画
             const badgeContainer = document.getElementById('stats-badge-list');
             if (badgeContainer) {
-                // --- フロントエンド renderProfilePage または loadMyStats 内 ---
+                badgeContainer.innerHTML = data.badges.map(b => {
+                    const isUnlocked = b.unlocked;
+                    
+                    // 未獲得時はグレーアウト
+                    const filterClass = isUnlocked ? 'grayscale-0 opacity-100' : 'grayscale opacity-60';
+                    const bgClass = isUnlocked 
+                        ? 'bg-yellow-50 dark:bg-yellow-900/20 border-yellow-400' 
+                        : 'bg-gray-100 dark:bg-zinc-800 border-gray-200 dark:border-gray-700';
+                    
+                    const iconColor = isUnlocked ? 'text-yellow-600' : 'text-gray-400';
+                    
+                    const statusText = isUnlocked 
+                        ? '<span class="text-yellow-600 font-bold"><i class="bi bi-check-circle-fill"></i> 獲得済</span>' 
+                        : '<span class="text-gray-500 text-xs"><i class="bi bi-lock-fill"></i> 未獲得</span>';
 
-// --- フロントエンド index.html 内のバッジ描画部分 ---
+                    const barColor = isUnlocked ? 'bg-yellow-500' : 'bg-blue-500';
 
-badgeContainer.innerHTML = data.badges.map(b => {
-    const isUnlocked = b.unlocked;
-    
-    // ★修正：未獲得時は完全にグレーにし、透明度を下げる
-    // grayscale-0 (カラー) / grayscale (白黒)
-    const filterClass = isUnlocked ? 'grayscale-0 opacity-100' : 'grayscale opacity-60';
-    
-    // ★修正：枠線の色も未獲得時は地味にする
-    const bgClass = isUnlocked 
-        ? 'bg-yellow-50 dark:bg-yellow-900/20 border-yellow-400' 
-        : 'bg-gray-100 dark:bg-zinc-800 border-gray-200 dark:border-gray-700';
-    
-    const iconColor = isUnlocked ? 'text-yellow-600' : 'text-gray-400';
-    
-    // テキスト
-    const statusText = isUnlocked 
-        ? '<span class="text-yellow-600 font-bold"><i class="bi bi-check-circle-fill"></i> 獲得済</span>' 
-        : '<span class="text-gray-500 text-xs"><i class="bi bi-lock-fill"></i> 未獲得</span>';
-
-    // 進捗バーの色（未獲得は青、獲得済みは金）
-    const barColor = isUnlocked ? 'bg-yellow-500' : 'bg-blue-500';
-
-    return `
-        <div class="flex flex-col p-3 rounded-lg border ${bgClass} ${filterClass} transition duration-300">
-            <div class="flex items-center gap-3 mb-2">
-                <div class="text-2xl ${iconColor}"><i class="bi ${b.icon}"></i></div>
-                <div class="flex-1 min-w-0">
-                    <div class="flex justify-between items-center">
-                        <div class="text-xs font-bold truncate">${b.name}</div>
-                        <div>${statusText}</div>
-                    </div>
-                    <div class="text-[10px] text-gray-500 truncate mt-0.5">${b.description}</div>
-                </div>
-            </div>
-            
-            <!-- 進捗バー -->
-            <div class="w-full mt-1">
-                <div class="flex justify-between text-[10px] text-gray-500 mb-1">
-                    <span>進捗</span>
-                    <span class="font-mono">${b.current_val} / ${b.target_val}</span>
-                </div>
-                <div class="w-full bg-gray-200 dark:bg-gray-700 h-1.5 rounded-full overflow-hidden">
-                    <div class="${barColor} h-full rounded-full" style="width: ${b.progress}%"></div>
-                </div>
-            </div>
-        </div>
-    `;
-}).join('');
+                    return `
+                        <div class="flex flex-col p-3 rounded-lg border ${bgClass} ${filterClass} transition duration-300">
+                            <div class="flex items-center gap-3 mb-2">
+                                <div class="text-2xl ${iconColor}"><i class="bi ${b.icon}"></i></div>
+                                <div class="flex-1 min-w-0">
+                                    <div class="flex justify-between items-center">
+                                        <div class="text-xs font-bold truncate">${b.name}</div>
+                                        <div>${statusText}</div>
+                                    </div>
+                                    <div class="text-[10px] text-gray-500 truncate mt-0.5">${b.description}</div>
+                                </div>
+                            </div>
+                            
+                            <!-- 進捗バー -->
+                            <div class="w-full mt-1">
+                                <div class="flex justify-between text-[10px] text-gray-500 mb-1">
+                                    <span>進捗</span>
+                                    <span class="font-mono">${b.current_val} / ${b.target_val}</span>
+                                </div>
+                                <div class="w-full bg-gray-200 dark:bg-gray-700 h-1.5 rounded-full overflow-hidden">
+                                    <div class="${barColor} h-full rounded-full" style="width: ${b.progress}%"></div>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                }).join('');
             }
         }
     } catch (e) {
