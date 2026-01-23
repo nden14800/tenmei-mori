@@ -9407,49 +9407,11 @@ function changeHistoryPage(newPage) {
             });
         }
 
-        // --- 認証モーダル表示 ---
-        function showVerifiedModal(type, username) {
-            let title = "", desc = "";
-            if (type === 'gold') {
-                title = "黄金の認証ユーザー";
-                desc = `${username} は、この「運勢・天命乃杜」の運営者、または開発に深く関わる特別なアカウントであることを証明します。<br><br>※このバッジは運営者のみに付与されます。`;
-            } else {
-                title = "認証済みユーザー";
-                desc = `${username} は、所定の手続きを経て本人確認が完了した、信頼できる公式アカウントであることを証明します。`;
-            }
-            showToast(`<div class="text-left"><h4 class="font-bold mb-1">${title}</h4><p class="text-xs">${desc}</p></div>`, 'info', '認証情報');
-        }
+       
 
-        // --- 編集モーダルを開く ---
-        function openEditProfileModal(currentBio, currentTitle) {
-            document.getElementById('edit-bio').value = currentBio === "自己紹介はまだありません。" ? "" : currentBio;
-            document.getElementById('edit-title').value = currentTitle;
-            document.getElementById('edit-profile-modal').style.display = 'flex';
-        }
+        
 
-        // --- プロフィール保存 ---
-        async function saveProfileChanges() {
-            const bio = document.getElementById('edit-bio').value;
-            const title = document.getElementById('edit-title').value || "初詣の旅人";
-
-            showLoading(true);
-            try {
-                const res = await authFetch(`${API_BASE}/api/user/update_details`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ bio, title })
-                });
-                if (res.ok) {
-                    showToast("プロフィールを更新しました", "success");
-                    document.getElementById('edit-profile-modal').style.display = 'none';
-                    // リロードして反映
-                    loadUserProfile(currentState.user.username);
-                } else {
-                    alert("更新に失敗しました");
-                }
-            } catch(e) { console.error(e); }
-            finally { showLoading(false); }
-        }
+        
 
        
         
@@ -9624,25 +9586,7 @@ function changeHistoryPage(newPage) {
             finally { showLoading(false); }
         }
 
-        async function toggleBlock(username, action) {
-            if(!confirm(`${username} を${action === 'block' ? 'ブロック' : 'ブロック解除'}しますか？`)) return;
-            
-            showLoading(true);
-            try {
-                const res = await authFetch(`${API_BASE}/api/user/block`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ targetUsername: username, action: action })
-                });
-                if(res.ok) {
-                    showToast(action === 'block' ? 'ブロックしました' : 'ブロックを解除しました', 'success');
-                    loadUserProfile(username);
-                } else {
-                    alert("操作に失敗しました");
-                }
-            } catch(e) { console.error(e); }
-            finally { showLoading(false); }
-        }
+        
 
         // 認証詳細モーダル（Meta風 + 申請機能付き + 高画質黄金バッジ）
         function openVerifiedModal(type, username) {
