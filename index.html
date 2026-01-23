@@ -8386,7 +8386,7 @@ ${getShareUrl()}`;
         }
 
         
-// --- 参拝の記録（統計＆実績）読み込み関数 ---
+// 1. 「参拝の記録」：記事数を削除し、実績達成率のみを表示するように修正
 async function loadMyStats() {
     if (!currentState.user) return;
 
@@ -8396,101 +8396,36 @@ async function loadMyStats() {
         if (res.ok) {
             const data = await res.json();
             
-            // 1. 【修正】数値データの反映（0になる問題の対策）
-            // データが空の場合の安全策（|| 0）を強化
+            // 数値データの反映
             const statTotal = document.getElementById('stat-total');
             const statDaikichi = document.getElementById('stat-daikichi');
             const statStreak = document.getElementById('stat-streak');
 
-            if (statTotal) {
-                statTotal.textContent = (data.stats.totalDraws || 0).toLocaleString();
-            }
-            if (statDaikichi) {
-                // ここで data.stats.daikichiCount を確実に取得
-                statDaikichi.textContent = (data.stats.daikichiCount || 0).toLocaleString();
-            }
+            if (statTotal) statTotal.textContent = (data.stats.totalDraws || 0).toLocaleString();
+            if (statDaikichi) statDaikichi.textContent = (data.stats.daikichiCount || 0).toLocaleString();
             if (statStreak) {
                 statStreak.innerHTML = `${(data.stats.goshuinCount || 0).toLocaleString()}<span class="text-xs font-normal text-gray-400 ml-1">日</span>`;
             }
 
-            // 実績達成率の計算
+            // 実績達成率のみを表示するエリア（記事数は削除）
             const unlockedCount = data.badges.filter(b => b.unlocked).length;
             const totalBadges = data.badges.length;
-            const percent = totalBadges > 0 ? Math.round((unlockedCount / totalBadges) * 100) : 0;
+            const percent = Math.round((unlockedCount / totalBadges) * 100);
 
-            // 達成率グラフの更新（もし表示エリアがあれば）
-            const extraStatsGrid = document.getElementById('extra-stats-grid');
-            if(extraStatsGrid) {
-                extraStatsGrid.innerHTML = `
-                    <div class="mb-8 text-center">
-                        <div class="bg-gray-50 dark:bg-zinc-800 p-4 rounded-xl border border-gray-200 dark:border-gray-700 shadow-inner">
-                            <div class="text-xs text-gray-500 font-bold mb-1">功徳の証（実績達成率）</div>
-                            <div class="text-3xl font-black text-blue-600 dark:text-blue-400">
-                                ${percent}% 
-                                <span class="text-sm text-gray-400 font-normal ml-2">(${unlockedCount} / ${totalBadges})</span>
-                            </div>
-                            <div class="badge-progress-container mt-3 h-2">
-                                <div class="badge-progress-bar" style="width: ${percent}%"></div>
-                            </div>
+            const extraStatsHtml = `
+                <div class="mb-8 text-center">
+                    <div class="bg-gray-50 dark:bg-zinc-800 p-4 rounded-xl border border-gray-200 dark:border-gray-700 shadow-inner">
+                        <div class="text-xs text-gray-500 font-bold mb-1">功徳の証（実績達成率）</div>
+                        <div class="text-3xl font-black text-blue-600 dark:text-blue-400">
+                            ${percent}% 
+                            <span class="text-sm text-gray-400 font-normal ml-2">(${unlockedCount} / ${totalBadges})</span>
+                        </div>
+                        <div class="badge-progress-container mt-3 h-2">
+                            <div class="badge-progress-bar" style="width: ${percent}%"></div>
                         </div>
                     </div>
-                `;
-            }
-
-            // 2. 【修正】実績リスト（%表示の追加）
-            const badgeContainer = document.getElementById('stats-badge-list');
-            if (badgeContainer) {
-                badgeContainer.innerHTML = data.badges.map(b => {
-                    const isUnlocked = b.unlocked;
-                    
-                    // 未獲得時はグレーアウト
-                    const filterClass = isUnlocked ? 'grayscale-0 opacity-100' : 'grayscale opacity-60';
-                    const bgClass = isUnlocked 
-                        ? 'bg-yellow-50 dark:bg-yellow-900/20 border-yellow-400' 
-                        : 'bg-gray-100 dark:bg-zinc-800 border-gray-200 dark:border-gray-700';
-                    const iconColor = isUnlocked ? 'text-yellow-600' : 'text-gray-400';
-                    
-                    const statusText = isUnlocked 
-                        ? '<span class="text-yellow-600 font-bold"><i class="bi bi-check-circle-fill"></i> 獲得済</span>' 
-                        : '<span class="text-gray-500 text-xs"><i class="bi bi-lock-fill"></i> 未獲得</span>';
-
-                    // 進捗バーの色
-                    const barColor = isUnlocked ? 'bg-yellow-500' : 'bg-blue-500';
-
-                    // ★ここを変更：進捗バーの上に「XX%」を表示するようにしました
-                    return `
-                        <div class="flex flex-col p-3 rounded-lg border ${bgClass} ${filterClass} transition duration-300">
-                            <div class="flex items-center gap-3 mb-2">
-                                <div class="text-2xl ${iconColor}"><i class="bi ${b.icon}"></i></div>
-                                <div class="flex-1 min-w-0">
-                                    <div class="flex justify-between items-center">
-                                        <div class="text-xs font-bold truncate">${b.name}</div>
-                                        <div>${statusText}</div>
-                                    </div>
-                                    <div class="text-[10px] text-gray-500 truncate mt-0.5">${b.description}</div>
-                                </div>
-                            </div>
-                            
-                            <!-- 進捗バーエリア -->
-                            <div class="w-full mt-1">
-                                <div class="flex justify-between text-[10px] text-gray-500 mb-1">
-                                    <span>進捗</span>
-                                    <!-- ▼▼▼ ここに % を追加しました ▼▼▼ -->
-                                    <span class="font-mono font-bold">${b.progress}% <span class="font-normal opacity-70">(${b.current_val} / ${b.target_val})</span></span>
-                                </div>
-                                <div class="w-full bg-gray-200 dark:bg-gray-700 h-1.5 rounded-full overflow-hidden">
-                                    <div class="${barColor} h-full rounded-full transition-all duration-500" style="width: ${b.progress}%"></div>
-                                </div>
-                            </div>
-                        </div>
-                    `;
-                }).join('');
-            }
-        }
-    } catch (e) {
-        console.error("Stats load failed", e);
-    }
-}
+                </div>
+            `;
             
             const statsWrapper = document.getElementById('stats-content-wrapper');
             const oldExtra = document.getElementById('extra-stats-grid');
