@@ -8396,40 +8396,38 @@ async function loadMyStats() {
         if (res.ok) {
             const data = await res.json();
             
-            // ▼▼▼ 修正：ここから超強力な検索ロジック ▼▼▼
+            // ▼▼▼ 修正：ここから強力な検索ロジック（バッジから数字を強制的に拾う） ▼▼▼
             
-            // 初期値を0にする
-            let correctDaikichiCount = 0;
+            // 1. まずは通常の統計データから取得（これが0の場合が多い）
+            let correctDaikichiCount = data.stats ? (data.stats.daikichiCount || 0) : 0;
 
-            // バッジデータが存在するか確認
+            // 2. バッジデータをスキャンして、より大きい数字があればそちらを採用する
             if (data.badges && Array.isArray(data.badges) && data.badges.length > 0) {
                 
-                // バッジを1つずつ全部チェックする
+                // バッジを1つずつ全部チェック
                 data.badges.forEach(b => {
-                    // 安全のため、名前とタイプを文字列化して小文字にする
+                    // 安全のため文字列化
                     const name = (b.name || "").toString();
                     const type = (b.condition_type || "").toString();
                     
                     // 名前かタイプに「大吉」または「daikichi」が含まれているか？
-                    const isDaikichi = name.includes('大吉') || type.includes('daikichi');
+                    const isDaikichiBadge = name.includes('大吉') || type.includes('daikichi');
 
-                    if (isDaikichi) {
-                        // 文字列の "10" かもしれないので、強制的に数値に変換する
-                        const val = Number(b.current_val);
+                    if (isDaikichiBadge) {
+                        // バッジの進捗値（左側の数字）を取得
+                        const badgeVal = Number(b.current_val);
                         
-                        // 数値として有効で、かつ現在の最大値より大きければ更新する
-                        if (!isNaN(val) && val > correctDaikichiCount) {
-                            correctDaikichiCount = val;
+                        // その数字が有効で、かつ現在のカウントより大きければ上書きする
+                        if (!isNaN(badgeVal) && badgeVal > correctDaikichiCount) {
+                            console.log("バッジから大吉数を補正しました:", badgeVal);
+                            correctDaikichiCount = badgeVal;
                         }
                     }
                 });
-                
-                // 【デバッグ用】もし動かない場合、ブラウザのコンソール(F12)で確認できます
-                console.log("検出された大吉バッジの最大値:", correctDaikichiCount);
             }
             // ▲▲▲ 修正ここまで ▲▲▲
 
-            // --- ここからは画面表示 ---
+            // --- 画面への反映処理 ---
 
             // 数値データの反映
             const statTotal = document.getElementById('stat-total');
@@ -8438,14 +8436,15 @@ async function loadMyStats() {
 
             if (statTotal) statTotal.textContent = (data.stats.totalDraws || 0).toLocaleString();
             
-            // ★確実に拾った数値をここに適用
+            // ★ここで「バッジから拾った数字」を適用
             if (statDaikichi) statDaikichi.textContent = correctDaikichiCount.toLocaleString();
             
             if (statStreak) {
-                statStreak.innerHTML = `${(data.stats.goshuinCount || 0).toLocaleString()}<span class="text-xs font-normal text-gray-400 ml-1">日</span>`;
+                const streakVal = data.stats.goshuinCount || 0;
+                statStreak.innerHTML = `${streakVal.toLocaleString()}<span class="text-xs font-normal text-gray-400 ml-1">日</span>`;
             }
 
-            // 実績達成率のみを表示するエリア
+            // 実績達成率のみを表示するエリア（記事数は削除）
             const unlockedCount = data.badges.filter(b => b.unlocked).length;
             const totalBadges = data.badges.length;
             const percent = totalBadges > 0 ? Math.round((unlockedCount / totalBadges) * 100) : 0;
