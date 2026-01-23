@@ -8386,7 +8386,7 @@ ${getShareUrl()}`;
         }
 
         
-// 1. 「参拝の記録」：大吉カウントをバッジの進捗値(current_val)から強制取得するように修正
+// 1. 「参拝の記録」：大吉カウントをバッジの進捗値から「確実」に拾い上げる修正版
 async function loadMyStats() {
     if (!currentState.user) return;
 
@@ -8396,25 +8396,40 @@ async function loadMyStats() {
         if (res.ok) {
             const data = await res.json();
             
-            // ▼▼▼ 修正: バッジデータから「大吉」の現在値(current_val)を抽出するロジック ▼▼▼
+            // ▼▼▼ 修正：ここから超強力な検索ロジック ▼▼▼
             
+            // 初期値を0にする
             let correctDaikichiCount = 0;
 
-            if (data.badges && Array.isArray(data.badges)) {
-                // 名前(name)に「大吉」が含まれるバッジ、またはタイプがdaikichiのバッジを全て抽出
-                const daikichiBadges = data.badges.filter(b => 
-                    (b.name && b.name.includes('大吉')) || 
-                    (b.condition_type && b.condition_type.includes('daikichi'))
-                );
+            // バッジデータが存在するか確認
+            if (data.badges && Array.isArray(data.badges) && data.badges.length > 0) {
+                
+                // バッジを1つずつ全部チェックする
+                data.badges.forEach(b => {
+                    // 安全のため、名前とタイプを文字列化して小文字にする
+                    const name = (b.name || "").toString();
+                    const type = (b.condition_type || "").toString();
+                    
+                    // 名前かタイプに「大吉」または「daikichi」が含まれているか？
+                    const isDaikichi = name.includes('大吉') || type.includes('daikichi');
 
-                if (daikichiBadges.length > 0) {
-                    // 抽出したバッジの中で、current_val (進捗の左側の数字) が最も大きいものを採用
-                    // これにより、実績バッジに表示されている数字と確実に一致させます
-                    const values = daikichiBadges.map(b => Number(b.current_val) || 0);
-                    correctDaikichiCount = Math.max(...values);
-                }
+                    if (isDaikichi) {
+                        // 文字列の "10" かもしれないので、強制的に数値に変換する
+                        const val = Number(b.current_val);
+                        
+                        // 数値として有効で、かつ現在の最大値より大きければ更新する
+                        if (!isNaN(val) && val > correctDaikichiCount) {
+                            correctDaikichiCount = val;
+                        }
+                    }
+                });
+                
+                // 【デバッグ用】もし動かない場合、ブラウザのコンソール(F12)で確認できます
+                console.log("検出された大吉バッジの最大値:", correctDaikichiCount);
             }
             // ▲▲▲ 修正ここまで ▲▲▲
+
+            // --- ここからは画面表示 ---
 
             // 数値データの反映
             const statTotal = document.getElementById('stat-total');
@@ -8423,14 +8438,14 @@ async function loadMyStats() {
 
             if (statTotal) statTotal.textContent = (data.stats.totalDraws || 0).toLocaleString();
             
-            // ★バッジから取得した値をここに適用
+            // ★確実に拾った数値をここに適用
             if (statDaikichi) statDaikichi.textContent = correctDaikichiCount.toLocaleString();
             
             if (statStreak) {
                 statStreak.innerHTML = `${(data.stats.goshuinCount || 0).toLocaleString()}<span class="text-xs font-normal text-gray-400 ml-1">日</span>`;
             }
 
-            // 実績達成率のみを表示するエリア（記事数は削除）
+            // 実績達成率のみを表示するエリア
             const unlockedCount = data.badges.filter(b => b.unlocked).length;
             const totalBadges = data.badges.length;
             const percent = totalBadges > 0 ? Math.round((unlockedCount / totalBadges) * 100) : 0;
@@ -8452,33 +8467,30 @@ async function loadMyStats() {
             
             const statsWrapper = document.getElementById('stats-content-wrapper');
             const oldExtra = document.getElementById('extra-stats-grid');
-            if (oldExtra) oldExtra.remove(); // 古いのがあれば削除
+            if (oldExtra) oldExtra.remove(); 
 
             const div = document.createElement('div');
             div.id = 'extra-stats-grid';
             div.innerHTML = extraStatsHtml;
-            // 3つの統計グリッドの直後に挿入
+            
             const statGrid = statsWrapper.querySelector('.grid');
-            statGrid.parentNode.insertBefore(div, statGrid.nextSibling);
+            if(statGrid) {
+                statGrid.parentNode.insertBefore(div, statGrid.nextSibling);
+            }
 
-             // バッジリストの描画
+            // バッジリストの描画
             const badgeContainer = document.getElementById('stats-badge-list');
             if (badgeContainer) {
                 badgeContainer.innerHTML = data.badges.map(b => {
                     const isUnlocked = b.unlocked;
-                    
-                    // 未獲得時はグレーアウト
                     const filterClass = isUnlocked ? 'grayscale-0 opacity-100' : 'grayscale opacity-60';
                     const bgClass = isUnlocked 
                         ? 'bg-yellow-50 dark:bg-yellow-900/20 border-yellow-400' 
                         : 'bg-gray-100 dark:bg-zinc-800 border-gray-200 dark:border-gray-700';
-                    
                     const iconColor = isUnlocked ? 'text-yellow-600' : 'text-gray-400';
-                    
                     const statusText = isUnlocked 
                         ? '<span class="text-yellow-600 font-bold"><i class="bi bi-check-circle-fill"></i> 獲得済</span>' 
                         : '<span class="text-gray-500 text-xs"><i class="bi bi-lock-fill"></i> 未獲得</span>';
-
                     const barColor = isUnlocked ? 'bg-yellow-500' : 'bg-blue-500';
 
                     return `
@@ -8493,7 +8505,6 @@ async function loadMyStats() {
                                     <div class="text-[10px] text-gray-500 truncate mt-0.5">${b.description}</div>
                                 </div>
                             </div>
-                            
                             <!-- 進捗バー -->
                             <div class="w-full mt-1">
                                 <div class="flex justify-between text-[10px] text-gray-500 mb-1">
