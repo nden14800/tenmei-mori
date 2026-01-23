@@ -9198,65 +9198,84 @@ function changeHistoryPage(newPage) {
     // 既存の showView 関数を少し修正して、画面表示時に目次を生成するようにする
     const originalShowView = window.showView; // 既存の関数を退避（または直接書き換え）
     
-    // --- 修正後の showView 関数 (stats対応) ---
-window.showView = function(viewId) {
-    // Labsのロック処理 (既存)
-    if(viewId === 'lab') {
-        const lock = document.getElementById('lab-lock');
-        const wrapper = document.getElementById('lab-content-wrapper');
-        if(!currentState.user) {
-            lock.classList.remove('hidden');
-            wrapper.classList.add('lab-blurred');
-        } else {
-            lock.classList.add('hidden');
-            wrapper.classList.remove('lab-blurred');
+    // ==========================================
+    //  ビュー制御・参拝の記録システム (プロフィール廃止・統計特化版)
+    // ==========================================
+
+    // 画面切り替え関数 (既存のshowViewを完全に置き換えてください)
+    window.showView = function(viewId) {
+        // 1. まず全てのビューを非表示にする
+        document.querySelectorAll('.view-section').forEach(el => {
+            el.classList.remove('active');
+            // フェードアウトアニメーション待ち（即時非表示でも動作はする）
+            setTimeout(() => {
+                if(!el.classList.contains('active')) el.style.display = 'none';
+            }, 500);
+        });
+
+        // 2. ターゲットを表示
+        const target = document.getElementById(`view-${viewId}`);
+        if (target) {
+            target.style.display = 'block';
+            // リフロー強制（アニメーション用）
+            void target.offsetWidth; 
+            target.classList.add('active');
         }
-    }
+        currentState.view = viewId;
 
-    // ▼▼ 新規: 統計ページのロック処理 ▼▼
-    if(viewId === 'stats') {
-        const lock = document.getElementById('stats-lock');
-        const wrapper = document.getElementById('stats-content-wrapper');
-        
-        if(!currentState.user) {
-            // 未ログイン：ロック表示 & 背景ぼかし
-            lock.classList.remove('hidden');
-            wrapper.classList.add('lab-blurred'); // 既存のぼかしクラスを流用
-            // ダミー表示（空っぽだと寂しいので）
-            document.getElementById('stat-total').textContent = "-";
-            document.getElementById('stat-daikichi').textContent = "-";
-            document.getElementById('stat-streak').textContent = "-";
-            document.getElementById('stats-badge-list').innerHTML = '<div class="col-span-2 text-center text-gray-400 py-10">記録がありません</div>';
-        } else {
-            // ログイン済み：ロック解除 & データ読み込み
-            lock.classList.add('hidden');
-            wrapper.classList.remove('lab-blurred');
-            loadMyStats(); // データを取得して表示
+        // --- ビューごとの固有処理 ---
+
+        // ■ 参拝の記録 (stats) - プロフィールではなく統計のみを表示
+        if(viewId === 'stats') {
+            const lock = document.getElementById('stats-lock');
+            const wrapper = document.getElementById('stats-content-wrapper');
+            
+            if(!currentState.user) {
+                // 未ログイン時：ロック画面を表示 & 背景ぼかし
+                if(lock) lock.classList.remove('hidden');
+                if(wrapper) {
+                    wrapper.classList.add('lab-blurred');
+                    // データはダミー表示（ぼかしの下に見えるもの）
+                    const totalEl = document.getElementById('stat-total');
+                    if(totalEl) totalEl.textContent = "-";
+                    
+                    const daikichiEl = document.getElementById('stat-daikichi');
+                    if(daikichiEl) daikichiEl.textContent = "-";
+                    
+                    const streakEl = document.getElementById('stat-streak');
+                    if(streakEl) streakEl.textContent = "-";
+                    
+                    const badgeList = document.getElementById('stats-badge-list');
+                    if(badgeList) badgeList.innerHTML = '<div class="col-span-full text-center text-gray-400 py-10">記録がありません</div>';
+                }
+            } else {
+                // ログイン時：ロック解除 & データロード
+                if(lock) lock.classList.add('hidden');
+                if(wrapper) wrapper.classList.remove('lab-blurred');
+                loadMyStats(); // 統計データを読み込み
+            }
         }
-    }
 
-    // 画面切り替え (既存)
-    document.querySelectorAll('.view-section').forEach(el => {
-        el.classList.remove('active');
-        setTimeout(() => {
-            if(!el.classList.contains('active')) el.style.display = 'none';
-        }, 500);
-    });
-    
-    const target = document.getElementById(`view-${viewId}`);
-    if (target) {
-        target.style.display = 'block';
-        void target.offsetWidth; 
-        target.classList.add('active');
-    }
-    currentState.view = viewId;
+        // ■ TENMEI Labs (lab)
+        if(viewId === 'lab') {
+            const lock = document.getElementById('lab-lock');
+            const wrapper = document.getElementById('lab-content-wrapper');
+            if(!currentState.user) {
+                if(lock) lock.classList.remove('hidden');
+                if(wrapper) wrapper.classList.add('lab-blurred');
+            } else {
+                if(lock) lock.classList.add('hidden');
+                if(wrapper) wrapper.classList.remove('lab-blurred');
+            }
+        }
 
-    if(viewId === 'draw') resetOmikujiPool();
-    if(viewId === 'history') loadHistory();
-    if(viewId === 'prefecture') renderPrefectureRanking();
-    if(viewId === 'about' || viewId === 'privacy') initTOC(viewId);
-    if(viewId === 'omamori') OmamoriSystem.reset();
-};
+        // その他の初期化処理
+        if(viewId === 'draw') resetOmikujiPool();
+        if(viewId === 'history') loadHistory();
+        if(viewId === 'prefecture') renderPrefectureRanking();
+        if(viewId === 'about' || viewId === 'privacy') initTOC(viewId);
+        if(viewId === 'omamori') OmamoriSystem.reset();
+    };
 
 // ==========================================
     //  プロフィール・参拝者台帳システム (軽量修正版)
