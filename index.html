@@ -9258,190 +9258,263 @@ window.showView = function(viewId) {
     if(viewId === 'omamori') OmamoriSystem.reset();
 };
 
-// ▼▼ 新規: 統計データの読み込み & 描画関数 ▼▼
-async function loadMyStats() {
-    if (!currentState.user) return;
+// ==========================================
+    //  プロフィール・参拝者台帳システム (軽量修正版)
+    // ==========================================
 
-    // 既存の profile API を流用 (statsとbadgesが含まれているため)
-    // エラーの原因だった icon や date は無視して数字だけ使います
-    try {
-        const res = await fetch(`${API_BASE}/api/user/profile?username=${encodeURIComponent(currentState.user.username)}`);
-        if (res.ok) {
-            const data = await res.json();
+    // プロフィールボタン（ナビゲーション）の挙動
+    function handleProfileClick() {
+        if (currentState.user) {
+            // ログイン中なら自分のプロフィールを読み込んで表示
+            loadUserProfile(currentState.user.username);
+        } else {
+            // 未ログインなら認証画面へ
+            showView('auth');
+        }
+    }
+
+    // ユーザープロフィールの読み込み
+    async function loadUserProfile(username) {
+        showLoading(true);
+        try {
+            // 自分のデータかどうか判定
+            const isMe = currentState.user && currentState.user.username === username;
             
-            // 1. 数値の反映
-            document.getElementById('stat-total').textContent = data.stats.totalDraws.toLocaleString();
-            document.getElementById('stat-daikichi').textContent = data.stats.daikichiCount.toLocaleString();
-            document.getElementById('stat-streak').textContent = data.stats.goshuinCount.toLocaleString();
-
-            // 2. バッジリストの描画
-            const badgeContainer = document.getElementById('stats-badge-list');
-            if (data.badges.length === 0) {
-                badgeContainer.innerHTML = '<p class="text-center text-gray-500 col-span-2">まだ実績はありません</p>';
-                return;
+            // APIからデータ取得
+            const res = await fetch(`${API_BASE}/api/user/profile?username=${encodeURIComponent(username)}`);
+            
+            if (res.ok) {
+                const data = await res.json();
+                data.isMe = isMe; // 自分かどうかのフラグを付与
+                renderProfilePage(data);
+                showView('profile'); // プロフィールビューを表示（HTML側に id="view-profile" が必要）
+            } else {
+                showToast("ユーザー情報の取得に失敗しました", "error");
             }
+        } catch (e) {
+            console.error(e);
+            showToast("通信エラーが発生しました", "error");
+        } finally {
+            showLoading(false);
+        }
+    }
 
-            badgeContainer.innerHTML = data.badges.map(b => {
-                const isUnlocked = b.unlocked;
-                const iconColor = isUnlocked ? 'text-yellow-600' : 'text-gray-300';
-                const bgClass = isUnlocked 
-                    ? 'bg-yellow-50 dark:bg-yellow-900/20 border-yellow-200' 
-                    : 'bg-gray-100 dark:bg-zinc-800 border-gray-200 dark:border-gray-700';
-                const grayscale = isUnlocked ? '' : 'grayscale opacity-50';
+    // プロフィール画面の描画 (バッジ・フォロー・ブロック・検索・掲示板 削除済み)
+    function renderProfilePage(data) {
+        const container = document.querySelector('#view-profile'); // 既存のセクションをターゲットに
+        if (!container) return;
+
+        // ビューの中身を一度クリアして再構築
+        container.innerHTML = '';
+
+        // 1. 実績バッジのHTML生成
+        let badgesHtml = '';
+        if (data.badges && data.badges.length > 0) {
+            badgesHtml = data.badges.map(b => {
+                // 未獲得は表示しない、あるいはグレーアウト（ここではグレーアウト方式）
+                const opacity = b.unlocked ? 'opacity-100' : 'opacity-40 grayscale';
+                const bgClass = b.unlocked ? 'bg-yellow-50 dark:bg-yellow-900/20 border-yellow-200' : 'bg-gray-100 dark:bg-zinc-800 border-gray-200';
                 
-                const statusText = isUnlocked 
-                    ? `<span class="text-yellow-600 font-bold"><i class="bi bi-check-circle-fill"></i> 解除済み</span>`
-                    : `<span class="text-gray-400"><i class="bi bi-lock-fill"></i> 未獲得</span>`;
-
                 return `
-                <div class="flex items-center gap-3 p-3 rounded-lg border ${bgClass} transition">
-                    <div class="w-12 h-12 flex-shrink-0 flex items-center justify-center rounded-full bg-white dark:bg-black text-2xl ${iconColor} shadow-sm ${grayscale}">
-                        <i class="bi ${b.icon}"></i>
+                    <div class="flex items-center gap-3 p-3 rounded-lg border ${bgClass} ${opacity}">
+                        <div class="text-2xl text-yellow-600"><i class="bi ${b.icon}"></i></div>
+                        <div>
+                            <div class="text-xs font-bold">${b.name}</div>
+                            <div class="text-[10px] text-gray-500">${b.description}</div>
+                        </div>
                     </div>
-                    <div class="flex-1 min-w-0">
-                        <h4 class="font-bold text-sm truncate ${isUnlocked ? 'text-gray-800 dark:text-gray-100' : 'text-gray-500'}">${b.name}</h4>
-                        <p class="text-[10px] text-gray-500 truncate mb-1">${b.description}</p>
-                        <div class="text-[10px]">${statusText}</div>
-                    </div>
-                </div>
                 `;
             }).join('');
         }
-    } catch (e) {
-        console.error("Stats load failed", e);
-    }
-}
 
-// ※ 以前の loadUserProfile, renderProfilePage, handleUserSearch などの関数は削除してOKです。
-// ※ handleProfileClick は「ログイン画面へ行く」か「ログアウト画面へ行く」ように単純化します。
-
-function handleProfileClick() {
-    if(currentState.user) {
-        // ログイン中はログアウト確認画面へ (簡易的)
-        if(confirm(`現在「${currentState.user.username}」としてログイン中です。\nログアウトしますか？`)) {
-            logout();
+        // 2. 日付フォーマット
+        let joined = "----/--/--";
+        if (data.joinDate) {
+            const d = new Date(data.joinDate);
+            if (!isNaN(d.getTime())) {
+                joined = `${d.getFullYear()}/${d.getMonth() + 1}/${d.getDate()}`;
+            }
         }
-    } else {
-        showView('auth');
-    }
-}
 
-            
-// 2. 日付フォーマット (安全策追加版)
-let joined = "----/--/--";
-if (data.joinDate) {
-    const date = new Date(data.joinDate);
-    // 日付が有効な場合のみフォーマットする
-    if (!isNaN(date.getTime())) {
-        joined = `${date.getFullYear()}/${date.getMonth()+1}/${date.getDate()}`;
-    }
-}
-
-            // 3. 認証バッジ表示
-            let verifiedHtml = '';
-            if (data.verified === 'gold') {
-                verifiedHtml = `<span class="verified-badge cursor-pointer hover:scale-110 transition" onclick="openVerifiedModal('gold', '${escapeHtml(data.username)}')">${getGoldBadgeIcon("w-6 h-6")}</span>`;
-            } else if (data.verified === 'blue') {
-                verifiedHtml = `<span class="verified-badge verified-blue" onclick="openVerifiedModal('blue', '${escapeHtml(data.username)}')"><i class="bi bi-patch-check-fill text-xl"></i></span>`;
-            }
-
-            // 4. アクションボタン
-            let actionBtnHtml = '';
-            const isMe = data.isMe || (currentState.user && currentState.user.username === data.username);
-
-            if (isMe) {
-                actionBtnHtml = `
-                    <div class="flex gap-2 flex-wrap justify-center md:justify-end">
-                        <button onclick="openEditProfileModal('${escapeHtml(data.bio)}', '${escapeHtml(data.title)}', '${data.icon}', '${data.color}')" 
-                                class="px-4 py-2 bg-indigo-600 text-white rounded-lg font-bold text-sm hover:opacity-90 shadow-md whitespace-nowrap">
-                            <i class="bi bi-pencil-square"></i> 編集
-                        </button>
-                `;
-                if (data.verified === 'none') {
-                    actionBtnHtml += `
-                        <button onclick="document.getElementById('verification-apply-modal').style.display='flex'" 
-                                class="px-4 py-2 bg-white dark:bg-zinc-800 text-gray-700 dark:text-gray-200 border border-gray-300 dark:border-gray-600 rounded-lg font-bold text-sm hover:bg-gray-50 dark:hover:bg-zinc-700 shadow-md whitespace-nowrap transition">
-                            <i class="bi bi-patch-check"></i> 認証を開始
-                        </button>
-                    `;
-                }
-                actionBtnHtml += `</div>`;
-            }
-
-            // 5. アイコン色設定
-            const iconColorMap = {
-                'gray': '#6b7280', 'red': '#ef4444', 'blue': '#3b82f6', 'green': '#10b981', 'yellow': '#eab308', 
-                'purple': '#a855f7', 'pink': '#ec4899', 'black': '#1f2937'
-            };
-            const iconStyle = `color: ${iconColorMap[data.color] || '#6b7280'}; border-color: ${iconColorMap[data.color] || '#e5e7eb'}`;
-
-            // 6. HTML組み立て
-            container.innerHTML = `
-                <div class="profile-header-bg">
-                    <div class="profile-avatar-container">
-                        <div class="profile-avatar-img" style="${iconStyle}">
-                            <i class="bi ${data.icon}"></i>
-                        </div>
-                    </div>
-                </div>
-                
-                <div class="px-6 pb-8 mt-12 text-center md:text-left">
-                    <div class="flex flex-col md:flex-row justify-between items-center md:items-start mb-4 gap-4">
-                        <div>
-                            <h2 class="text-3xl font-black mb-1 flex items-center justify-center md:justify-start gap-2">
-                                ${escapeHtml(data.username)} ${verifiedHtml}
-                            </h2>
-                            <p class="text-sm themed-text-sub font-bold mb-2">
-                                <span class="bg-yellow-100 text-yellow-800 px-2 py-0.5 rounded mr-2">${escapeHtml(data.title)}</span>
-                                <i class="bi bi-calendar-event"></i> 開始: ${joined}
-                            </p>
-                        </div>
-                        
-                        <div class="mt-2 md:mt-0">
-                            ${actionBtnHtml}
-                        </div>
-                    </div>
-
-                    ${data.isBlocked ? '<div class="mb-4 text-center text-red-500 font-bold border border-red-500 p-2 rounded">このユーザーをブロックしています</div>' : ''}
-                    ${data.isBlockedBy ? '<div class="mb-4 text-center text-gray-500 font-bold bg-gray-100 p-2 rounded">ユーザーからブロックされています</div>' : ''}
-
-                    <div class="mb-6 p-4 rounded-xl bg-gray-50 dark:bg-zinc-800 border border-gray-200 dark:border-gray-700 text-sm leading-relaxed text-left">
-                        <h4 class="font-bold mb-2 text-gray-500">自己紹介</h4>
-                        <div style="white-space: pre-wrap;">${escapeHtml(data.bio)}</div>
-                    </div>
-
-                    <h3 class="font-bold text-lg mb-4 border-l-4 border-red-500 pl-3 text-left">参拝記録</h3>
-                    <div class="profile-stats-grid">
-                        <div class="profile-stat-box">
-                            <div class="profile-stat-val text-red-600">${data.stats.totalDraws}</div>
-                            <div class="profile-stat-label">総参拝数</div>
-                        </div>
-                        <div class="profile-stat-box">
-                            <div class="profile-stat-val text-yellow-600">${data.stats.daikichiCount}</div>
-                            <div class="profile-stat-label">大吉獲得</div>
-                        </div>
-                        <div class="profile-stat-box">
-                            <div class="profile-stat-val text-purple-600">${data.stats.goshuinCount}</div>
-                            <div class="profile-stat-label">参拝日数<br><span class="text-xs">(御朱印)</span></div>
-                        </div>
-                    </div>
-
-                    <div class="flex justify-between items-end mb-4 border-b border-gray-200 dark:border-gray-700 pb-2 mt-8">
-                        <h3 class="font-bold text-lg border-l-4 border-yellow-500 pl-3 text-left">功徳の証 (実績)</h3>
-                    </div>
-                    
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
-                        ${badgesHtml}
-                    </div>
-                    ${badgesHtml.length === 0 ? '<p class="text-center text-gray-400 text-xs">まだ功徳の証はありません</p>' : ''}
+        // 3. アクションボタン（自分なら編集・ログアウト、他人なら何もなし）
+        let actionBtnHtml = '';
+        if (data.isMe) {
+            actionBtnHtml = `
+                <div class="flex gap-2 mt-4 justify-center md:justify-end">
+                    <button onclick="openEditProfileModal('${escapeHtml(data.bio)}', '${escapeHtml(data.title)}', '${data.icon}', '${data.color}')" 
+                            class="px-4 py-2 bg-indigo-600 text-white rounded-lg font-bold text-sm hover:opacity-90 shadow-md">
+                        <i class="bi bi-pencil-square"></i> プロフィール編集
+                    </button>
+                    <button onclick="logout()" class="px-4 py-2 bg-gray-500 text-white rounded-lg font-bold text-sm hover:opacity-90 shadow-md">
+                        <i class="bi bi-box-arrow-right"></i> ログアウト
+                    </button>
                 </div>
             `;
-            
-            if(isMe && data.badges) {
-                window.myBadges = data.badges.filter(b => b.unlocked).map(b => b.id);
-            }
         }
 
+        // 4. アイコンの色設定
+        const iconColorMap = {
+            'gray': '#6b7280', 'red': '#ef4444', 'blue': '#3b82f6', 'green': '#10b981', 
+            'yellow': '#eab308', 'purple': '#a855f7', 'pink': '#ec4899', 'black': '#1f2937'
+        };
+        const iconColor = iconColorMap[data.color] || '#6b7280';
+        const iconStyle = `color: ${iconColor}; border-color: ${iconColor};`;
+
+        // 5. HTML組み立て（シンプル版）
+        const html = `
+            <div class="max-w-2xl mx-auto bg-white dark:bg-zinc-900 rounded-xl shadow overflow-hidden relative mt-10">
+                <!-- ヘッダー背景 -->
+                <div class="h-32 bg-gradient-to-r from-gray-800 to-gray-600 relative"></div>
+                
+                <!-- アイコン -->
+                <div class="absolute top-20 left-6 w-24 h-24 rounded-full bg-white dark:bg-zinc-900 border-4 border-white dark:border-zinc-800 flex items-center justify-center shadow-lg">
+                    <div class="text-5xl" style="color: ${iconColor};">
+                        <i class="bi ${data.icon || 'bi-person'}"></i>
+                    </div>
+                </div>
+
+                <div class="pt-16 px-6 pb-6">
+                    <div class="flex justify-between items-start flex-wrap">
+                        <div>
+                            <h2 class="text-2xl font-black text-gray-800 dark:text-gray-100 flex items-center gap-2">
+                                ${escapeHtml(data.username)}
+                            </h2>
+                            <p class="text-sm text-gray-500 font-bold mt-1">
+                                <span class="bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300 px-2 py-0.5 rounded border border-gray-300 dark:border-gray-700">
+                                    ${escapeHtml(data.title || '初詣の旅人')}
+                                </span>
+                                <span class="ml-2"><i class="bi bi-calendar"></i> 開始: ${joined}</span>
+                            </p>
+                        </div>
+                        ${actionBtnHtml}
+                    </div>
+
+                    <!-- 自己紹介 -->
+                    <div class="mt-6 p-4 rounded-lg bg-gray-50 dark:bg-zinc-800 border border-gray-200 dark:border-gray-700 text-sm leading-relaxed text-gray-700 dark:text-gray-300">
+                        <div style="white-space: pre-wrap;">${escapeHtml(data.bio || '自己紹介はまだありません。')}</div>
+                    </div>
+
+                    <!-- 統計情報 -->
+                    <h3 class="font-bold text-lg mt-8 mb-4 border-l-4 border-red-500 pl-3">参拝記録</h3>
+                    <div class="grid grid-cols-3 gap-4 text-center mb-8">
+                        <div class="p-3 bg-gray-50 dark:bg-zinc-800 rounded border border-gray-200 dark:border-gray-700">
+                            <div class="text-2xl font-black text-red-600">${data.stats.totalDraws}</div>
+                            <div class="text-xs text-gray-500">総参拝数</div>
+                        </div>
+                        <div class="p-3 bg-gray-50 dark:bg-zinc-800 rounded border border-gray-200 dark:border-gray-700">
+                            <div class="text-2xl font-black text-yellow-600">${data.stats.daikichiCount}</div>
+                            <div class="text-xs text-gray-500">大吉獲得</div>
+                        </div>
+                        <div class="p-3 bg-gray-50 dark:bg-zinc-800 rounded border border-gray-200 dark:border-gray-700">
+                            <div class="text-2xl font-black text-purple-600">${data.stats.goshuinCount}</div>
+                            <div class="text-xs text-gray-500">参拝日数</div>
+                        </div>
+                    </div>
+
+                    <!-- 実績バッジ一覧 -->
+                    <h3 class="font-bold text-lg mb-4 border-l-4 border-yellow-500 pl-3">功徳の証</h3>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                        ${badgesHtml}
+                    </div>
+                    ${badgesHtml === '' ? '<p class="text-gray-400 text-sm">まだ実績はありません</p>' : ''}
+                </div>
+            </div>
+        `;
+
+        container.innerHTML = html;
+
+        // 自分の実績情報をグローバル変数に保存（実績一覧モーダル用）
+        if (data.isMe && data.badges) {
+            window.myBadges = data.badges.filter(b => b.unlocked).map(b => b.id);
+        }
+    }
+
+    // --- プロフィール編集関連 ---
+
+    // 編集モーダルを開く
+    function openEditProfileModal(bio, title, icon, color) {
+        document.getElementById('edit-bio').value = (bio === "自己紹介はまだありません。") ? "" : bio;
+        document.getElementById('edit-title').value = title;
+        
+        // 選択状態の初期化
+        selectedIcon = icon || 'bi-person';
+        selectedColor = color || 'gray';
+        
+        renderIconSelector();
+        renderColorSelector();
+        
+        document.getElementById('edit-profile-modal').style.display = 'flex';
+    }
+
+    // アイコン・色データ定義
+    const profileIcons = [
+        'bi-person', 'bi-flower1', 'bi-star', 'bi-heart', 
+        'bi-moon-stars', 'bi-sun', 'bi-tree', 'bi-cloud', 
+        'bi-droplet', 'bi-lightning', 'bi-gem', 'bi-fire', 'bi-snow'
+    ];
+    const profileColors = ['gray', 'red', 'blue', 'green', 'yellow', 'purple', 'pink', 'black'];
+    
+    let selectedIcon = 'bi-person';
+    let selectedColor = 'gray';
+
+    // アイコン選択肢描画
+    function renderIconSelector() {
+        const container = document.getElementById('icon-selector');
+        if(!container) return;
+        container.innerHTML = profileIcons.map(ic => `
+            <div class="icon-option ${ic === selectedIcon ? 'selected' : ''} flex items-center justify-center text-xl cursor-pointer p-2 rounded border hover:bg-gray-100 dark:hover:bg-zinc-700 ${ic === selectedIcon ? 'border-red-500 bg-red-50 dark:bg-red-900/30' : 'border-gray-200 dark:border-gray-600'}" 
+                 onclick="selectedIcon='${ic}'; renderIconSelector()">
+                <i class="bi ${ic}"></i>
+            </div>
+        `).join('');
+    }
+
+    // 色選択肢描画
+    function renderColorSelector() {
+        const container = document.getElementById('color-selector');
+        if(!container) return;
+        const colorMap = { 'gray':'#9ca3af', 'red':'#ef4444', 'blue':'#3b82f6', 'green':'#10b981', 'yellow':'#eab308', 'purple':'#a855f7', 'pink':'#ec4899', 'black':'#1f2937' };
+        
+        container.innerHTML = profileColors.map(c => `
+            <div class="color-option ${c === selectedColor ? 'selected' : ''} w-8 h-8 rounded-full cursor-pointer border-2 ${c === selectedColor ? 'border-gray-900 dark:border-white scale-110' : 'border-transparent'}" 
+                 style="background-color: ${colorMap[c]}" 
+                 onclick="selectedColor='${c}'; renderColorSelector()"></div>
+        `).join('');
+    }
+
+    // 編集内容リセット
+    function resetProfileEdit() {
+        if(!confirm("プロフィールを初期状態に戻しますか？")) return;
+        document.getElementById('edit-bio').value = "";
+        document.getElementById('edit-title').value = "初詣の旅人";
+        selectedIcon = 'bi-person';
+        selectedColor = 'gray';
+        renderIconSelector();
+        renderColorSelector();
+    }
+
+    // 編集内容保存
+    async function saveProfileChanges() {
+        const bio = document.getElementById('edit-bio').value;
+        const title = document.getElementById('edit-title').value || "初詣の旅人";
+
+        showLoading(true);
+        try {
+            const res = await authFetch(`${API_BASE}/api/user/update_details`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ bio, title, icon: selectedIcon, color: selectedColor })
+            });
+            if (res.ok) {
+                showToast("プロフィールを更新しました", "success");
+                document.getElementById('edit-profile-modal').style.display = 'none';
+                loadUserProfile(currentState.user.username); // 再読み込み
+            } else {
+                alert("更新に失敗しました");
+            }
+        } catch(e) { console.error(e); }
+        finally { showLoading(false); }
+    }
         // --- メニュー表示 ---
         function toggleProfileMenu() {
             const menu = document.getElementById('profile-menu-dropdown');
