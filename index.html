@@ -8386,7 +8386,7 @@ ${getShareUrl()}`;
         }
 
         
-// 1. 「参拝の記録」：大吉カウントをバッジデータから取得するように修正
+// 1. 「参拝の記録」：大吉カウントをバッジの進捗値(current_val)から強制取得するように修正
 async function loadMyStats() {
     if (!currentState.user) return;
 
@@ -8396,23 +8396,22 @@ async function loadMyStats() {
         if (res.ok) {
             const data = await res.json();
             
-            // ▼▼▼ 修正: バッジデータから大吉のカウントを抽出して同期させる処理 ▼▼▼
+            // ▼▼▼ 修正: バッジデータから「大吉」の現在値(current_val)を抽出するロジック ▼▼▼
             
-            // デフォルトは統計データを使うが...
-            let correctDaikichiCount = data.stats.daikichiCount || 0;
+            let correctDaikichiCount = 0;
 
-            // バッジリストの中に「大吉」の回数を計測しているものがあれば、その値を正とする
-            // (バッジデータの方が正確であるための処置)
-            if (data.badges && data.badges.length > 0) {
-                // 条件タイプが 'daikichi' または名前に '大吉' を含むバッジを探す
-                const daikichiBadge = data.badges.find(b => 
-                    (b.condition_type && b.condition_type === 'daikichi') || 
-                    (b.name && b.name.includes('大吉'))
+            if (data.badges && Array.isArray(data.badges)) {
+                // 名前(name)に「大吉」が含まれるバッジ、またはタイプがdaikichiのバッジを全て抽出
+                const daikichiBadges = data.badges.filter(b => 
+                    (b.name && b.name.includes('大吉')) || 
+                    (b.condition_type && b.condition_type.includes('daikichi'))
                 );
 
-                // 見つかった場合、その current_val (現在値) を採用
-                if (daikichiBadge && typeof daikichiBadge.current_val === 'number') {
-                    correctDaikichiCount = daikichiBadge.current_val;
+                if (daikichiBadges.length > 0) {
+                    // 抽出したバッジの中で、current_val (進捗の左側の数字) が最も大きいものを採用
+                    // これにより、実績バッジに表示されている数字と確実に一致させます
+                    const values = daikichiBadges.map(b => Number(b.current_val) || 0);
+                    correctDaikichiCount = Math.max(...values);
                 }
             }
             // ▲▲▲ 修正ここまで ▲▲▲
@@ -8424,7 +8423,7 @@ async function loadMyStats() {
 
             if (statTotal) statTotal.textContent = (data.stats.totalDraws || 0).toLocaleString();
             
-            // ★修正した値をここに適用
+            // ★バッジから取得した値をここに適用
             if (statDaikichi) statDaikichi.textContent = correctDaikichiCount.toLocaleString();
             
             if (statStreak) {
