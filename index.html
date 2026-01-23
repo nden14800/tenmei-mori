@@ -8350,47 +8350,78 @@ ${getShareUrl()}`;
         }
     }
 
-        // ==========================================
-    //  プロフィール・参拝者台帳システム (変数重複修正版)
+     // ==========================================
+    //  プロフィール設定機能 (シンプル版)
     // ==========================================
 
-    // ナビゲーションの会員ボタンクリック時の挙動
-    // プロフィール画面へは遷移せず、ログアウト確認のみを行います
+    // ナビゲーションの「会員:〇〇」ボタンを押した時の挙動
     function handleProfileClick() {
         if(currentState.user) {
-            if(confirm(`現在「${currentState.user.username}」としてログイン中です。\nログアウトしますか？`)) {
-                logout();
-            }
+            // 現在の情報を画面にセット
+            const nameEl = document.getElementById('profile-current-username');
+            const mailEl = document.getElementById('profile-current-email');
+            
+            if(nameEl) nameEl.textContent = currentState.user.username;
+            if(mailEl) mailEl.textContent = currentState.user.email;
+            
+            // 入力欄をクリア
+            const newNameInput = document.getElementById('profile-new-username');
+            const newPassInput = document.getElementById('profile-new-password');
+            if(newNameInput) newNameInput.value = '';
+            if(newPassInput) newPassInput.value = '';
+
+            // シンプルな設定画面を表示
+            showView('profile');
         } else {
+            // 未ログイン時は認証画面へ
             showView('auth');
         }
     }
 
-    // ユーザープロフィールの読み込み
-    async function loadUserProfile(username) {
+    // ユーザー名・パスワードの変更処理
+    async function updateProfile() {
+        const newName = document.getElementById('profile-new-username').value;
+        const newPass = document.getElementById('profile-new-password').value;
+        
+        if(!newName && !newPass) return alert("変更内容を入力してください");
+        
         showLoading(true);
         try {
-            // 自分のデータかどうか判定
-            const isMe = currentState.user && currentState.user.username === username;
+            // サーバーへ変更リクエスト送信
+            const res = await authFetch(`${API_BASE}/api/user/update`, {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({
+                    newUsername: newName || undefined,
+                    newPassword: newPass || undefined
+                })
+            });
+            const data = await res.json();
             
-            // APIからデータ取得
-            const res = await fetch(`${API_BASE}/api/user/profile?username=${encodeURIComponent(username)}`);
-            
-            if (res.ok) {
-                const data = await res.json();
-                data.isMe = isMe; // 自分かどうかのフラグを付与
-                renderProfilePage(data);
-                showView('profile'); // プロフィールビューを表示
+            if(data.success) {
+                alert("更新しました");
+                
+                // ユーザー名を変更した場合は画面と状態を即時更新
+                if(newName) {
+                    currentState.user.username = newName;
+                    document.getElementById('profile-current-username').textContent = newName;
+                    updateAuthUI(); // ナビバーの表示も更新
+                }
+                
+                // 入力欄をクリア
+                document.getElementById('profile-new-username').value = '';
+                document.getElementById('profile-new-password').value = '';
             } else {
-                showToast("ユーザー情報の取得に失敗しました", "error");
+                alert("更新失敗: " + (data.error || "不明なエラー"));
             }
-        } catch (e) {
+        } catch(e) { 
             console.error(e);
-            showToast("通信エラーが発生しました", "error");
-        } finally {
-            showLoading(false);
+            alert("通信エラーが発生しました"); 
         }
-    }
+        finally { 
+            showLoading(false); 
+        }
+    }  
 
         async function deleteAccount() {
             if(!confirm("本当にアカウントを削除しますか？\n履歴やお気に入りデータも完全に消去されます。")) return;
