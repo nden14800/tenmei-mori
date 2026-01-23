@@ -8385,8 +8385,7 @@ ${getShareUrl()}`;
             window.open(intent, '_blank');
         }
 
-        
-// 1. 「参拝の記録」：大吉カウントをバッジの進捗値から「確実」に拾い上げる修正版
+        // 1. 「参拝の記録」：大吉獲得数の表示を完全に削除し、2列レイアウトに変更する修正版
 async function loadMyStats() {
     if (!currentState.user) return;
 
@@ -8396,55 +8395,40 @@ async function loadMyStats() {
         if (res.ok) {
             const data = await res.json();
             
-            // ▼▼▼ 修正：ここから強力な検索ロジック（バッジから数字を強制的に拾う） ▼▼▼
-            
-            // 1. まずは通常の統計データから取得（これが0の場合が多い）
-            let correctDaikichiCount = data.stats ? (data.stats.daikichiCount || 0) : 0;
-
-            // 2. バッジデータをスキャンして、より大きい数字があればそちらを採用する
-            if (data.badges && Array.isArray(data.badges) && data.badges.length > 0) {
-                
-                // バッジを1つずつ全部チェック
-                data.badges.forEach(b => {
-                    // 安全のため文字列化
-                    const name = (b.name || "").toString();
-                    const type = (b.condition_type || "").toString();
-                    
-                    // 名前かタイプに「大吉」または「daikichi」が含まれているか？
-                    const isDaikichiBadge = name.includes('大吉') || type.includes('daikichi');
-
-                    if (isDaikichiBadge) {
-                        // バッジの進捗値（左側の数字）を取得
-                        const badgeVal = Number(b.current_val);
-                        
-                        // その数字が有効で、かつ現在のカウントより大きければ上書きする
-                        if (!isNaN(badgeVal) && badgeVal > correctDaikichiCount) {
-                            console.log("バッジから大吉数を補正しました:", badgeVal);
-                            correctDaikichiCount = badgeVal;
-                        }
-                    }
-                });
-            }
-            // ▲▲▲ 修正ここまで ▲▲▲
-
-            // --- 画面への反映処理 ---
-
-            // 数値データの反映
+            // 1. 総参拝数 (Total)
             const statTotal = document.getElementById('stat-total');
-            const statDaikichi = document.getElementById('stat-daikichi');
+            if (statTotal) {
+                statTotal.textContent = (data.stats.totalDraws || 0).toLocaleString();
+            }
+            
+            // 2. 連続参拝 (Streak)
             const statStreak = document.getElementById('stat-streak');
-
-            if (statTotal) statTotal.textContent = (data.stats.totalDraws || 0).toLocaleString();
-            
-            // ★ここで「バッジから拾った数字」を適用
-            if (statDaikichi) statDaikichi.textContent = correctDaikichiCount.toLocaleString();
-            
             if (statStreak) {
                 const streakVal = data.stats.goshuinCount || 0;
                 statStreak.innerHTML = `${streakVal.toLocaleString()}<span class="text-xs font-normal text-gray-400 ml-1">日</span>`;
             }
 
-            // 実績達成率のみを表示するエリア（記事数は削除）
+            // ▼▼▼ 修正：大吉の表示エリアを強制的に削除し、レイアウトを整える処理 ▼▼▼
+            const statDaikichi = document.getElementById('stat-daikichi');
+            if (statDaikichi) {
+                // 大吉の数字が入っている「箱（カード）」自体を取得
+                const daikichiCard = statDaikichi.closest('.bg-white'); // または .dark:bg-zinc-800
+                
+                if (daikichiCard) {
+                    // 箱を非表示にする
+                    daikichiCard.style.display = 'none';
+                    
+                    // 親のグリッドコンテナを取得して、3列(grid-cols-3) から 2列(grid-cols-2) に変更
+                    const gridContainer = daikichiCard.parentElement;
+                    if (gridContainer) {
+                        gridContainer.classList.remove('grid-cols-3');
+                        gridContainer.classList.add('grid-cols-2');
+                    }
+                }
+            }
+            // ▲▲▲ 修正ここまで ▲▲▲
+
+            // 実績達成率を表示するエリア（ここは変更なし）
             const unlockedCount = data.badges.filter(b => b.unlocked).length;
             const totalBadges = data.badges.length;
             const percent = totalBadges > 0 ? Math.round((unlockedCount / totalBadges) * 100) : 0;
@@ -8466,7 +8450,7 @@ async function loadMyStats() {
             
             const statsWrapper = document.getElementById('stats-content-wrapper');
             const oldExtra = document.getElementById('extra-stats-grid');
-            if (oldExtra) oldExtra.remove(); 
+            if (oldExtra) oldExtra.remove();
 
             const div = document.createElement('div');
             div.id = 'extra-stats-grid';
@@ -8504,7 +8488,6 @@ async function loadMyStats() {
                                     <div class="text-[10px] text-gray-500 truncate mt-0.5">${b.description}</div>
                                 </div>
                             </div>
-                            <!-- 進捗バー -->
                             <div class="w-full mt-1">
                                 <div class="flex justify-between text-[10px] text-gray-500 mb-1">
                                     <span>進捗</span>
