@@ -8003,8 +8003,14 @@ function handleInputQuiz(button, correctAnswers, questionId) {
                 showResultDetail(false, item);
             }; 
 
-            const date = new Date(item.timestamp);
-            const dateStr = `${date.getMonth()+1}/${date.getDate()} ${date.getHours()}:${String(date.getMinutes()).padStart(2, '0')}`;
+            // ★修正: timestampを数値に確実に変換してからDateにする
+        let date = new Date(Number(item.timestamp));
+        
+        // それでも無効な日付(NaN)だった場合の対策
+        let dateStr = "----/--/-- --:--";
+        if (!isNaN(date.getTime())) {
+            dateStr = `${date.getMonth()+1}/${date.getDate()} ${date.getHours()}:${String(date.getMinutes()).padStart(2, '0')}`;
+        }
             
             // ★修正: username を escapeHtml で囲んで無害化
             div.innerHTML = `
