@@ -3889,6 +3889,73 @@ function escapeHtml(str) {
 
 
         {
+            id: 38,
+            title: "【最終報告】データベースの最終着地（Turso）と、参拝記録表示の最適化について",
+            date: "2026/1/23",
+            time: "23:45",
+            tag: "システム・仕様",
+            tagColor: "text-emerald-600",
+            borderColor: "border-emerald-600",
+            desc: "参拝記録の表示項目を整理し、実績バッジへの一元化を行いました。また、幾多の変遷を経て辿り着いたデータベース「Turso」と他社技術の比較を公開します。",
+            content: `
+                <div class="article-content">
+                    <p>いつも「運勢・天命乃杜」をご利用いただき、誠にありがとうございます。運営者のnden148です。</p>
+                    <p>本日、参拝者の皆様により正確な情報をお届けするため、プロフィール画面（参拝の記録）の表示項目を一部変更いたしました。また、ここ数日間で目まぐるしく変化した当サイトの「心臓部（データベース）」について、最終的な技術選定の理由をご報告いたします。</p>
+
+                    <h3>1. 「大吉獲得数」表示の統合について</h3>
+                    <p>これまで「参拝の記録」画面において、数値としての「大吉獲得数」と、実績バッジとしての「大吉記録」を併記しておりましたが、システム上の集計タイミングのズレにより、両者の数字が一致しない（片方が0のままになる）現象が確認されました。</p>
+                    <p>調査の結果、実績バッジ（功徳の証）側のデータが最も正確に皆様の幸運を記録できていることが判明いたしました。</p>
+                    <p>そのため、混乱を招く数値だけの表示枠を撤廃し、今後は<strong>「功徳の証（バッジ）」にて大吉の獲得状況をご確認いただく</strong>仕様へと統一いたしました。皆様が引き当てた幸運は、バッジの中に確実に刻まれておりますのでご安心ください。</p>
+
+                    <h3>2. データベース放浪の旅、その終着点「Turso」</h3>
+                    <p>当サイトは、「1日10万回の書き込み」と「0.1秒以内の応答」を両立させるため、短期間のうちに複数のデータベース技術を渡り歩いてきました。そして今、SQLiteをベースとしたエッジデータベース<strong>「Turso（ターソ）」</strong>に定住することを決意しました。</p>
+                    <p>なぜ、流行のSupabaseや、最強のTiDBではなく、Tursoを選んだのか。その技術的な比較表をここに公開いたします。</p>
+
+                    <div class="overflow-x-auto mb-8">
+                        <table class="comparison-table" style="min-width: 100%; font-size: 0.8rem;">
+                            <thead class="bg-gray-100 dark:bg-zinc-700 font-bold">
+                                <tr>
+                                    <th class="p-2 border border-gray-300">比較項目</th>
+                                    <th class="p-2 border border-gray-300 text-gray-500">Supabase (PostgreSQL)</th>
+                                    <th class="p-2 border border-gray-300 text-gray-500">TiDB (MySQL互換)</th>
+                                    <th class="p-2 border border-gray-300 bg-emerald-50 dark:bg-emerald-900/20 text-emerald-800 dark:text-emerald-200 border-b-4 border-emerald-500">Turso (SQLite互換)</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td class="p-2 border border-gray-300 font-bold">通信方式</td>
+                                    <td class="p-2 border border-gray-300">TCP接続 (重い)</td>
+                                    <td class="p-2 border border-gray-300">TCP接続 (重い)</td>
+                                    <td class="p-2 border border-gray-300 font-bold">HTTP (Webと同じ・爆速)</td>
+                                </tr>
+                                <tr>
+                                    <td class="p-2 border border-gray-300 font-bold">エッジ適性</td>
+                                    <td class="p-2 border border-gray-300">△ コネクションプールの管理が困難</td>
+                                    <td class="p-2 border border-gray-300">△ サーバーレスだが初期接続に遅延あり</td>
+                                    <td class="p-2 border border-gray-300 font-black text-lg text-emerald-600">◎ 最適 (Over HTTP)</td>
+                                </tr>
+                                <tr>
+                                    <td class="p-2 border border-gray-300 font-bold">書き込み耐性</td>
+                                    <td class="p-2 border border-gray-300">非常に高い</td>
+                                    <td class="p-2 border border-gray-300">無限 (分散型)</td>
+                                    <td class="p-2 border border-gray-300">非常に高い (数億回/月まで余裕)</td>
+                                </tr>
+                                <tr>
+                                    <td class="p-2 border border-gray-300 font-bold">採用の決め手</td>
+                                    <td class="p-2 border border-gray-300">機能は豊富だが、今回には重厚すぎた</td>
+                                    <td class="p-2 border border-gray-300">最強だが、小規模な参照にはオーバースペック</td>
+                                    <td class="p-2 border border-gray-300 font-bold">「Webサイトを表示する」という用途に特化した軽快さ</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <p>SupabaseもTiDBも素晴らしい技術ですが、当サイトのような「ユーザーが訪れた瞬間に結果を返す」というスピード勝負の環境においては、HTTP通信で軽量に動作する<strong>Turso</strong>こそが、現在の最適解であると判断いたしました。</p>
+                    <p>この強固で軽快な礎の上で、これからも皆様に快適な「天命」をお届けしてまいります。</p>
+                </div>
+            `
+        },
+        {
             id: 37,
             title: "【完全復旧】大規模障害のお詫びと、全データリセット及び「参拝の記録」への刷新について",
             date: "2026/1/23",
