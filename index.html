@@ -6723,82 +6723,71 @@ async function authFetch(url, options = {}) {
 
         
     // ==========================================
-//  統合された初期化処理 (window.onload) - 修正版
-// ==========================================
-window.onload = async function() {
-    // メンテナンスチェック
-    checkMaintenance();
+    //  統合された初期化処理 (window.onload) - 修正版
+    // ==========================================
+    window.onload = async function() {
+        // メンテナンスチェック
+        checkMaintenance();
 
-    // 基本初期化
-    initHomeAnimation();
-    initZodiacSystem();
-    
-    // ダークモード監視
-    window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', applyTheme);
+        // 基本初期化
+        initHomeAnimation();
+        initZodiacSystem();
+        
+        // ダークモード監視
+        window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', applyTheme);
 
-    // ★修正ポイント: localStorageではなく、サーバーにCookieの状態を聞く
-    await checkSession();
+        // セッション確認
+        await checkSession();
 
-    // 各種データ取得・定期実行
-    startLiveCounter();
-    fetchHistoryStats();
-    setInterval(fetchHistoryStats, 60000); 
-    loadFavorites();
+        // 各種データ取得・定期実行
+        startLiveCounter();
+        fetchHistoryStats();
+        setInterval(fetchHistoryStats, 60000); 
+        loadFavorites();
 
-    // URLクリーンアップ
-    const url = new URL(window.location);
-    if (url.searchParams.has('d')) {
-        url.searchParams.delete('d');
-        window.history.replaceState({}, '', url);
-    }
-
-    
-// 掲示板初期化
-    BoardSystem.init();
-
-
-    // 記事リストの描画
-    renderHomeLists();      
-    renderFullNewsView();   
-    renderFullColumnView(); 
-};
-
-// ★修正: checkSession関数 (authFetch使用 & トークン保存追加)
-async function checkSession() {
-    try {
-        // authFetchに変更
-        const res = await authFetch(`${API_BASE}/api/auth/check`, {
-            method: 'GET'
-        });
-        if (res.ok) {
-            const data = await res.json();
-            if (data.loggedIn) {
-                currentState.user = { username: data.username, email: data.email };
-                // window.onload内の最後の方に追加
-    if (currentState.user) {
-        checkGoshuin();
-    }
-                
-                // ★追加: サーバーからトークンが返ってきたら保存
-                if (data.token) {
-                    localStorage.setItem('auth_token', data.token);
-                }
-
-                updateAuthUI();
-                loadLabSettings();
-                console.log("Session restored");
-            } else {
-                currentState.user = null;
-                updateAuthUI();
-                loadLabSettings(); // ゲスト設定をロード
-            }
+        // URLクリーンアップ
+        const url = new URL(window.location);
+        if (url.searchParams.has('d')) {
+            url.searchParams.delete('d');
+            window.history.replaceState({}, '', url);
         }
-    } catch (e) {
-        console.error("Session check failed", e);
-        currentState.user = null;
-        updateAuthUI();
+
+        // 記事リストの描画
+        renderHomeLists();      
+        renderFullNewsView();   
+        renderFullColumnView(); 
+    };
+
+    // セッションチェック関数
+    async function checkSession() {
+        try {
+            const res = await authFetch(`${API_BASE}/api/auth/check`, {
+                method: 'GET'
+            });
+            if (res.ok) {
+                const data = await res.json();
+                if (data.loggedIn) {
+                    currentState.user = { username: data.username, email: data.email };
+                    
+                    if (data.token) {
+                        localStorage.setItem('auth_token', data.token);
+                    }
+
+                    updateAuthUI();
+                    loadLabSettings();
+                    console.log("Session restored");
+                } else {
+                    currentState.user = null;
+                    updateAuthUI();
+                    loadLabSettings(); // ゲスト設定をロード
+                }
+            }
+        } catch (e) {
+            console.error("Session check failed", e);
+            currentState.user = null;
+            updateAuthUI();
+        }
     }
-}
 
         // --- 状態管理 ---
         let currentState = {
