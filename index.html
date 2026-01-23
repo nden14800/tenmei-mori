@@ -7438,40 +7438,51 @@ function handleInputQuiz(button, correctAnswers, questionId) {
             }
         }
 
-        // --- 統計情報の取得 (12種類対応版) ---
         async function fetchHistoryStats() {
-            try {
-                const res = await fetch(`${API_BASE}/api/stats`);
-                if(res.ok) {
-                    const data = await res.json();
-                    document.getElementById('stats-update-time').textContent = data.timestamp || "--:--:--";
+    try {
+        const res = await fetch(`${API_BASE}/api/stats`);
+        if(res.ok) {
+            const data = await res.json();
+            
+            // 更新時刻の反映
+            document.getElementById('stats-update-time').textContent = data.timestamp || "--:--:--";
 
-                    const setBar = (id, percent, count) => {
-                        // 要素が存在する場合のみ更新
-                        const statEl = document.getElementById(`stat-${id}`);
-                        if (statEl) {
-                            const p = parseFloat(percent).toFixed(2);
-                            statEl.textContent = p + "%";
-                            document.getElementById(`cnt-${id}`).textContent = (count || 0).toLocaleString() + "本";
-                            document.getElementById(`bar-${id}`).style.width = p + "%";
-                        }
-                    };
+            const stats = data.stats || {};
+            // 全体の合計本数を取得（0割防止のため最低1にする）
+            const total = data.total || 1; 
 
-                    const stats = data.stats || {};
-                    const counts = data.counts || {};
-                    
-                    // 12種類全てのキーを更新
-                    const keys = [
-                        'daikichi', 'chukichi', 'shokichi', 'kichi', 'hankichi', 'suekichi', 'sueshokichi',
-                        'kyo', 'shokyo', 'hankyo', 'suekyo', 'daikyo'
-                    ];
-                    
-                    keys.forEach(key => {
-                        setBar(key, stats[key] || 0, counts[key] || 0);
-                    });
+            const setBar = (id, percentage, count) => {
+                const statEl = document.getElementById(`stat-${id}`);
+                if (statEl) {
+                    // 小数点第2位まで計算したパーセントを表示
+                    const p = parseFloat(percentage).toFixed(2);
+                    statEl.textContent = p + "%";
+                    // 実際の「本数」を表示
+                    const cntEl = document.getElementById(`cnt-${id}`);
+                    if(cntEl) cntEl.textContent = (count || 0).toLocaleString() + "本";
+                    // グラフの長さを反映
+                    const barEl = document.getElementById(`bar-${id}`);
+                    if(barEl) barEl.style.width = p + "%";
                 }
-            } catch(e) { console.error(e); }
+            };
+
+            // 12種類全てのキーをループして計算
+            const keys = [
+                'daikichi', 'chukichi', 'shokichi', 'kichi', 'hankichi', 'suekichi', 'sueshokichi',
+                'kyo', 'shokyo', 'hankyo', 'suekyo', 'daikyo'
+            ];
+            
+            keys.forEach(key => {
+                const count = stats[key] || 0;
+                // ここでパーセントを計算： (個別の本数 / 全体の本数) * 100
+                const percentage = (count / total) * 100;
+                setBar(key, percentage, count);
+            });
         }
+    } catch(e) { 
+        console.error("統計データの取得または計算に失敗しました:", e); 
+    }
+}
 
         // --- おみくじロジック (画像風・敷き詰めレイアウト版) ---
         function startOmikuji() {
