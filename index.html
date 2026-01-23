@@ -6302,61 +6302,37 @@ function createPaginationHTML(type, current, total) {
         }
     };
 
-    // 2. 社務所だより一覧 (検索・ページ機能付き)
-    window.renderFullNewsView = function() {
-        const container = document.getElementById('view-news-list');
-        const pagination = document.getElementById('news-pagination');
-        if (!container) return;
+    // 2. 「社務所だより」：上部に総記事数を表示するように修正
+window.renderFullNewsView = function() {
+    const container = document.getElementById('view-news-list');
+    const pagination = document.getElementById('news-pagination');
+    const titleArea = document.querySelector('#view-news h2'); // タイトル部分を取得
+    if (!container) return;
 
-        const { data, totalPages, currentPage, totalItems } = getPaginatedData('news', newsData);
+    const { data, totalPages, currentPage, totalItems } = getPaginatedData('news', newsData);
 
-        if (totalItems === 0) {
-            container.innerHTML = '<p class="text-center text-gray-500 py-8">該当する記事が見つかりませんでした。</p>';
-            pagination.innerHTML = '';
-            return;
-        }
+    // タイトル横に件数を表示（検索中ならヒット数、通常なら全件数）
+    const countDisplay = listState.news.query 
+        ? `<span class="text-sm font-normal ml-3 text-gray-500">検索結果: ${totalItems}件 / 全${newsData.length}件</span>`
+        : `<span class="text-sm font-normal ml-3 text-gray-500">全${newsData.length}件</span>`;
+    titleArea.innerHTML = `社務所だより ${countDisplay}`;
 
-        container.innerHTML = data.map(item => `
-            <article class="themed-card p-4 rounded shadow border-l-4 ${item.borderColor || 'border-gray-400'} cursor-pointer hover:opacity-80 transition" onclick="openArticle('news', ${item.id})">
-                <div class="text-sm themed-text-sub">${item.date} ${item.time || ''} <span class="ml-2 font-bold ${item.tagColor}">${item.tag}</span></div>
-                <h3 class="font-bold text-lg ${item.tag === '重要' ? 'text-red-600' : ''}">${item.title}</h3>
-                <p class="text-sm mt-2 truncate themed-text-sub">${item.desc}</p>
-            </article>
-        `).join('');
+    if (totalItems === 0) {
+        container.innerHTML = '<p class="text-center text-gray-500 py-8">該当する記事が見つかりませんでした。</p>';
+        pagination.innerHTML = '';
+        return;
+    }
 
-        pagination.innerHTML = createPaginationHTML('news', currentPage, totalPages);
-    };
+    container.innerHTML = data.map(item => `
+        <article class="themed-card p-4 rounded shadow border-l-4 ${item.borderColor || 'border-gray-400'} cursor-pointer hover:opacity-80 transition" onclick="openArticle('news', ${item.id})">
+            <div class="text-sm themed-text-sub">${item.date} ${item.time || ''} <span class="ml-2 font-bold ${item.tagColor}">${item.tag}</span></div>
+            <h3 class="font-bold text-lg ${item.tag === '重要' ? 'text-red-600' : ''}">${item.title}</h3>
+            <p class="text-sm mt-2 truncate themed-text-sub">${item.desc}</p>
+        </article>
+    `).join('');
 
-    // 3. 神籤草子一覧 (検索・ページ機能付き)
-    window.renderFullColumnView = function() {
-        const container = document.getElementById('view-column-list');
-        const pagination = document.getElementById('column-pagination');
-        if (!container) return;
-
-        const { data, totalPages, currentPage, totalItems } = getPaginatedData('column', columnData);
-
-        if (totalItems === 0) {
-            container.innerHTML = '<p class="col-span-full text-center text-gray-500 py-8">該当するコラムが見つかりませんでした。</p>';
-            pagination.innerHTML = '';
-            return;
-        }
-
-        container.innerHTML = data.map(item => `
-            <article class="themed-card rounded overflow-hidden shadow cursor-pointer hover:shadow-lg transition" onclick="openArticle('column', ${item.id})">
-                <div class="h-32 bg-${item.colorClass}-100 dark:bg-${item.colorClass}-900 flex items-center justify-center text-${item.colorClass}-800 dark:text-${item.colorClass}-200 font-bold">
-                    <i class="bi ${item.icon} text-3xl"></i>
-                </div>
-                <div class="p-4">
-                    <div class="text-xs themed-text-sub mb-1">
-                         <span class="bg-gray-200 dark:bg-zinc-700 px-2 py-0.5 rounded text-[10px] mr-2">${item.category}</span>${item.date}
-                    </div>
-                    <h3 class="font-bold">${item.title}</h3>
-                </div>
-            </article>
-        `).join('');
-
-        pagination.innerHTML = createPaginationHTML('column', currentPage, totalPages);
-    };
+    pagination.innerHTML = createPaginationHTML('news', currentPage, totalPages);
+};
 
     // 4. 記事詳細表示
     window.openArticle = function(type, id) {
