@@ -2761,46 +2761,70 @@
             </div>
         </section>
 
-        <!-- ビュー: プロフィール -->
-        <section id="view-profile" class="view-section max-w-md mx-auto themed-card p-8 rounded-xl shadow-lg mt-10">
-            <h2 class="text-2xl font-bold mb-6 text-center">会員情報</h2>
-            
-            <div class="mb-6 border-b pb-4">
-                <p class="text-sm themed-text-sub">現在のユーザー名</p>
-                <p class="text-xl font-bold" id="profile-current-username">---</p>
-                <p class="text-sm themed-text-sub mt-2">メールアドレス</p>
-                <p class="text-lg" id="profile-current-email">---</p>
-                
-                <!-- ▼▼▼ 追加ここから：自分のページを見るボタン ▼▼▼ -->
-                <div class="mt-4">
-                    <button onclick="loadUserProfile(currentState.user.username)" class="w-full bg-indigo-600 text-white py-2 rounded-lg font-bold hover:opacity-90 shadow transition transform active:scale-95">
-                        <i class="bi bi-person-badge-fill mr-2"></i> 自分の「参拝者台帳」を見る
-                    </button>
-                    <p class="text-xs text-gray-500 mt-1">※他のユーザーに見えるあなたの画面を確認します</p>
-                </div>
-                <!-- ▲▲▲ 追加ここまで ▲▲▲ -->
-            </div>
+        <!-- ビュー: 会員情報設定 (シンプル版) -->
+<section id="view-profile" class="view-section max-w-md mx-auto themed-card p-8 rounded-xl shadow-lg mt-10">
+    <h2 class="text-2xl font-bold mb-6 text-center border-b border-gray-200 dark:border-gray-700 pb-4">
+        アカウント設定
+    </h2>
+    
+    <!-- 現在の情報 -->
+    <div class="mb-8 bg-gray-50 dark:bg-zinc-800 p-4 rounded-lg border border-gray-200 dark:border-gray-700">
+        <div class="mb-4">
+            <p class="text-xs text-gray-500 font-bold mb-1">現在のユーザー名</p>
+            <p class="text-xl font-black text-gray-800 dark:text-gray-100" id="setting-current-username">---</p>
+        </div>
+        <div>
+            <p class="text-xs text-gray-500 font-bold mb-1">現在のメールアドレス</p>
+            <p class="text-base font-mono text-gray-700 dark:text-gray-300" id="setting-current-email">---</p>
+        </div>
+        
+        <!-- (任意) 自分の公開プロフィールを確認したい場合用 -->
+        <div class="mt-4 pt-4 border-t border-gray-200 dark:border-gray-700">
+            <button onclick="viewMyPublicProfile()" class="text-sm text-indigo-600 hover:underline flex items-center">
+                <i class="bi bi-person-badge mr-1"></i> 自分の「参拝者台帳（公開ページ）」を見る
+            </button>
+        </div>
+    </div>
 
-            <div class="space-y-4">
-                <h3 class="font-bold border-l-4 border-red-500 pl-2">情報変更</h3>
-                <div>
-                    <label class="block text-sm">新しいユーザー名 (変更する場合のみ)</label>
-                    <input type="text" id="profile-new-username" class="w-full p-2 border rounded themed-input">
-                </div>
-                <div>
-                    <label class="block text-sm">新しいパスワード (変更する場合のみ)</label>
-                    <input type="password" id="profile-new-password" class="w-full p-2 border rounded themed-input">
-                </div>
-                <button onclick="updateProfile()" class="btn-primary w-full justify-center py-2 text-sm">変更を保存</button>
-            </div>
+    <!-- 情報変更フォーム -->
+    <div class="space-y-5 mb-8">
+        <h3 class="font-bold text-sm flex items-center text-gray-700 dark:text-gray-300">
+            <i class="bi bi-pencil-square mr-2"></i>登録情報の変更
+        </h3>
+        
+        <div>
+            <label class="block text-xs font-bold mb-1 text-gray-500">新しいユーザー名</label>
+            <input type="text" id="setting-new-username" class="w-full p-3 border rounded themed-input text-sm" placeholder="変更する場合のみ入力">
+        </div>
+        
+        <div>
+            <label class="block text-xs font-bold mb-1 text-gray-500">新しいパスワード</label>
+            <input type="password" id="setting-new-password" class="w-full p-3 border rounded themed-input text-sm" placeholder="変更する場合のみ入力">
+        </div>
+        
+        <button onclick="updateAccountSettings()" class="btn-primary w-full justify-center py-2 text-sm shadow-md">
+            変更を保存する
+        </button>
+    </div>
 
-            <div class="mt-10 border-t pt-6">
-                <h3 class="font-bold text-red-600 mb-2">アカウント操作</h3>
-                <button onclick="logout()" class="w-full bg-gray-500 text-white py-2 rounded hover:opacity-80 mb-4">ログアウト</button>
-                <button onclick="deleteAccount()" class="w-full bg-red-600 text-white py-2 rounded hover:opacity-80 text-sm">アカウント削除</button>
-                <p class="text-xs text-gray-500 mt-2">※アカウントを削除しても、同じメールアドレスで再登録可能です。</p>
-            </div>
-        </section>
+    <!-- 危険なエリア (ログアウト・削除) -->
+    <div class="border-t border-gray-200 dark:border-gray-700 pt-6 mt-6">
+        <h3 class="font-bold text-gray-500 text-xs mb-4">アカウント操作</h3>
+        
+        <button onclick="logout()" class="w-full bg-gray-500 text-white py-3 rounded-lg font-bold hover:opacity-80 transition mb-3 flex items-center justify-center gap-2">
+            <i class="bi bi-box-arrow-right"></i> ログアウト
+        </button>
+        
+        <button onclick="deleteAccount()" class="w-full bg-transparent border border-red-500 text-red-600 dark:text-red-400 py-3 rounded-lg font-bold hover:bg-red-50 dark:hover:bg-red-900/20 transition text-sm flex items-center justify-center gap-2">
+            <i class="bi bi-trash"></i> アカウント削除
+        </button>
+        
+        <p class="text-[10px] text-red-500 mt-2 text-center leading-relaxed">
+            <i class="bi bi-exclamation-triangle-fill"></i> 
+            アカウントを削除すると、おみくじの履歴、獲得したバッジ、お気に入り設定など全てのデータが恒久的に削除され、復元できません。
+        </p>
+    </div>
+</section>
 
         <!-- ビュー: おみくじの轍 (履歴) -->
         <section id="view-history" class="view-section max-w-4xl mx-auto relative">
