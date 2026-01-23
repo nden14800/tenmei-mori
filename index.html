@@ -8291,46 +8291,46 @@ ${getShareUrl()}`;
             window.open(intent, '_blank');
         }
 
-        // --- プロフィール機能 ---
-        function handleProfileClick() {
-            if(currentState.user) {
-                showView('profile');
-                document.getElementById('profile-current-username').textContent = currentState.user.username;
-                document.getElementById('profile-current-email').textContent = currentState.user.email;
-            } else {
-                showView('auth');
-            }
-        }
+        // ==========================================
+    //  プロフィール・参拝者台帳システム (変数重複修正版)
+    // ==========================================
 
-         async function updateProfile() {
-            const newName = document.getElementById('profile-new-username').value;
-            const newPass = document.getElementById('profile-new-password').value;
-            
-            if(!newName && !newPass) return alert("変更内容を入力してください");
-            
-            showLoading(true);
-            try {
-                // ★修正: authFetchに変更
-                const res = await authFetch(`${API_BASE}/api/user/update`, {
-                    method: 'POST',
-                    headers: {'Content-Type': 'application/json'},
-                    body: JSON.stringify({
-                        newUsername: newName || undefined,
-                        newPassword: newPass || undefined
-                    })
-                });
-                const data = await res.json();
-                if(data.success) {
-                    alert("更新しました");
-                    if(newName) currentState.user.username = newName;
-                    localStorage.setItem('omikuji_user', JSON.stringify(currentState.user));
-                    handleProfileClick();
-                } else {
-                    alert("更新失敗: " + data.error);
-                }
-            } catch(e) { alert("通信エラー"); }
-            finally { showLoading(false); }
+    // プロフィールボタン（ナビゲーション）の挙動
+    function handleProfileClick() {
+        if (currentState.user) {
+            // ログイン中なら自分のプロフィールを読み込んで表示
+            loadUserProfile(currentState.user.username);
+        } else {
+            // 未ログインなら認証画面へ
+            showView('auth');
         }
+    }
+
+    // ユーザープロフィールの読み込み
+    async function loadUserProfile(username) {
+        showLoading(true);
+        try {
+            // 自分のデータかどうか判定
+            const isMe = currentState.user && currentState.user.username === username;
+            
+            // APIからデータ取得
+            const res = await fetch(`${API_BASE}/api/user/profile?username=${encodeURIComponent(username)}`);
+            
+            if (res.ok) {
+                const data = await res.json();
+                data.isMe = isMe; // 自分かどうかのフラグを付与
+                renderProfilePage(data);
+                showView('profile'); // プロフィールビューを表示
+            } else {
+                showToast("ユーザー情報の取得に失敗しました", "error");
+            }
+        } catch (e) {
+            console.error(e);
+            showToast("通信エラーが発生しました", "error");
+        } finally {
+            showLoading(false);
+        }
+    }
 
         async function deleteAccount() {
             if(!confirm("本当にアカウントを削除しますか？\n履歴やお気に入りデータも完全に消去されます。")) return;
