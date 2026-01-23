@@ -8358,14 +8358,11 @@ ${getShareUrl()}`;
             window.open(intent, '_blank');
         }
 
-        // 参拝記録データの読み込みと描画
-    // プロフィール機能（アイコン、自己紹介など）は排除し、数値とバッジのみを扱います
+        // 参拝記録データの読み込みと描画 (統計情報強化版)
     async function loadMyStats() {
         if (!currentState.user) return;
 
         try {
-            // APIからユーザー情報を取得
-            // ※バックエンドのAPIは既存のものを流用しますが、表示には stats と badges しか使いません
             const res = await fetch(`${API_BASE}/api/user/profile?username=${encodeURIComponent(currentState.user.username)}`);
             
             if (res.ok) {
@@ -8379,11 +8376,38 @@ ${getShareUrl()}`;
                 if (statTotal) statTotal.textContent = (data.stats.totalDraws || 0).toLocaleString();
                 if (statDaikichi) statDaikichi.textContent = (data.stats.daikichiCount || 0).toLocaleString();
                 if (statStreak) {
-                    // 御朱印日数（連続参拝など）
                     statStreak.innerHTML = `${(data.stats.goshuinCount || 0).toLocaleString()}<span class="text-xs font-normal text-gray-400 ml-1">日</span>`;
                 }
 
-                // 2. 功徳の証（バッジ）リストの描画
+                // 2. 追加統計情報の表示（記事数・実績達成率）
+                // 既存のHTML構造に追加する形で挿入
+                const extraStatsHtml = `
+                    <div class="grid grid-cols-3 gap-4 mb-8 text-center text-xs text-gray-500">
+                        <div class="bg-gray-50 dark:bg-zinc-800 p-2 rounded border border-gray-200 dark:border-gray-700">
+                            <div>社務所だより</div>
+                            <div class="text-lg font-bold text-gray-800 dark:text-gray-200">${newsData.length}件</div>
+                        </div>
+                        <div class="bg-gray-50 dark:bg-zinc-800 p-2 rounded border border-gray-200 dark:border-gray-700">
+                            <div>神籤草子</div>
+                            <div class="text-lg font-bold text-gray-800 dark:text-gray-200">${columnData.length}件</div>
+                        </div>
+                        <div class="bg-gray-50 dark:bg-zinc-800 p-2 rounded border border-gray-200 dark:border-gray-700">
+                            <div>実績達成率</div>
+                            <div class="text-lg font-bold text-blue-600">${Math.round((data.badges.filter(b=>b.unlocked).length / data.badges.length)*100)}% <span class="text-xs text-gray-400">(${data.badges.filter(b=>b.unlocked).length}/${data.badges.length})</span></div>
+                        </div>
+                    </div>
+                `;
+                
+                // 数値グリッドの下に挿入
+                const statGrid = document.querySelector('#stats-content-wrapper .grid');
+                if(statGrid && !document.getElementById('extra-stats-grid')) {
+                     const div = document.createElement('div');
+                     div.id = 'extra-stats-grid';
+                     div.innerHTML = extraStatsHtml;
+                     statGrid.parentNode.insertBefore(div, statGrid.nextSibling);
+                }
+
+                // 3. 功徳の証（バッジ）リストの描画
                 const badgeContainer = document.getElementById('stats-badge-list');
                 if (badgeContainer) {
                     if (!data.badges || data.badges.length === 0) {
@@ -8392,7 +8416,6 @@ ${getShareUrl()}`;
                         badgeContainer.innerHTML = data.badges.map(b => {
                             const isUnlocked = b.unlocked;
                             
-                            // ロック状態のスタイル定義
                             const iconColor = isUnlocked ? 'text-yellow-600' : 'text-gray-300';
                             const bgClass = isUnlocked 
                                 ? 'bg-yellow-50 dark:bg-yellow-900/20 border-yellow-200' 
@@ -8418,8 +8441,6 @@ ${getShareUrl()}`;
                         }).join('');
                     }
                 }
-            } else {
-                console.error("Stats load failed: server error");
             }
         } catch (e) {
             console.error("Stats load failed", e);
