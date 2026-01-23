@@ -2761,7 +2761,7 @@
             </div>
         </section>
 
-        <!-- ビュー: プロフィール (シンプル設定版) -->
+        <!-- ビュー: プロフィール -->
         <section id="view-profile" class="view-section max-w-md mx-auto themed-card p-8 rounded-xl shadow-lg mt-10">
             <h2 class="text-2xl font-bold mb-6 text-center">会員情報</h2>
             
@@ -2770,17 +2770,26 @@
                 <p class="text-xl font-bold" id="profile-current-username">---</p>
                 <p class="text-sm themed-text-sub mt-2">メールアドレス</p>
                 <p class="text-lg" id="profile-current-email">---</p>
+                
+                <!-- ▼▼▼ 追加ここから：自分のページを見るボタン ▼▼▼ -->
+                <div class="mt-4">
+                    <button onclick="loadUserProfile(currentState.user.username)" class="w-full bg-indigo-600 text-white py-2 rounded-lg font-bold hover:opacity-90 shadow transition transform active:scale-95">
+                        <i class="bi bi-person-badge-fill mr-2"></i> 自分の「参拝者台帳」を見る
+                    </button>
+                    <p class="text-xs text-gray-500 mt-1">※他のユーザーに見えるあなたの画面を確認します</p>
+                </div>
+                <!-- ▲▲▲ 追加ここまで ▲▲▲ -->
             </div>
 
             <div class="space-y-4">
                 <h3 class="font-bold border-l-4 border-red-500 pl-2">情報変更</h3>
                 <div>
                     <label class="block text-sm">新しいユーザー名 (変更する場合のみ)</label>
-                    <input type="text" id="profile-new-username" class="w-full p-2 border rounded themed-input" placeholder="新しい名前">
+                    <input type="text" id="profile-new-username" class="w-full p-2 border rounded themed-input">
                 </div>
                 <div>
                     <label class="block text-sm">新しいパスワード (変更する場合のみ)</label>
-                    <input type="password" id="profile-new-password" class="w-full p-2 border rounded themed-input" placeholder="新しいパスワード">
+                    <input type="password" id="profile-new-password" class="w-full p-2 border rounded themed-input">
                 </div>
                 <button onclick="updateProfile()" class="btn-primary w-full justify-center py-2 text-sm">変更を保存</button>
             </div>
@@ -6723,71 +6732,82 @@ async function authFetch(url, options = {}) {
 
         
     // ==========================================
-    //  統合された初期化処理 (window.onload) - 修正版
-    // ==========================================
-    window.onload = async function() {
-        // メンテナンスチェック
-        checkMaintenance();
+//  統合された初期化処理 (window.onload) - 修正版
+// ==========================================
+window.onload = async function() {
+    // メンテナンスチェック
+    checkMaintenance();
 
-        // 基本初期化
-        initHomeAnimation();
-        initZodiacSystem();
-        
-        // ダークモード監視
-        window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', applyTheme);
+    // 基本初期化
+    initHomeAnimation();
+    initZodiacSystem();
+    
+    // ダークモード監視
+    window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', applyTheme);
 
-        // セッション確認
-        await checkSession();
+    // ★修正ポイント: localStorageではなく、サーバーにCookieの状態を聞く
+    await checkSession();
 
-        // 各種データ取得・定期実行
-        startLiveCounter();
-        fetchHistoryStats();
-        setInterval(fetchHistoryStats, 60000); 
-        loadFavorites();
+    // 各種データ取得・定期実行
+    startLiveCounter();
+    fetchHistoryStats();
+    setInterval(fetchHistoryStats, 60000); 
+    loadFavorites();
 
-        // URLクリーンアップ
-        const url = new URL(window.location);
-        if (url.searchParams.has('d')) {
-            url.searchParams.delete('d');
-            window.history.replaceState({}, '', url);
-        }
-
-        // 記事リストの描画
-        renderHomeLists();      
-        renderFullNewsView();   
-        renderFullColumnView(); 
-    };
-
-    // セッションチェック関数
-    async function checkSession() {
-        try {
-            const res = await authFetch(`${API_BASE}/api/auth/check`, {
-                method: 'GET'
-            });
-            if (res.ok) {
-                const data = await res.json();
-                if (data.loggedIn) {
-                    currentState.user = { username: data.username, email: data.email };
-                    
-                    if (data.token) {
-                        localStorage.setItem('auth_token', data.token);
-                    }
-
-                    updateAuthUI();
-                    loadLabSettings();
-                    console.log("Session restored");
-                } else {
-                    currentState.user = null;
-                    updateAuthUI();
-                    loadLabSettings(); // ゲスト設定をロード
-                }
-            }
-        } catch (e) {
-            console.error("Session check failed", e);
-            currentState.user = null;
-            updateAuthUI();
-        }
+    // URLクリーンアップ
+    const url = new URL(window.location);
+    if (url.searchParams.has('d')) {
+        url.searchParams.delete('d');
+        window.history.replaceState({}, '', url);
     }
+
+    
+// 掲示板初期化
+    BoardSystem.init();
+
+
+    // 記事リストの描画
+    renderHomeLists();      
+    renderFullNewsView();   
+    renderFullColumnView(); 
+};
+
+// ★修正: checkSession関数 (authFetch使用 & トークン保存追加)
+async function checkSession() {
+    try {
+        // authFetchに変更
+        const res = await authFetch(`${API_BASE}/api/auth/check`, {
+            method: 'GET'
+        });
+        if (res.ok) {
+            const data = await res.json();
+            if (data.loggedIn) {
+                currentState.user = { username: data.username, email: data.email };
+                // window.onload内の最後の方に追加
+    if (currentState.user) {
+        checkGoshuin();
+    }
+                
+                // ★追加: サーバーからトークンが返ってきたら保存
+                if (data.token) {
+                    localStorage.setItem('auth_token', data.token);
+                }
+
+                updateAuthUI();
+                loadLabSettings();
+                console.log("Session restored");
+            } else {
+                currentState.user = null;
+                updateAuthUI();
+                loadLabSettings(); // ゲスト設定をロード
+            }
+        }
+    } catch (e) {
+        console.error("Session check failed", e);
+        currentState.user = null;
+        updateAuthUI();
+    }
+}
 
         // --- 状態管理 ---
         let currentState = {
@@ -8271,174 +8291,79 @@ ${getShareUrl()}`;
             window.open(intent, '_blank');
         }
 
-        // 参拝記録データの読み込みと描画
-    // プロフィール機能（アイコン、自己紹介など）は排除し、数値とバッジのみを扱います
-    async function loadMyStats() {
-        if (!currentState.user) return;
-
-        try {
-            // APIからユーザー情報を取得
-            // ※バックエンドのAPIは既存のものを流用しますが、表示には stats と badges しか使いません
-            const res = await fetch(`${API_BASE}/api/user/profile?username=${encodeURIComponent(currentState.user.username)}`);
-            
-            if (res.ok) {
-                const data = await res.json();
-                
-                // 1. 数値データの反映 (HTML側に id="stat-total" 等がある前提)
-                const statTotal = document.getElementById('stat-total');
-                const statDaikichi = document.getElementById('stat-daikichi');
-                const statStreak = document.getElementById('stat-streak');
-
-                if (statTotal) statTotal.textContent = (data.stats.totalDraws || 0).toLocaleString();
-                if (statDaikichi) statDaikichi.textContent = (data.stats.daikichiCount || 0).toLocaleString();
-                if (statStreak) {
-                    // 御朱印日数（連続参拝など）
-                    statStreak.innerHTML = `${(data.stats.goshuinCount || 0).toLocaleString()}<span class="text-xs font-normal text-gray-400 ml-1">日</span>`;
-                }
-
-                // 2. 功徳の証（バッジ）リストの描画
-                const badgeContainer = document.getElementById('stats-badge-list');
-                if (badgeContainer) {
-                    if (!data.badges || data.badges.length === 0) {
-                        badgeContainer.innerHTML = '<p class="text-center text-gray-500 col-span-full py-4">まだ実績はありません</p>';
-                    } else {
-                        badgeContainer.innerHTML = data.badges.map(b => {
-                            const isUnlocked = b.unlocked;
-                            
-                            // ロック状態のスタイル定義
-                            const iconColor = isUnlocked ? 'text-yellow-600' : 'text-gray-300';
-                            const bgClass = isUnlocked 
-                                ? 'bg-yellow-50 dark:bg-yellow-900/20 border-yellow-200' 
-                                : 'bg-gray-100 dark:bg-zinc-800 border-gray-200 dark:border-gray-700';
-                            const grayscale = isUnlocked ? '' : 'grayscale opacity-50';
-                            
-                            const statusText = isUnlocked 
-                                ? `<span class="text-yellow-600 font-bold"><i class="bi bi-check-circle-fill"></i> 解除済み</span>`
-                                : `<span class="text-gray-400"><i class="bi bi-lock-fill"></i> 未獲得</span>`;
-
-                            return `
-                            <div class="flex items-center gap-3 p-3 rounded-lg border ${bgClass} transition">
-                                <div class="w-12 h-12 flex-shrink-0 flex items-center justify-center rounded-full bg-white dark:bg-black text-2xl ${iconColor} shadow-sm ${grayscale}">
-                                    <i class="bi ${b.icon}"></i>
-                                </div>
-                                <div class="flex-1 min-w-0">
-                                    <h4 class="font-bold text-sm truncate ${isUnlocked ? 'text-gray-800 dark:text-gray-100' : 'text-gray-500'}">${b.name}</h4>
-                                    <p class="text-[10px] text-gray-500 truncate mb-1">${b.description}</p>
-                                    <div class="text-[10px]">${statusText}</div>
-                                </div>
-                            </div>
-                            `;
-                        }).join('');
-                    }
-                }
-            } else {
-                console.error("Stats load failed: server error");
-            }
-        } catch (e) {
-            console.error("Stats load failed", e);
-        }
-    }
-
-     // ==========================================
-    //  プロフィール・参拝者台帳システム (軽量修正版)
+        // ==========================================
+    //  プロフィール・参拝者台帳システム (変数重複修正版)
     // ==========================================
 
     // プロフィールボタン（ナビゲーション）の挙動
-    // ※複雑なプロフィール画面ではなく、シンプルなアカウント設定画面を開きます
     function handleProfileClick() {
         if (currentState.user) {
-            // ログイン中：現在の情報を画面にセット
-            const nameEl = document.getElementById('profile-current-username');
-            const mailEl = document.getElementById('profile-current-email');
-            
-            if(nameEl) nameEl.textContent = currentState.user.username;
-            if(mailEl) mailEl.textContent = currentState.user.email;
-            
-            // 入力欄をクリア
-            const newNameInput = document.getElementById('profile-new-username');
-            const newPassInput = document.getElementById('profile-new-password');
-            if(newNameInput) newNameInput.value = '';
-            if(newPassInput) newPassInput.value = '';
-
-            // シンプルな設定画面を表示
-            showView('profile');
+            // ログイン中なら自分のプロフィールを読み込んで表示
+            loadUserProfile(currentState.user.username);
         } else {
             // 未ログインなら認証画面へ
             showView('auth');
         }
     }
 
-    // ユーザー名・パスワードの変更処理
-    async function updateProfile() {
-        const newName = document.getElementById('profile-new-username').value;
-        const newPass = document.getElementById('profile-new-password').value;
-        
-        if(!newName && !newPass) return alert("変更内容を入力してください");
-        
+    // ユーザープロフィールの読み込み
+    async function loadUserProfile(username) {
         showLoading(true);
         try {
-            // サーバーへ変更リクエスト送信
-            const res = await authFetch(`${API_BASE}/api/user/update`, {
-                method: 'POST',
-                headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify({
-                    newUsername: newName || undefined,
-                    newPassword: newPass || undefined
-                })
-            });
-            const data = await res.json();
+            // 自分のデータかどうか判定
+            const isMe = currentState.user && currentState.user.username === username;
             
-            if(data.success) {
-                alert("更新しました");
-                
-                // ユーザー名を変更した場合は画面と状態を即時更新
-                if(newName) {
-                    currentState.user.username = newName;
-                    const nameEl = document.getElementById('profile-current-username');
-                    if(nameEl) nameEl.textContent = newName;
-                    updateAuthUI(); // ナビバーの表示も更新
-                }
-                
-                // 入力欄をクリア
-                document.getElementById('profile-new-username').value = '';
-                document.getElementById('profile-new-password').value = '';
+            // APIからデータ取得
+            const res = await fetch(`${API_BASE}/api/user/profile?username=${encodeURIComponent(username)}`);
+            
+            if (res.ok) {
+                const data = await res.json();
+                data.isMe = isMe; // 自分かどうかのフラグを付与
+                renderProfilePage(data);
+                showView('profile'); // プロフィールビューを表示
             } else {
-                alert("更新失敗: " + (data.error || "不明なエラー"));
+                showToast("ユーザー情報の取得に失敗しました", "error");
             }
-        } catch(e) { 
+        } catch (e) {
             console.error(e);
-            alert("通信エラーが発生しました"); 
-        }
-        finally { 
-            showLoading(false); 
+            showToast("通信エラーが発生しました", "error");
+        } finally {
+            showLoading(false);
         }
     }
 
-    // アカウント削除処理
-    async function deleteAccount() {
-        if(!confirm("本当にアカウントを削除しますか？\n履歴やお気に入りデータも完全に消去されます。")) return;
-        
-        showLoading(true);
-        try {
-            const res = await authFetch(`${API_BASE}/api/user/delete`, {
-                method: 'POST',
-                headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify({})
-            });
+        async function deleteAccount() {
+            if(!confirm("本当にアカウントを削除しますか？\n履歴やお気に入りデータも完全に消去されます。")) return;
             
-            if(res.ok) {
-                alert("アカウントを削除しました。ご利用ありがとうございました。");
-                logout();
-            } else {
-                const data = await res.json();
-                alert("削除失敗: " + (data.message || data.error));
+            showLoading(true);
+            try {
+                // ★修正: authFetchに変更
+                const res = await authFetch(`${API_BASE}/api/user/delete`, {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({})
+                });
+                
+                const contentType = res.headers.get("content-type");
+                if (contentType && contentType.indexOf("application/json") !== -1) {
+                    const data = await res.json();
+                    if(data.success) {
+                        alert("アカウントを削除しました。ご利用ありがとうございました。");
+                        logout();
+                    } else {
+                        alert("削除失敗: " + (data.message || data.error));
+                    }
+                } else {
+                    const text = await res.text();
+                    console.error("Delete Error:", text);
+                    alert("削除処理中にエラーが発生しました。");
+                }
+            } catch(e) { 
+                console.error(e);
+                alert("通信エラーが発生しました。"); 
             }
-        } catch(e) { 
-            console.error(e);
-            alert("通信エラーが発生しました。"); 
+            finally { showLoading(false); }
         }
-        finally { showLoading(false); }
-    }
 
         // --- 認証系 (新: 選択 -> 入力 -> 認証) ---
         function startAuthFlow(mode) {
@@ -9273,84 +9198,65 @@ function changeHistoryPage(newPage) {
     // 既存の showView 関数を少し修正して、画面表示時に目次を生成するようにする
     const originalShowView = window.showView; // 既存の関数を退避（または直接書き換え）
     
-    // ==========================================
-    //  ビュー制御・参拝の記録システム (プロフィール廃止・統計特化版)
-    // ==========================================
-
-    // 画面切り替え関数 (既存のshowViewを完全に置き換えてください)
-    window.showView = function(viewId) {
-        // 1. まず全てのビューを非表示にする
-        document.querySelectorAll('.view-section').forEach(el => {
-            el.classList.remove('active');
-            // フェードアウトアニメーション待ち（即時非表示でも動作はする）
-            setTimeout(() => {
-                if(!el.classList.contains('active')) el.style.display = 'none';
-            }, 500);
-        });
-
-        // 2. ターゲットを表示
-        const target = document.getElementById(`view-${viewId}`);
-        if (target) {
-            target.style.display = 'block';
-            // リフロー強制（アニメーション用）
-            void target.offsetWidth; 
-            target.classList.add('active');
+    // --- 修正後の showView 関数 (stats対応) ---
+window.showView = function(viewId) {
+    // Labsのロック処理 (既存)
+    if(viewId === 'lab') {
+        const lock = document.getElementById('lab-lock');
+        const wrapper = document.getElementById('lab-content-wrapper');
+        if(!currentState.user) {
+            lock.classList.remove('hidden');
+            wrapper.classList.add('lab-blurred');
+        } else {
+            lock.classList.add('hidden');
+            wrapper.classList.remove('lab-blurred');
         }
-        currentState.view = viewId;
+    }
 
-        // --- ビューごとの固有処理 ---
-
-        // ■ 参拝の記録 (stats) - プロフィールではなく統計のみを表示
-        if(viewId === 'stats') {
-            const lock = document.getElementById('stats-lock');
-            const wrapper = document.getElementById('stats-content-wrapper');
-            
-            if(!currentState.user) {
-                // 未ログイン時：ロック画面を表示 & 背景ぼかし
-                if(lock) lock.classList.remove('hidden');
-                if(wrapper) {
-                    wrapper.classList.add('lab-blurred');
-                    // データはダミー表示（ぼかしの下に見えるもの）
-                    const totalEl = document.getElementById('stat-total');
-                    if(totalEl) totalEl.textContent = "-";
-                    
-                    const daikichiEl = document.getElementById('stat-daikichi');
-                    if(daikichiEl) daikichiEl.textContent = "-";
-                    
-                    const streakEl = document.getElementById('stat-streak');
-                    if(streakEl) streakEl.textContent = "-";
-                    
-                    const badgeList = document.getElementById('stats-badge-list');
-                    if(badgeList) badgeList.innerHTML = '<div class="col-span-full text-center text-gray-400 py-10">記録がありません</div>';
-                }
-            } else {
-                // ログイン時：ロック解除 & データロード
-                if(lock) lock.classList.add('hidden');
-                if(wrapper) wrapper.classList.remove('lab-blurred');
-                loadMyStats(); // 統計データを読み込み
-            }
+    // ▼▼ 新規: 統計ページのロック処理 ▼▼
+    if(viewId === 'stats') {
+        const lock = document.getElementById('stats-lock');
+        const wrapper = document.getElementById('stats-content-wrapper');
+        
+        if(!currentState.user) {
+            // 未ログイン：ロック表示 & 背景ぼかし
+            lock.classList.remove('hidden');
+            wrapper.classList.add('lab-blurred'); // 既存のぼかしクラスを流用
+            // ダミー表示（空っぽだと寂しいので）
+            document.getElementById('stat-total').textContent = "-";
+            document.getElementById('stat-daikichi').textContent = "-";
+            document.getElementById('stat-streak').textContent = "-";
+            document.getElementById('stats-badge-list').innerHTML = '<div class="col-span-2 text-center text-gray-400 py-10">記録がありません</div>';
+        } else {
+            // ログイン済み：ロック解除 & データ読み込み
+            lock.classList.add('hidden');
+            wrapper.classList.remove('lab-blurred');
+            loadMyStats(); // データを取得して表示
         }
+    }
 
-        // ■ TENMEI Labs (lab)
-        if(viewId === 'lab') {
-            const lock = document.getElementById('lab-lock');
-            const wrapper = document.getElementById('lab-content-wrapper');
-            if(!currentState.user) {
-                if(lock) lock.classList.remove('hidden');
-                if(wrapper) wrapper.classList.add('lab-blurred');
-            } else {
-                if(lock) lock.classList.add('hidden');
-                if(wrapper) wrapper.classList.remove('lab-blurred');
-            }
-        }
+    // 画面切り替え (既存)
+    document.querySelectorAll('.view-section').forEach(el => {
+        el.classList.remove('active');
+        setTimeout(() => {
+            if(!el.classList.contains('active')) el.style.display = 'none';
+        }, 500);
+    });
+    
+    const target = document.getElementById(`view-${viewId}`);
+    if (target) {
+        target.style.display = 'block';
+        void target.offsetWidth; 
+        target.classList.add('active');
+    }
+    currentState.view = viewId;
 
-        // その他の初期化処理
-        if(viewId === 'draw') resetOmikujiPool();
-        if(viewId === 'history') loadHistory();
-        if(viewId === 'prefecture') renderPrefectureRanking();
-        if(viewId === 'about' || viewId === 'privacy') initTOC(viewId);
-        if(viewId === 'omamori') OmamoriSystem.reset();
-    };
+    if(viewId === 'draw') resetOmikujiPool();
+    if(viewId === 'history') loadHistory();
+    if(viewId === 'prefecture') renderPrefectureRanking();
+    if(viewId === 'about' || viewId === 'privacy') initTOC(viewId);
+    if(viewId === 'omamori') OmamoriSystem.reset();
+};
 
 // ==========================================
     //  プロフィール・参拝者台帳システム (軽量修正版)
@@ -9365,8 +9271,454 @@ function changeHistoryPage(newPage) {
             // 未ログインなら認証画面へ
             showView('auth');
         }
+    }
 
+    // ユーザープロフィールの読み込み
+    async function loadUserProfile(username) {
+        showLoading(true);
+        try {
+            // 自分のデータかどうか判定
+            const isMe = currentState.user && currentState.user.username === username;
+            
+            // APIからデータ取得
+            const res = await fetch(`${API_BASE}/api/user/profile?username=${encodeURIComponent(username)}`);
+            
+            if (res.ok) {
+                const data = await res.json();
+                data.isMe = isMe; // 自分かどうかのフラグを付与
+                renderProfilePage(data);
+                showView('profile'); // プロフィールビューを表示（HTML側に id="view-profile" が必要）
+            } else {
+                showToast("ユーザー情報の取得に失敗しました", "error");
+            }
+        } catch (e) {
+            console.error(e);
+            showToast("通信エラーが発生しました", "error");
+        } finally {
+            showLoading(false);
+        }
+    }
+
+    // プロフィール画面の描画 (バッジ・フォロー・ブロック・検索・掲示板 削除済み)
+    function renderProfilePage(data) {
+        const container = document.querySelector('#view-profile'); // 既存のセクションをターゲットに
+        if (!container) return;
+
+        // ビューの中身を一度クリアして再構築
+        container.innerHTML = '';
+
+        // 1. 実績バッジのHTML生成
+        let badgesHtml = '';
+        if (data.badges && data.badges.length > 0) {
+            badgesHtml = data.badges.map(b => {
+                // 未獲得は表示しない、あるいはグレーアウト（ここではグレーアウト方式）
+                const opacity = b.unlocked ? 'opacity-100' : 'opacity-40 grayscale';
+                const bgClass = b.unlocked ? 'bg-yellow-50 dark:bg-yellow-900/20 border-yellow-200' : 'bg-gray-100 dark:bg-zinc-800 border-gray-200';
+                
+                return `
+                    <div class="flex items-center gap-3 p-3 rounded-lg border ${bgClass} ${opacity}">
+                        <div class="text-2xl text-yellow-600"><i class="bi ${b.icon}"></i></div>
+                        <div>
+                            <div class="text-xs font-bold">${b.name}</div>
+                            <div class="text-[10px] text-gray-500">${b.description}</div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        // 2. 日付フォーマット
+        let joined = "----/--/--";
+        if (data.joinDate) {
+            const d = new Date(data.joinDate);
+            if (!isNaN(d.getTime())) {
+                joined = `${d.getFullYear()}/${d.getMonth() + 1}/${d.getDate()}`;
+            }
+        }
+
+        // 3. アクションボタン（自分なら編集・ログアウト、他人なら何もなし）
+        let actionBtnHtml = '';
+        if (data.isMe) {
+            actionBtnHtml = `
+                <div class="flex gap-2 mt-4 justify-center md:justify-end">
+                    <button onclick="openEditProfileModal('${escapeHtml(data.bio)}', '${escapeHtml(data.title)}', '${data.icon}', '${data.color}')" 
+                            class="px-4 py-2 bg-indigo-600 text-white rounded-lg font-bold text-sm hover:opacity-90 shadow-md">
+                        <i class="bi bi-pencil-square"></i> プロフィール編集
+                    </button>
+                    <button onclick="logout()" class="px-4 py-2 bg-gray-500 text-white rounded-lg font-bold text-sm hover:opacity-90 shadow-md">
+                        <i class="bi bi-box-arrow-right"></i> ログアウト
+                    </button>
+                </div>
+            `;
+        }
+
+        // 4. アイコンの色設定
+        const iconColorMap = {
+            'gray': '#6b7280', 'red': '#ef4444', 'blue': '#3b82f6', 'green': '#10b981', 
+            'yellow': '#eab308', 'purple': '#a855f7', 'pink': '#ec4899', 'black': '#1f2937'
+        };
+        const iconColor = iconColorMap[data.color] || '#6b7280';
+        const iconStyle = `color: ${iconColor}; border-color: ${iconColor};`;
+
+        // 5. HTML組み立て（シンプル版）
+        const html = `
+            <div class="max-w-2xl mx-auto bg-white dark:bg-zinc-900 rounded-xl shadow overflow-hidden relative mt-10">
+                <!-- ヘッダー背景 -->
+                <div class="h-32 bg-gradient-to-r from-gray-800 to-gray-600 relative"></div>
+                
+                <!-- アイコン -->
+                <div class="absolute top-20 left-6 w-24 h-24 rounded-full bg-white dark:bg-zinc-900 border-4 border-white dark:border-zinc-800 flex items-center justify-center shadow-lg">
+                    <div class="text-5xl" style="color: ${iconColor};">
+                        <i class="bi ${data.icon || 'bi-person'}"></i>
+                    </div>
+                </div>
+
+                <div class="pt-16 px-6 pb-6">
+                    <div class="flex justify-between items-start flex-wrap">
+                        <div>
+                            <h2 class="text-2xl font-black text-gray-800 dark:text-gray-100 flex items-center gap-2">
+                                ${escapeHtml(data.username)}
+                            </h2>
+                            <p class="text-sm text-gray-500 font-bold mt-1">
+                                <span class="bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300 px-2 py-0.5 rounded border border-gray-300 dark:border-gray-700">
+                                    ${escapeHtml(data.title || '初詣の旅人')}
+                                </span>
+                                <span class="ml-2"><i class="bi bi-calendar"></i> 開始: ${joined}</span>
+                            </p>
+                        </div>
+                        ${actionBtnHtml}
+                    </div>
+
+                    <!-- 自己紹介 -->
+                    <div class="mt-6 p-4 rounded-lg bg-gray-50 dark:bg-zinc-800 border border-gray-200 dark:border-gray-700 text-sm leading-relaxed text-gray-700 dark:text-gray-300">
+                        <div style="white-space: pre-wrap;">${escapeHtml(data.bio || '自己紹介はまだありません。')}</div>
+                    </div>
+
+                    <!-- 統計情報 -->
+                    <h3 class="font-bold text-lg mt-8 mb-4 border-l-4 border-red-500 pl-3">参拝記録</h3>
+                    <div class="grid grid-cols-3 gap-4 text-center mb-8">
+                        <div class="p-3 bg-gray-50 dark:bg-zinc-800 rounded border border-gray-200 dark:border-gray-700">
+                            <div class="text-2xl font-black text-red-600">${data.stats.totalDraws}</div>
+                            <div class="text-xs text-gray-500">総参拝数</div>
+                        </div>
+                        <div class="p-3 bg-gray-50 dark:bg-zinc-800 rounded border border-gray-200 dark:border-gray-700">
+                            <div class="text-2xl font-black text-yellow-600">${data.stats.daikichiCount}</div>
+                            <div class="text-xs text-gray-500">大吉獲得</div>
+                        </div>
+                        <div class="p-3 bg-gray-50 dark:bg-zinc-800 rounded border border-gray-200 dark:border-gray-700">
+                            <div class="text-2xl font-black text-purple-600">${data.stats.goshuinCount}</div>
+                            <div class="text-xs text-gray-500">参拝日数</div>
+                        </div>
+                    </div>
+
+                    <!-- 実績バッジ一覧 -->
+                    <h3 class="font-bold text-lg mb-4 border-l-4 border-yellow-500 pl-3">功徳の証</h3>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                        ${badgesHtml}
+                    </div>
+                    ${badgesHtml === '' ? '<p class="text-gray-400 text-sm">まだ実績はありません</p>' : ''}
+                </div>
+            </div>
+        `;
+
+        container.innerHTML = html;
+
+        // 自分の実績情報をグローバル変数に保存（実績一覧モーダル用）
+        if (data.isMe && data.badges) {
+            window.myBadges = data.badges.filter(b => b.unlocked).map(b => b.id);
+        }
+    }
+
+    // --- プロフィール編集関連 ---
+
+    // 編集モーダルを開く
+    function openEditProfileModal(bio, title, icon, color) {
+        document.getElementById('edit-bio').value = (bio === "自己紹介はまだありません。") ? "" : bio;
+        document.getElementById('edit-title').value = title;
         
+        // 選択状態の初期化
+        selectedIcon = icon || 'bi-person';
+        selectedColor = color || 'gray';
+        
+        renderIconSelector();
+        renderColorSelector();
+        
+        document.getElementById('edit-profile-modal').style.display = 'flex';
+    }
+
+    // アイコン・色データ定義
+    const profileIcons = [
+        'bi-person', 'bi-flower1', 'bi-star', 'bi-heart', 
+        'bi-moon-stars', 'bi-sun', 'bi-tree', 'bi-cloud', 
+        'bi-droplet', 'bi-lightning', 'bi-gem', 'bi-fire', 'bi-snow'
+    ];
+    const profileColors = ['gray', 'red', 'blue', 'green', 'yellow', 'purple', 'pink', 'black'];
+    
+    let selectedIcon = 'bi-person';
+    let selectedColor = 'gray';
+
+    // アイコン選択肢描画
+    function renderIconSelector() {
+        const container = document.getElementById('icon-selector');
+        if(!container) return;
+        container.innerHTML = profileIcons.map(ic => `
+            <div class="icon-option ${ic === selectedIcon ? 'selected' : ''} flex items-center justify-center text-xl cursor-pointer p-2 rounded border hover:bg-gray-100 dark:hover:bg-zinc-700 ${ic === selectedIcon ? 'border-red-500 bg-red-50 dark:bg-red-900/30' : 'border-gray-200 dark:border-gray-600'}" 
+                 onclick="selectedIcon='${ic}'; renderIconSelector()">
+                <i class="bi ${ic}"></i>
+            </div>
+        `).join('');
+    }
+
+    // 色選択肢描画
+    function renderColorSelector() {
+        const container = document.getElementById('color-selector');
+        if(!container) return;
+        const colorMap = { 'gray':'#9ca3af', 'red':'#ef4444', 'blue':'#3b82f6', 'green':'#10b981', 'yellow':'#eab308', 'purple':'#a855f7', 'pink':'#ec4899', 'black':'#1f2937' };
+        
+        container.innerHTML = profileColors.map(c => `
+            <div class="color-option ${c === selectedColor ? 'selected' : ''} w-8 h-8 rounded-full cursor-pointer border-2 ${c === selectedColor ? 'border-gray-900 dark:border-white scale-110' : 'border-transparent'}" 
+                 style="background-color: ${colorMap[c]}" 
+                 onclick="selectedColor='${c}'; renderColorSelector()"></div>
+        `).join('');
+    }
+
+    // 編集内容リセット
+    function resetProfileEdit() {
+        if(!confirm("プロフィールを初期状態に戻しますか？")) return;
+        document.getElementById('edit-bio').value = "";
+        document.getElementById('edit-title').value = "初詣の旅人";
+        selectedIcon = 'bi-person';
+        selectedColor = 'gray';
+        renderIconSelector();
+        renderColorSelector();
+    }
+
+    // 編集内容保存
+    async function saveProfileChanges() {
+        const bio = document.getElementById('edit-bio').value;
+        const title = document.getElementById('edit-title').value || "初詣の旅人";
+
+        showLoading(true);
+        try {
+            const res = await authFetch(`${API_BASE}/api/user/update_details`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ bio, title, icon: selectedIcon, color: selectedColor })
+            });
+            if (res.ok) {
+                showToast("プロフィールを更新しました", "success");
+                document.getElementById('edit-profile-modal').style.display = 'none';
+                loadUserProfile(currentState.user.username); // 再読み込み
+            } else {
+                alert("更新に失敗しました");
+            }
+        } catch(e) { console.error(e); }
+        finally { showLoading(false); }
+    }
+        // --- メニュー表示 ---
+        function toggleProfileMenu() {
+            const menu = document.getElementById('profile-menu-dropdown');
+            if(menu) menu.classList.toggle('active');
+            // 他をクリックしたら閉じるイベントを追加
+            document.addEventListener('click', function closeMenu(e) {
+                if (!e.target.closest('.profile-menu-container')) {
+                    if(menu) menu.classList.remove('active');
+                    document.removeEventListener('click', closeMenu);
+                }
+            });
+        }
+
+        // --- 認証モーダル表示 ---
+        function showVerifiedModal(type, username) {
+            let title = "", desc = "";
+            if (type === 'gold') {
+                title = "黄金の認証ユーザー";
+                desc = `${username} は、この「運勢・天命乃杜」の運営者、または開発に深く関わる特別なアカウントであることを証明します。<br><br>※このバッジは運営者のみに付与されます。`;
+            } else {
+                title = "認証済みユーザー";
+                desc = `${username} は、所定の手続きを経て本人確認が完了した、信頼できる公式アカウントであることを証明します。`;
+            }
+            showToast(`<div class="text-left"><h4 class="font-bold mb-1">${title}</h4><p class="text-xs">${desc}</p></div>`, 'info', '認証情報');
+        }
+
+        // --- 編集モーダルを開く ---
+        function openEditProfileModal(currentBio, currentTitle) {
+            document.getElementById('edit-bio').value = currentBio === "自己紹介はまだありません。" ? "" : currentBio;
+            document.getElementById('edit-title').value = currentTitle;
+            document.getElementById('edit-profile-modal').style.display = 'flex';
+        }
+
+        // --- プロフィール保存 ---
+        async function saveProfileChanges() {
+            const bio = document.getElementById('edit-bio').value;
+            const title = document.getElementById('edit-title').value || "初詣の旅人";
+
+            showLoading(true);
+            try {
+                const res = await authFetch(`${API_BASE}/api/user/update_details`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ bio, title })
+                });
+                if (res.ok) {
+                    showToast("プロフィールを更新しました", "success");
+                    document.getElementById('edit-profile-modal').style.display = 'none';
+                    // リロードして反映
+                    loadUserProfile(currentState.user.username);
+                } else {
+                    alert("更新に失敗しました");
+                }
+            } catch(e) { console.error(e); }
+            finally { showLoading(false); }
+        }
+
+       // --- フォロー機能 (エラー詳細表示版) ---
+        async function toggleFollow(username, action) {
+            if(!currentState.user) return showView('auth');
+            
+            showLoading(true);
+            
+            try {
+                const res = await authFetch(`${API_BASE}/api/user/follow`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ 
+                        targetUsername: username, 
+                        action: action 
+                    })
+                });
+                
+                // レスポンスがJSONかどうか確認
+                const contentType = res.headers.get("content-type");
+                if (contentType && contentType.includes("application/json")) {
+                    const data = await res.json();
+                    if(res.ok) {
+                        const msg = action === 'follow' ? 'フォローしました' : 'フォローを解除しました';
+                        showToast(msg, 'success');
+                        await loadUserProfile(username);
+                    } else {
+                        alert(data.error || "操作に失敗しました");
+                    }
+                } else {
+                    // JSONじゃないエラー（Workerがクラッシュした場合など）
+                    const text = await res.text();
+                    console.error("Server Error:", text);
+                    alert("サーバーエラーが発生しました。\n(詳細はコンソールを確認してください)");
+                }
+            } catch(e) { 
+                console.error(e);
+                alert("通信エラーが発生しました: " + e.message); 
+            } finally { 
+                showLoading(false); 
+            }
+        }
+        
+        // --- 「参拝者台帳」ボタンの挙動 ---
+        function openWorshipperBook() {
+            showView('profile-public');
+            
+            if (currentState.user) {
+                // ログイン中：自分のプロフィールを表示
+                loadUserProfile(currentState.user.username);
+            } else {
+                // 未ログイン：空の検索を実行して「最近のユーザー」を表示させる
+                // さらに、まだ誰も選択していない状態の画面を表示
+                const container = document.getElementById('public-profile-content');
+                container.innerHTML = `
+                    <div class="flex flex-col items-center justify-center h-[500px] text-gray-500">
+                        <i class="bi bi-people-fill text-6xl mb-4 text-gray-300"></i>
+                        <p class="text-lg font-bold">参拝者台帳</p>
+                        <p class="text-sm mt-2">上の検索バーからユーザーを探すか、<br>表示される候補から選択してください。</p>
+                    </div>
+                `;
+                handleUserSearch(''); // おすすめユーザーを検索候補に出す
+                document.querySelector('.user-search-container input').focus();
+            }
+        }
+        
+        // リストの状態管理
+        let followListState = { type: 'followers', username: '', page: 1 };
+
+        // リスト読み込み
+        async function loadFollowList(type, username, page = 1) {
+            followListState = { type, username, page };
+            const modal = document.getElementById('follow-list-modal');
+            const titleEl = document.getElementById('follow-list-title');
+            const contentEl = document.getElementById('follow-list-content');
+            const pagingEl = document.getElementById('follow-list-pagination');
+            
+            modal.style.display = 'flex';
+            titleEl.textContent = type === 'followers' ? 'フォロワー' : 'フォロー中';
+            contentEl.innerHTML = '<div class="text-center py-4"><div class="spinner-border text-red-500" role="status"></div> 読み込み中...</div>';
+            pagingEl.innerHTML = '';
+
+            try {
+                const res = await fetch(`${API_BASE}/api/user/follow_list?username=${encodeURIComponent(username)}&type=${type}&page=${page}`);
+                if (res.ok) {
+                    const data = await res.json();
+                    renderFollowListContent(data);
+                } else {
+                    contentEl.innerHTML = '<p class="text-center text-gray-500">読み込みに失敗しました</p>';
+                }
+            } catch (e) {
+                console.error(e);
+                contentEl.innerHTML = '<p class="text-center text-gray-500">通信エラー</p>';
+            }
+        }
+
+        // リスト描画
+        function renderFollowListContent(data) {
+            const contentEl = document.getElementById('follow-list-content');
+            const pagingEl = document.getElementById('follow-list-pagination');
+
+            if (data.users.length === 0) {
+                contentEl.innerHTML = '<p class="text-center text-gray-500 py-4">ユーザーがいません</p>';
+                return;
+            }
+
+            contentEl.innerHTML = data.users.map(u => `
+                <div class="follow-user-item" onclick="loadUserProfile('${u.username}'); document.getElementById('follow-list-modal').style.display='none';">
+                    <div class="flex items-center">
+                        <i class="bi bi-person-circle text-2xl mr-3 text-gray-400"></i>
+                        <span class="font-bold text-lg">${escapeHtml(u.username)}</span>
+                    </div>
+                    <i class="bi bi-chevron-right text-gray-400"></i>
+                </div>
+            `).join('');
+            
+            // ページネーション（既存の共通関数を使用するために、カスタムボタンを生成）
+            if (data.total > data.perPage) {
+                const totalPages = Math.ceil(data.total / data.perPage);
+                pagingEl.innerHTML = `
+                    <div class="flex justify-center gap-2 items-center">
+                        <button onclick="changeFollowListPage(${data.page - 1})" class="px-3 py-1 rounded border disabled:opacity-50" ${data.page === 1 ? 'disabled' : ''}>前へ</button>
+                        <span class="text-sm font-bold">${data.page} / ${totalPages}</span>
+                        <button onclick="changeFollowListPage(${data.page + 1})" class="px-3 py-1 rounded border disabled:opacity-50" ${data.page === totalPages ? 'disabled' : ''}>次へ</button>
+                    </div>
+                `;
+            } else {
+                pagingEl.innerHTML = '';
+            }
+        }
+
+        // リストのページ切り替え
+        function changeFollowListPage(newPage) {
+            loadFollowList(followListState.type, followListState.username, newPage);
+        }
+// アイコン・色データ
+        // ▼▼▼ 修正: 運営者用アイコンや、その他使いやすそうなアイコンを追加して開放します ▼▼▼
+        const profileIcons = [
+            'bi-person', 'bi-flower1', 'bi-star', 'bi-heart', 
+            'bi-moon-stars', 'bi-sun', 'bi-sun-fill', // ← 運営者の太陽アイコン
+            'bi-tree', 'bi-cloud', 'bi-droplet', 'bi-lightning', 
+            'bi-clipboard-check-fill', // ← テスト垢の点検アイコン
+            'bi-gem', 'bi-fire', 'bi-snow' // ついでに宝石、火、雪も追加
+        ];
+        
+        const profileColors = ['gray', 'red', 'blue', 'green', 'yellow', 'purple', 'pink', 'black'];
+         let selectedIcon = 'bi-person';
+        let selectedColor = 'gray';
+
         // 編集モーダルを開く
         function openEditProfileModal(bio, title, icon, color) {
             document.getElementById('edit-bio').value = bio === "自己紹介はまだありません。" ? "" : bio;
@@ -9432,7 +9784,25 @@ function changeHistoryPage(newPage) {
             finally { showLoading(false); }
         }
 
-        
+        async function toggleBlock(username, action) {
+            if(!confirm(`${username} を${action === 'block' ? 'ブロック' : 'ブロック解除'}しますか？`)) return;
+            
+            showLoading(true);
+            try {
+                const res = await authFetch(`${API_BASE}/api/user/block`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ targetUsername: username, action: action })
+                });
+                if(res.ok) {
+                    showToast(action === 'block' ? 'ブロックしました' : 'ブロックを解除しました', 'success');
+                    loadUserProfile(username);
+                } else {
+                    alert("操作に失敗しました");
+                }
+            } catch(e) { console.error(e); }
+            finally { showLoading(false); }
+        }
 
         // 認証詳細モーダル（Meta風 + 申請機能付き + 高画質黄金バッジ）
         function openVerifiedModal(type, username) {
@@ -9498,13 +9868,126 @@ function changeHistoryPage(newPage) {
             modal.style.display = 'flex';
         }
 
-        
+        // --- 実績一覧表示機能 ---
+        async function showAllBadgesModal() {
+            const modal = document.getElementById('all-badges-modal');
+            const listEl = document.getElementById('all-badges-list');
+            
+            modal.style.display = 'flex';
+            listEl.innerHTML = '<div class="col-span-full text-center py-8"><div class="spinner-border text-yellow-500" role="status"></div> 読み込み中...</div>';
 
-        
+            try {
+                // マスターデータを取得
+                const res = await fetch(`${API_BASE}/api/badges`);
+                if(res.ok) {
+                    const data = await res.json();
+                    const allBadges = data.badges;
+                    
+                    // 自分の持っているバッジID（renderProfilePageで保存したもの、なければ空）
+                    const myOwnedIds = window.myBadges || [];
 
-        
+                    let html = '';
+                    allBadges.forEach(b => {
+                        const isUnlocked = myOwnedIds.includes(b.id);
+                        // 未獲得ならグレーアウト
+                        const opacity = isUnlocked ? 'opacity-100' : 'opacity-50 grayscale';
+                        const statusIcon = isUnlocked ? '<i class="bi bi-check-circle-fill text-green-500"></i>' : '<i class="bi bi-lock-fill text-gray-400"></i>';
+                        const bgClass = isUnlocked ? 'bg-yellow-50 dark:bg-yellow-900/20 border-yellow-200' : 'bg-gray-100 dark:bg-zinc-800 border-gray-300';
+                        
+                        html += `
+                            <div class="flex items-center gap-4 p-4 rounded-lg border ${bgClass} ${opacity} transition hover:opacity-100">
+                                <div class="w-12 h-12 flex-shrink-0 flex items-center justify-center rounded-full bg-white dark:bg-black text-2xl text-yellow-600 shadow-sm">
+                                    <i class="bi ${b.icon}"></i>
+                                </div>
+                                <div class="flex-1">
+                                    <div class="flex justify-between items-start">
+                                        <h4 class="font-bold text-sm">${b.name}</h4>
+                                        ${statusIcon}
+                                    </div>
+                                    <p class="text-xs text-gray-600 dark:text-gray-400 mt-1">${b.description}</p>
+                                    <p class="text-[10px] text-gray-400 mt-1 font-mono">条件: ${b.condition_type} >= ${b.condition_value}</p>
+                                </div>
+                            </div>
+                        `;
+                    });
+                    listEl.innerHTML = html;
+                }
+            } catch(e) {
+                console.error(e);
+                listEl.innerHTML = '<p class="text-center text-red-500">読み込みに失敗しました</p>';
+            }
+        }
 
-       
+        // 掲示板データの読み込み
+        async function loadBoard(page = 1) {
+            const list = document.getElementById('board-list');
+            try {
+                const res = await fetch(`${API_BASE}/api/board/list?page=${page}`);
+                if(res.ok) {
+                    const data = await res.json();
+                    renderBoardList(data);
+                }
+            } catch(e) { console.error(e); }
+        }
+
+        function renderBoardList(data) {
+            const container = document.getElementById('board-list');
+            container.innerHTML = data.posts.map(p => {
+                const date = new Date(p.created_at).toLocaleString();
+                // おみくじ引用がある場合
+                const omikuji = p.omikuji_result ? JSON.parse(p.omikuji_result) : null;
+                const omikujiHtml = omikuji ? `<div class="bg-red-50 dark:bg-red-900/10 p-2 rounded border-l-4 border-red-500 text-sm mb-2">引用運勢: <strong>${omikuji.type}</strong></div>` : '';
+
+                return `
+                    <div class="themed-card p-4 rounded-xl shadow-sm border border-gray-100">
+                        <div class="flex justify-between items-center mb-2">
+                            <span class="font-bold text-indigo-600" onclick="loadUserProfile('${p.username}')" style="cursor:pointer">@${escapeHtml(p.username)}</span>
+                            <span class="text-[10px] text-gray-400">${date}</span>
+                        </div>
+                        ${omikujiHtml}
+                        <p class="text-sm mb-4" style="white-space: pre-wrap;">${escapeHtml(p.content)}</p>
+                        <div class="flex gap-4 border-t pt-3">
+                            <button onclick="reactPost(${p.id}, 'like')" class="text-xs themed-text-sub hover:text-red-500">
+                                <i class="bi bi-heart"></i> ${p.reaction_count || 0}
+                            </button>
+                            <button onclick="openCommentModal(${p.id})" class="text-xs themed-text-sub hover:text-blue-500">
+                                <i class="bi bi-chat"></i> ${p.comment_count || 0}
+                            </button>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+            
+            // ページネーション描画
+            renderServerPaginationForBoard(data.page, data.total, 10);
+        }
+
+        async function submitBoardPost() {
+            const content = document.getElementById('board-post-input').value;
+            if(!content) return;
+            
+            // 直近のおみくじ結果を引用するかどうか（任意）
+            let omikuji_result = null;
+            if (currentState.lastResult) {
+                omikuji_result = JSON.stringify({ type: currentState.lastResult.type });
+            }
+
+            try {
+                const res = await authFetch(`${API_BASE}/api/board/post`, {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({ content, omikuji_result })
+                });
+                if(res.ok) {
+                    showToast("掲示板に奉納しました", "success");
+                    document.getElementById('board-post-input').value = "";
+                    loadBoard(1);
+                } else {
+                    const data = await res.json();
+                    showToast(data.message, "warning");
+                }
+            } catch(e) { console.error(e); }
+        }
 
         
 // ==========================================
@@ -9520,6 +10003,10 @@ function changeHistoryPage(newPage) {
         "決意": ["明日から本気出します。", "迷いを断ち切りました。", "新しい一歩を踏み出します。", "自分を信じて進みます。", "過去は振り返りません。"]
     };
 
+    const BoardSystem = {
+        selectedCategory: "挨拶",
+        selectedContent: null,
+        attachedOmikuji: null,
 
         // 初期化（カテゴリボタン生成など）
         init: function() {
@@ -9811,7 +10298,98 @@ function changeHistoryPage(newPage) {
 
     // 初期化実行 (window.onload内などで呼ぶ)
     // BoardSystem.init();
-       
+
+        // 申請送信
+        async function submitVerification() {
+            const reason = document.getElementById('verify-reason').value;
+            if(!reason) return alert("申請理由を入力してください");
+
+            showLoading(true);
+            try {
+                const res = await authFetch(`${API_BASE}/api/verification/apply`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ reason })
+                });
+                const data = await res.json();
+                if(res.ok) {
+                    showToast("申請を受け付けました。審査をお待ちください。", "success");
+                    document.getElementById('verification-apply-modal').style.display='none';
+                } else {
+                    alert("申請エラー: " + data.error);
+                }
+            } catch(e) { console.error(e); alert("通信エラー"); }
+            finally { showLoading(false); }
+        }
+
+        // 管理者パネルを開く
+        async function openAdminVerifyPanel() {
+            const modal = document.getElementById('admin-verify-modal');
+            const list = document.getElementById('admin-verify-list');
+            modal.style.display = 'flex';
+            list.innerHTML = '<div class="text-center"><div class="spinner-border text-yellow-500"></div></div>';
+
+            try {
+                const res = await authFetch(`${API_BASE}/api/admin/verifications`, { method: 'GET' });
+                if(res.ok) {
+                    const data = await res.json();
+                    renderAdminRequests(data.requests);
+                } else {
+                    list.innerHTML = '<p class="text-red-500 text-center">権限がありません</p>';
+                }
+            } catch(e) { list.innerHTML = '<p class="text-red-500 text-center">エラー発生</p>'; }
+        }
+
+        // 申請リスト描画
+        function renderAdminRequests(requests) {
+            const list = document.getElementById('admin-verify-list');
+            if(requests.length === 0) {
+                list.innerHTML = '<p class="text-gray-500 text-center py-4">現在、保留中の申請はありません。</p>';
+                return;
+            }
+
+            list.innerHTML = requests.map(req => `
+                <div class="bg-gray-50 dark:bg-zinc-800 p-4 rounded-lg border border-gray-200 dark:border-gray-700">
+                    <div class="flex justify-between items-start mb-2">
+                        <div>
+                            <span class="font-bold text-lg">${escapeHtml(req.username)}</span>
+                            <div class="text-xs text-gray-400">${req.user_email}</div>
+                        </div>
+                        <span class="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded">申請中</span>
+                    </div>
+                    <div class="bg-white dark:bg-black p-3 rounded text-sm text-gray-700 dark:text-gray-300 mb-3 border">
+                        ${escapeHtml(req.reason)}
+                    </div>
+                    <div class="flex gap-2 justify-end">
+                        <button onclick="decideVerification(${req.id}, 'reject')" class="px-3 py-1 bg-gray-200 text-gray-700 rounded hover:bg-gray-300 text-sm">却下</button>
+                        <button onclick="decideVerification(${req.id}, 'approve')" class="px-4 py-1 bg-blue-600 text-white font-bold rounded hover:bg-blue-700 text-sm">承認 (バッジ付与)</button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // 審査実行
+        async function decideVerification(id, decision) {
+            if(!confirm(decision === 'approve' ? "このユーザーに公式バッジを付与しますか？" : "申請を却下しますか？")) return;
+
+            showLoading(true);
+            try {
+                const res = await authFetch(`${API_BASE}/api/admin/decide_verification`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ request_id: id, decision })
+                });
+                if(res.ok) {
+                    showToast(decision === 'approve' ? "承認しました" : "却下しました", "success");
+                    openAdminVerifyPanel(); // リスト更新
+                } else {
+                    alert("処理失敗");
+                }
+            } catch(e) { console.error(e); }
+            finally { showLoading(false); }
+        }
+
+            
     </script>
 </body>
 </html>
