@@ -3898,8 +3898,8 @@ function escapeHtml(str) {
                     <p>そのため、混乱を招く数値だけの表示枠を撤廃し、今後は<strong>「功徳の証（バッジ）」にて大吉の獲得状況をご確認いただく</strong>仕様へと統一いたしました。皆様が引き当てた幸運は、バッジの中に確実に刻まれておりますのでご安心ください。</p>
 
                     <h3>2. データベース放浪の旅、その終着点「Turso」</h3>
-                    <p>当サイトは、「1日10万回の書き込み」と「0.1秒以内の応答」を両立させるため、短期間のうちに複数のデータベース技術を渡り歩いてきました。そして今、SQLiteをベースとしたエッジデータベース<strong>「Turso（ターソ）」</strong>に定住することを決意しました。</p>
-                    <p>なぜ、流行のSupabaseや、最強のTiDBではなく、Tursoを選んだのか。その技術的な比較表をここに公開いたします。</p>
+                    <p>当サイトは、「1日10万回の書き込み」と「0.1秒以内の応答」を無料プランの範囲内で両立させるため、短期間のうちに複数のデータベース技術を渡り歩いてきました。そして今、SQLiteをベースとしたエッジデータベース<strong>「Turso（ターソ）」</strong>に定住することを決意しました。</p>
+                    <p>なぜ、流行のSupabaseや、最強スペックのTiDBではなく、Tursoを選んだのか。その技術的な比較と選定理由（裏話）をここに公開いたします。</p>
 
                     <div class="overflow-x-auto mb-8">
                         <table class="comparison-table" style="min-width: 100%; font-size: 0.8rem;">
@@ -3913,35 +3913,31 @@ function escapeHtml(str) {
                             </thead>
                             <tbody>
                                 <tr>
-                                    <td class="p-2 border border-gray-300 font-bold">通信方式</td>
-                                    <td class="p-2 border border-gray-300">TCP接続 (重い)</td>
-                                    <td class="p-2 border border-gray-300">TCP接続 (重い)</td>
-                                    <td class="p-2 border border-gray-300 font-bold">HTTP (Webと同じ・爆速)</td>
+                                    <td class="p-2 border border-gray-300 font-bold">無料枠の容量</td>
+                                    <td class="p-2 border border-gray-300 text-red-600">500 MB<br><span class="text-xs text-gray-400">（少し厳しい）</span></td>
+                                    <td class="p-2 border border-gray-300 font-bold">5 GiB<br><span class="text-xs text-gray-400">（理想的）</span></td>
+                                    <td class="p-2 border border-gray-300 font-bold text-emerald-600">5 GB<br><span class="text-xs text-gray-400">（十分な広さ）</span></td>
                                 </tr>
                                 <tr>
-                                    <td class="p-2 border border-gray-300 font-bold">エッジ適性</td>
-                                    <td class="p-2 border border-gray-300">△ コネクションプールの管理が困難</td>
-                                    <td class="p-2 border border-gray-300">△ サーバーレスだが初期接続に遅延あり</td>
-                                    <td class="p-2 border border-gray-300 font-black text-lg text-emerald-600">◎ 最適 (Over HTTP)</td>
+                                    <td class="p-2 border border-gray-300 font-bold">処理能力上限</td>
+                                    <td class="p-2 border border-gray-300">CPU共有</td>
+                                    <td class="p-2 border border-gray-300">50M RU/月</td>
+                                    <td class="p-2 border border-gray-300 font-bold">読込 5億回 / 書込 1000万回</td>
                                 </tr>
                                 <tr>
-                                    <td class="p-2 border border-gray-300 font-bold">書き込み耐性</td>
-                                    <td class="p-2 border border-gray-300">非常に高い</td>
-                                    <td class="p-2 border border-gray-300">無限 (分散型)</td>
-                                    <td class="p-2 border border-gray-300">非常に高い (数億回/月まで余裕)</td>
-                                </tr>
-                                <tr>
-                                    <td class="p-2 border border-gray-300 font-bold">採用の決め手</td>
-                                    <td class="p-2 border border-gray-300">機能は豊富だが、今回には重厚すぎた</td>
-                                    <td class="p-2 border border-gray-300">最強だが、小規模な参照にはオーバースペック</td>
-                                    <td class="p-2 border border-gray-300 font-bold">「Webサイトを表示する」という用途に特化した軽快さ</td>
+                                    <td class="p-2 border border-gray-300 font-bold">不採用の理由</td>
+                                    <td class="p-2 border border-gray-300">将来的に容量不足になる懸念があったため</td>
+                                    <td class="p-2 border border-gray-300 font-bold text-red-600">移行時にサイトが完全停止する致命的な不具合が発生</td>
+                                    <td class="p-2 border border-gray-300 font-black text-lg text-emerald-600">◎ 採用</td>
                                 </tr>
                             </tbody>
                         </table>
                     </div>
 
-                    <p>SupabaseもTiDBも素晴らしい技術ですが、当サイトのような「ユーザーが訪れた瞬間に結果を返す」というスピード勝負の環境においては、HTTP通信で軽量に動作する<strong>Turso</strong>こそが、現在の最適解であると判断いたしました。</p>
-                    <p>この強固で軽快な礎の上で、これからも皆様に快適な「天命」をお届けしてまいります。</p>
+                    <p>正直に申し上げますと、スペック上は<strong>TiDB</strong>（5GiB / 5000万リクエストユニット）が最も理想的でした。しかし、実際に移行を試みたところ、当サイトのシステムとの相性問題により、画面が一切表示されなくなる致命的な事態に陥りました。動かないことにはどうしようもありません。</p>
+                    <p>一方、<strong>Supabase</strong>は安定していますが、無料枠の容量が<strong>500MB</strong>と厳しく、長く運営するには不安が残りました。</p>
+                    <p>最終的に選んだ<strong>Turso</strong>にも、「月間読み取り5億回（500M Reads）」「書き込み1000万回（10M Writes）」という制限は存在します。しかし、当サイトでは以前実施した「通信頻度の最適化（1分間隔更新）」や「キャッシュ活用」といった対策により、この制限には到底達しない設計となっております。</p>
+                    <p>この強固で軽快、そして身の丈に合った礎の上で、これからも皆様に快適な「天命」をお届けしてまいります。</p>
                 </div>
             `
         },
