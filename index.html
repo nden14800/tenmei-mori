@@ -8386,7 +8386,7 @@ ${getShareUrl()}`;
         }
 
         
-// --- 参拝の記録（統計＆実績）読み込み関数 [完全修正版] ---
+// --- 参拝の記録（統計＆実績）読み込み関数 [修正版] ---
 async function loadMyStats() {
     if (!currentState.user) return;
 
@@ -8411,12 +8411,11 @@ async function loadMyStats() {
                 statStreak.innerHTML = `${(data.stats.goshuinCount || 0).toLocaleString()}<span class="text-xs font-normal text-gray-400 ml-1">日</span>`;
             }
 
-            // 2. 実績達成率グラフの挿入（ここがエラーの原因でした）
-            // 安全策：挿入先がない場合は、新しく作って挿入する
-            let extraStatsGrid = document.getElementById('extra-stats-grid');
+            // 2. 実績達成率グラフの更新
             const statsWrapper = document.getElementById('stats-content-wrapper');
+            let extraStatsGrid = document.getElementById('extra-stats-grid');
             
-            // まだグラフ用の箱がない場合
+            // まだグラフ用の箱がない場合のみ作成
             if (!extraStatsGrid && statsWrapper) {
                 const div = document.createElement('div');
                 div.id = 'extra-stats-grid';
@@ -8428,6 +8427,7 @@ async function loadMyStats() {
                 }
             }
 
+            // 箱があれば中身を更新
             if (extraStatsGrid) {
                 const unlockedCount = data.badges.filter(b => b.unlocked).length;
                 const totalBadges = data.badges.length;
@@ -8507,7 +8507,6 @@ async function loadMyStats() {
     } catch (e) {
         console.error("Stats load failed", e);
     }
-}
 }
 
     // ユーザープロフィールの読み込み
