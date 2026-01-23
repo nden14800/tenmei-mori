@@ -8441,20 +8441,44 @@ async function loadMyStats() {
             // バッジリストの描画
             const badgeContainer = document.getElementById('stats-badge-list');
             if (badgeContainer) {
-                badgeContainer.innerHTML = data.badges.map(b => {
-                    const isUnlocked = b.unlocked;
-                    const opacity = isUnlocked ? 'opacity-100' : 'opacity-40 grayscale';
-                    const bgClass = isUnlocked ? 'bg-yellow-50 dark:bg-yellow-900/20 border-yellow-200' : 'bg-gray-100 dark:bg-zinc-800 border-gray-200';
-                    return `
-                        <div class="flex items-center gap-3 p-3 rounded-lg border ${bgClass} ${opacity} transition">
-                            <div class="text-2xl text-yellow-600"><i class="bi ${b.icon}"></i></div>
-                            <div>
-                                <div class="text-xs font-bold">${b.name}</div>
-                                <div class="text-[10px] text-gray-500">${b.description}</div>
-                            </div>
-                        </div>
-                    `;
-                }).join('');
+                // --- フロントエンド renderProfilePage または loadMyStats 内 ---
+
+badgeContainer.innerHTML = data.badges.map(b => {
+    const isUnlocked = b.unlocked;
+    const opacity = isUnlocked ? 'opacity-100' : 'opacity-80'; // 未解除でも少し見えるように
+    const bgClass = isUnlocked ? 'bg-yellow-50 dark:bg-yellow-900/20 border-yellow-200' : 'bg-gray-100 dark:bg-zinc-800 border-gray-200';
+    const iconColor = isUnlocked ? 'text-yellow-600' : 'text-gray-400';
+    const statusText = isUnlocked ? '<span class="text-yellow-600 font-bold">獲得済</span>' : '<span class="text-gray-500">未獲得</span>';
+
+    // 進捗バーの色
+    const barColor = isUnlocked ? 'bg-yellow-500' : 'bg-blue-500';
+
+    return `
+        <div class="flex flex-col p-3 rounded-lg border ${bgClass} ${opacity} transition">
+            <div class="flex items-center gap-3 mb-2">
+                <div class="text-2xl ${iconColor}"><i class="bi ${b.icon}"></i></div>
+                <div class="flex-1 min-w-0">
+                    <div class="flex justify-between">
+                        <div class="text-xs font-bold truncate">${b.name}</div>
+                        <div class="text-[10px]">${statusText}</div>
+                    </div>
+                    <div class="text-[10px] text-gray-500 truncate">${b.description}</div>
+                </div>
+            </div>
+            
+            <!-- 進捗バーエリア -->
+            <div class="w-full">
+                <div class="flex justify-between text-[10px] text-gray-500 mb-1">
+                    <span>進捗</span>
+                    <span class="font-mono">${b.current_val} / ${b.target_val}</span>
+                </div>
+                <div class="w-full bg-gray-200 dark:bg-gray-700 h-1.5 rounded-full overflow-hidden">
+                    <div class="${barColor} h-full rounded-full transition-all duration-500" style="width: ${b.progress}%"></div>
+                </div>
+            </div>
+        </div>
+    `;
+}).join('');
             }
         }
     } catch (e) {
