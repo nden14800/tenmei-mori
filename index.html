@@ -8358,95 +8358,82 @@ ${getShareUrl()}`;
             window.open(intent, '_blank');
         }
 
-        // 参拝記録データの読み込みと描画 (統計情報強化版)
-    async function loadMyStats() {
-        if (!currentState.user) return;
+        
+// 1. 「参拝の記録」：記事数を削除し、実績達成率のみを表示するように修正
+async function loadMyStats() {
+    if (!currentState.user) return;
 
-        try {
-            const res = await fetch(`${API_BASE}/api/user/profile?username=${encodeURIComponent(currentState.user.username)}`);
+    try {
+        const res = await fetch(`${API_BASE}/api/user/profile?username=${encodeURIComponent(currentState.user.username)}`);
+        
+        if (res.ok) {
+            const data = await res.json();
             
-            if (res.ok) {
-                const data = await res.json();
-                
-                // 1. 数値データの反映 (HTML側に id="stat-total" 等がある前提)
-                const statTotal = document.getElementById('stat-total');
-                const statDaikichi = document.getElementById('stat-daikichi');
-                const statStreak = document.getElementById('stat-streak');
+            // 数値データの反映
+            const statTotal = document.getElementById('stat-total');
+            const statDaikichi = document.getElementById('stat-daikichi');
+            const statStreak = document.getElementById('stat-streak');
 
-                if (statTotal) statTotal.textContent = (data.stats.totalDraws || 0).toLocaleString();
-                if (statDaikichi) statDaikichi.textContent = (data.stats.daikichiCount || 0).toLocaleString();
-                if (statStreak) {
-                    statStreak.innerHTML = `${(data.stats.goshuinCount || 0).toLocaleString()}<span class="text-xs font-normal text-gray-400 ml-1">日</span>`;
-                }
+            if (statTotal) statTotal.textContent = (data.stats.totalDraws || 0).toLocaleString();
+            if (statDaikichi) statDaikichi.textContent = (data.stats.daikichiCount || 0).toLocaleString();
+            if (statStreak) {
+                statStreak.innerHTML = `${(data.stats.goshuinCount || 0).toLocaleString()}<span class="text-xs font-normal text-gray-400 ml-1">日</span>`;
+            }
 
-                // 2. 追加統計情報の表示（記事数・実績達成率）
-                // 既存のHTML構造に追加する形で挿入
-                const extraStatsHtml = `
-                    <div class="grid grid-cols-3 gap-4 mb-8 text-center text-xs text-gray-500">
-                        <div class="bg-gray-50 dark:bg-zinc-800 p-2 rounded border border-gray-200 dark:border-gray-700">
-                            <div>社務所だより</div>
-                            <div class="text-lg font-bold text-gray-800 dark:text-gray-200">${newsData.length}件</div>
+            // 実績達成率のみを表示するエリア（記事数は削除）
+            const unlockedCount = data.badges.filter(b => b.unlocked).length;
+            const totalBadges = data.badges.length;
+            const percent = Math.round((unlockedCount / totalBadges) * 100);
+
+            const extraStatsHtml = `
+                <div class="mb-8 text-center">
+                    <div class="bg-gray-50 dark:bg-zinc-800 p-4 rounded-xl border border-gray-200 dark:border-gray-700 shadow-inner">
+                        <div class="text-xs text-gray-500 font-bold mb-1">功徳の証（実績達成率）</div>
+                        <div class="text-3xl font-black text-blue-600 dark:text-blue-400">
+                            ${percent}% 
+                            <span class="text-sm text-gray-400 font-normal ml-2">(${unlockedCount} / ${totalBadges})</span>
                         </div>
-                        <div class="bg-gray-50 dark:bg-zinc-800 p-2 rounded border border-gray-200 dark:border-gray-700">
-                            <div>神籤草子</div>
-                            <div class="text-lg font-bold text-gray-800 dark:text-gray-200">${columnData.length}件</div>
-                        </div>
-                        <div class="bg-gray-50 dark:bg-zinc-800 p-2 rounded border border-gray-200 dark:border-gray-700">
-                            <div>実績達成率</div>
-                            <div class="text-lg font-bold text-blue-600">${Math.round((data.badges.filter(b=>b.unlocked).length / data.badges.length)*100)}% <span class="text-xs text-gray-400">(${data.badges.filter(b=>b.unlocked).length}/${data.badges.length})</span></div>
+                        <div class="badge-progress-container mt-3 h-2">
+                            <div class="badge-progress-bar" style="width: ${percent}%"></div>
                         </div>
                     </div>
-                `;
-                
-                // 数値グリッドの下に挿入
-                const statGrid = document.querySelector('#stats-content-wrapper .grid');
-                if(statGrid && !document.getElementById('extra-stats-grid')) {
-                     const div = document.createElement('div');
-                     div.id = 'extra-stats-grid';
-                     div.innerHTML = extraStatsHtml;
-                     statGrid.parentNode.insertBefore(div, statGrid.nextSibling);
-                }
+                </div>
+            `;
+            
+            const statsWrapper = document.getElementById('stats-content-wrapper');
+            const oldExtra = document.getElementById('extra-stats-grid');
+            if (oldExtra) oldExtra.remove(); // 古いのがあれば削除
 
-                // 3. 功徳の証（バッジ）リストの描画
-                const badgeContainer = document.getElementById('stats-badge-list');
-                if (badgeContainer) {
-                    if (!data.badges || data.badges.length === 0) {
-                        badgeContainer.innerHTML = '<p class="text-center text-gray-500 col-span-full py-4">まだ実績はありません</p>';
-                    } else {
-                        badgeContainer.innerHTML = data.badges.map(b => {
-                            const isUnlocked = b.unlocked;
-                            
-                            const iconColor = isUnlocked ? 'text-yellow-600' : 'text-gray-300';
-                            const bgClass = isUnlocked 
-                                ? 'bg-yellow-50 dark:bg-yellow-900/20 border-yellow-200' 
-                                : 'bg-gray-100 dark:bg-zinc-800 border-gray-200 dark:border-gray-700';
-                            const grayscale = isUnlocked ? '' : 'grayscale opacity-50';
-                            
-                            const statusText = isUnlocked 
-                                ? `<span class="text-yellow-600 font-bold"><i class="bi bi-check-circle-fill"></i> 解除済み</span>`
-                                : `<span class="text-gray-400"><i class="bi bi-lock-fill"></i> 未獲得</span>`;
+            const div = document.createElement('div');
+            div.id = 'extra-stats-grid';
+            div.innerHTML = extraStatsHtml;
+            // 3つの統計グリッドの直後に挿入
+            const statGrid = statsWrapper.querySelector('.grid');
+            statGrid.parentNode.insertBefore(div, statGrid.nextSibling);
 
-                            return `
-                            <div class="flex items-center gap-3 p-3 rounded-lg border ${bgClass} transition">
-                                <div class="w-12 h-12 flex-shrink-0 flex items-center justify-center rounded-full bg-white dark:bg-black text-2xl ${iconColor} shadow-sm ${grayscale}">
-                                    <i class="bi ${b.icon}"></i>
-                                </div>
-                                <div class="flex-1 min-w-0">
-                                    <h4 class="font-bold text-sm truncate ${isUnlocked ? 'text-gray-800 dark:text-gray-100' : 'text-gray-500'}">${b.name}</h4>
-                                    <p class="text-[10px] text-gray-500 truncate mb-1">${b.description}</p>
-                                    <div class="text-[10px]">${statusText}</div>
-                                </div>
+            // バッジリストの描画
+            const badgeContainer = document.getElementById('stats-badge-list');
+            if (badgeContainer) {
+                badgeContainer.innerHTML = data.badges.map(b => {
+                    const isUnlocked = b.unlocked;
+                    const opacity = isUnlocked ? 'opacity-100' : 'opacity-40 grayscale';
+                    const bgClass = isUnlocked ? 'bg-yellow-50 dark:bg-yellow-900/20 border-yellow-200' : 'bg-gray-100 dark:bg-zinc-800 border-gray-200';
+                    return `
+                        <div class="flex items-center gap-3 p-3 rounded-lg border ${bgClass} ${opacity} transition">
+                            <div class="text-2xl text-yellow-600"><i class="bi ${b.icon}"></i></div>
+                            <div>
+                                <div class="text-xs font-bold">${b.name}</div>
+                                <div class="text-[10px] text-gray-500">${b.description}</div>
                             </div>
-                            `;
-                        }).join('');
-                    }
-                }
+                        </div>
+                    `;
+                }).join('');
             }
-        } catch (e) {
-            console.error("Stats load failed", e);
         }
+    } catch (e) {
+        console.error("Stats load failed", e);
     }
-
+}
 
     // ユーザープロフィールの読み込み
     async function loadUserProfile(username) {
