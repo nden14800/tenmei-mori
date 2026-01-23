@@ -8291,17 +8291,86 @@ ${getShareUrl()}`;
             window.open(intent, '_blank');
         }
 
+        // 参拝記録データの読み込みと描画
+    // プロフィール機能（アイコン、自己紹介など）は排除し、数値とバッジのみを扱います
+    async function loadMyStats() {
+        if (!currentState.user) return;
+
+        try {
+            // APIからユーザー情報を取得
+            // ※バックエンドのAPIは既存のものを流用しますが、表示には stats と badges しか使いません
+            const res = await fetch(`${API_BASE}/api/user/profile?username=${encodeURIComponent(currentState.user.username)}`);
+            
+            if (res.ok) {
+                const data = await res.json();
+                
+                // 1. 数値データの反映 (HTML側に id="stat-total" 等がある前提)
+                const statTotal = document.getElementById('stat-total');
+                const statDaikichi = document.getElementById('stat-daikichi');
+                const statStreak = document.getElementById('stat-streak');
+
+                if (statTotal) statTotal.textContent = (data.stats.totalDraws || 0).toLocaleString();
+                if (statDaikichi) statDaikichi.textContent = (data.stats.daikichiCount || 0).toLocaleString();
+                if (statStreak) {
+                    // 御朱印日数（連続参拝など）
+                    statStreak.innerHTML = `${(data.stats.goshuinCount || 0).toLocaleString()}<span class="text-xs font-normal text-gray-400 ml-1">日</span>`;
+                }
+
+                // 2. 功徳の証（バッジ）リストの描画
+                const badgeContainer = document.getElementById('stats-badge-list');
+                if (badgeContainer) {
+                    if (!data.badges || data.badges.length === 0) {
+                        badgeContainer.innerHTML = '<p class="text-center text-gray-500 col-span-full py-4">まだ実績はありません</p>';
+                    } else {
+                        badgeContainer.innerHTML = data.badges.map(b => {
+                            const isUnlocked = b.unlocked;
+                            
+                            // ロック状態のスタイル定義
+                            const iconColor = isUnlocked ? 'text-yellow-600' : 'text-gray-300';
+                            const bgClass = isUnlocked 
+                                ? 'bg-yellow-50 dark:bg-yellow-900/20 border-yellow-200' 
+                                : 'bg-gray-100 dark:bg-zinc-800 border-gray-200 dark:border-gray-700';
+                            const grayscale = isUnlocked ? '' : 'grayscale opacity-50';
+                            
+                            const statusText = isUnlocked 
+                                ? `<span class="text-yellow-600 font-bold"><i class="bi bi-check-circle-fill"></i> 解除済み</span>`
+                                : `<span class="text-gray-400"><i class="bi bi-lock-fill"></i> 未獲得</span>`;
+
+                            return `
+                            <div class="flex items-center gap-3 p-3 rounded-lg border ${bgClass} transition">
+                                <div class="w-12 h-12 flex-shrink-0 flex items-center justify-center rounded-full bg-white dark:bg-black text-2xl ${iconColor} shadow-sm ${grayscale}">
+                                    <i class="bi ${b.icon}"></i>
+                                </div>
+                                <div class="flex-1 min-w-0">
+                                    <h4 class="font-bold text-sm truncate ${isUnlocked ? 'text-gray-800 dark:text-gray-100' : 'text-gray-500'}">${b.name}</h4>
+                                    <p class="text-[10px] text-gray-500 truncate mb-1">${b.description}</p>
+                                    <div class="text-[10px]">${statusText}</div>
+                                </div>
+                            </div>
+                            `;
+                        }).join('');
+                    }
+                }
+            } else {
+                console.error("Stats load failed: server error");
+            }
+        } catch (e) {
+            console.error("Stats load failed", e);
+        }
+    }
+
         // ==========================================
     //  プロフィール・参拝者台帳システム (変数重複修正版)
     // ==========================================
 
-    // プロフィールボタン（ナビゲーション）の挙動
+    // ナビゲーションの会員ボタンクリック時の挙動
+    // プロフィール画面へは遷移せず、ログアウト確認のみを行います
     function handleProfileClick() {
-        if (currentState.user) {
-            // ログイン中なら自分のプロフィールを読み込んで表示
-            loadUserProfile(currentState.user.username);
+        if(currentState.user) {
+            if(confirm(`現在「${currentState.user.username}」としてログイン中です。\nログアウトしますか？`)) {
+                logout();
+            }
         } else {
-            // 未ログインなら認証画面へ
             showView('auth');
         }
     }
