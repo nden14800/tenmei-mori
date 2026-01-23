@@ -8383,7 +8383,7 @@ ${getShareUrl()}`;
             window.open(intent, '_blank');
         }
 
-        // 1. 「参拝の記録」：大吉獲得数の表示を完全に削除し、2列レイアウトに変更する修正版
+        // 1. 「参拝の記録」：大吉ロジックを完全撤去したシンプル版
 async function loadMyStats() {
     if (!currentState.user) return;
 
@@ -8406,27 +8406,7 @@ async function loadMyStats() {
                 statStreak.innerHTML = `${streakVal.toLocaleString()}<span class="text-xs font-normal text-gray-400 ml-1">日</span>`;
             }
 
-            // ▼▼▼ 修正：大吉の表示エリアを強制的に削除し、レイアウトを整える処理 ▼▼▼
-            const statDaikichi = document.getElementById('stat-daikichi');
-            if (statDaikichi) {
-                // 大吉の数字が入っている「箱（カード）」自体を取得
-                const daikichiCard = statDaikichi.closest('.bg-white'); // または .dark:bg-zinc-800
-                
-                if (daikichiCard) {
-                    // 箱を非表示にする
-                    daikichiCard.style.display = 'none';
-                    
-                    // 親のグリッドコンテナを取得して、3列(grid-cols-3) から 2列(grid-cols-2) に変更
-                    const gridContainer = daikichiCard.parentElement;
-                    if (gridContainer) {
-                        gridContainer.classList.remove('grid-cols-3');
-                        gridContainer.classList.add('grid-cols-2');
-                    }
-                }
-            }
-            // ▲▲▲ 修正ここまで ▲▲▲
-
-            // 実績達成率を表示するエリア（ここは変更なし）
+            // 実績達成率のみを表示するエリア
             const unlockedCount = data.badges.filter(b => b.unlocked).length;
             const totalBadges = data.badges.length;
             const percent = totalBadges > 0 ? Math.round((unlockedCount / totalBadges) * 100) : 0;
@@ -8504,7 +8484,7 @@ async function loadMyStats() {
         console.error("Stats load failed", e);
     }
 }
-
+        
     // ユーザープロフィールの読み込み
     async function loadUserProfile(username) {
         showLoading(true);
