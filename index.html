@@ -8386,21 +8386,24 @@ ${getShareUrl()}`;
         }
 
         
-// --- 参拝の記録（統計＆実績）読み込み関数 [修正版] ---
+// --- 参拝の記録（統計＆実績）読み込み関数 [完全修復版] ---
 async function loadMyStats() {
+    // 1. ログインチェック
     if (!currentState.user) return;
 
     try {
+        // 2. APIからデータを取得
         const res = await fetch(`${API_BASE}/api/user/profile?username=${encodeURIComponent(currentState.user.username)}`);
         
         if (res.ok) {
             const data = await res.json();
             
-            // 1. 数値データの反映 (0になる問題対策済み)
+            // 3. 数値データの反映
             const statTotal = document.getElementById('stat-total');
             const statDaikichi = document.getElementById('stat-daikichi');
             const statStreak = document.getElementById('stat-streak');
 
+            // 要素があるか確認してからセット（エラー防止）
             if (statTotal) {
                 statTotal.textContent = (data.stats.totalDraws || 0).toLocaleString();
             }
@@ -8411,15 +8414,17 @@ async function loadMyStats() {
                 statStreak.innerHTML = `${(data.stats.goshuinCount || 0).toLocaleString()}<span class="text-xs font-normal text-gray-400 ml-1">日</span>`;
             }
 
-            // 2. 実績達成率グラフの更新
+            // 4. 実績達成率グラフの表示
+            // 挿入先（親要素）を取得
             const statsWrapper = document.getElementById('stats-content-wrapper');
             let extraStatsGrid = document.getElementById('extra-stats-grid');
             
-            // まだグラフ用の箱がない場合のみ作成
+            // まだグラフを表示する箱がない場合、自動的に作成して挿入
             if (!extraStatsGrid && statsWrapper) {
                 const div = document.createElement('div');
                 div.id = 'extra-stats-grid';
-                // 3つの数字ボックスの入っているグリッドを探して、その直後に挿入
+                
+                // 3つの数字ボックス（.grid）を探し、その直後に挿入する
                 const statGrid = statsWrapper.querySelector('.grid');
                 if (statGrid) {
                     statGrid.parentNode.insertBefore(div, statGrid.nextSibling);
@@ -8427,10 +8432,11 @@ async function loadMyStats() {
                 }
             }
 
-            // 箱があれば中身を更新
+            // グラフの中身を描画
             if (extraStatsGrid) {
-                const unlockedCount = data.badges.filter(b => b.unlocked).length;
-                const totalBadges = data.badges.length;
+                const unlockedCount = data.badges ? data.badges.filter(b => b.unlocked).length : 0;
+                const totalBadges = data.badges ? data.badges.length : 0;
+                // 0除算を防ぐ
                 const percent = totalBadges > 0 ? Math.round((unlockedCount / totalBadges) * 100) : 0;
 
                 extraStatsGrid.innerHTML = `
@@ -8459,12 +8465,13 @@ async function loadMyStats() {
             const statGrid = statsWrapper.querySelector('.grid');
             statGrid.parentNode.insertBefore(div, statGrid.nextSibling);
 
-            // 3. 実績リスト（バッジ）の描画
+            // 5. 実績リスト（バッジ）の描画
             const badgeContainer = document.getElementById('stats-badge-list');
-            if (badgeContainer) {
+            if (badgeContainer && data.badges) {
                 badgeContainer.innerHTML = data.badges.map(b => {
                     const isUnlocked = b.unlocked;
                     
+                    // 未獲得時はグレーアウト＆半透明に
                     const filterClass = isUnlocked ? 'grayscale-0 opacity-100' : 'grayscale opacity-60';
                     const bgClass = isUnlocked 
                         ? 'bg-yellow-50 dark:bg-yellow-900/20 border-yellow-400' 
