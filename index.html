@@ -2960,26 +2960,23 @@
                 
                 <div class="text-right text-sm themed-text-sub mb-8">
                     制定日: 2026年1月2日<br>
-                    改定日: 2026年1月17日 (第5版)<br>
+                    改定日: 2026年1月23日 (第6版)<br>
                     運営・開発: nden148<br>
-                    基盤技術: Cloudflare Workers / Google Apps Script
+                    基盤技術: Cloudflare Workers / Turso (LibSQL)
                 </div>
 
-                <!-- ▼▼ 追加: 目次・PDFボタンエリア ▼▼ -->
                 <div id="about-toc-container" class="mb-8 p-6 bg-gray-50 dark:bg-black/20 rounded-xl border border-gray-200 dark:border-gray-700 hidden" data-html2canvas-ignore="true">
                     <div class="flex justify-between items-center mb-4 border-b border-gray-300 dark:border-gray-600 pb-2">
                         <h3 class="font-bold text-lg m-0 p-0 border-none"><i class="bi bi-list-ul mr-2"></i>目次</h3>
-                        <!-- ボタン削除済み -->
                     </div>
                     <ul class="text-sm space-y-2 list-none m-0 p-0 text-gray-700 dark:text-gray-300" id="about-toc-list"></ul>
                 </div>
-                <!-- ▲▲ 追加ここまで ▲▲ -->
 
                 <p class="mb-6 font-bold text-center">
                     〜 天命乃杜は、テクノロジーで再定義された「現代の鎮守の杜」です 〜
                 </p>
 
-                <!-- 徹底比較表 (36項目: 御守を追加) -->
+                <!-- 徹底比較表 -->
                 <h3 class="text-xl font-bold mt-8 mb-4 border-l-4 border-red-500 pl-3">第1章 サービス性能・機能比較（完全版）</h3>
                 <p class="mb-4 text-sm">
                     本表は、当サイト「天命乃杜」と、インターネット上に存在する主要な占いサービス形式（老舗Webサイト型、神社公式型、大手ポータル型、ネイティブアプリ型）の仕様を、客観的な技術指標に基づき比較したものです。特定の他社サービスを貶める意図はなく、利用者が自身のニーズに合ったサービスを選択するための判断材料として提供します。
@@ -3117,8 +3114,8 @@
                             </tr>
                             <tr>
                                 <td class="font-bold">クラウド同期</td>
-                                <!-- ▼▼ 修正: D1使用 → Supabase に変更 ▼▼ -->
-                                <td class="highlight">◎ 可能 (Supabase)</td>
+                                <!-- 修正箇所 -->
+                                <td class="highlight">◎ 可能 (Turso)</td>
                                 <td>× 不可</td>
                                 <td>× 不可</td>
                                 <td>○ ID連携時</td>
@@ -3157,7 +3154,7 @@
                                 <td>スクショ推奨</td>
                             </tr>
 
-                            <!-- 4. 複合機能 (御守を追加) -->
+                            <!-- 4. 複合機能 -->
                             <tr><td rowspan="7" class="font-bold bg-gray-50 dark:bg-zinc-800">12星座<br>その他</td>
                                 <td class="font-bold">12星座占い</td>
                                 <td class="highlight font-bold">◎ あり (血液型掛合)</td>
@@ -3182,7 +3179,6 @@
                                 <td>× なし</td>
                                 <td>△ 有料機能</td>
                             </tr>
-                            <!-- ▼ 追加: デジタル授与品 -->
                             <tr>
                                 <td class="font-bold">デジタル授与品</td>
                                 <td class="highlight font-bold">◎ 御守作成 (名前入)</td>
@@ -3233,16 +3229,15 @@
                                 <td>Social Login</td>
                                 <td>OS依存</td>
                             </tr>
-                            <!-- 比較表の tbody 内 -->
-<tr>
-    <td class="font-bold">DB堅牢性</td>
-    <!-- ここを変更 -->
-    <td class="highlight">Supabase (無制限)</td>
-    <td>ファイル (脆弱)</td>
-    <td>保存しない</td>
-    <td>RDB</td>
-    <td>RDB / SQLite</td>
-</tr>
+                            <tr>
+                                <td class="font-bold">DB堅牢性</td>
+                                <!-- 修正箇所 -->
+                                <td class="highlight">Turso (Edge SQLite)</td>
+                                <td>ファイル (脆弱)</td>
+                                <td>保存しない</td>
+                                <td>RDB</td>
+                                <td>RDB / SQLite</td>
+                            </tr>
                             <tr>
                                 <td class="font-bold">パスワード</td>
                                 <td class="highlight">SHA-256ハッシュ</td>
@@ -3305,13 +3300,14 @@
                 <p class="mb-4">
                     当サイトの更新頻度は、他のニュースサイトやブログメディアと比較して低く設定されています。これは開発の停滞を意味するものではなく、<strong>「初期リリースの段階で、予定されていた主要機能の実装が完了しており、システムとして完成されている」</strong>ためです。現在は安定稼働フェーズにあり、バグ修正やサーバーメンテナンスを除き、頻繁なコード変更は行われません。皆様には、変わらぬ品質で永続的にサービスを提供し続けます。
                 </p>
-                <!-- 書き換え後 -->
-<h4 class="font-bold mt-4 border-b border-gray-300 dark:border-gray-600 pb-1">2. 分散型データベース「TiDB」による無限の拡張性</h4>
-<p class="mb-4">
-    当サイトは、物理的なサーバーの制約から完全に解き放たれた<strong>分散型SQLデータベース「TiDB Serverless」</strong>を採用いたしました。
-    従来のデータベース（PostgreSQL等）とは異なり、TiDBはストレージと計算リソースを分離し、負荷に応じて水平方向に無限にスケールするアーキテクチャを持っています。
-    これにより、事実上上限のない書き込み・読み込みが可能となり、世界中からのアクセスが集中するような事態においても、データの整合性を保ちながら遅延なく応答し続ける「真の可用性」を実現しています。
-</p>
+                
+                <h4 class="font-bold mt-4 border-b border-gray-300 dark:border-gray-600 pb-1">2. エッジデータベース「Turso」による高速応答</h4>
+                <p class="mb-4">
+                    当サイトは、SupabaseやTiDBといった大規模データベースを経て、最終的に<strong>エッジ特化型データベース「Turso（SQLite互換）」</strong>を採用いたしました。
+                    Tursoは、HTTPプロトコルを通じて世界中のどこからでも低遅延でアクセスできる特性を持っており、Cloudflare Workersで構築された当サイトのサーバーレスアーキテクチャと最も親和性が高いシステムです。
+                    これにより、物理的な距離や接続数の制限による遅延を極限まで排除し、おみくじを引いた瞬間に結果が返ってくる「神速」のレスポンスを実現しています。
+                </p>
+
                 <h4 class="font-bold mt-4 border-b border-gray-300 dark:border-gray-600 pb-1">3. 真正性への取り組みと日付更新</h4>
                 <p class="mb-4">
                     占いの結果生成において、当サイトは「真正性」を重視しています。12星座×血液型占いおよび全国運気ランキングにおいては、その日の日付（日本時間 JST 0:00基準）をシード値（種）とした決定論的乱数生成アルゴリズム（Seeded Random）を採用しており、リロードを繰り返して良い結果が出るまでやり直す「リセマラ」を防止しています。これは、占いを単なるゲームではなく、その日の運命（天命）として受け入れていただくための仕様です。
@@ -3342,7 +3338,6 @@
                 <h3 class="text-xl font-bold mt-8 mb-4 border-l-4 border-red-500 pl-3">第4章 著作権と二次利用</h3>
                 <p class="mb-4">
                     1. 本サイトを構成するプログラムコード、デザイン、文章、ロゴ、および「TENMEI Labs」等の独自機能に関する知的財産権は、運営者（nden148）に帰属します。<br>
-                    <!-- ▼▼ 修正: 御守画像もSNS利用OKと明記 ▼▼ -->
                     2. ただし、本サイトの機能を用いて生成された<strong>「おみくじ結果画像」および「デジタル御守画像」</strong>については、ユーザー個人のSNS（X, Instagram, LINE等）での共有を目的とする限りにおいて、ユーザーはこれを自由に利用（複製、公衆送信）することができます。この際、画像に含まれるQRコードやサイトURLを削除しないことを推奨します。
                 </p>
 
@@ -3367,19 +3362,16 @@
                 <h2 class="text-3xl font-bold mb-8 text-center border-b border-gray-300 dark:border-gray-600 pb-4">プライバシーポリシー</h2>
                 <div class="text-right text-sm themed-text-sub mb-8">
                     制定日: 2026年1月2日<br>
-                    改定日: 2026年1月17日 (第4版)<br>
+                    改定日: 2026年1月23日 (第5版)<br>
                     運営者: nden148
                 </div>
 
-                <!-- ▼▼ 修正: PDFボタンを削除 ▼▼ -->
                 <div id="privacy-toc-container" class="mb-8 p-6 bg-gray-50 dark:bg-black/20 rounded-xl border border-gray-200 dark:border-gray-700 hidden" data-html2canvas-ignore="true">
                     <div class="flex justify-between items-center mb-4 border-b border-gray-300 dark:border-gray-600 pb-2">
                         <h3 class="font-bold text-lg m-0 p-0 border-none"><i class="bi bi-list-ul mr-2"></i>目次</h3>
-                        <!-- ボタン削除済み -->
                     </div>
                     <ul class="text-sm space-y-2 list-none m-0 p-0 text-gray-700 dark:text-gray-300" id="privacy-toc-list"></ul>
                 </div>
-                <!-- ▲▲ 修正ここまで ▲▲ -->
 
                 <p class="mb-6">
                     運勢・天命乃杜（以下、「当サイト」といいます。）は、当サイトが提供するウェブサービス「運勢・天命乃杜」（以下、「本サービス」といいます。）における、ユーザーの個人情報の取扱いについて、以下のとおりプライバシーポリシー（以下、「本ポリシー」といいます。）を定めます。当サイトは、個人情報の保護に関する法律（平成15年法律第57号。以下「個人情報保護法」といいます。）その他関係法令を遵守するとともに、本ポリシーに基づき、ユーザーの個人情報を適正に取り扱い、その保護に努めます。
@@ -3441,11 +3433,10 @@
                     <strong>1. 技術的保護措置：</strong><br>
                     当サイトは、通信経路における第三者の盗聴を防止するため、全ての通信に対してSSL/TLS（Transport Layer Security）暗号化技術を使用しています。また、ユーザーのパスワードについては、サーバー上で平文（そのままの状態）で保存することは一切なく、<strong>SHA-256アルゴリズムを用いて不可逆的なハッシュ値に変換</strong>した上でデータベースに格納しております。これにより、万が一データベースへの不正アクセスが発生した場合でも、運営者を含め第三者が元のパスワードを知ることは不可能な仕組みとなっております。
                 </p>
-                <!-- 書き換え後 -->
-<p class="mb-4 text-sm">
-    <strong>2. インフラストラクチャの安全性：</strong><br>
-    本サービスのサーバーサイド処理には <strong>Cloudflare Workers</strong> を、データベースには高度なセキュリティ対策が施された <strong>Supabase (PostgreSQL)</strong> を採用しています。データは暗号化された状態で分散保管され、物理的な障害や外部攻撃から保護されています。
-</p>
+                <p class="mb-4 text-sm">
+                    <strong>2. インフラストラクチャの安全性：</strong><br>
+                    本サービスのサーバーサイド処理には <strong>Cloudflare Workers</strong> を、データベースには暗号化通信をサポートする <strong>Turso (ChiselStrike)</strong> を採用しています。データは高度なセキュリティ対策が施された環境で分散管理され、物理的な障害や外部攻撃から保護されています。
+                </p>
 
                 <h4 class="font-bold mt-6 text-lg border-b border-gray-300 dark:border-gray-600 pb-1">第5条（外部サービスとの連携とデータ移転）</h4>
                 <p class="mb-4 text-sm">
@@ -3457,18 +3448,17 @@
                     <p class="mb-1">送信される情報：メールアドレス、認証コード、ユーザー名</p>
                     <p>特記事項：当サイトのシステムは、メール送信リクエストをGoogleのサーバーに送信します。Google側でメール送信処理が完了した後、当該個人情報がGoogleスプレッドシート等のストレージに永続的に蓄積されることはありません。</p>
                 </div>
-                <!-- 書き換え後（D1の記述を削除・修正し、Supabaseを追加） -->
-<div class="mb-4 text-sm border-l-2 border-gray-300 pl-4">
-    <p class="font-bold">2. Cloudflare (Cloudflare, Inc.)</p>
-    <p class="mb-1">利用目的：コンテンツ配信（CDN）、サーバーレスコンピューティング（Workers）</p>
-    <p>送信される情報：アクセスログ、通信リクエスト</p>
-</div>
-<div class="mb-4 text-sm border-l-2 border-gray-300 pl-4">
-    <p class="font-bold">3. TiDB Cloud (PingCAP, Inc.)</p>
-    <p class="mb-1">利用目的：ユーザー情報、履歴データ、統計データの保管および認証管理</p>
-    <p>送信される情報：メールアドレス、パスワード（ハッシュ化済）、ユーザー名、利用履歴</p>
-    <p>特記事項：データは高度に暗号化された分散ストレージ（TiKV）上に断片化して保存され、単一障害点が存在しない堅牢な環境で管理されています。</p>
-</div>
+                <div class="mb-4 text-sm border-l-2 border-gray-300 pl-4">
+                    <p class="font-bold">2. Cloudflare (Cloudflare, Inc.)</p>
+                    <p class="mb-1">利用目的：コンテンツ配信（CDN）、サーバーレスコンピューティング（Workers）</p>
+                    <p>送信される情報：アクセスログ、通信リクエスト</p>
+                </div>
+                <div class="mb-4 text-sm border-l-2 border-gray-300 pl-4">
+                    <p class="font-bold">3. Turso (ChiselStrike, Inc.)</p>
+                    <p class="mb-1">利用目的：ユーザー情報、履歴データ、統計データの保管および認証管理</p>
+                    <p>送信される情報：メールアドレス、パスワード（ハッシュ化済）、ユーザー名、利用履歴</p>
+                    <p>特記事項：TursoはSQLite互換のエッジデータベースであり、データはLibSQLプロトコルを通じて安全に送信・保存されます。</p>
+                </div>
 
                 <h4 class="font-bold mt-6 text-lg border-b border-gray-300 dark:border-gray-600 pb-1">第6条（個人情報の第三者提供）</h4>
                 <p class="mb-4 text-sm">
