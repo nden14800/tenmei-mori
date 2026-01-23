@@ -7853,8 +7853,15 @@ function handleInputQuiz(button, correctAnswers, questionId) {
                 const metaDiv = document.createElement('div');
                 metaDiv.style.textAlign = 'left';
                 const name = data.username || "参拝者";
-                const date = new Date(data.timestamp || Date.now());
+                // ▼▼▼ 日付修正箇所 ▼▼▼
+                // タイムスタンプを数値に変換（変換できない場合は現在時刻を使う）
+                let ts = Number(data.timestamp);
+                if (isNaN(ts) || ts === 0) {
+                    ts = Date.now();
+                }
+                const date = new Date(ts);
                 const dateStr = `${date.getFullYear()}年${date.getMonth()+1}月${date.getDate()}日 ${date.getHours()}:${String(date.getMinutes()).padStart(2,'0')}`;
+                // ▲▲▲ 修正ここまで ▲▲▲
                 metaDiv.innerHTML = `
                     <div class="result-user-name accent-text">${escapeHtml(name)} 様の運勢</div>
                     <div class="result-date accent-text">参拝日: ${dateStr}</div>
