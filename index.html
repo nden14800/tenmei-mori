@@ -6334,6 +6334,46 @@ window.renderFullNewsView = function() {
     pagination.innerHTML = createPaginationHTML('news', currentPage, totalPages);
 };
 
+        
+// 3. 「神籤草子」：上部に総コラム数を表示するように修正
+window.renderFullColumnView = function() {
+    const container = document.getElementById('view-column-list');
+    const pagination = document.getElementById('column-pagination');
+    const titleArea = document.querySelector('#view-column h2'); // タイトル部分を取得
+    if (!container) return;
+
+    const { data, totalPages, currentPage, totalItems } = getPaginatedData('column', columnData);
+
+    // タイトル横に件数を表示
+    const countDisplay = listState.column.query 
+        ? `<span class="text-sm font-normal ml-3 text-gray-500">検索結果: ${totalItems}件 / 全${columnData.length}件</span>`
+        : `<span class="text-sm font-normal ml-3 text-gray-500">全${columnData.length}件</span>`;
+    titleArea.innerHTML = `神籤草子 ${countDisplay}`;
+
+    if (totalItems === 0) {
+        container.innerHTML = '<p class="col-span-full text-center text-gray-500 py-8">該当するコラムが見つかりませんでした。</p>';
+        pagination.innerHTML = '';
+        return;
+    }
+
+    container.innerHTML = data.map(item => `
+        <article class="themed-card rounded overflow-hidden shadow cursor-pointer hover:shadow-lg transition" onclick="openArticle('column', ${item.id})">
+            <div class="h-32 bg-${item.colorClass}-100 dark:bg-${item.colorClass}-900 flex items-center justify-center text-${item.colorClass}-800 dark:text-${item.colorClass}-200 font-bold">
+                <i class="bi ${item.icon} text-3xl"></i>
+            </div>
+            <div class="p-4">
+                <div class="text-xs themed-text-sub mb-1">
+                     <span class="bg-gray-200 dark:bg-zinc-700 px-2 py-0.5 rounded text-[10px] mr-2">${item.category}</span>${item.date}
+                </div>
+                <h3 class="font-bold">${item.title}</h3>
+            </div>
+        </article>
+    `).join('');
+
+    pagination.innerHTML = createPaginationHTML('column', currentPage, totalPages);
+};
+
+
     // 4. 記事詳細表示
     window.openArticle = function(type, id) {
         let item;
