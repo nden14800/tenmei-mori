@@ -9198,65 +9198,84 @@ function changeHistoryPage(newPage) {
     // 既存の showView 関数を少し修正して、画面表示時に目次を生成するようにする
     const originalShowView = window.showView; // 既存の関数を退避（または直接書き換え）
     
-    // --- 修正後の showView 関数 (stats対応) ---
-window.showView = function(viewId) {
-    // Labsのロック処理 (既存)
-    if(viewId === 'lab') {
-        const lock = document.getElementById('lab-lock');
-        const wrapper = document.getElementById('lab-content-wrapper');
-        if(!currentState.user) {
-            lock.classList.remove('hidden');
-            wrapper.classList.add('lab-blurred');
-        } else {
-            lock.classList.add('hidden');
-            wrapper.classList.remove('lab-blurred');
+    // ==========================================
+    //  ビュー制御・参拝の記録システム (プロフィール廃止・統計特化版)
+    // ==========================================
+
+    // 画面切り替え関数 (既存のshowViewを完全に置き換えてください)
+    window.showView = function(viewId) {
+        // 1. まず全てのビューを非表示にする
+        document.querySelectorAll('.view-section').forEach(el => {
+            el.classList.remove('active');
+            // フェードアウトアニメーション待ち（即時非表示でも動作はする）
+            setTimeout(() => {
+                if(!el.classList.contains('active')) el.style.display = 'none';
+            }, 500);
+        });
+
+        // 2. ターゲットを表示
+        const target = document.getElementById(`view-${viewId}`);
+        if (target) {
+            target.style.display = 'block';
+            // リフロー強制（アニメーション用）
+            void target.offsetWidth; 
+            target.classList.add('active');
         }
-    }
+        currentState.view = viewId;
 
-    // ▼▼ 新規: 統計ページのロック処理 ▼▼
-    if(viewId === 'stats') {
-        const lock = document.getElementById('stats-lock');
-        const wrapper = document.getElementById('stats-content-wrapper');
-        
-        if(!currentState.user) {
-            // 未ログイン：ロック表示 & 背景ぼかし
-            lock.classList.remove('hidden');
-            wrapper.classList.add('lab-blurred'); // 既存のぼかしクラスを流用
-            // ダミー表示（空っぽだと寂しいので）
-            document.getElementById('stat-total').textContent = "-";
-            document.getElementById('stat-daikichi').textContent = "-";
-            document.getElementById('stat-streak').textContent = "-";
-            document.getElementById('stats-badge-list').innerHTML = '<div class="col-span-2 text-center text-gray-400 py-10">記録がありません</div>';
-        } else {
-            // ログイン済み：ロック解除 & データ読み込み
-            lock.classList.add('hidden');
-            wrapper.classList.remove('lab-blurred');
-            loadMyStats(); // データを取得して表示
+        // --- ビューごとの固有処理 ---
+
+        // ■ 参拝の記録 (stats) - プロフィールではなく統計のみを表示
+        if(viewId === 'stats') {
+            const lock = document.getElementById('stats-lock');
+            const wrapper = document.getElementById('stats-content-wrapper');
+            
+            if(!currentState.user) {
+                // 未ログイン時：ロック画面を表示 & 背景ぼかし
+                if(lock) lock.classList.remove('hidden');
+                if(wrapper) {
+                    wrapper.classList.add('lab-blurred');
+                    // データはダミー表示（ぼかしの下に見えるもの）
+                    const totalEl = document.getElementById('stat-total');
+                    if(totalEl) totalEl.textContent = "-";
+                    
+                    const daikichiEl = document.getElementById('stat-daikichi');
+                    if(daikichiEl) daikichiEl.textContent = "-";
+                    
+                    const streakEl = document.getElementById('stat-streak');
+                    if(streakEl) streakEl.textContent = "-";
+                    
+                    const badgeList = document.getElementById('stats-badge-list');
+                    if(badgeList) badgeList.innerHTML = '<div class="col-span-full text-center text-gray-400 py-10">記録がありません</div>';
+                }
+            } else {
+                // ログイン時：ロック解除 & データロード
+                if(lock) lock.classList.add('hidden');
+                if(wrapper) wrapper.classList.remove('lab-blurred');
+                loadMyStats(); // 統計データを読み込み
+            }
         }
-    }
 
-    // 画面切り替え (既存)
-    document.querySelectorAll('.view-section').forEach(el => {
-        el.classList.remove('active');
-        setTimeout(() => {
-            if(!el.classList.contains('active')) el.style.display = 'none';
-        }, 500);
-    });
-    
-    const target = document.getElementById(`view-${viewId}`);
-    if (target) {
-        target.style.display = 'block';
-        void target.offsetWidth; 
-        target.classList.add('active');
-    }
-    currentState.view = viewId;
+        // ■ TENMEI Labs (lab)
+        if(viewId === 'lab') {
+            const lock = document.getElementById('lab-lock');
+            const wrapper = document.getElementById('lab-content-wrapper');
+            if(!currentState.user) {
+                if(lock) lock.classList.remove('hidden');
+                if(wrapper) wrapper.classList.add('lab-blurred');
+            } else {
+                if(lock) lock.classList.add('hidden');
+                if(wrapper) wrapper.classList.remove('lab-blurred');
+            }
+        }
 
-    if(viewId === 'draw') resetOmikujiPool();
-    if(viewId === 'history') loadHistory();
-    if(viewId === 'prefecture') renderPrefectureRanking();
-    if(viewId === 'about' || viewId === 'privacy') initTOC(viewId);
-    if(viewId === 'omamori') OmamoriSystem.reset();
-};
+        // その他の初期化処理
+        if(viewId === 'draw') resetOmikujiPool();
+        if(viewId === 'history') loadHistory();
+        if(viewId === 'prefecture') renderPrefectureRanking();
+        if(viewId === 'about' || viewId === 'privacy') initTOC(viewId);
+        if(viewId === 'omamori') OmamoriSystem.reset();
+    };
 
 // ==========================================
     //  プロフィール・参拝者台帳システム (軽量修正版)
@@ -9299,9 +9318,9 @@ window.showView = function(viewId) {
         }
     }
 
-    // プロフィール画面の描画 (バッジ・フォロー・ブロック・検索・掲示板 削除済み)
+    // プロフィール画面の描画
     function renderProfilePage(data) {
-        const container = document.querySelector('#view-profile'); // 既存のセクションをターゲットに
+        const container = document.querySelector('#view-profile');
         if (!container) return;
 
         // ビューの中身を一度クリアして再構築
@@ -9311,7 +9330,7 @@ window.showView = function(viewId) {
         let badgesHtml = '';
         if (data.badges && data.badges.length > 0) {
             badgesHtml = data.badges.map(b => {
-                // 未獲得は表示しない、あるいはグレーアウト（ここではグレーアウト方式）
+                // 未獲得はグレーアウト
                 const opacity = b.unlocked ? 'opacity-100' : 'opacity-40 grayscale';
                 const bgClass = b.unlocked ? 'bg-yellow-50 dark:bg-yellow-900/20 border-yellow-200' : 'bg-gray-100 dark:bg-zinc-800 border-gray-200';
                 
@@ -9336,7 +9355,7 @@ window.showView = function(viewId) {
             }
         }
 
-        // 3. アクションボタン（自分なら編集・ログアウト、他人なら何もなし）
+        // 3. アクションボタン（自分なら編集・ログアウト）
         let actionBtnHtml = '';
         if (data.isMe) {
             actionBtnHtml = `
@@ -9358,9 +9377,8 @@ window.showView = function(viewId) {
             'yellow': '#eab308', 'purple': '#a855f7', 'pink': '#ec4899', 'black': '#1f2937'
         };
         const iconColor = iconColorMap[data.color] || '#6b7280';
-        const iconStyle = `color: ${iconColor}; border-color: ${iconColor};`;
 
-        // 5. HTML組み立て（シンプル版）
+        // 5. HTML組み立て
         const html = `
             <div class="max-w-2xl mx-auto bg-white dark:bg-zinc-900 rounded-xl shadow overflow-hidden relative mt-10">
                 <!-- ヘッダー背景 -->
@@ -9423,44 +9441,41 @@ window.showView = function(viewId) {
 
         container.innerHTML = html;
 
-        // 自分の実績情報をグローバル変数に保存（実績一覧モーダル用）
+        // 自分の実績情報を保存（実績一覧モーダル用）
         if (data.isMe && data.badges) {
             window.myBadges = data.badges.filter(b => b.unlocked).map(b => b.id);
         }
     }
 
+    
+
     // --- プロフィール編集関連 ---
 
     // 編集モーダルを開く
     function openEditProfileModal(bio, title, icon, color) {
-        document.getElementById('edit-bio').value = (bio === "自己紹介はまだありません。") ? "" : bio;
-        document.getElementById('edit-title').value = title;
+        const bioInput = document.getElementById('edit-bio');
+        const titleInput = document.getElementById('edit-title');
         
-        // 選択状態の初期化
-        selectedIcon = icon || 'bi-person';
-        selectedColor = color || 'gray';
+        if(bioInput) bioInput.value = (bio === "自己紹介はまだありません。") ? "" : bio;
+        if(titleInput) titleInput.value = title;
+        
+        // 元のコードで定義されている変数を利用
+        if (typeof selectedIcon !== 'undefined') selectedIcon = icon || 'bi-person';
+        if (typeof selectedColor !== 'undefined') selectedColor = color || 'gray';
         
         renderIconSelector();
         renderColorSelector();
         
-        document.getElementById('edit-profile-modal').style.display = 'flex';
+        const modal = document.getElementById('edit-profile-modal');
+        if(modal) modal.style.display = 'flex';
     }
-
-    // アイコン・色データ定義
-    const profileIcons = [
-        'bi-person', 'bi-flower1', 'bi-star', 'bi-heart', 
-        'bi-moon-stars', 'bi-sun', 'bi-tree', 'bi-cloud', 
-        'bi-droplet', 'bi-lightning', 'bi-gem', 'bi-fire', 'bi-snow'
-    ];
-    const profileColors = ['gray', 'red', 'blue', 'green', 'yellow', 'purple', 'pink', 'black'];
-    
-    let selectedIcon = 'bi-person';
-    let selectedColor = 'gray';
 
     // アイコン選択肢描画
     function renderIconSelector() {
         const container = document.getElementById('icon-selector');
-        if(!container) return;
+        // profileIcons が定義されていない場合は処理しない（エラー回避）
+        if(!container || typeof profileIcons === 'undefined') return;
+        
         container.innerHTML = profileIcons.map(ic => `
             <div class="icon-option ${ic === selectedIcon ? 'selected' : ''} flex items-center justify-center text-xl cursor-pointer p-2 rounded border hover:bg-gray-100 dark:hover:bg-zinc-700 ${ic === selectedIcon ? 'border-red-500 bg-red-50 dark:bg-red-900/30' : 'border-gray-200 dark:border-gray-600'}" 
                  onclick="selectedIcon='${ic}'; renderIconSelector()">
@@ -9472,7 +9487,9 @@ window.showView = function(viewId) {
     // 色選択肢描画
     function renderColorSelector() {
         const container = document.getElementById('color-selector');
-        if(!container) return;
+        // profileColors が定義されていない場合は処理しない
+        if(!container || typeof profileColors === 'undefined') return;
+        
         const colorMap = { 'gray':'#9ca3af', 'red':'#ef4444', 'blue':'#3b82f6', 'green':'#10b981', 'yellow':'#eab308', 'purple':'#a855f7', 'pink':'#ec4899', 'black':'#1f2937' };
         
         container.innerHTML = profileColors.map(c => `
@@ -9485,10 +9502,13 @@ window.showView = function(viewId) {
     // 編集内容リセット
     function resetProfileEdit() {
         if(!confirm("プロフィールを初期状態に戻しますか？")) return;
+        
         document.getElementById('edit-bio').value = "";
         document.getElementById('edit-title').value = "初詣の旅人";
-        selectedIcon = 'bi-person';
-        selectedColor = 'gray';
+        
+        if (typeof selectedIcon !== 'undefined') selectedIcon = 'bi-person';
+        if (typeof selectedColor !== 'undefined') selectedColor = 'gray';
+        
         renderIconSelector();
         renderColorSelector();
     }
@@ -9515,6 +9535,7 @@ window.showView = function(viewId) {
         } catch(e) { console.error(e); }
         finally { showLoading(false); }
     }
+    
         // --- メニュー表示 ---
         function toggleProfileMenu() {
             const menu = document.getElementById('profile-menu-dropdown');
