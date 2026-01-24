@@ -7822,7 +7822,7 @@ function handleInputQuiz(button, correctAnswers, questionId) {
                     unlucky: unluckyItems,
                     timestamp: timestamp,
                     username: username,
-                    issueNumber: 0 // 初期値は0、サーバーレスポンスで更新
+                    issueNumber: null // ★初期値はnull
                 };
                 
                 if(currentState.user) {
@@ -7852,13 +7852,13 @@ function handleInputQuiz(button, correctAnswers, questionId) {
                         if(res.ok) {
                             const data = await res.json();
                             if(data.success && data.count) {
-                                // サーバーの最新カウントをグローバル更新
                                 currentState.liveCount = data.count;
                                 document.getElementById('live-counter').textContent = currentState.liveCount.toLocaleString() + "本";
                                 
-                                // ★ここが重要：このおみくじ固有の番号をセットする
+                                // ★修正: サーバーから返ってきた最新カウントを「この結果の番号」としてセット
                                 resultData.issueNumber = data.count;
-                                
+                                currentState.lastResult.issueNumber = data.count;
+
                                 fetchHistoryStats();
 
                                 if (data.newBadges && data.newBadges.length > 0) {
@@ -7926,7 +7926,8 @@ function handleInputQuiz(button, correctAnswers, questionId) {
                     unlucky: unluckyItems,
                     timestamp: timestamp,
                     username: username,
-                    issueNumber: restoredIssueNum // 復元した番号
+                    // ★修正: 履歴データ(dataOverride)にある issue_number を受け取る
+                    issueNumber: dataOverride.issue_number || dataOverride.issueNumber || null
                 };
                 currentState.lastResult = resultData;
             }
