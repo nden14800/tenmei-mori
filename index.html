@@ -7778,7 +7778,7 @@ function handleInputQuiz(button, correctAnswers, questionId) {
             let resultData, randNum, detailsList, luckyItems, unluckyItems, timestamp, username;
 
             if (isNewDraw) {
-                // ▼ 新規抽選ロジック
+                // 新規抽選
                 const base = omikujiResults[Math.floor(Math.random() * omikujiResults.length)];
                 randNum = Math.floor(Math.random() * 100) + 1;
                 timestamp = Date.now();
@@ -7820,7 +7820,7 @@ function handleInputQuiz(button, correctAnswers, questionId) {
                     unlucky: unluckyItems,
                     timestamp: timestamp,
                     username: username,
-                    issueNumber: null // 一旦nullで初期化
+                    issueNumber: null 
                 };
                 
                 if(currentState.user) {
@@ -7842,17 +7842,16 @@ function handleInputQuiz(button, correctAnswers, questionId) {
                             const errData = await res.json();
                             showToast(errData.message, 'warning', '天命の戒め');
                             showLoading(false);
-                            return; // 制限時は画面遷移しない
+                            return; 
                         }
                         
                         if(res.ok) {
                             const data = await res.json();
                             if(data.success && data.count) {
-                                // サーバーからの最新値をセット
                                 currentState.liveCount = data.count;
                                 document.getElementById('live-counter').textContent = currentState.liveCount.toLocaleString() + "本";
                                 
-                                // ★重要：結果データに番号を確定させる
+                                // サーバーからの最新値をセット
                                 resultData.issueNumber = data.count;
 
                                 fetchHistoryStats();
@@ -7865,21 +7864,21 @@ function handleInputQuiz(button, correctAnswers, questionId) {
                             }
                         }
                     } catch(e) { 
-                        console.error("Draw API Error:", e);
-                        // エラー時は「現在のカウンター + 1（見込み）」を入れておく
+                        console.error(e);
+                        // エラー時は「現在の表示 + 1」を仮の番号とする
                         resultData.issueNumber = (currentState.liveCount || 0) + 1;
                     } finally { 
                         showLoading(false); 
                     }
                 } else {
-                    // 未ログイン時：現在のカウンター + 1 を仮発行番号とする
+                    // 未ログイン時：「現在の表示 + 1」を仮の番号とする
                     resultData.issueNumber = (currentState.liveCount || 0) + 1;
                 }
                 
                 currentState.lastResult = resultData;
 
             } else {
-                // ▼ 履歴からの復元ロジック
+                // 履歴からの復元ロジック
                 resultData = dataOverride;
                 randNum = dataOverride.num || 1;
                 
@@ -7926,12 +7925,11 @@ function handleInputQuiz(button, correctAnswers, questionId) {
                 currentState.lastResult = resultData;
             }
 
-            // ★最終安全策：もしここでissueNumberが空なら、無理やり現在の値を入れる
+            // 安全策: 番号が空なら現在の値+1を入れる
             if (resultData.issueNumber === null || resultData.issueNumber === undefined) {
-                resultData.issueNumber = currentState.liveCount || 0;
+                resultData.issueNumber = (currentState.liveCount || 0) + 1;
             }
 
-            // 結果カードの描画と画面遷移
             renderResultToCard('result-card-outer', resultData, true); 
             showView('result');
             
@@ -8523,7 +8521,7 @@ ${getShareUrl()}`;
             window.open(intent, '_blank');
         }
 
-        // 参拝の記録：統計表示 (実績削除版)
+        // 参拝の記録：統計表示 (修正版: 連続参拝を削除し、大吉数を表示)
     async function loadMyStats() {
         if (!currentState.user) return;
 
@@ -8533,7 +8531,7 @@ ${getShareUrl()}`;
             if (res.ok) {
                 const data = await res.json();
                 
-                // 数値データ表示
+                // 数値データ表示 (ここを修正しました)
                 const statsGrid = document.querySelector('#stats-content-wrapper .grid');
                 if (statsGrid) {
                     statsGrid.className = 'grid grid-cols-2 gap-4 mb-8 text-center';
@@ -8545,21 +8543,12 @@ ${getShareUrl()}`;
                             </div>
                         </div>
                         <div class="bg-white dark:bg-zinc-800 p-4 rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm">
-                            <div class="text-xs text-gray-500 mb-1">大吉獲得</div>
+                            <div class="text-xs text-gray-500 mb-1">大吉獲得数</div>
                             <div class="text-2xl md:text-3xl font-black text-yellow-500">
                                 ${Number(data.stats.daikichiCount || 0).toLocaleString()}
                             </div>
                         </div>
                     `;
-                }
-
-                // バッジリストのコンテナがあれば空にする（または削除）
-                const badgeContainer = document.getElementById('stats-badge-list');
-                if (badgeContainer) {
-                    badgeContainer.innerHTML = '';
-                    // 直前の見出し（功徳の証）も消す
-                    const badgeTitle = badgeContainer.previousElementSibling;
-                    if(badgeTitle && badgeTitle.tagName === 'H3') badgeTitle.remove();
                 }
             }
         } catch (e) {
