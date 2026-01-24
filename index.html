@@ -1936,120 +1936,177 @@
     color: var(--text-sub);
 }
 
-        /* --- Pet Sim 99風 ツールチップ & レアリティ --- */
+       /* --- Pet Simulator 99風 ツールチップ & インベントリ --- */
 :root {
-    /* レアリティカラー定義 */
-    --rarity-basic: #d1d5db;      /* Gray */
-    --rarity-rare: #86efac;       /* Pastel Green */
-    --rarity-epic: #93c5fd;       /* Baby Blue */
-    --rarity-legendary: #fdba74;  /* Pastel Orange */
-    --rarity-mythical: #fca5a5;   /* Pastel Red */
-    --rarity-secret: #171717;     /* Black */
+    /* レアリティカラー (PS99参考) */
+    --rarity-basic: #b0b0b0;      /* グレー */
+    --rarity-rare: #4ade80;       /* パステルグリーン */
+    --rarity-epic: #60a5fa;       /* ベビーブルー */
+    --rarity-legendary: #fb923c;  /* パステルオレンジ */
+    --rarity-mythical: #f87171;   /* パステルレッド */
+    --rarity-secret: #171717;     /* ブラック/レインボー枠用 */
 }
 
 /* ツールチップ本体 */
 #pet-tooltip {
     position: fixed;
-    z-index: 9999;
-    pointer-events: none; /* マウスの邪魔をしない */
-    background: rgba(20, 20, 20, 0.95);
-    backdrop-filter: blur(8px);
-    border: 3px solid var(--rarity-basic); /* JSで動的に変更 */
-    border-radius: 16px;
-    padding: 16px;
-    min-width: 220px;
-    max-width: 280px;
+    z-index: 10000;
+    pointer-events: none; /* マウス入力を透過 */
+    background: rgba(15, 23, 42, 0.95); /* 濃いネイビー/黒 */
+    backdrop-filter: blur(12px);
+    border: 4px solid var(--rarity-basic); /* JSで動的に変更 */
+    border-radius: 20px;
+    padding: 0; /* 内部構造でパディング調整 */
+    width: 280px;
     color: #fff;
     font-family: 'Segoe UI', sans-serif;
-    box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+    box-shadow: 0 20px 50px rgba(0,0,0,0.6);
     opacity: 0;
-    transform: scale(0.9);
-    transition: opacity 0.15s, transform 0.15s, top 0.1s, left 0.1s;
+    transform: scale(0.8) translateY(10px);
+    transition: opacity 0.1s, transform 0.1s; /* 位置(top,left)はJSで直接制御 */
     display: flex;
     flex-direction: column;
-    align-items: center;
-    text-align: center;
+    overflow: hidden;
 }
 #pet-tooltip.visible {
     opacity: 1;
-    transform: scale(1);
+    transform: scale(1) translateY(0);
 }
 
-/* ツールチップ内の要素 */
+/* ツールチップ内部パーツ */
+.pt-header {
+    background: rgba(255,255,255,0.05);
+    padding: 12px 16px;
+    text-align: center;
+    border-bottom: 1px solid rgba(255,255,255,0.1);
+}
 .pt-title {
     font-weight: 900;
-    font-size: 1.2rem;
-    margin-bottom: 4px;
-    text-shadow: 0 2px 0 rgba(0,0,0,0.5);
-    color: var(--rarity-basic); /* JSで変更 */
+    font-size: 1.3rem;
+    color: #fff;
+    text-shadow: 0 2px 4px rgba(0,0,0,0.5);
+    line-height: 1.2;
 }
-.pt-rarity-tag {
+.pt-rarity-badge {
+    display: inline-block;
     font-size: 0.7rem;
-    font-weight: bold;
+    font-weight: 800;
+    padding: 2px 10px;
+    border-radius: 12px;
+    margin-top: 4px;
     text-transform: uppercase;
-    background: rgba(255,255,255,0.1);
-    padding: 2px 8px;
-    border-radius: 10px;
-    margin-bottom: 8px;
     letter-spacing: 0.1em;
-}
-.pt-desc {
-    font-size: 0.8rem;
-    color: #d1d5db;
-    margin-bottom: 12px;
-    line-height: 1.4;
-}
-.pt-footer {
-    width: 100%;
-    border-top: 1px solid rgba(255,255,255,0.2);
-    padding-top: 8px;
-    font-size: 0.75rem;
-    color: #9ca3af;
-    display: flex;
-    justify-content: space-between;
-}
-.pt-exist {
-    color: #fbbf24; /* Gold text */
-    font-weight: bold;
+    background: #333;
+    color: #fff;
 }
 
-/* インベントリ（バッジリスト）のスタイル */
+.pt-body {
+    padding: 16px;
+    text-align: center;
+}
+.pt-desc {
+    font-size: 0.85rem;
+    color: #d1d5db;
+    margin-bottom: 16px;
+    line-height: 1.5;
+}
+
+/* 進捗エリア */
+.pt-progress-area {
+    background: rgba(0,0,0,0.3);
+    border-radius: 12px;
+    padding: 10px;
+    margin-bottom: 10px;
+}
+.pt-status-text {
+    font-size: 0.75rem;
+    font-weight: bold;
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 4px;
+    color: #9ca3af;
+}
+.pt-progress-bar-bg {
+    height: 12px;
+    background: #374151;
+    border-radius: 6px;
+    overflow: hidden;
+    position: relative;
+    box-shadow: inset 0 2px 4px rgba(0,0,0,0.5);
+}
+.pt-progress-bar-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #3b82f6, #60a5fa);
+    width: 0%;
+    border-radius: 6px;
+    transition: width 0.3s;
+}
+/* 完了時のバー */
+.pt-completed .pt-progress-bar-fill {
+    background: linear-gradient(90deg, #10b981, #34d399);
+}
+
+.pt-footer {
+    background: rgba(0,0,0,0.2);
+    padding: 10px 16px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 0.8rem;
+    font-weight: bold;
+    border-top: 1px solid rgba(255,255,255,0.1);
+}
+.pt-exist-label { color: #9ca3af; }
+.pt-exist-val { color: #fbbf24; font-family: monospace; font-size: 1rem; }
+
+/* インベントリ（バッジスロット） */
 .badge-slot {
     aspect-ratio: 1;
-    background-color: #f3f4f6;
-    border: 3px solid transparent; /* 色はJSで */
-    border-radius: 16px;
+    background: linear-gradient(135deg, #f3f4f6 0%, #e5e7eb 100%);
+    border: 4px solid transparent; /* 色はJSで */
+    border-radius: 20px;
     display: flex;
     align-items: center;
     justify-content: center;
     position: relative;
     cursor: pointer;
-    transition: transform 0.1s;
-    box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+    transition: transform 0.1s, box-shadow 0.1s;
+    box-shadow: 0 4px 0 rgba(0,0,0,0.1); /* 立体感 */
+    touch-action: manipulation; /* スマホでの操作性向上 */
 }
 .dark .badge-slot {
-    background-color: #27272a;
+    background: linear-gradient(135deg, #27272a 0%, #18181b 100%);
+    box-shadow: 0 4px 0 rgba(0,0,0,0.3);
 }
-.badge-slot:hover {
-    transform: scale(1.05);
-    z-index: 10;
+.badge-slot:active {
+    transform: translateY(4px);
+    box-shadow: 0 0 0 transparent;
 }
 .badge-slot.locked {
-    background-color: #e5e7eb;
-    border-color: #d1d5db !important;
-    opacity: 0.7;
-}
-.dark .badge-slot.locked {
-    background-color: #3f3f46;
-    border-color: #52525b !important;
+    filter: grayscale(100%);
+    opacity: 0.6;
+    background: #333;
+    border-color: #555 !important;
 }
 .badge-icon-inner {
-    font-size: 2rem;
-    filter: drop-shadow(0 2px 2px rgba(0,0,0,0.1));
+    font-size: 2.5rem;
+    filter: drop-shadow(0 4px 4px rgba(0,0,0,0.2));
 }
-.badge-slot.locked .badge-icon-inner {
-    filter: grayscale(100%);
-    opacity: 0.3;
+.badge-new-mark {
+    position: absolute;
+    top: -5px; right: -5px;
+    background: #ef4444;
+    color: white;
+    font-size: 0.6rem;
+    font-weight: bold;
+    padding: 2px 6px;
+    border-radius: 8px;
+    border: 2px solid white;
+    animation: bounce 1s infinite;
+}
+@keyframes bounce {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-3px); }
 }
 
     </style>
