@@ -3881,8 +3881,8 @@ function escapeHtml(str) {
         {
             id: 38,
             title: "【最終報告】データベースの最終着地（Turso）と、参拝記録表示の最適化について",
-            date: "2026/1/23",
-            time: "23:45",
+            date: "2026/1/24",
+            time: "09:30",
             tag: "システム・仕様",
             tagColor: "text-emerald-600",
             borderColor: "border-emerald-600",
@@ -3890,54 +3890,60 @@ function escapeHtml(str) {
             content: `
                 <div class="article-content">
                     <p>いつも「運勢・天命乃杜」をご利用いただき、誠にありがとうございます。運営者のnden148です。</p>
-                    <p>本日、参拝者の皆様により正確な情報をお届けするため、プロフィール画面（参拝の記録）の表示項目を一部変更いたしました。また、ここ数日間で目まぐるしく変化した当サイトの「心臓部（データベース）」について、最終的な技術選定の理由をご報告いたします。</p>
+                    <p>本日、参拝者の皆様により正確な情報をお届けするため、プロフィール画面（参拝の記録）の表示項目を整理いたしました。また、ここ数日間、より良い環境を求めて遷宮（移行）を繰り返してきた当サイトの「心臓部（データベース）」の選定理由について、詳細な技術比較とともにご報告いたします。</p>
 
-                    <h3>1. 「大吉獲得数」表示の統合について</h3>
-                    <p>これまで「参拝の記録」画面において、数値としての「大吉獲得数」と、実績バッジとしての「大吉記録」を併記しておりましたが、システム上の集計タイミングのズレにより、両者の数字が一致しない（片方が0のままになる）現象が確認されました。</p>
-                    <p>調査の結果、実績バッジ（功徳の証）側のデータが最も正確に皆様の幸運を記録できていることが判明いたしました。</p>
-                    <p>そのため、混乱を招く数値だけの表示枠を撤廃し、今後は<strong>「功徳の証（バッジ）」にて大吉の獲得状況をご確認いただく</strong>仕様へと統一いたしました。皆様が引き当てた幸運は、バッジの中に確実に刻まれておりますのでご安心ください。</p>
+                    <h3>1. 「大吉獲得数」表示の一元化について</h3>
+                    <p>これまで「参拝の記録」画面において、個別の数値としての「大吉獲得数」を表示しておりましたが、システム上の集計タイミングの問題により、実績バッジ側は正しくカウントされているにもかかわらず、数値表示だけが「0」のまま更新されないという不整合が確認されました。</p>
+                    <p>混乱を避けるため、今後は<strong>「功徳の証（バッジ）」の進捗数値を唯一の正解（Source of Truth）</strong>として扱う仕様に変更いたしました。数値だけの箱を削除し、レイアウトを最適化しております。皆様の幸運の記録は、バッジの中に確実に保存されておりますのでご安心ください。</p>
 
-                    <h3>2. データベース放浪の旅、その終着点「Turso」</h3>
-                    <p>当サイトは、「1日10万回の書き込み」と「0.1秒以内の応答」を無料プランの範囲内で両立させるため、短期間のうちに複数のデータベース技術を渡り歩いてきました。そして今、SQLiteをベースとしたエッジデータベース<strong>「Turso（ターソ）」</strong>に定住することを決意しました。</p>
-                    <p>なぜ、流行のSupabaseや、最強スペックのTiDBではなく、Tursoを選んだのか。その技術的な比較と選定理由（裏話）をここに公開いたします。</p>
+                    <h3>2. データベース選定の裏側と「Turso」採用の理由</h3>
+                    <p>理想の神域（データベース）を求め、名だたるプラットフォームを検証してまいりました。その比較結果を公開いたします。</p>
 
                     <div class="overflow-x-auto mb-8">
                         <table class="comparison-table" style="min-width: 100%; font-size: 0.8rem;">
                             <thead class="bg-gray-100 dark:bg-zinc-700 font-bold">
                                 <tr>
                                     <th class="p-2 border border-gray-300">比較項目</th>
-                                    <th class="p-2 border border-gray-300 text-gray-500">Supabase (PostgreSQL)</th>
-                                    <th class="p-2 border border-gray-300 text-gray-500">TiDB (MySQL互換)</th>
+                                    <th class="p-2 border border-gray-300">Supabase (Postgres)</th>
+                                    <th class="p-2 border border-gray-300">TiDB (MySQL互換)</th>
                                     <th class="p-2 border border-gray-300 bg-emerald-50 dark:bg-emerald-900/20 text-emerald-800 dark:text-emerald-200 border-b-4 border-emerald-500">Turso (SQLite互換)</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 <tr>
                                     <td class="p-2 border border-gray-300 font-bold">無料枠の容量</td>
-                                    <td class="p-2 border border-gray-300 text-red-600">500 MB<br><span class="text-xs text-gray-400">（少し厳しい）</span></td>
-                                    <td class="p-2 border border-gray-300 font-bold">5 GiB<br><span class="text-xs text-gray-400">（理想的）</span></td>
-                                    <td class="p-2 border border-gray-300 font-bold text-emerald-600">5 GB<br><span class="text-xs text-gray-400">（十分な広さ）</span></td>
+                                    <td class="p-2 border border-gray-300 text-red-600">500 MB<br><span class="text-[10px] text-gray-400">（長期運用には不足）</span></td>
+                                    <td class="p-2 border border-gray-300 text-blue-600">5 GiB<br><span class="text-[10px] text-gray-400">（非常に魅力的）</span></td>
+                                    <td class="p-2 border border-gray-300 font-bold text-emerald-600">5 GB<br><span class="text-[10px] text-gray-400">（十分な広さ）</span></td>
                                 </tr>
                                 <tr>
-                                    <td class="p-2 border border-gray-300 font-bold">処理能力上限</td>
-                                    <td class="p-2 border border-gray-300">CPU共有</td>
-                                    <td class="p-2 border border-gray-300">50M RU/月</td>
-                                    <td class="p-2 border border-gray-300 font-bold">読込 5億回 / 書込 1000万回</td>
+                                    <td class="p-2 border border-gray-300 font-bold">リクエスト上限</td>
+                                    <td class="p-2 border border-gray-300">制限なし(API経由)</td>
+                                    <td class="p-2 border border-gray-300 text-blue-600">50M RU / 月</td>
+                                    <td class="p-2 border border-gray-300 font-bold">読込 5億 / 書込 1000万</td>
                                 </tr>
                                 <tr>
                                     <td class="p-2 border border-gray-300 font-bold">不採用の理由</td>
-                                    <td class="p-2 border border-gray-300">将来的に容量不足になる懸念があったため</td>
-                                    <td class="p-2 border border-gray-300 font-bold text-red-600">移行時にサイトが完全停止する致命的な不具合が発生</td>
+                                    <td class="p-2 border border-gray-300 text-red-600">容量制限が厳しく、データの蓄積に不安があったため。</td>
+                                    <td class="p-2 border border-gray-300 text-red-600 font-bold">移行直後、システムとの相性によりサイトが完全停止したため。</td>
                                     <td class="p-2 border border-gray-300 font-black text-lg text-emerald-600">◎ 採用</td>
                                 </tr>
                             </tbody>
                         </table>
                     </div>
 
-                    <p>正直に申し上げますと、スペック上は<strong>TiDB</strong>（5GiB / 5000万リクエストユニット）が最も理想的でした。しかし、実際に移行を試みたところ、当サイトのシステムとの相性問題により、画面が一切表示されなくなる致命的な事態に陥りました。動かないことにはどうしようもありません。</p>
-                    <p>一方、<strong>Supabase</strong>は安定していますが、無料枠の容量が<strong>500MB</strong>と厳しく、長く運営するには不安が残りました。</p>
-                    <p>最終的に選んだ<strong>Turso</strong>にも、「月間読み取り5億回（500M Reads）」「書き込み1000万回（10M Writes）」という制限は存在します。しかし、当サイトでは以前実施した「通信頻度の最適化（1分間隔更新）」や「キャッシュ活用」といった対策により、この制限には到底達しない設計となっております。</p>
-                    <p>この強固で軽快、そして身の丈に合った礎の上で、これからも皆様に快適な「天命」をお届けしてまいります。</p>
+                    <p>本当は、スペック面で最も優れていた <strong>TiDB</strong> への完全移行を望んでおりましたが、当杜のシステムと接続した際に、画面が一切表示されなくなる致命的なエラーが解決できず、断念いたしました。また、<strong>Supabase</strong> は500MBという容量の壁が、皆様の膨大な参拝履歴を預かるには少々心許ない数値でした。</p>
+
+                    <h3>3. Tursoの制限を回避する「鉄壁の対策」</h3>
+                    <p>最終的に選んだ <strong>Turso</strong> も無料プランゆえの制限はありますが、当杜では以下の「三重の対策」を講じることで、制限への到達を完全に回避しております。</p>
+                    
+                    <ul class="list-disc ml-5 space-y-2 mb-4">
+                        <li><strong>通信頻度の10分の1削減：</strong> フロントエンドからの自動更新間隔を5秒から1分へと大幅に延長し、アイドリング時の負荷を激減させました。</li>
+                        <li><strong>厳格なレート制限（結界）：</strong> おみくじ（分間60回）や認証（分間5回）に対し、サーバー側でIP単位の結界を張り、過剰な負荷からデータベースを保護しています。</li>
+                        <li><strong>HTTPパイプライン最適化：</strong> runSQL関数において、TCP接続ではなくHTTP APIを用いたPipeline処理を採用。サーバーレス環境特有の接続数問題を根本から解決し、爆速の応答速度を実現しました。</li>
+                    </ul>
+
+                    <p>これら最新の最適化技術と、Tursoの軽快なエッジ性能が組み合わさることで、天命乃杜はかつてない安定性を手に入れました。新しく、そして強固になった神域で、心ゆくまで己が天命をお受け取りください。</p>
                 </div>
             `
         },
