@@ -3942,6 +3942,36 @@ function escapeHtml(str) {
 
 
         {
+            id: 39,
+            title: "【機能変更】「連続参拝（ログインボーナス）」機能の廃止と、参拝記録の表示修正について",
+            date: "2026/1/24",
+            time: "11:35",
+            tag: "機能変更",
+            tagColor: "text-gray-600",
+            borderColor: "border-gray-500",
+            desc: "日数のカウントが正常に動作しない不具合が確認されたため、連続参拝機能を廃止いたしました。併せて数値の表示形式を修正しました。",
+            content: `
+                <div class="article-content">
+                    <p>いつも「運勢・天命乃杜」をご利用いただき、誠にありがとうございます。</p>
+                    <p>本日、以下の機能変更および修正を行いました。</p>
+
+                    <h3>1. 「連続参拝（ログインボーナス）」機能の廃止</h3>
+                    <p>これまで提供しておりました「連続参拝日数」のカウント機能につきまして、日付更新の判定ロジックに不整合があり、毎日参拝しても日数が加算されない等の不具合が多発しておりました。</p>
+                    <p>不正確なデータをお見せすることは神意に反すると判断し、誠に勝手ながら<strong>本機能（日数カウントおよびスタンプ帳）を完全に廃止（撤去）</strong>させていただきました。</p>
+                    <p>今後は純粋に「総参拝数」と「大吉獲得数」の積み重ねをお楽しみください。</p>
+
+                    <h3>2. 参拝記録の表示修正</h3>
+                    <p>プロフィール画面（参拝の記録）において、以下の修正を行いました。</p>
+                    <ul class="list-disc ml-5">
+                        <li><strong>数値のカンマ区切り：</strong> 「1000」と表示されていた箇所を「1,000」のように見やすく修正しました。</li>
+                        <li><strong>大吉数の表示：</strong> ご要望にお応えし、「大吉獲得数」の表示パネルを復活させました。</li>
+                        <li><strong>実績バッジの表示：</strong> 未獲得のバッジが誤って「獲得済み」と表示される不具合を修正しました。</li>
+                    </ul>
+                    <p>度重なる変更でご迷惑をおかけしますが、何卒ご理解のほどお願い申し上げます。</p>
+                </div>
+            `
+        },
+        {
             id: 38,
             title: "【最終報告】データベースの最終着地（Turso）と、参拝記録表示の最適化について",
             date: "2026/1/23",
@@ -8513,7 +8543,7 @@ ${getShareUrl()}`;
             window.open(intent, '_blank');
         }
 
-        // 参拝の記録：統計＆スタンプカード表示 (修正版)
+        // 参拝の記録：統計表示 (修正版：連続参拝削除・大吉復活・カンマ修正)
 async function loadMyStats() {
     if (!currentState.user) return;
 
@@ -8523,95 +8553,36 @@ async function loadMyStats() {
         if (res.ok) {
             const data = await res.json();
             
-            // 1. 数値データ表示 (カンマ区切り適用 & 大吉復活)
-            // HTMLの構造を「3カラム」に戻して大吉を入れる
+            // 1. 数値データ表示 (カンマ区切り適用 & 大吉復活 & 連続参拝削除)
+            // HTML構造を「2カラム」に変更してシンプルに見せる
             const statsGrid = document.querySelector('#stats-content-wrapper .grid');
             if (statsGrid) {
-                // クラスを2列から3列に変更
-                statsGrid.classList.remove('grid-cols-2');
-                statsGrid.classList.add('grid-cols-3');
+                // クラスをリセットして2列に設定
+                statsGrid.className = 'grid grid-cols-2 gap-4 mb-8 text-center';
                 
                 statsGrid.innerHTML = `
                     <div class="bg-white dark:bg-zinc-800 p-4 rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm">
                         <div class="text-xs text-gray-500 mb-1">総参拝数</div>
-                        <div class="text-xl md:text-2xl font-black text-red-600" id="stat-total">
-                            ${(data.stats.totalDraws || 0).toLocaleString()}
+                        <div class="text-2xl md:text-3xl font-black text-red-600" id="stat-total">
+                            ${Number(data.stats.totalDraws || 0).toLocaleString()}
                         </div>
                     </div>
                     <div class="bg-white dark:bg-zinc-800 p-4 rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm">
                         <div class="text-xs text-gray-500 mb-1">大吉獲得</div>
-                        <div class="text-xl md:text-2xl font-black text-yellow-600">
-                            ${(data.stats.daikichiCount || 0).toLocaleString()}
-                        </div>
-                    </div>
-                    <div class="bg-white dark:bg-zinc-800 p-4 rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm">
-                        <div class="text-xs text-gray-500 mb-1">連続参拝</div>
-                        <div class="text-xl md:text-2xl font-black text-purple-600" id="stat-streak">
-                            ${(data.stats.goshuinCount || 0).toLocaleString()}<span class="text-xs font-normal text-gray-400 ml-1">日</span>
+                        <div class="text-2xl md:text-3xl font-black text-yellow-500">
+                            ${Number(data.stats.daikichiCount || 0).toLocaleString()}
                         </div>
                     </div>
                 `;
             }
 
-            // 2. 連続参拝スタンプカード (ゲーム風UI)
-            const streakCount = data.stats.goshuinCount || 0;
-            const extraDiv = document.getElementById('extra-stats-grid');
-            
-            // スタンプカードのHTML生成
-            // 現在の連続日数から、今日が「何日目」の表示になるかを計算 (最大7日周期の表示とする)
-            const cycleDay = ((streakCount - 1) % 7) + 1; // 1〜7
-            // まだ今日引いてない場合は、streakは昨日のままなので、表示上は「次は◯日目」とする
-            // (※API側で「今日引いたか」フラグがあれば完璧だが、ここではstreak値ベースで表現)
-            
-            let stampsHtml = '';
-            for(let i=1; i<=7; i++) {
-                // スタンプが押される条件: 
-                // streakが i 以上であること。
-                // ただし、7日を超えている場合は、直近の7日分を表示するイメージ
-                const isActive = i <= cycleDay && streakCount > 0;
-                const mark = isActive ? '<i class="bi bi-flower1 stamp-mark"></i>' : (i===7 ? '<i class="bi bi-gift-fill text-gray-300"></i>' : i);
-                const activeClass = isActive ? 'active' : '';
-                
-                stampsHtml += `
-                    <div class="stamp-item ${activeClass}">
-                        ${mark}
-                        <span class="stamp-label">${i}日目</span>
-                    </div>
-                `;
-            }
+            // 2. スタンプカード関連の要素があれば削除（ゴミ掃除）
+            const oldStamp = document.getElementById('stamp-card-area');
+            if(oldStamp) oldStamp.remove();
+            const extraStats = document.getElementById('extra-stats-grid');
+            if(extraStats) extraStats.remove();
 
-            const stampCardHtml = `
-                <div class="stamp-card-container shadow-sm">
-                    <div class="flex justify-between items-center mb-2">
-                        <h4 class="font-bold text-sm text-gray-700 dark:text-gray-200">
-                            <i class="bi bi-calendar-check-fill text-red-500 mr-2"></i>参拝ボーナス帳
-                        </h4>
-                        <span class="text-xs font-mono text-gray-500">Total: ${streakCount.toLocaleString()} Days</span>
-                    </div>
-                    <div class="stamp-grid">
-                        ${stampsHtml}
-                    </div>
-                    <div class="mt-4 text-[10px] text-center text-gray-400">
-                        毎日参拝して、杜の功徳（バッジ）を集めましょう。<br>
-                        ※日付は午前0時に切り替わります。
-                    </div>
-                </div>
-            `;
-
-            // 既存の「実績達成率」などの前か後に挿入
-            // ここでは statsWrapper の直下、数値グリッドの下に挿入する形をとります
-            let stampTarget = document.getElementById('stamp-card-area');
-            if(!stampTarget) {
-                stampTarget = document.createElement('div');
-                stampTarget.id = 'stamp-card-area';
-                const wrapper = document.getElementById('stats-content-wrapper');
-                // 数値グリッドの次、バッジリストの前
-                const badgeHeader = wrapper.querySelector('h3:nth-of-type(2)'); // "功徳の証"の見出し
-                wrapper.insertBefore(stampTarget, badgeHeader);
-            }
-            stampTarget.innerHTML = stampCardHtml;
-
-            // 3. バッジリストの描画 (既存コードと同じだが再掲)
+            // 3. バッジリストの描画
             const badgeContainer = document.getElementById('stats-badge-list');
             if (badgeContainer) {
                 badgeContainer.innerHTML = data.badges.map(b => {
@@ -8641,7 +8612,9 @@ async function loadMyStats() {
                             <div class="w-full mt-1">
                                 <div class="flex justify-between text-[10px] text-gray-500 mb-1">
                                     <span>進捗</span>
-                                    <span class="font-mono">${(b.current_val || 0).toLocaleString()} / ${(b.target_val || 0).toLocaleString()}</span>
+                                    <span class="font-mono">
+                                        ${Number(b.current_val || 0).toLocaleString()} / ${Number(b.target_val || 0).toLocaleString()}
+                                    </span>
                                 </div>
                                 <div class="w-full bg-gray-200 dark:bg-gray-700 h-1.5 rounded-full overflow-hidden">
                                     <div class="${barColor} h-full rounded-full" style="width: ${b.progress}%"></div>
