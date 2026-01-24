@@ -10932,6 +10932,150 @@ async function updateAccountSettings() {
     }
 }
 
+   // window.onload内など、初期化時に実行
+const tooltipDiv = document.createElement('div');
+tooltipDiv.id = 'pet-tooltip';
+tooltipDiv.innerHTML = `
+    <div class="pt-title" id="pt-title">Badge Name</div>
+    <div class="pt-rarity-tag" id="pt-rarity">BASIC</div>
+    <div class="pt-desc" id="pt-desc">Description here.</div>
+    <div class="pt-footer">
+        <span>Exist:</span>
+        <span class="pt-exist" id="pt-exist">0</span>
+    </div>
+`;
+document.body.appendChild(tooltipDiv);
+
+        
+// --- Pet Sim 99風 ツールチップ制御 ---
+const TooltipSystem = {
+    el: null,
+    
+    init: function() {
+        this.el = document.getElementById('pet-tooltip');
+        
+        // マウス追従
+        document.addEventListener('mousemove', (e) => {
+            if(!this.el.classList.contains('visible')) return;
+            
+            const offset = 15;
+            let left = e.clientX + offset;
+            let top = e.clientY + offset;
+            
+            // 画面端の調整
+            if (left + this.el.offsetWidth > window.innerWidth) {
+                left = e.clientX - this.el.offsetWidth - offset;
+            }
+            if (top + this.el.offsetHeight > window.innerHeight) {
+                top = e.clientY - this.el.offsetHeight - offset;
+            }
+            
+            this.el.style.left = left + 'px';
+            this.el.style.top = top + 'px';
+        });
+    },
+
+    show: function(target) {
+        const title = target.dataset.name;
+        const desc = target.dataset.desc;
+        const rarity = target.dataset.rarity;
+        const count = target.dataset.count;
+        const color = target.dataset.color; // CSS変数またはHEX
+
+        document.getElementById('pt-title').textContent = title;
+        document.getElementById('pt-title').style.color = color;
+        
+        document.getElementById('pt-rarity').textContent = rarity;
+        document.getElementById('pt-rarity').style.backgroundColor = color + "33"; // 20% opacity
+        document.getElementById('pt-rarity').style.color = color;
+
+        document.getElementById('pt-desc').textContent = desc;
+        document.getElementById('pt-exist').textContent = Number(count).toLocaleString();
+        
+        this.el.style.borderColor = color;
+        this.el.classList.add('visible');
+    },
+
+    hide: function() {
+        this.el.classList.remove('visible');
+    }
+};
+
+// --- レアリティ判定ヘルパー ---
+function getRarityInfo(badge) {
+    // 条件タイプや値、名前からレアリティを決定
+    const type = badge.condition_type;
+    const val = badge.condition_value;
+    
+    // シークレット
+    if (type === 'secret') {
+        return { name: 'SECRET???', color: 'var(--rarity-secret)', class: 'secret' };
+    }
+    // ミシカル (大吉系の上位)
+    if (type === 'daikichi_count' && val >= 10) {
+        return { name: 'MYTHICAL', color: 'var(--rarity-mythical)', class: 'mythical' };
+    }
+    // レジェンダリー (大吉、または高難易度)
+    if (type === 'daikichi_count' || (type === 'streak_days' && val >= 30)) {
+        return { name: 'LEGENDARY', color: 'var(--rarity-legendary)', class: 'legendary' };
+    }
+    // エピック (中難易度)
+    if ((type === 'streak_days' && val >= 7) || (type === 'total_draws' && val >= 100)) {
+        return { name: 'EPIC', color: 'var(--rarity-epic)', class: 'epic' };
+    }
+    // レア (少し頑張れば)
+    if ((type === 'streak_days' && val >= 3) || (type === 'total_draws' && val >= 10) || type === 'kyo_count') {
+        return { name: 'RARE', color: 'var(--rarity-rare)', class: 'rare' };
+    }
+    // ベーシック
+    return { name: 'BASIC', color: 'var(--rarity-basic)', class: 'basic' };
+}
+
+// --- シークレット隠しコマンド ---
+let secretClickCount = 0;
+let secretClickTimer = null;
+
+function setupSecretTrigger() {
+    const titleEl = document.querySelector('#view-stats h2'); // 参拝の記録のタイトル
+    if(!titleEl) return;
+
+    // タップ・クリック時の処理
+    titleEl.addEventListener('click', async (e) => {
+        // エフェクト（拡大）
+        e.target.style.transform = "scale(1.1)";
+        setTimeout(() => e.target.style.transform = "scale(1)", 100);
+
+        secretClickCount++;
+        
+        // タイマーリセット (2秒間隔があいたらリセット)
+        if(secretClickTimer) clearTimeout(secretClickTimer);
+        secretClickTimer = setTimeout(() => {
+            secretClickCount = 0;
+        }, 2000);
+
+        if(secretClickCount >= 10) {
+            secretClickCount = 0;
+            // API呼び出し
+            if(currentState.user) {
+                showLoading(true);
+                try {
+                    const res = await authFetch(`${API_BASE}/api/badge/unlock_secret`, { method: 'POST' });
+                    const data = await res.json();
+                    if(res.ok && data.newBadge) {
+                        showToast("隠された天命が解放されました！", "success", "SECRET UNLOCKED");
+                        // 花吹雪などの演出を入れても良い
+                        loadMyStats(); // バッジリスト更新
+                    }
+                } catch(e) { console.error(e); }
+                finally { showLoading(false); }
+            } else {
+                showToast("気配を感じる...（ログインが必要です）", "info");
+            }
+        }
+    });
+}
+
+
             
     </script>
 </body>
