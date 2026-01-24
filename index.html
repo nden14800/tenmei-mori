@@ -1936,266 +1936,6 @@
     color: var(--text-sub);
 }
 
-        
-<style>
-        :root {
-            /* ライトモード変数 */
-            --bg-pattern: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23d4d4d4' fill-opacity='0.15'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
-            --bg-color: #ffffff;
-            --text-main: #111827; /* より深い黒 */
-            --text-sub: #6b7280;
-            --card-bg: #ffffff;
-            --card-border: #e5e7eb;
-            --accent-red: #b91c1c;
-            --accent-gold: #c5a059;
-            --sidebar-bg: rgba(255, 255, 255, 0.9);
-            --sidebar-width: 260px; /* PCでは常に展開 */
-            --sidebar-width-mobile: 80px;
-            --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
-            --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
-            --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
-        }
-
-        @media (prefers-color-scheme: dark) {
-            :root {
-                --bg-pattern: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23444444' fill-opacity='0.15'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
-                --bg-color: #1a1a1a;
-                --text-main: #f3f4f6;
-                --text-sub: #9ca3af;
-                --card-bg: #27272a;
-                --card-border: #3f3f46;
-                --sidebar-bg: rgba(39, 39, 42, 0.9);
-            }
-        }
-        .dark {
-            --bg-pattern: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23444444' fill-opacity='0.15'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E") !important;
-            --bg-color: #1a1a1a !important;
-            --text-main: #f3f4f6 !important;
-            --text-sub: #9ca3af !important;
-            --card-bg: #27272a !important;
-            --card-border: #3f3f46 !important;
-            --sidebar-bg: rgba(39, 39, 42, 0.9) !important;
-        }
-
-        body {
-            font-family: 'Helvetica Neue', Arial, 'Hiragino Kaku Gothic ProN', 'Hiragino Sans', 'Meiryo', sans-serif;
-            background-color: var(--bg-color);
-            background-image: var(--bg-pattern);
-            color: var(--text-main);
-            margin: 0;
-            padding: 0;
-            display: flex;
-            min-height: 100vh;
-            overflow-x: hidden;
-        }
-
-        /* 見出し用フォント */
-        h1, h2, h3, .serif {
-            font-family: 'Zen Old Mincho', serif;
-        }
-
-        /* サイドバー刷新 */
-        #sidebar {
-            width: var(--sidebar-width);
-            background-color: var(--sidebar-bg);
-            backdrop-filter: blur(20px);
-            border-right: 1px solid var(--card-border);
-            height: 100vh;
-            position: fixed;
-            left: 0;
-            top: 0;
-            z-index: 100;
-            padding: 24px 16px;
-            display: flex;
-            flex-direction: column;
-            gap: 8px;
-            transition: transform 0.3s ease;
-        }
-        
-        .nav-btn {
-            width: 100%;
-            display: flex;
-            align-items: center;
-            padding: 12px 16px;
-            color: var(--text-sub);
-            background: transparent;
-            border: none;
-            border-radius: 12px;
-            cursor: pointer;
-            transition: all 0.2s;
-            text-decoration: none;
-            font-weight: 600;
-            font-size: 0.95rem;
-        }
-        .nav-btn:hover, .nav-btn.active {
-            background-color: var(--card-bg);
-            color: var(--text-main);
-            box-shadow: var(--shadow-sm);
-        }
-        .nav-btn.active {
-            background-color: rgba(185, 28, 28, 0.05);
-            color: var(--accent-red);
-        }
-        .nav-btn i {
-            font-size: 1.25rem;
-            margin-right: 12px;
-            width: 24px;
-            text-align: center;
-        }
-        
-        /* モバイル対応 */
-        @media (max-width: 768px) {
-            #sidebar {
-                width: 100%;
-                height: auto;
-                bottom: 0;
-                top: auto;
-                flex-direction: row;
-                justify-content: space-around;
-                padding: 10px;
-                border-right: none;
-                border-top: 1px solid var(--card-border);
-            }
-            .nav-text { display: none; }
-            .nav-btn { padding: 8px; justify-content: center; border-radius: 8px; }
-            .nav-btn i { margin-right: 0; }
-            #main-content { margin-left: 0 !important; padding-bottom: 80px; }
-        }
-
-        #main-content {
-            flex: 1;
-            margin-left: var(--sidebar-width);
-            padding: 40px;
-            max-width: 1600px;
-            width: 100%;
-        }
-
-        /* モダンカード (Bento Grid用) */
-        .modern-card {
-            background-color: var(--card-bg);
-            border: 1px solid var(--card-border);
-            border-radius: 24px;
-            padding: 24px;
-            transition: transform 0.2s, box-shadow 0.2s;
-            position: relative;
-            overflow: hidden;
-        }
-        .modern-card:hover {
-            transform: translateY(-2px);
-            box-shadow: var(--shadow-lg);
-            border-color: rgba(185, 28, 28, 0.2);
-        }
-
-        /* ヒーローカウンター (大きな数字) */
-        .hero-count-container {
-            display: flex;
-            align-items: baseline;
-            gap: 12px;
-        }
-        .hero-count-value {
-            font-family: 'Zen Old Mincho', serif;
-            font-size: 4rem;
-            font-weight: 900;
-            line-height: 1;
-            color: var(--text-main);
-            letter-spacing: -0.05em;
-        }
-        .hero-count-label {
-            font-size: 1rem;
-            color: var(--text-sub);
-            font-weight: bold;
-        }
-
-        /* Bento Grid Layouts */
-        .bento-grid-2 { display: grid; grid-template-columns: repeat(2, 1fr); gap: 24px; }
-        .bento-grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px; }
-        .bento-grid-4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 24px; }
-        
-        @media (max-width: 1024px) {
-            .bento-grid-3, .bento-grid-4 { grid-template-columns: repeat(2, 1fr); }
-        }
-        @media (max-width: 640px) {
-            .bento-grid-2, .bento-grid-3, .bento-grid-4 { grid-template-columns: 1fr; }
-            .hero-count-value { font-size: 3rem; }
-        }
-
-        /* 分析チャート（CSSのみで円グラフ） */
-        .pie-chart {
-            width: 120px; height: 120px;
-            border-radius: 50%;
-            background: conic-gradient(var(--accent-red) 0% 0%, var(--card-border) 0% 100%);
-            display: flex; align-items: center; justify-content: center;
-            position: relative;
-        }
-        .pie-chart::after {
-            content: ""; position: absolute;
-            width: 80px; height: 80px;
-            background: var(--card-bg);
-            border-radius: 50%;
-        }
-        .pie-value {
-            position: absolute; z-index: 10;
-            font-weight: bold; font-size: 1.2rem;
-        }
-
-        /* タイムラインスタイル */
-        .timeline-item {
-            position: relative;
-            padding-left: 30px;
-            margin-bottom: 20px;
-            border-left: 2px solid var(--card-border);
-        }
-        .timeline-item::before {
-            content: '';
-            position: absolute; left: -6px; top: 0;
-            width: 10px; height: 10px;
-            border-radius: 50%;
-            background: var(--accent-red);
-            border: 2px solid var(--card-bg);
-        }
-
-        /* 共通ボタンスタイル刷新 */
-        .btn-modern {
-            display: inline-flex; justify-content: center; align-items: center;
-            padding: 12px 24px; border-radius: 100px;
-            font-weight: 700; transition: all 0.2s;
-            cursor: pointer; border: none; gap: 8px;
-        }
-        .btn-modern-primary {
-            background: var(--text-main); color: var(--bg-color);
-        }
-        .btn-modern-primary:hover {
-            opacity: 0.9; transform: scale(1.02);
-            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-        }
-        
-        /* 検索バー刷新 */
-        .modern-search {
-            width: 100%;
-            padding: 16px 20px;
-            border-radius: 16px;
-            border: 1px solid var(--card-border);
-            background: var(--card-bg);
-            font-size: 1rem;
-            transition: all 0.2s;
-            box-shadow: var(--shadow-sm);
-        }
-        .modern-search:focus {
-            outline: none;
-            border-color: var(--accent-red);
-            box-shadow: 0 0 0 4px rgba(185, 28, 28, 0.1);
-        }
-
-        /* アニメーション用 */
-        @keyframes fadeInScale {
-            from { opacity: 0; transform: scale(0.98); }
-            to { opacity: 1; transform: scale(1); }
-        }
-        .view-section.active {
-            animation: fadeInScale 0.4s cubic-bezier(0.16, 1, 0.3, 1);
-        }
-
-
     </style>
 </head>
 <body>
@@ -2214,61 +1954,84 @@
         </svg>
     </div>
 
+    <!-- サイドバー -->
     <nav id="sidebar">
-        <div class="mb-8 px-4 hidden md:block">
-            <h1 class="text-xl font-black tracking-widest serif">天命乃杜</h1>
-            <p class="text-xs text-gray-400 font-bold mt-1">FORTUNE TENMEI</p>
-        </div>
-
-        <button class="nav-btn active" onclick="showView('home')" id="nav-home">
-            <i class="bi bi-grid-fill"></i>
+        <button class="nav-btn" onclick="showView('home')">
+            <i class="bi bi-house-door"></i>
             <span class="nav-text">ホーム</span>
         </button>
-        <button class="nav-btn" onclick="showView('draw')" id="nav-draw">
-            <i class="bi bi-flower1"></i>
-            <span class="nav-text">おみくじを引く</span>
-        </button>
-        <button class="nav-btn" onclick="showView('zodiac')" id="nav-zodiac">
+        <button class="nav-btn" onclick="showView('zodiac')">
             <i class="bi bi-stars"></i>
-            <span class="nav-text">12星座×血液型</span>
+            <span class="nav-text">12星座×血液型占い</span>
         </button>
-        <button class="nav-btn" onclick="showView('history')" id="nav-history">
+        <button class="nav-btn" onclick="showView('history')">
             <i class="bi bi-clock-history"></i>
             <span class="nav-text">おみくじの轍</span>
         </button>
-        <button class="nav-btn" onclick="showView('news')" id="nav-news">
-            <i class="bi bi-megaphone-fill"></i>
+        <button class="nav-btn" onclick="showView('news')">
+            <i class="bi bi-bell"></i>
             <span class="nav-text">社務所だより</span>
         </button>
-        <button class="nav-btn" onclick="showView('column')" id="nav-column">
-            <i class="bi bi-book-half"></i>
+        <button class="nav-btn" onclick="showView('column')">
+            <i class="bi bi-book"></i>
             <span class="nav-text">神籤草子</span>
         </button>
-        <button class="nav-btn" onclick="showView('omamori')" id="nav-omamori">
-            <i class="bi bi-shield-check"></i>
+        <!-- サイドバー内に追加 -->
+        <button class="nav-btn" onclick="showView('omamori')">
+            <!-- 盾のアイコンで「守り」を表現 -->
+            <i class="bi bi-shield-fill-check"></i>
             <span class="nav-text">御守授与所</span>
         </button>
-        <button class="nav-btn" onclick="showView('prefecture')" id="nav-prefecture">
-            <i class="bi bi-map-fill"></i>
-            <span class="nav-text">全国の運気</span>
-        </button>
-        <button class="nav-btn" onclick="showView('stats')" id="nav-stats">
-            <i class="bi bi-bar-chart-line-fill"></i>
-            <span class="nav-text">参拝の記録</span>
-        </button>
-        <button class="nav-btn" onclick="showView('lab')" id="nav-lab">
-            <i class="bi bi-flask-fill"></i>
+        <!-- サイドバーボタン: TENMEI Labs -->
+        <button class="nav-btn" onclick="showView('lab')">
+            <div class="nav-flask-anim">
+                <svg viewBox="0 0 200 200" overflow="hidden" style="width:100%; height:100%;">
+                    <defs>
+                        <clipPath id="flaskClipNav">
+                             <path d="M80 20 L120 20 L120 70 L170 170 C175 180, 165 190, 150 190 L50 190 C35 190, 25 180, 30 170 L80 70 Z" />
+                        </clipPath>
+                    </defs>
+                    <g class="flask-container">
+                        <g clip-path="url(#flaskClipNav)">
+                            <g class="liquid-container">
+                                <!-- サイドバーは視認性重視で手前の波のみ表示 -->
+                                <path class="wave-path wave-front" 
+                                      d="M0 120 Q50 140 100 120 T200 120 T300 120 T400 120 V250 H0 Z" />
+                            </g>
+                        </g>
+                        <!-- ガラス容器 -->
+                        <path class="glass-stroke" fill="none" stroke-width="12"
+                              d="M80 20 L120 20 L120 70 L170 170 C175 180, 165 190, 150 190 L50 190 C35 190, 25 180, 30 170 L80 70 Z" />
+                    </g>
+                </svg>
+            </div>
             <span class="nav-text">TENMEI Labs</span>
         </button>
 
-        <div class="mt-auto pt-4 border-t border-gray-200 dark:border-gray-700">
-            <button class="nav-btn" onclick="handleProfileClick()" id="nav-login-btn">
-                <i class="bi bi-person-circle"></i>
-                <span class="nav-text">ログイン / 登録</span>
+        <button class="nav-btn" onclick="showView('prefecture')">
+            <i class="bi bi-list-columns-reverse"></i>
+            <span class="nav-text">全国の運気</span>
+        </button>
+
+        <!-- ▼▼ 変更: 参拝者台帳を削除し、統計ボタンに変更 ▼▼ -->
+    <button class="nav-btn" onclick="showView('stats')">
+        <i class="bi bi-bar-chart-line-fill"></i>
+        <span class="nav-text">参拝の記録</span>
+    </button>
+        
+        <button class="nav-btn" onclick="handleProfileClick()" id="nav-login-btn">
+            <i class="bi bi-person-circle"></i>
+            <span class="nav-text">ログイン/登録</span>
+        </button>
+        
+        <div style="margin-top: auto; width: 100%;">
+            <button class="nav-btn" onclick="showView('about')">
+                <i class="bi bi-info-circle"></i>
+                <span class="nav-text">当サイトについて</span>
             </button>
-            <button class="nav-btn" onclick="showView('setting')" id="nav-setting">
-                <i class="bi bi-gear-fill"></i>
-                <span class="nav-text">設定</span>
+            <button class="nav-btn" onclick="showView('privacy')">
+                <i class="bi bi-shield-lock"></i>
+                <span class="nav-text">プライバシー</span>
             </button>
         </div>
     </nav>
@@ -2276,75 +2039,111 @@
     <!-- メインエリア -->
     <main id="main-content">
         
-        <section id="view-home" class="view-section active">
-            <!-- ヒーローヘッダー -->
-            <div class="mb-10 text-center md:text-left flex flex-col md:flex-row justify-between items-end">
-                <div>
-                    <h2 class="text-4xl font-black mb-2 serif">運勢・天命乃杜</h2>
-                    <p class="text-gray-500 font-bold">日々の道しるべ、此処にあり。</p>
-                </div>
-                <div class="mt-4 md:mt-0 text-right">
-                    <div class="text-xs text-gray-400 font-bold uppercase mb-1">Total Issues</div>
-                    <div class="hero-count-value" id="live-counter">---</div>
-                </div>
+        <!-- ビュー: ホーム -->
+        <section id="view-home" class="view-section active text-center max-w-4xl mx-auto">
+            <h1 class="text-4xl font-black mb-2 tracking-widest" style="font-family: 'Zen Old Mincho'">運勢・天命乃杜</h1>
+            <p class="text-sm font-serif mb-4 tracking-widest uppercase">FORTUNE TENMEI-NO-MORI</p>
+            <p class="text-lg font-serif mb-8 themed-text-sub">天命が導く、日々の道しるべ<br>災いを避け、福を招く</p>
+
+            <div class="home-circle-container" id="home-anim-container">
+                <!-- JSで紙を生成 -->
             </div>
 
-            <!-- Bento Grid Layout -->
-            <div class="bento-grid-3">
-                
-                <!-- メインアクション: おみくじ -->
-                <div class="modern-card col-span-3 md:col-span-2 relative overflow-hidden group cursor-pointer" onclick="startOmikuji()" style="min-height: 300px; display:flex; flex-direction:column; justify-content:center; align-items:center;">
-                    <div class="absolute inset-0 opacity-10 bg-red-600 transition group-hover:opacity-20"></div>
-                    <div class="home-circle-container" id="home-anim-container" style="transform: scale(0.8);"></div>
-                    <div class="relative z-10 text-center mt-4">
-                        <h3 class="text-3xl font-black serif mb-2">おみくじを引く</h3>
-                        <p class="text-sm font-bold opacity-70">心を鎮め、天命を問う</p>
+            <button onclick="startOmikuji()" class="btn-primary text-xl px-12 py-4 mb-8">
+                <i class="bi bi-box-seam-fill"></i> おみくじを引く
+            </button>
+
+            <!-- カウンター -->
+            <div id="home-counter-area" class="themed-card p-4 rounded-lg mb-2">
+                <p class="text-sm themed-text-sub">累計発行本数</p>
+                <div class="text-3xl font-bold font-mono text-red-700" id="live-counter">---</div>
+                <!-- ▼ ここを修正: (5秒毎更新) → (1分毎更新) -->
+                <p class="text-xs themed-text-sub mt-1">最終更新: <span id="counter-time">--:--:--</span> (1分毎更新)</p>
+                <p class="text-[10px] themed-text-sub mt-1">※会員様の祈りの数のみが反映されます</p>
+            </div>
+
+            <!-- ダッシュボード風グリッド -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mt-12 text-left">
+                <!-- 轍 (統計) -->
+                <div class="themed-card p-6 rounded-xl shadow-sm">
+                    <h3 class="font-bold text-lg mb-2 border-b border-gray-300 dark:border-gray-600 pb-2"><i class="bi bi-balloon-heart text-red-500"></i> おみくじの轍</h3>
+                    <div class="text-xs text-right mb-2 themed-text-sub">更新: <span id="stats-update-time">--:--:--</span></div>
+                    
+                    <div class="space-y-3 mb-4 text-sm" id="home-history-stats">
+                         <!-- 12段階 統計表示 -->
+                         <div class="grid grid-cols-1 gap-2">
+                             <!-- 大吉 -->
+                             <div class="flex justify-between text-xs"><span>大吉</span><span><span id="cnt-daikichi" class="mr-2 font-mono">0</span><span id="stat-daikichi">0.00%</span></span></div>
+                             <div class="w-full bg-gray-200 dark:bg-gray-600 h-1.5 rounded mb-1"><div id="bar-daikichi" class="bg-yellow-400 h-1.5 rounded" style="width: 0%"></div></div>
+                             
+                             <!-- 中吉 -->
+                             <div class="flex justify-between text-xs"><span>中吉</span><span><span id="cnt-chukichi" class="mr-2 font-mono">0</span><span id="stat-chukichi">0.00%</span></span></div>
+                             <div class="w-full bg-gray-200 dark:bg-gray-600 h-1.5 rounded mb-1"><div id="bar-chukichi" class="bg-orange-400 h-1.5 rounded" style="width: 0%"></div></div>
+
+                             <!-- 小吉 -->
+                             <div class="flex justify-between text-xs"><span>小吉</span><span><span id="cnt-shokichi" class="mr-2 font-mono">0</span><span id="stat-shokichi">0.00%</span></span></div>
+                             <div class="w-full bg-gray-200 dark:bg-gray-600 h-1.5 rounded mb-1"><div id="bar-shokichi" class="bg-green-400 h-1.5 rounded" style="width: 0%"></div></div>
+
+                             <!-- 吉 -->
+                             <div class="flex justify-between text-xs"><span>吉</span><span><span id="cnt-kichi" class="mr-2 font-mono">0</span><span id="stat-kichi">0.00%</span></span></div>
+                             <div class="w-full bg-gray-200 dark:bg-gray-600 h-1.5 rounded mb-1"><div id="bar-kichi" class="bg-red-400 h-1.5 rounded" style="width: 0%"></div></div>
+
+                             <!-- 半吉 -->
+                             <div class="flex justify-between text-xs"><span>半吉</span><span><span id="cnt-hankichi" class="mr-2 font-mono">0</span><span id="stat-hankichi">0.00%</span></span></div>
+                             <div class="w-full bg-gray-200 dark:bg-gray-600 h-1.5 rounded mb-1"><div id="bar-hankichi" class="bg-red-300 h-1.5 rounded" style="width: 0%"></div></div>
+
+                             <!-- 末吉 -->
+                             <div class="flex justify-between text-xs"><span>末吉</span><span><span id="cnt-suekichi" class="mr-2 font-mono">0</span><span id="stat-suekichi">0.00%</span></span></div>
+                             <div class="w-full bg-gray-200 dark:bg-gray-600 h-1.5 rounded mb-1"><div id="bar-suekichi" class="bg-blue-400 h-1.5 rounded" style="width: 0%"></div></div>
+
+                             <!-- 末小吉 -->
+                             <div class="flex justify-between text-xs"><span>末小吉</span><span><span id="cnt-sueshokichi" class="mr-2 font-mono">0</span><span id="stat-sueshokichi">0.00%</span></span></div>
+                             <div class="w-full bg-gray-200 dark:bg-gray-600 h-1.5 rounded mb-1"><div id="bar-sueshokichi" class="bg-blue-300 h-1.5 rounded" style="width: 0%"></div></div>
+
+                             <!-- 凶 -->
+                             <div class="flex justify-between text-xs"><span>凶</span><span><span id="cnt-kyo" class="mr-2 font-mono">0</span><span id="stat-kyo">0.00%</span></span></div>
+                             <div class="w-full bg-gray-200 dark:bg-gray-600 h-1.5 rounded mb-1"><div id="bar-kyo" class="bg-gray-400 h-1.5 rounded" style="width: 0%"></div></div>
+
+                             <!-- 小凶 -->
+                             <div class="flex justify-between text-xs"><span>小凶</span><span><span id="cnt-shokyo" class="mr-2 font-mono">0</span><span id="stat-shokyo">0.00%</span></span></div>
+                             <div class="w-full bg-gray-200 dark:bg-gray-600 h-1.5 rounded mb-1"><div id="bar-shokyo" class="bg-gray-500 h-1.5 rounded" style="width: 0%"></div></div>
+
+                             <!-- 半凶 -->
+                             <div class="flex justify-between text-xs"><span>半凶</span><span><span id="cnt-hankyo" class="mr-2 font-mono">0</span><span id="stat-hankyo">0.00%</span></span></div>
+                             <div class="w-full bg-gray-200 dark:bg-gray-600 h-1.5 rounded mb-1">
+                                 <!-- ▼ 修正箇所: dark:bg-gray-400 を追加 -->
+                                 <div id="bar-hankyo" class="bg-gray-600 dark:bg-gray-400 h-1.5 rounded" style="width: 0%"></div>
+                             </div>
+
+                             <!-- 末凶 -->
+                             <div class="flex justify-between text-xs"><span>末凶</span><span><span id="cnt-suekyo" class="mr-2 font-mono">0</span><span id="stat-suekyo">0.00%</span></span></div>
+                             <div class="w-full bg-gray-200 dark:bg-gray-600 h-1.5 rounded mb-1"><div id="bar-suekyo" class="bg-gray-700 h-1.5 rounded" style="width: 0%"></div></div>
+
+                             <!-- 大凶 -->
+                             <div class="flex justify-between text-xs"><span>大凶</span><span><span id="cnt-daikyo" class="mr-2 font-mono">0</span><span id="stat-daikyo">0.00%</span></span></div>
+                             <div class="w-full bg-gray-200 dark:bg-gray-600 h-1.5 rounded mb-1"><div id="bar-daikyo" class="bg-black h-1.5 rounded" style="width: 0%"></div></div>
+                         </div>
                     </div>
+                    <button onclick="showView('history')" class="text-sm text-red-600 hover:underline">おみくじの轍をもっと見る (全運勢ログ)</button>
                 </div>
 
-                <!-- 12星座 -->
-                <div class="modern-card cursor-pointer hover:bg-yellow-50 dark:hover:bg-yellow-900/10 transition" onclick="showView('zodiac')">
-                    <div class="flex justify-between items-start mb-4">
-                        <div class="w-12 h-12 rounded-full bg-yellow-100 text-yellow-600 flex items-center justify-center text-2xl"><i class="bi bi-stars"></i></div>
-                        <i class="bi bi-arrow-up-right text-gray-400"></i>
-                    </div>
-                    <h3 class="text-xl font-bold mb-1">12星座×血液型</h3>
-                    <p class="text-sm text-gray-500">今日の最強運勢ランキング</p>
-                    <div class="mt-4 text-xs font-mono text-gray-400" id="current-date-home">Loading...</div>
+                <!-- お知らせ (自動生成対応) -->
+                <div class="themed-card p-6 rounded-xl shadow-sm">
+                    <h3 class="font-bold text-lg mb-2 border-b border-gray-300 dark:border-gray-600 pb-2"><i class="bi bi-megaphone text-blue-500"></i> 社務所だより</h3>
+                    <ul class="text-sm space-y-2 mb-4" id="home-news-list">
+                        <!-- JSで自動挿入されます -->
+                    </ul>
+                    <button onclick="showView('news')" class="text-sm text-blue-600 hover:underline">社務所だよりをもっと見る</button>
                 </div>
 
-                <!-- おみくじの轍（サマリー） -->
-                <div class="modern-card col-span-3 md:col-span-1">
-                    <div class="flex justify-between items-center mb-4">
-                        <h3 class="font-bold text-lg"><i class="bi bi-clock-history mr-2 text-red-500"></i>最近の轍</h3>
-                        <button onclick="showView('history')" class="text-xs text-gray-500 hover:text-red-600 font-bold">すべて見る</button>
-                    </div>
-                    <div id="home-history-summary" class="space-y-3">
-                        <!-- JSで最新3件程度を表示 -->
-                        <div class="text-sm text-gray-400 text-center py-4">読み込み中...</div>
-                    </div>
+                <!-- コラム (自動生成対応) -->
+                <div class="themed-card p-6 rounded-xl shadow-sm">
+                    <h3 class="font-bold text-lg mb-2 border-b border-gray-300 dark:border-gray-600 pb-2"><i class="bi bi-book text-green-500"></i> 神籤草子 (コラム)</h3>
+                    <ul class="text-sm space-y-2 mb-4" id="home-column-list">
+                        <!-- JSで自動挿入されます -->
+                    </ul>
+                    <button onclick="showView('column')" class="text-sm text-green-600 hover:underline">神籤草子をもっと見る</button>
                 </div>
-
-                <!-- 社務所だより & 神籤草子 -->
-                <div class="modern-card col-span-3 md:col-span-2">
-                    <div class="flex gap-6 mb-4 border-b border-gray-100 dark:border-gray-700 pb-2">
-                        <h3 class="font-bold text-lg cursor-pointer text-blue-600 border-b-2 border-blue-600 pb-2">社務所だより</h3>
-                        <h3 class="font-bold text-lg cursor-pointer text-gray-400 hover:text-gray-600" onclick="showView('column')">神籤草子</h3>
-                    </div>
-                    <div id="home-news-list" class="space-y-2">
-                        <!-- JSで挿入 -->
-                    </div>
-                </div>
-
-                <!-- 全国の運気 -->
-                <div class="modern-card cursor-pointer" onclick="showView('prefecture')">
-                    <div class="h-32 bg-green-50 dark:bg-green-900/20 rounded-xl mb-4 flex items-center justify-center">
-                        <i class="bi bi-map-fill text-4xl text-green-600"></i>
-                    </div>
-                    <h3 class="font-bold mb-1">全国の運気</h3>
-                    <p class="text-xs text-gray-500">土地のエネルギーを味方に</p>
-                </div>
-
             </div>
         </section>
 
@@ -7975,7 +7774,7 @@ function handleInputQuiz(button, correctAnswers, questionId) {
             }, 1000);
         }
 
-        async function showResultDetail(isNewDraw, dataOverride = null) {
+       async function showResultDetail(isNewDraw, dataOverride = null) {
             let resultData, randNum, detailsList, luckyItems, unluckyItems, timestamp, username;
 
             if (isNewDraw) {
@@ -8022,11 +7821,10 @@ function handleInputQuiz(button, correctAnswers, questionId) {
                     lucky: luckyItems,
                     unlucky: unluckyItems,
                     timestamp: timestamp,
-                    username: username
+                    username: username,
+                    issueNumber: 0 // 初期値は0、サーバーレスポンスで更新
                 };
-                currentState.lastResult = resultData;
-
-                // ▼▼▼ 修正箇所: ログイン時はサーバーの許可がないと結果を表示させない ▼▼▼
+                
                 if(currentState.user) {
                     showLoading(true);
                     try {
@@ -8045,13 +7843,8 @@ function handleInputQuiz(button, correctAnswers, questionId) {
                         // レート制限（429）の場合
                         if (res.status === 429) {
                             const errData = await res.json();
-                            // 警告通知を出す
                             showToast(errData.message, 'warning', '天命の戒め');
-                            
-                            // ローディングを消す
                             showLoading(false);
-                            
-                            // 【重要】ここで処理を強制終了する（結果画面へ行かせない）
                             return; 
                         }
                         
@@ -8059,32 +7852,38 @@ function handleInputQuiz(button, correctAnswers, questionId) {
                         if(res.ok) {
                             const data = await res.json();
                             if(data.success && data.count) {
+                                // サーバーの最新カウントをグローバル更新
                                 currentState.liveCount = data.count;
                                 document.getElementById('live-counter').textContent = currentState.liveCount.toLocaleString() + "本";
+                                
+                                // ★ここが重要：このおみくじ固有の番号をセットする
+                                resultData.issueNumber = data.count;
+                                
                                 fetchHistoryStats();
 
-        
-// ▼▼▼ 追加: 新しいバッジがあれば通知 ▼▼▼
                                 if (data.newBadges && data.newBadges.length > 0) {
                                     data.newBadges.forEach(badgeName => {
                                         showToast(`実績解除: 「${badgeName}」を獲得しました！`, 'success', '功徳の証');
                                     });
                                 }
-                                // ▲▲▲ 追加ここまで ▲▲▲
-
                             }
                         }
                     } catch(e) { 
                         console.error(e);
-                        // 通信エラー時も念の為アラートを出すが、表示は許可する（あるいはここも止めるかはお好みで）
+                        // エラー時は仮の番号(グローバルカウント)を入れるか、0のままにする
+                        resultData.issueNumber = currentState.liveCount || 0;
                     } finally { 
                         showLoading(false); 
                     }
+                } else {
+                    // 未ログイン時は現在のグローバルカウント(表示用)または仮の番号
+                    resultData.issueNumber = currentState.liveCount || 0;
                 }
-                // ▲▲▲ 修正ここまで ▲▲▲
+                
+                currentState.lastResult = resultData;
 
             } else {
-                // 履歴からの復元ロジック（変更なし）
+                // 履歴からの復元ロジック
                 resultData = dataOverride;
                 randNum = dataOverride.num || 1;
                 
@@ -8113,6 +7912,10 @@ function handleInputQuiz(button, correctAnswers, questionId) {
                 timestamp = dataOverride.timestamp;
                 username = dataOverride.username || "参拝者";
                 
+                // ★履歴オブジェクトから発行番号を復元（DBのカラム名に合わせて調整してください）
+                // サーバーが issue_number または issueNumber で返していると想定
+                let restoredIssueNum = dataOverride.issueNumber || dataOverride.issue_number || 0;
+
                 resultData = {
                     type: dataOverride.type || dataOverride.result,
                     poem: dataOverride.poem,
@@ -8122,12 +7925,13 @@ function handleInputQuiz(button, correctAnswers, questionId) {
                     lucky: luckyItems,
                     unlucky: unluckyItems,
                     timestamp: timestamp,
-                    username: username
+                    username: username,
+                    issueNumber: restoredIssueNum // 復元した番号
                 };
                 currentState.lastResult = resultData;
             }
 
-            // 結果カードの描画と画面遷移（制限に引っかかった場合はここまで到達しない）
+            // 結果カードの描画と画面遷移
             renderResultToCard('result-card-outer', resultData, true); 
             showView('result');
             
@@ -8163,11 +7967,15 @@ function handleInputQuiz(button, correctAnswers, questionId) {
             `;
             outer.appendChild(headerDiv);
 
-            // 2. 本数カウンター
+            // 2. 本数カウンター（ここを修正：個別の発行番号を表示）
             const issueDiv = document.createElement('div');
             issueDiv.className = 'result-issue-num accent-text';
-            let issueNum = currentState.liveCount || 0;
-            issueDiv.textContent = `累計発行本数 ${issueNum.toLocaleString()} 本`;
+            
+            // データ内に保存された発行番号があればそれを使用、なければ0（または現在の値）
+            // ※過去のデータで番号が保存されていない場合は「---」や0になります
+            let issueNum = data.issueNumber || 0; 
+            
+            issueDiv.textContent = `第 ${issueNum.toLocaleString()} 番祈願`;
             outer.appendChild(issueDiv);
 
             // 3. 運勢ハンコ（縦書き・画像風）
@@ -8175,11 +7983,9 @@ function handleInputQuiz(button, correctAnswers, questionId) {
             circleBox.className = 'result-circle-box';
             let fs = "4.2rem"; 
             
-            // ▼▼ 修正: 3文字（末小吉など）のサイズを小さく調整 ▼▼
             if (data.type.length === 3) fs = "2.9rem"; 
             if (data.type.length >= 4) fs = "2.4rem";
             
-            // ▼▼ 修正: styleに white-space: nowrap を追加して改行を強制禁止 ▼▼
             circleBox.innerHTML = `<div class="result-kanji-main" style="font-size: ${fs}; white-space: nowrap;">${data.type}</div>`;
             outer.appendChild(circleBox);
 
@@ -8250,15 +8056,14 @@ function handleInputQuiz(button, correctAnswers, questionId) {
                 const metaDiv = document.createElement('div');
                 metaDiv.style.textAlign = 'left';
                 const name = data.username || "参拝者";
-                // ▼▼▼ 日付修正箇所 ▼▼▼
-                // タイムスタンプを数値に変換（変換できない場合は現在時刻を使う）
+                
                 let ts = Number(data.timestamp);
                 if (isNaN(ts) || ts === 0) {
                     ts = Date.now();
                 }
                 const date = new Date(ts);
                 const dateStr = `${date.getFullYear()}年${date.getMonth()+1}月${date.getDate()}日 ${date.getHours()}:${String(date.getMinutes()).padStart(2,'0')}`;
-                // ▲▲▲ 修正ここまで ▲▲▲
+                
                 metaDiv.innerHTML = `
                     <div class="result-user-name accent-text">${escapeHtml(name)} 様の運勢</div>
                     <div class="result-date accent-text">参拝日: ${dateStr}</div>
