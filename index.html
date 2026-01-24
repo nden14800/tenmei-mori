@@ -6943,42 +6943,36 @@ async function authFetch(url, options = {}) {
     // ==========================================
 //  統合された初期化処理 (window.onload) - 修正版
 // ==========================================
+// ---------------------------------------------------------------
+// 3. 初期化処理 (エラーの原因となっていた checkGoshuin を削除)
+// ---------------------------------------------------------------
 window.onload = async function() {
-    // メンテナンスチェック
     checkMaintenance();
-
-    // 基本初期化
     initHomeAnimation();
     initZodiacSystem();
-    
-    // ダークモード監視
     window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', applyTheme);
 
-    // ★修正ポイント: localStorageではなく、サーバーにCookieの状態を聞く
     await checkSession();
 
-    // 各種データ取得・定期実行
     startLiveCounter();
     fetchHistoryStats();
     setInterval(fetchHistoryStats, 60000); 
     loadFavorites();
 
-    // URLクリーンアップ
     const url = new URL(window.location);
     if (url.searchParams.has('d')) {
         url.searchParams.delete('d');
         window.history.replaceState({}, '', url);
     }
 
-    
-// 掲示板初期化
     BoardSystem.init();
 
-
-    // 記事リストの描画
     renderHomeLists();      
     renderFullNewsView();   
-    renderFullColumnView(); 
+    renderFullColumnView();
+    
+    // ★削除: if (currentState.user) { checkGoshuin(); } 
+    // 定義されていない関数を呼ぶとここでスクリプトが止まり、以降の描画が行われません。
 };
 
 // ---------------------------------------------------------------
