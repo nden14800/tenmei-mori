@@ -1936,6 +1936,122 @@
     color: var(--text-sub);
 }
 
+        /* --- Pet Sim 99風 ツールチップ & レアリティ --- */
+:root {
+    /* レアリティカラー定義 */
+    --rarity-basic: #d1d5db;      /* Gray */
+    --rarity-rare: #86efac;       /* Pastel Green */
+    --rarity-epic: #93c5fd;       /* Baby Blue */
+    --rarity-legendary: #fdba74;  /* Pastel Orange */
+    --rarity-mythical: #fca5a5;   /* Pastel Red */
+    --rarity-secret: #171717;     /* Black */
+}
+
+/* ツールチップ本体 */
+#pet-tooltip {
+    position: fixed;
+    z-index: 9999;
+    pointer-events: none; /* マウスの邪魔をしない */
+    background: rgba(20, 20, 20, 0.95);
+    backdrop-filter: blur(8px);
+    border: 3px solid var(--rarity-basic); /* JSで動的に変更 */
+    border-radius: 16px;
+    padding: 16px;
+    min-width: 220px;
+    max-width: 280px;
+    color: #fff;
+    font-family: 'Segoe UI', sans-serif;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+    opacity: 0;
+    transform: scale(0.9);
+    transition: opacity 0.15s, transform 0.15s, top 0.1s, left 0.1s;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+}
+#pet-tooltip.visible {
+    opacity: 1;
+    transform: scale(1);
+}
+
+/* ツールチップ内の要素 */
+.pt-title {
+    font-weight: 900;
+    font-size: 1.2rem;
+    margin-bottom: 4px;
+    text-shadow: 0 2px 0 rgba(0,0,0,0.5);
+    color: var(--rarity-basic); /* JSで変更 */
+}
+.pt-rarity-tag {
+    font-size: 0.7rem;
+    font-weight: bold;
+    text-transform: uppercase;
+    background: rgba(255,255,255,0.1);
+    padding: 2px 8px;
+    border-radius: 10px;
+    margin-bottom: 8px;
+    letter-spacing: 0.1em;
+}
+.pt-desc {
+    font-size: 0.8rem;
+    color: #d1d5db;
+    margin-bottom: 12px;
+    line-height: 1.4;
+}
+.pt-footer {
+    width: 100%;
+    border-top: 1px solid rgba(255,255,255,0.2);
+    padding-top: 8px;
+    font-size: 0.75rem;
+    color: #9ca3af;
+    display: flex;
+    justify-content: space-between;
+}
+.pt-exist {
+    color: #fbbf24; /* Gold text */
+    font-weight: bold;
+}
+
+/* インベントリ（バッジリスト）のスタイル */
+.badge-slot {
+    aspect-ratio: 1;
+    background-color: #f3f4f6;
+    border: 3px solid transparent; /* 色はJSで */
+    border-radius: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    cursor: pointer;
+    transition: transform 0.1s;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+}
+.dark .badge-slot {
+    background-color: #27272a;
+}
+.badge-slot:hover {
+    transform: scale(1.05);
+    z-index: 10;
+}
+.badge-slot.locked {
+    background-color: #e5e7eb;
+    border-color: #d1d5db !important;
+    opacity: 0.7;
+}
+.dark .badge-slot.locked {
+    background-color: #3f3f46;
+    border-color: #52525b !important;
+}
+.badge-icon-inner {
+    font-size: 2rem;
+    filter: drop-shadow(0 2px 2px rgba(0,0,0,0.1));
+}
+.badge-slot.locked .badge-icon-inner {
+    filter: grayscale(100%);
+    opacity: 0.3;
+}
+
     </style>
 </head>
 <body>
