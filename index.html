@@ -10979,67 +10979,143 @@ async function updateAccountSettings() {
     }
 }
 
-   // window.onload内など、初期化時に実行
-const tooltipDiv = document.createElement('div');
-tooltipDiv.id = 'pet-tooltip';
-tooltipDiv.innerHTML = `
-    <div class="pt-title" id="pt-title">Badge Name</div>
-    <div class="pt-rarity-tag" id="pt-rarity">BASIC</div>
-    <div class="pt-desc" id="pt-desc">Description here.</div>
+   // ツールチップ要素の生成（PS99風構造）
+const psTooltip = document.createElement('div');
+psTooltip.id = 'pet-tooltip';
+psTooltip.innerHTML = `
+    <div class="pt-header">
+        <div class="pt-title" id="pt-title">Badge Name</div>
+        <div class="pt-rarity-badge" id="pt-rarity">BASIC</div>
+    </div>
+    <div class="pt-body">
+        <div class="pt-desc" id="pt-desc">Description text here.</div>
+        <div class="pt-progress-area" id="pt-progress-container">
+            <div class="pt-status-text">
+                <span id="pt-status-label">LOCKED</span>
+                <span id="pt-progress-text">0 / 100</span>
+            </div>
+            <div class="pt-progress-bar-bg">
+                <div class="pt-progress-bar-fill" id="pt-bar"></div>
+            </div>
+            <div class="text-[10px] text-gray-400 mt-1 text-right" id="pt-percent">0%</div>
+        </div>
+    </div>
     <div class="pt-footer">
-        <span>Exist:</span>
-        <span class="pt-exist" id="pt-exist">0</span>
+        <span class="pt-exist-label"><i class="bi bi-globe"></i> Exist</span>
+        <span class="pt-exist-val" id="pt-exist">0</span>
     </div>
 `;
-document.body.appendChild(tooltipDiv);
+document.body.appendChild(psTooltip);
 
         
-// --- Pet Sim 99風 ツールチップ制御 ---
+// --- Pet Sim 99風 ツールチップ制御システム ---
 const TooltipSystem = {
     el: null,
     
     init: function() {
         this.el = document.getElementById('pet-tooltip');
         
-        // マウス追従
+        // グローバルなマウス移動監視（表示中のみ追従）
         document.addEventListener('mousemove', (e) => {
-            if(!this.el.classList.contains('visible')) return;
-            
-            const offset = 15;
-            let left = e.clientX + offset;
-            let top = e.clientY + offset;
-            
-            // 画面端の調整
-            if (left + this.el.offsetWidth > window.innerWidth) {
-                left = e.clientX - this.el.offsetWidth - offset;
+            if(this.el.classList.contains('visible')) {
+                this.updatePosition(e.clientX, e.clientY);
             }
-            if (top + this.el.offsetHeight > window.innerHeight) {
-                top = e.clientY - this.el.offsetHeight - offset;
-            }
-            
-            this.el.style.left = left + 'px';
-            this.el.style.top = top + 'px';
         });
+        
+        // スマホ用: タッチ移動でも追従
+        document.addEventListener('touchmove', (e) => {
+            if(this.el.classList.contains('visible')) {
+                const touch = e.touches[0];
+                this.updatePosition(touch.clientX, touch.clientY);
+            }
+        }, { passive: true });
+    },
+
+    updatePosition: function(x, y) {
+        const offset = 20;
+        let left = x + offset;
+        let top = y + offset;
+        
+        // 画面端の検出と補正
+        if (left + this.el.offsetWidth > window.innerWidth) {
+            left = x - this.el.offsetWidth - offset;
+        }
+        if (top + this.el.offsetHeight > window.innerHeight) {
+            top = y - this.el.offsetHeight - offset;
+        }
+        
+        this.el.style.left = left + 'px';
+        this.el.style.top = top + 'px';
     },
 
     show: function(target) {
-        const title = target.dataset.name;
+        // データ取得
+        const name = target.dataset.name;
         const desc = target.dataset.desc;
         const rarity = target.dataset.rarity;
-        const count = target.dataset.count;
-        const color = target.dataset.color; // CSS変数またはHEX
-
-        document.getElementById('pt-title').textContent = title;
-        document.getElementById('pt-title').style.color = color;
+        const color = target.dataset.color;
         
-        document.getElementById('pt-rarity').textContent = rarity;
-        document.getElementById('pt-rarity').style.backgroundColor = color + "33"; // 20% opacity
-        document.getElementById('pt-rarity').style.color = color;
+        // 数値データの整形（カンマ区切り）
+        const unlocked = target.dataset.unlocked === 'true';
+        const current = Number(target.dataset.current);
+        const targetVal = Number(target.dataset.target);
+        const count = Number(target.dataset.count); // グローバル数
+        const percent = target.dataset.progress;
 
+        // --- DOM反映 ---
+        
+        // 1. タイトル & レアリティ
+        const titleEl = document.getElementById('pt-title');
+        titleEl.textContent = name;
+        titleEl.style.color = color;
+        
+        const rarityEl = document.getElementById('pt-rarity');
+        rarityEl.textContent = rarity;
+        rarityEl.style.backgroundColor = color;
+        rarityEl.style.boxShadow = `0 0 10px ${color}66`; // 光彩
+
+        // 2. 説明文
         document.getElementById('pt-desc').textContent = desc;
-        document.getElementById('pt-exist').textContent = Number(count).toLocaleString();
-        
+
+        // 3. 進捗バー & ステータス
+        const statusLabel = document.getElementById('pt-status-label');
+        const progressText = document.getElementById('pt-progress-text');
+        const bar = document.getElementById('pt-bar');
+        const percentText = document.getElementById('pt-percent');
+        const container = document.getElementById('pt-progress-container');
+
+        if (unlocked) {
+            statusLabel.textContent = "COMPLETED";
+            statusLabel.style.color = "#4ade80"; // Green
+            container.classList.add('pt-completed');
+            progressText.textContent = "MAX";
+            bar.style.width = "100%";
+            percentText.textContent = "100%";
+        } else {
+            statusLabel.textContent = "INCOMPLETE";
+            statusLabel.style.color = "#ef4444"; // Red
+            container.classList.remove('pt-completed');
+            progressText.textContent = `${current.toLocaleString()} / ${targetVal.toLocaleString()}`;
+            bar.style.width = `${percent}%`;
+            percentText.textContent = `${percent}%`;
+        }
+
+        // 4. Exist（存在数）
+        // 未獲得の場合は「0 (Unknown)」とする
+        const existEl = document.getElementById('pt-exist');
+        if (unlocked) {
+            existEl.textContent = count.toLocaleString();
+            existEl.style.color = "#fbbf24";
+        } else {
+            existEl.textContent = "???"; // 未獲得なら隠す
+            existEl.style.color = "#6b7280";
+        }
+
+        // 5. 枠線の色
         this.el.style.borderColor = color;
+        this.el.style.boxShadow = `0 10px 40px ${color}33`; // 枠色に合わせた影
+
+        // 表示
         this.el.classList.add('visible');
     },
 
@@ -11048,57 +11124,77 @@ const TooltipSystem = {
     }
 };
 
-// --- レアリティ判定ヘルパー ---
+// --- レアリティ自動判定ロジック (難易度ベース) ---
 function getRarityInfo(badge) {
-    // 条件タイプや値、名前からレアリティを決定
     const type = badge.condition_type;
     const val = badge.condition_value;
-    
+
     // シークレット
     if (type === 'secret') {
-        return { name: 'SECRET???', color: 'var(--rarity-secret)', class: 'secret' };
+        return { name: 'SECRET', color: 'var(--rarity-secret)' };
     }
-    // ミシカル (大吉系の上位)
-    if (type === 'daikichi_count' && val >= 10) {
-        return { name: 'MYTHICAL', color: 'var(--rarity-mythical)', class: 'mythical' };
-    }
-    // レジェンダリー (大吉、または高難易度)
-    if (type === 'daikichi_count' || (type === 'streak_days' && val >= 30)) {
-        return { name: 'LEGENDARY', color: 'var(--rarity-legendary)', class: 'legendary' };
-    }
-    // エピック (中難易度)
-    if ((type === 'streak_days' && val >= 7) || (type === 'total_draws' && val >= 100)) {
-        return { name: 'EPIC', color: 'var(--rarity-epic)', class: 'epic' };
-    }
-    // レア (少し頑張れば)
-    if ((type === 'streak_days' && val >= 3) || (type === 'total_draws' && val >= 10) || type === 'kyo_count') {
-        return { name: 'RARE', color: 'var(--rarity-rare)', class: 'rare' };
-    }
-    // ベーシック
-    return { name: 'BASIC', color: 'var(--rarity-basic)', class: 'basic' };
+
+    // 難易度スコア計算 (仮の重み付け)
+    let difficulty = 0;
+    if (type === 'daikichi_count') difficulty = val * 5; // 大吉は難しい
+    else if (type === 'streak_days') difficulty = val * 3; // 連続も難しい
+    else if (type === 'kyo_count') difficulty = val * 2; // 凶は運
+    else if (type === 'total_draws') difficulty = val / 5; // 回数は簡単
+
+    // スコアによる分類
+    if (difficulty >= 100) return { name: 'MYTHICAL', color: 'var(--rarity-mythical)' };
+    if (difficulty >= 50) return { name: 'LEGENDARY', color: 'var(--rarity-legendary)' };
+    if (difficulty >= 20) return { name: 'EPIC', color: 'var(--rarity-epic)' };
+    if (difficulty >= 10) return { name: 'RARE', color: 'var(--rarity-rare)' };
+    
+    return { name: 'BASIC', color: 'var(--rarity-basic)' };
 }
 
-// --- シークレット隠しコマンド ---
+// --- シークレット隠しコマンド (10回連打) ---
 let secretClickCount = 0;
 let secretClickTimer = null;
 
 function setupSecretTrigger() {
-    const titleEl = document.querySelector('#view-stats h2'); // 参拝の記録のタイトル
+    // 確実に要素を取得するためにIDを付与したタイトルを探す
+    // ※ HTML側で <h2 id="stats-title">参拝の記録</h2> となっている前提、なければ動的に探す
+    let titleEl = document.getElementById('stats-title-text');
+    
+    // 見つからなければ querySelector で探して ID をつける
+    if (!titleEl) {
+        const h2s = document.querySelectorAll('#view-stats h2');
+        h2s.forEach(h2 => {
+            if(h2.textContent.includes('参拝の記録')) {
+                titleEl = h2;
+                titleEl.id = 'stats-title-text'; // ID付与
+                titleEl.style.cursor = 'pointer'; // クリックできる感を出す
+                titleEl.style.userSelect = 'none';
+            }
+        });
+    }
+
     if(!titleEl) return;
 
-    // タップ・クリック時の処理
+    // イベント重複登録防止
+    if(titleEl.dataset.secretInit) return;
+    titleEl.dataset.secretInit = "true";
+
     titleEl.addEventListener('click', async (e) => {
-        // エフェクト（拡大）
-        e.target.style.transform = "scale(1.1)";
-        setTimeout(() => e.target.style.transform = "scale(1)", 100);
+        // クリック演出
+        e.target.style.transform = "scale(0.95)";
+        e.target.style.color = "#d4af37"; // 一瞬金色に
+        setTimeout(() => {
+            e.target.style.transform = "scale(1)";
+            e.target.style.color = ""; 
+        }, 100);
 
         secretClickCount++;
-        
-        // タイマーリセット (2秒間隔があいたらリセット)
+        console.log(`Secret Click: ${secretClickCount}`); // デバッグ用
+
+        // タイマーリセット (1秒間隔があいたらリセット)
         if(secretClickTimer) clearTimeout(secretClickTimer);
         secretClickTimer = setTimeout(() => {
             secretClickCount = 0;
-        }, 2000);
+        }, 1000);
 
         if(secretClickCount >= 10) {
             secretClickCount = 0;
@@ -11109,9 +11205,11 @@ function setupSecretTrigger() {
                     const res = await authFetch(`${API_BASE}/api/badge/unlock_secret`, { method: 'POST' });
                     const data = await res.json();
                     if(res.ok && data.newBadge) {
-                        showToast("隠された天命が解放されました！", "success", "SECRET UNLOCKED");
-                        // 花吹雪などの演出を入れても良い
-                        loadMyStats(); // バッジリスト更新
+                        showToast("隠された天命が解放されました！", "success");
+                        // データを再読み込みしてバッジを表示
+                        loadMyStats(); 
+                    } else if (data.message === "Already unlocked") {
+                        showToast("既に解放されています", "info");
                     }
                 } catch(e) { console.error(e); }
                 finally { showLoading(false); }
@@ -11121,7 +11219,6 @@ function setupSecretTrigger() {
         }
     });
 }
-
 
             
     </script>
