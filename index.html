@@ -1936,6 +1936,266 @@
     color: var(--text-sub);
 }
 
+        
+<style>
+        :root {
+            /* ライトモード変数 */
+            --bg-pattern: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23d4d4d4' fill-opacity='0.15'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+            --bg-color: #ffffff;
+            --text-main: #111827; /* より深い黒 */
+            --text-sub: #6b7280;
+            --card-bg: #ffffff;
+            --card-border: #e5e7eb;
+            --accent-red: #b91c1c;
+            --accent-gold: #c5a059;
+            --sidebar-bg: rgba(255, 255, 255, 0.9);
+            --sidebar-width: 260px; /* PCでは常に展開 */
+            --sidebar-width-mobile: 80px;
+            --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+            --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+            --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+        }
+
+        @media (prefers-color-scheme: dark) {
+            :root {
+                --bg-pattern: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23444444' fill-opacity='0.15'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+                --bg-color: #1a1a1a;
+                --text-main: #f3f4f6;
+                --text-sub: #9ca3af;
+                --card-bg: #27272a;
+                --card-border: #3f3f46;
+                --sidebar-bg: rgba(39, 39, 42, 0.9);
+            }
+        }
+        .dark {
+            --bg-pattern: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23444444' fill-opacity='0.15'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E") !important;
+            --bg-color: #1a1a1a !important;
+            --text-main: #f3f4f6 !important;
+            --text-sub: #9ca3af !important;
+            --card-bg: #27272a !important;
+            --card-border: #3f3f46 !important;
+            --sidebar-bg: rgba(39, 39, 42, 0.9) !important;
+        }
+
+        body {
+            font-family: 'Helvetica Neue', Arial, 'Hiragino Kaku Gothic ProN', 'Hiragino Sans', 'Meiryo', sans-serif;
+            background-color: var(--bg-color);
+            background-image: var(--bg-pattern);
+            color: var(--text-main);
+            margin: 0;
+            padding: 0;
+            display: flex;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        /* 見出し用フォント */
+        h1, h2, h3, .serif {
+            font-family: 'Zen Old Mincho', serif;
+        }
+
+        /* サイドバー刷新 */
+        #sidebar {
+            width: var(--sidebar-width);
+            background-color: var(--sidebar-bg);
+            backdrop-filter: blur(20px);
+            border-right: 1px solid var(--card-border);
+            height: 100vh;
+            position: fixed;
+            left: 0;
+            top: 0;
+            z-index: 100;
+            padding: 24px 16px;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            transition: transform 0.3s ease;
+        }
+        
+        .nav-btn {
+            width: 100%;
+            display: flex;
+            align-items: center;
+            padding: 12px 16px;
+            color: var(--text-sub);
+            background: transparent;
+            border: none;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.2s;
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 0.95rem;
+        }
+        .nav-btn:hover, .nav-btn.active {
+            background-color: var(--card-bg);
+            color: var(--text-main);
+            box-shadow: var(--shadow-sm);
+        }
+        .nav-btn.active {
+            background-color: rgba(185, 28, 28, 0.05);
+            color: var(--accent-red);
+        }
+        .nav-btn i {
+            font-size: 1.25rem;
+            margin-right: 12px;
+            width: 24px;
+            text-align: center;
+        }
+        
+        /* モバイル対応 */
+        @media (max-width: 768px) {
+            #sidebar {
+                width: 100%;
+                height: auto;
+                bottom: 0;
+                top: auto;
+                flex-direction: row;
+                justify-content: space-around;
+                padding: 10px;
+                border-right: none;
+                border-top: 1px solid var(--card-border);
+            }
+            .nav-text { display: none; }
+            .nav-btn { padding: 8px; justify-content: center; border-radius: 8px; }
+            .nav-btn i { margin-right: 0; }
+            #main-content { margin-left: 0 !important; padding-bottom: 80px; }
+        }
+
+        #main-content {
+            flex: 1;
+            margin-left: var(--sidebar-width);
+            padding: 40px;
+            max-width: 1600px;
+            width: 100%;
+        }
+
+        /* モダンカード (Bento Grid用) */
+        .modern-card {
+            background-color: var(--card-bg);
+            border: 1px solid var(--card-border);
+            border-radius: 24px;
+            padding: 24px;
+            transition: transform 0.2s, box-shadow 0.2s;
+            position: relative;
+            overflow: hidden;
+        }
+        .modern-card:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-lg);
+            border-color: rgba(185, 28, 28, 0.2);
+        }
+
+        /* ヒーローカウンター (大きな数字) */
+        .hero-count-container {
+            display: flex;
+            align-items: baseline;
+            gap: 12px;
+        }
+        .hero-count-value {
+            font-family: 'Zen Old Mincho', serif;
+            font-size: 4rem;
+            font-weight: 900;
+            line-height: 1;
+            color: var(--text-main);
+            letter-spacing: -0.05em;
+        }
+        .hero-count-label {
+            font-size: 1rem;
+            color: var(--text-sub);
+            font-weight: bold;
+        }
+
+        /* Bento Grid Layouts */
+        .bento-grid-2 { display: grid; grid-template-columns: repeat(2, 1fr); gap: 24px; }
+        .bento-grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px; }
+        .bento-grid-4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 24px; }
+        
+        @media (max-width: 1024px) {
+            .bento-grid-3, .bento-grid-4 { grid-template-columns: repeat(2, 1fr); }
+        }
+        @media (max-width: 640px) {
+            .bento-grid-2, .bento-grid-3, .bento-grid-4 { grid-template-columns: 1fr; }
+            .hero-count-value { font-size: 3rem; }
+        }
+
+        /* 分析チャート（CSSのみで円グラフ） */
+        .pie-chart {
+            width: 120px; height: 120px;
+            border-radius: 50%;
+            background: conic-gradient(var(--accent-red) 0% 0%, var(--card-border) 0% 100%);
+            display: flex; align-items: center; justify-content: center;
+            position: relative;
+        }
+        .pie-chart::after {
+            content: ""; position: absolute;
+            width: 80px; height: 80px;
+            background: var(--card-bg);
+            border-radius: 50%;
+        }
+        .pie-value {
+            position: absolute; z-index: 10;
+            font-weight: bold; font-size: 1.2rem;
+        }
+
+        /* タイムラインスタイル */
+        .timeline-item {
+            position: relative;
+            padding-left: 30px;
+            margin-bottom: 20px;
+            border-left: 2px solid var(--card-border);
+        }
+        .timeline-item::before {
+            content: '';
+            position: absolute; left: -6px; top: 0;
+            width: 10px; height: 10px;
+            border-radius: 50%;
+            background: var(--accent-red);
+            border: 2px solid var(--card-bg);
+        }
+
+        /* 共通ボタンスタイル刷新 */
+        .btn-modern {
+            display: inline-flex; justify-content: center; align-items: center;
+            padding: 12px 24px; border-radius: 100px;
+            font-weight: 700; transition: all 0.2s;
+            cursor: pointer; border: none; gap: 8px;
+        }
+        .btn-modern-primary {
+            background: var(--text-main); color: var(--bg-color);
+        }
+        .btn-modern-primary:hover {
+            opacity: 0.9; transform: scale(1.02);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        }
+        
+        /* 検索バー刷新 */
+        .modern-search {
+            width: 100%;
+            padding: 16px 20px;
+            border-radius: 16px;
+            border: 1px solid var(--card-border);
+            background: var(--card-bg);
+            font-size: 1rem;
+            transition: all 0.2s;
+            box-shadow: var(--shadow-sm);
+        }
+        .modern-search:focus {
+            outline: none;
+            border-color: var(--accent-red);
+            box-shadow: 0 0 0 4px rgba(185, 28, 28, 0.1);
+        }
+
+        /* アニメーション用 */
+        @keyframes fadeInScale {
+            from { opacity: 0; transform: scale(0.98); }
+            to { opacity: 1; transform: scale(1); }
+        }
+        .view-section.active {
+            animation: fadeInScale 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+
     </style>
 </head>
 <body>
