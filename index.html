@@ -10787,6 +10787,27 @@ async function updateAccountSettings() {
     }
 }
 
+        // 総参拝者数カウンターの更新対応
+async function startLiveCounter() {
+    const el = document.getElementById('live-counter');
+    const uEl = document.getElementById('worshipper-counter');
+    const timeEl = document.getElementById('counter-time');
+    
+    async function fetchCount() {
+        try {
+            const res = await fetch(`${API_BASE}/api/counter`);
+            if(res.ok) {
+                const data = await res.json();
+                el.textContent = data.count.toLocaleString() + "本";
+                uEl.textContent = data.userCount.toLocaleString() + "名";
+                if(timeEl) timeEl.textContent = new Date().toLocaleTimeString();
+            }
+        } catch(e) { console.error(e); }
+    }
+    fetchCount();
+    setInterval(fetchCount, 60000);
+}
+
             
     </script>
 </body>
