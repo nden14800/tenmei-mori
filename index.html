@@ -2665,19 +2665,32 @@
         <div id="stats-content-wrapper">
             <!-- 1. 数値データ -->
             <h3 class="font-bold text-lg mb-4 border-l-4 border-red-500 pl-3">積み上げた徳</h3>
-            <!-- ▼ 修正：grid-cols-3 を grid-cols-2 に変更し、大吉の箱を削除しました ▼ -->
-            <div class="grid grid-cols-2 gap-4 mb-8 text-center">
+            
+            <div class="grid grid-cols-2 gap-4 mb-8 text-center" id="my-stats-grid">
+                <!-- 総参拝数 -->
                 <div class="bg-white dark:bg-zinc-800 p-4 rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm">
                     <div class="text-xs text-gray-500 mb-1">総参拝数</div>
-                    <div class="text-2xl font-black text-red-600" id="stat-total">0</div>
+                    <div class="text-2xl font-black text-red-600" id="stat-total">-</div>
                 </div>
-                <!-- ここにあった「大吉獲得」のブロックを完全に削除 -->
+                <!-- 大吉獲得数 (ここを修正) -->
                 <div class="bg-white dark:bg-zinc-800 p-4 rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm">
-                    <div class="text-xs text-gray-500 mb-1">連続参拝</div>
-                    <div class="text-2xl font-black text-purple-600" id="stat-streak">0<span class="text-xs font-normal text-gray-400 ml-1">日</span></div>
+                    <div class="text-xs text-gray-500 mb-1">大吉獲得数</div>
+                    <div class="text-2xl font-black text-yellow-500" id="stat-daikichi-num">-</div>
                 </div>
             </div>
 
+            <!-- 2. 功徳の証 (バッジ) -->
+            <h3 class="font-bold text-lg mb-4 border-l-4 border-yellow-500 pl-3">功徳の証</h3>
+            <div id="stats-badge-list" class="grid grid-cols-3 sm:grid-cols-4 gap-3">
+                <!-- JSでロード -->
+            </div>
+            
+            <div class="text-center mt-6">
+                <button onclick="showAllBadgesModal()" class="text-sm underline text-gray-500 hover:text-gray-800 dark:hover:text-gray-300">
+                    <i class="bi bi-collection"></i> 全ての実績を見る
+                </button>
+            </div>
+        </div>
 
         <!-- ロック画面 (未ログイン時) -->
         <div id="stats-lock" class="lab-lock-overlay hidden flex items-center justify-center">
