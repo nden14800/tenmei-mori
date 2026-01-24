@@ -7778,7 +7778,7 @@ function handleInputQuiz(button, correctAnswers, questionId) {
             let resultData, randNum, detailsList, luckyItems, unluckyItems, timestamp, username;
 
             if (isNewDraw) {
-                // 新規抽選
+                // ▼ 新規抽選ロジック
                 const base = omikujiResults[Math.floor(Math.random() * omikujiResults.length)];
                 randNum = Math.floor(Math.random() * 100) + 1;
                 timestamp = Date.now();
@@ -7820,7 +7820,7 @@ function handleInputQuiz(button, correctAnswers, questionId) {
                     unlucky: unluckyItems,
                     timestamp: timestamp,
                     username: username,
-                    issueNumber: null // 初期値
+                    issueNumber: null // 一旦nullで初期化
                 };
                 
                 if(currentState.user) {
@@ -7842,16 +7842,17 @@ function handleInputQuiz(button, correctAnswers, questionId) {
                             const errData = await res.json();
                             showToast(errData.message, 'warning', '天命の戒め');
                             showLoading(false);
-                            return; 
+                            return; // 制限時は画面遷移しない
                         }
                         
                         if(res.ok) {
                             const data = await res.json();
                             if(data.success && data.count) {
+                                // サーバーからの最新値をセット
                                 currentState.liveCount = data.count;
                                 document.getElementById('live-counter').textContent = currentState.liveCount.toLocaleString() + "本";
                                 
-                                // ★サーバーから返ってきた最新カウントを「この結果の番号」として固定保存
+                                // ★重要：結果データに番号を確定させる
                                 resultData.issueNumber = data.count;
 
                                 fetchHistoryStats();
@@ -7864,21 +7865,21 @@ function handleInputQuiz(button, correctAnswers, questionId) {
                             }
                         }
                     } catch(e) { 
-                        console.error(e);
-                        // エラー時は暫定的に現在のカウンターを使用
-                        resultData.issueNumber = currentState.liveCount || 0;
+                        console.error("Draw API Error:", e);
+                        // エラー時は「現在のカウンター + 1（見込み）」を入れておく
+                        resultData.issueNumber = (currentState.liveCount || 0) + 1;
                     } finally { 
                         showLoading(false); 
                     }
                 } else {
-                    // 未ログイン時は現在のグローバルカウントをその場の番号として固定
-                    resultData.issueNumber = currentState.liveCount || 0;
+                    // 未ログイン時：現在のカウンター + 1 を仮発行番号とする
+                    resultData.issueNumber = (currentState.liveCount || 0) + 1;
                 }
                 
                 currentState.lastResult = resultData;
 
             } else {
-                // 履歴からの復元ロジック
+                // ▼ 履歴からの復元ロジック
                 resultData = dataOverride;
                 randNum = dataOverride.num || 1;
                 
@@ -7907,6 +7908,9 @@ function handleInputQuiz(button, correctAnswers, questionId) {
                 timestamp = dataOverride.timestamp;
                 username = dataOverride.username || "参拝者";
                 
+                // 履歴データから番号を復元
+                let restoredNum = dataOverride.issueNumber || dataOverride.issue_number;
+                
                 resultData = {
                     type: dataOverride.type || dataOverride.result,
                     poem: dataOverride.poem,
@@ -7917,10 +7921,14 @@ function handleInputQuiz(button, correctAnswers, questionId) {
                     unlucky: unluckyItems,
                     timestamp: timestamp,
                     username: username,
-                    // ★履歴データにある issue_number を復元（DBカラム名に合わせて取得）
-                    issueNumber: dataOverride.issue_number || dataOverride.issueNumber || null
+                    issueNumber: restoredNum
                 };
                 currentState.lastResult = resultData;
+            }
+
+            // ★最終安全策：もしここでissueNumberが空なら、無理やり現在の値を入れる
+            if (resultData.issueNumber === null || resultData.issueNumber === undefined) {
+                resultData.issueNumber = currentState.liveCount || 0;
             }
 
             // 結果カードの描画と画面遷移
@@ -7960,11 +7968,13 @@ function handleInputQuiz(button, correctAnswers, questionId) {
             const issueDiv = document.createElement('div');
             issueDiv.className = 'result-issue-num accent-text';
             
-            // データに固有の番号(issueNumber)があればそれを使う
-            // issueNumberがnull/undefinedの場合は "---"
+            // issueNumberが 0 や 数値の場合でも正しく表示するように厳密判定
             let issueText = "---";
             if (data.issueNumber !== undefined && data.issueNumber !== null) {
                 issueText = Number(data.issueNumber).toLocaleString();
+            } else {
+                // データに無い場合は暫定的に現在のカウンターを表示（緊急回避）
+                issueText = (currentState.liveCount || 0).toLocaleString();
             }
             
             issueDiv.textContent = `通算発行 第 ${issueText} 号`; 
