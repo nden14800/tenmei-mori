@@ -1936,6 +1936,143 @@
     color: var(--text-sub);
 }
 
+        /* --- UI刷新：モダン・和・Bentoスタイル --- */
+
+/* 1. 全体レイアウト調整 */
+:root {
+    --card-radius: 24px; /* 大きめの角丸（最近のトレンド） */
+    --transition-smooth: all 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
+}
+
+/* 背景は真っ白を維持 */
+body {
+    background-color: #ffffff !important;
+}
+
+/* メインコンテンツの最大幅を広げ、余白を調整 */
+#main-content {
+    padding: 40px 40px 80px; /* 余白を広めに */
+    max-width: 1400px; /* ワイド画面対応 */
+    margin: 0 auto 0 var(--sidebar-width);
+}
+
+/* 2. Bento Grid（弁当箱）レイアウト */
+.bento-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 24px;
+    margin-bottom: 40px;
+}
+
+.bento-item {
+    background: #ffffff;
+    border: 1px solid #f0f0f0;
+    border-radius: var(--card-radius);
+    padding: 32px;
+    transition: var(--transition-smooth);
+    position: relative;
+    overflow: hidden;
+    box-shadow: 0 10px 40px -10px rgba(0,0,0,0.05); /* 柔らかく深い影 */
+    display: flex;
+    flex-direction: column;
+}
+
+.bento-item:hover {
+    transform: translateY(-5px) scale(1.01);
+    box-shadow: 0 20px 50px -10px rgba(185, 28, 28, 0.15); /* 紅色の影 */
+    border-color: var(--accent-red);
+}
+
+.bento-col-2 { grid-column: span 2; }
+@media (max-width: 768px) { .bento-col-2 { grid-column: span 1; } }
+
+/* 3. タイポグラフィ（文字の強調） */
+.typography-hero {
+    font-family: 'Shippori Mincho', serif;
+    font-weight: 900;
+    line-height: 1.1;
+    letter-spacing: -0.02em;
+}
+
+.text-jumbo { font-size: 4rem; }
+.text-xxl { font-size: 2.5rem; }
+.text-label { 
+    font-size: 0.85rem; 
+    letter-spacing: 0.1em; 
+    color: var(--text-sub); 
+    font-weight: bold;
+    text-transform: uppercase;
+    margin-bottom: 8px;
+    display: block;
+}
+
+/* 4. モダンなリストカード（社務所だより・神籤草子用） */
+.modern-list-card {
+    display: flex;
+    align-items: center;
+    padding: 24px;
+    background: #fff;
+    border-bottom: 1px solid #f5f5f5;
+    transition: var(--transition-smooth);
+    cursor: pointer;
+}
+.modern-list-card:last-child { border-bottom: none; }
+.modern-list-card:hover {
+    background: #fffbfb; /* ほんのり赤 */
+    padding-left: 32px; /* 右へスライド */
+}
+
+.news-badge {
+    padding: 6px 12px;
+    border-radius: 50px;
+    font-size: 0.75rem;
+    font-weight: bold;
+    margin-right: 16px;
+    white-space: nowrap;
+}
+
+/* 5. データ分析ビジュアライゼーション（参拝記録用） */
+.analysis-chart-bar {
+    height: 12px;
+    background: #f0f0f0;
+    border-radius: 6px;
+    overflow: hidden;
+    margin-top: 8px;
+    position: relative;
+}
+.analysis-chart-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--accent-red), #ff8e8e);
+    border-radius: 6px;
+    width: 0%;
+    transition: width 1.5s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+/* ヒートマップ風カレンダー */
+.heatmap-grid {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 4px;
+}
+.heatmap-cell {
+    aspect-ratio: 1;
+    border-radius: 4px;
+    background-color: #f5f5f5;
+    transition: transform 0.2s;
+}
+.heatmap-cell:hover { transform: scale(1.2); z-index: 10; border: 1px solid #ddd;}
+.level-1 { background-color: #ffebeb; }
+.level-2 { background-color: #ffcaca; }
+.level-3 { background-color: #ff8b8b; }
+.level-4 { background-color: #ff4d4d; }
+.level-5 { background-color: #b91c1c; }
+
+/* 6. サイドバーの調整 */
+.nav-text {
+    font-size: 0.95rem;
+    letter-spacing: 0.05em;
+}
+
     </style>
 </head>
 <body>
