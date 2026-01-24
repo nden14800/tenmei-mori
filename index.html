@@ -8524,29 +8524,30 @@ ${getShareUrl()}`;
             window.open(intent, '_blank');
         }
 
-        // 参拝の記録：統計表示 (実績削除版)
+        // 参拝の記録：統計表示 (連続参拝削除・大吉追加版)
     async function loadMyStats() {
         if (!currentState.user) return;
 
         try {
+            // プロフィールAPIからデータを取得
             const res = await fetch(`${API_BASE}/api/user/profile?username=${encodeURIComponent(currentState.user.username)}`);
             
             if (res.ok) {
                 const data = await res.json();
                 
-                // 数値データ表示
-                const statsGrid = document.querySelector('#stats-content-wrapper .grid');
+                // --- 1. 数値データの表示変更 ---
+                // ID指定ではなく、グリッドごと書き換えることで確実に更新
+                const statsGrid = document.getElementById('my-stats-grid');
                 if (statsGrid) {
-                    statsGrid.className = 'grid grid-cols-2 gap-4 mb-8 text-center';
                     statsGrid.innerHTML = `
                         <div class="bg-white dark:bg-zinc-800 p-4 rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm">
                             <div class="text-xs text-gray-500 mb-1">総参拝数</div>
-                            <div class="text-2xl md:text-3xl font-black text-red-600" id="stat-total">
+                            <div class="text-2xl md:text-3xl font-black text-red-600">
                                 ${Number(data.stats.totalDraws || 0).toLocaleString()}
                             </div>
                         </div>
                         <div class="bg-white dark:bg-zinc-800 p-4 rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm">
-                            <div class="text-xs text-gray-500 mb-1">大吉獲得</div>
+                            <div class="text-xs text-gray-500 mb-1">大吉獲得数</div>
                             <div class="text-2xl md:text-3xl font-black text-yellow-500">
                                 ${Number(data.stats.daikichiCount || 0).toLocaleString()}
                             </div>
@@ -8554,13 +8555,26 @@ ${getShareUrl()}`;
                     `;
                 }
 
-                // バッジリストのコンテナがあれば空にする（または削除）
-                const badgeContainer = document.getElementById('stats-badge-list');
-                if (badgeContainer) {
-                    badgeContainer.innerHTML = '';
-                    // 直前の見出し（功徳の証）も消す
-                    const badgeTitle = badgeContainer.previousElementSibling;
-                    if(badgeTitle && badgeTitle.tagName === 'H3') badgeTitle.remove();
+                // --- 2. 獲得済みバッジの表示 (変更なし) ---
+                const badgeList = document.getElementById('stats-badge-list');
+                if (badgeList) {
+                    if (data.badges && data.badges.length > 0) {
+                        // 獲得済み(unlocked)のものだけ抽出して表示
+                        const unlockedBadges = data.badges.filter(b => b.unlocked);
+                        
+                        if (unlockedBadges.length > 0) {
+                            badgeList.innerHTML = unlockedBadges.map(b => `
+                                <div class="flex flex-col items-center p-2 bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg">
+                                    <div class="text-3xl text-yellow-500 mb-1"><i class="bi ${b.icon}"></i></div>
+                                    <div class="text-[10px] font-bold text-center leading-tight">${b.name}</div>
+                                </div>
+                            `).join('');
+                        } else {
+                            badgeList.innerHTML = '<div class="col-span-full text-center text-gray-400 py-4 text-xs">まだ実績を獲得していません</div>';
+                        }
+                    } else {
+                        badgeList.innerHTML = '<div class="col-span-full text-center text-gray-400 py-4 text-xs">データ読み込み中...</div>';
+                    }
                 }
             }
         } catch (e) {
