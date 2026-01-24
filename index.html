@@ -8724,21 +8724,18 @@ async function loadMyStats() {
                 `;
             }
 
-            // 2. スタンプカード (ログインボーナス風) - 30日分表示に拡張
-            // Flex wrapを使って並べる
+            // 2. スタンプカード (30日分表示)
             const streakCount = data.stats.goshuinCount || 0;
-            // 30日サイクル (31日目は1日目に戻るような表示、あるいは30日目以降はすべて埋まる表現も可だが今回はサイクル)
             const cycleDay = ((streakCount - 1) % 30) + 1; 
             
             let stampsHtml = '';
             for(let i=1; i<=30; i++) {
                 const isActive = i <= cycleDay && streakCount > 0;
-                // 5の倍数はギフトアイコン、それ以外は数字
-                const iconContent = (i % 5 === 0) ? '<i class="bi bi-gift-fill"></i>' : i;
+                // ギフトアイコン(5日毎)
+                const iconContent = (i % 5 === 0) ? '<i class="bi bi-gift-fill text-yellow-500"></i>' : i;
                 const mark = isActive ? '<i class="bi bi-check-lg stamp-mark"></i>' : iconContent;
                 const activeClass = isActive ? 'active' : '';
                 
-                // 30個並べるので小さくする
                 stampsHtml += `
                     <div class="stamp-item ${activeClass}" style="width:32px; height:32px; font-size:0.7rem;">
                         ${mark}
@@ -8746,7 +8743,6 @@ async function loadMyStats() {
                 `;
             }
 
-            // コンテナ再取得または生成
             let stampTarget = document.getElementById('stamp-card-area');
             if(!stampTarget) {
                 stampTarget = document.createElement('div');
@@ -8770,37 +8766,43 @@ async function loadMyStats() {
                 </div>
             `;
 
-            // 3. バッジインベントリ (Pet Sim 99風)
+            // 3. バッジインベントリ (Pet Sim 99風 - ツールチップ連携)
             const badgeContainer = document.getElementById('stats-badge-list');
             if (badgeContainer) {
-                // グリッドレイアウトに変更 (スマホ3列、PC5列くらい)
-                badgeContainer.className = "grid grid-cols-3 md:grid-cols-5 gap-4 pb-20";
+                badgeContainer.className = "grid grid-cols-4 md:grid-cols-6 gap-3 pb-20";
                 
                 badgeContainer.innerHTML = data.badges.map(b => {
                     const rarity = getRarityInfo(b);
-                    // アンロック判定: APIから返る unlocked (boolean) を信用する
                     const isUnlocked = b.unlocked; 
                     const lockClass = isUnlocked ? '' : 'locked';
-                    
-                    // データ属性にツールチップ情報を仕込む
+                    const borderColor = isUnlocked ? rarity.color : 'transparent';
+                    const iconColor = isUnlocked ? rarity.color : '#6b7280'; // 未獲得はグレー
+
                     return `
-                        <div class="badge-slot ${lockClass}" style="border-color: ${rarity.color};"
+                        <div class="badge-slot ${lockClass}" style="border-color: ${borderColor};"
                              data-name="${b.name}" 
                              data-desc="${b.description}" 
                              data-rarity="${rarity.name}" 
                              data-color="${rarity.color}" 
                              data-count="${b.global_count || 0}"
+                             data-current="${b.current_val || 0}"
+                             data-target="${b.condition_value || 0}"
+                             data-progress="${b.progress || 0}"
+                             data-unlocked="${isUnlocked}"
+                             
                              onmouseenter="TooltipSystem.show(this)"
                              onmouseleave="TooltipSystem.hide()"
-                             touchstart="TooltipSystem.show(this)">
+                             onclick="TooltipSystem.show(this)" 
+                             ontouchstart="TooltipSystem.show(this)"
+                             >
                              
-                            <div class="badge-icon-inner" style="color: ${rarity.color};">
+                            <div class="badge-icon-inner" style="color: ${iconColor};">
                                 <i class="bi ${b.icon}"></i>
                             </div>
                             
-                            <!-- 進捗バー (未獲得時のみ表示などお好みで) -->
-                            ${!isUnlocked && b.target_val > 0 ? `
-                                <div class="absolute bottom-2 left-2 right-2 h-1 bg-gray-300 rounded-full overflow-hidden">
+                            <!-- 未獲得時の進捗バー（インベントリ内） -->
+                            ${!isUnlocked ? `
+                                <div class="absolute bottom-1 left-2 right-2 h-1 bg-gray-300 rounded-full overflow-hidden">
                                     <div class="h-full bg-blue-500" style="width: ${b.progress}%"></div>
                                 </div>
                             ` : ''}
@@ -8809,7 +8811,7 @@ async function loadMyStats() {
                 }).join('');
             }
             
-            // ツールチップ初期化 & シークレットイベント設定 (初回のみ)
+            // 初回のみ初期化
             if(!TooltipSystem.el) {
                 TooltipSystem.init();
                 setupSecretTrigger();
