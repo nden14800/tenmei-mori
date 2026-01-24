@@ -8523,7 +8523,7 @@ ${getShareUrl()}`;
             window.open(intent, '_blank');
         }
 
-        // 参拝の記録：統計読み込み (バッジ機能削除・数値特化版)
+        // 参拝の記録：統計読み込み (ID指定による確実な更新版)
     async function loadMyStats() {
         if (!currentState.user) return;
 
@@ -8534,23 +8534,16 @@ ${getShareUrl()}`;
             if (res.ok) {
                 const data = await res.json();
                 
-                // 数値データの表示更新
-                const statsGrid = document.getElementById('my-stats-grid');
-                if (statsGrid) {
-                    statsGrid.innerHTML = `
-                        <div class="bg-white dark:bg-zinc-800 p-4 rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm">
-                            <div class="text-xs text-gray-500 mb-1">総参拝数</div>
-                            <div class="text-2xl md:text-3xl font-black text-red-600">
-                                ${Number(data.stats.totalDraws || 0).toLocaleString()}
-                            </div>
-                        </div>
-                        <div class="bg-white dark:bg-zinc-800 p-4 rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm">
-                            <div class="text-xs text-gray-500 mb-1">大吉獲得数</div>
-                            <div class="text-2xl md:text-3xl font-black text-yellow-500">
-                                ${Number(data.stats.daikichiCount || 0).toLocaleString()}
-                            </div>
-                        </div>
-                    `;
+                // HTML内のID要素を直接取得して数値をセットする
+                // (前回提示したHTML構造の id="stat-total" と id="stat-daikichi-num" に対応)
+                const totalEl = document.getElementById('stat-total');
+                const daikichiEl = document.getElementById('stat-daikichi-num');
+
+                if (totalEl) {
+                    totalEl.textContent = Number(data.stats.totalDraws || 0).toLocaleString();
+                }
+                if (daikichiEl) {
+                    daikichiEl.textContent = Number(data.stats.daikichiCount || 0).toLocaleString();
                 }
             }
         } catch (e) {
