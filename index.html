@@ -7771,21 +7771,21 @@ function handleInputQuiz(button, correctAnswers, questionId) {
                 }
             }, 1000);
         }
-
-        // ---------------------------------------------------------------
-// 1. おみくじ結果表示ロジック (ローディング復活・番号ズレ修正版)
-// ---------------------------------------------------------------
+      
+// ==========================================
+// 【修正版】おみくじ結果表示ロジック (番号ズレ・カウンター即時更新対応)
+// ==========================================
 async function showResultDetail(isNewDraw, dataOverride = null) {
     let resultData, randNum, detailsList, luckyItems, unluckyItems, timestamp, username;
 
-    // --- 新規におみくじを引く場合 ---
+    // --- A. 新規におみくじを引く場合 ---
     if (isNewDraw) {
-        // ローディングを「確実に」表示開始
+        // カウントダウンを消してローディングを表示
         const overlay = document.getElementById('countdown-overlay');
-        overlay.style.display = 'none'; // カウントダウンを消す
-        showLoading(true); // スピナーを回す
+        overlay.style.display = 'none';
+        showLoading(true);
 
-        // 1. 基本結果の抽選 (ローカル計算)
+        // 1. ローカルでの抽選（仮データ作成）
         const base = omikujiResults[Math.floor(Math.random() * omikujiResults.length)];
         randNum = Math.floor(Math.random() * 100) + 1;
         timestamp = Date.now();
@@ -7813,19 +7813,18 @@ async function showResultDetail(isNewDraw, dataOverride = null) {
 
         unluckyItems = { item: ulItem, spot: ulSpot, person: ulPerson };
 
-        // 仮のデータ構築
+        // 仮データセット（発行番号は一旦今のカウントを入れるが、後で上書きする）
         resultData = { 
             type: base.type, poem: base.poem, desc: base.desc,
             num: randNum, detail: detailsList,
             lucky: luckyItems, unlucky: unluckyItems,
             timestamp: timestamp, username: username,
-            issue_number: currentState.liveCount // 仮の番号
+            issue_number: currentState.liveCount // 仮
         };
 
-        // 2. ログイン時はサーバーと通信して「確定番号」を取得する
+        // 2. サーバー通信（ログイン時のみ）
         if(currentState.user) {
             try {
-                // ★ここでサーバーからの応答を「待つ」ことで、ローディングを表示し続ける
                 const res = await authFetch(`${API_BASE}/api/draw`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
@@ -7842,31 +7841,39 @@ async function showResultDetail(isNewDraw, dataOverride = null) {
                     showLoading(false);
                     const errData = await res.json();
                     showToast(errData.message, 'warning', '天命の戒め');
-                    return; // 処理中断
+                    return; // 制限時は中断
                 }
                 
                 if(res.ok) {
                     const data = await res.json();
                     if(data.success && data.count) {
-                        // サーバーから返ってきた「正しい番号」で上書き
+                        // 【重要】サーバーから返ってきた最新の番号で上書き
                         resultData.issue_number = data.count;
                         currentState.liveCount = data.count;
                         
-                        // 各種カウンター更新
+                        // 【修正】ホーム画面の累計カウンターを即座に更新 (リロード不要にする)
                         const counterEl = document.getElementById('live-counter');
-                        if(counterEl) counterEl.textContent = currentState.liveCount.toLocaleString() + "本";
+                        if(counterEl) counterEl.textContent = Number(data.count).toLocaleString() + "本";
                         
-                        fetchHistoryStats(); // 全体統計更新
-                        loadMyStats();       // 自分の記録更新
+                        // 統計データの再取得
+                        fetchHistoryStats(); 
+                        // 自分の記録（総参拝数・大吉数）を即座に更新
+                        await loadMyStats(); 
                     }
                 }
             } catch(e) { 
                 console.error("Draw API Error:", e);
-                // エラーでも止まらずに結果は表示する
+                // エラーでも止まらず、仮データのまま表示へ進む
             }
+        } else {
+            // ゲストの場合も、見かけ上のカウントを+1して即時反映させる
+            currentState.liveCount++;
+            resultData.issue_number = currentState.liveCount;
+            const counterEl = document.getElementById('live-counter');
+            if(counterEl) counterEl.textContent = currentState.liveCount.toLocaleString() + "本";
         }
 
-        // 3. データが整ってから描画・画面遷移
+        // 3. データが確定してからカードを描画
         currentState.lastResult = resultData;
         renderResultToCard('result-card-outer', resultData, true); 
         
@@ -7876,14 +7883,13 @@ async function showResultDetail(isNewDraw, dataOverride = null) {
         container.classList.add('hidden');
         document.getElementById('gen-img-status').textContent = "";
 
-        // 最後にローディングを消して画面を表示
+        // ローディング消去＆画面遷移
         showLoading(false);
         showView('result');
 
     } else {
-        // --- 履歴からの表示 (変更なし) ---
+        // --- B. 履歴からの表示 (既存ロジック維持) ---
         resultData = dataOverride;
-        // (省略なしで記述)
         randNum = dataOverride.num || 1;
         if (Array.isArray(dataOverride.detail)) {
             detailsList = dataOverride.detail;
@@ -7901,8 +7907,6 @@ async function showResultDetail(isNewDraw, dataOverride = null) {
         }
         luckyItems = dataOverride.lucky || { item: "不明", spot: "不明", color: "不明", person: "不明" };
         unluckyItems = dataOverride.unlucky || { item: "不明", spot: "不明", person: "不明" };
-        timestamp = dataOverride.timestamp;
-        username = dataOverride.username || "参拝者";
         
         resultData = {
             type: dataOverride.type || dataOverride.result,
@@ -7912,9 +7916,9 @@ async function showResultDetail(isNewDraw, dataOverride = null) {
             detail: detailsList,
             lucky: luckyItems,
             unlucky: unluckyItems,
-            timestamp: timestamp,
-            username: username,
-            issue_number: dataOverride.issue_number
+            timestamp: dataOverride.timestamp,
+            username: dataOverride.username || "参拝者",
+            issue_number: dataOverride.issue_number // 履歴に保存された番号を使用
         };
         currentState.lastResult = resultData;
 
