@@ -8527,28 +8527,34 @@ ${getShareUrl()}`;
             window.open(intent, '_blank');
         }
 
-        // 参拝の記録：統計読み込み (ID指定による確実な更新版)
+        // 参拝の記録：統計読み込み (authFetch使用による修正版)
     async function loadMyStats() {
+        // ログインしていない場合は処理しない
         if (!currentState.user) return;
 
         try {
-            // プロフィールAPIからデータを取得
-            const res = await fetch(`${API_BASE}/api/user/profile?username=${encodeURIComponent(currentState.user.username)}`);
+            // ★修正: fetch ではなく authFetch を使用して認証ヘッダーを付与する
+            const res = await authFetch(`${API_BASE}/api/user/profile?username=${encodeURIComponent(currentState.user.username)}`, {
+                method: 'GET'
+            });
             
             if (res.ok) {
                 const data = await res.json();
                 
-                // HTML内のID要素を直接取得して数値をセットする
-                // (前回提示したHTML構造の id="stat-total" と id="stat-daikichi-num" に対応)
                 const totalEl = document.getElementById('stat-total');
                 const daikichiEl = document.getElementById('stat-daikichi-num');
 
+                // 数値が undefined の場合は 0 を表示し、"-" にならないようにする
                 if (totalEl) {
-                    totalEl.textContent = Number(data.stats.totalDraws || 0).toLocaleString();
+                    const val = (data.stats && data.stats.totalDraws !== undefined) ? data.stats.totalDraws : 0;
+                    totalEl.textContent = Number(val).toLocaleString();
                 }
                 if (daikichiEl) {
-                    daikichiEl.textContent = Number(data.stats.daikichiCount || 0).toLocaleString();
+                    const val = (data.stats && data.stats.daikichiCount !== undefined) ? data.stats.daikichiCount : 0;
+                    daikichiEl.textContent = Number(val).toLocaleString();
                 }
+            } else {
+                console.warn("統計データの取得に失敗しました");
             }
         } catch (e) {
             console.error("Stats load failed", e);
