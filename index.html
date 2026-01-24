@@ -6981,10 +6981,11 @@ window.onload = async function() {
     renderFullColumnView(); 
 };
 
-// ★修正: checkSession関数 (authFetch使用 & トークン保存追加)
+// ---------------------------------------------------------------
+// 2. セッションチェック (エラーの原因となっていた checkGoshuin を削除)
+// ---------------------------------------------------------------
 async function checkSession() {
     try {
-        // authFetchに変更
         const res = await authFetch(`${API_BASE}/api/auth/check`, {
             method: 'GET'
         });
@@ -6992,23 +6993,21 @@ async function checkSession() {
             const data = await res.json();
             if (data.loggedIn) {
                 currentState.user = { username: data.username, email: data.email };
-                // window.onload内の最後の方に追加
-    if (currentState.user) {
-        checkGoshuin();
-    }
                 
-                // ★追加: サーバーからトークンが返ってきたら保存
+                // ★削除: checkGoshuin(); (定義されていないためエラーになる)
+                
                 if (data.token) {
                     localStorage.setItem('auth_token', data.token);
                 }
 
                 updateAuthUI();
                 loadLabSettings();
+                loadMyStats(); // ★追加: ログイン確認直後に統計を読み込む
                 console.log("Session restored");
             } else {
                 currentState.user = null;
                 updateAuthUI();
-                loadLabSettings(); // ゲスト設定をロード
+                loadLabSettings(); 
             }
         }
     } catch (e) {
