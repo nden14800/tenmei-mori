@@ -7827,12 +7827,22 @@ function handleInputQuiz(button, correctAnswers, questionId) {
                     unlucky: unluckyItems,
                     timestamp: timestamp,
                     username: username,
-                    issue_number: currentState.liveCount // 仮の値（サーバーレスポンスで上書き）
+                    // 一旦、現在のカウンターを表示しておく（サーバーレスポンス待ち）
+                    issue_number: currentState.liveCount 
                 };
                 currentState.lastResult = resultData;
 
+                // 先に仮描画して画面遷移（体感速度向上）
+                renderResultToCard('result-card-outer', resultData, true); 
+                showView('result');
+                const container = document.getElementById('generated-image-container');
+                container.innerHTML = '';
+                container.classList.add('hidden');
+                document.getElementById('gen-img-status').textContent = "";
+
+                // ログインしている場合はサーバーに保存＆正しい番号を取得
                 if(currentState.user) {
-                    showLoading(true);
+                    // showLoading(true); // 結果画面に出ているのでローディングは出さない方が自然
                     try {
                         const res = await authFetch(`${API_BASE}/api/draw`, {
                             method: 'POST',
@@ -7849,35 +7859,33 @@ function handleInputQuiz(button, correctAnswers, questionId) {
                         if (res.status === 429) {
                             const errData = await res.json();
                             showToast(errData.message, 'warning', '天命の戒め');
-                            showLoading(false);
                             return; 
                         }
                         
                         if(res.ok) {
                             const data = await res.json();
                             if(data.success && data.count) {
-                                // ★修正: サーバーから返ってきた最新の発行番号をセット
+                                // ★重要修正: サーバーから確定した発行番号を受け取る
                                 resultData.issue_number = data.count;
                                 currentState.liveCount = data.count;
+                                
+                                // グローバルカウンターの更新
                                 document.getElementById('live-counter').textContent = currentState.liveCount.toLocaleString() + "本";
-                                fetchHistoryStats();
+                                
+                                // ★最重要: 正しい番号で結果カードを「再描画」する
+                                renderResultToCard('result-card-outer', resultData, true);
 
-                                if (data.newBadges && data.newBadges.length > 0) {
-                                    data.newBadges.forEach(badgeName => {
-                                        showToast(`実績解除: 「${badgeName}」を獲得しました！`, 'success', '功徳の証');
-                                    });
-                                }
+                                // 統計などの更新
+                                fetchHistoryStats();
                             }
                         }
                     } catch(e) { 
                         console.error(e);
-                    } finally { 
-                        showLoading(false); 
                     }
                 }
 
             } else {
-                // 履歴からの復元ロジック
+                // 履歴からの復元ロジック（ここは変更なし）
                 resultData = dataOverride;
                 randNum = dataOverride.num || 1;
                 
@@ -7916,20 +7924,19 @@ function handleInputQuiz(button, correctAnswers, questionId) {
                     unlucky: unluckyItems,
                     timestamp: timestamp,
                     username: username,
-                    // ★修正: 履歴データから発行番号を復元
                     issue_number: dataOverride.issue_number
                 };
                 currentState.lastResult = resultData;
-            }
 
-            // 結果カードの描画と画面遷移
-            renderResultToCard('result-card-outer', resultData, true); 
-            showView('result');
-            
-            const container = document.getElementById('generated-image-container');
-            container.innerHTML = '';
-            container.classList.add('hidden');
-            document.getElementById('gen-img-status').textContent = "";
+                // 結果カードの描画と画面遷移
+                renderResultToCard('result-card-outer', resultData, true); 
+                showView('result');
+                
+                const container = document.getElementById('generated-image-container');
+                container.innerHTML = '';
+                container.classList.add('hidden');
+                document.getElementById('gen-img-status').textContent = "";
+            }
         }
 
         // updateURL は廃止（空関数にして互換性維持）
