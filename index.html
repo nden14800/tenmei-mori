@@ -8516,7 +8516,7 @@ ${getShareUrl()}`;
             window.open(intent, '_blank');
         }
 
-        // 参拝の記録：統計表示 (連続参拝削除・大吉追加版)
+        // 参拝の記録：統計読み込み (バッジ機能削除・数値特化版)
     async function loadMyStats() {
         if (!currentState.user) return;
 
@@ -8527,8 +8527,7 @@ ${getShareUrl()}`;
             if (res.ok) {
                 const data = await res.json();
                 
-                // --- 1. 数値データの表示変更 ---
-                // ID指定ではなく、グリッドごと書き換えることで確実に更新
+                // 数値データの表示更新
                 const statsGrid = document.getElementById('my-stats-grid');
                 if (statsGrid) {
                     statsGrid.innerHTML = `
@@ -8545,28 +8544,6 @@ ${getShareUrl()}`;
                             </div>
                         </div>
                     `;
-                }
-
-                // --- 2. 獲得済みバッジの表示 (変更なし) ---
-                const badgeList = document.getElementById('stats-badge-list');
-                if (badgeList) {
-                    if (data.badges && data.badges.length > 0) {
-                        // 獲得済み(unlocked)のものだけ抽出して表示
-                        const unlockedBadges = data.badges.filter(b => b.unlocked);
-                        
-                        if (unlockedBadges.length > 0) {
-                            badgeList.innerHTML = unlockedBadges.map(b => `
-                                <div class="flex flex-col items-center p-2 bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg">
-                                    <div class="text-3xl text-yellow-500 mb-1"><i class="bi ${b.icon}"></i></div>
-                                    <div class="text-[10px] font-bold text-center leading-tight">${b.name}</div>
-                                </div>
-                            `).join('');
-                        } else {
-                            badgeList.innerHTML = '<div class="col-span-full text-center text-gray-400 py-4 text-xs">まだ実績を獲得していません</div>';
-                        }
-                    } else {
-                        badgeList.innerHTML = '<div class="col-span-full text-center text-gray-400 py-4 text-xs">データ読み込み中...</div>';
-                    }
                 }
             }
         } catch (e) {
