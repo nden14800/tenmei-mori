@@ -7783,13 +7783,13 @@ function handleInputQuiz(button, correctAnswers, questionId) {
             let resultData, randNum, detailsList, luckyItems, unluckyItems, timestamp, username;
 
             if (isNewDraw) {
-                // 新規抽選（ローカルで一旦計算）
+                // --- 1. 新規抽選のローカル計算 ---
                 const base = omikujiResults[Math.floor(Math.random() * omikujiResults.length)];
                 randNum = Math.floor(Math.random() * 100) + 1;
                 timestamp = Date.now();
                 username = currentState.user ? (currentState.user.username || "参拝者") : "ゲスト";
 
-                // 詳細項目生成
+                // 詳細項目の生成
                 const detailIndex = 5 - base.rank;
                 const cats = ['願事','恋愛','待人','商売','旅立','学問','病気'];
                 
@@ -7798,7 +7798,7 @@ function handleInputQuiz(button, correctAnswers, questionId) {
                     content: detailTexts[c][Math.min(detailIndex, detailTexts[c].length - 1)]
                 }));
 
-                // ラッキー/アンラッキー生成
+                // ラッキー/アンラッキー項目の生成
                 luckyItems = {
                     item: luckyItemsList[Math.floor(Math.random()*luckyItemsList.length)],
                     spot: luckySpotsList[Math.floor(Math.random()*luckySpotsList.length)],
@@ -7806,6 +7806,7 @@ function handleInputQuiz(button, correctAnswers, questionId) {
                     person: luckyPersonsList[Math.floor(Math.random()*luckyPersonsList.length)]
                 };
                 
+                // アンラッキーはラッキーと重複しないように選ぶ
                 let ulItem, ulSpot, ulPerson;
                 do { ulItem = luckyItemsList[Math.floor(Math.random()*luckyItemsList.length)]; } while(ulItem === luckyItems.item);
                 do { ulSpot = luckySpotsList[Math.floor(Math.random()*luckySpotsList.length)]; } while(ulSpot === luckyItems.spot);
@@ -7827,25 +7828,25 @@ function handleInputQuiz(button, correctAnswers, questionId) {
                     unlucky: unluckyItems,
                     timestamp: timestamp,
                     username: username,
-                    // ★仮の番号（現在の表示値）を入れておく
+                    // ★暫定的に現在のカウンター値をセット（サーバーレスポンス待ち）
                     issue_number: currentState.liveCount 
                 };
                 currentState.lastResult = resultData;
 
-                // 1. 先に仮描画して画面遷移（体感速度向上）
-                // ※この時点では番号が古い可能性があります
+                // --- 2. 仮描画して即座に画面遷移（体感速度向上） ---
                 renderResultToCard('result-card-outer', resultData, true); 
                 showView('result');
                 
+                // 画像生成エリアのリセット
                 const container = document.getElementById('generated-image-container');
                 container.innerHTML = '';
                 container.classList.add('hidden');
                 document.getElementById('gen-img-status').textContent = "";
 
-                // ログインしている場合はサーバーに保存＆正しい番号を取得
+                // --- 3. ログイン時はサーバーへ保存＆正しい番号を取得して再描画 ---
                 if(currentState.user) {
                     try {
-                        // サーバーへ送信
+                        // authFetchを使用してサーバーへ送信
                         const res = await authFetch(`${API_BASE}/api/draw`, {
                             method: 'POST',
                             headers: { 'Content-Type': 'application/json' },
@@ -7858,6 +7859,7 @@ function handleInputQuiz(button, correctAnswers, questionId) {
                             })
                         });
                         
+                        // レート制限のハンドリング
                         if (res.status === 429) {
                             const errData = await res.json();
                             showToast(errData.message, 'warning', '天命の戒め');
@@ -7867,7 +7869,7 @@ function handleInputQuiz(button, correctAnswers, questionId) {
                         if(res.ok) {
                             const data = await res.json();
                             if(data.success && data.count) {
-                                // ★修正: サーバーから確定した「最新の発行番号」を受け取る
+                                // ★修正ポイント: サーバーから確定した「最新の発行番号」を受け取る
                                 resultData.issue_number = data.count;
                                 currentState.liveCount = data.count;
                                 
@@ -7875,28 +7877,30 @@ function handleInputQuiz(button, correctAnswers, questionId) {
                                 const counterEl = document.getElementById('live-counter');
                                 if(counterEl) counterEl.textContent = currentState.liveCount.toLocaleString() + "本";
                                 
-                                // ★修正: 最新の番号で結果カードを「再描画」する
-                                // これにより、画面上の「第〇〇番」が正しい数字に書き換わります
+                                // ★最重要: 最新の番号データを使って、結果カードを「再描画」する
+                                // これにより画面上の「第〇〇番」が正しい値に書き換わります
                                 renderResultToCard('result-card-outer', resultData, true);
 
-                                // 統計などの更新
+                                // 統計データの更新
                                 fetchHistoryStats();
-                                loadMyStats(); // 自分の統計も即座に更新
+                                // 自分の参拝記録（総数など）も即座に更新
+                                loadMyStats(); 
                             }
                         }
                     } catch(e) { 
-                        console.error(e);
+                        console.error("Draw API Error:", e);
                     }
                 }
 
             } else {
-                // 履歴からの復元ロジック（変更なし）
+                // --- 履歴からの復元ロジック（変更なし） ---
                 resultData = dataOverride;
                 randNum = dataOverride.num || 1;
                 
                 if (Array.isArray(dataOverride.detail)) {
                     detailsList = dataOverride.detail;
                 } else {
+                    // 詳細データがない場合のダミー生成（互換性維持）
                     const cats = ['願事','恋愛','待人','商売','旅立','学問','病気'];
                     const vals = ['叶う','良し','来る','繁盛','吉','成就','治る','遅れる','待て','控','難','危'];
                     detailsList = cats.map(c => ({
@@ -7933,6 +7937,7 @@ function handleInputQuiz(button, correctAnswers, questionId) {
                 };
                 currentState.lastResult = resultData;
 
+                // 復元データの描画
                 renderResultToCard('result-card-outer', resultData, true); 
                 showView('result');
                 
