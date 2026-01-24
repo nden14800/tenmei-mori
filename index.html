@@ -7827,14 +7827,16 @@ function handleInputQuiz(button, correctAnswers, questionId) {
                     unlucky: unluckyItems,
                     timestamp: timestamp,
                     username: username,
-                    // 一旦、現在のカウンターを表示しておく（サーバーレスポンス待ち）
+                    // ★仮の番号（現在の表示値）を入れておく
                     issue_number: currentState.liveCount 
                 };
                 currentState.lastResult = resultData;
 
-                // 先に仮描画して画面遷移（体感速度向上）
+                // 1. 先に仮描画して画面遷移（体感速度向上）
+                // ※この時点では番号が古い可能性があります
                 renderResultToCard('result-card-outer', resultData, true); 
                 showView('result');
+                
                 const container = document.getElementById('generated-image-container');
                 container.innerHTML = '';
                 container.classList.add('hidden');
@@ -7842,8 +7844,8 @@ function handleInputQuiz(button, correctAnswers, questionId) {
 
                 // ログインしている場合はサーバーに保存＆正しい番号を取得
                 if(currentState.user) {
-                    // showLoading(true); // 結果画面に出ているのでローディングは出さない方が自然
                     try {
+                        // サーバーへ送信
                         const res = await authFetch(`${API_BASE}/api/draw`, {
                             method: 'POST',
                             headers: { 'Content-Type': 'application/json' },
@@ -7865,18 +7867,21 @@ function handleInputQuiz(button, correctAnswers, questionId) {
                         if(res.ok) {
                             const data = await res.json();
                             if(data.success && data.count) {
-                                // ★重要修正: サーバーから確定した発行番号を受け取る
+                                // ★修正: サーバーから確定した「最新の発行番号」を受け取る
                                 resultData.issue_number = data.count;
                                 currentState.liveCount = data.count;
                                 
-                                // グローバルカウンターの更新
-                                document.getElementById('live-counter').textContent = currentState.liveCount.toLocaleString() + "本";
+                                // グローバルカウンターの表示更新
+                                const counterEl = document.getElementById('live-counter');
+                                if(counterEl) counterEl.textContent = currentState.liveCount.toLocaleString() + "本";
                                 
-                                // ★最重要: 正しい番号で結果カードを「再描画」する
+                                // ★修正: 最新の番号で結果カードを「再描画」する
+                                // これにより、画面上の「第〇〇番」が正しい数字に書き換わります
                                 renderResultToCard('result-card-outer', resultData, true);
 
                                 // 統計などの更新
                                 fetchHistoryStats();
+                                loadMyStats(); // 自分の統計も即座に更新
                             }
                         }
                     } catch(e) { 
@@ -7885,7 +7890,7 @@ function handleInputQuiz(button, correctAnswers, questionId) {
                 }
 
             } else {
-                // 履歴からの復元ロジック（ここは変更なし）
+                // 履歴からの復元ロジック（変更なし）
                 resultData = dataOverride;
                 randNum = dataOverride.num || 1;
                 
@@ -7928,7 +7933,6 @@ function handleInputQuiz(button, correctAnswers, questionId) {
                 };
                 currentState.lastResult = resultData;
 
-                // 結果カードの描画と画面遷移
                 renderResultToCard('result-card-outer', resultData, true); 
                 showView('result');
                 
