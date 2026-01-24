@@ -8532,39 +8532,40 @@ ${getShareUrl()}`;
             window.open(intent, '_blank');
         }
 
-        // 参拝の記録：統計読み込み (authFetch使用による修正版)
-    async function loadMyStats() {
-        // ログインしていない場合は処理しない
-        if (!currentState.user) return;
+        // 参拝の記録：統計読み込み（修正版）
+        async function loadMyStats() {
+            // ログインしていない場合は処理しない
+            if (!currentState.user) return;
 
-        try {
-            // ★修正: fetch ではなく authFetch を使用して認証ヘッダーを付与する
-            const res = await authFetch(`${API_BASE}/api/user/profile?username=${encodeURIComponent(currentState.user.username)}`, {
-                method: 'GET'
-            });
-            
-            if (res.ok) {
-                const data = await res.json();
+            try {
+                // ★修正ポイント: 通常の fetch ではなく authFetch を使用
+                // これにより Authorization ヘッダーと Cookie が正しく送信される
+                const res = await authFetch(`${API_BASE}/api/user/profile?username=${encodeURIComponent(currentState.user.username)}`, {
+                    method: 'GET'
+                });
                 
-                const totalEl = document.getElementById('stat-total');
-                const daikichiEl = document.getElementById('stat-daikichi-num');
+                if (res.ok) {
+                    const data = await res.json();
+                    
+                    const totalEl = document.getElementById('stat-total');
+                    const daikichiEl = document.getElementById('stat-daikichi-num');
 
-                // 数値が undefined の場合は 0 を表示し、"-" にならないようにする
-                if (totalEl) {
-                    const val = (data.stats && data.stats.totalDraws !== undefined) ? data.stats.totalDraws : 0;
-                    totalEl.textContent = Number(val).toLocaleString();
+                    // データが存在しない場合や null の場合は 0 を表示し、"-" のままにしない
+                    if (totalEl) {
+                        const val = (data.stats && data.stats.totalDraws !== undefined && data.stats.totalDraws !== null) ? data.stats.totalDraws : 0;
+                        totalEl.textContent = Number(val).toLocaleString();
+                    }
+                    if (daikichiEl) {
+                        const val = (data.stats && data.stats.daikichiCount !== undefined && data.stats.daikichiCount !== null) ? data.stats.daikichiCount : 0;
+                        daikichiEl.textContent = Number(val).toLocaleString();
+                    }
+                } else {
+                    console.warn("統計データの取得に失敗しました");
                 }
-                if (daikichiEl) {
-                    const val = (data.stats && data.stats.daikichiCount !== undefined) ? data.stats.daikichiCount : 0;
-                    daikichiEl.textContent = Number(val).toLocaleString();
-                }
-            } else {
-                console.warn("統計データの取得に失敗しました");
+            } catch (e) {
+                console.error("Stats load failed", e);
             }
-        } catch (e) {
-            console.error("Stats load failed", e);
         }
-    }
         
     // ユーザープロフィールの読み込み
     async function loadUserProfile(username) {
