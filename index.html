@@ -7774,7 +7774,7 @@ function handleInputQuiz(button, correctAnswers, questionId) {
             }, 1000);
         }
 
-        async function showResultDetail(isNewDraw, dataOverride = null) {
+       async function showResultDetail(isNewDraw, dataOverride = null) {
             let resultData, randNum, detailsList, luckyItems, unluckyItems, timestamp, username;
 
             if (isNewDraw) {
@@ -7821,11 +7821,10 @@ function handleInputQuiz(button, correctAnswers, questionId) {
                     lucky: luckyItems,
                     unlucky: unluckyItems,
                     timestamp: timestamp,
-                    username: username
+                    username: username,
+                    issueNumber: 0 // 初期値は0、サーバーレスポンスで更新
                 };
-                currentState.lastResult = resultData;
-
-                // ▼▼▼ 修正箇所: ログイン時はサーバーの許可がないと結果を表示させない ▼▼▼
+                
                 if(currentState.user) {
                     showLoading(true);
                     try {
@@ -7844,13 +7843,8 @@ function handleInputQuiz(button, correctAnswers, questionId) {
                         // レート制限（429）の場合
                         if (res.status === 429) {
                             const errData = await res.json();
-                            // 警告通知を出す
                             showToast(errData.message, 'warning', '天命の戒め');
-                            
-                            // ローディングを消す
                             showLoading(false);
-                            
-                            // 【重要】ここで処理を強制終了する（結果画面へ行かせない）
                             return; 
                         }
                         
@@ -7858,32 +7852,38 @@ function handleInputQuiz(button, correctAnswers, questionId) {
                         if(res.ok) {
                             const data = await res.json();
                             if(data.success && data.count) {
+                                // サーバーの最新カウントをグローバル更新
                                 currentState.liveCount = data.count;
                                 document.getElementById('live-counter').textContent = currentState.liveCount.toLocaleString() + "本";
+                                
+                                // ★ここが重要：このおみくじ固有の番号をセットする
+                                resultData.issueNumber = data.count;
+                                
                                 fetchHistoryStats();
 
-        
-// ▼▼▼ 追加: 新しいバッジがあれば通知 ▼▼▼
                                 if (data.newBadges && data.newBadges.length > 0) {
                                     data.newBadges.forEach(badgeName => {
                                         showToast(`実績解除: 「${badgeName}」を獲得しました！`, 'success', '功徳の証');
                                     });
                                 }
-                                // ▲▲▲ 追加ここまで ▲▲▲
-
                             }
                         }
                     } catch(e) { 
                         console.error(e);
-                        // 通信エラー時も念の為アラートを出すが、表示は許可する（あるいはここも止めるかはお好みで）
+                        // エラー時は仮の番号(グローバルカウント)を入れるか、0のままにする
+                        resultData.issueNumber = currentState.liveCount || 0;
                     } finally { 
                         showLoading(false); 
                     }
+                } else {
+                    // 未ログイン時は現在のグローバルカウント(表示用)または仮の番号
+                    resultData.issueNumber = currentState.liveCount || 0;
                 }
-                // ▲▲▲ 修正ここまで ▲▲▲
+                
+                currentState.lastResult = resultData;
 
             } else {
-                // 履歴からの復元ロジック（変更なし）
+                // 履歴からの復元ロジック
                 resultData = dataOverride;
                 randNum = dataOverride.num || 1;
                 
@@ -7912,6 +7912,10 @@ function handleInputQuiz(button, correctAnswers, questionId) {
                 timestamp = dataOverride.timestamp;
                 username = dataOverride.username || "参拝者";
                 
+                // ★履歴オブジェクトから発行番号を復元（DBのカラム名に合わせて調整してください）
+                // サーバーが issue_number または issueNumber で返していると想定
+                let restoredIssueNum = dataOverride.issueNumber || dataOverride.issue_number || 0;
+
                 resultData = {
                     type: dataOverride.type || dataOverride.result,
                     poem: dataOverride.poem,
@@ -7921,12 +7925,13 @@ function handleInputQuiz(button, correctAnswers, questionId) {
                     lucky: luckyItems,
                     unlucky: unluckyItems,
                     timestamp: timestamp,
-                    username: username
+                    username: username,
+                    issueNumber: restoredIssueNum // 復元した番号
                 };
                 currentState.lastResult = resultData;
             }
 
-            // 結果カードの描画と画面遷移（制限に引っかかった場合はここまで到達しない）
+            // 結果カードの描画と画面遷移
             renderResultToCard('result-card-outer', resultData, true); 
             showView('result');
             
