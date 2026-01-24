@@ -1873,6 +1873,69 @@
             font-family: monospace;
         }
 
+        /* --- スタンプカード (連続参拝ゲーム風UI) --- */
+.stamp-card-container {
+    background-color: #fff;
+    border: 2px solid #e5e7eb;
+    border-radius: 16px;
+    padding: 20px;
+    margin-bottom: 20px;
+    position: relative;
+    overflow: hidden;
+}
+.dark .stamp-card-container {
+    background-color: #27272a;
+    border-color: #3f3f46;
+}
+.stamp-grid {
+    display: flex;
+    justify-content: space-between;
+    gap: 8px;
+    margin-top: 15px;
+}
+.stamp-item {
+    width: 100%;
+    aspect-ratio: 1;
+    border: 2px dashed #d1d5db;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #9ca3af;
+    font-size: 0.8rem;
+    position: relative;
+    background: rgba(0,0,0,0.02);
+}
+.dark .stamp-item {
+    border-color: #52525b;
+    color: #71717a;
+}
+.stamp-item.active {
+    border: 2px solid #d4af37;
+    background-color: #fffcf0;
+    color: #d4af37;
+    box-shadow: 0 4px 10px rgba(212, 175, 55, 0.2);
+}
+.dark .stamp-item.active {
+    background-color: #3f2c00;
+}
+.stamp-mark {
+    font-size: 1.5rem;
+    color: #d4af37; /* 黄金 */
+    animation: stampIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+@keyframes stampIn {
+    from { transform: scale(2); opacity: 0; }
+    to { transform: scale(1); opacity: 1; }
+}
+.stamp-label {
+    position: absolute;
+    bottom: -20px;
+    font-size: 0.65rem;
+    white-space: nowrap;
+    color: var(--text-sub);
+}
+
     </style>
 </head>
 <body>
