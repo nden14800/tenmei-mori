@@ -7778,13 +7778,12 @@ function handleInputQuiz(button, correctAnswers, questionId) {
             let resultData, randNum, detailsList, luckyItems, unluckyItems, timestamp, username;
 
             if (isNewDraw) {
-                // 新規抽選（ローカルで一旦計算）
+                // 新規抽選
                 const base = omikujiResults[Math.floor(Math.random() * omikujiResults.length)];
                 randNum = Math.floor(Math.random() * 100) + 1;
                 timestamp = Date.now();
                 username = currentState.user ? (currentState.user.username || "参拝者") : "ゲスト";
 
-                // 詳細項目生成
                 const detailIndex = 5 - base.rank;
                 const cats = ['願事','恋愛','待人','商売','旅立','学問','病気'];
                 
@@ -7793,7 +7792,6 @@ function handleInputQuiz(button, correctAnswers, questionId) {
                     content: detailTexts[c][Math.min(detailIndex, detailTexts[c].length - 1)]
                 }));
 
-                // ラッキー/アンラッキー生成
                 luckyItems = {
                     item: luckyItemsList[Math.floor(Math.random()*luckyItemsList.length)],
                     spot: luckySpotsList[Math.floor(Math.random()*luckySpotsList.length)],
@@ -7822,7 +7820,7 @@ function handleInputQuiz(button, correctAnswers, questionId) {
                     unlucky: unluckyItems,
                     timestamp: timestamp,
                     username: username,
-                    issueNumber: null // ★初期値はnull
+                    issueNumber: null // 初期値
                 };
                 
                 if(currentState.user) {
@@ -7840,7 +7838,6 @@ function handleInputQuiz(button, correctAnswers, questionId) {
                             })
                         });
                         
-                        // レート制限（429）の場合
                         if (res.status === 429) {
                             const errData = await res.json();
                             showToast(errData.message, 'warning', '天命の戒め');
@@ -7848,16 +7845,14 @@ function handleInputQuiz(button, correctAnswers, questionId) {
                             return; 
                         }
                         
-                        // 成功時 (200 OK)
                         if(res.ok) {
                             const data = await res.json();
                             if(data.success && data.count) {
                                 currentState.liveCount = data.count;
                                 document.getElementById('live-counter').textContent = currentState.liveCount.toLocaleString() + "本";
                                 
-                                // ★修正: サーバーから返ってきた最新カウントを「この結果の番号」としてセット
+                                // ★サーバーから返ってきた最新カウントを「この結果の番号」として固定保存
                                 resultData.issueNumber = data.count;
-                                currentState.lastResult.issueNumber = data.count;
 
                                 fetchHistoryStats();
 
@@ -7870,13 +7865,13 @@ function handleInputQuiz(button, correctAnswers, questionId) {
                         }
                     } catch(e) { 
                         console.error(e);
-                        // エラー時は仮の番号(グローバルカウント)を入れるか、0のままにする
+                        // エラー時は暫定的に現在のカウンターを使用
                         resultData.issueNumber = currentState.liveCount || 0;
                     } finally { 
                         showLoading(false); 
                     }
                 } else {
-                    // 未ログイン時は現在のグローバルカウント(表示用)または仮の番号
+                    // 未ログイン時は現在のグローバルカウントをその場の番号として固定
                     resultData.issueNumber = currentState.liveCount || 0;
                 }
                 
@@ -7912,10 +7907,6 @@ function handleInputQuiz(button, correctAnswers, questionId) {
                 timestamp = dataOverride.timestamp;
                 username = dataOverride.username || "参拝者";
                 
-                // ★履歴オブジェクトから発行番号を復元（DBのカラム名に合わせて調整してください）
-                // サーバーが issue_number または issueNumber で返していると想定
-                let restoredIssueNum = dataOverride.issueNumber || dataOverride.issue_number || 0;
-
                 resultData = {
                     type: dataOverride.type || dataOverride.result,
                     poem: dataOverride.poem,
@@ -7926,7 +7917,7 @@ function handleInputQuiz(button, correctAnswers, questionId) {
                     unlucky: unluckyItems,
                     timestamp: timestamp,
                     username: username,
-                    // ★修正: 履歴データ(dataOverride)にある issue_number を受け取る
+                    // ★履歴データにある issue_number を復元（DBカラム名に合わせて取得）
                     issueNumber: dataOverride.issue_number || dataOverride.issueNumber || null
                 };
                 currentState.lastResult = resultData;
@@ -7942,14 +7933,11 @@ function handleInputQuiz(button, correctAnswers, questionId) {
             document.getElementById('gen-img-status').textContent = "";
         }
 
-        // updateURL は廃止（空関数にして互換性維持）
-        function updateURL(resultData) {}
-
        function renderResultToCard(outerId, data, withFooter) {
             const outer = document.getElementById(outerId);
             outer.innerHTML = ''; 
 
-            // クラスの適用 (そのまま)
+            // クラスの適用
             outer.className = 'result-card-outer';
             if (data.type === "大吉") {
                 outer.classList.add("style-daikichi");
@@ -7959,7 +7947,7 @@ function handleInputQuiz(button, correctAnswers, questionId) {
                 outer.classList.add("style-normal");
             }
 
-            // 1. ロゴ・タイトル (そのまま)
+            // 1. ロゴ・タイトル
             const headerDiv = document.createElement('div');
             headerDiv.className = 'result-logo-area';
             headerDiv.innerHTML = `
@@ -7968,26 +7956,21 @@ function handleInputQuiz(button, correctAnswers, questionId) {
             `;
             outer.appendChild(headerDiv);
 
-            // 2. 本数カウンター (★ここを修正)
+            // 2. 発行番号表示 (★修正箇所)
             const issueDiv = document.createElement('div');
             issueDiv.className = 'result-issue-num accent-text';
             
-            // データに固有の番号(issueNumber)があればそれを使い、なければ(古いデータなど) "---" とする
-            // ※currentState.liveCount を使うと全て同じ数字になってしまうため廃止
+            // データに固有の番号(issueNumber)があればそれを使う
+            // issueNumberがnull/undefinedの場合は "---"
             let issueText = "---";
-            if (data.issueNumber) {
+            if (data.issueNumber !== undefined && data.issueNumber !== null) {
                 issueText = Number(data.issueNumber).toLocaleString();
-            } else if (currentState.liveCount && !data.timestamp) {
-                // プレビュー等でtimestampが無い新規生成時は暫定的にliveCountを使う
-                issueText = currentState.liveCount.toLocaleString(); 
             }
-
+            
             issueDiv.textContent = `通算発行 第 ${issueText} 号`; 
             outer.appendChild(issueDiv);
 
-            // ... (3. 運勢ハンコ 以降は変更なし) ...
-            
-            // 3. 運勢ハンコ（縦書き・画像風）
+            // 3. 運勢ハンコ
             const circleBox = document.createElement('div');
             circleBox.className = 'result-circle-box';
             let fs = "4.2rem"; 
@@ -7996,12 +7979,13 @@ function handleInputQuiz(button, correctAnswers, questionId) {
             circleBox.innerHTML = `<div class="result-kanji-main" style="font-size: ${fs}; white-space: nowrap;">${data.type}</div>`;
             outer.appendChild(circleBox);
 
-            // ... (以下、元のコードのまま) ...
+            // 4. ラベル
             const labelSub = document.createElement('div');
             labelSub.className = 'result-label-sub accent-text';
             labelSub.textContent = '運勢';
             outer.appendChild(labelSub);
 
+            // 5. メッセージエリア
             const msgArea = document.createElement('div');
             msgArea.className = 'result-main-message-area';
             const adviceBox = document.createElement('div');
@@ -8014,6 +7998,7 @@ function handleInputQuiz(button, correctAnswers, questionId) {
             msgArea.appendChild(poemDiv);
             outer.appendChild(msgArea);
 
+            // 6. 詳細項目
             const detailGrid = document.createElement('div');
             detailGrid.className = 'result-details-grid accent-border';
             if (data.detail) {
@@ -8026,6 +8011,7 @@ function handleInputQuiz(button, correctAnswers, questionId) {
             }
             outer.appendChild(detailGrid);
 
+            // 7. 開運・不運エリア
             const luckyArea = document.createElement('div');
             luckyArea.className = 'lucky-area';
             const lBox = document.createElement('div');
@@ -8053,6 +8039,7 @@ function handleInputQuiz(button, correctAnswers, questionId) {
             luckyArea.appendChild(uBox);
             outer.appendChild(luckyArea);
 
+            // 8. フッター情報
             if (withFooter) {
                 const footer = document.createElement('div');
                 footer.className = 'result-footer-info accent-border';
