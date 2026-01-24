@@ -8523,45 +8523,101 @@ ${getShareUrl()}`;
             window.open(intent, '_blank');
         }
 
-        // ==========================================
-// 【修正版】参拝の記録：統計読み込み (「-」表示不具合の修正)
+      // ==========================================
+// 【強化版】参拝の記録：描画ロジック
 // ==========================================
 async function loadMyStats() {
-    // ログインしていない場合は処理せず、数値を「-」に戻して終了
-    if (!currentState.user) {
-        const tEl = document.getElementById('stat-total');
-        const dEl = document.getElementById('stat-daikichi-num');
-        if(tEl) tEl.textContent = "-";
-        if(dEl) dEl.textContent = "-";
-        return;
-    }
+    if (!currentState.user) return;
 
     try {
-        // authFetchを使用し、自身のプロフィール情報を取得
         const res = await authFetch(`${API_BASE}/api/user/profile?username=${encodeURIComponent(currentState.user.username)}`, {
             method: 'GET'
         });
         
         if (res.ok) {
             const data = await res.json();
-            
-            const totalEl = document.getElementById('stat-total');
-            const daikichiEl = document.getElementById('stat-daikichi-num');
+            const s = data.stats;
 
-            // データが 0 の場合でも正しく "0" と表示するように修正
-            if (totalEl && data.stats) {
-                const val = data.stats.totalDraws ?? 0; // null/undefinedなら0
-                totalEl.textContent = Number(val).toLocaleString();
+            // 1. 総数の表示
+            document.getElementById('stat-total').textContent = s.totalDraws.toLocaleString() + "回";
+            
+            // 全体平均総数を計算
+            let avgTotal = 0;
+            Object.values(s.averageFortunes).forEach(v => avgTotal += v);
+            document.getElementById('stat-avg-total').textContent = avgTotal.toFixed(1) + "回";
+
+            // 2. 比較文章の生成
+            const compText = document.getElementById('stat-comparison-text');
+            let message = `あなたは一般的な参拝者（平均 ${avgTotal.toFixed(1)}回）と比べて、`;
+            if (s.totalDraws > avgTotal) {
+                message += `<strong class="text-red-600">熱心に参拝（${s.totalDraws}回）されています。</strong>`;
+            } else {
+                message += `<strong class="text-blue-600">これから徳を積む伸び代（${s.totalDraws}回）があります。</strong>`;
             }
-            if (daikichiEl && data.stats) {
-                const val = data.stats.daikichiCount ?? 0; // null/undefinedなら0
-                daikichiEl.textContent = Number(val).toLocaleString();
+            
+            const myDaikichi = s.userFortunes["大吉"] || 0;
+            const avgDaikichi = s.averageFortunes["大吉"] || 0;
+            if (myDaikichi > avgDaikichi) {
+                message += `<br>特に大吉の獲得数が平均より高く、強い天命をお持ちのようです。`;
             }
+            compText.innerHTML = message;
+
+            // 3. 12運勢グラフの描画
+            const graphContainer = document.getElementById('stat-detailed-graphs');
+            graphContainer.innerHTML = '';
+            
+            const fortunes = ["大吉", "中吉", "小吉", "吉", "半吉", "末吉", "末小吉", "凶", "小凶", "半凶", "末凶", "大凶"];
+            
+            // 最大値を取得（グラフの幅を合わせるため）
+            const maxVal = Math.max(...Object.values(s.userFortunes), ...Object.values(s.averageFortunes), 1);
+
+            fortunes.forEach(f => {
+                const myVal = s.userFortunes[f] || 0;
+                const avgVal = s.averageFortunes[f] || 0;
+                
+                const myWidth = (myVal / maxVal) * 100;
+                const avgWidth = (avgVal / maxVal) * 100;
+
+                const row = document.createElement('div');
+                row.className = "space-y-1";
+                row.innerHTML = `
+                    <div class="flex justify-between text-[10px] font-bold">
+                        <span>${f}</span>
+                        <span>あなた: ${myVal} / 平均: ${avgVal}</span>
+                    </div>
+                    <div class="relative h-4 bg-gray-100 dark:bg-zinc-700 rounded-full overflow-hidden">
+                        <!-- 平均値 (灰色) -->
+                        <div class="absolute top-0 left-0 h-full bg-gray-400 opacity-30 stat-bar-animate" 
+                             style="width: ${avgWidth}%"></div>
+                        <!-- あなたの値 (赤色) -->
+                        <div class="absolute top-0 left-0 h-full bg-red-600 shadow-sm stat-bar-animate" 
+                             style="width: ${myWidth}%"></div>
+                    </div>
+                `;
+                graphContainer.appendChild(row);
+            });
+
+            // アニメーションをトリガーするために一瞬遅らせて幅を適用
+            setTimeout(() => {
+                document.querySelectorAll('.stat-bar-animate').forEach(bar => {
+                    // style.widthは既に設定されているので、再描画を促す
+                    const w = bar.style.width;
+                    bar.style.width = '0';
+                    setTimeout(() => bar.style.width = w, 50);
+                });
+            }, 100);
         }
     } catch (e) {
         console.error("Stats load failed", e);
     }
 }
+
+// 自動更新の設定 (1分ごと)
+setInterval(() => {
+    if (currentState.view === 'stats') {
+        loadMyStats();
+    }
+}, 60000);  
         
     // ユーザープロフィールの読み込み
     async function loadUserProfile(username) {
