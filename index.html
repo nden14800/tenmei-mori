@@ -1936,179 +1936,6 @@
     color: var(--text-sub);
 }
 
-       /* --- Pet Simulator 99風 ツールチップ & インベントリ --- */
-:root {
-    /* レアリティカラー (PS99参考) */
-    --rarity-basic: #b0b0b0;      /* グレー */
-    --rarity-rare: #4ade80;       /* パステルグリーン */
-    --rarity-epic: #60a5fa;       /* ベビーブルー */
-    --rarity-legendary: #fb923c;  /* パステルオレンジ */
-    --rarity-mythical: #f87171;   /* パステルレッド */
-    --rarity-secret: #171717;     /* ブラック/レインボー枠用 */
-}
-
-/* ツールチップ本体 */
-#pet-tooltip {
-    position: fixed;
-    z-index: 10000;
-    pointer-events: none; /* マウス入力を透過 */
-    background: rgba(15, 23, 42, 0.95); /* 濃いネイビー/黒 */
-    backdrop-filter: blur(12px);
-    border: 4px solid var(--rarity-basic); /* JSで動的に変更 */
-    border-radius: 20px;
-    padding: 0; /* 内部構造でパディング調整 */
-    width: 280px;
-    color: #fff;
-    font-family: 'Segoe UI', sans-serif;
-    box-shadow: 0 20px 50px rgba(0,0,0,0.6);
-    opacity: 0;
-    transform: scale(0.8) translateY(10px);
-    transition: opacity 0.1s, transform 0.1s; /* 位置(top,left)はJSで直接制御 */
-    display: flex;
-    flex-direction: column;
-    overflow: hidden;
-}
-#pet-tooltip.visible {
-    opacity: 1;
-    transform: scale(1) translateY(0);
-}
-
-/* ツールチップ内部パーツ */
-.pt-header {
-    background: rgba(255,255,255,0.05);
-    padding: 12px 16px;
-    text-align: center;
-    border-bottom: 1px solid rgba(255,255,255,0.1);
-}
-.pt-title {
-    font-weight: 900;
-    font-size: 1.3rem;
-    color: #fff;
-    text-shadow: 0 2px 4px rgba(0,0,0,0.5);
-    line-height: 1.2;
-}
-.pt-rarity-badge {
-    display: inline-block;
-    font-size: 0.7rem;
-    font-weight: 800;
-    padding: 2px 10px;
-    border-radius: 12px;
-    margin-top: 4px;
-    text-transform: uppercase;
-    letter-spacing: 0.1em;
-    background: #333;
-    color: #fff;
-}
-
-.pt-body {
-    padding: 16px;
-    text-align: center;
-}
-.pt-desc {
-    font-size: 0.85rem;
-    color: #d1d5db;
-    margin-bottom: 16px;
-    line-height: 1.5;
-}
-
-/* 進捗エリア */
-.pt-progress-area {
-    background: rgba(0,0,0,0.3);
-    border-radius: 12px;
-    padding: 10px;
-    margin-bottom: 10px;
-}
-.pt-status-text {
-    font-size: 0.75rem;
-    font-weight: bold;
-    display: flex;
-    justify-content: space-between;
-    margin-bottom: 4px;
-    color: #9ca3af;
-}
-.pt-progress-bar-bg {
-    height: 12px;
-    background: #374151;
-    border-radius: 6px;
-    overflow: hidden;
-    position: relative;
-    box-shadow: inset 0 2px 4px rgba(0,0,0,0.5);
-}
-.pt-progress-bar-fill {
-    height: 100%;
-    background: linear-gradient(90deg, #3b82f6, #60a5fa);
-    width: 0%;
-    border-radius: 6px;
-    transition: width 0.3s;
-}
-/* 完了時のバー */
-.pt-completed .pt-progress-bar-fill {
-    background: linear-gradient(90deg, #10b981, #34d399);
-}
-
-.pt-footer {
-    background: rgba(0,0,0,0.2);
-    padding: 10px 16px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    font-size: 0.8rem;
-    font-weight: bold;
-    border-top: 1px solid rgba(255,255,255,0.1);
-}
-.pt-exist-label { color: #9ca3af; }
-.pt-exist-val { color: #fbbf24; font-family: monospace; font-size: 1rem; }
-
-/* インベントリ（バッジスロット） */
-.badge-slot {
-    aspect-ratio: 1;
-    background: linear-gradient(135deg, #f3f4f6 0%, #e5e7eb 100%);
-    border: 4px solid transparent; /* 色はJSで */
-    border-radius: 20px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    position: relative;
-    cursor: pointer;
-    transition: transform 0.1s, box-shadow 0.1s;
-    box-shadow: 0 4px 0 rgba(0,0,0,0.1); /* 立体感 */
-    touch-action: manipulation; /* スマホでの操作性向上 */
-}
-.dark .badge-slot {
-    background: linear-gradient(135deg, #27272a 0%, #18181b 100%);
-    box-shadow: 0 4px 0 rgba(0,0,0,0.3);
-}
-.badge-slot:active {
-    transform: translateY(4px);
-    box-shadow: 0 0 0 transparent;
-}
-.badge-slot.locked {
-    filter: grayscale(100%);
-    opacity: 0.6;
-    background: #333;
-    border-color: #555 !important;
-}
-.badge-icon-inner {
-    font-size: 2.5rem;
-    filter: drop-shadow(0 4px 4px rgba(0,0,0,0.2));
-}
-.badge-new-mark {
-    position: absolute;
-    top: -5px; right: -5px;
-    background: #ef4444;
-    color: white;
-    font-size: 0.6rem;
-    font-weight: bold;
-    padding: 2px 6px;
-    border-radius: 8px;
-    border: 2px solid white;
-    animation: bounce 1s infinite;
-}
-@keyframes bounce {
-    0%, 100% { transform: translateY(0); }
-    50% { transform: translateY(-3px); }
-}
-
     </style>
 </head>
 <body>
@@ -8686,7 +8513,7 @@ ${getShareUrl()}`;
             window.open(intent, '_blank');
         }
 
-        // 参拝の記録：統計＆インベントリ表示 (修正版)
+        // 参拝の記録：統計＆スタンプカード表示 (修正版)
 async function loadMyStats() {
     if (!currentState.user) return;
 
@@ -8697,8 +8524,10 @@ async function loadMyStats() {
             const data = await res.json();
             
             // 1. 数値データ表示 (カンマ区切り適用 & 大吉復活)
+            // HTMLの構造を「3カラム」に戻して大吉を入れる
             const statsGrid = document.querySelector('#stats-content-wrapper .grid');
             if (statsGrid) {
+                // クラスを2列から3列に変更
                 statsGrid.classList.remove('grid-cols-2');
                 statsGrid.classList.add('grid-cols-3');
                 
@@ -8706,115 +8535,121 @@ async function loadMyStats() {
                     <div class="bg-white dark:bg-zinc-800 p-4 rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm">
                         <div class="text-xs text-gray-500 mb-1">総参拝数</div>
                         <div class="text-xl md:text-2xl font-black text-red-600" id="stat-total">
-                            ${Number(data.stats.totalDraws).toLocaleString()}
+                            ${(data.stats.totalDraws || 0).toLocaleString()}
                         </div>
                     </div>
                     <div class="bg-white dark:bg-zinc-800 p-4 rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm">
                         <div class="text-xs text-gray-500 mb-1">大吉獲得</div>
                         <div class="text-xl md:text-2xl font-black text-yellow-600">
-                            ${Number(data.stats.daikichiCount).toLocaleString()}
+                            ${(data.stats.daikichiCount || 0).toLocaleString()}
                         </div>
                     </div>
                     <div class="bg-white dark:bg-zinc-800 p-4 rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm">
                         <div class="text-xs text-gray-500 mb-1">連続参拝</div>
                         <div class="text-xl md:text-2xl font-black text-purple-600" id="stat-streak">
-                            ${Number(data.stats.goshuinCount).toLocaleString()}<span class="text-xs font-normal text-gray-400 ml-1">日</span>
+                            ${(data.stats.goshuinCount || 0).toLocaleString()}<span class="text-xs font-normal text-gray-400 ml-1">日</span>
                         </div>
                     </div>
                 `;
             }
 
-            // 2. スタンプカード (30日分表示)
+            // 2. 連続参拝スタンプカード (ゲーム風UI)
             const streakCount = data.stats.goshuinCount || 0;
-            const cycleDay = ((streakCount - 1) % 30) + 1; 
+            const extraDiv = document.getElementById('extra-stats-grid');
+            
+            // スタンプカードのHTML生成
+            // 現在の連続日数から、今日が「何日目」の表示になるかを計算 (最大7日周期の表示とする)
+            const cycleDay = ((streakCount - 1) % 7) + 1; // 1〜7
+            // まだ今日引いてない場合は、streakは昨日のままなので、表示上は「次は◯日目」とする
+            // (※API側で「今日引いたか」フラグがあれば完璧だが、ここではstreak値ベースで表現)
             
             let stampsHtml = '';
-            for(let i=1; i<=30; i++) {
+            for(let i=1; i<=7; i++) {
+                // スタンプが押される条件: 
+                // streakが i 以上であること。
+                // ただし、7日を超えている場合は、直近の7日分を表示するイメージ
                 const isActive = i <= cycleDay && streakCount > 0;
-                // ギフトアイコン(5日毎)
-                const iconContent = (i % 5 === 0) ? '<i class="bi bi-gift-fill text-yellow-500"></i>' : i;
-                const mark = isActive ? '<i class="bi bi-check-lg stamp-mark"></i>' : iconContent;
+                const mark = isActive ? '<i class="bi bi-flower1 stamp-mark"></i>' : (i===7 ? '<i class="bi bi-gift-fill text-gray-300"></i>' : i);
                 const activeClass = isActive ? 'active' : '';
                 
                 stampsHtml += `
-                    <div class="stamp-item ${activeClass}" style="width:32px; height:32px; font-size:0.7rem;">
+                    <div class="stamp-item ${activeClass}">
                         ${mark}
+                        <span class="stamp-label">${i}日目</span>
                     </div>
                 `;
             }
 
+            const stampCardHtml = `
+                <div class="stamp-card-container shadow-sm">
+                    <div class="flex justify-between items-center mb-2">
+                        <h4 class="font-bold text-sm text-gray-700 dark:text-gray-200">
+                            <i class="bi bi-calendar-check-fill text-red-500 mr-2"></i>参拝ボーナス帳
+                        </h4>
+                        <span class="text-xs font-mono text-gray-500">Total: ${streakCount.toLocaleString()} Days</span>
+                    </div>
+                    <div class="stamp-grid">
+                        ${stampsHtml}
+                    </div>
+                    <div class="mt-4 text-[10px] text-center text-gray-400">
+                        毎日参拝して、杜の功徳（バッジ）を集めましょう。<br>
+                        ※日付は午前0時に切り替わります。
+                    </div>
+                </div>
+            `;
+
+            // 既存の「実績達成率」などの前か後に挿入
+            // ここでは statsWrapper の直下、数値グリッドの下に挿入する形をとります
             let stampTarget = document.getElementById('stamp-card-area');
             if(!stampTarget) {
                 stampTarget = document.createElement('div');
                 stampTarget.id = 'stamp-card-area';
                 const wrapper = document.getElementById('stats-content-wrapper');
-                const badgeHeader = wrapper.querySelector('h3:nth-of-type(2)');
+                // 数値グリッドの次、バッジリストの前
+                const badgeHeader = wrapper.querySelector('h3:nth-of-type(2)'); // "功徳の証"の見出し
                 wrapper.insertBefore(stampTarget, badgeHeader);
             }
+            stampTarget.innerHTML = stampCardHtml;
 
-            stampTarget.innerHTML = `
-                <div class="stamp-card-container shadow-sm p-4">
-                    <div class="flex justify-between items-center mb-3">
-                        <h4 class="font-bold text-sm text-gray-700 dark:text-gray-200">
-                            <i class="bi bi-calendar-range text-red-500 mr-2"></i>参拝ボーナス (30日帳)
-                        </h4>
-                        <span class="text-xs font-mono text-gray-500">Day: ${streakCount.toLocaleString()}</span>
-                    </div>
-                    <div class="flex flex-wrap gap-2 justify-center">
-                        ${stampsHtml}
-                    </div>
-                </div>
-            `;
-
-            // 3. バッジインベントリ (Pet Sim 99風 - ツールチップ連携)
+            // 3. バッジリストの描画 (既存コードと同じだが再掲)
             const badgeContainer = document.getElementById('stats-badge-list');
             if (badgeContainer) {
-                badgeContainer.className = "grid grid-cols-4 md:grid-cols-6 gap-3 pb-20";
-                
                 badgeContainer.innerHTML = data.badges.map(b => {
-                    const rarity = getRarityInfo(b);
-                    const isUnlocked = b.unlocked; 
-                    const lockClass = isUnlocked ? '' : 'locked';
-                    const borderColor = isUnlocked ? rarity.color : 'transparent';
-                    const iconColor = isUnlocked ? rarity.color : '#6b7280'; // 未獲得はグレー
+                    const isUnlocked = b.unlocked;
+                    const filterClass = isUnlocked ? 'grayscale-0 opacity-100' : 'grayscale opacity-60';
+                    const bgClass = isUnlocked 
+                        ? 'bg-yellow-50 dark:bg-yellow-900/20 border-yellow-400' 
+                        : 'bg-gray-100 dark:bg-zinc-800 border-gray-200 dark:border-gray-700';
+                    const iconColor = isUnlocked ? 'text-yellow-600' : 'text-gray-400';
+                    const statusText = isUnlocked 
+                        ? '<span class="text-yellow-600 font-bold"><i class="bi bi-check-circle-fill"></i> 獲得済</span>' 
+                        : '<span class="text-gray-500 text-xs"><i class="bi bi-lock-fill"></i> 未獲得</span>';
+                    const barColor = isUnlocked ? 'bg-yellow-500' : 'bg-blue-500';
 
                     return `
-                        <div class="badge-slot ${lockClass}" style="border-color: ${borderColor};"
-                             data-name="${b.name}" 
-                             data-desc="${b.description}" 
-                             data-rarity="${rarity.name}" 
-                             data-color="${rarity.color}" 
-                             data-count="${b.global_count || 0}"
-                             data-current="${b.current_val || 0}"
-                             data-target="${b.condition_value || 0}"
-                             data-progress="${b.progress || 0}"
-                             data-unlocked="${isUnlocked}"
-                             
-                             onmouseenter="TooltipSystem.show(this)"
-                             onmouseleave="TooltipSystem.hide()"
-                             onclick="TooltipSystem.show(this)" 
-                             ontouchstart="TooltipSystem.show(this)"
-                             >
-                             
-                            <div class="badge-icon-inner" style="color: ${iconColor};">
-                                <i class="bi ${b.icon}"></i>
-                            </div>
-                            
-                            <!-- 未獲得時の進捗バー（インベントリ内） -->
-                            ${!isUnlocked ? `
-                                <div class="absolute bottom-1 left-2 right-2 h-1 bg-gray-300 rounded-full overflow-hidden">
-                                    <div class="h-full bg-blue-500" style="width: ${b.progress}%"></div>
+                        <div class="flex flex-col p-3 rounded-lg border ${bgClass} ${filterClass} transition duration-300">
+                            <div class="flex items-center gap-3 mb-2">
+                                <div class="text-2xl ${iconColor}"><i class="bi ${b.icon}"></i></div>
+                                <div class="flex-1 min-w-0">
+                                    <div class="flex justify-between items-center">
+                                        <div class="text-xs font-bold truncate">${b.name}</div>
+                                        <div>${statusText}</div>
+                                    </div>
+                                    <div class="text-[10px] text-gray-500 truncate mt-0.5">${b.description}</div>
                                 </div>
-                            ` : ''}
+                            </div>
+                            <div class="w-full mt-1">
+                                <div class="flex justify-between text-[10px] text-gray-500 mb-1">
+                                    <span>進捗</span>
+                                    <span class="font-mono">${(b.current_val || 0).toLocaleString()} / ${(b.target_val || 0).toLocaleString()}</span>
+                                </div>
+                                <div class="w-full bg-gray-200 dark:bg-gray-700 h-1.5 rounded-full overflow-hidden">
+                                    <div class="${barColor} h-full rounded-full" style="width: ${b.progress}%"></div>
+                                </div>
+                            </div>
                         </div>
                     `;
                 }).join('');
-            }
-            
-            // 初回のみ初期化
-            if(!TooltipSystem.el) {
-                TooltipSystem.init();
-                setupSecretTrigger();
             }
         }
     } catch (e) {
@@ -10979,247 +10814,6 @@ async function updateAccountSettings() {
     } finally {
         showLoading(false);
     }
-}
-
-   // ツールチップ要素の生成（PS99風構造）
-const psTooltip = document.createElement('div');
-psTooltip.id = 'pet-tooltip';
-psTooltip.innerHTML = `
-    <div class="pt-header">
-        <div class="pt-title" id="pt-title">Badge Name</div>
-        <div class="pt-rarity-badge" id="pt-rarity">BASIC</div>
-    </div>
-    <div class="pt-body">
-        <div class="pt-desc" id="pt-desc">Description text here.</div>
-        <div class="pt-progress-area" id="pt-progress-container">
-            <div class="pt-status-text">
-                <span id="pt-status-label">LOCKED</span>
-                <span id="pt-progress-text">0 / 100</span>
-            </div>
-            <div class="pt-progress-bar-bg">
-                <div class="pt-progress-bar-fill" id="pt-bar"></div>
-            </div>
-            <div class="text-[10px] text-gray-400 mt-1 text-right" id="pt-percent">0%</div>
-        </div>
-    </div>
-    <div class="pt-footer">
-        <span class="pt-exist-label"><i class="bi bi-globe"></i> Exist</span>
-        <span class="pt-exist-val" id="pt-exist">0</span>
-    </div>
-`;
-document.body.appendChild(psTooltip);
-
-        
-// --- Pet Sim 99風 ツールチップ制御システム ---
-const TooltipSystem = {
-    el: null,
-    
-    init: function() {
-        this.el = document.getElementById('pet-tooltip');
-        
-        // グローバルなマウス移動監視（表示中のみ追従）
-        document.addEventListener('mousemove', (e) => {
-            if(this.el.classList.contains('visible')) {
-                this.updatePosition(e.clientX, e.clientY);
-            }
-        });
-        
-        // スマホ用: タッチ移動でも追従
-        document.addEventListener('touchmove', (e) => {
-            if(this.el.classList.contains('visible')) {
-                const touch = e.touches[0];
-                this.updatePosition(touch.clientX, touch.clientY);
-            }
-        }, { passive: true });
-    },
-
-    updatePosition: function(x, y) {
-        const offset = 20;
-        let left = x + offset;
-        let top = y + offset;
-        
-        // 画面端の検出と補正
-        if (left + this.el.offsetWidth > window.innerWidth) {
-            left = x - this.el.offsetWidth - offset;
-        }
-        if (top + this.el.offsetHeight > window.innerHeight) {
-            top = y - this.el.offsetHeight - offset;
-        }
-        
-        this.el.style.left = left + 'px';
-        this.el.style.top = top + 'px';
-    },
-
-    show: function(target) {
-        // データ取得
-        const name = target.dataset.name;
-        const desc = target.dataset.desc;
-        const rarity = target.dataset.rarity;
-        const color = target.dataset.color;
-        
-        // 数値データの整形（カンマ区切り）
-        const unlocked = target.dataset.unlocked === 'true';
-        const current = Number(target.dataset.current);
-        const targetVal = Number(target.dataset.target);
-        const count = Number(target.dataset.count); // グローバル数
-        const percent = target.dataset.progress;
-
-        // --- DOM反映 ---
-        
-        // 1. タイトル & レアリティ
-        const titleEl = document.getElementById('pt-title');
-        titleEl.textContent = name;
-        titleEl.style.color = color;
-        
-        const rarityEl = document.getElementById('pt-rarity');
-        rarityEl.textContent = rarity;
-        rarityEl.style.backgroundColor = color;
-        rarityEl.style.boxShadow = `0 0 10px ${color}66`; // 光彩
-
-        // 2. 説明文
-        document.getElementById('pt-desc').textContent = desc;
-
-        // 3. 進捗バー & ステータス
-        const statusLabel = document.getElementById('pt-status-label');
-        const progressText = document.getElementById('pt-progress-text');
-        const bar = document.getElementById('pt-bar');
-        const percentText = document.getElementById('pt-percent');
-        const container = document.getElementById('pt-progress-container');
-
-        if (unlocked) {
-            statusLabel.textContent = "COMPLETED";
-            statusLabel.style.color = "#4ade80"; // Green
-            container.classList.add('pt-completed');
-            progressText.textContent = "MAX";
-            bar.style.width = "100%";
-            percentText.textContent = "100%";
-        } else {
-            statusLabel.textContent = "INCOMPLETE";
-            statusLabel.style.color = "#ef4444"; // Red
-            container.classList.remove('pt-completed');
-            progressText.textContent = `${current.toLocaleString()} / ${targetVal.toLocaleString()}`;
-            bar.style.width = `${percent}%`;
-            percentText.textContent = `${percent}%`;
-        }
-
-        // 4. Exist（存在数）
-        // 未獲得の場合は「0 (Unknown)」とする
-        const existEl = document.getElementById('pt-exist');
-        if (unlocked) {
-            existEl.textContent = count.toLocaleString();
-            existEl.style.color = "#fbbf24";
-        } else {
-            existEl.textContent = "???"; // 未獲得なら隠す
-            existEl.style.color = "#6b7280";
-        }
-
-        // 5. 枠線の色
-        this.el.style.borderColor = color;
-        this.el.style.boxShadow = `0 10px 40px ${color}33`; // 枠色に合わせた影
-
-        // 表示
-        this.el.classList.add('visible');
-    },
-
-    hide: function() {
-        this.el.classList.remove('visible');
-    }
-};
-
-// --- レアリティ自動判定ロジック (難易度ベース) ---
-function getRarityInfo(badge) {
-    const type = badge.condition_type;
-    const val = badge.condition_value;
-
-    // シークレット
-    if (type === 'secret') {
-        return { name: 'SECRET', color: 'var(--rarity-secret)' };
-    }
-
-    // 難易度スコア計算 (仮の重み付け)
-    let difficulty = 0;
-    if (type === 'daikichi_count') difficulty = val * 5; // 大吉は難しい
-    else if (type === 'streak_days') difficulty = val * 3; // 連続も難しい
-    else if (type === 'kyo_count') difficulty = val * 2; // 凶は運
-    else if (type === 'total_draws') difficulty = val / 5; // 回数は簡単
-
-    // スコアによる分類
-    if (difficulty >= 100) return { name: 'MYTHICAL', color: 'var(--rarity-mythical)' };
-    if (difficulty >= 50) return { name: 'LEGENDARY', color: 'var(--rarity-legendary)' };
-    if (difficulty >= 20) return { name: 'EPIC', color: 'var(--rarity-epic)' };
-    if (difficulty >= 10) return { name: 'RARE', color: 'var(--rarity-rare)' };
-    
-    return { name: 'BASIC', color: 'var(--rarity-basic)' };
-}
-
-// --- シークレット隠しコマンド (10回連打) ---
-let secretClickCount = 0;
-let secretClickTimer = null;
-
-function setupSecretTrigger() {
-    // 確実に要素を取得するためにIDを付与したタイトルを探す
-    // ※ HTML側で <h2 id="stats-title">参拝の記録</h2> となっている前提、なければ動的に探す
-    let titleEl = document.getElementById('stats-title-text');
-    
-    // 見つからなければ querySelector で探して ID をつける
-    if (!titleEl) {
-        const h2s = document.querySelectorAll('#view-stats h2');
-        h2s.forEach(h2 => {
-            if(h2.textContent.includes('参拝の記録')) {
-                titleEl = h2;
-                titleEl.id = 'stats-title-text'; // ID付与
-                titleEl.style.cursor = 'pointer'; // クリックできる感を出す
-                titleEl.style.userSelect = 'none';
-            }
-        });
-    }
-
-    if(!titleEl) return;
-
-    // イベント重複登録防止
-    if(titleEl.dataset.secretInit) return;
-    titleEl.dataset.secretInit = "true";
-
-    titleEl.addEventListener('click', async (e) => {
-        // クリック演出
-        e.target.style.transform = "scale(0.95)";
-        e.target.style.color = "#d4af37"; // 一瞬金色に
-        setTimeout(() => {
-            e.target.style.transform = "scale(1)";
-            e.target.style.color = ""; 
-        }, 100);
-
-        secretClickCount++;
-        console.log(`Secret Click: ${secretClickCount}`); // デバッグ用
-
-        // タイマーリセット (1秒間隔があいたらリセット)
-        if(secretClickTimer) clearTimeout(secretClickTimer);
-        secretClickTimer = setTimeout(() => {
-            secretClickCount = 0;
-        }, 1000);
-
-        if(secretClickCount >= 10) {
-            secretClickCount = 0;
-            // API呼び出し
-            if(currentState.user) {
-                showLoading(true);
-                try {
-                    const res = await authFetch(`${API_BASE}/api/badge/unlock_secret`, { method: 'POST' });
-                    const data = await res.json();
-                    if(res.ok && data.newBadge) {
-                        showToast("隠された天命が解放されました！", "success");
-                        // データを再読み込みしてバッジを表示
-                        loadMyStats(); 
-                    } else if (data.message === "Already unlocked") {
-                        showToast("既に解放されています", "info");
-                    }
-                } catch(e) { console.error(e); }
-                finally { showLoading(false); }
-            } else {
-                showToast("気配を感じる...（ログインが必要です）", "info");
-            }
-        }
-    });
 }
 
             
