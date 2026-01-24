@@ -8629,7 +8629,7 @@ ${getShareUrl()}`;
             window.open(intent, '_blank');
         }
 
-        // 参拝の記録：統計＆スタンプカード表示 (修正版)
+        // 参拝の記録：統計＆インベントリ表示 (修正版)
 async function loadMyStats() {
     if (!currentState.user) return;
 
@@ -8640,10 +8640,8 @@ async function loadMyStats() {
             const data = await res.json();
             
             // 1. 数値データ表示 (カンマ区切り適用 & 大吉復活)
-            // HTMLの構造を「3カラム」に戻して大吉を入れる
             const statsGrid = document.querySelector('#stats-content-wrapper .grid');
             if (statsGrid) {
-                // クラスを2列から3列に変更
                 statsGrid.classList.remove('grid-cols-2');
                 statsGrid.classList.add('grid-cols-3');
                 
@@ -8651,121 +8649,113 @@ async function loadMyStats() {
                     <div class="bg-white dark:bg-zinc-800 p-4 rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm">
                         <div class="text-xs text-gray-500 mb-1">総参拝数</div>
                         <div class="text-xl md:text-2xl font-black text-red-600" id="stat-total">
-                            ${(data.stats.totalDraws || 0).toLocaleString()}
+                            ${Number(data.stats.totalDraws).toLocaleString()}
                         </div>
                     </div>
                     <div class="bg-white dark:bg-zinc-800 p-4 rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm">
                         <div class="text-xs text-gray-500 mb-1">大吉獲得</div>
                         <div class="text-xl md:text-2xl font-black text-yellow-600">
-                            ${(data.stats.daikichiCount || 0).toLocaleString()}
+                            ${Number(data.stats.daikichiCount).toLocaleString()}
                         </div>
                     </div>
                     <div class="bg-white dark:bg-zinc-800 p-4 rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm">
                         <div class="text-xs text-gray-500 mb-1">連続参拝</div>
                         <div class="text-xl md:text-2xl font-black text-purple-600" id="stat-streak">
-                            ${(data.stats.goshuinCount || 0).toLocaleString()}<span class="text-xs font-normal text-gray-400 ml-1">日</span>
+                            ${Number(data.stats.goshuinCount).toLocaleString()}<span class="text-xs font-normal text-gray-400 ml-1">日</span>
                         </div>
                     </div>
                 `;
             }
 
-            // 2. 連続参拝スタンプカード (ゲーム風UI)
+            // 2. スタンプカード (ログインボーナス風) - 30日分表示に拡張
+            // Flex wrapを使って並べる
             const streakCount = data.stats.goshuinCount || 0;
-            const extraDiv = document.getElementById('extra-stats-grid');
-            
-            // スタンプカードのHTML生成
-            // 現在の連続日数から、今日が「何日目」の表示になるかを計算 (最大7日周期の表示とする)
-            const cycleDay = ((streakCount - 1) % 7) + 1; // 1〜7
-            // まだ今日引いてない場合は、streakは昨日のままなので、表示上は「次は◯日目」とする
-            // (※API側で「今日引いたか」フラグがあれば完璧だが、ここではstreak値ベースで表現)
+            // 30日サイクル (31日目は1日目に戻るような表示、あるいは30日目以降はすべて埋まる表現も可だが今回はサイクル)
+            const cycleDay = ((streakCount - 1) % 30) + 1; 
             
             let stampsHtml = '';
-            for(let i=1; i<=7; i++) {
-                // スタンプが押される条件: 
-                // streakが i 以上であること。
-                // ただし、7日を超えている場合は、直近の7日分を表示するイメージ
+            for(let i=1; i<=30; i++) {
                 const isActive = i <= cycleDay && streakCount > 0;
-                const mark = isActive ? '<i class="bi bi-flower1 stamp-mark"></i>' : (i===7 ? '<i class="bi bi-gift-fill text-gray-300"></i>' : i);
+                // 5の倍数はギフトアイコン、それ以外は数字
+                const iconContent = (i % 5 === 0) ? '<i class="bi bi-gift-fill"></i>' : i;
+                const mark = isActive ? '<i class="bi bi-check-lg stamp-mark"></i>' : iconContent;
                 const activeClass = isActive ? 'active' : '';
                 
+                // 30個並べるので小さくする
                 stampsHtml += `
-                    <div class="stamp-item ${activeClass}">
+                    <div class="stamp-item ${activeClass}" style="width:32px; height:32px; font-size:0.7rem;">
                         ${mark}
-                        <span class="stamp-label">${i}日目</span>
                     </div>
                 `;
             }
 
-            const stampCardHtml = `
-                <div class="stamp-card-container shadow-sm">
-                    <div class="flex justify-between items-center mb-2">
-                        <h4 class="font-bold text-sm text-gray-700 dark:text-gray-200">
-                            <i class="bi bi-calendar-check-fill text-red-500 mr-2"></i>参拝ボーナス帳
-                        </h4>
-                        <span class="text-xs font-mono text-gray-500">Total: ${streakCount.toLocaleString()} Days</span>
-                    </div>
-                    <div class="stamp-grid">
-                        ${stampsHtml}
-                    </div>
-                    <div class="mt-4 text-[10px] text-center text-gray-400">
-                        毎日参拝して、杜の功徳（バッジ）を集めましょう。<br>
-                        ※日付は午前0時に切り替わります。
-                    </div>
-                </div>
-            `;
-
-            // 既存の「実績達成率」などの前か後に挿入
-            // ここでは statsWrapper の直下、数値グリッドの下に挿入する形をとります
+            // コンテナ再取得または生成
             let stampTarget = document.getElementById('stamp-card-area');
             if(!stampTarget) {
                 stampTarget = document.createElement('div');
                 stampTarget.id = 'stamp-card-area';
                 const wrapper = document.getElementById('stats-content-wrapper');
-                // 数値グリッドの次、バッジリストの前
-                const badgeHeader = wrapper.querySelector('h3:nth-of-type(2)'); // "功徳の証"の見出し
+                const badgeHeader = wrapper.querySelector('h3:nth-of-type(2)');
                 wrapper.insertBefore(stampTarget, badgeHeader);
             }
-            stampTarget.innerHTML = stampCardHtml;
 
-            // 3. バッジリストの描画 (既存コードと同じだが再掲)
+            stampTarget.innerHTML = `
+                <div class="stamp-card-container shadow-sm p-4">
+                    <div class="flex justify-between items-center mb-3">
+                        <h4 class="font-bold text-sm text-gray-700 dark:text-gray-200">
+                            <i class="bi bi-calendar-range text-red-500 mr-2"></i>参拝ボーナス (30日帳)
+                        </h4>
+                        <span class="text-xs font-mono text-gray-500">Day: ${streakCount.toLocaleString()}</span>
+                    </div>
+                    <div class="flex flex-wrap gap-2 justify-center">
+                        ${stampsHtml}
+                    </div>
+                </div>
+            `;
+
+            // 3. バッジインベントリ (Pet Sim 99風)
             const badgeContainer = document.getElementById('stats-badge-list');
             if (badgeContainer) {
+                // グリッドレイアウトに変更 (スマホ3列、PC5列くらい)
+                badgeContainer.className = "grid grid-cols-3 md:grid-cols-5 gap-4 pb-20";
+                
                 badgeContainer.innerHTML = data.badges.map(b => {
-                    const isUnlocked = b.unlocked;
-                    const filterClass = isUnlocked ? 'grayscale-0 opacity-100' : 'grayscale opacity-60';
-                    const bgClass = isUnlocked 
-                        ? 'bg-yellow-50 dark:bg-yellow-900/20 border-yellow-400' 
-                        : 'bg-gray-100 dark:bg-zinc-800 border-gray-200 dark:border-gray-700';
-                    const iconColor = isUnlocked ? 'text-yellow-600' : 'text-gray-400';
-                    const statusText = isUnlocked 
-                        ? '<span class="text-yellow-600 font-bold"><i class="bi bi-check-circle-fill"></i> 獲得済</span>' 
-                        : '<span class="text-gray-500 text-xs"><i class="bi bi-lock-fill"></i> 未獲得</span>';
-                    const barColor = isUnlocked ? 'bg-yellow-500' : 'bg-blue-500';
-
+                    const rarity = getRarityInfo(b);
+                    // アンロック判定: APIから返る unlocked (boolean) を信用する
+                    const isUnlocked = b.unlocked; 
+                    const lockClass = isUnlocked ? '' : 'locked';
+                    
+                    // データ属性にツールチップ情報を仕込む
                     return `
-                        <div class="flex flex-col p-3 rounded-lg border ${bgClass} ${filterClass} transition duration-300">
-                            <div class="flex items-center gap-3 mb-2">
-                                <div class="text-2xl ${iconColor}"><i class="bi ${b.icon}"></i></div>
-                                <div class="flex-1 min-w-0">
-                                    <div class="flex justify-between items-center">
-                                        <div class="text-xs font-bold truncate">${b.name}</div>
-                                        <div>${statusText}</div>
-                                    </div>
-                                    <div class="text-[10px] text-gray-500 truncate mt-0.5">${b.description}</div>
-                                </div>
+                        <div class="badge-slot ${lockClass}" style="border-color: ${rarity.color};"
+                             data-name="${b.name}" 
+                             data-desc="${b.description}" 
+                             data-rarity="${rarity.name}" 
+                             data-color="${rarity.color}" 
+                             data-count="${b.global_count || 0}"
+                             onmouseenter="TooltipSystem.show(this)"
+                             onmouseleave="TooltipSystem.hide()"
+                             touchstart="TooltipSystem.show(this)">
+                             
+                            <div class="badge-icon-inner" style="color: ${rarity.color};">
+                                <i class="bi ${b.icon}"></i>
                             </div>
-                            <div class="w-full mt-1">
-                                <div class="flex justify-between text-[10px] text-gray-500 mb-1">
-                                    <span>進捗</span>
-                                    <span class="font-mono">${(b.current_val || 0).toLocaleString()} / ${(b.target_val || 0).toLocaleString()}</span>
+                            
+                            <!-- 進捗バー (未獲得時のみ表示などお好みで) -->
+                            ${!isUnlocked && b.target_val > 0 ? `
+                                <div class="absolute bottom-2 left-2 right-2 h-1 bg-gray-300 rounded-full overflow-hidden">
+                                    <div class="h-full bg-blue-500" style="width: ${b.progress}%"></div>
                                 </div>
-                                <div class="w-full bg-gray-200 dark:bg-gray-700 h-1.5 rounded-full overflow-hidden">
-                                    <div class="${barColor} h-full rounded-full" style="width: ${b.progress}%"></div>
-                                </div>
-                            </div>
+                            ` : ''}
                         </div>
                     `;
                 }).join('');
+            }
+            
+            // ツールチップ初期化 & シークレットイベント設定 (初回のみ)
+            if(!TooltipSystem.el) {
+                TooltipSystem.init();
+                setupSecretTrigger();
             }
         }
     } catch (e) {
