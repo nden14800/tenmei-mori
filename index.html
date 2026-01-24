@@ -2688,48 +2688,30 @@
         </section>
         
 
-    <!-- ビュー: 参拝の記録 (強化版) -->
-<section id="view-stats" class="view-section max-w-2xl mx-auto relative">
-    <h2 class="text-3xl font-bold mb-4 text-center text-gray-800 dark:text-gray-100">
-        <i class="bi bi-journal-bookmark-fill text-red-600 mr-2"></i>参拝の記録
-    </h2>
+    <!-- 参拝の記録セクション (強化版) -->
+<section id="view-stats" class="view-section max-w-3xl mx-auto relative">
+    <h2 class="text-3xl font-bold mb-4 text-center">参拝の記録</h2>
 
     <div id="stats-content-wrapper">
-        <!-- 比較文章エリア -->
         <div class="themed-card p-5 rounded-xl mb-6 border-l-4 border-red-500 shadow-sm">
-            <p id="stat-comparison-text" class="text-sm leading-relaxed text-gray-700 dark:text-gray-300">
-                読み込み中...
-            </p>
+            <p id="stat-comparison-text" class="text-sm leading-relaxed">計算中...</p>
         </div>
-        
-        <div class="grid grid-cols-2 gap-4 mb-8 text-center">
-            <div class="bg-white dark:bg-zinc-800 p-4 rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm">
-                <div class="text-xs text-gray-500 mb-1">あなたの総参拝数</div>
-                <div class="text-2xl font-black text-red-600" id="stat-total">-</div>
-            </div>
-            <div class="bg-white dark:bg-zinc-800 p-4 rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm">
-                <div class="text-xs text-gray-500 mb-1">平均の総参拝数</div>
-                <div class="text-2xl font-black text-gray-400" id="stat-avg-total">-</div>
+
+        <!-- グラフエリア -->
+        <div class="themed-card p-8 rounded-xl shadow-sm relative pt-12">
+            <!-- 目盛り線コンテナ (JSで動的生成) -->
+            <div id="graph-grid-lines" class="absolute inset-0 px-8 pt-12 pointer-events-none"></div>
+            
+            <div id="stat-detailed-graphs" class="space-y-6 relative z-10">
+                <!-- ここに総参拝数 + 12運勢のグラフが生成される -->
             </div>
         </div>
 
-        <h3 class="font-bold text-lg mb-4 flex items-center gap-2">
-            <i class="bi bi-bar-chart-steps"></i> 運勢分布の比較
-            <span class="text-[10px] font-normal text-gray-400">■ あなた(赤) / ■ 平均(灰)</span>
-        </h3>
-        
-        <!-- グラフコンテナ -->
-        <div id="stat-detailed-graphs" class="space-y-4 themed-card p-6 rounded-xl shadow-sm">
-            <!-- JSで生成 -->
+        <div class="mt-6 flex justify-center gap-4 text-[10px] font-bold">
+            <span class="flex items-center gap-1"><div class="w-3 h-1.5 rounded bg-red-600"></div> あなた</span>
+            <span class="flex items-center gap-1"><div class="w-3 h-1.5 rounded bg-gray-300"></div> 一般的な平均</span>
         </div>
-        
-        <p class="text-[10px] text-center text-gray-400 mt-6">
-            ※統計は1分ごと、またはおみくじを引いた瞬間に更新されます。
-        </p>
     </div>
-
-    <!-- 未ログイン用ロックはそのまま維持 -->
-    <div id="stats-lock" class="lab-lock-overlay hidden"> ... </div>
 </section>
 
         <!-- ビュー: ログイン/登録 (新フロー: 選択 -> 入力 -> 認証) -->
