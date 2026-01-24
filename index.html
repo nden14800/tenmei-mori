@@ -2678,6 +2678,12 @@
                 </div>
             </div>
 
+            <!-- 2. 功徳の証 (バッジ) -->
+            <h3 class="font-bold text-lg mb-4 border-l-4 border-yellow-500 pl-3">功徳の証 (実績)</h3>
+            <div id="stats-badge-list" class="grid grid-cols-1 md:grid-cols-2 gap-3 pb-20">
+                <!-- JSでバッジ一覧を生成 -->
+            </div>
+        </div>
 
         <!-- ロック画面 (未ログイン時) -->
         <div id="stats-lock" class="lab-lock-overlay hidden flex items-center justify-center">
@@ -2696,18 +2702,48 @@
         <section id="view-auth" class="view-section max-w-md mx-auto themed-card p-8 rounded-xl shadow-lg mt-10">
             <h2 class="text-2xl font-bold mb-8 text-center">アカウント認証</h2>
             
-            <!-- 初期選択画面 -->
+           <!-- 初期選択画面 -->
             <div id="auth-selection">
-                <!-- ▼▼▼ 修正: 長いリストを削除し、汎用的な説明文のみに変更 ▼▼▼ -->
-                <div class="mb-8 text-center">
-                    <p class="text-sm text-gray-600 dark:text-gray-300 leading-relaxed">
-                        アカウントを作成すると、おみくじの結果を<br>
-                        <strong>「轍（履歴）」</strong>として永続的に保存したり、<br>
-                        自分だけの<strong>「参拝記録」</strong>を残すことができます。
-                    </p>
+                <div class="mb-6 p-5 bg-red-50 dark:bg-red-900/20 text-sm text-red-800 dark:text-red-200 border border-red-200 dark:border-red-800 rounded-xl shadow-sm">
+                    <h4 class="font-bold mb-3 text-base flex items-center border-b border-red-200 dark:border-red-800 pb-2">
+                        <i class="bi bi-stars text-yellow-500 mr-2 text-lg"></i> 天命会員の特典（全一覧）
+                    </h4>
+                    <ul class="space-y-2 text-xs leading-relaxed">
+                        <li class="flex items-start">
+                            <i class="bi bi-check-circle-fill mr-2 mt-0.5 text-red-500 flex-shrink-0"></i> 
+                            <span><strong>おみくじの轍（履歴）：</strong> 参拝記録の無期限保存、条件検索、詳細（結果カード）の再確認。</span>
+                        </li>
+                        <li class="flex items-start">
+                            <i class="bi bi-check-circle-fill mr-2 mt-0.5 text-red-500 flex-shrink-0"></i> 
+                            <span><strong>参拝者台帳（プロフィール）：</strong> 称号・アイコン・自己紹介の編集と、公開ページの保有。</span>
+                        </li>
+                        <li class="flex items-start">
+                            <i class="bi bi-check-circle-fill mr-2 mt-0.5 text-red-500 flex-shrink-0"></i> 
+                            <span><strong>功徳の証（バッジ）：</strong> 大吉獲得や連続参拝など、条件達成による実績バッジの収集。</span>
+                        </li>
+                        <li class="flex items-start">
+                            <i class="bi bi-check-circle-fill mr-2 mt-0.5 text-red-500 flex-shrink-0"></i> 
+                            <span><strong>TENMEI Labs（実験室）：</strong> 「神速」「宵闇」「霧」などの機能利用と、設定のクラウド同期。</span>
+                        </li>
+                        <li class="flex items-start">
+                            <i class="bi bi-check-circle-fill mr-2 mt-0.5 text-red-500 flex-shrink-0"></i> 
+                            <span><strong>御朱印（ログイン記録）：</strong> 毎日の参拝スタンプ記帳、および連続参拝日数のカウント。</span>
+                        </li>
+                        <li class="flex items-start">
+                            <i class="bi bi-check-circle-fill mr-2 mt-0.5 text-red-500 flex-shrink-0"></i> 
+                            <span><strong>12星座占い（お気に入り）：</strong> 自分や大切な人の星座・血液型をトップに固定（最大5件）。</span>
+                        </li>
+                        <li class="flex items-start">
+                            <i class="bi bi-check-circle-fill mr-2 mt-0.5 text-red-500 flex-shrink-0"></i> 
+                            <span><strong>認証バッジ申請：</strong> 信頼の証である「公式認証（ブルーバッジ）」への審査申請権。</span>
+                        </li>
+                        <li class="flex items-start">
+                            <i class="bi bi-check-circle-fill mr-2 mt-0.5 text-red-500 flex-shrink-0"></i> 
+                            <span><strong>神恩への貢献：</strong> 参拝数がサイト全体の「累計発行本数」へ正式に反映されます。</span>
+                        </li>
+                    </ul>
                 </div>
-                <!-- ▲▲▲ 修正ここまで ▲▲▲ -->
-           
+
                 <button class="auth-selection-btn" onclick="startAuthFlow('login')">
                     <i class="bi bi-box-arrow-in-right text-blue-500"></i> ログイン
                 </button>
@@ -7774,16 +7810,17 @@ function handleInputQuiz(button, correctAnswers, questionId) {
             }, 1000);
         }
 
-       async function showResultDetail(isNewDraw, dataOverride = null) {
+        async function showResultDetail(isNewDraw, dataOverride = null) {
             let resultData, randNum, detailsList, luckyItems, unluckyItems, timestamp, username;
 
             if (isNewDraw) {
-                // 新規抽選
+                // 新規抽選（ローカルで一旦計算）
                 const base = omikujiResults[Math.floor(Math.random() * omikujiResults.length)];
                 randNum = Math.floor(Math.random() * 100) + 1;
                 timestamp = Date.now();
                 username = currentState.user ? (currentState.user.username || "参拝者") : "ゲスト";
 
+                // 詳細項目生成
                 const detailIndex = 5 - base.rank;
                 const cats = ['願事','恋愛','待人','商売','旅立','学問','病気'];
                 
@@ -7792,6 +7829,7 @@ function handleInputQuiz(button, correctAnswers, questionId) {
                     content: detailTexts[c][Math.min(detailIndex, detailTexts[c].length - 1)]
                 }));
 
+                // ラッキー/アンラッキー生成
                 luckyItems = {
                     item: luckyItemsList[Math.floor(Math.random()*luckyItemsList.length)],
                     spot: luckySpotsList[Math.floor(Math.random()*luckySpotsList.length)],
@@ -7819,10 +7857,11 @@ function handleInputQuiz(button, correctAnswers, questionId) {
                     lucky: luckyItems,
                     unlucky: unluckyItems,
                     timestamp: timestamp,
-                    username: username,
-                    issueNumber: null 
+                    username: username
                 };
-                
+                currentState.lastResult = resultData;
+
+                // ▼▼▼ 修正箇所: ログイン時はサーバーの許可がないと結果を表示させない ▼▼▼
                 if(currentState.user) {
                     showLoading(true);
                     try {
@@ -7838,47 +7877,49 @@ function handleInputQuiz(button, correctAnswers, questionId) {
                             })
                         });
                         
+                        // レート制限（429）の場合
                         if (res.status === 429) {
                             const errData = await res.json();
+                            // 警告通知を出す
                             showToast(errData.message, 'warning', '天命の戒め');
+                            
+                            // ローディングを消す
                             showLoading(false);
+                            
+                            // 【重要】ここで処理を強制終了する（結果画面へ行かせない）
                             return; 
                         }
                         
+                        // 成功時 (200 OK)
                         if(res.ok) {
                             const data = await res.json();
                             if(data.success && data.count) {
                                 currentState.liveCount = data.count;
                                 document.getElementById('live-counter').textContent = currentState.liveCount.toLocaleString() + "本";
-                                
-                                // サーバーからの最新値をセット
-                                resultData.issueNumber = data.count;
-
                                 fetchHistoryStats();
 
+        
+// ▼▼▼ 追加: 新しいバッジがあれば通知 ▼▼▼
                                 if (data.newBadges && data.newBadges.length > 0) {
                                     data.newBadges.forEach(badgeName => {
                                         showToast(`実績解除: 「${badgeName}」を獲得しました！`, 'success', '功徳の証');
                                     });
                                 }
+                                // ▲▲▲ 追加ここまで ▲▲▲
+
                             }
                         }
                     } catch(e) { 
                         console.error(e);
-                        // エラー時は「現在の表示 + 1」を仮の番号とする
-                        resultData.issueNumber = (currentState.liveCount || 0) + 1;
+                        // 通信エラー時も念の為アラートを出すが、表示は許可する（あるいはここも止めるかはお好みで）
                     } finally { 
                         showLoading(false); 
                     }
-                } else {
-                    // 未ログイン時：「現在の表示 + 1」を仮の番号とする
-                    resultData.issueNumber = (currentState.liveCount || 0) + 1;
                 }
-                
-                currentState.lastResult = resultData;
+                // ▲▲▲ 修正ここまで ▲▲▲
 
             } else {
-                // 履歴からの復元ロジック
+                // 履歴からの復元ロジック（変更なし）
                 resultData = dataOverride;
                 randNum = dataOverride.num || 1;
                 
@@ -7907,9 +7948,6 @@ function handleInputQuiz(button, correctAnswers, questionId) {
                 timestamp = dataOverride.timestamp;
                 username = dataOverride.username || "参拝者";
                 
-                // 履歴データから番号を復元
-                let restoredNum = dataOverride.issueNumber || dataOverride.issue_number;
-                
                 resultData = {
                     type: dataOverride.type || dataOverride.result,
                     poem: dataOverride.poem,
@@ -7919,17 +7957,12 @@ function handleInputQuiz(button, correctAnswers, questionId) {
                     lucky: luckyItems,
                     unlucky: unluckyItems,
                     timestamp: timestamp,
-                    username: username,
-                    issueNumber: restoredNum
+                    username: username
                 };
                 currentState.lastResult = resultData;
             }
 
-            // 安全策: 番号が空なら現在の値+1を入れる
-            if (resultData.issueNumber === null || resultData.issueNumber === undefined) {
-                resultData.issueNumber = (currentState.liveCount || 0) + 1;
-            }
-
+            // 結果カードの描画と画面遷移（制限に引っかかった場合はここまで到達しない）
             renderResultToCard('result-card-outer', resultData, true); 
             showView('result');
             
@@ -7939,7 +7972,10 @@ function handleInputQuiz(button, correctAnswers, questionId) {
             document.getElementById('gen-img-status').textContent = "";
         }
 
-       function renderResultToCard(outerId, data, withFooter) {
+        // updateURL は廃止（空関数にして互換性維持）
+        function updateURL(resultData) {}
+
+        function renderResultToCard(outerId, data, withFooter) {
             const outer = document.getElementById(outerId);
             outer.innerHTML = ''; 
 
@@ -7962,28 +7998,23 @@ function handleInputQuiz(button, correctAnswers, questionId) {
             `;
             outer.appendChild(headerDiv);
 
-            // 2. 発行番号表示 (★修正箇所)
+            // 2. 本数カウンター
             const issueDiv = document.createElement('div');
             issueDiv.className = 'result-issue-num accent-text';
-            
-            // issueNumberが 0 や 数値の場合でも正しく表示するように厳密判定
-            let issueText = "---";
-            if (data.issueNumber !== undefined && data.issueNumber !== null) {
-                issueText = Number(data.issueNumber).toLocaleString();
-            } else {
-                // データに無い場合は暫定的に現在のカウンターを表示（緊急回避）
-                issueText = (currentState.liveCount || 0).toLocaleString();
-            }
-            
-            issueDiv.textContent = `通算発行 第 ${issueText} 号`; 
+            let issueNum = currentState.liveCount || 0;
+            issueDiv.textContent = `累計発行本数 ${issueNum.toLocaleString()} 本`;
             outer.appendChild(issueDiv);
 
-            // 3. 運勢ハンコ
+            // 3. 運勢ハンコ（縦書き・画像風）
             const circleBox = document.createElement('div');
             circleBox.className = 'result-circle-box';
             let fs = "4.2rem"; 
+            
+            // ▼▼ 修正: 3文字（末小吉など）のサイズを小さく調整 ▼▼
             if (data.type.length === 3) fs = "2.9rem"; 
             if (data.type.length >= 4) fs = "2.4rem";
+            
+            // ▼▼ 修正: styleに white-space: nowrap を追加して改行を強制禁止 ▼▼
             circleBox.innerHTML = `<div class="result-kanji-main" style="font-size: ${fs}; white-space: nowrap;">${data.type}</div>`;
             outer.appendChild(circleBox);
 
@@ -8054,12 +8085,15 @@ function handleInputQuiz(button, correctAnswers, questionId) {
                 const metaDiv = document.createElement('div');
                 metaDiv.style.textAlign = 'left';
                 const name = data.username || "参拝者";
+                // ▼▼▼ 日付修正箇所 ▼▼▼
+                // タイムスタンプを数値に変換（変換できない場合は現在時刻を使う）
                 let ts = Number(data.timestamp);
                 if (isNaN(ts) || ts === 0) {
                     ts = Date.now();
                 }
                 const date = new Date(ts);
                 const dateStr = `${date.getFullYear()}年${date.getMonth()+1}月${date.getDate()}日 ${date.getHours()}:${String(date.getMinutes()).padStart(2,'0')}`;
+                // ▲▲▲ 修正ここまで ▲▲▲
                 metaDiv.innerHTML = `
                     <div class="result-user-name accent-text">${escapeHtml(name)} 様の運勢</div>
                     <div class="result-date accent-text">参拝日: ${dateStr}</div>
@@ -8521,7 +8555,7 @@ ${getShareUrl()}`;
             window.open(intent, '_blank');
         }
 
-        // 参拝の記録：統計表示 (修正版: 連続参拝を削除し、大吉数を表示)
+        // 参拝の記録：統計表示 (実績削除版)
     async function loadMyStats() {
         if (!currentState.user) return;
 
@@ -8531,7 +8565,7 @@ ${getShareUrl()}`;
             if (res.ok) {
                 const data = await res.json();
                 
-                // 数値データ表示 (ここを修正しました)
+                // 数値データ表示
                 const statsGrid = document.querySelector('#stats-content-wrapper .grid');
                 if (statsGrid) {
                     statsGrid.className = 'grid grid-cols-2 gap-4 mb-8 text-center';
@@ -8543,12 +8577,21 @@ ${getShareUrl()}`;
                             </div>
                         </div>
                         <div class="bg-white dark:bg-zinc-800 p-4 rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm">
-                            <div class="text-xs text-gray-500 mb-1">大吉獲得数</div>
+                            <div class="text-xs text-gray-500 mb-1">大吉獲得</div>
                             <div class="text-2xl md:text-3xl font-black text-yellow-500">
                                 ${Number(data.stats.daikichiCount || 0).toLocaleString()}
                             </div>
                         </div>
                     `;
+                }
+
+                // バッジリストのコンテナがあれば空にする（または削除）
+                const badgeContainer = document.getElementById('stats-badge-list');
+                if (badgeContainer) {
+                    badgeContainer.innerHTML = '';
+                    // 直前の見出し（功徳の証）も消す
+                    const badgeTitle = badgeContainer.previousElementSibling;
+                    if(badgeTitle && badgeTitle.tagName === 'H3') badgeTitle.remove();
                 }
             }
         } catch (e) {
