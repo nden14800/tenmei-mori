@@ -10806,25 +10806,136 @@ async function updateAccountSettings() {
     }
 }
 
-        // 総参拝者数カウンターの更新対応
+
+        // ホームカウンター更新 (userCountを確実に反映)
 async function startLiveCounter() {
     const el = document.getElementById('live-counter');
     const uEl = document.getElementById('worshipper-counter');
-    const timeEl = document.getElementById('counter-time');
-    
+    if (!el || !uEl) return;
+
     async function fetchCount() {
         try {
             const res = await fetch(`${API_BASE}/api/counter`);
             if(res.ok) {
                 const data = await res.json();
-                el.textContent = data.count.toLocaleString() + "本";
-                uEl.textContent = data.userCount.toLocaleString() + "名";
-                if(timeEl) timeEl.textContent = new Date().toLocaleTimeString();
+                el.textContent = Number(data.count || 0).toLocaleString() + "本";
+                uEl.textContent = Number(data.userCount || 0).toLocaleString() + "名";
             }
         } catch(e) { console.error(e); }
     }
     fetchCount();
     setInterval(fetchCount, 60000);
+}
+
+// 統計描画（カード分割・目盛り線・加速アニメ版）
+async function loadMyStats() {
+    if (!currentState.user) return;
+
+    try {
+        const res = await authFetch(`${API_BASE}/api/user/profile?username=${encodeURIComponent(currentState.user.username)}`, {
+            method: 'GET'
+        });
+        
+        if (res.ok) {
+            const data = await res.json();
+            const s = data.stats;
+            
+            let avgTotal = 0;
+            if (s.averageFortunes) {
+                Object.values(s.averageFortunes).forEach(v => avgTotal += v);
+            }
+            const multiplier = (s.totalDraws / Math.max(0.1, avgTotal)).toFixed(1);
+
+            // 解説テキスト
+            document.getElementById('stat-comparison-text').innerHTML = `
+                あなたは平均 ${avgTotal.toFixed(1)}回参拝している一般的な参拝者と比較して、
+                <strong class="text-red-600 text-lg">${multiplier}倍</strong> の徳を積んでいます。<br>
+                <span class="text-[10px] text-gray-500">現在、${Number(s.totalUsers || 0).toLocaleString()}名の参拝者が杜に名を連ねています。</span>
+            `;
+
+            // 1. 総参拝数カードの描画
+            renderSingleGraph('graph-total-draws', 'grid-lines-total', "総参拝数", s.totalDraws, avgTotal);
+
+            // 2. 運勢分布カードの描画
+            const fortunes = ["大吉", "中吉", "小吉", "吉", "半吉", "末吉", "末小吉", "凶", "小凶", "半凶", "末凶", "大凶"];
+            const graphContainer = document.getElementById('stat-detailed-graphs');
+            const gridContainer = document.getElementById('grid-lines-fortunes');
+            graphContainer.innerHTML = '';
+            gridContainer.innerHTML = '';
+
+            // 運勢グラフの中での最大値を求める
+            const vals = [...Object.values(s.userFortunes), ...Object.values(s.averageFortunes)];
+            const maxVal = Math.max(...vals, 1);
+
+            // 目盛り線
+            renderGridLines(gridContainer, maxVal);
+
+            // 各運勢の行を生成
+            fortunes.forEach(f => {
+                const myVal = s.userFortunes[f] || 0;
+                const avgVal = s.averageFortunes[f] || 0;
+                graphContainer.appendChild(createGraphRow(f, myVal, avgVal, maxVal));
+            });
+
+            // 加速アニメーション開始
+            setTimeout(() => {
+                document.querySelectorAll('.bar-animate-fast').forEach(bar => {
+                    const w = bar.dataset.targetWidth;
+                    bar.style.width = w;
+                });
+            }, 100);
+        }
+    } catch (e) { console.error(e); }
+}
+
+// グラフの1行（2本バー）を作成するヘルパー
+function createGraphRow(label, myVal, avgVal, maxVal) {
+    const row = document.createElement('div');
+    row.className = "flex items-center gap-2 w-full";
+    const bars = [
+        { val: avgVal, color: 'bg-gray-200 dark:bg-zinc-700' },
+        { val: myVal, color: 'bg-red-600' }
+    ];
+    bars.sort((a, b) => a.val - b.val); // 多い方を下にする
+
+    row.innerHTML = `
+        <div class="w-16 text-[10px] font-bold text-gray-500 flex-shrink-0">${label}</div>
+        <div class="flex-1 space-y-1">
+            ${bars.map(b => `
+                <div class="w-full h-1.5 bg-transparent relative">
+                    <div class="h-full rounded-full bar-animate-fast ${b.color}" 
+                         style="width: 0%" data-target-width="${(b.val / maxVal * 100)}%"></div>
+                </div>
+            `).join('')}
+        </div>
+        <div class="w-20 text-right text-[9px] font-mono text-gray-400 flex-shrink-0">
+            ${myVal} <span class="opacity-30">/ ${avgVal.toFixed(1)}</span>
+        </div>
+    `;
+    return row;
+}
+
+// 単体グラフ（総参拝数用）の描画
+function renderSingleGraph(containerId, gridId, label, myVal, avgVal) {
+    const container = document.getElementById(containerId);
+    const grid = document.getElementById(gridId);
+    const maxVal = Math.max(myVal, avgVal, 1);
+    container.innerHTML = '';
+    grid.innerHTML = '';
+    renderGridLines(grid, maxVal);
+    container.appendChild(createGraphRow(label, myVal, avgVal, maxVal));
+}
+
+// 目盛り線の描画
+function renderGridLines(container, maxVal) {
+    [0, 0.25, 0.5, 0.75, 1].forEach(p => {
+        const val = Math.floor(maxVal * p);
+        const left = p * 100;
+        container.innerHTML += `
+            <div class="grid-line" style="left: ${left}%"></div>
+            <div class="grid-label" style="left: ${left}%">${val.toLocaleString()}</div>
+        `;
+    });
 }
 
             
