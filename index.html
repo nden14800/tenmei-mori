@@ -7962,11 +7962,15 @@ function handleInputQuiz(button, correctAnswers, questionId) {
             `;
             outer.appendChild(headerDiv);
 
-            // 2. 本数カウンター
+            // 2. 本数カウンター（ここを修正：個別の発行番号を表示）
             const issueDiv = document.createElement('div');
             issueDiv.className = 'result-issue-num accent-text';
-            let issueNum = currentState.liveCount || 0;
-            issueDiv.textContent = `累計発行本数 ${issueNum.toLocaleString()} 本`;
+            
+            // データ内に保存された発行番号があればそれを使用、なければ0（または現在の値）
+            // ※過去のデータで番号が保存されていない場合は「---」や0になります
+            let issueNum = data.issueNumber || 0; 
+            
+            issueDiv.textContent = `第 ${issueNum.toLocaleString()} 番祈願`;
             outer.appendChild(issueDiv);
 
             // 3. 運勢ハンコ（縦書き・画像風）
@@ -7974,11 +7978,9 @@ function handleInputQuiz(button, correctAnswers, questionId) {
             circleBox.className = 'result-circle-box';
             let fs = "4.2rem"; 
             
-            // ▼▼ 修正: 3文字（末小吉など）のサイズを小さく調整 ▼▼
             if (data.type.length === 3) fs = "2.9rem"; 
             if (data.type.length >= 4) fs = "2.4rem";
             
-            // ▼▼ 修正: styleに white-space: nowrap を追加して改行を強制禁止 ▼▼
             circleBox.innerHTML = `<div class="result-kanji-main" style="font-size: ${fs}; white-space: nowrap;">${data.type}</div>`;
             outer.appendChild(circleBox);
 
@@ -8049,15 +8051,14 @@ function handleInputQuiz(button, correctAnswers, questionId) {
                 const metaDiv = document.createElement('div');
                 metaDiv.style.textAlign = 'left';
                 const name = data.username || "参拝者";
-                // ▼▼▼ 日付修正箇所 ▼▼▼
-                // タイムスタンプを数値に変換（変換できない場合は現在時刻を使う）
+                
                 let ts = Number(data.timestamp);
                 if (isNaN(ts) || ts === 0) {
                     ts = Date.now();
                 }
                 const date = new Date(ts);
                 const dateStr = `${date.getFullYear()}年${date.getMonth()+1}月${date.getDate()}日 ${date.getHours()}:${String(date.getMinutes()).padStart(2,'0')}`;
-                // ▲▲▲ 修正ここまで ▲▲▲
+                
                 metaDiv.innerHTML = `
                     <div class="result-user-name accent-text">${escapeHtml(name)} 様の運勢</div>
                     <div class="result-date accent-text">参拝日: ${dateStr}</div>
