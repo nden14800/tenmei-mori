@@ -9782,13 +9782,13 @@ async function toggleFavorite(signId, bloodType) {
     }
 }
 
-// カードHTML生成関数 (クラス名変更により背景色干渉を回避)
+// カードHTML生成関数 (文字ラベル復活版)
 function createCardHTML(data) {
     // お気に入り状態チェック
     const isFav = favoriteList.some(f => f.sign === data.sign.id && f.blood === data.blood);
     
     // ランクスタイルの決定
-    // ★ここ重要：クラス名を "rank-1" ではなく "card-rank-1" に変更してバッジ用クラスとの干渉を防ぐ
+    // 背景色はCSSで白固定にしているため、ここでは枠線用クラスのみ指定
     let cardClass = "card-rank-normal";
     let badgeClass = "badge-normal";
     
@@ -9807,8 +9807,6 @@ function createCardHTML(data) {
     const calendarHTML = data.calendar.map(d => {
         const hasMark = d.marks.length > 0;
         const cellClass = hasMark ? 'has-mark' : '';
-        // マークがある場合はアイコンを表示、なければ日付のみ
-        // スペースが狭いので最大2つくらいまで表示するように結合
         const marksStr = d.marks.slice(0, 2).join(''); 
         
         return `
@@ -9847,13 +9845,21 @@ function createCardHTML(data) {
                     
                     <!-- 文章エリア -->
                     <div class="zodiac-text-area">
-                        <div class="flex flex-wrap items-center gap-2 text-xs font-bold text-gray-500 mb-2">
+                        <div class="flex flex-wrap items-center gap-3 text-xs font-bold text-gray-500 mb-2">
                             <span class="bg-red-50 dark:bg-red-900/20 text-red-700 dark:text-red-300 px-2 py-1 rounded">
                                 総合: ${data.totalScore}点
                             </span>
                             <span>ラッキーNo.${data.luckyNum}</span>
-                            <span><i class="bi bi-stars text-yellow-500"></i> ${data.item}</span>
-                            <span><i class="bi bi-palette text-pink-500"></i> ${data.color}</span>
+                            
+                            <!-- ★修正: 文字ラベルを復活 -->
+                            <span class="flex items-center gap-1">
+                                <i class="bi bi-stars text-yellow-500"></i>
+                                <span>ラッキーアイテム：${data.item}</span>
+                            </span>
+                            <span class="flex items-center gap-1">
+                                <i class="bi bi-palette text-pink-500"></i>
+                                <span>ラッキーカラー：${data.color}</span>
+                            </span>
                         </div>
                         <p class="text-sm leading-6 text-justify text-gray-700 dark:text-gray-300 font-medium">
                             ${data.longDesc}
