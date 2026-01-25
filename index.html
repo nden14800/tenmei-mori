@@ -9333,134 +9333,314 @@ async function checkSession() {
         let globalHistory = [];
         let personalHistory = [];
 
-        // --- Lab機能の状態管理とモーダル制御 (理由付き・検証済み完全版) ---
-        const TenmeiLab = {
-            details: {
-                newyear: {
-                    title: "迎春・雅（みやび）モード",
-                    icon: '<i class="bi bi-flower1 text-yellow-600"></i>',
-                    desc: "サイト全体のテーマカラーを「紅白」と「金」を基調としたお正月仕様に変更します。<br><br>背景に特別な和柄が浮かび上がり、おめでたい雰囲気を演出します。",
-                    reason: "配色のコントラストが非常に強いため、長時間の閲覧において目の疲れ（ハレーション）を招く可能性があります。また、専用の装飾パターンが通信環境によっては読み込み遅延を起こす場合があります。",
-                    bgClass: "bg-yellow-100"
-                },
-                speed: {
-                    title: "神速（しんそく）の祈り",
-                    icon: '<i class="bi bi-lightning-charge-fill text-blue-600"></i>',
-                    desc: "おみくじ結果表示前の「3秒間のカウントダウン」を省略します。<br><br>※サーバーへの記録通信（ローディング）は数秒発生しますのでご了承ください。",
-                    reason: "おみくじ本来の「待つ間の緊張感」や「情緒」が損なわれるため、UX（ユーザー体験）の観点から非推奨としています。また、連打が可能になることでAPIリクエスト制限（Rate Limit）に抵触しやすくなるリスクがあります。",
-                    bgClass: "bg-blue-100"
-                },
-                dark: {
-                    title: "宵闇（よいやみ）の刻",
-                    icon: '<i class="bi bi-moon-stars-fill text-purple-600"></i>',
-                    desc: "OSの設定に関わらず、強制的にダークモードを適用します。夜間の参拝や目に優しい画面を好む方に最適です。",
-                    reason: "CSS変数の強制上書きを行うため、一部のブラウザや古い端末において、画面切り替え時に一瞬背景が白く光る「フラッシュ現象」が発生する可能性があります。",
-                    bgClass: "bg-purple-100"
-                },
-                bigtext: {
-                    title: "言霊（ことだま）の増幅",
-                    icon: '<i class="bi bi-type-h1 text-green-600"></i>',
-                    desc: "サイト内の主要な文字サイズを大きくします。神託の言葉をより力強く、読みやすく表示します。",
-                    reason: "全体のレイアウト計算を無視してフォントサイズを拡大するため、スマートフォンなどの画面幅が狭い端末では、文字の改行位置が不自然になったり、枠からはみ出したりする（レイアウト崩れ）現象が避けられません。",
-                    bgClass: "bg-green-100"
-                },
-                mist: {
-                    title: "幽玄（ゆうげん）の霧",
-                    icon: '<i class="bi bi-cloud-haze2-fill text-gray-600"></i>',
-                    desc: "画面全体に流れる霧のアニメーションを重畳させます。<br><br>静かな杜の中にいるような、幻想的で神秘的な没入感を演出する視覚実験です。",
-                    reason: "広範囲にぼかしフィルター（Blur）とアニメーションを常時適用するため、GPU（描画処理装置）への負荷が極めて高く、古いスマートフォンの動作が重くなったり、バッテリー消費が激しくなる問題があります。",
-                    bgClass: "bg-gray-100"
-                },
-                gold: {
-                    title: "黄金（おうごん）の神域",
-                    icon: '<i class="bi bi-stars text-yellow-500"></i>',
-                    desc: "サイト全体のアクセントカラーである「紅」を、すべて「黄金（ゴールド）」に変更します。<br><br>ボタンやタイトル、アイコンが金色に輝き、最高位の神域を彷彿とさせる豪華な装いになります。",
-                    reason: "白背景に金色の文字を使用するため、視認性（アクセシビリティ）のガイドライン基準を満たしておらず、屋外や明るい場所では文字が読みづらくなるという欠陥を抱えています。",
-                    bgClass: "bg-yellow-50"
+        // --- Lab機能の状態管理と詳細設定モーダル (コントロールパネル版) ---
+const TenmeiLab = {
+    // 各機能の設定定義
+    details: {
+        newyear: {
+            title: "迎春・雅（みやび）モード",
+            icon: '<i class="bi bi-flower1 text-yellow-600"></i>',
+            desc: "サイト全体のテーマを「紅白」と「金」に変更します。",
+            reason: "配色のコントラストが強く、長時間の閲覧は目が疲れる可能性があります。",
+            bgClass: "bg-yellow-100",
+            // 詳細設定項目
+            configs: [
+                { id: 'active', type: 'switch', label: '機能を有効にする', sub: '迎春テーマを適用します' },
+                // ※CSS側での実装が複雑なため、今回はON/OFFのみとします
+            ]
+        },
+        speed: {
+            title: "神速（しんそく）の祈り",
+            icon: '<i class="bi bi-lightning-charge-fill text-blue-600"></i>',
+            desc: "おみくじのカウントダウン演出を省略します。",
+            reason: "おみくじの情緒が損なわれるため、UXの観点から非推奨としています。",
+            bgClass: "bg-blue-100",
+            configs: [
+                { id: 'active', type: 'switch', label: '機能を有効にする', sub: 'カウントダウンをスキップ' }
+            ]
+        },
+        dark: {
+            title: "宵闇（よいやみ）の刻",
+            icon: '<i class="bi bi-moon-stars-fill text-purple-600"></i>',
+            desc: "強制的にダークモードを適用します。",
+            reason: "一部の古い端末で画面切り替え時にチラつきが発生する場合があります。",
+            bgClass: "bg-purple-100",
+            configs: [
+                { id: 'active', type: 'switch', label: '機能を有効にする', sub: '常時ダークモードを適用' }
+            ]
+        },
+        bigtext: {
+            title: "言霊（ことだま）の増幅",
+            icon: '<i class="bi bi-type-h1 text-green-600"></i>',
+            desc: "文字サイズを大きくし、視認性を高めます。",
+            reason: "画面幅によってはレイアウト崩れや文字のはみ出しが発生します。",
+            bgClass: "bg-green-100",
+            // ★スライダー設定を追加
+            configs: [
+                { id: 'active', type: 'switch', label: '機能を有効にする', sub: '文字サイズ拡大を適用' },
+                { 
+                    id: 'scale', type: 'range', label: '拡大率', sub: '基準サイズに対する倍率',
+                    min: 110, max: 150, step: 5, unit: '%', default: 120, cssVar: '--lab-font-scale'
                 }
-            },
-
-            // 各スイッチの動作ロジック
-            toggleNewYear: (el) => {
-                if(el.checked) document.body.classList.add('theme-newyear');
-                else document.body.classList.remove('theme-newyear');
-                saveLabSettings();
-            },
-            toggleSpeed: (el) => {
-                window.labSpeedMode = el.checked;
-                saveLabSettings();
-            },
-            toggleDark: (el) => {
-                saveLabSettings();
-                applyTheme(); 
-            },
-            toggleBigText: (el) => {
-                if(el.checked) document.documentElement.classList.add('lab-big-text');
-                else document.documentElement.classList.remove('lab-big-text');
-                saveLabSettings();
-            },
-            toggleMist: (el) => {
-                const container = document.getElementById('mist-container');
-                if(!container) return;
-
-                if(el.checked) {
-                    container.classList.add('active');
-                } else {
-                    container.classList.remove('active');
+            ]
+        },
+        mist: {
+            title: "幽玄（ゆうげん）の霧",
+            icon: '<i class="bi bi-cloud-haze2-fill text-gray-600"></i>',
+            desc: "画面全体に流れる霧のアニメーションを表示します。",
+            reason: "GPU負荷が高く、バッテリー消費が増加する可能性があります。",
+            bgClass: "bg-gray-100",
+            // ★スライダー設定を追加
+            configs: [
+                { id: 'active', type: 'switch', label: '機能を有効にする', sub: '霧エフェクトを表示' },
+                { 
+                    id: 'opacity', type: 'range', label: '霧の濃さ', sub: '画面の見やすさに影響します',
+                    min: 0.1, max: 1.0, step: 0.1, unit: '', default: 0.6, cssVar: '--lab-mist-opacity'
+                },
+                { 
+                    id: 'speed', type: 'range', label: '流れる速さ', sub: '秒数（小さいほど速い）',
+                    min: 10, max: 60, step: 5, unit: 's', default: 30, cssVar: '--lab-mist-speed', inverse: true 
                 }
-                saveLabSettings();
-            },
-            toggleGold: (el) => {
-                if(el.checked) document.body.classList.add('theme-gold');
-                else document.body.classList.remove('theme-gold');
-                saveLabSettings();
-            },
+            ]
+        },
+        gold: {
+            title: "黄金（おうごん）の神域",
+            icon: '<i class="bi bi-stars text-yellow-500"></i>',
+            desc: "アクセントカラーを「黄金」に変更します。",
+            reason: "白背景では文字が読みづらくなる場合があります。",
+            bgClass: "bg-yellow-50",
+            configs: [
+                { id: 'active', type: 'switch', label: '機能を有効にする', sub: '黄金テーマを適用' }
+            ]
+        }
+    },
 
-            // モーダル制御
-            openModal: (key) => {
-                const data = TenmeiLab.details[key];
-                if(!data) return;
-                const content = document.getElementById('lab-modal-content');
+    // 現在の設定値を保持するオブジェクト
+    currentSettings: {},
+
+    // 初期化（localStorageから読み込み）
+    init: function() {
+        const stored = localStorage.getItem('tenmei_lab_detailed_config');
+        if (stored) {
+            try {
+                this.currentSettings = JSON.parse(stored);
+            } catch(e) { this.currentSettings = {}; }
+        }
+        // CSS変数の適用
+        this.applyAllCSS();
+    },
+
+    // 設定保存
+    save: function() {
+        localStorage.setItem('tenmei_lab_detailed_config', JSON.stringify(this.currentSettings));
+        // ここでクラウド同期などを呼んでも良い
+    },
+
+    // 全CSS変数の適用（ロード時など）
+    applyAllCSS: function() {
+        const root = document.documentElement;
+        Object.keys(this.details).forEach(key => {
+            const configs = this.details[key].configs;
+            configs.forEach(conf => {
+                if (conf.cssVar) {
+                    const savedVal = this.getVal(key, conf.id, conf.default);
+                    // inverseフラグがある場合（秒数など）、UIとは逆のロジックが必要ならここで処理
+                    // 今回はそのまま適用
+                    let val = savedVal;
+                    if(conf.unit) val += conf.unit;
+                    root.style.setProperty(conf.cssVar, val);
+                }
+            });
+        });
+    },
+
+    // 値の取得ヘルパー
+    getVal: function(key, configId, def) {
+        if (this.currentSettings[key] && this.currentSettings[key][configId] !== undefined) {
+            return this.currentSettings[key][configId];
+        }
+        return def;
+    },
+
+    // 値の設定ヘルパー
+    setVal: function(key, configId, val) {
+        if (!this.currentSettings[key]) this.currentSettings[key] = {};
+        this.currentSettings[key][configId] = val;
+        this.save();
+    },
+
+    // スイッチ類の実処理（メインスイッチ用）
+    toggleFeature: function(key, isActive) {
+        // UIのメインスイッチも同期
+        const mainSwitch = document.getElementById(`switch-${key}`);
+        if(mainSwitch) mainSwitch.checked = isActive;
+
+        // 既存のトグル関数を呼び出し（互換性維持）
+        if(key === 'newyear') this.toggleNewYear({checked: isActive});
+        if(key === 'speed') this.toggleSpeed({checked: isActive});
+        if(key === 'dark') this.toggleDark({checked: isActive});
+        if(key === 'bigtext') this.toggleBigText({checked: isActive});
+        if(key === 'mist') this.toggleMist({checked: isActive});
+        if(key === 'gold') this.toggleGold({checked: isActive});
+        
+        // 設定保存
+        this.setVal(key, 'active', isActive);
+    },
+
+    // --- 既存のトグル関数群 (そのまま維持) ---
+    toggleNewYear: (el) => {
+        if(el.checked) document.body.classList.add('theme-newyear');
+        else document.body.classList.remove('theme-newyear');
+        saveLabSettings(); // クラウド同期
+    },
+    toggleSpeed: (el) => {
+        window.labSpeedMode = el.checked;
+        saveLabSettings();
+    },
+    toggleDark: (el) => {
+        saveLabSettings();
+        applyTheme(); 
+    },
+    toggleBigText: (el) => {
+        if(el.checked) document.documentElement.classList.add('lab-big-text');
+        else document.documentElement.classList.remove('lab-big-text');
+        saveLabSettings();
+    },
+    toggleMist: (el) => {
+        const container = document.getElementById('mist-container');
+        if(!container) return;
+        if(el.checked) container.classList.add('active');
+        else container.classList.remove('active');
+        saveLabSettings();
+    },
+    toggleGold: (el) => {
+        if(el.checked) document.body.classList.add('theme-gold');
+        else document.body.classList.remove('theme-gold');
+        saveLabSettings();
+    },
+
+    // --- 詳細設定モーダルの表示 (UI構築) ---
+    openModal: (key) => {
+        const data = TenmeiLab.details[key];
+        if(!data) return;
+        
+        const content = document.getElementById('lab-modal-content');
+        
+        // メインスイッチの状態確認
+        const mainSwitch = document.getElementById(`switch-${key}`);
+        const isActive = mainSwitch ? mainSwitch.checked : false;
+
+        // 設定項目のHTML生成
+        let configHtml = '';
+        if (data.configs) {
+            configHtml = data.configs.map(conf => {
+                // 値の取得
+                let currentVal = TenmeiLab.getVal(key, conf.id, conf.default);
                 
-                content.innerHTML = `
-                    <div class="flex flex-col items-center text-center">
-                        <div class="w-20 h-20 rounded-full ${data.bgClass} flex items-center justify-center text-4xl mb-6 shadow-sm">
-                            ${data.icon}
+                // A. スイッチの場合 (activeは特別扱い)
+                if (conf.id === 'active') {
+                    // メインスイッチの状態を優先
+                    currentVal = isActive;
+                    return `
+                        <div class="lab-setting-row">
+                            <div class="lab-setting-label">
+                                ${conf.label}
+                                <span class="lab-setting-sub">${conf.sub}</span>
+                            </div>
+                            <label class="toggle-switch">
+                                <input type="checkbox" ${currentVal ? 'checked' : ''} 
+                                    onchange="TenmeiLab.handleConfigChange('${key}', '${conf.id}', this.checked)">
+                                <span class="slider"></span>
+                            </label>
                         </div>
-                        <h3 class="text-2xl font-bold mb-4 text-gray-800 dark:text-gray-100">${data.title}</h3>
-                        
-                        <!-- 機能説明 -->
-                        <div class="text-gray-600 dark:text-gray-300 leading-loose text-left w-full bg-gray-50 dark:bg-zinc-800 p-6 rounded-xl border border-gray-100 dark:border-gray-700 mb-6 shadow-inner">
-                            ${data.desc}
+                    `;
+                }
+                
+                // B. スライダーの場合
+                if (conf.type === 'range') {
+                    return `
+                        <div class="lab-setting-row">
+                            <div class="lab-setting-label">
+                                ${conf.label}
+                                <span class="lab-setting-sub">${conf.sub}</span>
+                            </div>
+                            <div class="lab-slider-container">
+                                <input type="range" class="lab-range-input" 
+                                    min="${conf.min}" max="${conf.max}" step="${conf.step}" value="${currentVal}"
+                                    oninput="TenmeiLab.handleConfigChange('${key}', '${conf.id}', this.value, '${conf.unit}', '${conf.cssVar}')">
+                                <span class="lab-val-display" id="val-${key}-${conf.id}">${currentVal}${conf.unit}</span>
+                            </div>
                         </div>
-
-                        <!-- 実験的理由（警告エリア） -->
-                        <div class="w-full bg-red-50 dark:bg-red-900/20 p-5 rounded-xl border border-red-200 dark:border-red-800 text-left shadow-sm">
-                            <p class="font-bold text-red-600 dark:text-red-300 mb-2 flex items-center text-sm">
-                                <i class="bi bi-exclamation-triangle-fill mr-2"></i>なぜ「実験的」なのか？
-                            </p>
-                            <p class="text-gray-700 dark:text-gray-300 leading-relaxed text-xs">
-                                ${data.reason}
-                            </p>
-                        </div>
-
-                        <div class="mt-8 w-full">
-                            <button onclick="TenmeiLab.closeModal(null)" class="btn-primary w-full py-3 shadow-lg">
-                                <i class="bi bi-check2"></i> 確認して閉じる
-                            </button>
-                        </div>
+                    `;
+                }
+                return '';
+            }).join('');
+        }
+        
+        content.innerHTML = `
+            <div class="flex flex-col items-center text-center">
+                <!-- ヘッダー -->
+                <div class="w-16 h-16 rounded-full ${data.bgClass} flex items-center justify-center text-3xl mb-4 shadow-sm">
+                    ${data.icon}
+                </div>
+                <h3 class="text-2xl font-bold mb-2 text-gray-800 dark:text-gray-100">${data.title}</h3>
+                <p class="text-sm text-gray-500 mb-6 font-bold">詳細設定パネル</p>
+                
+                <!-- 説明文 -->
+                <div class="text-gray-600 dark:text-gray-300 text-sm text-left w-full bg-gray-50 dark:bg-zinc-800 p-4 rounded-xl border border-gray-100 dark:border-gray-700 mb-6">
+                    ${data.desc}
+                    <div class="mt-2 text-xs text-red-500 flex items-start gap-1">
+                        <i class="bi bi-exclamation-circle-fill mt-0.5"></i>
+                        <span>${data.reason}</span>
                     </div>
-                `;
-                const modal = document.getElementById('lab-modal');
-                modal.classList.add('active');
-                document.body.style.overflow = 'hidden';
-            },
-            closeModal: (e) => {
-                if (e && e.target.id !== 'lab-modal' && !e.target.classList.contains('lab-close-btn') && e.target.tagName !== 'BUTTON') return;
-                document.getElementById('lab-modal').classList.remove('active');
-                document.body.style.overflow = '';
-            }
-        };
+                </div>
+
+                <!-- 設定コントロール (ここがメイン) -->
+                <div class="w-full bg-white dark:bg-black/20 p-2 rounded-xl border border-gray-200 dark:border-gray-700 mb-6">
+                    ${configHtml}
+                </div>
+
+                <div class="w-full">
+                    <button onclick="TenmeiLab.closeModal(null)" class="btn-primary w-full py-3 shadow-lg">
+                        <i class="bi bi-check2"></i> 設定を完了する
+                    </button>
+                </div>
+            </div>
+        `;
+        const modal = document.getElementById('lab-modal');
+        modal.classList.add('active');
+        document.body.style.overflow = 'hidden';
+    },
+
+    // 設定変更時のハンドラ（リアルタイム反映）
+    handleConfigChange: (key, configId, value, unit = '', cssVar = null) => {
+        // 1. 値の保存
+        TenmeiLab.setVal(key, configId, value);
+
+        // 2. 数値表示の更新 (スライダーの場合)
+        const displayEl = document.getElementById(`val-${key}-${configId}`);
+        if(displayEl) displayEl.textContent = value + unit;
+
+        // 3. 動作の反映
+        if (configId === 'active') {
+            // メインスイッチ切り替え
+            TenmeiLab.toggleFeature(key, value);
+        } else if (cssVar) {
+            // CSS変数の更新
+            const root = document.documentElement;
+            root.style.setProperty(cssVar, value + unit);
+        }
+    },
+
+    closeModal: (e) => {
+        if (e && e.target.id !== 'lab-modal' && !e.target.classList.contains('lab-close-btn') && e.target.tagName !== 'BUTTON') return;
+        document.getElementById('lab-modal').classList.remove('active');
+        document.body.style.overflow = '';
+    }
+};
+
+// 初期化実行 (window.onload内で呼ぶため)
+TenmeiLab.init();
 
         // --- 追加: テーマ適用ロジック（OS設定とLab設定の統合） ---
         function applyTheme() {
