@@ -1149,76 +1149,114 @@
             transform: translateY(0);
         }
 
-        /* ランキングカード（Bentoスタイル・修正版） */
+        /* --- ランキングカード（Bentoスタイル・完全版） --- */
         .rank-card-modern {
             background-color: var(--card-bg);
             border: 1px solid var(--card-border);
-            border-radius: 24px;
-            padding: 24px;
-            margin-bottom: 20px;
+            border-radius: 20px;
+            padding: 0; /* 内部でパディングを制御するため0に */
+            margin-bottom: 24px;
             position: relative;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.02);
-            transition: all 0.3s ease;
-            overflow: hidden; /* はみ出し防止の保険 */
+            box-shadow: 0 4px 10px rgba(0,0,0,0.03);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
         }
         
-        /* Flexコンテナ内のテキストはみ出し防止の鉄則設定 */
-        .rank-card-modern .flex-1 {
-            min-width: 0; /* これがないとflexアイテムが縮まずにはみ出す */
+        .rank-card-modern:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.08);
         }
 
-        /* TOP3の特別演出 */
-        .rank-card-modern.top-rank {
-            border-width: 2px;
-            transform: scale(1.01);
-            box-shadow: 0 10px 30px -10px rgba(0,0,0,0.1);
+        /* コンテンツエリア（上部） */
+        .rank-card-content {
+            padding: 24px;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
         }
-        .rank-card-modern.rank-1 { border-color: #ffd700; background: linear-gradient(to bottom right, var(--card-bg), rgba(255, 215, 0, 0.05)); }
-        .rank-card-modern.rank-2 { border-color: #c0c0c0; background: linear-gradient(to bottom right, var(--card-bg), rgba(192, 192, 192, 0.05)); }
-        .rank-card-modern.rank-3 { border-color: #cd7f32; background: linear-gradient(to bottom right, var(--card-bg), rgba(205, 127, 50, 0.05)); }
+        
+        /* PC画面では横並び */
+        @media (min-width: 768px) {
+            .rank-card-content {
+                flex-direction: row;
+                align-items: flex-start;
+            }
+        }
+
+        /* ランクに応じた装飾 */
+        .rank-card-modern.rank-1 { border: 2px solid #d4af37; background: linear-gradient(to bottom, #fffcf5, #fff); }
+        .rank-card-modern.rank-2 { border: 2px solid #a0a0a0; }
+        .rank-card-modern.rank-3 { border: 2px solid #b87333; }
+        .dark .rank-card-modern.rank-1 { background: linear-gradient(to bottom, #2a2200, #1a1a1a); border-color: #ffd700; }
 
         /* ランクバッジ */
-        .rank-badge-modern {
-            width: 50px; height: 50px;
-            border-radius: 14px;
+        .modern-rank-badge {
+            width: 60px; height: 60px;
+            border-radius: 16px;
             display: flex; align-items: center; justify-content: center;
-            font-weight: 900; font-size: 1.4rem;
-            color: var(--text-main);
-            background-color: var(--bg-color);
+            font-weight: 900; font-size: 1.8rem;
+            color: white;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+            flex-shrink: 0;
+        }
+        .bg-rank-1 { background: linear-gradient(135deg, #ffd700, #fdb931); }
+        .bg-rank-2 { background: linear-gradient(135deg, #e0e0e0, #bdbdbd); color: #555; }
+        .bg-rank-3 { background: linear-gradient(135deg, #cd7f32, #a0522d); }
+        .bg-rank-other { background: var(--card-border); color: var(--text-sub); width: 50px; height: 50px; font-size: 1.4rem; }
+
+        /* カレンダーエリア（下部・横幅いっぱい） */
+        .modern-calendar-area {
+            background-color: rgba(128,128,128,0.03);
+            border-top: 1px dashed var(--card-border);
+            padding: 15px 24px;
+        }
+        
+        .modern-cal-grid {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr); /* 7曜日に合わせて7列 */
+            gap: 4px;
+        }
+        
+        /* カレンダーの1日セル（アイコンが入るように高さを確保） */
+        .modern-cal-cell {
+            background: var(--bg-color);
             border: 1px solid var(--card-border);
-            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
-            flex-shrink: 0; /* 縮ませない */
+            border-radius: 8px;
+            min-height: 45px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: flex-start;
+            padding: 4px 2px;
         }
-        .rank-1 .rank-badge-modern { background: #ffd700; color: #fff; border: none; box-shadow: 0 4px 10px rgba(255, 215, 0, 0.4); }
-        .rank-2 .rank-badge-modern { background: #c0c0c0; color: #fff; border: none; }
-        .rank-3 .rank-badge-modern { background: #cd7f32; color: #fff; border: none; }
-
-        /* パラメータバー */
-        .modern-bar-bg {
-            width: 100%; height: 6px;
-            background-color: rgba(128,128,128,0.1);
-            border-radius: 3px;
-            overflow: hidden;
-            margin-top: 6px;
+        
+        .modern-cal-date {
+            font-size: 0.65rem;
+            font-weight: bold;
+            color: var(--text-sub);
+            margin-bottom: 2px;
+            line-height: 1;
         }
-        .modern-bar-fill { height: 100%; border-radius: 3px; }
+        
+        .modern-cal-icons {
+            display: flex;
+            gap: 1px;
+            flex-wrap: wrap;
+            justify-content: center;
+            font-size: 0.6rem;
+            line-height: 1;
+        }
 
-        /* レスポンス対応（スマホでの縦並び） */
-        @media (max-width: 768px) {
-            .rank-card-modern > .flex {
-                flex-direction: column;
-            }
-            .rank-card-modern .border-r {
-                border-right: none;
-                border-bottom: 1px solid var(--card-border);
-                padding-bottom: 16px;
-                margin-bottom: 16px;
-                width: 100%;
-            }
-            .rank-card-modern .md\\:w-64 {
-                width: 100%; /* 右側のパラメータエリアを全幅に */
-                margin-top: 16px;
-            }
+        /* 判定結果エリア内の調整 */
+        #my-rank-result .rank-card-modern {
+            margin-bottom: 0;
+            box-shadow: none;
+            border: 1px solid var(--card-border); /* 親の枠線と馴染ませる */
+        }
+        #my-rank-result .rank-card-modern.rank-1 {
+            border: 2px solid #d4af37; /* 1位だけは特別 */
         }
 
         /* 認証コード入力欄（和風） */
