@@ -1092,6 +1092,118 @@
             }
         }
 
+        /* --- 12星座占い モダンUI --- */
+        
+        /* 入力エリアのグリッド */
+        .zodiac-input-grid {
+            display: grid;
+            grid-template-columns: repeat(12, 1fr);
+            gap: 15px;
+            margin-bottom: 30px;
+        }
+        
+        /* 選択セレクトボックスのモダン化 */
+        .modern-select {
+            appearance: none;
+            background-color: var(--input-bg);
+            border: 1px solid var(--card-border);
+            border-radius: 16px;
+            padding: 16px;
+            font-size: 1rem;
+            color: var(--text-main);
+            width: 100%;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-family: inherit;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='%23888' viewBox='0 0 16 16'%3E%3Cpath d='M7.247 11.14 2.451 5.658C1.885 5.013 2.345 4 3.204 4h9.592a1 1 0 0 1 .753 1.659l-4.796 5.48a1 1 0 0 1-1.506 0z'/%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 1rem center;
+        }
+        .modern-select:hover, .modern-select:focus {
+            border-color: var(--accent-red);
+            box-shadow: 0 0 0 4px rgba(185, 28, 28, 0.1);
+            outline: none;
+        }
+
+        /* 判定ボタン */
+        .modern-search-btn {
+            background-color: var(--accent-red);
+            color: white;
+            border: none;
+            border-radius: 16px;
+            font-weight: bold;
+            font-size: 1.1rem;
+            cursor: pointer;
+            transition: transform 0.2s, background 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            box-shadow: 0 4px 10px rgba(185, 28, 28, 0.3);
+        }
+        .modern-search-btn:hover {
+            transform: translateY(-2px);
+            filter: brightness(1.1);
+        }
+        .modern-search-btn:active {
+            transform: translateY(0);
+        }
+
+        /* ランキングカード（Bentoスタイル） */
+        .rank-card-modern {
+            background-color: var(--card-bg);
+            border: 1px solid var(--card-border);
+            border-radius: 24px;
+            padding: 24px;
+            margin-bottom: 20px;
+            position: relative;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.02);
+            transition: all 0.3s ease;
+        }
+        /* TOP3の特別演出 */
+        .rank-card-modern.top-rank {
+            border-width: 2px;
+            transform: scale(1.01);
+            box-shadow: 0 10px 30px -10px rgba(0,0,0,0.1);
+        }
+        .rank-card-modern.rank-1 { border-color: #ffd700; background: linear-gradient(to bottom right, var(--card-bg), rgba(255, 215, 0, 0.05)); }
+        .rank-card-modern.rank-2 { border-color: #c0c0c0; background: linear-gradient(to bottom right, var(--card-bg), rgba(192, 192, 192, 0.05)); }
+        .rank-card-modern.rank-3 { border-color: #cd7f32; background: linear-gradient(to bottom right, var(--card-bg), rgba(205, 127, 50, 0.05)); }
+
+        /* ランクバッジ */
+        .rank-badge-modern {
+            width: 50px; height: 50px;
+            border-radius: 14px;
+            display: flex; align-items: center; justify-content: center;
+            font-weight: 900; font-size: 1.4rem;
+            color: var(--text-main);
+            background-color: var(--bg-color);
+            border: 1px solid var(--card-border);
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
+        .rank-1 .rank-badge-modern { background: #ffd700; color: #fff; border: none; box-shadow: 0 4px 10px rgba(255, 215, 0, 0.4); }
+        .rank-2 .rank-badge-modern { background: #c0c0c0; color: #fff; border: none; }
+        .rank-3 .rank-badge-modern { background: #cd7f32; color: #fff; border: none; }
+
+        /* パラメータバー */
+        .modern-bar-bg {
+            width: 100%; height: 6px;
+            background-color: rgba(128,128,128,0.1);
+            border-radius: 3px;
+            overflow: hidden;
+            margin-top: 6px;
+        }
+        .modern-bar-fill { height: 100%; border-radius: 3px; }
+
+        /* レスポンス対応 */
+        @media (max-width: 768px) {
+            .zodiac-input-grid {
+                display: flex;
+                flex-direction: column;
+                gap: 10px;
+            }
+        }
+
         /* 認証コード入力欄（和風） */
         .auth-code-input-container {
             display: flex;
