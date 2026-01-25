@@ -9782,19 +9782,19 @@ async function toggleFavorite(signId, bloodType) {
     }
 }
 
-// カードHTML生成関数 (カレンダー表示部分の修正)
+// カードHTML生成関数 (クラス名変更により背景色干渉を回避)
 function createCardHTML(data) {
     // お気に入り状態チェック
     const isFav = favoriteList.some(f => f.sign === data.sign.id && f.blood === data.blood);
     
     // ランクスタイルの決定
-    // 背景色はCSSで白固定にしているため、ここでは枠線用クラスのみ指定
-    let cardClass = "rank-normal";
+    // ★ここ重要：クラス名を "rank-1" ではなく "card-rank-1" に変更してバッジ用クラスとの干渉を防ぐ
+    let cardClass = "card-rank-normal";
     let badgeClass = "badge-normal";
     
-    if (data.rank === 1) { cardClass = "rank-1"; badgeClass = "badge-gold"; }
-    else if (data.rank === 2) { cardClass = "rank-2"; badgeClass = "badge-silver"; }
-    else if (data.rank === 3) { cardClass = "rank-3"; badgeClass = "badge-bronze"; }
+    if (data.rank === 1) { cardClass = "card-rank-1"; badgeClass = "badge-gold"; }
+    else if (data.rank === 2) { cardClass = "card-rank-2"; badgeClass = "badge-silver"; }
+    else if (data.rank === 3) { cardClass = "card-rank-3"; badgeClass = "badge-bronze"; }
 
     // スコアバーの色
     const getBarColor = (score) => {
@@ -9803,7 +9803,7 @@ function createCardHTML(data) {
         return "#3b82f6"; // 青
     };
 
-    // カレンダーHTML生成 (アイコンを表示するように変更)
+    // カレンダーHTML生成
     const calendarHTML = data.calendar.map(d => {
         const hasMark = d.marks.length > 0;
         const cellClass = hasMark ? 'has-mark' : '';
