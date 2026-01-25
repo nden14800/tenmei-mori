@@ -983,6 +983,115 @@
     100% { transform: translateY(-80px) scale(1.2); opacity: 0; }
 }
 
+        /* --- Bento Grid UI (モダン・グリッドレイアウト) --- */
+        .bento-grid {
+            display: grid;
+            grid-template-columns: repeat(12, 1fr);
+            grid-auto-rows: minmax(100px, auto); /* 行の高さを自動調整 */
+            gap: 20px;
+            width: 100%;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding-bottom: 60px;
+        }
+
+        .bento-card {
+            background-color: var(--card-bg);
+            border: 1px solid var(--card-border);
+            border-radius: 24px; /* 角丸を大きくモダンに */
+            padding: 24px;
+            position: relative;
+            overflow: hidden;
+            transition: all 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
+        }
+
+        .bento-card:hover {
+            transform: translateY(-4px) scale(1.01);
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+            border-color: var(--accent-red); /* ホバー時に紅色の枠 */
+            z-index: 10;
+        }
+
+        /* 挨拶エリア（ヘッダー） */
+        .bento-welcome {
+            grid-column: span 12; /* 横幅いっぱい */
+            background: linear-gradient(135deg, var(--card-bg) 0%, var(--bg-color) 100%);
+            display: flex;
+            flex-direction: row;
+            align-items: center;
+            justify-content: space-between;
+            min-height: 120px;
+        }
+
+        /* タイトルエリア */
+        .bento-title {
+            grid-column: span 8;
+            grid-row: span 2;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            background-image: var(--bg-pattern);
+        }
+
+        /* アクションエリア（おみくじを引く） */
+        .bento-action {
+            grid-column: span 4;
+            grid-row: span 2;
+            background-color: var(--accent-red);
+            color: white;
+            border: none;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            text-align: center;
+        }
+        .bento-action:hover {
+            background-color: #a01818; /* 少し濃く */
+        }
+        .bento-action h3 {
+            font-size: 1.5rem;
+            font-weight: 900;
+            margin-bottom: 10px;
+        }
+        
+        /* 統計エリア・ニュース・コラム */
+        .bento-stats { grid-column: span 4; grid-row: span 2; }
+        .bento-news  { grid-column: span 4; grid-row: span 2; }
+        .bento-col   { grid-column: span 4; grid-row: span 2; }
+
+        /* カウンター小窓 */
+        .bento-mini {
+            grid-column: span 6;
+            display: flex;
+            flex-direction: row;
+            align-items: center;
+            gap: 15px;
+        }
+
+        /* --- モバイル対応（1カラムにする） --- */
+        @media (max-width: 768px) {
+            .bento-grid {
+                display: flex;
+                flex-direction: column;
+            }
+            .bento-card {
+                min-height: auto;
+            }
+            /* モバイルでは挨拶エリアを縦並びに */
+            .bento-welcome {
+                flex-direction: column;
+                text-align: center;
+                gap: 10px;
+                padding: 30px;
+            }
+        }
+
         /* 認証コード入力欄（和風） */
         .auth-code-input-container {
             display: flex;
