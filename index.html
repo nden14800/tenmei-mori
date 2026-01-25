@@ -4091,28 +4091,37 @@
             </div>
         </section>
 
-        <!-- ビュー: おみくじ選択 -->
-        <section id="view-draw" class="view-section relative min-h-screen w-full bg-red-50 dark:bg-zinc-900" style="overflow-y: auto !important;">
-            <div class="sticky top-0 z-20 w-full bg-white/90 dark:bg-black/90 backdrop-blur-md border-b border-red-100 dark:border-red-900 p-4 shadow-sm text-center">
-                <h2 class="text-lg md:text-xl font-bold leading-relaxed font-serif text-gray-800 dark:text-gray-200">
-                    背筋を伸ばし、深く呼吸を整えて心を静めます。<br>
-                    占いたい事柄を胸の内で唱えながら、<br class="hidden md:inline">天命の一枚をお選びください。<br>
-                    <span class="text-sm font-normal mt-2 block text-gray-500">※特に悩みがない場合は、『今の私に必要な導きを』と念じて引いてください。</span>
-                </h2>
+        <!-- ビュー: おみくじ選択 (Bento Header版) -->
+        <section id="view-draw" class="view-section relative min-h-screen w-full" style="overflow-y: auto !important;">
+            
+            <!-- 固定ヘッダーカード -->
+            <div class="sticky top-0 z-20 px-4 pt-4">
+                <div class="draw-header-card">
+                    <h2 class="text-xl font-black leading-relaxed font-serif mb-2 text-gray-800 dark:text-gray-100">
+                        <i class="bi bi-stars text-yellow-500"></i> 天命の授与所
+                    </h2>
+                    <p class="text-sm font-medium text-gray-600 dark:text-gray-300 leading-relaxed">
+                        心を鎮め、問いかけを念じながら<br>
+                        最も惹かれる一枚をお選びください。
+                    </p>
+                </div>
             </div>
             
+            <!-- おみくじプール -->
             <div id="omikuji-pool" class="omikuji-pool p-4 md:p-8"></div>
             
+            <!-- 追加ボタン -->
             <div class="fixed bottom-10 left-0 w-full text-center z-50 pointer-events-none">
-                <button onclick="addOmikuji()" class="btn-primary pointer-events-auto shadow-xl transform hover:scale-105 transition">
-                    <i class="bi bi-plus-lg"></i> もっとおみくじを探す
+                <button onclick="addOmikuji()" class="btn-primary pointer-events-auto shadow-2xl transform hover:scale-105 transition py-4 px-8 rounded-full border-2 border-white/20 backdrop-blur-md">
+                    <i class="bi bi-plus-lg"></i> さらに探す
                 </button>
             </div>
         </section>
 
-        <!-- ビュー: おみくじ結果 -->
+        <!-- ビュー: おみくじ結果 (Bento Action Grid版) -->
         <section id="view-result" class="view-section text-center">
             <div id="result-display-area" class="py-10">
+                
                 <!-- 画像化対象エリア -->
                 <div style="display: flex; justify-content: flex-start; overflow-x: auto; -webkit-overflow-scrolling: touch; padding: 0 10px;">
                     <div id="result-capture-container">
@@ -4121,65 +4130,60 @@
                     </div>
                 </div>
 
-                <!-- ▼▼▼ ここに追加：画像には含まれない注釈 ▼▼▼ -->
+                <!-- 注釈 -->
                 <div class="mt-4 text-xs text-gray-500 dark:text-gray-400 leading-relaxed">
-                    おみくじの結果は、必ずしもその内容通りになるとは限りません。<br>
-                    詳細は<button onclick="showView('about'); window.scrollTo(0,0);" class="text-red-600 dark:text-red-400 hover:underline font-bold ml-1">「当サイトについて・利用規約」</button>をご確認ください。
+                    結果は必ずしもその通りになるとは限りません。<br>
+                    詳細は<button onclick="showView('about'); window.scrollTo(0,0);" class="text-red-600 dark:text-red-400 hover:underline font-bold ml-1">利用規約</button>をご確認ください。
                 </div>
-                <!-- ▲▲▲ 追加ここまで ▲▲▲ -->
 
-                <!-- アクションボタンエリア -->
-                <div class="max-w-xl mx-auto mt-8 p-4 themed-card rounded-lg shadow space-y-4">
-                    <p class="font-bold">結果をシェアする</p>
+                <!-- アクションエリア (Bento Grid) -->
+                <div class="max-w-2xl mx-auto mt-8 px-4">
                     
-                    <button onclick="generateResultImage()" class="btn-outline w-full justify-center">
-                        <i class="bi bi-download"></i> 画像を保存する
-                    </button>
-                    
-                    <div id="gen-img-status" class="text-sm themed-text-sub"></div>
-                    <div id="generated-image-container" class="hidden">
-                        <p class="text-green-600 font-bold mb-2">画像の生成完了</p>
-                        <!-- 生成画像 -->
+                    <!-- 生成ステータス表示 -->
+                    <div id="gen-img-status" class="text-sm font-bold text-gray-500 mb-2 h-6"></div>
+                    <div id="generated-image-container" class="hidden mb-6 p-4 bg-gray-100 dark:bg-zinc-800 rounded-xl">
+                        <!-- 生成画像がここに入ります -->
                     </div>
 
-                    <!-- index.html 内の view-result セクションにあるシェアボタンエリア -->
-
-<div class="flex flex-col gap-3 mt-4">
-    <!-- 追加・修正: 全SNS対応の注意書き -->
-    <p class="text-xs text-red-600 dark:text-red-400 font-bold text-center border border-red-200 dark:border-red-900 bg-red-50 dark:bg-red-900/20 p-2 rounded">
-        ※X, Bluesky, Misskey等への投稿時、画像は自動添付されません。<br>
-        ボタンを押すと画像が端末に保存されますので、<br>開いた投稿画面で手動で添付してください。
-    </p>
-
-    <button onclick="shareToX()" class="bg-black text-white py-3 rounded-lg font-bold flex items-center justify-center gap-2 hover:opacity-80">
-        <i class="bi bi-twitter-x"></i> Xでシェア (画像を保存して投稿)
-    </button>
-    <button onclick="shareToFB()" class="bg-blue-600 text-white py-3 rounded-lg font-bold flex items-center justify-center gap-2 hover:opacity-80">
-        <i class="bi bi-facebook"></i> Facebookでシェア
-    </button>
-    <button onclick="shareToLine()" class="bg-green-500 text-white py-3 rounded-lg font-bold flex items-center justify-center gap-2 hover:opacity-80">
-        <i class="bi bi-line"></i> LINEでシェア
-    </button>
-    <!-- Blueskyでシェア (公式ロゴSVG) -->
-    <button onclick="shareToBluesky()" class="bg-blue-500 text-white py-3 rounded-lg font-bold flex items-center justify-center gap-2 hover:opacity-80">
-        <!-- Bluesky Butterfly Icon -->
-        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" viewBox="0 0 600 530">
-            <path d="M135.72 44.03c66.496 49.921 138.02 151.14 164.28 205.46 26.262-54.316 97.782-155.54 164.28-205.46 47.98-36.021 125.72-63.892 125.72 24.317 0 59.31-21.66 205.49-51.942 258.85-39.826 70.198-111.2 30.083-161.01-12.506 39.998 52.346 42.422 133.55-23.731 133.55-58.261 0-77.921-27.995-77.31-79.626 2.593-219.06-189.28-169.87-192.31-169.87-2.917 0-3.666-51.059-3.666-87.876 0-87.653 76.789-58.86 125.69-22.349z"/>
-        </svg>
-        Blueskyでシェア
-    </button>
-    <!-- Misskey.ioでシェア (公式ロゴ風SVG) -->
-    <button onclick="shareToMisskey()" class="bg-lime-600 text-white py-3 rounded-lg font-bold flex items-center justify-center gap-2 hover:opacity-80">
-        <!-- Misskey Icon -->
-        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" viewBox="0 0 16 16">
-            <path d="M8 0a8 8 0 1 0 0 16A8 8 0 0 0 8 0zm3.669 4.382c.074.225.137.458.19.697a4.67 4.67 0 0 1 .066.727c0 .193-.01.383-.028.57a3.86 3.86 0 0 1-.09.53 4.2 4.2 0 0 1-.72 1.621 3.96 3.96 0 0 1-.397.47c-.126.13-.263.25-.408.36-.146.113-.301.214-.465.304-.326.179-.675.316-1.038.406-.364.09-.74.136-1.119.136a4.7 4.7 0 0 1-1.12-.136 4.3 4.3 0 0 1-1.037-.406 4.1 4.1 0 0 1-.465-.304 3.9 3.9 0 0 1-.409-.36 4 4 0 0 1-.396-.47 4.2 4.2 0 0 1-.72-1.62 3.86 3.86 0 0 1-.09-.531 4.7 4.7 0 0 1-.028-.57c0-.246.022-.49.065-.727.054-.24.117-.472.19-.697A8 8 0 0 0 8 4.382z"/>
-        </svg>
-        Misskey.ioでシェア
-    </button>
-</div>
-                    <div class="mt-4">
-                        <button onclick="showView('home')" class="text-sm underline text-gray-500">ホームに戻る</button>
+                    <!-- 保存・戻るアクション -->
+                    <div class="grid grid-cols-2 gap-4 mb-6">
+                        <button onclick="generateResultImage()" class="action-card-btn action-primary col-span-2">
+                            <i class="bi bi-download"></i>
+                            <span>画像を保存する</span>
+                        </button>
+                        <button onclick="showView('home')" class="action-card-btn">
+                            <i class="bi bi-house-door"></i>
+                            <span>ホームへ</span>
+                        </button>
+                        <button onclick="startOmikuji()" class="action-card-btn">
+                            <i class="bi bi-arrow-counterclockwise"></i>
+                            <span>もう一度引く</span>
+                        </button>
                     </div>
+
+                    <!-- SNSシェアグリッド -->
+                    <div class="text-left mb-2">
+                        <p class="text-xs font-bold text-gray-400 ml-2">SNSでシェア（画像は手動添付）</p>
+                    </div>
+                    <div class="result-action-grid mt-0">
+                        <button onclick="shareToX()" class="action-card-btn btn-x">
+                            <i class="bi bi-twitter-x"></i>
+                            <span>X (Twitter)</span>
+                        </button>
+                        <button onclick="shareToLine()" class="action-card-btn btn-line">
+                            <i class="bi bi-line"></i>
+                            <span>LINE</span>
+                        </button>
+                        <button onclick="shareToBluesky()" class="action-card-btn btn-bsky">
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 600 530"><path d="M135.72 44.03c66.496 49.921 138.02 151.14 164.28 205.46 26.262-54.316 97.782-155.54 164.28-205.46 47.98-36.021 125.72-63.892 125.72 24.317 0 59.31-21.66 205.49-51.942 258.85-39.826 70.198-111.2 30.083-161.01-12.506 39.998 52.346 42.422 133.55-23.731 133.55-58.261 0-77.921-27.995-77.31-79.626 2.593-219.06-189.28-169.87-192.31-169.87-2.917 0-3.666-51.059-3.666-87.876 0-87.653 76.789-58.86 125.69-22.349z"/></svg>
+                            <span>Bluesky</span>
+                        </button>
+                        <button onclick="shareToMisskey()" class="action-card-btn btn-misskey">
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 16 16"><path d="M8 0a8 8 0 1 0 0 16A8 8 0 0 0 8 0zm3.669 4.382c.074.225.137.458.19.697a4.67 4.67 0 0 1 .066.727c0 .193-.01.383-.028.57a3.86 3.86 0 0 1-.09.53 4.2 4.2 0 0 1-.72 1.621 3.96 3.96 0 0 1-.397.47c-.126.13-.263.25-.408.36-.146.113-.301.214-.465.304-.326.179-.675.316-1.038.406-.364.09-.74.136-1.119.136a4.7 4.7 0 0 1-1.12-.136 4.3 4.3 0 0 1-1.037-.406 4.1 4.1 0 0 1-.465-.304 3.9 3.9 0 0 1-.409-.36 4 4 0 0 1-.396-.47 4.2 4.2 0 0 1-.72-1.62 3.86 3.86 0 0 1-.09-.531 4.7 4.7 0 0 1-.028-.57c0-.246.022-.49.065-.727.054-.24.117-.472.19-.697A8 8 0 0 0 8 4.382z"/></svg>
+                            <span>Misskey.io</span>
+                        </button>
+                    </div>
+                    
                 </div>
             </div>
         </section>
