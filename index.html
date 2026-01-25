@@ -3667,89 +3667,110 @@
         </section>
 
         <!-- ビュー: 御守授与所 -->
-        <section id="view-omamori" class="view-section max-w-4xl mx-auto text-center">
-            <div class="mb-8">
-                <h2 class="text-3xl font-black mb-2 tracking-widest text-red-700 dark:text-red-500" style="font-family: 'Zen Old Mincho'">デジタル御守授与所</h2>
-                <p class="text-sm themed-text-sub">
-                    あなたの願いに合わせて、色と文様を選定し、<br>
-                    世界に一つの「デジタル御守」を授与いたします。
-                </p>
+<section id="view-omamori" class="view-section max-w-4xl mx-auto relative pb-20">
+    <div class="text-center mb-8">
+        <h2 class="text-3xl font-black mb-2 tracking-widest text-red-700 dark:text-red-500" style="font-family: 'Zen Old Mincho'">デジタル御守授与所</h2>
+        <p class="text-xs font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest">DIGITAL AMULET</p>
+        <p class="text-sm themed-text-sub mt-4 leading-relaxed">
+            あなたの願いに合わせて色と文様を選定し、<br>
+            世界に一つの「デジタル御守」を授与いたします。
+        </p>
+    </div>
+
+    <!-- ステップ1: 願い事選択 -->
+    <div id="omamori-step-1">
+        <div class="flex items-center justify-center gap-2 mb-6">
+            <div class="h-px w-8 bg-gray-300 dark:bg-gray-700"></div>
+            <span class="text-sm font-bold text-gray-500">願い事をお選びください</span>
+            <div class="h-px w-8 bg-gray-300 dark:bg-gray-700"></div>
+        </div>
+
+        <div class="omamori-grid-container">
+            <!-- 交通安全 -->
+            <div class="wish-card wish-safety" onclick="OmamoriSystem.startPrayer('safety')">
+                <div class="wish-icon-box"><i class="bi bi-car-front-fill"></i></div>
+                <div class="wish-title">交通安全</div>
+                <div class="wish-desc">道中の無事を祈る</div>
+            </div>
+            <!-- 健康長寿 -->
+            <div class="wish-card wish-health" onclick="OmamoriSystem.startPrayer('health')">
+                <div class="wish-icon-box"><i class="bi bi-bandaid-fill"></i></div>
+                <div class="wish-title">健康長寿</div>
+                <div class="wish-desc">健やかな毎日を</div>
+            </div>
+            <!-- 良縁成就 -->
+            <div class="wish-card wish-love" onclick="OmamoriSystem.startPrayer('love')">
+                <div class="wish-icon-box"><i class="bi bi-heart-fill"></i></div>
+                <div class="wish-title">良縁成就</div>
+                <div class="wish-desc">素敵な出会いを</div>
+            </div>
+            <!-- 金運上昇 -->
+            <div class="wish-card wish-money" onclick="OmamoriSystem.startPrayer('money')">
+                <div class="wish-icon-box"><i class="bi bi-currency-yen"></i></div>
+                <div class="wish-title">金運上昇</div>
+                <div class="wish-desc">豊かさを招く</div>
+            </div>
+            <!-- 学業成就 -->
+            <div class="wish-card wish-study" onclick="OmamoriSystem.startPrayer('study')">
+                <div class="wish-icon-box"><i class="bi bi-pen-fill"></i></div>
+                <div class="wish-title">学業成就</div>
+                <div class="wish-desc">合格・スキル向上</div>
+            </div>
+            <!-- 必勝祈願 -->
+            <div class="wish-card wish-victory" onclick="OmamoriSystem.startPrayer('victory')">
+                <div class="wish-icon-box"><i class="bi bi-trophy-fill"></i></div>
+                <div class="wish-title">必勝祈願</div>
+                <div class="wish-desc">勝負に打ち勝つ</div>
+            </div>
+            <!-- 厄除け -->
+            <div class="wish-card wish-protect" onclick="OmamoriSystem.startPrayer('protect')">
+                <div class="wish-icon-box"><i class="bi bi-shield-lock-fill"></i></div>
+                <div class="wish-title">厄除け</div>
+                <div class="wish-desc">災いを遠ざける</div>
+            </div>
+            <!-- 大願成就 -->
+            <div class="wish-card wish-success" onclick="OmamoriSystem.startPrayer('success')">
+                <div class="wish-icon-box"><i class="bi bi-stars"></i></div>
+                <div class="wish-title">大願成就</div>
+                <div class="wish-desc">大きな夢を叶える</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ステップ2: 祈祷中アニメーション -->
+    <div id="omamori-step-2" class="hidden h-96 flex flex-col items-center justify-center">
+        <div class="relative">
+            <div class="prayer-light mb-8"></div>
+            <div class="absolute top-0 left-0 w-full h-full animate-ping opacity-20 bg-yellow-200 rounded-full"></div>
+        </div>
+        <p class="text-2xl font-black animate-pulse tracking-widest mb-2" style="font-family: 'Zen Old Mincho'">祈祷中</p>
+        <p class="text-sm themed-text-sub">願いを込めて織り上げております...</p>
+    </div>
+
+    <!-- ステップ3: 授与（結果） -->
+    <div id="omamori-step-3" class="hidden">
+        <p class="mb-6 font-bold text-lg border-b border-red-500 inline-block px-8 pb-1">授与</p>
+        
+        <!-- 授与ステージ（画像化対象） -->
+        <div class="omamori-stage" id="omamori-capture-area">
+            <div id="omamori-display"></div>
+        </div>
+
+        <div class="max-w-md mx-auto space-y-4">
+            <div class="bg-gray-50 dark:bg-zinc-800 p-4 rounded text-sm text-gray-600 dark:text-gray-400 text-left">
+                <i class="bi bi-info-circle mr-1"></i>
+                この御守は画像として保存できます。スマートフォンの壁紙（待ち受け）に設定し、日々の守り神としてお持ち歩きください。
             </div>
 
-            <!-- ステップ1: 願い事選択 -->
-            <div id="omamori-step-1">
-                <h3 class="text-lg font-bold mb-4 border-b border-gray-300 dark:border-gray-600 pb-2 inline-block px-4">
-                    願い事をお選びください
-                </h3>
-                <div class="wish-grid">
-                    <button class="wish-btn" onclick="OmamoriSystem.startPrayer('safety')">
-                        <div class="wish-icon text-green-600"><i class="bi bi-car-front-fill"></i></div>
-                        <div class="wish-name">交通安全</div>
-                    </button>
-                    <button class="wish-btn" onclick="OmamoriSystem.startPrayer('health')">
-                        <div class="wish-icon text-emerald-500"><i class="bi bi-bandaid-fill"></i></div>
-                        <div class="wish-name">健康長寿</div>
-                    </button>
-                    <button class="wish-btn" onclick="OmamoriSystem.startPrayer('love')">
-                        <div class="wish-icon text-pink-500"><i class="bi bi-heart-fill"></i></div>
-                        <div class="wish-name">良縁成就</div>
-                    </button>
-                    <button class="wish-btn" onclick="OmamoriSystem.startPrayer('money')">
-                        <div class="wish-icon text-yellow-500"><i class="bi bi-currency-yen"></i></div>
-                        <div class="wish-name">金運上昇</div>
-                    </button>
-                    <button class="wish-btn" onclick="OmamoriSystem.startPrayer('study')">
-                        <div class="wish-icon text-blue-500"><i class="bi bi-pen-fill"></i></div>
-                        <div class="wish-name">学業成就</div>
-                    </button>
-                    <button class="wish-btn" onclick="OmamoriSystem.startPrayer('victory')">
-                        <div class="wish-icon text-red-600"><i class="bi bi-trophy-fill"></i></div>
-                        <div class="wish-name">必勝祈願</div>
-                    </button>
-                    <button class="wish-btn" onclick="OmamoriSystem.startPrayer('protect')">
-                        <div class="wish-icon text-gray-700 dark:text-gray-300"><i class="bi bi-shield-lock-fill"></i></div>
-                        <div class="wish-name">厄除け</div>
-                    </button>
-                    <button class="wish-btn" onclick="OmamoriSystem.startPrayer('success')">
-                        <div class="wish-icon text-purple-600"><i class="bi bi-briefcase-fill"></i></div>
-                        <div class="wish-name">大願成就</div>
-                    </button>
-                </div>
-            </div>
-
-            <!-- ステップ2: 祈祷中アニメーション -->
-            <div id="omamori-step-2" class="hidden relative h-64 flex flex-col items-center justify-center">
-                <div class="prayer-light mb-4"></div>
-                <p class="text-xl font-bold animate-pulse">祈祷中...</p>
-                <p class="text-sm mt-2 themed-text-sub">願いを込めて織り上げております</p>
-            </div>
-
-            <!-- ステップ3: 授与（結果） -->
-            <div id="omamori-step-3" class="hidden">
-                <p class="mb-6 font-bold text-lg">── 授与 ──</p>
-                
-                <!-- 画像化対象エリア -->
-                <div class="flex justify-center mb-8 relative p-4" id="omamori-capture-area">
-                    <!-- 背景エフェクト（画像化には含めないが雰囲気作り用） -->
-                    <div class="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-64 h-64 bg-yellow-100/50 dark:bg-yellow-900/20 rounded-full blur-3xl -z-10"></div>
-                    
-                    <!-- 生成される御守 -->
-                    <div id="omamori-display"></div>
-                </div>
-
-                <div class="max-w-md mx-auto space-y-3">
-                    <p class="text-sm mb-4">
-                        この御守は、あなたの端末に保存して<br>待ち受け画像などとしてお持ち歩きください。
-                    </p>
-                    <button onclick="OmamoriSystem.saveImage()" class="btn-primary w-full justify-center">
-                        <i class="bi bi-download"></i> 御守を授かる（保存）
-                    </button>
-                    <button onclick="OmamoriSystem.reset()" class="btn-outline w-full justify-center">
-    <i class="bi bi-arrow-counterclockwise"></i> 別の願いを選ぶ
-</button>
-                </div>
-            </div>
-        </section>
+            <button onclick="OmamoriSystem.saveImage()" class="btn-primary w-full justify-center py-4 text-lg shadow-lg">
+                <i class="bi bi-download"></i> 御守を授かる（保存）
+            </button>
+            <button onclick="OmamoriSystem.reset()" class="px-6 py-3 rounded-full border border-gray-300 hover:bg-gray-100 dark:hover:bg-zinc-800 transition w-full">
+                <i class="bi bi-arrow-counterclockwise"></i> 別の願いを選ぶ
+            </button>
+        </div>
+    </div>
+</section>
         
 
    <section id="view-stats" class="view-section max-w-3xl mx-auto relative">
