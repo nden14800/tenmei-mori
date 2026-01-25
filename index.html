@@ -1149,116 +1149,118 @@
             transform: translateY(0);
         }
 
-        /* --- ランキングカード（Bentoスタイル・完全版） --- */
-        .rank-card-modern {
-            background-color: var(--card-bg);
+        /* --- 12星座占い 新カードスタイル (修正・完全版) --- */
+        
+        /* カード全体（白背景・シンプル化） */
+        .zodiac-card-box {
+            background-color: var(--card-bg); /* 基本は白 */
             border: 1px solid var(--card-border);
-            border-radius: 20px;
-            padding: 0; /* 内部でパディングを制御するため0に */
-            margin-bottom: 24px;
+            border-radius: 16px;
+            margin-bottom: 20px;
             position: relative;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.03);
-            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
             overflow: hidden;
+            transition: transform 0.2s;
             display: flex;
             flex-direction: column;
         }
         
-        .rank-card-modern:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 10px 25px rgba(0,0,0,0.08);
+        /* 4位以下のカード（少し控えめ） */
+        .zodiac-card-box.rank-normal {
+            border-left: 4px solid var(--card-border);
         }
 
+        /* TOP3の特別装飾（枠線のみ・背景は白のまま） */
+        .zodiac-card-box.rank-top {
+            background-color: #ffffff; /* 強制的に白 */
+            box-shadow: 0 8px 20px rgba(0,0,0,0.1);
+        }
+        .dark .zodiac-card-box.rank-top { background-color: #2c2c2c; }
+
+        /* 1位: 金枠 */
+        .zodiac-card-box.rank-1 { border: 2px solid #d4af37; }
+        /* 2位: 銀枠 */
+        .zodiac-card-box.rank-2 { border: 2px solid #a0a0a0; }
+        /* 3位: 銅枠 */
+        .zodiac-card-box.rank-3 { border: 2px solid #b87333; }
+
         /* コンテンツエリア（上部） */
-        .rank-card-content {
-            padding: 24px;
+        .zodiac-card-body {
+            padding: 20px;
             display: flex;
             flex-direction: column;
             gap: 20px;
         }
         
-        /* PC画面では横並び */
+        /* PC/タブレット以上で横並び */
         @media (min-width: 768px) {
-            .rank-card-content {
+            .zodiac-card-body {
                 flex-direction: row;
                 align-items: flex-start;
             }
         }
 
-        /* ランクに応じた装飾 */
-        .rank-card-modern.rank-1 { border: 2px solid #d4af37; background: linear-gradient(to bottom, #fffcf5, #fff); }
-        .rank-card-modern.rank-2 { border: 2px solid #a0a0a0; }
-        .rank-card-modern.rank-3 { border: 2px solid #b87333; }
-        .dark .rank-card-modern.rank-1 { background: linear-gradient(to bottom, #2a2200, #1a1a1a); border-color: #ffd700; }
-
-        /* ランクバッジ */
-        .modern-rank-badge {
-            width: 60px; height: 60px;
-            border-radius: 16px;
-            display: flex; align-items: center; justify-content: center;
-            font-weight: 900; font-size: 1.8rem;
-            color: white;
-            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
-            flex-shrink: 0;
-        }
-        .bg-rank-1 { background: linear-gradient(135deg, #ffd700, #fdb931); }
-        .bg-rank-2 { background: linear-gradient(135deg, #e0e0e0, #bdbdbd); color: #555; }
-        .bg-rank-3 { background: linear-gradient(135deg, #cd7f32, #a0522d); }
-        .bg-rank-other { background: var(--card-border); color: var(--text-sub); width: 50px; height: 50px; font-size: 1.4rem; }
-
-        /* カレンダーエリア（下部・横幅いっぱい） */
-        .modern-calendar-area {
+        /* カレンダーエリア（下部） */
+        .zodiac-calendar-area {
             background-color: rgba(128,128,128,0.03);
             border-top: 1px dashed var(--card-border);
-            padding: 15px 24px;
+            padding: 10px 20px;
         }
-        
-        .modern-cal-grid {
+        .zodiac-cal-grid {
             display: grid;
-            grid-template-columns: repeat(7, 1fr); /* 7曜日に合わせて7列 */
-            gap: 4px;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 2px;
         }
-        
-        /* カレンダーの1日セル（アイコンが入るように高さを確保） */
-        .modern-cal-cell {
+        .zodiac-cal-cell {
             background: var(--bg-color);
             border: 1px solid var(--card-border);
-            border-radius: 8px;
-            min-height: 45px;
+            border-radius: 4px;
+            padding: 4px 0;
+            text-align: center;
             display: flex;
             flex-direction: column;
             align-items: center;
-            justify-content: flex-start;
-            padding: 4px 2px;
+            min-height: 40px;
         }
-        
-        .modern-cal-date {
-            font-size: 0.65rem;
-            font-weight: bold;
-            color: var(--text-sub);
-            margin-bottom: 2px;
-            line-height: 1;
-        }
-        
-        .modern-cal-icons {
-            display: flex;
-            gap: 1px;
-            flex-wrap: wrap;
-            justify-content: center;
-            font-size: 0.6rem;
-            line-height: 1;
-        }
+        .zodiac-cal-date { font-size: 10px; font-weight: bold; color: var(--text-sub); }
+        .zodiac-cal-icons { font-size: 9px; line-height: 1; display: flex; gap: 1px; }
 
-        /* 判定結果エリア内の調整 */
-        #my-rank-result .rank-card-modern {
-            margin-bottom: 0;
+        /* ランクバッジ */
+        .zodiac-rank-badge {
+            width: 50px; height: 50px;
+            border-radius: 12px;
+            display: flex; align-items: center; justify-content: center;
+            font-weight: 900; font-size: 1.5rem;
+            color: white;
+            flex-shrink: 0;
+        }
+        /* バッジの色 */
+        .badge-gold   { background: linear-gradient(135deg, #ffd700, #fdb931); }
+        .badge-silver { background: linear-gradient(135deg, #e0e0e0, #bdbdbd); color: #555; }
+        .badge-bronze { background: linear-gradient(135deg, #cd7f32, #a0522d); }
+        .badge-normal { background: var(--card-border); color: var(--text-sub); width: 40px; height: 40px; font-size: 1.2rem; }
+
+        /* お気に入りボタン（位置修正） */
+        .zodiac-fav-btn {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            font-size: 1.5rem;
+            background: none;
+            border: none;
+            cursor: pointer;
+            z-index: 10;
+            padding: 5px;
+        }
+        .zodiac-fav-btn:hover { transform: scale(1.1); }
+        
+        /* 判定結果エリアの微調整 */
+        #my-rank-result .zodiac-card-box {
             box-shadow: none;
-            border: 1px solid var(--card-border); /* 親の枠線と馴染ませる */
-        }
-        #my-rank-result .rank-card-modern.rank-1 {
-            border: 2px solid #d4af37; /* 1位だけは特別 */
+            margin-bottom: 0;
         }
 
+        
         /* 認証コード入力欄（和風） */
         .auth-code-input-container {
             display: flex;
