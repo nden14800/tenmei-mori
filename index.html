@@ -11,37 +11,6 @@
       tailwind.config = {
         darkMode: 'class',
       }
-        <!-- ▼▼▼ Cloudflare Turnstile 設定 (ここから) ▼▼▼ -->
-<script>
-    // グローバル変数を定義 (これがnullのままだとエラーになります)
-    window.turnstileLoginId = null;
-    window.turnstileRegisterId = null;
-    
-    // サイトキー (★ここにCloudflareのSite Keyを入力してください)
-    const CF_SITE_KEY = "0x4AAAAAACP5ArwUHoQ6FdSc"; 
-
-    // Cloudflareの準備ができたら自動的に呼ばれる関数
-    window.onloadTurnstileCallback = function() {
-        console.log("Turnstile API Loaded."); // 確認用ログ
-
-        // ログイン用ウィジェットの生成
-        const loginEl = document.getElementById('turnstile-login');
-        if (loginEl) {
-            window.turnstileLoginId = turnstile.render('#turnstile-login', {
-                sitekey: CF_SITE_KEY,
-                theme: 'auto',
-            });
-        }
-
-        // 登録用ウィジェットの生成
-        const regEl = document.getElementById('turnstile-register');
-        if (regEl) {
-            window.turnstileRegisterId = turnstile.render('#turnstile-register', {
-                sitekey: CF_SITE_KEY,
-                theme: 'auto',
-            });
-        }
-    };
     </script>
    <!-- QRCode.js -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
@@ -49,10 +18,6 @@
     <!-- jsPDF & html2canvas -->
     <!-- 修正: jspdfを削除し、html2canvasのみ残す -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
-
-    <!-- APIスクリプト本体 (必ずコールバック定義の後に置く) -->
-    <script src="https://challenges.cloudflare.com/turnstile/v0/api.js?onload=onloadTurnstileCallback" async defer></script>
-    <!-- ▲▲▲ Cloudflare Turnstile 設定 (ここまで) ▲▲▲ -->
     
     <!-- フォント -->
     <link href="https://fonts.googleapis.com/css2?family=Shippori+Mincho:wght@400;500;600;800&family=Zen+Old+Mincho:wght@400;700;900&display=swap" rel="stylesheet">
