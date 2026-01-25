@@ -2614,11 +2614,11 @@
         </section>
 
         
-<!-- ビュー: 12星座×血液型占い (Modern UI) -->
+<!-- ビュー: 12星座×血液型占い (修正版) -->
         <section id="view-zodiac" class="view-section">
             <div class="max-w-5xl mx-auto">
                 
-                <!-- ヘッダーカード -->
+                <!-- ヘッダー -->
                 <div class="bento-card mb-8 flex flex-col md:flex-row items-center justify-between gap-4 bg-gradient-to-r from-gray-50 to-white dark:from-zinc-900 dark:to-black">
                     <div>
                         <h2 class="text-2xl md:text-3xl font-black mb-2 flex items-center gap-3">
@@ -2633,26 +2633,24 @@
                     </div>
                 </div>
         
-                <!-- 入力フォームカード -->
+                <!-- 判定フォーム -->
                 <div class="bento-card mb-10 border-l-4 border-l-red-500">
-                    <h3 class="font-bold text-lg mb-4 flex items-center gap-2">
-                        <i class="bi bi-search"></i> あなたの順位をチェック
-                    </h3>
+                    <h3 class="font-bold text-lg mb-4"><i class="bi bi-search"></i> あなたの順位をチェック</h3>
                     <div class="zodiac-input-grid">
                         <div style="grid-column: span 5;">
                             <select id="user-sign" class="modern-select">
-                                <option value="aries">♈ 牡羊座 (3/21-4/19)</option>
-                                <option value="taurus">♉ 牡牛座 (4/20-5/20)</option>
-                                <option value="gemini">♊ 双子座 (5/21-6/21)</option>
-                                <option value="cancer">♋ 蟹座 (6/22-7/22)</option>
-                                <option value="leo">♌ 獅子座 (7/23-8/22)</option>
-                                <option value="virgo">♍ 乙女座 (8/23-9/22)</option>
-                                <option value="libra">♎ 天秤座 (9/23-10/23)</option>
-                                <option value="scorpio">♏ 蠍座 (10/24-11/22)</option>
-                                <option value="sagittarius">♐ 射手座 (11/23-12/21)</option>
-                                <option value="capricorn">♑ 山羊座 (12/22-1/19)</option>
-                                <option value="aquarius">♒ 水瓶座 (1/20-2/18)</option>
-                                <option value="pisces">♓ 魚座 (2/19-3/20)</option>
+                                <option value="aries">♈ 牡羊座</option>
+                                <option value="taurus">♉ 牡牛座</option>
+                                <option value="gemini">♊ 双子座</option>
+                                <option value="cancer">♋ 蟹座</option>
+                                <option value="leo">♌ 獅子座</option>
+                                <option value="virgo">♍ 乙女座</option>
+                                <option value="libra">♎ 天秤座</option>
+                                <option value="scorpio">♏ 蠍座</option>
+                                <option value="sagittarius">♐ 射手座</option>
+                                <option value="capricorn">♑ 山羊座</option>
+                                <option value="aquarius">♒ 水瓶座</option>
+                                <option value="pisces">♓ 魚座</option>
                             </select>
                         </div>
                         <div style="grid-column: span 4;">
@@ -2664,57 +2662,47 @@
                             </select>
                         </div>
                         <div style="grid-column: span 3;">
-                            <button onclick="findMyRank()" class="modern-search-btn w-full h-full py-3 md:py-0">
-                                判定する
-                            </button>
+                            <button onclick="findMyRank()" class="modern-search-btn w-full h-full py-3 md:py-0">判定する</button>
                         </div>
                     </div>
-                    <!-- 自分検索結果表示エリア -->
-                    <div id="my-rank-result" class="hidden pt-6 border-t border-gray-100 dark:border-gray-800 animation-fade-in"></div>
+                    <!-- 結果表示エリア -->
+                    <div id="my-rank-result" class="hidden pt-6 border-t border-gray-100 dark:border-gray-800"></div>
                 </div>
         
-                <!-- お気に入りセクション -->
+                <!-- お気に入り -->
                 <div id="favorites-section" class="hidden mb-10">
                     <div class="flex items-center justify-between mb-4 px-2">
-                        <h3 class="text-lg font-bold flex items-center gap-2">
-                            <i class="bi bi-star-fill text-yellow-400"></i> お気に入り
-                        </h3>
-                        <span id="fav-status-badge" class="text-[10px] bg-gray-100 dark:bg-zinc-800 px-2 py-1 rounded text-gray-500"></span>
+                        <h3 class="text-lg font-bold text-yellow-500"><i class="bi bi-star-fill"></i> お気に入り</h3>
+                        <span id="fav-status-badge" class="text-[10px] bg-gray-100 dark:bg-zinc-800 px-2 py-1 rounded"></span>
                     </div>
                     <div id="favorites-list" class="space-y-4"></div>
                 </div>
         
-                <!-- ランキングリスト -->
-                <div class="mb-4 px-2 flex justify-between items-end">
-                    <h3 class="font-bold text-xl">全48通りの順位</h3>
-                </div>
-
-                <div id="ranking-list" class="space-y-4"></div>
+                <!-- 全ランキングリスト -->
+                <h3 class="font-bold text-xl mb-4 px-2">本日の順位（全48通り）</h3>
                 
-                <div class="text-center mt-8 mb-12">
-                    <button onclick="showFullRanking()" class="group inline-flex items-center gap-2 text-sm font-bold text-gray-500 hover:text-red-500 transition px-6 py-3 rounded-full bg-gray-100 dark:bg-zinc-800 hover:bg-red-50 dark:hover:bg-red-900/20">
-                        <span id="show-ranking-text">4位以下をすべて見る</span>
-                        <i class="bi bi-chevron-down group-hover:translate-y-1 transition-transform"></i>
+                <!-- TOP3表示用 -->
+                <div id="ranking-list" class="space-y-6"></div>
+                
+                <!-- 4位以下を見るボタン -->
+                <div class="text-center mt-10 mb-6">
+                    <button onclick="showFullRanking()" class="inline-flex items-center gap-2 text-sm font-bold px-8 py-3 rounded-full bg-gray-200 dark:bg-zinc-700 hover:bg-red-500 hover:text-white transition">
+                        <span id="show-ranking-text">4位以下を見る</span>
+                        <i class="bi bi-chevron-down"></i>
                     </button>
                 </div>
-                <div id="full-ranking-list" class="space-y-4 mt-6 hidden"></div>
 
-                <!-- ログインモーダル (既存のまま) -->
+                <!-- 4位以下リスト (初期は hidden) -->
+                <div id="full-ranking-list" class="hidden space-y-4"></div>
+
+                <!-- ログインモーダル -->
                 <div id="zodiac-login-modal" class="fixed top-0 left-0 w-full h-full bg-black/60 z-[2000] hidden items-center justify-center backdrop-blur-sm" onclick="closeZodiacModal(event)">
                     <div class="themed-card p-8 rounded-xl shadow-2xl max-w-sm w-full text-center border border-gray-200 dark:border-gray-700 relative" onclick="event.stopPropagation()">
-                        <button onclick="closeZodiacModal(null)" class="absolute top-4 right-4 text-gray-400 hover:text-red-500 transition">
-                            <i class="bi bi-x-lg text-lg"></i>
-                        </button>
-                        <div class="mb-4 text-yellow-400 text-5xl drop-shadow-md">
-                            <i class="bi bi-star-fill"></i>
-                        </div>
+                        <button onclick="closeZodiacModal(null)" class="absolute top-4 right-4 text-gray-400 hover:text-red-500"><i class="bi bi-x-lg text-lg"></i></button>
+                        <div class="mb-4 text-yellow-400 text-5xl"><i class="bi bi-star-fill"></i></div>
                         <h3 class="text-xl font-bold mb-2">会員限定機能</h3>
-                        <p class="text-sm themed-text-sub mb-6 leading-relaxed">
-                            お気に入り機能を利用するには<br>会員ログインが必要です。
-                        </p>
-                        <button onclick="showView('auth'); closeZodiacModal(null);" class="btn-primary w-full justify-center py-3 shadow-lg">
-                            ログイン / 登録
-                        </button>
+                        <p class="text-sm themed-text-sub mb-6">お気に入りは会員限定です。</p>
+                        <button onclick="showView('auth'); closeZodiacModal(null);" class="btn-primary w-full justify-center py-3">ログイン / 登録</button>
                     </div>
                 </div>
             </div>
