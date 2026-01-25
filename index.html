@@ -9618,7 +9618,7 @@ async function logout() {
     }
 
     // ==========================================
-    //  モダンカード生成ロジック (Bento UI対応)
+    //  モダンカード生成ロジック (Bento UI対応・修正版)
     // ==========================================
     function createCardHTML(data) {
         const isFav = favoriteList.some(f => f.sign === data.sign.id && f.blood === data.blood);
@@ -9638,14 +9638,16 @@ async function logout() {
 
         return `
             <div class="rank-card-modern ${rankClass}">
-                <!-- お気に入りボタン -->
-                <button class="absolute top-4 right-4 text-2xl transition-transform hover:scale-110 ${isFav ? 'text-yellow-400' : 'text-gray-200 dark:text-zinc-700 hover:text-yellow-400'}" 
-                        onclick="toggleFavorite('${data.sign.id}', '${data.blood}')">
-                    <i class="bi bi-star${isFav ? '-fill' : ''}"></i>
-                </button>
-
-                <div class="flex flex-col md:flex-row gap-6">
+                
+                <div class="flex flex-col md:flex-row gap-6 relative">
                     
+                    <!-- お気に入りボタン (修正: カード内の右上に配置を微調整) -->
+                    <button class="absolute top-0 right-0 p-2 text-2xl transition-transform hover:scale-110 z-10 ${isFav ? 'text-yellow-400' : 'text-gray-300 dark:text-zinc-600 hover:text-yellow-400'}" 
+                            onclick="toggleFavorite('${data.sign.id}', '${data.blood}')"
+                            title="お気に入りに追加/解除">
+                        <i class="bi bi-star${isFav ? '-fill' : ''}"></i>
+                    </button>
+
                     <!-- 左: ランクと基本情報 -->
                     <div class="flex flex-row md:flex-col items-center md:items-start gap-4 md:w-32 flex-shrink-0 border-b md:border-b-0 md:border-r border-gray-100 dark:border-gray-800 pb-4 md:pb-0 md:pr-4">
                         <div class="rank-badge-modern flex-shrink-0">${data.rank}</div>
@@ -9661,8 +9663,8 @@ async function logout() {
                     </div>
 
                     <!-- 中央: 詳細テキスト -->
-                    <div class="flex-1 min-w-0">
-                        <div class="flex flex-wrap items-center gap-4 text-xs font-bold text-gray-500 mb-3">
+                    <div class="flex-1 min-w-0 pr-8"> <!-- pr-8で星ボタンとの被りを防ぐ -->
+                        <div class="flex flex-wrap items-center gap-2 text-xs font-bold text-gray-500 mb-3">
                             <span class="bg-yellow-50 dark:bg-yellow-900/20 text-yellow-700 dark:text-yellow-300 px-2 py-1 rounded">
                                 <i class="bi bi-hash"></i> ラッキーNo. ${data.luckyNum}
                             </span>
@@ -9684,7 +9686,7 @@ async function logout() {
                     <!-- 右: パラメータとカレンダー -->
                     <div class="md:w-64 flex-shrink-0 flex flex-col justify-between gap-4">
                         <!-- パラメータ -->
-                        <div class="space-y-3">
+                        <div class="space-y-3 pt-6 md:pt-0"> <!-- スマホ時は少し下げる -->
                             <div>
                                 <div class="flex justify-between text-xs font-bold mb-1">
                                     <span class="flex items-center gap-1"><i class="bi bi-heart-fill text-pink-500"></i> 恋愛</span>
