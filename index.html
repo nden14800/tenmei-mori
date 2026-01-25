@@ -14038,33 +14038,30 @@ window.onloadTurnstileCallback = function() {
     });
 };
 
-// 4. 認証コード送信 (修正版)
+// 4. 認証コード送信 (全てのCAPTCHA/Turnstileを完全に除去した最新版)
 async function initiateAuth(mode) {
+    // 入力要素の取得
     const emailInputId = (mode === 'login') ? 'login-email' : 'reg-email';
-    const email = document.getElementById(emailInputId).value.trim().toLowerCase();
-    const username = document.getElementById('reg-username').value;
-    const pass = document.getElementById(mode === 'login' ? 'login-password' : 'reg-password').value;
+    const emailEl = document.getElementById(emailInputId);
+    const usernameEl = document.getElementById('reg-username');
+    const passEl = document.getElementById(mode === 'login' ? 'login-password' : 'reg-password');
 
+    // 要素が存在しない場合の安全策
+    if (!emailEl || !passEl) return; 
+
+    const email = emailEl.value.trim().toLowerCase();
+    const pass = passEl.value;
+    const username = usernameEl ? usernameEl.value : "";
+
+    // 基本入力チェック
     if(!email || !pass) return alert("メールアドレスとパスワードを入力してください");
     if(mode === 'register' && !username) return alert("ユーザー名を入力してください");
 
-    // ▼▼▼ 修正: モードに応じたウィジェットIDを使ってトークンを取得 ▼▼▼
-    let token;
-    try {
-        const widgetId = (mode === 'login') ? turnstileLoginId : turnstileRegisterId;
-        token = turnstile.getResponse(widgetId);
-    } catch(e) {
-        console.error(e);
-        return alert("セキュリティチェックを読み込んでいます。少々お待ちください。");
-    }
-
-    if (!token) {
-        return alert("セキュリティチェック（私はロボットではありません）を完了してください");
-    }
-    // ▲▲▲ 修正ここまで ▲▲▲
-
+    // 読み込み中表示
     showLoading(true);
+
     try {
+        // API送信 (tokenなしの純粋なリクエスト)
         const res = await fetch(`${API_BASE}/api/auth/send`, { 
             method: 'POST', 
             headers: {'Content-Type': 'application/json'},
@@ -14072,38 +14069,37 @@ async function initiateAuth(mode) {
                 email, 
                 password: pass, 
                 username: mode === 'register' ? username : undefined,
-                mode: mode,
-                token: token // 取得したトークンを送信
+                mode: mode 
             }) 
         });
         
         const data = await res.json();
         
+        // レート制限（結界）のチェック
         if (res.status === 429) {
             showToast(data.message, 'warning', '天命の戒め');
-            // 失敗時はリセット
-            turnstile.reset(mode === 'login' ? turnstileLoginId : turnstileRegisterId);
             return;
         }
 
         if(res.ok && data.success) {
+            // 成功：認証コード入力画面へ切り替え
             document.getElementById('auth-step-1').classList.add('hidden');
             document.getElementById('auth-step-2').classList.remove('hidden');
-            const codeInput = document.getElementById('auth-code-input');
-            codeInput.value = '';
-            codeInput.focus();
             
-            // 成功後もリセットしておく（次回用）
-            turnstile.reset(mode === 'login' ? turnstileLoginId : turnstileRegisterId);
+            const codeInput = document.getElementById('auth-code-input');
+            if(codeInput) {
+                codeInput.value = '';
+                codeInput.focus();
+            }
         } else {
-            alert(`送信エラー: ${data.error || '不明なエラー'}`);
-            turnstile.reset(mode === 'login' ? turnstileLoginId : turnstileRegisterId);
+            // サーバー側からのエラーを表示
+            alert(`送信エラー: ${data.error || data.message || '不明なエラー'}`);
         }
     } catch(e) { 
-        alert("通信エラー"); 
-        // エラー時もリセット
-        try { turnstile.reset(mode === 'login' ? turnstileLoginId : turnstileRegisterId); } catch(err){}
+        console.error("Auth Error:", e);
+        alert("通信エラーが発生しました。インターネット接続を確認してください。"); 
     } finally { 
+        // 成功・失敗に関わらず読み込み中を消す
         showLoading(false); 
     }
 }
