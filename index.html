@@ -4671,80 +4671,119 @@
     </div>
 </section>
 
-        <!-- ビュー: ログイン/登録 (新フロー: 選択 -> 入力 -> 認証) -->
-        <section id="view-auth" class="view-section max-w-md mx-auto themed-card p-8 rounded-xl shadow-lg mt-10">
-            <h2 class="text-2xl font-bold mb-8 text-center">アカウント認証</h2>
-            
-            <!-- 初期選択画面 -->
-            <div id="auth-selection">
-                <!-- ▼▼▼ 修正: 長いリストを削除し、汎用的な説明文のみに変更 ▼▼▼ -->
-                <div class="mb-8 text-center">
-                    <p class="text-sm text-gray-600 dark:text-gray-300 leading-relaxed">
-                        アカウントを作成すると、おみくじの結果を<br>
-                        <strong>「轍（履歴）」</strong>として永続的に保存したり、<br>
-                        自分だけの<strong>「参拝記録」</strong>を残すことができます。
-                    </p>
-                </div>
-                <!-- ▲▲▲ 修正ここまで ▲▲▲ -->
-           
-                <button class="auth-selection-btn" onclick="startAuthFlow('login')">
-                    <i class="bi bi-box-arrow-in-right text-blue-500"></i> ログイン
-                </button>
-                <button class="auth-selection-btn" onclick="startAuthFlow('register')">
-                    <i class="bi bi-person-plus text-green-500"></i> 新規登録
-                </button>
+        <!-- ビュー: ログイン/登録 (Bento UI版) -->
+        <section id="view-auth" class="view-section">
+            <div class="max-w-4xl mx-auto mb-8 text-center">
+                <h2 class="text-3xl font-black tracking-widest" style="font-family: 'Zen Old Mincho'">参拝証の発行</h2>
+                <p class="text-xs font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest">AUTHENTICATION</p>
             </div>
 
-            <!-- ステップ1: メール/パスワード入力 -->
-            <div id="auth-step-1" class="hidden">
+            <!-- 1. 初期選択画面 -->
+            <div id="auth-selection" class="auth-bento-grid">
+                
+                <!-- ログインボタン -->
+                <div class="stats-card-interactive auth-action-card border-blue-200 dark:border-blue-900" onclick="startAuthFlow('login')">
+                    <div class="auth-icon-circle bg-blue-100 dark:bg-blue-900/30 text-blue-600">
+                        <i class="bi bi-box-arrow-in-right"></i>
+                    </div>
+                    <h3 class="font-bold text-xl mb-1">ログイン</h3>
+                    <p class="text-xs text-gray-500">参拝証をお持ちの方</p>
+                </div>
+
+                <!-- 新規登録ボタン -->
+                <div class="stats-card-interactive auth-action-card border-green-200 dark:border-green-900" onclick="startAuthFlow('register')">
+                    <div class="auth-icon-circle bg-green-100 dark:bg-green-900/30 text-green-600">
+                        <i class="bi bi-person-plus-fill"></i>
+                    </div>
+                    <h3 class="font-bold text-xl mb-1">新規登録</h3>
+                    <p class="text-xs text-gray-500">初めての方はこちら</p>
+                </div>
+
+                <!-- 説明カード -->
+                <div class="stats-card-interactive auth-info-card">
+                    <div class="text-3xl text-yellow-500 pl-2">
+                        <i class="bi bi-stars"></i>
+                    </div>
+                    <div class="text-left">
+                        <h4 class="font-bold text-sm mb-1">会員限定の機能</h4>
+                        <p class="text-xs text-gray-500 leading-relaxed">
+                            アカウントを作成すると、「おみくじの轍（履歴）」の永続保存や、「TENMEI Labs」の実験機能が利用可能になります。
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 2. 入力フォーム (ログイン/登録共通) -->
+            <div id="auth-step-1" class="hidden auth-form-container stats-card-interactive">
                 <div class="flex items-center mb-6">
-                    <button onclick="backToAuthSelection()" class="text-gray-500 hover:text-gray-800 mr-4">
+                    <button onclick="backToAuthSelection()" class="text-gray-400 hover:text-gray-800 dark:hover:text-gray-200 transition mr-4">
                         <i class="bi bi-arrow-left text-xl"></i>
                     </button>
-                    <h3 class="font-bold text-lg" id="auth-form-title">ログイン</h3>
+                    <h3 class="font-bold text-xl" id="auth-form-title">ログイン</h3>
                 </div>
 
-                <div id="form-login-fields" class="hidden">
-                    <label class="block mb-2 font-bold text-sm">メールアドレス</label>
-                    <input type="email" id="login-email" placeholder="example@email.com" class="w-full p-3 border rounded mb-4 themed-input">
-                    <label class="block mb-2 font-bold text-sm">パスワード</label>
-                    <input type="password" id="login-password" placeholder="********" class="w-full p-3 border rounded mb-4 themed-input">
-                    <button onclick="initiateAuth('login')" class="btn-primary w-full justify-center">
+                <!-- ログイン用フィールド -->
+                <div id="form-login-fields" class="hidden space-y-4">
+                    <div>
+                        <label class="profile-input-label">メールアドレス</label>
+                        <input type="email" id="login-email" class="profile-input-field" placeholder="example@email.com">
+                    </div>
+                    <div>
+                        <label class="profile-input-label">パスワード</label>
+                        <input type="password" id="login-password" class="profile-input-field" placeholder="********">
+                    </div>
+                    <button onclick="initiateAuth('login')" class="btn-primary w-full justify-center py-3 mt-2 shadow-lg">
                         <i class="bi bi-send"></i> 認証コードを送信
                     </button>
                 </div>
 
-                <div id="form-register-fields" class="hidden">
-                    <label class="block mb-2 font-bold text-sm">ユーザー名</label>
-                    <input type="text" id="reg-username" placeholder="天命 太郎" class="w-full p-3 border rounded mb-4 themed-input">
-                    <label class="block mb-2 font-bold text-sm">メールアドレス</label>
-                    <input type="email" id="reg-email" placeholder="example@email.com" class="w-full p-3 border rounded mb-4 themed-input">
-                    <label class="block mb-2 font-bold text-sm">パスワード</label>
-                    <input type="password" id="reg-password" placeholder="********" class="w-full p-3 border rounded mb-4 themed-input">
-                    <button onclick="initiateAuth('register')" class="btn-primary w-full justify-center">
+                <!-- 登録用フィールド -->
+                <div id="form-register-fields" class="hidden space-y-4">
+                    <div>
+                        <label class="profile-input-label">参拝者名 (ユーザー名)</label>
+                        <input type="text" id="reg-username" class="profile-input-field" placeholder="天命 太郎">
+                    </div>
+                    <div>
+                        <label class="profile-input-label">メールアドレス</label>
+                        <input type="email" id="reg-email" class="profile-input-field" placeholder="example@email.com">
+                    </div>
+                    <div>
+                        <label class="profile-input-label">パスワード</label>
+                        <input type="password" id="reg-password" class="profile-input-field" placeholder="********">
+                    </div>
+                    <button onclick="initiateAuth('register')" class="btn-primary w-full justify-center py-3 mt-2 shadow-lg">
                         <i class="bi bi-send"></i> 認証コードを送信
                     </button>
                 </div>
             </div>
 
-            <!-- ステップ2: 認証コード入力 (和風デザイン) -->
-            <div id="auth-step-2" class="hidden text-center">
-                <div class="mb-4">
-                    <i class="bi bi-envelope-check text-4xl text-red-500"></i>
+            <!-- 3. 認証コード入力 (モダンUI) -->
+            <div id="auth-step-2" class="hidden auth-form-container stats-card-interactive text-center">
+                <div class="mb-6">
+                    <i class="bi bi-envelope-check text-5xl text-red-500 animate-pulse"></i>
                 </div>
-                <p class="mb-2 font-bold">認証コードを入力してください</p>
-                <p class="text-xs text-gray-500 mb-6">メールアドレスに送信された6桁の数字を入力し、認証を完了させてください。</p>
+                <h3 class="font-bold text-lg mb-2">認証コードを入力</h3>
+                <p class="text-xs text-gray-500 mb-6 leading-relaxed">
+                    送信されたメールに記載されている<br>6桁の数字を入力してください。
+                </p>
                 
-                <div class="auth-code-input-container">
-                    <div class="auth-code-deco">天命認証符</div>
-                    <input type="text" id="auth-code-input" maxlength="6" class="auth-code-input" placeholder="123456" oninput="this.value = this.value.replace(/[^0-9]/g, '');">
+                <div class="mb-6 relative">
+                    <!-- プレースホルダー削除: placeholder="" -->
+                    <input type="text" id="auth-code-input" maxlength="6" 
+                           class="auth-code-input-modern" 
+                           placeholder="" 
+                           autocomplete="one-time-code"
+                           inputmode="numeric"
+                           oninput="this.value = this.value.replace(/[^0-9]/g, '');">
+                    <p class="text-[10px] text-gray-400 mt-2">半角数字のみ入力可能</p>
                 </div>
 
-                <button onclick="finalizeAuth()" class="btn-primary w-full justify-center mb-3">
-                    <i class="bi bi-check-circle-fill"></i> 認証完了
+                <button onclick="finalizeAuth()" class="btn-primary w-full justify-center py-3 shadow-lg mb-4">
+                    <i class="bi bi-check-lg"></i> 認証を完了する
                 </button>
-                <button onclick="backToAuthStep1()" class="text-sm underline text-gray-500">
-                    戻る
+                
+                <button onclick="backToAuthStep1()" class="text-xs text-gray-400 hover:text-red-500 underline">
+                    入力画面に戻る
                 </button>
             </div>
         </section>
