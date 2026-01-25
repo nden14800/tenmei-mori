@@ -2219,24 +2219,6 @@
             }
         }
 
-        /* --- 修正: 判定結果エリアのカード調整 --- */
-        #my-rank-result .rank-card-modern {
-            margin-bottom: 0;
-            box-shadow: none;
-            border: 1px solid rgba(0,0,0,0.08);
-            background: rgba(255,255,255,0.5); /* 少し透過させて親に馴染ませる */
-        }
-        .dark #my-rank-result .rank-card-modern {
-            background: rgba(0,0,0,0.2);
-            border-color: rgba(255,255,255,0.1);
-        }
-        
-        /* 判定結果カード内部の文字あふれ対策 */
-        .rank-card-modern p {
-            word-break: break-all; /* 長い単語を強制的に折り返す */
-            overflow-wrap: break-word;
-        }
-
 
     </style>
 </head>
@@ -9652,16 +9634,18 @@ async function logout() {
     }
 
     // ==========================================
-    //  モダンカード生成ロジック (星ボタン位置修正版)
+    //  モダンカード生成ロジック (Bento UI対応・修正版)
     // ==========================================
     function createCardHTML(data) {
         const isFav = favoriteList.some(f => f.sign === data.sign.id && f.blood === data.blood);
         
+        // ランクに応じたクラス付与
         let rankClass = "rank-other";
         if(data.rank === 1) rankClass = "rank-1 top-rank";
         else if(data.rank === 2) rankClass = "rank-2 top-rank";
         else if(data.rank === 3) rankClass = "rank-3 top-rank";
 
+        // スコアバーの色判定
         const getBarColor = (score) => {
             if(score >= 80) return "bg-red-500";
             if(score >= 60) return "bg-yellow-500";
@@ -9669,17 +9653,17 @@ async function logout() {
         };
 
         return `
-            <div class="rank-card-modern ${rankClass} relative">
-                <!-- お気に入りボタン (修正: カード直下の絶対配置に変更) -->
-                <!-- top-3 right-3 でカードの右上に固定 -->
-                <button class="absolute top-3 right-3 p-2 text-2xl transition-transform hover:scale-110 z-20 ${isFav ? 'text-yellow-400' : 'text-gray-300 dark:text-zinc-600 hover:text-yellow-400'}" 
-                        onclick="toggleFavorite('${data.sign.id}', '${data.blood}')"
-                        title="お気に入り">
-                    <i class="bi bi-star${isFav ? '-fill' : ''}"></i>
-                </button>
-
-                <div class="flex flex-col md:flex-row gap-6 relative z-10">
+            <div class="rank-card-modern ${rankClass}">
+                
+                <div class="flex flex-col md:flex-row gap-6 relative">
                     
+                    <!-- お気に入りボタン (修正: カード内の右上に配置を微調整) -->
+                    <button class="absolute top-0 right-0 p-2 text-2xl transition-transform hover:scale-110 z-10 ${isFav ? 'text-yellow-400' : 'text-gray-300 dark:text-zinc-600 hover:text-yellow-400'}" 
+                            onclick="toggleFavorite('${data.sign.id}', '${data.blood}')"
+                            title="お気に入りに追加/解除">
+                        <i class="bi bi-star${isFav ? '-fill' : ''}"></i>
+                    </button>
+
                     <!-- 左: ランクと基本情報 -->
                     <div class="flex flex-row md:flex-col items-center md:items-start gap-4 md:w-32 flex-shrink-0 border-b md:border-b-0 md:border-r border-gray-100 dark:border-gray-800 pb-4 md:pb-0 md:pr-4">
                         <div class="rank-badge-modern flex-shrink-0">${data.rank}</div>
@@ -9694,37 +9678,38 @@ async function logout() {
                         </div>
                     </div>
 
-                    <!-- 中央: 詳細テキスト (min-w-0ではみ出し防止) -->
-                    <div class="flex-1 min-w-0 pr-2 md:pr-4"> 
+                    <!-- 中央: 詳細テキスト -->
+                    <div class="flex-1 min-w-0 pr-8"> <!-- pr-8で星ボタンとの被りを防ぐ -->
                         <div class="flex flex-wrap items-center gap-2 text-xs font-bold text-gray-500 mb-3">
                             <span class="bg-yellow-50 dark:bg-yellow-900/20 text-yellow-700 dark:text-yellow-300 px-2 py-1 rounded">
-                                <i class="bi bi-hash"></i> No.${data.luckyNum}
+                                <i class="bi bi-hash"></i> ラッキーNo. ${data.luckyNum}
                             </span>
                             <span class="bg-red-50 dark:bg-red-900/20 text-red-700 dark:text-red-300 px-2 py-1 rounded">
                                 <i class="bi bi-bar-chart-fill"></i> 総合: ${data.totalScore}点
                             </span>
                         </div>
                         
-                        <p class="text-sm leading-7 text-justify text-gray-700 dark:text-gray-300 mb-4 font-medium break-words">
+                        <p class="text-sm leading-7 text-justify text-gray-700 dark:text-gray-300 mb-4 font-medium">
                             ${data.longDesc}
                         </p>
 
                         <div class="grid grid-cols-2 gap-2 text-xs bg-gray-50 dark:bg-zinc-800/50 p-3 rounded-lg border border-gray-100 dark:border-gray-800">
-                            <div><i class="bi bi-stars text-yellow-500 mr-1"></i> <b>${data.item}</b></div>
-                            <div><i class="bi bi-palette text-pink-500 mr-1"></i> <b>${data.color}</b></div>
+                            <div><i class="bi bi-stars text-yellow-500 mr-1"></i> アイテム: <b>${data.item}</b></div>
+                            <div><i class="bi bi-palette text-pink-500 mr-1"></i> カラー: <b>${data.color}</b></div>
                         </div>
                     </div>
 
-                    <!-- 右: パラメータ -->
+                    <!-- 右: パラメータとカレンダー -->
                     <div class="md:w-64 flex-shrink-0 flex flex-col justify-between gap-4">
-                        <div class="space-y-3 pt-2 md:pt-0">
+                        <!-- パラメータ -->
+                        <div class="space-y-3 pt-6 md:pt-0"> <!-- スマホ時は少し下げる -->
                             <div>
                                 <div class="flex justify-between text-xs font-bold mb-1">
                                     <span class="flex items-center gap-1"><i class="bi bi-heart-fill text-pink-500"></i> 恋愛</span>
                                     <span>${data.love.score}点</span>
                                 </div>
                                 <div class="modern-bar-bg"><div class="modern-bar-fill ${getBarColor(data.love.score)}" style="width:${data.love.score}%"></div></div>
-                                <p class="text-[10px] text-gray-400 mt-0.5 text-right truncate">${data.love.desc}</p>
+                                <p class="text-[10px] text-gray-400 mt-0.5 text-right">${data.love.desc}</p>
                             </div>
                             <div>
                                 <div class="flex justify-between text-xs font-bold mb-1">
@@ -9732,7 +9717,7 @@ async function logout() {
                                     <span>${data.money.score}点</span>
                                 </div>
                                 <div class="modern-bar-bg"><div class="modern-bar-fill ${getBarColor(data.money.score)}" style="width:${data.money.score}%"></div></div>
-                                <p class="text-[10px] text-gray-400 mt-0.5 text-right truncate">${data.money.desc}</p>
+                                <p class="text-[10px] text-gray-400 mt-0.5 text-right">${data.money.desc}</p>
                             </div>
                             <div>
                                 <div class="flex justify-between text-xs font-bold mb-1">
@@ -9740,9 +9725,11 @@ async function logout() {
                                     <span>${data.work.score}点</span>
                                 </div>
                                 <div class="modern-bar-bg"><div class="modern-bar-fill ${getBarColor(data.work.score)}" style="width:${data.work.score}%"></div></div>
-                                <p class="text-[10px] text-gray-400 mt-0.5 text-right truncate">${data.work.desc}</p>
+                                <p class="text-[10px] text-gray-400 mt-0.5 text-right">${data.work.desc}</p>
                             </div>
                         </div>
+
+                        <!-- カレンダー (コンパクト版) -->
                         <div class="border-t border-dashed border-gray-200 dark:border-gray-700 pt-3 mt-1">
                             <p class="text-[10px] font-bold text-center text-gray-400 mb-2">30日間のラッキーデー予報</p>
                             <div class="grid grid-cols-7 gap-1">
@@ -9754,6 +9741,7 @@ async function logout() {
                             </div>
                         </div>
                     </div>
+
                 </div>
             </div>
         `;
