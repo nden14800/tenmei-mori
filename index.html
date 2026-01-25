@@ -6628,19 +6628,19 @@ function createPaginationHTML(type, current, total) {
     //  描画ロジック (一覧・ホーム・詳細)
     // ==========================================
 
-    // 1. ホーム画面のリスト (最新件数のみ表示)
-    // ★これが消えていたためエラーになっていました
+
+    // 1. ホーム画面のリスト (隙間修正・コンパクト版)
     window.renderHomeLists = function() {
         // 社務所だより（最新4件）
         const newsListEl = document.getElementById('home-news-list');
         if (newsListEl) {
             newsListEl.innerHTML = newsData.slice(0, 4).map(item => `
-                <li class="flex justify-between cursor-pointer hover:bg-gray-100 dark:hover:bg-zinc-700 p-1 rounded transition" onclick="openArticle('news', ${item.id})">
-                    <span class="truncate">
-                        <span class="bg-gray-200 dark:bg-zinc-700 px-1 py-0.5 rounded text-[10px] mr-1 ${item.tagColor || 'text-gray-600'}">${item.tag}</span>
-                        ${item.title}
-                    </span>
-                    <span class="themed-text-sub flex-shrink-0 ml-2">${item.date}</span>
+                <li class="flex justify-between items-center cursor-pointer hover:bg-gray-50 dark:hover:bg-zinc-800 py-2 px-1 transition group" onclick="openArticle('news', ${item.id})">
+                    <div class="flex items-center min-w-0 mr-2">
+                        <span class="flex-shrink-0 bg-gray-100 dark:bg-zinc-700 px-1.5 py-0.5 rounded text-[10px] mr-2 ${item.tagColor || 'text-gray-600'} font-bold border border-gray-200 dark:border-gray-600">${item.tag}</span>
+                        <span class="truncate group-hover:text-blue-600 transition-colors text-sm font-medium">${item.title}</span>
+                    </div>
+                    <span class="text-[10px] text-gray-400 flex-shrink-0 font-mono">${item.date}</span>
                 </li>
             `).join('');
         }
@@ -6649,12 +6649,12 @@ function createPaginationHTML(type, current, total) {
         const columnListEl = document.getElementById('home-column-list');
         if (columnListEl) {
             columnListEl.innerHTML = columnData.slice(0, 5).map(item => `
-                <li class="flex justify-between cursor-pointer hover:bg-gray-100 dark:hover:bg-zinc-700 p-1 rounded transition" onclick="openArticle('column', ${item.id})">
-                    <span class="truncate">
-                        <span class="bg-gray-200 dark:bg-zinc-700 px-1 py-0.5 rounded text-[10px] mr-1 text-gray-600 dark:text-gray-300">${item.category}</span>
-                        ${item.title}
-                    </span>
-                    <span class="themed-text-sub flex-shrink-0 ml-2">${item.date}</span>
+                <li class="flex justify-between items-center cursor-pointer hover:bg-gray-50 dark:hover:bg-zinc-800 py-2 px-1 transition group" onclick="openArticle('column', ${item.id})">
+                    <div class="flex items-center min-w-0 mr-2">
+                        <span class="flex-shrink-0 bg-gray-100 dark:bg-zinc-700 px-1.5 py-0.5 rounded text-[10px] mr-2 text-gray-600 dark:text-gray-300 font-bold border border-gray-200 dark:border-gray-600">${item.category}</span>
+                        <span class="truncate group-hover:text-green-600 transition-colors text-sm font-medium">${item.title}</span>
+                    </div>
+                    <span class="text-[10px] text-gray-400 flex-shrink-0 font-mono">${item.date}</span>
                 </li>
             `).join('');
         }
