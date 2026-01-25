@@ -1646,6 +1646,126 @@
     color: #9ca3af;
 }
 
+        /* --- 参拝の記録：新・インタラクティブUI --- */
+
+/* クリック・ホバーできるカードの共通クラス */
+.stats-card-interactive {
+    transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+    cursor: pointer;
+    border: 1px solid var(--card-border);
+    position: relative; /* 必要 */
+    z-index: 1;
+}
+
+/* 浮き上がり＋赤枠エフェクト */
+.stats-card-interactive:hover {
+    transform: translateY(-4px) scale(1.01);
+    box-shadow: 0 15px 30px -5px rgba(185, 28, 28, 0.15); /* 赤系の影 */
+    border-color: var(--accent-red);
+    z-index: 10;
+}
+
+/* グラフコンテナの調整 */
+.stats-graph-container {
+    padding-top: 40px; /* 目盛り用のスペース確保 */
+    margin-top: 20px;
+    background-color: var(--card-bg);
+    border-radius: 16px;
+    border: 1px solid var(--card-border);
+    position: relative;
+}
+
+/* 目盛り線（グリッド） */
+.graph-grid-overlay {
+    position: absolute;
+    top: 40px; /* コンテナのpadding-topに合わせる */
+    bottom: 20px;
+    left: 80px; /* ラベル幅に合わせる */
+    right: 20px;
+    pointer-events: none;
+    z-index: 0;
+}
+
+.grid-line-item {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    width: 1px;
+    background-color: rgba(128, 128, 128, 0.1); /* 薄い線 */
+}
+
+.grid-label-text {
+    position: absolute;
+    top: -25px; /* 線の上に配置 */
+    transform: translateX(-50%);
+    font-size: 0.65rem;
+    color: var(--text-sub);
+    opacity: 0.6;
+    font-family: monospace;
+    white-space: nowrap;
+}
+
+/* グラフの行レイアウト */
+.stats-row-modern {
+    display: flex;
+    align-items: center;
+    margin-bottom: 16px;
+    position: relative;
+    z-index: 1; /* グリッドより手前 */
+    height: 32px;
+}
+
+.stats-label-modern {
+    width: 80px;
+    font-size: 0.75rem;
+    font-weight: bold;
+    color: var(--text-sub);
+    flex-shrink: 0;
+    padding-right: 10px;
+    text-align: right;
+}
+
+.stats-bar-area-modern {
+    flex: 1;
+    height: 100%;
+    position: relative;
+    /* 背景色なし（グリッドを見せるため） */
+    display: flex;
+    align-items: center;
+}
+
+/* バー共通 */
+.stats-bar-base {
+    height: 12px; /* 少し細くスタイリッシュに */
+    border-radius: 6px;
+    position: absolute;
+    left: 0;
+    transition: width 1s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+/* 自分（赤） */
+.bar-user {
+    background-color: var(--accent-red);
+    box-shadow: 0 2px 4px rgba(185, 28, 28, 0.3);
+    z-index: 2; /* デフォルト */
+}
+
+/* 平均（グレー） */
+.bar-avg {
+    background-color: #d1d5db;
+    z-index: 1; /* デフォルト */
+}
+.dark .bar-avg { background-color: #52525b; }
+
+/* 値ラベル（バーの右側に出す場合など） */
+.stats-val-modern {
+    position: absolute;
+    right: -40px; /* バーエリアの外に出す */
+    font-size: 0.7rem;
+    font-family: monospace;
+    color: var(--text-main);
+}
+
         /* --- TENMEI Labs: グラス・コントロールパネルUI --- */
 
 /* 1. ラボ用グリッド */
