@@ -4450,48 +4450,29 @@ body.theme-newyear {
                 
                 <!-- ヒーローエリア (タイトル) -->
                 <div class="lab-hero-area">
-                   
-                   <!-- メインフラスコ (奥の波を削除し、サイドバーと完全統一) -->
+                   <!-- メインフラスコ -->
                     <div class="title-flask-anim mb-6 transform scale-110">
                         <svg viewBox="0 0 200 200" overflow="hidden" style="width:100%; height:100%;">
                             <defs>
-                                <!-- 共通の鮮やかなグラデーション (青→紫) -->
                                 <linearGradient id="gradUnified" x1="0%" y1="100%" x2="100%" y2="0%">
                                     <stop offset="0%" stop-color="#4facfe" />
                                     <stop offset="100%" stop-color="#8e2de2" />
                                 </linearGradient>
-                                
-                                <!-- 三角フラスコのマスク形状 -->
                                 <clipPath id="flaskClipMain">
                                     <path d="M80 20 L120 20 L120 70 L170 170 C175 180, 165 190, 150 190 L50 190 C35 190, 25 180, 30 170 L80 70 Z" />
                                 </clipPath>
                             </defs>
-
-                            <!-- 揺れる本体 -->
                             <g class="flask-container">
-                                
-                                <!-- 液体レイヤー -->
                                 <g clip-path="url(#flaskClipMain)">
                                     <g class="liquid-container">
-                                        <!-- 背景 (薄いガラス色) -->
                                         <rect x="-50" y="-50" width="300" height="300" fill="rgba(255,255,255,0.05)" />
-
-                                        <!-- 手前の波 (これ1つだけにしました) -->
-                                        <path class="wave-path wave-front" 
-                                              d="M0 135 Q50 150 100 135 T200 135 T300 135 T400 135 V250 H0 Z" />
-                                        
-                                        <!-- 泡 -->
+                                        <path class="wave-path wave-front" d="M0 135 Q50 150 100 135 T200 135 T300 135 T400 135 V250 H0 Z" />
                                         <circle class="bubble" cx="100" cy="180" r="4" style="animation-delay:0s" />
                                         <circle class="bubble" cx="60" cy="170" r="3" style="animation-delay:1s" />
                                         <circle class="bubble" cx="140" cy="175" r="5" style="animation-delay:2s" />
                                     </g>
                                 </g>
-
-                                <!-- ガラス容器 (三角) -->
-                                <path class="glass-stroke" fill="none" 
-                                      d="M80 20 L120 20 L120 70 L170 170 C175 180, 165 190, 150 190 L50 190 C35 190, 25 180, 30 170 L80 70 Z" />
-                                
-                                <!-- ハイライト -->
+                                <path class="glass-stroke" fill="none" d="M80 20 L120 20 L120 70 L170 170 C175 180, 165 190, 150 190 L50 190 C35 190, 25 180, 30 170 L80 70 Z" />
                                 <path d="M45 170 L75 80" stroke="rgba(255,255,255,0.3)" stroke-width="4" fill="none" />
                             </g>
                         </svg>
@@ -4504,192 +4485,169 @@ body.theme-newyear {
                     </p>
                 </div>
 
-                <!-- 機能カードリスト (ぼかし対象ラッパー) -->
+                <!-- ▼▼▼ 修正箇所：ぼかし対象のラッパー開始 ▼▼▼ -->
                 <div id="lab-content-wrapper" class="max-w-2xl mx-auto space-y-6 pb-20">
+                    
                     <!-- ラボ・グリッドコンテナ -->
-<div id="lab-container" class="lab-grid-container">
-    
-    <!-- 1. 迎春・雅モード -->
-    <div class="lab-glass-card" onclick="TenmeiLab.openModal('newyear')">
-        <div class="lab-card-header">
-            <div class="lab-icon-box icon-bg-red">
-                <i class="bi bi-flower1"></i>
-            </div>
-            <div class="lab-switch-wrapper" onclick="event.stopPropagation()">
-                <label class="toggle-switch">
-                    <input type="checkbox" onchange="TenmeiLab.toggleNewYear(this)" id="switch-newyear">
-                    <span class="slider"></span>
-                </label>
-            </div>
-        </div>
-        <div class="lab-card-body">
-            <h3>迎春・雅モード <span class="lab-badge badge-stable">Stable</span></h3>
-            <p class="lab-card-desc">サイト全体を紅白と金色の雅な装いに変更します。おめでたい雰囲気を演出します。</p>
-        </div>
-        <div class="lab-card-footer">
-            詳細設定 <i class="bi bi-chevron-right"></i>
-        </div>
-    </div>
+                    <div id="lab-container" class="lab-grid-container">
+                        
+                        <!-- 1. 迎春・雅モード -->
+                        <div class="lab-glass-card" onclick="TenmeiLab.openModal('newyear')">
+                            <div class="lab-card-header">
+                                <div class="lab-icon-box icon-bg-red"><i class="bi bi-flower1"></i></div>
+                                <div class="lab-switch-wrapper" onclick="event.stopPropagation()">
+                                    <label class="toggle-switch">
+                                        <input type="checkbox" onchange="TenmeiLab.toggleNewYear(this)" id="switch-newyear">
+                                        <span class="slider"></span>
+                                    </label>
+                                </div>
+                            </div>
+                            <div class="lab-card-body">
+                                <h3>迎春・雅モード <span class="lab-badge badge-stable">Stable</span></h3>
+                                <p class="lab-card-desc">サイト全体を紅白と金色の雅な装いに変更します。おめでたい雰囲気を演出します。</p>
+                            </div>
+                            <div class="lab-card-footer">詳細設定 <i class="bi bi-chevron-right"></i></div>
+                        </div>
 
-    <!-- 2. 神速の祈り -->
-    <div class="lab-glass-card" onclick="TenmeiLab.openModal('speed')">
-        <div class="lab-card-header">
-            <div class="lab-icon-box icon-bg-blue">
-                <i class="bi bi-lightning-charge-fill"></i>
-            </div>
-            <div class="lab-switch-wrapper" onclick="event.stopPropagation()">
-                <label class="toggle-switch">
-                    <input type="checkbox" onchange="TenmeiLab.toggleSpeed(this)" id="switch-speed">
-                    <span class="slider"></span>
-                </label>
-            </div>
-        </div>
-        <div class="lab-card-body">
-            <h3>神速の祈り <span class="lab-badge badge-beta">Beta</span></h3>
-            <p class="lab-card-desc">おみくじのカウントダウン演出を省略し、結果を最速で表示します。</p>
-        </div>
-        <div class="lab-card-footer">
-            詳細設定 <i class="bi bi-chevron-right"></i>
-        </div>
-    </div>
+                        <!-- 2. 神速の祈り -->
+                        <div class="lab-glass-card" onclick="TenmeiLab.openModal('speed')">
+                            <div class="lab-card-header">
+                                <div class="lab-icon-box icon-bg-blue"><i class="bi bi-lightning-charge-fill"></i></div>
+                                <div class="lab-switch-wrapper" onclick="event.stopPropagation()">
+                                    <label class="toggle-switch">
+                                        <input type="checkbox" onchange="TenmeiLab.toggleSpeed(this)" id="switch-speed">
+                                        <span class="slider"></span>
+                                    </label>
+                                </div>
+                            </div>
+                            <div class="lab-card-body">
+                                <h3>神速の祈り <span class="lab-badge badge-beta">Beta</span></h3>
+                                <p class="lab-card-desc">おみくじのカウントダウン演出を省略し、結果を最速で表示します。</p>
+                            </div>
+                            <div class="lab-card-footer">詳細設定 <i class="bi bi-chevron-right"></i></div>
+                        </div>
 
-    <!-- 3. 宵闇の刻 -->
-    <div class="lab-glass-card" onclick="TenmeiLab.openModal('dark')">
-        <div class="lab-card-header">
-            <div class="lab-icon-box icon-bg-purple">
-                <i class="bi bi-moon-stars-fill"></i>
-            </div>
-            <div class="lab-switch-wrapper" onclick="event.stopPropagation()">
-                <label class="toggle-switch">
-                    <input type="checkbox" onchange="TenmeiLab.toggleDark(this)" id="switch-dark">
-                    <span class="slider"></span>
-                </label>
-            </div>
-        </div>
-        <div class="lab-card-body">
-            <h3>宵闇の刻 <span class="lab-badge badge-stable">Stable</span></h3>
-            <p class="lab-card-desc">OS設定に関わらず、強制的にダークモードを適用し、夜の雰囲気を演出します。</p>
-        </div>
-        <div class="lab-card-footer">
-            詳細設定 <i class="bi bi-chevron-right"></i>
-        </div>
-    </div>
+                        <!-- 3. 宵闇の刻 -->
+                        <div class="lab-glass-card" onclick="TenmeiLab.openModal('dark')">
+                            <div class="lab-card-header">
+                                <div class="lab-icon-box icon-bg-purple"><i class="bi bi-moon-stars-fill"></i></div>
+                                <div class="lab-switch-wrapper" onclick="event.stopPropagation()">
+                                    <label class="toggle-switch">
+                                        <input type="checkbox" onchange="TenmeiLab.toggleDark(this)" id="switch-dark">
+                                        <span class="slider"></span>
+                                    </label>
+                                </div>
+                            </div>
+                            <div class="lab-card-body">
+                                <h3>宵闇の刻 <span class="lab-badge badge-stable">Stable</span></h3>
+                                <p class="lab-card-desc">OS設定に関わらず、強制的にダークモードを適用し、夜の雰囲気を演出します。</p>
+                            </div>
+                            <div class="lab-card-footer">詳細設定 <i class="bi bi-chevron-right"></i></div>
+                        </div>
 
-    <!-- 4. 言霊の増幅 -->
-    <div class="lab-card-new lab-glass-card" onclick="TenmeiLab.openModal('bigtext')">
-        <div class="lab-card-header">
-            <div class="lab-icon-box icon-bg-green">
-                <i class="bi bi-type-h1"></i>
-            </div>
-            <div class="lab-switch-wrapper" onclick="event.stopPropagation()">
-                <label class="toggle-switch">
-                    <input type="checkbox" onchange="TenmeiLab.toggleBigText(this)" id="switch-bigtext">
-                    <span class="slider"></span>
-                </label>
-            </div>
-        </div>
-        <div class="lab-card-body">
-            <h3>言霊の増幅 <span class="lab-badge badge-beta">Beta</span></h3>
-            <p class="lab-card-desc">文字サイズを大きくし、神託の言葉をより力強く読みやすく表示します。</p>
-        </div>
-        <div class="lab-card-footer">
-            詳細設定 <i class="bi bi-chevron-right"></i>
-        </div>
-    </div>
+                        <!-- 4. 言霊の増幅 -->
+                        <div class="lab-glass-card" onclick="TenmeiLab.openModal('bigtext')">
+                            <div class="lab-card-header">
+                                <div class="lab-icon-box icon-bg-green"><i class="bi bi-type-h1"></i></div>
+                                <div class="lab-switch-wrapper" onclick="event.stopPropagation()">
+                                    <label class="toggle-switch">
+                                        <input type="checkbox" onchange="TenmeiLab.toggleBigText(this)" id="switch-bigtext">
+                                        <span class="slider"></span>
+                                    </label>
+                                </div>
+                            </div>
+                            <div class="lab-card-body">
+                                <h3>言霊の増幅 <span class="lab-badge badge-beta">Beta</span></h3>
+                                <p class="lab-card-desc">文字サイズを大きくし、神託の言葉をより力強く読みやすく表示します。</p>
+                            </div>
+                            <div class="lab-card-footer">詳細設定 <i class="bi bi-chevron-right"></i></div>
+                        </div>
 
-    <!-- 5. 幽玄の霧 -->
-    <div class="lab-glass-card" onclick="TenmeiLab.openModal('mist')">
-        <div class="lab-card-header">
-            <div class="lab-icon-box icon-bg-gray">
-                <i class="bi bi-cloud-haze2-fill"></i>
-            </div>
-            <div class="lab-switch-wrapper" onclick="event.stopPropagation()">
-                <label class="toggle-switch">
-                    <input type="checkbox" onchange="TenmeiLab.toggleMist(this)" id="switch-mist">
-                    <span class="slider"></span>
-                </label>
-            </div>
-        </div>
-        <div class="lab-card-body">
-            <h3>幽玄の霧 <span class="lab-badge badge-exp">Exp</span></h3>
-            <p class="lab-card-desc">画面全体に流れる霧のアニメーションを重ね、神秘的な没入感を高めます。</p>
-        </div>
-        <div class="lab-card-footer">
-            詳細設定 <i class="bi bi-chevron-right"></i>
-        </div>
-    </div>
+                        <!-- 5. 幽玄の霧 -->
+                        <div class="lab-glass-card" onclick="TenmeiLab.openModal('mist')">
+                            <div class="lab-card-header">
+                                <div class="lab-icon-box icon-bg-gray"><i class="bi bi-cloud-haze2-fill"></i></div>
+                                <div class="lab-switch-wrapper" onclick="event.stopPropagation()">
+                                    <label class="toggle-switch">
+                                        <input type="checkbox" onchange="TenmeiLab.toggleMist(this)" id="switch-mist">
+                                        <span class="slider"></span>
+                                    </label>
+                                </div>
+                            </div>
+                            <div class="lab-card-body">
+                                <h3>幽玄の霧 <span class="lab-badge badge-exp">Exp</span></h3>
+                                <p class="lab-card-desc">画面全体に流れる霧のアニメーションを重ね、神秘的な没入感を高めます。</p>
+                            </div>
+                            <div class="lab-card-footer">詳細設定 <i class="bi bi-chevron-right"></i></div>
+                        </div>
 
-    <!-- 6. 黄金の神域 -->
-    <div class="lab-glass-card" onclick="TenmeiLab.openModal('gold')">
-        <div class="lab-card-header">
-            <div class="lab-icon-box icon-bg-gold">
-                <i class="bi bi-stars"></i>
-            </div>
-            <div class="lab-switch-wrapper" onclick="event.stopPropagation()">
-                <label class="toggle-switch">
-                    <input type="checkbox" onchange="TenmeiLab.toggleGold(this)" id="switch-gold">
-                    <span class="slider"></span>
-                </label>
-            </div>
-        </div>
-        <div class="lab-card-body">
-            <h3>黄金の神域 <span class="lab-badge badge-exp">Exp</span></h3>
-            <p class="lab-card-desc">サイトのアクセントカラーを「紅」から「黄金」へ変更し、豪華な装いにします。</p>
-        </div>
-        <div class="lab-card-footer">
-            詳細設定 <i class="bi bi-chevron-right"></i>
-        </div>
-    </div>
+                        <!-- 6. 黄金の神域 -->
+                        <div class="lab-glass-card" onclick="TenmeiLab.openModal('gold')">
+                            <div class="lab-card-header">
+                                <div class="lab-icon-box icon-bg-gold"><i class="bi bi-stars"></i></div>
+                                <div class="lab-switch-wrapper" onclick="event.stopPropagation()">
+                                    <label class="toggle-switch">
+                                        <input type="checkbox" onchange="TenmeiLab.toggleGold(this)" id="switch-gold">
+                                        <span class="slider"></span>
+                                    </label>
+                                </div>
+                            </div>
+                            <div class="lab-card-body">
+                                <h3>黄金の神域 <span class="lab-badge badge-exp">Exp</span></h3>
+                                <p class="lab-card-desc">サイトのアクセントカラーを「紅」から「黄金」へ変更し、豪華な装いにします。</p>
+                            </div>
+                            <div class="lab-card-footer">詳細設定 <i class="bi bi-chevron-right"></i></div>
+                        </div>
 
-    <!-- 7. メンテナンス訓練 (管理者・テスト用) -->
-    <div class="lab-glass-card" onclick="checkMaintenance(true)" style="border-color: rgba(239, 68, 68, 0.4);">
-        <div class="lab-card-header">
-            <div class="lab-icon-box bg-black text-yellow-500">
-                <i class="bi bi-cone-striped"></i>
-            </div>
-            <div class="lab-switch-wrapper">
-                <button class="bg-gray-200 dark:bg-zinc-700 rounded-full w-12 h-6 flex items-center p-1">
-                    <i class="bi bi-play-fill text-gray-500"></i>
-                </button>
-            </div>
-        </div>
-        <div class="lab-card-body">
-            <h3>メンテナンス訓練 <span class="lab-badge badge-danger">Dev</span></h3>
-            <p class="lab-card-desc">強制的にメンテナンス画面を表示します。※再読み込みで復帰します。</p>
-        </div>
-        <div class="lab-card-footer text-red-500">
-            実行する <i class="bi bi-exclamation-triangle"></i>
-        </div>
-    </div>
+                        <!-- 7. メンテナンス訓練 -->
+                        <div class="lab-glass-card" onclick="checkMaintenance(true)" style="border-color: rgba(239, 68, 68, 0.4);">
+                            <div class="lab-card-header">
+                                <div class="lab-icon-box bg-black text-yellow-500"><i class="bi bi-cone-striped"></i></div>
+                                <div class="lab-switch-wrapper">
+                                    <button class="bg-gray-200 dark:bg-zinc-700 rounded-full w-12 h-6 flex items-center p-1">
+                                        <i class="bi bi-play-fill text-gray-500"></i>
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="lab-card-body">
+                                <h3>メンテナンス訓練 <span class="lab-badge badge-danger">Dev</span></h3>
+                                <p class="lab-card-desc">強制的にメンテナンス画面を表示します。※再読み込みで復帰します。</p>
+                            </div>
+                            <div class="lab-card-footer text-red-500">実行する <i class="bi bi-exclamation-triangle"></i></div>
+                        </div>
 
-</div>
+                    </div> <!-- /lab-grid-container -->
+                </div> 
+                <!-- ▲▲▲ ぼかし対象ラッパー（#lab-content-wrapper）はここで閉じる ▲▲▲ -->
 
-            <!-- 非ログイン時のロック画面 (構造修正版) -->
-<div id="lab-lock" class="lab-lock-container hidden">
-    <!-- カード本体 -->
-    <div class="lab-lock-card">
-        <div class="mb-4 text-6xl text-gray-300 dark:text-gray-600">
-            <i class="bi bi-lock-fill"></i>
-        </div>
-        <h3 class="text-xl font-black mb-3 text-gray-800 dark:text-white">会員限定エリア</h3>
-        <p class="text-sm text-gray-600 dark:text-gray-300 mb-8 leading-relaxed font-medium">
-            ここから先は会員様のみが入室できる<br>
-            天命実験室（Labs）です。
-        </p>
-        <button onclick="showView('auth')" class="btn-primary w-full py-3 shadow-lg font-bold text-lg">
-            ログインして入室
-        </button>
-    </div>
-</div>
-            <!-- 詳細モーダル (全画面オーバーレイ) -->
-    <div id="lab-modal" class="lab-modal-overlay" onclick="TenmeiLab.closeModal(event)">
-        <div class="lab-modal-card" onclick="event.stopPropagation()">
-            <button class="lab-close-btn" onclick="TenmeiLab.closeModal(null)"><i class="bi bi-x-lg"></i></button>
-            <div id="lab-modal-content">
-                <!-- JSでコンテンツ挿入 -->
-            </div>
-        </div>
-    </div>
+                <!-- ▼▼▼ 修正箇所：ロック画面をラッパーの外に出す ▼▼▼ -->
+                <!-- 非ログイン時のロック画面 -->
+                <div id="lab-lock" class="lab-lock-container hidden">
+                    <div class="lab-lock-card">
+                        <div class="mb-4 text-6xl text-gray-300 dark:text-gray-600">
+                            <i class="bi bi-lock-fill"></i>
+                        </div>
+                        <h3 class="text-xl font-black mb-3 text-gray-800 dark:text-white">会員限定エリア</h3>
+                        <p class="text-sm text-gray-600 dark:text-gray-300 mb-8 leading-relaxed font-medium">
+                            ここから先は会員様のみが入室できる<br>
+                            天命実験室（Labs）です。
+                        </p>
+                        <button onclick="showView('auth')" class="btn-primary w-full py-3 shadow-lg font-bold text-lg">
+                            ログインして入室
+                        </button>
+                    </div>
+                </div>
+
+                <!-- 詳細モーダル (全画面オーバーレイ) -->
+                <div id="lab-modal" class="lab-modal-overlay" onclick="TenmeiLab.closeModal(event)">
+                    <div class="lab-modal-card" onclick="event.stopPropagation()">
+                        <button class="lab-close-btn" onclick="TenmeiLab.closeModal(null)"><i class="bi bi-x-lg"></i></button>
+                        <div id="lab-modal-content">
+                            <!-- JSでコンテンツ挿入 -->
+                        </div>
+                    </div>
+                </div>
+            </div> <!-- /lab-content-relative -->
         </section>
 
         <!-- ビュー: 都道府県別・運気ランキング -->
