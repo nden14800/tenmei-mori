@@ -7316,7 +7316,7 @@ function createPaginationHTML(type, current, total) {
         }
     };
 
-    // 2. 「社務所だより」描画関数（モダン・瓦版UI版）
+    // 2. 「社務所だより」描画関数（モダン・瓦版UI・バリエーション拡張版）
 window.renderFullNewsView = function() {
     const container = document.getElementById('view-news-list');
     const pagination = document.getElementById('news-pagination');
@@ -7343,22 +7343,46 @@ window.renderFullNewsView = function() {
     }
 
     container.innerHTML = data.map(item => {
-        // タグによるスタイルの分岐
+        // タグの文字列によるスタイル分岐 (バリエーション強化)
         let tagClass = "tag-info";
         let iconClass = "icon-news-info";
+        const t = item.tag; // 短縮
 
-        if (item.tag.includes("重要") || item.tag.includes("障害")) {
-            tagClass = "tag-important";
+        if (t.includes("重要") || t.includes("障害")) {
+            tagClass = "tag-important"; // 赤
             iconClass = "icon-news-alert";
-        } else if (item.tag.includes("更新") || item.tag.includes("機能") || item.tag.includes("システム")) {
-            tagClass = "tag-update";
-            iconClass = "icon-news-update";
-        } else if (item.tag.includes("新機能")) {
-            tagClass = "tag-system"; // 黄色系
+        } 
+        else if (t.includes("不具合") || t.includes("バグ")) {
+            tagClass = "tag-important"; // 赤
+            iconClass = "icon-news-bug";
+        }
+        else if (t.includes("メンテナンス") || t.includes("システム")) {
+            tagClass = "tag-purple";    // 紫
+            iconClass = "icon-news-maint";
+        }
+        else if (t.includes("新機能")) {
+            tagClass = "tag-system";    // 黄
             iconClass = "icon-news-star";
-        } else if (item.tag.includes("開発") || item.tag.includes("裏話")) {
-            tagClass = "tag-green";
+        } 
+        else if (t.includes("デザイン") || t.includes("意匠") || t.includes("改装")) {
+            tagClass = "tag-teal";      // 青緑
+            iconClass = "icon-news-design";
+        }
+        else if (t.includes("解説") || t.includes("規約") || t.includes("技術")) {
+            tagClass = "tag-orange";    // 橙
+            iconClass = "icon-news-book";
+        }
+        else if (t.includes("挨拶") || t.includes("イベント")) {
+            tagClass = "tag-pink";      // ピンク
+            iconClass = "icon-news-flower";
+        }
+        else if (t.includes("開発") || t.includes("裏話")) {
+            tagClass = "tag-green";     // 緑
             iconClass = "icon-news-chat";
+        }
+        else if (t.includes("更新") || t.includes("機能") || t.includes("改善")) {
+            tagClass = "tag-update";    // 青
+            iconClass = "icon-news-update";
         }
 
         return `
