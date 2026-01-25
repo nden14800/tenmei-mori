@@ -9708,126 +9708,176 @@ async function logout() {
     }
 
     // ==========================================
-    //  修正版: カード生成ロジック (白背景・シンプル)
-    // ==========================================
-    function createCardHTML(data) {
-        const isFav = favoriteList.some(f => f.sign === data.sign.id && f.blood === data.blood);
-        
-        // ランクスタイルの決定
-        let cardClass = "rank-normal";
-        let badgeClass = "badge-normal";
-        
-        if (data.rank === 1) { cardClass = "rank-top rank-1"; badgeClass = "badge-gold"; }
-        else if (data.rank === 2) { cardClass = "rank-top rank-2"; badgeClass = "badge-silver"; }
-        else if (data.rank === 3) { cardClass = "rank-top rank-3"; badgeClass = "badge-bronze"; }
+//  お気に入り切り替え機能（修正版）
+// ==========================================
+async function toggleFavorite(signId, bloodType) {
+    // ボタンのクリックイベントがカードの開閉等に伝播しないようにする
+    if(event) event.stopPropagation();
 
-        // スコアバーの色
-        const getBarColor = (score) => {
-            if(score >= 90) return "#ef4444"; // 赤
-            if(score >= 70) return "#eab308"; // 黄
-            return "#3b82f6"; // 青
-        };
+    // ユーザーチェック
+    if (!currentState.user) {
+        // 未ログイン時はモーダルを出す（既存の関数を使用）
+        const modal = document.getElementById('zodiac-login-modal');
+        if(modal) modal.style.display = 'flex'; // hiddenクラスを消すかdisplay制御
+        modal.classList.remove('hidden');
+        return;
+    }
 
-        // カレンダー日付 (アイコン表示)
-        const calendarHTML = data.calendar.map(d => {
-            const icons = d.marks.length > 0 ? d.marks.join('') : '<span style="opacity:0">.</span>';
-            const cellBg = d.marks.length > 0 ? 'bg-yellow-50 dark:bg-yellow-900/20' : '';
-            return `
-                <div class="zodiac-cal-cell ${cellBg}">
-                    <span class="zodiac-cal-date">${d.day}</span>
-                    <div class="zodiac-cal-icons">${icons}</div>
-                </div>
-            `;
-        }).join('');
+    // お気に入りリストにあるか確認
+    const index = favoriteList.findIndex(f => f.sign === signId && f.blood === bloodType);
+    
+    if (index === -1) {
+        // 追加 (最大5件)
+        if (favoriteList.length >= 5) {
+            alert("お気に入りは5件までです");
+            return;
+        }
+        favoriteList.push({ sign: signId, blood: bloodType });
+    } else {
+        // 削除
+        favoriteList.splice(index, 1);
+    }
 
-        return `
-            <div class="zodiac-card-box ${cardClass}">
+    // UIを即座に更新（再描画）
+    renderRanking();
+    
+    // サーバーに保存 (非同期でバックグラウンド実行)
+    try {
+        await authFetch(`${API_BASE}/api/favorites`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ favorites: favoriteList })
+        });
+        // 保存完了後にバッジ更新
+        const badge = document.getElementById('fav-status-badge');
+        if(badge) badge.textContent = "保存完了";
+    } catch(e) {
+        console.error("Favorite save failed", e);
+    }
+}
+
+// ==========================================
+//  カード生成ロジック (修正・配置変更版)
+// ==========================================
+function createCardHTML(data) {
+    // お気に入り状態チェック
+    const isFav = favoriteList.some(f => f.sign === data.sign.id && f.blood === data.blood);
+    
+    // ランクスタイルの決定（背景は白統一、枠線とバッジで差別化）
+    let cardClass = "rank-normal";
+    let badgeClass = "badge-normal";
+    
+    if (data.rank === 1) { cardClass = "rank-top rank-1"; badgeClass = "badge-gold"; }
+    else if (data.rank === 2) { cardClass = "rank-top rank-2"; badgeClass = "badge-silver"; }
+    else if (data.rank === 3) { cardClass = "rank-top rank-3"; badgeClass = "badge-bronze"; }
+
+    // スコアバーの色
+    const getBarColor = (score) => {
+        if(score >= 90) return "#ef4444"; // 赤
+        if(score >= 70) return "#eab308"; // 黄
+        return "#3b82f6"; // 青
+    };
+
+    // コンパクトカレンダー (30日分)
+    // 6列x5行のグリッドに収めるため、余分なスペースを削る
+    const calendarHTML = data.calendar.map(d => {
+        // マークがある日だけ色をつける（星などのアイコンは小さすぎて潰れるので色と点滅等で表現、または文字色変更）
+        const hasMark = d.marks.length > 0;
+        const cellClass = hasMark ? 'has-mark' : '';
+        // 日付のみ表示
+        return `<div class="zodiac-cal-cell ${cellClass}">${d.day}</div>`;
+    }).join('');
+
+    return `
+        <div class="zodiac-card-box ${cardClass}">
+            <div class="zodiac-card-body">
                 
-                <!-- お気に入りボタン -->
-                <button class="zodiac-fav-btn ${isFav ? 'text-yellow-400' : 'text-gray-300 hover:text-yellow-400'}" 
-                        onclick="toggleFavorite('${data.sign.id}', '${data.blood}')">
-                    <i class="bi bi-star${isFav ? '-fill' : ''}"></i>
-                </button>
-
-                <!-- メイン部分 -->
-                <div class="zodiac-card-body">
-                    
-                    <!-- 左: ランク・星座 -->
-                    <div class="flex flex-row md:flex-col items-center md:items-start gap-4 md:w-32 flex-shrink-0">
-                        <div class="zodiac-rank-badge ${badgeClass}">${data.rank}</div>
-                        <div>
-                            <div class="flex items-center gap-2 mb-1">
-                                <span class="text-3xl">${data.sign.icon}</span>
-                                <span class="text-xl font-black whitespace-nowrap">${data.sign.name}</span>
-                            </div>
-                            <span class="inline-block bg-gray-100 dark:bg-zinc-800 px-3 py-1 rounded-full text-sm font-bold border border-gray-200 dark:border-gray-700">
+                <!-- 1. 左側: ランク・星座アイコン -->
+                <div class="flex flex-row md:flex-col items-center md:items-start gap-3 md:w-28 flex-shrink-0">
+                    <div class="zodiac-rank-badge ${badgeClass}">${data.rank}</div>
+                    <div>
+                        <div class="flex items-center gap-1 mb-1">
+                            <span class="text-2xl">${data.sign.icon}</span>
+                            <!-- 星ボタンを名前の隣に配置 -->
+                            <button class="fav-star-btn ${isFav ? 'active' : ''}" 
+                                    onclick="toggleFavorite('${data.sign.id}', '${data.blood}')">
+                                <i class="bi bi-star${isFav ? '-fill' : ''}"></i>
+                            </button>
+                        </div>
+                        <span class="text-lg font-black whitespace-nowrap">${data.sign.name}</span>
+                        <div class="mt-1">
+                            <span class="inline-block bg-gray-100 dark:bg-zinc-800 px-2 py-0.5 rounded text-xs font-bold border border-gray-200 dark:border-gray-700">
                                 ${data.blood}型
                             </span>
                         </div>
                     </div>
+                </div>
 
-                    <!-- 中: 文章 -->
-                    <div class="flex-1 min-w-0 pr-8">
-                        <div class="flex flex-wrap items-center gap-3 text-xs font-bold text-gray-500 mb-3">
+                <!-- 2. 中央エリア: 文章 + カレンダー(右配置) -->
+                <div class="zodiac-content-middle">
+                    
+                    <!-- 文章エリア -->
+                    <div class="zodiac-text-area">
+                        <div class="flex flex-wrap items-center gap-2 text-xs font-bold text-gray-500 mb-2">
                             <span class="bg-red-50 dark:bg-red-900/20 text-red-700 dark:text-red-300 px-2 py-1 rounded">
                                 総合: ${data.totalScore}点
                             </span>
                             <span>ラッキーNo.${data.luckyNum}</span>
-                        </div>
-                        <p class="text-sm leading-7 text-justify text-gray-700 dark:text-gray-300 mb-4 font-medium">
-                            ${data.longDesc}
-                        </p>
-                        <div class="flex flex-wrap gap-4 text-xs text-gray-500">
                             <span><i class="bi bi-stars text-yellow-500"></i> ${data.item}</span>
                             <span><i class="bi bi-palette text-pink-500"></i> ${data.color}</span>
                         </div>
+                        <p class="text-sm leading-6 text-justify text-gray-700 dark:text-gray-300 font-medium">
+                            ${data.longDesc}
+                        </p>
                     </div>
 
-                    <!-- 右: パラメータ -->
-                    <div class="w-full md:w-56 flex-shrink-0 space-y-3 pt-4 md:pt-0 border-t md:border-t-0 md:border-l border-gray-100 dark:border-gray-700 md:pl-6">
-                        <div>
-                            <div class="flex justify-between text-xs font-bold mb-1">
-                                <span class="flex items-center gap-1"><i class="bi bi-heart-fill text-pink-500"></i> 恋愛</span>
-                                <span>${data.love.score}点</span>
-                            </div>
-                            <div style="height:6px; background:#eee; border-radius:3px; overflow:hidden;">
-                                <div style="height:100%; width:${data.love.score}%; background:${getBarColor(data.love.score)};"></div>
-                            </div>
-                            <p class="text-[10px] text-gray-400 mt-0.5 text-right">${data.love.desc}</p>
-                        </div>
-                        <div>
-                            <div class="flex justify-between text-xs font-bold mb-1">
-                                <span class="flex items-center gap-1"><i class="bi bi-currency-yen text-yellow-500"></i> 金運</span>
-                                <span>${data.money.score}点</span>
-                            </div>
-                            <div style="height:6px; background:#eee; border-radius:3px; overflow:hidden;">
-                                <div style="height:100%; width:${data.money.score}%; background:${getBarColor(data.money.score)};"></div>
-                            </div>
-                            <p class="text-[10px] text-gray-400 mt-0.5 text-right">${data.money.desc}</p>
-                        </div>
-                        <div>
-                            <div class="flex justify-between text-xs font-bold mb-1">
-                                <span class="flex items-center gap-1"><i class="bi bi-book-fill text-blue-500"></i> 仕事</span>
-                                <span>${data.work.score}点</span>
-                            </div>
-                            <div style="height:6px; background:#eee; border-radius:3px; overflow:hidden;">
-                                <div style="height:100%; width:${data.work.score}%; background:${getBarColor(data.work.score)};"></div>
-                            </div>
-                            <p class="text-[10px] text-gray-400 mt-0.5 text-right">${data.work.desc}</p>
+                    <!-- カレンダーエリア (右側配置・コンパクト) -->
+                    <div class="zodiac-compact-calendar">
+                        <h4>30日吉日予報</h4>
+                        <div class="zodiac-cal-grid">
+                            ${calendarHTML}
                         </div>
                     </div>
                 </div>
 
-                <!-- カレンダー -->
-                <div class="zodiac-calendar-area">
-                    <p class="text-[10px] font-bold text-gray-400 mb-1">30日間のラッキーデー</p>
-                    <div class="zodiac-cal-grid">
-                        ${calendarHTML}
+                <!-- 3. 右端: パラメータバー (幅固定) -->
+                <div class="w-full md:w-48 flex-shrink-0 space-y-2 pt-3 md:pt-0 border-t md:border-t-0 md:border-l border-gray-100 dark:border-gray-700 md:pl-4">
+                    <div>
+                        <div class="flex justify-between text-[10px] font-bold mb-0.5">
+                            <span class="flex items-center gap-1"><i class="bi bi-heart-fill text-pink-500"></i> 恋愛</span>
+                            <span>${data.love.score}</span>
+                        </div>
+                        <div style="height:4px; background:#eee; border-radius:2px; overflow:hidden;">
+                            <div style="height:100%; width:${data.love.score}%; background:${getBarColor(data.love.score)};"></div>
+                        </div>
+                        <p class="text-[9px] text-gray-400 mt-0.5 text-right truncate">${data.love.desc}</p>
+                    </div>
+                    <div>
+                        <div class="flex justify-between text-[10px] font-bold mb-0.5">
+                            <span class="flex items-center gap-1"><i class="bi bi-currency-yen text-yellow-500"></i> 金運</span>
+                            <span>${data.money.score}</span>
+                        </div>
+                        <div style="height:4px; background:#eee; border-radius:2px; overflow:hidden;">
+                            <div style="height:100%; width:${data.money.score}%; background:${getBarColor(data.money.score)};"></div>
+                        </div>
+                        <p class="text-[9px] text-gray-400 mt-0.5 text-right truncate">${data.money.desc}</p>
+                    </div>
+                    <div>
+                        <div class="flex justify-between text-[10px] font-bold mb-0.5">
+                            <span class="flex items-center gap-1"><i class="bi bi-book-fill text-blue-500"></i> 仕事</span>
+                            <span>${data.work.score}</span>
+                        </div>
+                        <div style="height:4px; background:#eee; border-radius:2px; overflow:hidden;">
+                            <div style="height:100%; width:${data.work.score}%; background:${getBarColor(data.work.score)};"></div>
+                        </div>
+                        <p class="text-[9px] text-gray-400 mt-0.5 text-right truncate">${data.work.desc}</p>
                     </div>
                 </div>
+
             </div>
-        `;
-    }
+        </div>
+    `;
+}
 
     // ランキング描画ロジックの修正 (4位以下を表示させる)
     function renderRanking() {
