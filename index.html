@@ -14084,6 +14084,98 @@ function renderGridLines(container, maxVal) {
     });
 }
 
+        // ==========================================
+//  Cloudflare Turnstile 制御ロジック
+// ==========================================
+let turnstileLoginId = null;
+let turnstileRegisterId = null;
+const SITE_KEY = "0x4AAAAAACP5ArwUHoQ6FdSc"; // ★必ず書き換える
+
+// Turnstile APIが読み込まれたら自動的に実行される関数
+window.onloadTurnstileCallback = function() {
+    // ログイン用のウィジェット生成
+    turnstileLoginId = turnstile.render('#turnstile-login', {
+        sitekey: SITE_KEY,
+        theme: 'auto',
+    });
+
+    // 登録用のウィジェット生成
+    turnstileRegisterId = turnstile.render('#turnstile-register', {
+        sitekey: SITE_KEY,
+        theme: 'auto',
+    });
+};
+
+// 4. 認証コード送信 (修正版)
+async function initiateAuth(mode) {
+    const emailInputId = (mode === 'login') ? 'login-email' : 'reg-email';
+    const email = document.getElementById(emailInputId).value.trim().toLowerCase();
+    const username = document.getElementById('reg-username').value;
+    const pass = document.getElementById(mode === 'login' ? 'login-password' : 'reg-password').value;
+
+    if(!email || !pass) return alert("メールアドレスとパスワードを入力してください");
+    if(mode === 'register' && !username) return alert("ユーザー名を入力してください");
+
+    // ▼▼▼ 修正: モードに応じたウィジェットIDを使ってトークンを取得 ▼▼▼
+    let token;
+    try {
+        const widgetId = (mode === 'login') ? turnstileLoginId : turnstileRegisterId;
+        token = turnstile.getResponse(widgetId);
+    } catch(e) {
+        console.error(e);
+        return alert("セキュリティチェックを読み込んでいます。少々お待ちください。");
+    }
+
+    if (!token) {
+        return alert("セキュリティチェック（私はロボットではありません）を完了してください");
+    }
+    // ▲▲▲ 修正ここまで ▲▲▲
+
+    showLoading(true);
+    try {
+        const res = await fetch(`${API_BASE}/api/auth/send`, { 
+            method: 'POST', 
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({ 
+                email, 
+                password: pass, 
+                username: mode === 'register' ? username : undefined,
+                mode: mode,
+                token: token // 取得したトークンを送信
+            }) 
+        });
+        
+        const data = await res.json();
+        
+        if (res.status === 429) {
+            showToast(data.message, 'warning', '天命の戒め');
+            // 失敗時はリセット
+            turnstile.reset(mode === 'login' ? turnstileLoginId : turnstileRegisterId);
+            return;
+        }
+
+        if(res.ok && data.success) {
+            document.getElementById('auth-step-1').classList.add('hidden');
+            document.getElementById('auth-step-2').classList.remove('hidden');
+            const codeInput = document.getElementById('auth-code-input');
+            codeInput.value = '';
+            codeInput.focus();
+            
+            // 成功後もリセットしておく（次回用）
+            turnstile.reset(mode === 'login' ? turnstileLoginId : turnstileRegisterId);
+        } else {
+            alert(`送信エラー: ${data.error || '不明なエラー'}`);
+            turnstile.reset(mode === 'login' ? turnstileLoginId : turnstileRegisterId);
+        }
+    } catch(e) { 
+        alert("通信エラー"); 
+        // エラー時もリセット
+        try { turnstile.reset(mode === 'login' ? turnstileLoginId : turnstileRegisterId); } catch(err){}
+    } finally { 
+        showLoading(false); 
+    }
+}
+
             
     </script>
 </body>
