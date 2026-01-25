@@ -4664,15 +4664,37 @@ body.theme-newyear {
 
 </div>
 
-            <!-- 非ログイン時のロック画面 (構造修正版) -->
-<div id="lab-lock" class="lab-lock-container hidden">
-    <!-- カード本体 -->
-    <div class="lab-lock-card">
+            <!-- 非ログイン時のロック画面 (修正版：不透明カード) -->
+<div id="lab-lock" class="hidden" style="
+    position: absolute;
+    top: 0; left: 0; width: 100%; height: 100%;
+    z-index: 9999;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    pointer-events: none; /* コンテナ自体はクリックを通す */
+">
+    <!-- カード本体 (クリック有効・完全不透明) -->
+    <div style="
+        background-color: #ffffff; 
+        padding: 40px;
+        border-radius: 24px;
+        box-shadow: 0 25px 50px rgba(0,0,0,0.5);
+        width: 90%;
+        max-width: 400px;
+        text-align: center;
+        border: 1px solid rgba(0,0,0,0.1);
+        pointer-events: auto;
+        opacity: 1 !important;
+        filter: none !important;
+        transform: translateZ(0); /* 描画レイヤーを分離 */
+    " class="dark:bg-zinc-900 dark:border-gray-700 dark:text-white">
+        
         <div class="mb-4 text-6xl text-gray-300 dark:text-gray-600">
             <i class="bi bi-lock-fill"></i>
         </div>
-        <h3 class="text-xl font-black mb-3 text-gray-800 dark:text-white">会員限定エリア</h3>
-        <p class="text-sm text-gray-600 dark:text-gray-300 mb-8 leading-relaxed font-medium">
+        <h3 class="text-xl font-black mb-3 text-gray-800 dark:text-gray-100">会員限定エリア</h3>
+        <p class="text-sm text-gray-600 dark:text-gray-400 mb-8 leading-relaxed font-medium">
             ここから先は会員様のみが入室できる<br>
             天命実験室（Labs）です。
         </p>
