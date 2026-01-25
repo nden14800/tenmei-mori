@@ -3493,80 +3493,99 @@
 </section>
 
         <!-- ビュー: おみくじの轍 (履歴) -->
-        <section id="view-history" class="view-section max-w-4xl mx-auto relative">
-            <h2 class="text-3xl font-bold mb-6 text-center text-red-800 dark:text-red-400">おみくじの轍</h2>
+<section id="view-history" class="view-section max-w-4xl mx-auto relative pb-20">
+    <!-- タイトル -->
+    <div class="text-center mb-8">
+        <h2 class="text-3xl font-black mb-2 tracking-widest" style="font-family: 'Zen Old Mincho'">おみくじの轍</h2>
+        <p class="text-xs font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest">TIMELINE OF DESTINY</p>
+    </div>
+
+    <!-- コンテンツコンテナ -->
+    <div id="history-container">
+        
+        <!-- 1. 統計ダッシュボード -->
+        <div class="history-stats-grid">
+            <div class="history-stat-card stat-card-personal">
+                <div class="stat-label">あなたの参拝数</div>
+                <div class="stat-value text-red-600" id="personal-history-count">-</div>
+            </div>
+            <div class="history-stat-card stat-card-global">
+                <div class="stat-label">みんなの参拝数</div>
+                <div class="stat-value text-indigo-600 dark:text-indigo-400" id="global-history-count">-</div>
+            </div>
+        </div>
+
+        <!-- 2. コントロールバー (検索) -->
+        <div class="history-control-bar">
+            <div class="flex items-center gap-2 mb-1">
+                <i class="bi bi-sliders text-gray-400"></i>
+                <span class="text-xs font-bold text-gray-500">条件を絞り込む</span>
+            </div>
             
-            <div class="text-center mb-6">
-                <p class="text-sm themed-text-sub">ログインすると、ご自身の履歴と皆様の参拝記録が保存されます。</p>
+            <div class="control-group-row">
+                <select id="search-type" class="modern-filter-select flex-1" style="min-width: 120px;">
+                    <option value="all">全ての運勢</option>
+                    <option value="大吉">大吉</option>
+                    <option value="中吉">中吉</option>
+                    <option value="小吉">小吉</option>
+                    <option value="吉">吉</option>
+                    <option value="半吉">半吉</option>
+                    <option value="末吉">末吉</option>
+                    <option value="末小吉">末小吉</option>
+                    <option value="凶">凶</option>
+                    <option value="小凶">小凶</option>
+                    <option value="半凶">半凶</option>
+                    <option value="末凶">末凶</option>
+                    <option value="大凶">大凶</option>
+                </select>
+                <input type="text" id="search-keyword" placeholder="ユーザー名で検索" class="modern-filter-input flex-[2]">
             </div>
-
-            <div id="history-container" class="">
-                <div class="grid grid-cols-2 gap-4 mb-4 text-center">
-                    <div class="themed-card p-3 rounded">
-                        <p class="text-xs themed-text-sub">あなたの参拝数 (全期間)</p>
-                        <p class="text-xl font-bold" id="personal-history-count">-</p>
-                    </div>
-                    <div class="themed-card p-3 rounded">
-                        <p class="text-xs themed-text-sub">みんなの参拝数 (全期間)</p>
-                        <p class="text-xl font-bold" id="global-history-count">-</p>
-                    </div>
-                </div>
-
-                <!-- 検索フォーム -->
-                <div class="search-form-container">
-                    <h3 class="text-sm font-bold mb-2"><i class="bi bi-search"></i> 轍を検索</h3>
-                    <div class="search-input-group">
-                        <select id="search-type" class="search-input">
-                            <option value="all">全ての運勢</option>
-                            <option value="大吉">大吉</option>
-                            <option value="中吉">中吉</option>
-                            <option value="小吉">小吉</option>
-                            <option value="吉">吉</option>
-                            <option value="半吉">半吉</option>
-                            <option value="末吉">末吉</option>
-                            <option value="末小吉">末小吉</option>
-                            <option value="凶">凶</option>
-                            <option value="小凶">小凶</option>
-                            <option value="半凶">半凶</option>
-                            <option value="末凶">末凶</option>
-                            <option value="大凶">大凶</option>
-                        </select>
-                        <input type="text" id="search-keyword" placeholder="ユーザー名" class="search-input">
-                        <input type="date" id="search-date-start" class="search-input">
-                        <span class="self-center">〜</span>
-                        <input type="date" id="search-date-end" class="search-input">
-                    </div>
-                    <div class="flex gap-2">
-                        <button onclick="filterHistory()" class="btn-primary text-xs py-1 px-4">検索</button>
-                        <button onclick="resetSearch()" class="btn-outline text-xs py-1 px-4">リセット</button>
-                    </div>
-                    <div class="text-right text-xs mt-2 themed-text-sub">
-                        検索結果: <span id="search-result-count" class="font-bold">0</span> 件
-                    </div>
-                </div>
-
-                <div class="themed-card p-6 rounded shadow mb-6">
-                    <div class="flex justify-between items-center border-b border-gray-300 dark:border-gray-600 pb-2 mb-4">
-                        <h3 class="font-bold">参拝の足跡一覧</h3>
-                        <div class="text-xs text-gray-500" id="history-view-mode"></div>
-                    </div>
-                    <!-- ■ 修正前（目安） -->
-<div id="history-list" class="space-y-3">
-    <!-- JSで挿入 -->
-</div>
-
-<!-- ■ 修正後：この下に以下の div を追加してください -->
-<div id="history-pagination" class="flex justify-center items-center gap-4 mt-6 text-sm"></div>
+            
+            <div class="control-group-row">
+                <input type="date" id="search-date-start" class="modern-filter-input flex-1">
+                <span class="self-center text-gray-400">～</span>
+                <input type="date" id="search-date-end" class="modern-filter-input flex-1">
+                
+                <button onclick="filterHistory()" class="btn-primary py-2 px-6 text-sm flex-shrink-0 shadow-md">
+                    <i class="bi bi-search"></i> 検索
+                </button>
+                <button onclick="resetSearch()" class="px-4 py-2 rounded-lg border border-gray-300 hover:bg-gray-100 dark:hover:bg-zinc-700 transition text-sm flex-shrink-0">
+                    <i class="bi bi-arrow-counterclockwise"></i>
+                </button>
+            </div>
+            
+            <div class="flex justify-between items-center mt-1 px-1">
+                <div class="text-xs text-gray-400" id="history-view-mode">全期間の記録</div>
+                <div class="text-xs font-bold text-gray-500">
+                    Hit: <span id="search-result-count" class="text-red-600 text-lg mx-1">0</span> 件
                 </div>
             </div>
+        </div>
 
-            <div id="history-login-overlay" class="history-overlay hidden">
-                <i class="bi bi-lock-fill text-4xl text-gray-400 mb-4 block"></i>
-                <p class="text-lg font-bold mb-2">轍を見るには会員証が必要です</p>
-                <p class="text-sm themed-text-sub mb-4">ログインすると、過去の結果を詳細まで振り返ることができます。</p>
-                <button onclick="showView('auth')" class="btn-primary">ログイン / 登録</button>
+        <!-- 3. タイムラインリスト -->
+        <div class="bg-white dark:bg-zinc-900 rounded-2xl p-6 shadow-sm border border-gray-100 dark:border-gray-800">
+            <div class="timeline-container" id="history-list">
+                <!-- JSでここにアイテムが挿入されます -->
             </div>
-        </section>
+            
+            <!-- ページネーション -->
+            <div id="history-pagination" class="flex justify-center items-center gap-4 mt-8 pt-6 border-t border-gray-100 dark:border-gray-800"></div>
+        </div>
+
+    </div>
+
+    <!-- 非ログイン時のオーバーレイ -->
+    <div id="history-login-overlay" class="history-overlay hidden">
+        <i class="bi bi-lock-fill text-5xl text-gray-300 mb-4 block"></i>
+        <h3 class="text-xl font-bold mb-2">轍を見るには会員証が必要です</h3>
+        <p class="text-sm text-gray-500 mb-6 leading-relaxed">
+            ログインすると、あなた自身の過去の運勢と、<br>他の参拝者の記録を閲覧・検索することができます。
+        </p>
+        <button onclick="showView('auth')" class="btn-primary shadow-lg">
+            <i class="bi bi-person-check"></i> ログイン / 登録
+        </button>
+    </div>
+</section>
 
         <!-- ビュー: 社務所だより（検索・ページ機能付き） -->
         <section id="view-news" class="view-section max-w-3xl mx-auto">
