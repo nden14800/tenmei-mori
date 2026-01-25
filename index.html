@@ -1477,6 +1477,175 @@
 .bar-B { background: #3b82f6; } /* 青 */
 .bar-C { background: #6b7280; } /* 灰 */
 
+        /* --- 参拝の記録：ダッシュボードUI --- */
+
+/* 1. ヒーローセクション (主要スコア) */
+.stats-hero-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 16px;
+    margin-bottom: 30px;
+}
+
+.stats-hero-card {
+    background-color: var(--card-bg);
+    border: 1px solid var(--card-border);
+    border-radius: 20px;
+    padding: 24px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    overflow: hidden;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.03);
+}
+
+/* 背景の巨大文字装飾 */
+.stats-hero-card::after {
+    content: attr(data-bg-text);
+    position: absolute;
+    bottom: -15px;
+    right: -10px;
+    font-size: 5rem;
+    font-weight: 900;
+    color: currentColor;
+    opacity: 0.07;
+    font-family: 'Zen Old Mincho', serif;
+    pointer-events: none;
+}
+
+.stats-hero-label {
+    font-size: 0.8rem;
+    font-weight: bold;
+    color: var(--text-sub);
+    margin-bottom: 5px;
+    z-index: 1;
+}
+
+.stats-hero-value {
+    font-size: 2.2rem;
+    font-weight: 900;
+    font-family: monospace; /* 数字は見やすく */
+    line-height: 1;
+    z-index: 1;
+}
+
+/* 色分け */
+.hero-total { color: var(--text-main); }
+.hero-daikichi { color: #d4af37; border-color: #fcd34d; background: linear-gradient(to bottom right, #fff, #fffbef); }
+.dark .hero-daikichi { background: linear-gradient(to bottom right, #1a1a1a, #3f2c00); border-color: #854d0e; }
+
+/* 2. インサイトエリア (比較) */
+.stats-insight-box {
+    background-color: var(--card-bg);
+    border-left: 4px solid var(--accent-red);
+    border-radius: 8px;
+    padding: 20px;
+    margin-bottom: 30px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+}
+
+.stats-insight-text {
+    font-size: 0.9rem;
+    line-height: 1.8;
+    color: var(--text-main);
+}
+.stats-insight-highlight {
+    font-weight: 900;
+    font-size: 1.2rem;
+    color: var(--accent-red);
+    margin: 0 4px;
+}
+
+/* 3. 運勢スペクトル (グラフ) */
+.stats-graph-container {
+    background-color: var(--card-bg);
+    border: 1px solid var(--card-border);
+    border-radius: 16px;
+    padding: 24px;
+    position: relative;
+}
+
+.stats-graph-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+    border-bottom: 1px solid var(--card-border);
+    padding-bottom: 10px;
+}
+
+.stats-row {
+    display: flex;
+    align-items: center;
+    margin-bottom: 12px;
+    height: 28px; /* 行の高さ固定 */
+}
+
+.stats-label-col {
+    width: 60px;
+    font-size: 0.75rem;
+    font-weight: bold;
+    color: var(--text-sub);
+    flex-shrink: 0;
+}
+
+.stats-bar-area {
+    flex: 1;
+    height: 100%;
+    position: relative;
+    background: rgba(0,0,0,0.03);
+    border-radius: 6px;
+    overflow: hidden;
+    margin: 0 10px;
+    display: flex;
+}
+
+/* 2つのバーを重ねるためのスタイル */
+.stats-bar-avg {
+    height: 100%;
+    background-color: #d1d5db; /* 平均はグレー */
+    opacity: 0.5;
+    border-right: 1px solid #fff;
+}
+.dark .stats-bar-avg { background-color: #52525b; border-right-color: #000; }
+
+.stats-bar-user {
+    height: 100%;
+    background-color: var(--accent-red); /* 自分は赤 */
+    position: absolute; /* 平均の上に重ねる */
+    top: 0; left: 0;
+    border-radius: 6px;
+    opacity: 0.9;
+    box-shadow: 2px 0 5px rgba(0,0,0,0.1);
+    
+    /* アニメーション用 */
+    width: 0; 
+    transition: width 1s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+/* 特別な色のバー */
+.bar-color-gold { background-color: #d4af37 !important; } /* 大吉 */
+.bar-color-black { background-color: #1f2937 !important; } /* 大凶 */
+.dark .bar-color-black { background-color: #9ca3af !important; }
+
+.stats-val-col {
+    width: 80px;
+    font-family: monospace;
+    text-align: right;
+    font-size: 0.75rem;
+    color: var(--text-main);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    line-height: 1.1;
+}
+.val-sub {
+    font-size: 0.65rem;
+    color: #9ca3af;
+}
+
         /* --- TENMEI Labs: グラス・コントロールパネルUI --- */
 
 /* 1. ラボ用グリッド */
