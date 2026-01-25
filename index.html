@@ -12155,15 +12155,16 @@ function createCardHTML(data) {
         renderFavorites();
     }
 
-    // 追加: モーダルを閉じる関数
+    // 12星座用ログインモーダルを閉じる関数（修正版）
     function closeZodiacModal(e) {
-        // 背景クリックまたは閉じるボタンの場合のみ閉じる
-        if(e && e.target.id !== 'zodiac-login-modal' && e.target.tagName !== 'BUTTON') return;
-        
-        const modal = document.getElementById('zodiac-login-modal');
-        if(modal) {
-            modal.classList.add('hidden');
-            modal.classList.remove('flex');
+        // eがnull（バツボタンからの直接呼び出し）か、
+        // クリックされたのがモーダル背景自体、またはボタン要素（アイコン含む）なら閉じる
+        if (!e || e.target.id === 'zodiac-login-modal' || e.target.closest('button')) {
+            const modal = document.getElementById('zodiac-login-modal');
+            if(modal) {
+                modal.classList.add('hidden');
+                modal.classList.remove('flex');
+            }
         }
     }
       
