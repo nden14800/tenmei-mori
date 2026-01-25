@@ -4270,40 +4270,61 @@
 </section>
         
 
-   <section id="view-stats" class="view-section max-w-3xl mx-auto relative">
-    <h2 class="text-3xl font-bold mb-6 text-center">参拝の記録</h2>
+   <!-- ビュー: 参拝の記録 (統計ダッシュボード) -->
+<section id="view-stats" class="view-section max-w-4xl mx-auto relative pb-20">
+    <div class="text-center mb-8">
+        <h2 class="text-3xl font-black mb-2 tracking-widest" style="font-family: 'Zen Old Mincho'">参拝の記録</h2>
+        <p class="text-xs font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest">PERSONAL STATISTICS</p>
+    </div>
 
+    <!-- コンテンツラッパー (JSでデータ挿入) -->
     <div id="stats-content-wrapper">
-        <!-- 比較解説カード -->
-        <div class="themed-card p-5 rounded-xl mb-6 border-l-4 border-red-500 shadow-sm">
-            <p id="stat-comparison-text" class="text-sm leading-relaxed">計算中...</p>
-        </div>
-
-        <!-- カード1: 総参拝数の比較 -->
-        <div class="themed-card p-6 rounded-xl shadow-sm mb-6 relative overflow-hidden">
-            <h3 class="text-sm font-bold mb-8 flex items-center gap-2 text-gray-500">
-                <i class="bi bi-person-walking"></i> 総参拝数の比較
-            </h3>
-            <div id="grid-lines-total" class="grid-container"></div>
-            <div id="graph-total-draws" class="space-y-6 relative z-10">
-                <!-- JSで生成 -->
+        
+        <!-- 1. ヒーローセクション -->
+        <div class="stats-hero-grid">
+            <div class="stats-hero-card hero-total" data-bg-text="参">
+                <div class="stats-hero-label">総参拝数</div>
+                <div class="stats-hero-value" id="hero-total-val">-</div>
+            </div>
+            <div class="stats-hero-card hero-daikichi" data-bg-text="吉">
+                <div class="stats-hero-label">大吉獲得数</div>
+                <div class="stats-hero-value" id="hero-daikichi-val">-</div>
             </div>
         </div>
 
-        <!-- カード2: 運勢分布の比較 -->
-        <div class="themed-card p-6 rounded-xl shadow-sm relative overflow-hidden">
-            <h3 class="text-sm font-bold mb-8 flex items-center gap-2 text-gray-500">
-                <i class="bi bi-bar-chart-line"></i> 運勢別の詳細比較
-            </h3>
-            <div id="grid-lines-fortunes" class="grid-container"></div>
-            <div id="stat-detailed-graphs" class="space-y-6 relative z-10">
-                <!-- JSで生成 -->
+        <!-- 2. インサイト (比較分析) -->
+        <div id="stats-insight-area" class="stats-insight-box">
+            <p class="text-center text-gray-400 text-sm">集計中...</p>
+        </div>
+
+        <!-- 3. 詳細グラフ -->
+        <div class="stats-graph-container">
+            <div class="stats-graph-header">
+                <h3 class="font-bold text-lg"><i class="bi bi-bar-chart-steps"></i> 運勢分布スペクトル</h3>
+                <div class="flex gap-4 text-[10px] font-bold">
+                    <div class="flex items-center gap-1"><div class="w-3 h-3 rounded bg-red-600"></div>あなた</div>
+                    <div class="flex items-center gap-1"><div class="w-3 h-3 rounded bg-gray-300 dark:bg-zinc-600"></div>平均</div>
+                </div>
+            </div>
+            
+            <div id="stats-spectrum-list" class="space-y-1">
+                <!-- JSで自動挿入 -->
             </div>
         </div>
 
-        <div class="mt-6 flex justify-center gap-4 text-[10px] font-bold">
-            <span class="flex items-center gap-1"><div class="w-3 h-1.5 rounded bg-red-600"></div> あなた</span>
-            <span class="flex items-center gap-1"><div class="w-3 h-1.5 rounded bg-gray-200 dark:bg-zinc-700"></div> 一般的な平均</span>
+    </div>
+
+    <!-- 非ログイン時のロック画面 -->
+    <div id="stats-lock" class="lab-lock-overlay hidden flex items-center justify-center">
+        <div class="bg-white/90 dark:bg-black/80 backdrop-blur-xl p-8 rounded-2xl shadow-2xl max-w-sm w-full border border-gray-100 dark:border-gray-800 text-center mx-4">
+            <i class="bi bi-person-lock text-5xl text-gray-400 mb-4 block"></i>
+            <h3 class="text-xl font-bold mb-2">記録は閉じられています</h3>
+            <p class="text-sm text-gray-500 mb-6 leading-relaxed">
+                自分だけの参拝記録を残し、<br>運勢の傾向を分析するにはログインが必要です。
+            </p>
+            <button onclick="showView('auth')" class="btn-primary w-full shadow-lg">
+                <i class="bi bi-person-plus-fill"></i> 記録を始める
+            </button>
         </div>
     </div>
 </section>
