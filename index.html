@@ -8575,104 +8575,139 @@ async function showResultDetail(isNewDraw, dataOverride = null) {
         let historyAbortController = null;
         let currentHistoryRequestId = 0; // 最新のリクエストIDを管理
 
-        async function loadHistory(page = 1) {
-            // リクエストIDを更新（これが「今回の注文番号」になる）
-            const requestId = ++currentHistoryRequestId;
+        // ホームカウンター更新 (修正版: 履歴画面の数字も同期させる)
+async function startLiveCounter() {
+    const el = document.getElementById('live-counter'); // ホーム: 発行総数
+    const uEl = document.getElementById('worshipper-counter'); // ホーム: 参拝者数
+    const historyGlobalEl = document.getElementById('global-history-count'); // ★追加: 履歴画面の参拝数
 
-            const list = document.getElementById('history-list');
-            const container = document.getElementById('history-container');
-            const overlay = document.getElementById('history-login-overlay');
-            const viewMode = document.getElementById('history-view-mode');
-            const myCountEl = document.getElementById('personal-history-count');
-            const globalCountEl = document.getElementById('global-history-count');
-            const searchResultCount = document.getElementById('search-result-count');
-
-            // 検索条件
-            const type = document.getElementById('search-type').value;
-            const keyword = document.getElementById('search-keyword').value;
-            const dateStart = document.getElementById('search-date-start').value;
-            const dateEnd = document.getElementById('search-date-end').value;
-
-            if(!currentState.user) {
-                container.classList.add('history-blurred');
-                overlay.classList.remove('hidden');
-                viewMode.textContent = "";
-                myCountEl.textContent = "-";
-                globalCountEl.textContent = "-";
-                // ダミー表示
-                let html = '';
-                for(let i=0; i<10; i++) html += `<div class="bg-gray-50 dark:bg-zinc-800 p-3 rounded mb-2 h-12 border-l-4 border-gray-300"></div>`;
-                list.innerHTML = html;
-                return;
-            }
-
-            // 前回の通信が生きていればキャンセル
-            if (historyAbortController) {
-                historyAbortController.abort();
-            }
-            historyAbortController = new AbortController();
-            const signal = historyAbortController.signal;
-
-            // UI初期化
-            container.classList.remove('history-blurred');
-            overlay.classList.add('hidden');
-            viewMode.textContent = "全参拝者の記録 (全期間)";
-            list.innerHTML = '<div class="text-center py-8"><div class="spinner-border text-red-500" role="status"></div> 読み込み中...</div>';
-            
-            // ★重要: 強制的にローディングを出す
-            showLoading(true);
-
-            try {
-                const params = new URLSearchParams({
-                    page: page,
-                    type: type,
-                    keyword: keyword,
-                    dateStart: dateStart,
-                    dateEnd: dateEnd
-                });
-
-                // 通信実行
-                const res = await authFetch(`${API_BASE}/api/history/global?${params.toString()}`, {
-                    method: 'GET',
-                    signal: signal 
-                });
+    async function fetchCount() {
+        try {
+            const res = await fetch(`${API_BASE}/api/counter`);
+            if(res.ok) {
+                const data = await res.json();
+                const countVal = Number(data.count || 0);
                 
-                // 通信が終わった時点で、このリクエストが「最新」かチェック
-                if (requestId !== currentHistoryRequestId) return; 
+                // 状態を更新
+                currentState.liveCount = countVal;
 
-                if(res.ok) {
-                    const data = await res.json();
-                    
-                    myCountEl.textContent = (data.personalTotal || 0).toLocaleString() + "回";
-                    globalCountEl.textContent = (currentState.liveCount || 0).toLocaleString() + "本";
-                    searchResultCount.textContent = (data.totalItems || 0).toLocaleString();
+                // 各要素に反映
+                if(el) el.textContent = countVal.toLocaleString() + "本";
+                if(uEl) uEl.textContent = Number(data.userCount || 0).toLocaleString() + "名";
+                
+                // ★追加: 履歴画面の要素があれば更新
+                if(historyGlobalEl) historyGlobalEl.textContent = countVal.toLocaleString() + "本";
+            }
+        } catch(e) { console.error(e); }
+    }
+    fetchCount();
+    setInterval(fetchCount, 60000);
+}
 
-                    historyPageState.page = data.page;
-                    historyPageState.totalItems = data.totalItems;
-                    historyPageState.filteredData = data.global;
+// 履歴読み込み関数 (修正版: 0上書き防止)
+async function loadHistory(page = 1) {
+    // リクエストIDを更新
+    const requestId = ++currentHistoryRequestId;
 
-                    renderHistoryList(data.global);
-                    renderServerPagination(data.page, data.totalItems, 100);
-                } else {
-                    console.error("Load failed:", res.status);
-                    list.innerHTML = '<p class="text-center text-red-500">情報の取得に失敗しました。</p>';
-                }
-            } catch(e) {
-                // キャンセル以外のエラーなら表示
-                if (e.name !== 'AbortError') {
-                    console.error(e);
-                    if (requestId === currentHistoryRequestId) {
-                        list.innerHTML = '<p class="text-center text-red-500">通信エラーが発生しました。</p>';
-                    }
-                }
-            } finally {
-                // ★最重要修正: 「自分が最新のリクエストである場合のみ」ローディングを消す
-                // これにより、連打しても最後の一回が終わるまで消えたり残ったりしなくなる
-                if (requestId === currentHistoryRequestId) {
-                    showLoading(false);
-                }
+    const list = document.getElementById('history-list');
+    const container = document.getElementById('history-container');
+    const overlay = document.getElementById('history-login-overlay');
+    const viewMode = document.getElementById('history-view-mode');
+    const myCountEl = document.getElementById('personal-history-count');
+    const globalCountEl = document.getElementById('global-history-count');
+    const searchResultCount = document.getElementById('search-result-count');
+
+    // 検索条件
+    const type = document.getElementById('search-type').value;
+    const keyword = document.getElementById('search-keyword').value;
+    const dateStart = document.getElementById('search-date-start').value;
+    const dateEnd = document.getElementById('search-date-end').value;
+
+    if(!currentState.user) {
+        container.classList.add('history-blurred');
+        overlay.classList.remove('hidden');
+        viewMode.textContent = "";
+        myCountEl.textContent = "-";
+        globalCountEl.textContent = "-";
+        // ダミー表示
+        let html = '';
+        for(let i=0; i<10; i++) html += `<div class="bg-gray-50 dark:bg-zinc-800 p-3 rounded mb-2 h-12 border-l-4 border-gray-300"></div>`;
+        list.innerHTML = html;
+        return;
+    }
+
+    // 前回の通信が生きていればキャンセル
+    if (historyAbortController) {
+        historyAbortController.abort();
+    }
+    historyAbortController = new AbortController();
+    const signal = historyAbortController.signal;
+
+    // UI初期化
+    container.classList.remove('history-blurred');
+    overlay.classList.add('hidden');
+    viewMode.textContent = "全参拝者の記録 (全期間)";
+    list.innerHTML = '<div class="text-center py-8"><div class="spinner-border text-red-500" role="status"></div> 読み込み中...</div>';
+    
+    // ★修正: 0の場合は上書きしない（startLiveCounterに任せる）、既に値があれば表示
+    if (currentState.liveCount > 0) {
+        globalCountEl.textContent = currentState.liveCount.toLocaleString() + "本";
+    }
+
+    showLoading(true);
+
+    try {
+        const params = new URLSearchParams({
+            page: page,
+            type: type,
+            keyword: keyword,
+            dateStart: dateStart,
+            dateEnd: dateEnd
+        });
+
+        // 通信実行
+        const res = await authFetch(`${API_BASE}/api/history/global?${params.toString()}`, {
+            method: 'GET',
+            signal: signal 
+        });
+        
+        if (requestId !== currentHistoryRequestId) return; 
+
+        if(res.ok) {
+            const data = await res.json();
+            
+            myCountEl.textContent = (data.personalTotal || 0).toLocaleString() + "回";
+            
+            // サーバーから返ってきた最新のライブカウントがあれば更新、なければ既存を維持
+            if (currentState.liveCount > 0) {
+                globalCountEl.textContent = currentState.liveCount.toLocaleString() + "本";
+            }
+            
+            searchResultCount.textContent = (data.totalItems || 0).toLocaleString();
+
+            historyPageState.page = data.page;
+            historyPageState.totalItems = data.totalItems;
+            historyPageState.filteredData = data.global;
+
+            renderHistoryList(data.global);
+            renderServerPagination(data.page, data.totalItems, 100);
+        } else {
+            console.error("Load failed:", res.status);
+            list.innerHTML = '<p class="text-center text-red-500">情報の取得に失敗しました。</p>';
+        }
+    } catch(e) {
+        if (e.name !== 'AbortError') {
+            console.error(e);
+            if (requestId === currentHistoryRequestId) {
+                list.innerHTML = '<p class="text-center text-red-500">通信エラーが発生しました。</p>';
             }
         }
+    } finally {
+        if (requestId === currentHistoryRequestId) {
+            showLoading(false);
+        }
+    }
+}
 
         // 履歴リストのレンダリング関数 (XSS対策版)
     function renderHistoryList(historyData) {
