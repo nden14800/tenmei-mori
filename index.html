@@ -11132,134 +11132,60 @@ function resetSearch() {
             document.getElementById('history-detail-modal').style.display = 'none';
         }
 
-        // --- シェア用画像生成 (修正版：縦書き崩壊・重なり防止対策強化) ---
+        // --- シェア用画像生成 (ライブラリ変更版：dom-to-image-more 使用) ---
         function generateResultImage() {
             const status = document.getElementById('gen-img-status');
             status.textContent = "画像を生成中...画面を動かさないでください";
             
+            // 画像化対象の要素
             const target = document.getElementById('result-capture-container');
+            const resultCard = document.getElementById('result-card-outer');
+            
             const container = document.getElementById('generated-image-container');
             container.innerHTML = '';
             container.classList.add('hidden');
             
-            // 現在のスクロール位置を保存
-            const originalScrollPos = window.scrollY;
-
-            // ★重要対策: 生成前に強制的にページ最上部へスクロールさせる
-            // (iOS Safari等でスクロール位置によるズレを防ぐため)
-            window.scrollTo(0, 0);
-            
+            // フォント読み込み待機
             document.fonts.ready.then(() => {
-                html2canvas(target, { 
-                    scale: 3, // 高画質
-                    useCORS: true, 
-                    allowTaint: true,
-                    backgroundColor: null, // 背景透過
-                    scrollX: 0,
-                    scrollY: 0, // 上でスクロールさせたので0指定
-                    
-                    // ★★★ 画像生成用レイアウト補正処理 ★★★
-                    onclone: (clonedDoc) => {
-                        const clonedOuter = clonedDoc.getElementById('result-card-outer');
-                        if (clonedOuter) {
-                            
-                            // 1. 全体のフォントをシステムフォント優先で固定（描画安定化）
-                            clonedOuter.style.fontFamily = "'Zen Old Mincho', serif, 'Hiragino Mincho ProN', serif";
-
-                            // 2. 助言ボックス（枠線内）の崩れ防止
-                            // 原因：縦書き内のインライン要素の配置計算ミス
-                            // 対策：内部要素をブロック化し、絶対的なサイズを持たせる
-                            const adviceBox = clonedOuter.querySelector('.result-advice-box');
-                            if (adviceBox) {
-                                adviceBox.style.display = 'block'; // Flex/Grid解除
-                                adviceBox.style.position = 'relative';
-                                // 内部のspanをdiv(ブロック)のように扱う
-                                const spans = adviceBox.querySelectorAll('span');
-                                spans.forEach(span => {
-                                    span.style.display = 'inline-block'; // ブロック化
-                                    span.style.marginBottom = '10px'; // 文字間隔確保
-                                    span.style.whiteSpace = 'nowrap'; // 改行禁止
-                                });
-                                // ラベル（助言）と本文の間に強制的に余白を入れる
-                                const label = adviceBox.querySelector('.advice-label');
-                                if(label) {
-                                    label.style.borderBottom = '1px solid currentColor';
-                                    label.style.paddingBottom = '5px';
-                                    label.style.marginBottom = '15px'; // 下（縦書きなので左）に余白
-                                }
-                            }
-
-                            // 3. 和歌エリアの位置調整
-                            const poem = clonedOuter.querySelector('.result-poem-vertical');
-                            if (poem) {
-                                poem.style.letterSpacing = '0.05em'; // 間延び防止のため少し詰める
-                                poem.style.lineHeight = '1.4';
-                            }
-
-                            // 4. 下部詳細エリア（病気・学問など）の重なり防止
-                            // 原因：縦書き+Flexbox(row-reverse)の計算バグ
-                            // 対策：gapを廃止し、マージンで制御。高さを固定。
-                            const detailGrid = clonedOuter.querySelector('.result-details-grid');
-                            if (detailGrid) {
-                                detailGrid.style.display = 'flex';
-                                detailGrid.style.flexDirection = 'row-reverse'; // 並び順維持
-                                detailGrid.style.gap = '0'; // gap廃止
-                                detailGrid.style.justifyContent = 'center';
-                                
-                                const columns = detailGrid.querySelectorAll('.detail-column');
-                                columns.forEach(col => {
-                                    col.style.margin = '0 10px'; // 左右マージンで間隔確保
-                                    col.style.height = '280px'; // 高さ固定で押し出し防止
-                                    col.style.writingMode = 'vertical-rl';
-                                    
-                                    // 項目名と内容が重ならないように調整
-                                    const label = col.querySelector('.detail-item-label');
-                                    const content = col.querySelector('.detail-item-content');
-                                    if(label) {
-                                        label.style.display = 'inline-block';
-                                        label.style.marginBottom = '8px';
-                                    }
-                                    if(content) {
-                                        content.style.display = 'inline-block';
-                                    }
-                                });
-                            }
-
-                            // 5. 下部の開運ボックス（Lucky Area）のレイアウト確保
-                            const luckyArea = clonedOuter.querySelector('.lucky-area');
-                            if (luckyArea) {
-                                luckyArea.style.display = 'grid';
-                                luckyArea.style.gridTemplateColumns = '1fr 1fr'; // 2列固定
-                                luckyArea.style.gap = '20px';
-                                luckyArea.style.marginTop = '30px';
-                            }
-
-                            // 6. 大吉背景などの装飾解除（念のため）
-                            clonedOuter.style.backgroundImage = 'none';
-                            clonedOuter.style.boxShadow = 'none';
-                            clonedOuter.style.transform = 'none'; 
-                        }
-                    }
-                }).then(canvas => {
+                
+                // 高画質化のためのスケール設定 (3倍)
+                const scale = 3;
+                
+                // dom-to-image-more の実行
+                domtoimage.toPng(target, {
+                    width: target.offsetWidth * scale,
+                    height: target.offsetHeight * scale,
+                    style: {
+                        // 内部的に要素を拡大して高画質化する
+                        transform: `scale(${scale})`,
+                        transformOrigin: 'top left',
+                        width: target.offsetWidth + 'px',
+                        height: target.offsetHeight + 'px',
+                        // 余計なマージンを排除
+                        margin: '0'
+                    },
+                    // 背景色を透明にするか、指定色にするか（nullなら透明）
+                    bgcolor: null 
+                })
+                .then(function (dataUrl) {
                     status.textContent = "";
                     
-                    canvas.toBlob(blob => {
-                        if (!blob) {
-                            status.textContent = "生成エラー：Blob作成失敗";
-                            window.scrollTo(0, originalScrollPos);
-                            return;
-                        }
-                        
-                        container.innerHTML = '<p class="text-green-600 font-bold mb-2">画像の生成完了</p>';
+                    // Blob変換処理
+                    fetch(dataUrl)
+                    .then(res => res.blob())
+                    .then(blob => {
                         currentState.lastImageBlob = blob;
                         const url = URL.createObjectURL(blob);
                         
-                        // プレビュー表示
+                        // 生成完了表示
+                        container.innerHTML = '<p class="text-green-600 font-bold mb-2">画像の生成完了</p>';
+                        container.classList.remove('hidden');
+
+                        // プレビュー画像
                         const img = document.createElement('img');
                         img.src = url;
                         img.className = "mx-auto rounded border w-40 mb-3 shadow-lg"; 
                         container.appendChild(img);
-                        container.classList.remove('hidden');
 
                         // ダウンロードボタン
                         const dlLink = document.createElement('a');
@@ -11268,16 +11194,13 @@ function resetSearch() {
                         dlLink.className = "btn-primary text-sm w-full justify-center py-3 shadow-md";
                         dlLink.innerHTML = '<i class="bi bi-download"></i> 画像を保存する';
                         container.appendChild(dlLink);
-                        
-                        // 完了したら元の位置に戻る
-                        window.scrollTo(0, originalScrollPos);
-
-                    }, 'image/png');
-
-                }).catch(err => {
-                    console.error(err);
+                    });
+                })
+                .catch(function (error) {
+                    console.error('画像生成エラー:', error);
                     status.textContent = "画像の生成に失敗しました。";
-                    window.scrollTo(0, originalScrollPos);
+                    // エラー内容をアラートで出す（デバッグ用）
+                    // alert("生成エラー: " + error.message);
                 });
             });
         }
