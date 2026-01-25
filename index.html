@@ -9685,20 +9685,19 @@ async function toggleFavorite(signId, bloodType) {
     }
 }
 
-// ==========================================
-//  カード生成ロジック (修正・配置変更版)
-// ==========================================
+// カードHTML生成関数 (カレンダー表示部分の修正)
 function createCardHTML(data) {
     // お気に入り状態チェック
     const isFav = favoriteList.some(f => f.sign === data.sign.id && f.blood === data.blood);
     
-    // ランクスタイルの決定（背景は白統一、枠線とバッジで差別化）
+    // ランクスタイルの決定
+    // 背景色はCSSで白固定にしているため、ここでは枠線用クラスのみ指定
     let cardClass = "rank-normal";
     let badgeClass = "badge-normal";
     
-    if (data.rank === 1) { cardClass = "rank-top rank-1"; badgeClass = "badge-gold"; }
-    else if (data.rank === 2) { cardClass = "rank-top rank-2"; badgeClass = "badge-silver"; }
-    else if (data.rank === 3) { cardClass = "rank-top rank-3"; badgeClass = "badge-bronze"; }
+    if (data.rank === 1) { cardClass = "rank-1"; badgeClass = "badge-gold"; }
+    else if (data.rank === 2) { cardClass = "rank-2"; badgeClass = "badge-silver"; }
+    else if (data.rank === 3) { cardClass = "rank-3"; badgeClass = "badge-bronze"; }
 
     // スコアバーの色
     const getBarColor = (score) => {
@@ -9707,14 +9706,19 @@ function createCardHTML(data) {
         return "#3b82f6"; // 青
     };
 
-    // コンパクトカレンダー (30日分)
-    // 6列x5行のグリッドに収めるため、余分なスペースを削る
+    // カレンダーHTML生成 (アイコンを表示するように変更)
     const calendarHTML = data.calendar.map(d => {
-        // マークがある日だけ色をつける（星などのアイコンは小さすぎて潰れるので色と点滅等で表現、または文字色変更）
         const hasMark = d.marks.length > 0;
         const cellClass = hasMark ? 'has-mark' : '';
-        // 日付のみ表示
-        return `<div class="zodiac-cal-cell ${cellClass}">${d.day}</div>`;
+        // マークがある場合はアイコンを表示、なければ日付のみ
+        // スペースが狭いので最大2つくらいまで表示するように結合
+        const marksStr = d.marks.slice(0, 2).join(''); 
+        
+        return `
+            <div class="zodiac-cal-cell ${cellClass}">
+                <span class="zodiac-cal-date">${d.day}</span>
+                <div class="zodiac-cal-marks">${marksStr}</div>
+            </div>`;
     }).join('');
 
     return `
@@ -9727,7 +9731,6 @@ function createCardHTML(data) {
                     <div>
                         <div class="flex items-center gap-1 mb-1">
                             <span class="text-2xl">${data.sign.icon}</span>
-                            <!-- 星ボタンを名前の隣に配置 -->
                             <button class="fav-star-btn ${isFav ? 'active' : ''}" 
                                     onclick="toggleFavorite('${data.sign.id}', '${data.blood}')">
                                 <i class="bi bi-star${isFav ? '-fill' : ''}"></i>
@@ -9760,7 +9763,7 @@ function createCardHTML(data) {
                         </p>
                     </div>
 
-                    <!-- カレンダーエリア (右側配置・コンパクト) -->
+                    <!-- カレンダーエリア (右側配置・コンパクト・丸角) -->
                     <div class="zodiac-compact-calendar">
                         <h4>30日吉日予報</h4>
                         <div class="zodiac-cal-grid">
@@ -9769,7 +9772,7 @@ function createCardHTML(data) {
                     </div>
                 </div>
 
-                <!-- 3. 右端: パラメータバー (幅固定) -->
+                <!-- 3. 右端: パラメータバー -->
                 <div class="w-full md:w-48 flex-shrink-0 space-y-2 pt-3 md:pt-0 border-t md:border-t-0 md:border-l border-gray-100 dark:border-gray-700 md:pl-4">
                     <div>
                         <div class="flex justify-between text-[10px] font-bold mb-0.5">
