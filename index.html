@@ -10741,76 +10741,90 @@ ${getShareUrl()}`;
             finally { showLoading(false); }
         }
 
-        // --- 認証系 (新: 選択 -> 入力 -> 認証) ---
-        function startAuthFlow(mode) {
-            document.getElementById('auth-selection').classList.add('hidden');
-            document.getElementById('auth-step-1').classList.remove('hidden');
-            
-            currentState.authMode = mode;
-            
-            const loginFields = document.getElementById('form-login-fields');
-            const regFields = document.getElementById('form-register-fields');
-            const title = document.getElementById('auth-form-title');
+        // --- 認証系 (Bento UI対応) ---
 
-            if (mode === 'login') {
-                loginFields.classList.remove('hidden');
-                regFields.classList.add('hidden');
-                title.textContent = 'ログイン';
-            } else {
-                loginFields.classList.add('hidden');
-                regFields.classList.remove('hidden');
-                title.textContent = '新規登録';
-            }
+// 1. 最初の選択 (ログイン or 登録)
+function startAuthFlow(mode) {
+    document.getElementById('auth-selection').classList.add('hidden');
+    document.getElementById('auth-step-1').classList.remove('hidden');
+    
+    currentState.authMode = mode;
+    
+    const loginFields = document.getElementById('form-login-fields');
+    const regFields = document.getElementById('form-register-fields');
+    const title = document.getElementById('auth-form-title');
+
+    if (mode === 'login') {
+        loginFields.classList.remove('hidden');
+        regFields.classList.add('hidden');
+        title.textContent = 'ログイン';
+    } else {
+        loginFields.classList.add('hidden');
+        regFields.classList.remove('hidden');
+        title.textContent = '新規登録';
+    }
+}
+
+// 2. 選択画面に戻る
+function backToAuthSelection() {
+    document.getElementById('auth-step-1').classList.add('hidden');
+    document.getElementById('auth-selection').classList.remove('hidden');
+}
+
+// 3. 入力画面に戻る (コード入力から戻る時)
+function backToAuthStep1() {
+    document.getElementById('auth-step-2').classList.add('hidden');
+    document.getElementById('auth-step-1').classList.remove('hidden');
+}
+
+// 4. 認証コード送信 (UI制御の更新)
+async function initiateAuth(mode) {
+    const emailInputId = (mode === 'login') ? 'login-email' : 'reg-email';
+    const email = document.getElementById(emailInputId).value.trim().toLowerCase();
+    const username = document.getElementById('reg-username').value;
+    const pass = document.getElementById(mode === 'login' ? 'login-password' : 'reg-password').value;
+
+    if(!email || !pass) return alert("メールアドレスとパスワードを入力してください");
+    if(mode === 'register' && !username) return alert("ユーザー名を入力してください");
+
+    showLoading(true);
+    try {
+        const res = await fetch(`${API_BASE}/api/auth/send`, { 
+            method: 'POST', 
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({ 
+                email, 
+                password: pass, 
+                username: mode === 'register' ? username : undefined,
+                mode: mode 
+            }) 
+        });
+        
+        const data = await res.json();
+        
+        // レート制限チェック
+        if (res.status === 429) {
+            showToast(data.message, 'warning', '天命の戒め');
+            return;
         }
 
-        function backToAuthSelection() {
+        if(res.ok && data.success) {
+            // 画面遷移: 入力フォーム -> コード入力
             document.getElementById('auth-step-1').classList.add('hidden');
-            document.getElementById('auth-selection').classList.remove('hidden');
+            document.getElementById('auth-step-2').classList.remove('hidden');
+            
+            const codeInput = document.getElementById('auth-code-input');
+            codeInput.value = ''; // 空にする
+            codeInput.focus();
+        } else {
+            alert(`送信エラー: ${data.error || '不明なエラー'}`);
         }
-
-        // --- 認証コード送信 (initiateAuth) - 修正版 ---
-        async function initiateAuth(mode) {
-            const emailInputId = (mode === 'login') ? 'login-email' : 'reg-email';
-            const email = document.getElementById(emailInputId).value.trim().toLowerCase();
-            const username = document.getElementById('reg-username').value;
-            const pass = document.getElementById(mode === 'login' ? 'login-password' : 'reg-password').value;
-
-            if(!email || !pass) return alert("メールアドレスとパスワードを入力してください");
-            if(mode === 'register' && !username) return alert("ユーザー名を入力してください");
-
-            showLoading(true);
-            try {
-                const res = await fetch(`${API_BASE}/api/auth/send`, { 
-                    method: 'POST', 
-                    headers: {'Content-Type': 'application/json'},
-                    body: JSON.stringify({ 
-                        email, 
-                        password: pass, 
-                        username: mode === 'register' ? username : undefined,
-                        mode: mode 
-                    }) 
-                });
-                
-                const data = await res.json();
-                
-                // ▼▼▼ 修正: レート制限（429）の場合、天命の戒めを表示 ▼▼▼
-                if (res.status === 429) {
-                    showToast(data.message, 'warning', '天命の戒め');
-                    return;
-                }
-
-                if(res.ok && data.success) {
-                    document.getElementById('auth-step-1').classList.add('hidden');
-                    document.getElementById('auth-step-2').classList.remove('hidden');
-                    const codeInput = document.getElementById('auth-code-input');
-                    codeInput.value = '';
-                    codeInput.focus();
-                } else {
-                    alert(`送信エラー: ${data.error || '不明なエラー'}`);
-                }
-            } catch(e) { alert("通信エラー"); }
-            finally { showLoading(false); }
-        }
+    } catch(e) { 
+        alert("通信エラー"); 
+    } finally { 
+        showLoading(false); 
+    }
+}
 
         // --- 認証完了 (finalizeAuth) - 修正版 ---
         async function finalizeAuth() {
