@@ -1150,88 +1150,229 @@
         }
 
 
-/* --- 12星座占い カードスタイル修正版 --- */
-
-/* カード全体（白背景・シンプル化・影統一） */
-.zodiac-card-box {
-    background-color: var(--card-bg); /* 強制的に白(#ffffff) */
-    border: 1px solid var(--card-border);
-    border-radius: 16px;
-    margin-bottom: 20px;
-    position: relative;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.05); /* 影も全順位で統一 */
-    overflow: hidden;
-    transition: transform 0.2s;
-    display: flex;
-    flex-direction: column;
-}
-
-/* TOP3でも背景は変えず、左線の色と太さだけで表現 */
-.zodiac-card-box.rank-1 { border-left: 6px solid #d4af37; } /* 金 */
-.zodiac-card-box.rank-2 { border-left: 6px solid #a0a0a0; } /* 銀 */
-.zodiac-card-box.rank-3 { border-left: 6px solid #b87333; } /* 銅 */
-.zodiac-card-box.rank-normal { border-left: 4px solid var(--card-border); } /* 4位以下 */
-
-/* ダークモード対応 */
-.dark .zodiac-card-box {
-    background-color: var(--card-bg); /* ダークモード時の背景色 */
-}
-
-/* カレンダーグリッド (6列で配置) */
-.zodiac-cal-grid {
-    display: grid;
-    grid-template-columns: repeat(6, 1fr); 
-    gap: 3px;
-    margin-top: 5px;
-}
-
-/* カレンダーのセル (少し丸みを帯びさせる) */
-.zodiac-cal-cell {
-    background: var(--bg-color);
-    border: 1px solid var(--card-border);
-    border-radius: 6px; /* ★ここを修正: 角を丸く */
-    height: 24px; /* アイコンが入るよう少し高さを確保 */
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    position: relative;
-    overflow: hidden;
-}
-
-/* 日付の文字 */
-.zodiac-cal-date {
-    font-size: 0.55rem;
-    line-height: 1;
-    color: var(--text-sub);
-    font-weight: bold;
-}
-
-/* マークエリア */
-.zodiac-cal-marks {
-    display: flex;
-    justify-content: center;
-    gap: 1px;
-    margin-top: 1px;
-    line-height: 1;
-}
-/* カレンダー内の極小アイコン */
-.zodiac-cal-marks i {
-    font-size: 0.5rem; /* かなり小さくして収める */
-}
-
-/* マークがある日の強調（背景色を薄くつける） */
-.zodiac-cal-cell.has-mark {
-    background-color: #fffbef;
-    border-color: #fcd34d;
-}
-.dark .zodiac-cal-cell.has-mark {
-    background-color: #3f2c00;
-    border-color: #854d0e;
-}
+/* --- 12星座占い モダンUI --- */
         
+        /* 入力エリアのグリッド */
+        .zodiac-input-grid {
+            display: grid;
+            grid-template-columns: repeat(12, 1fr);
+            gap: 15px;
+            margin-bottom: 30px;
+        }
         
+        /* 選択セレクトボックスのモダン化 */
+        .modern-select {
+            appearance: none;
+            background-color: var(--input-bg);
+            border: 1px solid var(--card-border);
+            border-radius: 16px;
+            padding: 16px;
+            font-size: 1rem;
+            color: var(--text-main);
+            width: 100%;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-family: inherit;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='%23888' viewBox='0 0 16 16'%3E%3Cpath d='M7.247 11.14 2.451 5.658C1.885 5.013 2.345 4 3.204 4h9.592a1 1 0 0 1 .753 1.659l-4.796 5.48a1 1 0 0 1-1.506 0z'/%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 1rem center;
+        }
+        .modern-select:hover, .modern-select:focus {
+            border-color: var(--accent-red);
+            box-shadow: 0 0 0 4px rgba(185, 28, 28, 0.1);
+            outline: none;
+        }
 
+        /* 判定ボタン */
+        .modern-search-btn {
+            background-color: var(--accent-red);
+            color: white;
+            border: none;
+            border-radius: 16px;
+            font-weight: bold;
+            font-size: 1.1rem;
+            cursor: pointer;
+            transition: transform 0.2s, background 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            box-shadow: 0 4px 10px rgba(185, 28, 28, 0.3);
+        }
+        .modern-search-btn:hover {
+            transform: translateY(-2px);
+            filter: brightness(1.1);
+        }
+        .modern-search-btn:active {
+            transform: translateY(0);
+        }
+
+        /* --- 12星座占い 新カードスタイル (修正・完全版) --- */
+
+        /* カード全体（白背景・シンプル化・影統一） */
+        .zodiac-card-box {
+            background-color: var(--card-bg); /* 強制的に白(#ffffff) */
+            border: 1px solid var(--card-border);
+            border-radius: 16px;
+            margin-bottom: 20px;
+            position: relative;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05); /* 影も全順位で統一 */
+            overflow: hidden;
+            transition: transform 0.2s;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* 順位ごとの左線（背景色は変えず、線だけで表現） */
+        .zodiac-card-box.rank-1 { border-left: 6px solid #d4af37; } /* 金 */
+        .zodiac-card-box.rank-2 { border-left: 6px solid #a0a0a0; } /* 銀 */
+        .zodiac-card-box.rank-3 { border-left: 6px solid #b87333; } /* 銅 */
+        .zodiac-card-box.rank-normal { border-left: 4px solid var(--card-border); } /* 4位以下 */
+
+        /* ダークモード対応 */
+        .dark .zodiac-card-box {
+            background-color: var(--card-bg);
+        }
+
+        /* コンテンツエリア */
+        .zodiac-card-body {
+            padding: 15px 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        /* PC/タブレット以上で横並び */
+        @media (min-width: 768px) {
+            .zodiac-card-body {
+                flex-direction: row;
+                align-items: flex-start;
+            }
+        }
+
+        /* 中央コンテンツエリア（文章とカレンダーを横並びにする） */
+        .zodiac-content-middle {
+            flex: 1;
+            min-width: 0;
+            display: flex;
+            gap: 15px;
+        }
+        @media (max-width: 600px) {
+            .zodiac-content-middle {
+                flex-direction: column; /* スマホ極小画面では縦に戻す */
+            }
+        }
+
+        /* 文章エリア */
+        .zodiac-text-area {
+            flex: 1;
+        }
+
+        /* コンパクトカレンダーエリア（右側配置用） */
+        .zodiac-compact-calendar {
+            width: 130px; /* 固定幅でコンパクトに */
+            flex-shrink: 0;
+            background-color: rgba(128,128,128,0.03);
+            border: 1px solid var(--card-border);
+            border-radius: 8px;
+            padding: 6px;
+            text-align: center;
+        }
+        .zodiac-compact-calendar h4 {
+            font-size: 0.6rem;
+            color: var(--text-sub);
+            margin-bottom: 4px;
+            font-weight: bold;
+        }
+
+        /* カレンダーグリッド (6列で配置) */
+        .zodiac-cal-grid {
+            display: grid;
+            grid-template-columns: repeat(6, 1fr); 
+            gap: 3px;
+            margin-top: 5px;
+        }
+
+        /* カレンダーのセル (丸みを帯びさせる) */
+        .zodiac-cal-cell {
+            background: var(--bg-color);
+            border: 1px solid var(--card-border);
+            border-radius: 6px; /* 角を丸く */
+            height: 24px; /* アイコンが入るよう少し高さを確保 */
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        /* 日付の文字 */
+        .zodiac-cal-date {
+            font-size: 0.55rem;
+            line-height: 1;
+            color: var(--text-sub);
+            font-weight: bold;
+        }
+
+        /* マークエリア */
+        .zodiac-cal-marks {
+            display: flex;
+            justify-content: center;
+            gap: 1px;
+            margin-top: 1px;
+            line-height: 1;
+        }
+        /* カレンダー内の極小アイコン */
+        .zodiac-cal-marks i {
+            font-size: 0.5rem; /* 小さくして収める */
+        }
+
+        /* マークがある日の強調 */
+        .zodiac-cal-cell.has-mark {
+            background-color: #fffbef;
+            border-color: #fcd34d;
+        }
+        .dark .zodiac-cal-cell.has-mark {
+            background-color: #3f2c00;
+            border-color: #854d0e;
+        }
+
+        /* ランクバッジ */
+        .zodiac-rank-badge {
+            width: 40px; height: 40px;
+            border-radius: 10px;
+            display: flex; align-items: center; justify-content: center;
+            font-weight: 900; font-size: 1.2rem;
+            color: white;
+            flex-shrink: 0;
+        }
+        /* バッジの色 */
+        .badge-gold   { background: linear-gradient(135deg, #ffd700, #fdb931); }
+        .badge-silver { background: linear-gradient(135deg, #e0e0e0, #bdbdbd); color: #555; }
+        .badge-bronze { background: linear-gradient(135deg, #cd7f32, #a0522d); }
+        .badge-normal { background: var(--card-border); color: var(--text-sub); font-size: 1rem; }
+
+        /* お気に入りボタン（名前の横） */
+        .fav-star-btn {
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-size: 1.2rem;
+            color: #ccc;
+            transition: transform 0.2s, color 0.2s;
+            margin-left: 5px;
+            padding: 0 5px;
+            line-height: 1;
+        }
+        .fav-star-btn.active {
+            color: #facc15; /* 黄色 */
+            transform: scale(1.1);
+        }
+        .fav-star-btn:hover {
+            color: #facc15;
+        }
+        
         
         /* 認証コード入力欄（和風） */
         .auth-code-input-container {
