@@ -2230,21 +2230,25 @@
             opacity: 0.6;
             transition: all 0.5s;
         }
+
+        /* ▼ 修正：ロック画面そのものにはフィルターがかからないように強制解除 ▼ */
         .lab-lock-overlay {
             position: absolute;
             top: 50%; left: 50%;
             transform: translate(-50%, -50%);
-            z-index: 20;
-            background-color: rgba(255, 255, 255, 0.7);
+            z-index: 100; /* 重なり順を最前面に */
+            background-color: rgba(255, 255, 255, 0.8);
             backdrop-filter: blur(10px);
             padding: 30px;
-            border-radius: 12px;
-            box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.2);
             text-align: center;
             border: 1px solid var(--card-border);
-            width: 80%;
+            width: 90%;
             max-width: 400px;
+            filter: none !important; /* 絶対にボカさない */
         }
+        
         /* ダークモード時のロック画面 */
         @media (prefers-color-scheme: dark) {
             .lab-lock-overlay {
