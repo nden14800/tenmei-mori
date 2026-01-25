@@ -8926,54 +8926,90 @@ async function loadHistory(page = 1) {
     }
 }
 
-        // 履歴リストのレンダリング関数 (XSS対策版)
-    function renderHistoryList(historyData) {
-        const list = document.getElementById('history-list');
-        list.innerHTML = '';
-        
-        if(historyData.length === 0) {
-            list.innerHTML = '<p class="text-gray-400 text-center">該当する履歴がありません。</p>';
-            return;
-        }
-
-        historyData.forEach((item) => {
-            const div = document.createElement('div');
-            const isMe = item.username === currentState.user.username;
-            const borderColor = item.result.includes('凶') ? 'border-gray-500' : 'border-red-500';
-            const bgClass = isMe ? 'bg-red-50 dark:bg-red-900/20' : 'bg-gray-50 dark:bg-zinc-800';
-
-            div.className = `${bgClass} p-3 rounded flex justify-between items-center border-l-4 ${borderColor} cursor-pointer hover:opacity-80 transition shadow-sm`;
-            
-            div.onclick = () => {
-                showResultDetail(false, item);
-            }; 
-
-            // ★修正: timestampを数値に確実に変換してからDateにする
-        let date = new Date(Number(item.timestamp));
-        
-        // それでも無効な日付(NaN)だった場合の対策
-        let dateStr = "----/--/-- --:--";
-        if (!isNaN(date.getTime())) {
-            dateStr = `${date.getMonth()+1}/${date.getDate()} ${date.getHours()}:${String(date.getMinutes()).padStart(2, '0')}`;
-        }
-            
-            // ★修正: username を escapeHtml で囲んで無害化
-            div.innerHTML = `
-                <div class="flex flex-col text-left">
-                    <span class="text-xs font-bold ${isMe ? 'text-red-600' : 'themed-text-sub'}">
-                        ${escapeHtml(item.username)} 様
-                    </span>
-                    <span class="text-xs text-gray-400">${dateStr}</span>
-                </div>
-                <div class="flex items-center gap-4">
-                    <span class="font-bold text-red-700 dark:text-red-400 text-lg w-16 text-right">
-                        ${item.result}
-                    </span>
-                </div>
-            `;
-            list.appendChild(div);
-        });
+        // 履歴リストのレンダリング関数 (タイムライン・モダンカード版)
+function renderHistoryList(historyData) {
+    const list = document.getElementById('history-list');
+    list.innerHTML = '';
+    
+    // データがない場合の表示
+    if(historyData.length === 0) {
+        list.innerHTML = `
+            <div class="flex flex-col items-center justify-center py-10 text-gray-400">
+                <i class="bi bi-wind text-4xl mb-3 opacity-50"></i>
+                <p>風の音しかしません...</p>
+                <p class="text-xs mt-1">条件に一致する記録が見つかりませんでした。</p>
+            </div>
+        `;
+        return;
     }
+
+    // データのループ処理
+    historyData.forEach((item, index) => {
+        // 自分の記録かどうか判定
+        const isMe = currentState.user && item.username === currentState.user.username;
+        
+        // 日付フォーマット処理
+        let dateObj = new Date(Number(item.timestamp));
+        let dateStr = "----/--/--";
+        let timeStr = "--:--";
+        if (!isNaN(dateObj.getTime())) {
+            dateStr = `${dateObj.getFullYear()}.${String(dateObj.getMonth()+1).padStart(2,'0')}.${String(dateObj.getDate()).padStart(2,'0')}`;
+            timeStr = `${dateObj.getHours()}:${String(dateObj.getMinutes()).padStart(2,'0')}`;
+        }
+
+        // バッジのスタイル決定（運勢によって色を変える）
+        let badgeClass = "res-kyo"; // デフォルト（凶系）
+        if (item.result === "大吉") {
+            badgeClass = "res-daikichi"; // 大吉用（金）
+        } else if (item.result.includes("吉")) {
+            badgeClass = "res-kichi"; // 吉系（赤）
+        } else if (item.result === "大凶") {
+            badgeClass = "res-daikyo"; // 大凶用（黒）
+        }
+
+        // アニメーション遅延 (少しずつずらして表示する演出)
+        const delay = index * 0.05; 
+
+        // HTML生成 (タイムライン構造)
+        // .timeline-item が全体の枠、.timeline-dot が左の点、.history-card が中身
+        // クリックで詳細モーダルを表示するイベントを設定
+        // JSON.stringify(item) でデータを埋め込み、シングルクォートのエスケープ処理も行う
+        const html = `
+            <div class="timeline-item ${isMe ? 'is-me' : ''}" style="animation-delay: ${delay}s">
+                <div class="timeline-dot"></div>
+                
+                <div class="history-card ${isMe ? 'is-me' : ''}" onclick='showResultDetail(false, ${JSON.stringify(item).replace(/'/g, "&apos;")})'>
+                    <!-- 左側: 日付とユーザー情報 -->
+                    <div>
+                        <div class="flex items-center gap-2 mb-1">
+                            <span class="text-xs font-bold text-gray-400 tracking-wider font-mono">${dateStr}</span>
+                            <span class="text-[10px] bg-gray-100 dark:bg-zinc-700 px-1.5 rounded text-gray-500">${timeStr}</span>
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <span class="font-bold ${isMe ? 'text-red-600' : 'text-gray-700 dark:text-gray-300'} text-sm truncate max-w-[120px] md:max-w-[200px]">
+                                ${isMe ? '<i class="bi bi-person-fill"></i> ' : ''}${escapeHtml(item.username)}
+                            </span>
+                            ${isMe ? '<span class="text-[10px] border border-red-200 text-red-500 px-1 rounded">あなた</span>' : ''}
+                        </div>
+                    </div>
+
+                    <!-- 右側: 結果バッジと発行番号 -->
+                    <div class="flex flex-col items-end">
+                        <div class="result-badge ${badgeClass}">
+                            ${item.result}
+                        </div>
+                        <div class="text-[10px] text-gray-400 mt-1">
+                            No.${Number(item.issue_number || 0).toLocaleString()}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `;
+        
+        // リストに追加
+        list.insertAdjacentHTML('beforeend', html);
+    });
+}
 
         // 検索ボタン: 1ページ目をロード
 function filterHistory() {
