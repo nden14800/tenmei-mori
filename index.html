@@ -8171,117 +8171,105 @@ window.renderFullColumnView = function() {
         "熊本県","大分県","宮崎県","鹿児島県","沖縄県"
     ];
 
-    // ランキング生成・描画関数
-    window.renderPrefectureRanking = function() {
-        const listContainer = document.getElementById('prefecture-list');
-        const dateDisplay = document.getElementById('pref-date-display');
+    // ランキング生成・描画関数（ダッシュボードUI版）
+window.renderPrefectureRanking = function() {
+    const listContainer = document.getElementById('prefecture-list');
+    const top3Container = document.getElementById('prefecture-top3');
+    const dateDisplay = document.getElementById('pref-date-display');
+    
+    if (!listContainer || !top3Container) return;
+
+    // 日付表示
+    const dateStr = getJSTDateString(); 
+    if (dateDisplay) {
+        const dateParts = dateStr.split('-');
+        dateDisplay.innerHTML = `${dateParts[0]}年${dateParts[1]}月${dateParts[2]}日`;
+    }
+
+    // 1. データ生成 (47都道府県計算)
+    let rankingData = prefecturesList.map((pref, index) => {
+        const seed = dateStr + "_" + pref;
+        const rng = new SeededRandom(seed);
+        const score = Math.floor(rng.next() * 52) + 49;
         
-        // コンテナが存在しない場合は処理を中断（エラー防止）
-        if (!listContainer) return;
+        return {
+            name: pref,
+            score: score,
+            text: generatePrefectureText(pref, score, rng, index)
+        };
+    });
 
-        // 【重要】日本時間(JST)の日付文字列を取得
-        const dateStr = getJSTDateString(); 
+    // 2. ソート (高得点順)
+    rankingData.sort((a, b) => b.score - a.score);
+
+    // 3. 描画 (TOP3とそれ以外に分割)
+    const top3Data = rankingData.slice(0, 3);
+    const restData = rankingData.slice(3);
+
+    // --- A. TOP3の描画 ---
+    // 配列順序を [2位, 1位, 3位] の並びにして、1位を真ん中にする（PC表示時）
+    // スマホ(flex-col)では上から順に表示したいので、HTML構造順は 1->2->3 にし、CSS orderで制御も可能だが
+    // 今回はシンプルに 1->2->3 の順でDOM生成し、CSSで特別感を出す
+    
+    let top3Html = '';
+    
+    // 1位
+    top3Html += createTopCard(top3Data[0], 1, 'crown-gold', 'top-rank-1', 'text-yellow-600');
+    // 2位
+    top3Html += createTopCard(top3Data[1], 2, 'crown-silver', 'top-rank-2', 'text-gray-500');
+    // 3位
+    top3Html += createTopCard(top3Data[2], 3, 'crown-bronze', 'top-rank-3', 'text-orange-600');
+
+    top3Container.innerHTML = top3Html;
+
+    // --- B. 4位以下の描画 ---
+    let listHtml = '';
+    restData.forEach((item, index) => {
+        const rank = index + 4;
         
-        if (dateDisplay) {
-            const dateParts = dateStr.split('-');
-            dateDisplay.innerHTML = `${dateParts[0]}年${dateParts[1]}月${dateParts[2]}日 <span class="text-sm font-normal ml-2 text-gray-500 dark:text-gray-400">の運勢順位</span>`;
-        }
+        // バーの色判定
+        let barClass = "bar-C";
+        if (item.score >= 80) barClass = "bar-A";
+        else if (item.score >= 60) barClass = "bar-B";
 
-        // 1. データ生成 (47都道府県すべて計算)
-        let rankingData = prefecturesList.map((pref, index) => {
-            // シード: 日付文字列(JST) + 県名
-            const seed = dateStr + "_" + pref;
-            const rng = new SeededRandom(seed);
-            
-            // スコア算出 (49点〜100点の範囲)
-            const score = Math.floor(rng.next() * 52) + 49;
-            
-            return {
-                name: pref,
-                score: score,
-                // indexを渡して、47都道府県で被らないように制御
-                text: generatePrefectureText(pref, score, rng, index)
-            };
-        });
-
-        // 2. ソート (点数が高い順に並び替え)
-        rankingData.sort((a, b) => b.score - a.score);
-
-        // 3. 描画 HTML生成
-        let html = '';
-        rankingData.forEach((item, index) => {
-            const rank = index + 1;
-            
-            // ランク別スタイル定義
-            let rankBadgeClass = "bg-gray-200 text-gray-600";
-            let borderClass = "border-gray-300";
-            let scoreColor = "text-gray-600";
-
-            // 100点〜90点 (Sランク)
-            if (item.score >= 90) { 
-                rankBadgeClass = "bg-gradient-to-br from-yellow-300 to-yellow-500 text-white border-2 border-yellow-100 shadow";
-                borderClass = "border-yellow-400 bg-yellow-50 dark:bg-yellow-900/20";
-                scoreColor = "text-red-600";
-            
-            // 89点〜70点 (Aランク)
-            } else if (item.score >= 70) { 
-                rankBadgeClass = "bg-red-500 text-white";
-                borderClass = "border-red-300 bg-red-50 dark:bg-red-900/10";
-                scoreColor = "text-red-500";
-            
-            // 69点〜40点 (Bランク)
-            } else if (item.score >= 40) { 
-                rankBadgeClass = "bg-blue-500 text-white";
-                borderClass = "border-blue-200";
-                scoreColor = "text-blue-600";
-            
-            // 39点〜0点 (Cランク)
-            } else { 
-                rankBadgeClass = "bg-gray-500 text-white";
-                borderClass = "border-gray-400 bg-gray-100 dark:bg-zinc-800";
-                scoreColor = "text-gray-500";
-            }
-
-            // 王冠アイコン (TOP3のみ表示)
-            let crown = "";
-            if(rank === 1) crown = '<i class="bi bi-trophy-fill text-yellow-500 mr-1"></i>';
-            else if(rank === 2) crown = '<i class="bi bi-award-fill text-gray-400 mr-1"></i>';
-            else if(rank === 3) crown = '<i class="bi bi-award-fill text-orange-400 mr-1"></i>';
-
-            // カードHTMLの組み立て
-            html += `
-                <div class="themed-card rounded-xl p-5 border-l-8 ${borderClass} shadow-sm flex flex-col md:flex-row gap-4 items-start md:items-center">
-                    <!-- 順位と県名 -->
-                    <div class="flex items-center gap-4 min-w-[180px]">
-                        <div class="flex flex-col items-center justify-center w-16">
-                            <span class="text-xs font-bold text-gray-400 mb-1">RANK</span>
-                            <div class="w-12 h-12 rounded-full flex items-center justify-center font-black text-xl ${rankBadgeClass}">
-                                ${rank}
-                            </div>
-                        </div>
-                        <div>
-                            <div class="text-sm text-gray-500 font-bold mb-1">${crown}No.${rank}</div>
-                            <div class="text-2xl font-black tracking-widest">${item.name}</div>
-                        </div>
+        listHtml += `
+            <div class="pref-card-normal">
+                <div class="pref-normal-header">
+                    <div class="flex items-center gap-3">
+                        <span class="pref-rank-badge">${rank}位</span>
+                        <span class="font-bold text-lg">${item.name}</span>
                     </div>
-
-                    <!-- スコアとテキスト -->
-                    <div class="flex-1 w-full">
-                        <div class="flex justify-between items-end border-b border-gray-200 dark:border-gray-700 pb-2 mb-3">
-                            <span class="text-xs font-bold text-gray-400">運気指数</span>
-                            <span class="text-3xl font-black ${scoreColor} font-mono">${item.score}<span class="text-sm ml-1 text-gray-500">/100</span></span>
-                        </div>
-                        <p class="text-sm leading-7 text-justify text-gray-700 dark:text-gray-300 font-medium">
-                            ${item.text}
-                        </p>
-                    </div>
+                    <span class="pref-score-sm">${item.score}</span>
                 </div>
-            `;
-        });
+                
+                <!-- スコアバー -->
+                <div class="pref-bar-bg">
+                    <div class="pref-bar-fill ${barClass}" style="width: ${item.score}%;"></div>
+                </div>
 
-        // 画面に反映
-        listContainer.innerHTML = html;
-    };
+                <p class="text-xs text-gray-500 dark:text-gray-400 leading-relaxed mt-1 text-justify">
+                    ${item.text}
+                </p>
+            </div>
+        `;
+    });
+    listContainer.innerHTML = listHtml;
+};
+
+// ヘルパー関数: TOP3カード生成
+function createTopCard(item, rank, iconClass, rankClass, colorClass) {
+    return `
+        <div class="pref-card-top ${rankClass}">
+            <div class="pref-crown ${iconClass}"><i class="bi bi-trophy-fill"></i></div>
+            <div class="text-sm font-bold text-gray-400 mb-1">RANK ${rank}</div>
+            <div class="pref-name-lg">${item.name}</div>
+            <div class="pref-score-lg ${colorClass}">${item.score}</div>
+            <div class="pref-text-box">
+                ${item.text}
+            </div>
+        </div>
+    `;
+}
 
     // 文章生成ロジック (47種類の長文テンプレートからスコアに応じて選択)
     function generatePrefectureText(prefName, score, rng, index) {
