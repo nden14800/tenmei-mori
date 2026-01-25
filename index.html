@@ -11472,53 +11472,6 @@ function backToAuthStep1() {
     document.getElementById('auth-step-1').classList.remove('hidden');
 }
 
-// 4. 認証コード送信 (Turnstileを削除した元通りのバージョン)
-async function initiateAuth(mode) {
-    const emailInputId = (mode === 'login') ? 'login-email' : 'reg-email';
-    const email = document.getElementById(emailInputId).value.trim().toLowerCase();
-    const username = document.getElementById('reg-username').value;
-    const pass = document.getElementById(mode === 'login' ? 'login-password' : 'reg-password').value;
-
-    if(!email || !pass) return alert("メールアドレスとパスワードを入力してください");
-    if(mode === 'register' && !username) return alert("ユーザー名を入力してください");
-
-    showLoading(true);
-    try {
-        const res = await fetch(`${API_BASE}/api/auth/send`, { 
-            method: 'POST', 
-            headers: {'Content-Type': 'application/json'},
-            body: JSON.stringify({ 
-                email, 
-                password: pass, 
-                username: mode === 'register' ? username : undefined,
-                mode: mode 
-                // tokenの送信は不要なので削除
-            }) 
-        });
-        
-        const data = await res.json();
-        
-        if (res.status === 429) {
-            showToast(data.message, 'warning', '天命の戒め');
-            return;
-        }
-
-        if(res.ok && data.success) {
-            document.getElementById('auth-step-1').classList.add('hidden');
-            document.getElementById('auth-step-2').classList.remove('hidden');
-            const codeInput = document.getElementById('auth-code-input');
-            codeInput.value = '';
-            codeInput.focus();
-        } else {
-            alert(`送信エラー: ${data.error || '不明なエラー'}`);
-        }
-    } catch(e) { 
-        alert("通信エラーが発生しました"); 
-    } finally { 
-        showLoading(false); 
-    }
-}
-
         // --- 認証完了 (finalizeAuth) - 修正版 ---
         async function finalizeAuth() {
             const code = document.getElementById('auth-code-input').value;
