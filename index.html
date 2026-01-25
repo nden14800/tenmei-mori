@@ -9600,69 +9600,113 @@ async function logout() {
         return calendarDays;
     }
 
+    // ==========================================
+    //  モダンカード生成ロジック (Bento UI対応)
+    // ==========================================
     function createCardHTML(data) {
         const isFav = favoriteList.some(f => f.sign === data.sign.id && f.blood === data.blood);
-        const rankClass = data.rank <= 3 ? `rank-${data.rank}` : 'rank-other';
-        const borderClass = data.rank <= 3 ? 'border-l-4 border-yellow-400' : '';
-        const getBarColor = (score) => score > 80 ? '#ef4444' : (score > 50 ? '#eab308' : '#3b82f6');
         
+        // ランクに応じたクラス付与
+        let rankClass = "rank-other";
+        if(data.rank === 1) rankClass = "rank-1 top-rank";
+        else if(data.rank === 2) rankClass = "rank-2 top-rank";
+        else if(data.rank === 3) rankClass = "rank-3 top-rank";
+
+        // スコアバーの色判定
+        const getBarColor = (score) => {
+            if(score >= 80) return "bg-red-500";
+            if(score >= 60) return "bg-yellow-500";
+            return "bg-blue-500";
+        };
+
         return `
-            <div class="ranking-card ${borderClass} themed-card">
-                <button class="fav-btn ${isFav ? 'active' : ''}" onclick="toggleFavorite('${data.sign.id}', '${data.blood}')">
+            <div class="rank-card-modern ${rankClass}">
+                <!-- お気に入りボタン -->
+                <button class="absolute top-4 right-4 text-2xl transition-transform hover:scale-110 ${isFav ? 'text-yellow-400' : 'text-gray-200 dark:text-zinc-700 hover:text-yellow-400'}" 
+                        onclick="toggleFavorite('${data.sign.id}', '${data.blood}')">
                     <i class="bi bi-star${isFav ? '-fill' : ''}"></i>
                 </button>
-                <div class="flex items-start">
-                    <div class="rank-badge-lg ${rankClass}">${data.rank}</div>
-                    <div class="ml-4 flex-grow">
-                        <div class="flex items-center flex-wrap gap-2 mb-1">
-                            <span class="text-3xl">${data.sign.icon}</span>
-                            <span class="font-bold text-xl" style="color:var(--text-main);">${data.sign.name}</span>
-                            <span class="bg-gray-200 dark:bg-gray-700 px-2 py-0.5 rounded text-sm font-bold" style="color:var(--text-main);">${data.blood}型</span>
-                        </div>
-                        <div class="flex items-center gap-4 text-sm mt-1 mb-2" style="color: var(--text-sub);">
-                            <span><i class="bi bi-hash"></i> ラッキーナンバー: <strong>${data.luckyNum}</strong></span>
-                            <span><i class="bi bi-bar-chart-fill"></i> 総合: <strong>${data.totalScore}点</strong></span>
-                        </div>
-                        <p class="text-sm leading-relaxed mb-4 text-justify" style="color: var(--text-main); line-height:1.8;">${data.longDesc}</p>
-                        <div class="grid grid-cols-2 gap-x-4 gap-y-1 text-xs mb-3" style="color: var(--text-sub);">
-                            <div><i class="bi bi-stars text-yellow-500"></i> ラッキーアイテム: ${data.item}</div>
-                            <div><i class="bi bi-palette text-pink-500"></i> ラッキーカラー: ${data.color}</div>
+
+                <div class="flex flex-col md:flex-row gap-6">
+                    
+                    <!-- 左: ランクと基本情報 -->
+                    <div class="flex flex-row md:flex-col items-center md:items-start gap-4 md:w-32 flex-shrink-0 border-b md:border-b-0 md:border-r border-gray-100 dark:border-gray-800 pb-4 md:pb-0 md:pr-4">
+                        <div class="rank-badge-modern flex-shrink-0">${data.rank}</div>
+                        <div>
+                            <div class="flex items-center gap-2 mb-1">
+                                <span class="text-3xl">${data.sign.icon}</span>
+                                <span class="text-xl font-black">${data.sign.name}</span>
+                            </div>
+                            <span class="inline-block bg-gray-100 dark:bg-zinc-800 px-3 py-1 rounded-full text-sm font-bold border border-gray-200 dark:border-gray-700">
+                                ${data.blood}型
+                            </span>
                         </div>
                     </div>
-                </div>
-                <div class="param-grid">
-                    <div class="param-item">
-                        <div class="param-label"><i class="bi bi-heart-fill text-pink-500"></i> 恋愛 (${data.love.rank}位)</div>
-                        <div class="param-score-text">${data.love.score}点</div>
-                        <div class="param-value text-xs">${data.love.desc}</div>
-                        <div class="score-bar-bg"><div class="score-bar-fill" style="width:${data.love.score}%; background:${getBarColor(data.love.score)};"></div></div>
+
+                    <!-- 中央: 詳細テキスト -->
+                    <div class="flex-1 min-w-0">
+                        <div class="flex flex-wrap items-center gap-4 text-xs font-bold text-gray-500 mb-3">
+                            <span class="bg-yellow-50 dark:bg-yellow-900/20 text-yellow-700 dark:text-yellow-300 px-2 py-1 rounded">
+                                <i class="bi bi-hash"></i> ラッキーNo. ${data.luckyNum}
+                            </span>
+                            <span class="bg-red-50 dark:bg-red-900/20 text-red-700 dark:text-red-300 px-2 py-1 rounded">
+                                <i class="bi bi-bar-chart-fill"></i> 総合: ${data.totalScore}点
+                            </span>
+                        </div>
+                        
+                        <p class="text-sm leading-7 text-justify text-gray-700 dark:text-gray-300 mb-4 font-medium">
+                            ${data.longDesc}
+                        </p>
+
+                        <div class="grid grid-cols-2 gap-2 text-xs bg-gray-50 dark:bg-zinc-800/50 p-3 rounded-lg border border-gray-100 dark:border-gray-800">
+                            <div><i class="bi bi-stars text-yellow-500 mr-1"></i> アイテム: <b>${data.item}</b></div>
+                            <div><i class="bi bi-palette text-pink-500 mr-1"></i> カラー: <b>${data.color}</b></div>
+                        </div>
                     </div>
-                    <div class="param-item">
-                        <div class="param-label"><i class="bi bi-currency-yen text-yellow-500"></i> 金運 (${data.money.rank}位)</div>
-                        <div class="param-score-text">${data.money.score}点</div>
-                        <div class="param-value text-xs">${data.money.desc}</div>
-                        <div class="score-bar-bg"><div class="score-bar-fill" style="width:${data.money.score}%; background:${getBarColor(data.money.score)};"></div></div>
+
+                    <!-- 右: パラメータとカレンダー -->
+                    <div class="md:w-64 flex-shrink-0 flex flex-col justify-between gap-4">
+                        <!-- パラメータ -->
+                        <div class="space-y-3">
+                            <div>
+                                <div class="flex justify-between text-xs font-bold mb-1">
+                                    <span class="flex items-center gap-1"><i class="bi bi-heart-fill text-pink-500"></i> 恋愛</span>
+                                    <span>${data.love.score}点</span>
+                                </div>
+                                <div class="modern-bar-bg"><div class="modern-bar-fill ${getBarColor(data.love.score)}" style="width:${data.love.score}%"></div></div>
+                                <p class="text-[10px] text-gray-400 mt-0.5 text-right">${data.love.desc}</p>
+                            </div>
+                            <div>
+                                <div class="flex justify-between text-xs font-bold mb-1">
+                                    <span class="flex items-center gap-1"><i class="bi bi-currency-yen text-yellow-500"></i> 金運</span>
+                                    <span>${data.money.score}点</span>
+                                </div>
+                                <div class="modern-bar-bg"><div class="modern-bar-fill ${getBarColor(data.money.score)}" style="width:${data.money.score}%"></div></div>
+                                <p class="text-[10px] text-gray-400 mt-0.5 text-right">${data.money.desc}</p>
+                            </div>
+                            <div>
+                                <div class="flex justify-between text-xs font-bold mb-1">
+                                    <span class="flex items-center gap-1"><i class="bi bi-book-fill text-blue-500"></i> 仕事</span>
+                                    <span>${data.work.score}点</span>
+                                </div>
+                                <div class="modern-bar-bg"><div class="modern-bar-fill ${getBarColor(data.work.score)}" style="width:${data.work.score}%"></div></div>
+                                <p class="text-[10px] text-gray-400 mt-0.5 text-right">${data.work.desc}</p>
+                            </div>
+                        </div>
+
+                        <!-- カレンダー (コンパクト版) -->
+                        <div class="border-t border-dashed border-gray-200 dark:border-gray-700 pt-3 mt-1">
+                            <p class="text-[10px] font-bold text-center text-gray-400 mb-2">30日間のラッキーデー予報</p>
+                            <div class="grid grid-cols-7 gap-1">
+                                ${data.calendar.map(d => {
+                                    const hasMark = d.marks.length > 0;
+                                    const bg = hasMark ? 'bg-yellow-50 dark:bg-yellow-900/30 font-bold text-yellow-600' : 'text-gray-300';
+                                    return `<div class="text-[9px] text-center py-1 rounded ${bg}">${d.day}</div>`;
+                                }).join('')}
+                            </div>
+                        </div>
                     </div>
-                    <div class="param-item">
-                        <!-- ▼「仕事」から「仕事/勉強」に修正 -->
-                        <div class="param-label"><i class="bi bi-book-fill text-blue-500"></i> 仕事/勉強 (${data.work.rank}位)</div>
-                        <div class="param-score-text">${data.work.score}点</div>
-                        <div class="param-value text-xs">${data.work.desc}</div>
-                        <div class="score-bar-bg"><div class="score-bar-fill" style="width:${data.work.score}%; background:${getBarColor(data.work.score)};"></div></div>
-                    </div>
-                </div>
-                <div class="calendar-wrapper">
-                    <p class="text-xs text-center mb-1 font-bold" style="color:var(--text-main);">向こう30日間のラッキーデー</p>
-                    <div class="calendar-grid">
-                        ${data.calendar.map(d => `<div class="calendar-cell"><span class="cal-date">${d.day}</span><span class="cal-mark">${d.marks.join('')}</span></div>`).join('')}
-                    </div>
-                    <div class="calendar-legend">
-                        <div class="legend-item"><i class="bi bi-star-fill text-yellow-500"></i>総合1位</div>
-                        <div class="legend-item"><i class="bi bi-heart-fill text-pink-500"></i>恋愛1位</div>
-                        <div class="legend-item"><i class="bi bi-currency-yen text-yellow-600"></i>金運1位</div>
-                        <!-- ▼「勉強1位」から「仕事/勉強1位」に修正 -->
-                        <div class="legend-item"><i class="bi bi-pencil-fill text-blue-500"></i>仕事/勉強1位</div>
-                    </div>
+
                 </div>
             </div>
         `;
