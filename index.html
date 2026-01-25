@@ -4398,16 +4398,29 @@ body.theme-newyear {
                 <!-- 4位以下リスト (初期は hidden) -->
                 <div id="full-ranking-list" class="hidden space-y-4"></div>
 
-                <!-- ログインモーダル -->
-                <div id="zodiac-login-modal" class="fixed top-0 left-0 w-full h-full bg-black/60 z-[2000] hidden items-center justify-center backdrop-blur-sm" onclick="closeZodiacModal(event)">
-                    <div class="themed-card p-8 rounded-xl shadow-2xl max-w-sm w-full text-center border border-gray-200 dark:border-gray-700 relative" onclick="event.stopPropagation()">
-                        <button onclick="closeZodiacModal(null)" class="absolute top-4 right-4 text-gray-400 hover:text-red-500"><i class="bi bi-x-lg text-lg"></i></button>
-                        <div class="mb-4 text-yellow-400 text-5xl"><i class="bi bi-star-fill"></i></div>
-                        <h3 class="text-xl font-bold mb-2">会員限定機能</h3>
-                        <p class="text-sm themed-text-sub mb-6">お気に入りは会員限定です。</p>
-                        <button onclick="showView('auth'); closeZodiacModal(null);" class="btn-primary w-full justify-center py-3">ログイン / 登録</button>
-                    </div>
-                </div>
+                <!-- ログインモーダル (修正版) -->
+<div id="zodiac-login-modal" 
+     class="fixed top-0 left-0 w-full h-full bg-black/60 z-[3000] hidden items-center justify-center backdrop-blur-sm" 
+     onclick="closeZodiacModal(event)">
+    
+    <!-- カード本体: stopPropagationで親への伝播を止める -->
+    <div class="themed-card p-8 rounded-xl shadow-2xl max-w-sm w-full text-center border border-gray-200 dark:border-gray-700 relative" 
+         onclick="event.stopPropagation()">
+        
+        <!-- 閉じるボタン: nullではなくeventを渡すか、単に関数のみ呼ぶ -->
+        <button onclick="closeZodiacModal(null)" 
+                class="absolute top-4 right-4 text-gray-400 hover:text-red-500 w-10 h-10 flex items-center justify-center rounded-full hover:bg-gray-100 dark:hover:bg-zinc-800 transition">
+            <i class="bi bi-x-lg text-lg"></i>
+        </button>
+        
+        <div class="mb-4 text-yellow-400 text-5xl"><i class="bi bi-star-fill"></i></div>
+        <h3 class="text-xl font-bold mb-2">会員限定機能</h3>
+        <p class="text-sm themed-text-sub mb-6">お気に入りは会員限定です。<br>ログインして天命を記録しましょう。</p>
+        <button onclick="showView('auth'); closeZodiacModal(null);" class="btn-primary w-full justify-center py-3">
+            ログイン / 登録
+        </button>
+    </div>
+</div>
             </div>
         </section>
         
