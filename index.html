@@ -3827,6 +3827,90 @@
             }
         }
 
+        /* --- TENMEI Labs: 詳細設定パネル --- */
+
+/* 設定項目の行 */
+.lab-setting-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 15px 0;
+    border-bottom: 1px solid rgba(0,0,0,0.05);
+}
+.dark .lab-setting-row {
+    border-bottom: 1px solid rgba(255,255,255,0.05);
+}
+
+.lab-setting-label {
+    font-weight: bold;
+    font-size: 0.9rem;
+    color: var(--text-main);
+    display: flex;
+    flex-direction: column;
+}
+.lab-setting-sub {
+    font-size: 0.7rem;
+    color: var(--text-sub);
+    font-weight: normal;
+}
+
+/* スライダー */
+.lab-slider-container {
+    width: 50%;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+.lab-range-input {
+    width: 100%;
+    height: 6px;
+    background: #e5e7eb;
+    border-radius: 3px;
+    appearance: none;
+    outline: none;
+}
+.dark .lab-range-input { background: #4b5563; }
+
+.lab-range-input::-webkit-slider-thumb {
+    appearance: none;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background: var(--accent-red);
+    cursor: pointer;
+    border: 2px solid #fff;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+}
+
+/* 値の表示 */
+.lab-val-display {
+    font-family: monospace;
+    font-weight: bold;
+    width: 40px;
+    text-align: right;
+}
+
+/* --- 動的CSS変数 (JSで操作する対象) --- */
+
+/* 幽玄の霧: 透明度変数を適用 */
+.mist-blob {
+    /* デフォルト値をJSで上書きできるように変数化 */
+    opacity: var(--lab-mist-opacity, 0.6); 
+    /* アニメーション速度も変数化 */
+    animation-duration: var(--lab-mist-speed, 30s) !important;
+}
+
+/* 言霊の増幅: サイズ変数を適用 */
+html.lab-big-text {
+    font-size: var(--lab-font-scale, 120%);
+}
+
+/* 迎春モード: パターン濃度 */
+body.theme-newyear {
+    /* 背景画像の不透明度操作は難しいので、擬似要素などで対応するか、
+       ここではシンプルに「背景色のブレンド」などで対応する想定 */
+}
+
 
     </style>
 </head>
