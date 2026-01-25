@@ -12179,18 +12179,41 @@ function createCardHTML(data) {
         renderFavorites();
     }
 
-    // 12星座用ログインモーダルを閉じる関数（修正版）
-    function closeZodiacModal(e) {
-        // eがnull（バツボタンからの直接呼び出し）か、
-        // クリックされたのがモーダル背景自体、またはボタン要素（アイコン含む）なら閉じる
-        if (!e || e.target.id === 'zodiac-login-modal' || e.target.closest('button')) {
-            const modal = document.getElementById('zodiac-login-modal');
-            if(modal) {
-                modal.classList.add('hidden');
-                modal.classList.remove('flex');
-            }
+    // --- 12星座用ログインモーダルを閉じる関数（完全修正版） ---
+function closeZodiacModal(e) {
+    // 引数 e がある場合（背景クリック時）はIDチェック
+    // 引数 e が null または undefined の場合（ボタンから直接呼び出し）は強制クローズ
+    if (!e || e.target.id === 'zodiac-login-modal') {
+        const modal = document.getElementById('zodiac-login-modal');
+        if (modal) {
+            // Tailwindのhiddenクラスを追加して非表示に
+            modal.classList.add('hidden');
+            modal.classList.remove('flex');
+            
+            // 安全のため style.display も操作
+            modal.style.display = 'none';
         }
     }
+}
+
+// --- Labsのロック制御を含む showView 関数の該当部分（確認用） ---
+// 既存の showView 関数内の if(viewId === 'lab') ブロックが以下のようになっているか確認してください
+/*
+if(viewId === 'lab') {
+    const lock = document.getElementById('lab-lock');
+    const wrapper = document.getElementById('lab-content-wrapper');
+    
+    if(!currentState.user) {
+        // 未ログイン時
+        if(lock) lock.classList.remove('hidden'); // ロック画面を表示
+        if(wrapper) wrapper.classList.add('lab-blurred'); // コンテンツだけぼかす
+    } else {
+        // ログイン時
+        if(lock) lock.classList.add('hidden'); // ロック画面を隠す
+        if(wrapper) wrapper.classList.remove('lab-blurred'); // ぼかし解除
+    }
+}
+*/
       
     function renderFavorites() {
         const container = document.getElementById('favorites-list');
