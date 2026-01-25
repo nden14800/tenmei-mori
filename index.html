@@ -2222,39 +2222,50 @@
             max-width: 400px;
         }
 
-        /* Labs ぼかし制御 */
-        .lab-blurred {
-            filter: blur(10px);
-            pointer-events: none;
-            user-select: none;
-            opacity: 0.6;
-            transition: all 0.5s;
-        }
+        /* --- TENMEI Labs ロック画面の修正 --- */
 
-        /* ▼ 修正：ロック画面そのものにはフィルターがかからないように強制解除 ▼ */
-        .lab-lock-overlay {
-            position: absolute;
-            top: 50%; left: 50%;
-            transform: translate(-50%, -50%);
-            z-index: 100; /* 重なり順を最前面に */
-            background-color: rgba(255, 255, 255, 0.8);
-            backdrop-filter: blur(10px);
-            padding: 30px;
-            border-radius: 20px;
-            box-shadow: 0 20px 40px rgba(0,0,0,0.2);
-            text-align: center;
-            border: 1px solid var(--card-border);
-            width: 90%;
-            max-width: 400px;
-            filter: none !important; /* 絶対にボカさない */
-        }
-        
-        /* ダークモード時のロック画面 */
-        @media (prefers-color-scheme: dark) {
-            .lab-lock-overlay {
-                background-color: rgba(30, 30, 30, 0.7);
-            }
-        }
+/* コンテンツをぼかすクラス */
+.lab-blurred {
+    filter: blur(10px);
+    pointer-events: none;
+    user-select: none;
+    opacity: 0.6;
+    transition: all 0.5s;
+}
+
+/* ロック画面オーバーレイ (絶対にぼかさない・最前面) */
+.lab-lock-overlay {
+    position: absolute; /* 親要素が relative なら absolute でOK */
+    top: 50%; 
+    left: 50%;
+    transform: translate(-50%, -50%);
+    z-index: 2000 !important; /* コンテンツより確実に上に配置 */
+    
+    /* 背景色とすりガラス効果 */
+    background-color: rgba(255, 255, 255, 0.85);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    
+    padding: 30px;
+    border-radius: 20px;
+    box-shadow: 0 20px 50px rgba(0,0,0,0.3);
+    text-align: center;
+    border: 1px solid var(--card-border);
+    width: 90%;
+    max-width: 400px;
+    
+    /* ★重要: この要素自体にはフィルタをかけない */
+    filter: none !important; 
+    opacity: 1 !important;
+    pointer-events: auto !important; /* クリックできるようにする */
+}
+
+/* ダークモード対応 */
+@media (prefers-color-scheme: dark) {
+    .lab-lock-overlay {
+        background-color: rgba(30, 30, 30, 0.85);
+    }
+}
 
         /* 詳細モーダル (削除予定だが互換性のために残す) */
         #history-detail-modal {
