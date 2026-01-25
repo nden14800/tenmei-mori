@@ -12759,8 +12759,9 @@ async function startLiveCounter() {
     setInterval(fetchCount, 60000);
 }
 
-// 統計描画（カード分割・目盛り線・加速アニメ版）
+// 統計描画（ダッシュボード・スペクトル版）
 async function loadMyStats() {
+    // ユーザーチェックは呼び出し元(showView)で行っているが念のため
     if (!currentState.user) return;
 
     try {
@@ -12776,48 +12777,102 @@ async function loadMyStats() {
             if (s.averageFortunes) {
                 Object.values(s.averageFortunes).forEach(v => avgTotal += v);
             }
-            const multiplier = (s.totalDraws / Math.max(0.1, avgTotal)).toFixed(1);
+            // ゼロ除算防止
+            const avgBase = Math.max(0.1, avgTotal);
+            const multiplier = (s.totalDraws / avgBase).toFixed(1);
 
-            // 解説テキスト
-            document.getElementById('stat-comparison-text').innerHTML = `
-                あなたは平均 ${avgTotal.toFixed(1)}回参拝している一般的な参拝者と比較して、
-                <strong class="text-red-600 text-lg">${multiplier}倍</strong> の徳を積んでいます。<br>
-                <span class="text-[10px] text-gray-500">現在、${Number(s.totalUsers || 0).toLocaleString()}名の参拝者が杜に名を連ねています。</span>
-            `;
+            // 1. ヒーローセクション更新
+            const totalEl = document.getElementById('hero-total-val');
+            const daikichiEl = document.getElementById('hero-daikichi-val');
+            
+            if(totalEl) animateValue(totalEl, 0, s.totalDraws, 1000);
+            if(daikichiEl) animateValue(daikichiEl, 0, s.userFortunes['大吉'] || 0, 1000);
 
-            // 1. 総参拝数カードの描画
-            renderSingleGraph('graph-total-draws', 'grid-lines-total', "総参拝数", s.totalDraws, avgTotal);
+            // 2. インサイトエリア更新
+            const insightEl = document.getElementById('stats-insight-area');
+            if(insightEl) {
+                insightEl.innerHTML = `
+                    <div class="stats-insight-text">
+                        現在、この杜には <span class="font-bold">${Number(s.totalUsers || 0).toLocaleString()}</span> 名の参拝者が記録を残しています。<br>
+                        あなたは平均的な参拝者と比較して 
+                        <span class="stats-insight-highlight">${multiplier}倍</span> 
+                        の熱意で参拝されています。
+                        <br>
+                        <span class="text-xs text-gray-400 mt-2 block">
+                            (あなたの総参拝数: ${s.totalDraws.toLocaleString()}回 / 全体平均: ${avgTotal.toFixed(1)}回)
+                        </span>
+                    </div>
+                `;
+            }
 
-            // 2. 運勢分布カードの描画
-            const fortunes = ["大吉", "中吉", "小吉", "吉", "半吉", "末吉", "末小吉", "凶", "小凶", "半凶", "末凶", "大凶"];
-            const graphContainer = document.getElementById('stat-detailed-graphs');
-            const gridContainer = document.getElementById('grid-lines-fortunes');
-            graphContainer.innerHTML = '';
-            gridContainer.innerHTML = '';
+            // 3. 運勢スペクトル描画
+            const listEl = document.getElementById('stats-spectrum-list');
+            if(listEl) {
+                listEl.innerHTML = '';
+                const fortunes = ["大吉", "中吉", "小吉", "吉", "半吉", "末吉", "末小吉", "凶", "小凶", "半凶", "末凶", "大凶"];
+                
+                // グラフの最大値を決定 (自分と平均の中で一番大きい値)
+                const allVals = [...Object.values(s.userFortunes), ...Object.values(s.averageFortunes)];
+                const maxVal = Math.max(...allVals, 1); // 最低1
 
-            // 運勢グラフの中での最大値を求める
-            const vals = [...Object.values(s.userFortunes), ...Object.values(s.averageFortunes)];
-            const maxVal = Math.max(...vals, 1);
+                fortunes.forEach(f => {
+                    const myVal = s.userFortunes[f] || 0;
+                    const avgVal = s.averageFortunes[f] || 0;
 
-            // 目盛り線
-            renderGridLines(gridContainer, maxVal);
+                    // バーの幅(%)
+                    const myWidth = (myVal / maxVal) * 100;
+                    const avgWidth = (avgVal / maxVal) * 100;
 
-            // 各運勢の行を生成
-            fortunes.forEach(f => {
-                const myVal = s.userFortunes[f] || 0;
-                const avgVal = s.averageFortunes[f] || 0;
-                graphContainer.appendChild(createGraphRow(f, myVal, avgVal, maxVal));
-            });
+                    // 特別色クラス
+                    let colorClass = "";
+                    if(f === "大吉") colorClass = "bar-color-gold";
+                    if(f === "大凶") colorClass = "bar-color-black";
 
-            // 加速アニメーション開始
-            setTimeout(() => {
-                document.querySelectorAll('.bar-animate-fast').forEach(bar => {
-                    const w = bar.dataset.targetWidth;
-                    bar.style.width = w;
+                    const html = `
+                        <div class="stats-row">
+                            <div class="stats-label-col">${f}</div>
+                            <div class="stats-bar-area">
+                                <!-- 平均バー -->
+                                <div class="stats-bar-avg" style="width: ${avgWidth}%"></div>
+                                <!-- 自分バー (アニメーション用 width:0 -> JSで設定) -->
+                                <div class="stats-bar-user ${colorClass}" data-width="${myWidth}%"></div>
+                            </div>
+                            <div class="stats-val-col">
+                                <span>${myVal}</span>
+                                <span class="val-sub">Avg: ${avgVal.toFixed(1)}</span>
+                            </div>
+                        </div>
+                    `;
+                    listEl.insertAdjacentHTML('beforeend', html);
                 });
-            }, 100);
+
+                // アニメーション発火 (少し遅らせて実行)
+                setTimeout(() => {
+                    const bars = listEl.querySelectorAll('.stats-bar-user');
+                    bars.forEach(bar => {
+                        bar.style.width = bar.dataset.width;
+                    });
+                }, 100);
+            }
         }
     } catch (e) { console.error(e); }
+}
+
+// 数字カウントアップ演出ヘルパー
+function animateValue(obj, start, end, duration) {
+    let startTimestamp = null;
+    const step = (timestamp) => {
+        if (!startTimestamp) startTimestamp = timestamp;
+        const progress = Math.min((timestamp - startTimestamp) / duration, 1);
+        // イージングありで整数表示
+        obj.innerHTML = Math.floor(progress * (end - start) + start).toLocaleString();
+        if (progress < 1) {
+            window.requestAnimationFrame(step);
+        } else {
+            obj.innerHTML = end.toLocaleString();
+        }
+    };
+    window.requestAnimationFrame(step);
 }
 
 // グラフの1行（2本バー）を作成するヘルパー
