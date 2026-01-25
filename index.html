@@ -9662,57 +9662,53 @@ async function logout() {
     }
 
     // ==========================================
-    //  モダンカード生成ロジック (完全修正版)
+    //  修正版: カード生成ロジック (白背景・シンプル)
     // ==========================================
     function createCardHTML(data) {
         const isFav = favoriteList.some(f => f.sign === data.sign.id && f.blood === data.blood);
         
         // ランクスタイルの決定
-        let rankBgClass = "bg-rank-other";
-        let rankClass = "rank-other";
+        let cardClass = "rank-normal";
+        let badgeClass = "badge-normal";
         
-        if (data.rank === 1) { rankBgClass = "bg-rank-1"; rankClass = "rank-1"; }
-        else if (data.rank === 2) { rankBgClass = "bg-rank-2"; rankClass = "rank-2"; }
-        else if (data.rank === 3) { rankBgClass = "bg-rank-3"; rankClass = "rank-3"; }
+        if (data.rank === 1) { cardClass = "rank-top rank-1"; badgeClass = "badge-gold"; }
+        else if (data.rank === 2) { cardClass = "rank-top rank-2"; badgeClass = "badge-silver"; }
+        else if (data.rank === 3) { cardClass = "rank-top rank-3"; badgeClass = "badge-bronze"; }
 
-        // スコアバーの色判定
+        // スコアバーの色
         const getBarColor = (score) => {
-            if(score >= 80) return "bg-red-500";
-            if(score >= 60) return "bg-yellow-500";
-            return "bg-blue-500";
+            if(score >= 90) return "#ef4444"; // 赤
+            if(score >= 70) return "#eab308"; // 黄
+            return "#3b82f6"; // 青
         };
 
-        // カレンダーの日付生成 (アイコン付き)
+        // カレンダー日付 (アイコン表示)
         const calendarHTML = data.calendar.map(d => {
-            // アイコンがあれば表示、なければ空
-            const icons = d.marks.length > 0 ? d.marks.join('') : '<span style="height:6px;"></span>'; 
-            // 1位がある日だけ背景を少し目立たせる（オプション）
-            const cellBg = d.marks.length > 0 ? 'bg-yellow-50 dark:bg-yellow-900/10' : '';
-            
+            const icons = d.marks.length > 0 ? d.marks.join('') : '<span style="opacity:0">.</span>';
+            const cellBg = d.marks.length > 0 ? 'bg-yellow-50 dark:bg-yellow-900/20' : '';
             return `
-                <div class="modern-cal-cell ${cellBg}">
-                    <span class="modern-cal-date">${d.day}</span>
-                    <div class="modern-cal-icons">${icons}</div>
+                <div class="zodiac-cal-cell ${cellBg}">
+                    <span class="zodiac-cal-date">${d.day}</span>
+                    <div class="zodiac-cal-icons">${icons}</div>
                 </div>
             `;
         }).join('');
 
         return `
-            <div class="rank-card-modern ${rankClass}">
+            <div class="zodiac-card-box ${cardClass}">
                 
-                <!-- お気に入りボタン (絶対配置で右上に固定) -->
-                <button class="absolute top-3 right-3 z-10 p-2 text-2xl transition-transform hover:scale-110 ${isFav ? 'text-yellow-400' : 'text-gray-300 dark:text-gray-600 hover:text-yellow-400'}" 
-                        onclick="toggleFavorite('${data.sign.id}', '${data.blood}')" 
-                        title="お気に入り">
+                <!-- お気に入りボタン -->
+                <button class="zodiac-fav-btn ${isFav ? 'text-yellow-400' : 'text-gray-300 hover:text-yellow-400'}" 
+                        onclick="toggleFavorite('${data.sign.id}', '${data.blood}')">
                     <i class="bi bi-star${isFav ? '-fill' : ''}"></i>
                 </button>
 
-                <!-- 上段：メイン情報 -->
-                <div class="rank-card-content">
+                <!-- メイン部分 -->
+                <div class="zodiac-card-body">
                     
-                    <!-- 左カラム：ランク・星座・血液型 -->
+                    <!-- 左: ランク・星座 -->
                     <div class="flex flex-row md:flex-col items-center md:items-start gap-4 md:w-32 flex-shrink-0">
-                        <div class="modern-rank-badge ${rankBgClass}">${data.rank}</div>
+                        <div class="zodiac-rank-badge ${badgeClass}">${data.rank}</div>
                         <div>
                             <div class="flex items-center gap-2 mb-1">
                                 <span class="text-3xl">${data.sign.icon}</span>
@@ -9724,39 +9720,33 @@ async function logout() {
                         </div>
                     </div>
 
-                    <!-- 中央カラム：運勢テキスト・ラッキーアイテム -->
-                    <div class="flex-1 min-w-0 md:border-l md:border-r border-gray-100 dark:border-gray-700 md:px-6">
+                    <!-- 中: 文章 -->
+                    <div class="flex-1 min-w-0 pr-8">
                         <div class="flex flex-wrap items-center gap-3 text-xs font-bold text-gray-500 mb-3">
-                            <span class="bg-yellow-50 dark:bg-yellow-900/20 text-yellow-700 dark:text-yellow-300 px-2 py-1 rounded">
-                                <i class="bi bi-hash"></i> ラッキーNo. ${data.luckyNum}
-                            </span>
                             <span class="bg-red-50 dark:bg-red-900/20 text-red-700 dark:text-red-300 px-2 py-1 rounded">
-                                <i class="bi bi-bar-chart-fill"></i> 総合: ${data.totalScore}点
+                                総合: ${data.totalScore}点
                             </span>
+                            <span>ラッキーNo.${data.luckyNum}</span>
                         </div>
-                        
                         <p class="text-sm leading-7 text-justify text-gray-700 dark:text-gray-300 mb-4 font-medium">
                             ${data.longDesc}
                         </p>
-
-                        <div class="flex flex-wrap gap-2 text-xs">
-                            <span class="bg-white dark:bg-black border border-gray-200 dark:border-gray-700 px-2 py-1 rounded">
-                                <i class="bi bi-stars text-yellow-500"></i> アイテム: <b>${data.item}</b>
-                            </span>
-                            <span class="bg-white dark:bg-black border border-gray-200 dark:border-gray-700 px-2 py-1 rounded">
-                                <i class="bi bi-palette text-pink-500"></i> カラー: <b>${data.color}</b>
-                            </span>
+                        <div class="flex flex-wrap gap-4 text-xs text-gray-500">
+                            <span><i class="bi bi-stars text-yellow-500"></i> ${data.item}</span>
+                            <span><i class="bi bi-palette text-pink-500"></i> ${data.color}</span>
                         </div>
                     </div>
 
-                    <!-- 右カラム：パラメータ（恋愛・金運・仕事） -->
-                    <div class="w-full md:w-64 flex-shrink-0 pt-4 md:pt-0 space-y-4">
+                    <!-- 右: パラメータ -->
+                    <div class="w-full md:w-56 flex-shrink-0 space-y-3 pt-4 md:pt-0 border-t md:border-t-0 md:border-l border-gray-100 dark:border-gray-700 md:pl-6">
                         <div>
                             <div class="flex justify-between text-xs font-bold mb-1">
                                 <span class="flex items-center gap-1"><i class="bi bi-heart-fill text-pink-500"></i> 恋愛</span>
                                 <span>${data.love.score}点</span>
                             </div>
-                            <div class="modern-bar-bg"><div class="modern-bar-fill ${getBarColor(data.love.score)}" style="width:${data.love.score}%"></div></div>
+                            <div style="height:6px; background:#eee; border-radius:3px; overflow:hidden;">
+                                <div style="height:100%; width:${data.love.score}%; background:${getBarColor(data.love.score)};"></div>
+                            </div>
                             <p class="text-[10px] text-gray-400 mt-0.5 text-right">${data.love.desc}</p>
                         </div>
                         <div>
@@ -9764,7 +9754,9 @@ async function logout() {
                                 <span class="flex items-center gap-1"><i class="bi bi-currency-yen text-yellow-500"></i> 金運</span>
                                 <span>${data.money.score}点</span>
                             </div>
-                            <div class="modern-bar-bg"><div class="modern-bar-fill ${getBarColor(data.money.score)}" style="width:${data.money.score}%"></div></div>
+                            <div style="height:6px; background:#eee; border-radius:3px; overflow:hidden;">
+                                <div style="height:100%; width:${data.money.score}%; background:${getBarColor(data.money.score)};"></div>
+                            </div>
                             <p class="text-[10px] text-gray-400 mt-0.5 text-right">${data.money.desc}</p>
                         </div>
                         <div>
@@ -9772,65 +9764,45 @@ async function logout() {
                                 <span class="flex items-center gap-1"><i class="bi bi-book-fill text-blue-500"></i> 仕事</span>
                                 <span>${data.work.score}点</span>
                             </div>
-                            <div class="modern-bar-bg"><div class="modern-bar-fill ${getBarColor(data.work.score)}" style="width:${data.work.score}%"></div></div>
+                            <div style="height:6px; background:#eee; border-radius:3px; overflow:hidden;">
+                                <div style="height:100%; width:${data.work.score}%; background:${getBarColor(data.work.score)};"></div>
+                            </div>
                             <p class="text-[10px] text-gray-400 mt-0.5 text-right">${data.work.desc}</p>
                         </div>
                     </div>
                 </div>
 
-                <!-- 下段：ラッキーカレンダー（アイコン付き復活） -->
-                <div class="modern-calendar-area">
-                    <div class="flex justify-between items-center mb-2">
-                        <p class="text-[10px] font-bold text-gray-500">向こう30日間のラッキーデー予報</p>
-                        <div class="text-[9px] text-gray-400 flex gap-2">
-                            <span><i class="bi bi-star-fill text-yellow-500"></i>総合</span>
-                            <span><i class="bi bi-heart-fill text-pink-500"></i>恋愛</span>
-                            <span><i class="bi bi-currency-yen text-yellow-600"></i>金運</span>
-                            <span><i class="bi bi-pencil-fill text-blue-500"></i>仕事</span>
-                        </div>
-                    </div>
-                    <div class="modern-cal-grid">
+                <!-- カレンダー -->
+                <div class="zodiac-calendar-area">
+                    <p class="text-[10px] font-bold text-gray-400 mb-1">30日間のラッキーデー</p>
+                    <div class="zodiac-cal-grid">
                         ${calendarHTML}
                     </div>
                 </div>
-
             </div>
         `;
     }
 
-    // ==========================================
-    //  お気に入り機能 (修正版: モーダル表示)
-    // ==========================================
-
-    function toggleFavorite(signId, bloodType) {
-        // 1. 未ログインチェック: ログインしていない場合は専用モーダルを表示
-        if (!currentState.user) {
-            const modal = document.getElementById('zodiac-login-modal');
-            if(modal) {
-                modal.classList.remove('hidden');
-                modal.classList.add('flex'); // Flexboxで中央寄せ表示
+    // ランキング描画ロジックの修正 (4位以下を表示させる)
+    function renderRanking() {
+        const listContainer = document.getElementById('ranking-list');
+        const fullListContainer = document.getElementById('full-ranking-list');
+        
+        if (!listContainer || !fullListContainer) return;
+        
+        listContainer.innerHTML = ''; 
+        fullListContainer.innerHTML = '';
+        
+        dailyRanking.forEach((data, index) => {
+            const html = createCardHTML(data);
+            if (index < 3) {
+                // 1~3位はメインリストへ
+                listContainer.insertAdjacentHTML('beforeend', html);
+            } else {
+                // 4位以下は隠しリストへ
+                fullListContainer.insertAdjacentHTML('beforeend', html);
             }
-            return;
-        }
-
-        // 2. 登録・解除のロジック
-        const existsIndex = favoriteList.findIndex(f => f.sign === signId && f.blood === bloodType);
-        if (existsIndex >= 0) { 
-            favoriteList.splice(existsIndex, 1); 
-        } else { 
-            if (favoriteList.length >= 5) return alert('お気に入りは最大5件までです'); 
-            favoriteList.push({ sign: signId, blood: bloodType }); 
-        }
-
-        // サーバー同期部分のみ修正
-        // ★修正: authFetchに変更
-        authFetch(`${API_BASE}/api/favorites`, { 
-            method: 'POST', 
-            headers: {'Content-Type': 'application/json'}, 
-            body: JSON.stringify({
-                favorites: favoriteList
-            }) 
-        }).catch(e => console.error("Sync Error:", e));
+        });
         
         renderFavorites();
     }
