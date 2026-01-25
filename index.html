@@ -11651,20 +11651,108 @@ function changeHistoryPage(newPage) {
         // プロフィールボタン（ナビゲーション）の挙動
 function handleProfileClick() {
     if (currentState.user) {
-        // ログイン中なら「アカウント設定画面」を表示
+        // ログイン中なら「アカウント設定画面」を描画して表示
+        renderSettingsDashboard();
         showView('profile');
-        
-        // 現在の情報を画面にセット
-        document.getElementById('setting-current-username').textContent = currentState.user.username;
-        document.getElementById('setting-current-email').textContent = currentState.user.email;
-        
-        // 入力欄をクリア
-        document.getElementById('setting-new-username').value = '';
-        document.getElementById('setting-new-password').value = '';
     } else {
         // 未ログインなら認証画面へ
         showView('auth');
     }
+}
+
+// アカウント設定ダッシュボードの描画関数
+function renderSettingsDashboard() {
+    const container = document.getElementById('profile-dashboard-content');
+    if (!container || !currentState.user) return;
+
+    const user = currentState.user;
+    
+    // メールアドレスの表示用加工
+    const safeEmail = escapeHtml(user.email);
+    const safeName = escapeHtml(user.username);
+
+    // HTML生成
+    container.innerHTML = `
+        <div class="profile-bento-grid">
+            
+            <!-- 1. Identity Card (身分証) -->
+            <div class="stats-card-interactive profile-card-identity p-6 rounded-2xl">
+                <div class="profile-icon-ring">
+                    <i class="bi bi-person-fill"></i>
+                </div>
+                <div class="flex-1">
+                    <div class="mb-2">
+                        <span class="member-rank-badge"><i class="bi bi-patch-check-fill"></i> 天命乃杜 会員</span>
+                    </div>
+                    <h3 class="text-2xl font-black mb-1" style="font-family: 'Zen Old Mincho'">${safeName}</h3>
+                    <p class="text-sm text-gray-500 font-mono">${safeEmail}</p>
+                </div>
+            </div>
+
+            <!-- 2. Status Card (クラウド同期状況) -->
+            <div class="stats-card-interactive profile-card-status p-6 rounded-2xl">
+                <div class="flex items-center gap-2 mb-2 text-green-600 font-bold text-sm">
+                    <i class="bi bi-cloud-check-fill text-xl"></i>
+                    <span>クラウド同期: 有効</span>
+                </div>
+                <p class="text-xs text-gray-500 leading-relaxed">
+                    あなたの参拝記録、お気に入り、Labs設定は安全にクラウドへ保存されています。
+                </p>
+                <div class="mt-4 w-full bg-gray-100 dark:bg-zinc-800 h-2 rounded-full overflow-hidden">
+                    <div class="bg-green-500 h-full w-full opacity-50"></div>
+                </div>
+            </div>
+
+            <!-- 3. Edit Form (登録情報変更) -->
+            <div class="stats-card-interactive profile-card-edit p-6 rounded-2xl bg-white dark:bg-zinc-900">
+                <div class="flex items-center gap-2 mb-6 border-b border-gray-100 dark:border-gray-700 pb-3">
+                    <i class="bi bi-pencil-square text-blue-500"></i>
+                    <h4 class="font-bold text-lg">登録情報の変更</h4>
+                </div>
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div class="profile-input-group">
+                        <label class="profile-input-label">新しいユーザー名</label>
+                        <input type="text" id="setting-new-username" class="profile-input-field" placeholder="${safeName}">
+                    </div>
+                    
+                    <div class="profile-input-group">
+                        <label class="profile-input-label">新しいパスワード</label>
+                        <input type="password" id="setting-new-password" class="profile-input-field" placeholder="変更する場合のみ入力">
+                    </div>
+                </div>
+
+                <div class="mt-2 text-right">
+                    <button onclick="updateAccountSettings()" class="btn-primary py-2 px-6 shadow-md text-sm">
+                        <i class="bi bi-save"></i> 変更を保存
+                    </button>
+                </div>
+            </div>
+
+            <!-- 4. Danger Zone (ログアウト・削除) -->
+            <div class="stats-card-interactive profile-card-danger p-6 rounded-2xl bg-red-50 dark:bg-red-900/10 border-red-100 dark:border-red-900">
+                <div class="flex items-center gap-2 mb-4 text-red-600 dark:text-red-400">
+                    <i class="bi bi-shield-exclamation"></i>
+                    <h4 class="font-bold text-sm">アカウント操作</h4>
+                </div>
+                
+                <div class="space-y-3">
+                    <button onclick="logout()" class="w-full py-3 rounded-xl border border-gray-300 dark:border-gray-600 bg-white dark:bg-black font-bold text-sm text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-zinc-800 transition flex items-center justify-center gap-2">
+                        <i class="bi bi-box-arrow-right"></i> ログアウト
+                    </button>
+                    
+                    <button onclick="deleteAccount()" class="w-full py-3 rounded-xl border border-red-200 dark:border-red-800 bg-white dark:bg-black font-bold text-sm text-red-600 hover:bg-red-50 dark:hover:bg-red-900/30 transition flex items-center justify-center gap-2">
+                        <i class="bi bi-trash"></i> アカウント削除
+                    </button>
+                </div>
+                
+                <p class="text-[10px] text-red-500 mt-3 text-center leading-tight opacity-70">
+                    ※削除したデータは復元できません。
+                </p>
+            </div>
+
+        </div>
+    `;
 }
 
     // ユーザープロフィールの読み込み
