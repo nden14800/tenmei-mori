@@ -12799,9 +12799,8 @@ async function startLiveCounter() {
     setInterval(fetchCount, 60000);
 }
 
-// 統計描画（ダッシュボード・スペクトル統合・完全版）
+// 統計描画（修正版：独立グラフ・指定デザイン・指定文章）
 async function loadMyStats() {
-    // ユーザーチェック
     if (!currentState.user) return;
 
     try {
@@ -12820,10 +12819,12 @@ async function loadMyStats() {
             }
             // ゼロ除算防止
             const avgBase = Math.max(0.1, avgTotal);
+            // 小数点第1位まで
             const multiplier = (s.totalDraws / avgBase).toFixed(1);
+            const avgTotalDisplay = avgTotal.toFixed(1); // "531.5" のような形式に
 
             // ----------------------------------------------------
-            // 1. ヒーローセクション更新 (カウントアップ演出)
+            // 1. ヒーローセクション (カウントアップ)
             // ----------------------------------------------------
             const totalEl = document.getElementById('hero-total-val');
             const daikichiEl = document.getElementById('hero-daikichi-val');
@@ -12832,7 +12833,7 @@ async function loadMyStats() {
             if(daikichiEl) animateValue(daikichiEl, 0, s.userFortunes['大吉'] || 0, 1000);
 
             // ----------------------------------------------------
-            // 2. インサイトエリア更新
+            // 2. インサイトエリア (指定文章フォーマット)
             // ----------------------------------------------------
             const insightEl = document.getElementById('stats-insight-area');
             if(insightEl) {
@@ -12841,7 +12842,10 @@ async function loadMyStats() {
                         現在、この杜には <span class="font-bold">${Number(s.totalUsers || 0).toLocaleString()}</span> 名の参拝者が記録を残しています。<br>
                         あなたは平均的な参拝者と比較して 
                         <span class="stats-insight-highlight">${multiplier}倍</span> 
-                        の熱意で参拝されています。
+                        の熱意で参拝されています。<br>
+                        <span class="text-xs text-gray-500 mt-1 block">
+                            (あなたの総参拝数: ${s.totalDraws.toLocaleString()}回 / 全体平均: ${avgTotalDisplay}回)
+                        </span>
                     </div>
                 `;
             }
@@ -12853,14 +12857,13 @@ async function loadMyStats() {
             const gridTotal = document.getElementById('grid-total');
             
             if (graphTotalBody && gridTotal) {
-                // 最大値を決定 (自分と平均の大きい方 × 1.2倍で余裕を持たせる)
-                const maxTotalVal = Math.max(s.totalDraws, avgTotal, 10) * 1.1;
+                // 最大値を決定 (1.2倍くらいのマージン)
+                const maxTotalVal = Math.max(s.totalDraws, avgTotal, 10) * 1.2;
                 
-                // グリッド線描画
                 renderGridLines(gridTotal, maxTotalVal);
                 
-                // グラフ本体描画
-                graphTotalBody.innerHTML = createModernBarRow("総回数", s.totalDraws, avgTotal, maxTotalVal);
+                // 総参拝数は「紅」で表示
+                graphTotalBody.innerHTML = createDualBarRow("総回数", s.totalDraws, avgTotal, maxTotalVal, "bar-red");
             }
 
             // ----------------------------------------------------
@@ -12873,22 +12876,25 @@ async function loadMyStats() {
                 listEl.innerHTML = '';
                 const fortunes = ["大吉", "中吉", "小吉", "吉", "半吉", "末吉", "末小吉", "凶", "小凶", "半凶", "末凶", "大凶"];
                 
-                // 全項目の中での最大値を決定（スケール統一のため）
+                // 全項目の中での最大値
                 const allVals = [...Object.values(s.userFortunes), ...Object.values(s.averageFortunes)];
-                const maxSpecVal = Math.max(...allVals, 5) * 1.1; // 最低5、1.1倍の余裕
+                const maxSpecVal = Math.max(...allVals, 5) * 1.2; 
 
-                // グリッド線描画
                 renderGridLines(gridSpectrum, maxSpecVal);
 
-                // 各行を描画
                 fortunes.forEach(f => {
                     const myVal = s.userFortunes[f] || 0;
                     const avgVal = s.averageFortunes[f] || 0;
                     
-                    listEl.insertAdjacentHTML('beforeend', createModernBarRow(f, myVal, avgVal, maxSpecVal));
+                    // 色の決定
+                    let colorClass = "bar-red"; // デフォルト: 紅
+                    if (f === "大吉") colorClass = "bar-gold"; // 黄金
+                    else if (f === "大凶") colorClass = "bar-black"; // 黒灰
+
+                    listEl.insertAdjacentHTML('beforeend', createDualBarRow(f, myVal, avgVal, maxSpecVal, colorClass));
                 });
 
-                // アニメーション発火 (幅をセット)
+                // アニメーション発火
                 setTimeout(() => {
                     const bars = document.querySelectorAll('.stats-bar-base');
                     bars.forEach(bar => {
@@ -12900,13 +12906,14 @@ async function loadMyStats() {
     } catch (e) { console.error(e); }
 }
 
-// ヘルパー：グリッド線と数値ラベルの生成 (0, 25, 50, 75, 100%)
+// ヘルパー：グリッド線と数値ラベルの生成 (目安線と値)
 function renderGridLines(container, maxValue) {
     container.innerHTML = '';
     const steps = [0, 0.25, 0.5, 0.75, 1];
     
     steps.forEach(p => {
-        const val = Math.round(maxValue * p); // 整数丸め
+        // 整数に丸めて表示
+        const val = Math.floor(maxValue * p);
         const left = p * 100;
         
         container.innerHTML += `
@@ -12915,6 +12922,33 @@ function renderGridLines(container, maxValue) {
             </div>
         `;
     });
+}
+
+// ヘルパー：2本のバーを上下に並べて生成する (独立表示)
+function createDualBarRow(label, myVal, avgVal, maxVal, colorClass) {
+    const myWidth = (myVal / maxVal) * 100;
+    const avgWidth = (avgVal / maxVal) * 100;
+
+    return `
+        <div class="stats-row-dual">
+            <div class="stats-label-modern">${label}</div>
+            <div class="stats-bar-area-dual">
+                <!-- 上段: 平均 (グレー) -->
+                <div class="w-full relative h-[10px]">
+                    <div class="stats-bar-base bar-avg" 
+                         style="width: 0%;" 
+                         data-width="${avgWidth}%"></div>
+                </div>
+                
+                <!-- 下段: 自分 (指定色) -->
+                <div class="w-full relative h-[10px]">
+                    <div class="stats-bar-base ${colorClass}" 
+                         style="width: 0%;" 
+                         data-width="${myWidth}%"></div>
+                </div>
+            </div>
+        </div>
+    `;
 }
 
 // ヘルパー：モダンなバー行のHTML生成
