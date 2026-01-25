@@ -1149,7 +1149,7 @@
             transform: translateY(0);
         }
 
-        /* ランキングカード（Bentoスタイル） */
+        /* ランキングカード（Bentoスタイル・修正版） */
         .rank-card-modern {
             background-color: var(--card-bg);
             border: 1px solid var(--card-border);
@@ -1159,7 +1159,14 @@
             position: relative;
             box-shadow: 0 2px 5px rgba(0,0,0,0.02);
             transition: all 0.3s ease;
+            overflow: hidden; /* はみ出し防止の保険 */
         }
+        
+        /* Flexコンテナ内のテキストはみ出し防止の鉄則設定 */
+        .rank-card-modern .flex-1 {
+            min-width: 0; /* これがないとflexアイテムが縮まずにはみ出す */
+        }
+
         /* TOP3の特別演出 */
         .rank-card-modern.top-rank {
             border-width: 2px;
@@ -1180,6 +1187,7 @@
             background-color: var(--bg-color);
             border: 1px solid var(--card-border);
             box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+            flex-shrink: 0; /* 縮ませない */
         }
         .rank-1 .rank-badge-modern { background: #ffd700; color: #fff; border: none; box-shadow: 0 4px 10px rgba(255, 215, 0, 0.4); }
         .rank-2 .rank-badge-modern { background: #c0c0c0; color: #fff; border: none; }
@@ -1195,12 +1203,21 @@
         }
         .modern-bar-fill { height: 100%; border-radius: 3px; }
 
-        /* レスポンス対応 */
+        /* レスポンス対応（スマホでの縦並び） */
         @media (max-width: 768px) {
-            .zodiac-input-grid {
-                display: flex;
+            .rank-card-modern > .flex {
                 flex-direction: column;
-                gap: 10px;
+            }
+            .rank-card-modern .border-r {
+                border-right: none;
+                border-bottom: 1px solid var(--card-border);
+                padding-bottom: 16px;
+                margin-bottom: 16px;
+                width: 100%;
+            }
+            .rank-card-modern .md\\:w-64 {
+                width: 100%; /* 右側のパラメータエリアを全幅に */
+                margin-top: 16px;
             }
         }
 
