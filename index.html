@@ -11133,7 +11133,7 @@ function resetSearch() {
             document.getElementById('history-detail-modal').style.display = 'none';
         }
 
-        // --- シェア用画像生成 (大吉バグ修正版) ---
+        // --- シェア用画像生成 (修正版：縦書き・ハンコ位置ズレ・間延び防止対策済み) ---
         function generateResultImage() {
             const status = document.getElementById('gen-img-status');
             status.textContent = "シェア画像を生成中...フォント読み込み待機";
@@ -11143,32 +11143,71 @@ function resetSearch() {
             container.innerHTML = '';
             container.classList.add('hidden');
             
+            // フォントが読み込まれているか確認してから実行
             document.fonts.ready.then(() => {
                 const originalScrollPos = window.scrollY;
 
+                // html2canvasの設定
                 html2canvas(target, { 
-                    scale: 3, 
+                    scale: 3, // 高画質設定
                     useCORS: true, 
                     allowTaint: true,
-                    backgroundColor: null, 
+                    backgroundColor: null, // 背景透過
                     scrollX: 0,
                     scrollY: -window.scrollY, 
-                    // ここが修正の肝です
+                    
+                    // ★★★ ここが修正の核心：画像生成時専用のスタイル調整 ★★★
                     onclone: (clonedDoc) => {
                         const clonedOuter = clonedDoc.getElementById('result-card-outer');
                         if (clonedOuter) {
-                            // 1. 縦書きレイアウト崩れ防止ハック
+                            
+                            // 1. 全体のフォントを強制再適用（描画崩れ防止）
+                            clonedOuter.style.fontFamily = "'Zen Old Mincho', serif";
+
+                            // 2. ハンコ（円）の中の文字位置修正
+                            // html2canvasは縦書きFlexboxの中央揃えが苦手なため、補正します
+                            const circleBox = clonedOuter.querySelector('.result-circle-box');
+                            const kanjiMain = clonedOuter.querySelector('.result-kanji-main');
+                            
+                            if (circleBox && kanjiMain) {
+                                // Flexboxの設定をより厳密に指定
+                                circleBox.style.display = 'flex';
+                                circleBox.style.alignItems = 'center';
+                                circleBox.style.justifyContent = 'center';
+                                circleBox.style.textAlign = 'center';
+                                
+                                // 文字側の微調整（行間を締める）
+                                kanjiMain.style.lineHeight = '1';
+                                kanjiMain.style.width = '100%'; // 幅を確保して中央寄せを安定させる
+                                kanjiMain.style.height = '100%';
+                                kanjiMain.style.display = 'flex';
+                                kanjiMain.style.alignItems = 'center';
+                                kanjiMain.style.justifyContent = 'center';
+                            }
+
+                            // 3. 縦書きテキスト（和歌・助言・詳細）の間延び防止
+                            // html2canvasは縦書きの letter-spacing を過剰に描画する癖があるため、0にリセット
                             const verticals = clonedOuter.querySelectorAll('.result-poem-vertical, .result-advice-box, .detail-column');
                             verticals.forEach(el => {
-                                el.style.letterSpacing = '0.1em'; 
-                                el.style.lineHeight = '1.6';
+                                el.style.letterSpacing = '0px'; // 画像化時は0にする（これで見た目が丁度よくなることが多い）
+                                el.style.lineHeight = '1.4';    // 行間も少し詰める
                                 el.style.fontFamily = "'Zen Old Mincho', serif"; 
                             });
 
-                            // 2. 【重要】大吉の背景SVGを削除する (これでクラッシュを防ぐ)
-                            // 模様は消えますが、背景色の金色(#f3c845)は残るので見た目は金色のままです
+                            // 4. 下部の開運ボックス（Lucky Area）のレイアウト崩れ防止
+                            const luckyArea = clonedOuter.querySelector('.lucky-area');
+                            if (luckyArea) {
+                                luckyArea.style.display = 'grid';
+                                luckyArea.style.gridTemplateColumns = '1fr 1fr';
+                                luckyArea.style.gap = '15px'; // ギャップを明示的に指定
+                                luckyArea.style.width = '100%';
+                            }
+
+                            // 5. 大吉の背景SVG削除（クラッシュ防止のため維持）
+                            // ※背景色は残るので金色にはなります
                             clonedOuter.style.backgroundImage = 'none';
 
+                            // 6. 高さ・変形のリセット
                             clonedOuter.style.height = 'auto';
                             clonedOuter.style.minHeight = '1200px'; 
                             clonedOuter.style.transform = 'none'; 
@@ -11179,16 +11218,24 @@ function resetSearch() {
                     
                     container.innerHTML = '<p class="text-green-600 font-bold mb-2">画像の生成完了</p>';
                     
+                    canvas.toDataURL("image/png"); // データ化の確認
+                    
                     canvas.toBlob(blob => {
+                        if (!blob) {
+                            status.textContent = "画像データの生成に失敗しました。";
+                            return;
+                        }
                         currentState.lastImageBlob = blob;
                         const url = URL.createObjectURL(blob);
                         
+                        // プレビュー画像表示
                         const img = document.createElement('img');
                         img.src = url;
                         img.className = "mx-auto rounded border w-32 mb-2 shadow-sm"; 
                         container.appendChild(img);
                         container.classList.remove('hidden');
 
+                        // ダウンロードボタン
                         const dlLink = document.createElement('a');
                         dlLink.href = url;
                         dlLink.download = `tenmei_omikuji_${Date.now()}.png`;
