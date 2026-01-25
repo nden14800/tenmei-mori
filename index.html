@@ -1325,6 +1325,144 @@
     border-radius: 50%;
     z-index: 0;
 }
+
+        /* --- TENMEI Labs: グラス・コントロールパネルUI --- */
+
+/* 1. ラボ用グリッド */
+.lab-grid-container {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+    gap: 20px;
+    position: relative;
+    z-index: 10;
+}
+
+/* 2. ガラスカード (カプセル) */
+.lab-glass-card {
+    background: rgba(255, 255, 255, 0.65);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border: 1px solid rgba(255, 255, 255, 0.6);
+    border-radius: 20px;
+    padding: 20px;
+    position: relative;
+    overflow: hidden;
+    transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.05);
+    cursor: pointer;
+    display: flex;
+    flex-direction: column;
+}
+
+.dark .lab-glass-card {
+    background: rgba(30, 30, 30, 0.6);
+    border-color: rgba(255, 255, 255, 0.1);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+}
+
+/* ホバー時の発光 */
+.lab-glass-card:hover {
+    transform: translateY(-4px) scale(1.02);
+    background: rgba(255, 255, 255, 0.8);
+    border-color: var(--accent-red);
+    box-shadow: 0 15px 40px rgba(185, 28, 28, 0.15);
+}
+.dark .lab-glass-card:hover {
+    background: rgba(40, 40, 40, 0.8);
+    border-color: var(--accent-gold);
+}
+
+/* 3. カード内レイアウト */
+.lab-card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 15px;
+}
+
+.lab-icon-box {
+    width: 50px;
+    height: 50px;
+    border-radius: 14px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5rem;
+    color: #fff;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+}
+
+/* アイコン背景色バリエーション */
+.icon-bg-red    { background: linear-gradient(135deg, #ef4444, #b91c1c); }
+.icon-bg-blue   { background: linear-gradient(135deg, #3b82f6, #1d4ed8); }
+.icon-bg-yellow { background: linear-gradient(135deg, #eab308, #b45309); }
+.icon-bg-purple { background: linear-gradient(135deg, #a855f7, #7e22ce); }
+.icon-bg-green  { background: linear-gradient(135deg, #10b981, #047857); }
+.icon-bg-gray   { background: linear-gradient(135deg, #6b7280, #374151); }
+.icon-bg-gold   { background: linear-gradient(135deg, #fbbf24, #d97706); }
+
+/* スイッチ (右上配置) */
+.lab-switch-wrapper {
+    position: relative;
+    z-index: 20; /* クリック優先 */
+}
+
+/* タイトルと説明 */
+.lab-card-body h3 {
+    font-size: 1.1rem;
+    font-weight: 900;
+    margin-bottom: 6px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.lab-card-desc {
+    font-size: 0.8rem;
+    color: var(--text-sub);
+    line-height: 1.6;
+    margin-bottom: 12px;
+    opacity: 0.9;
+}
+
+/* ステータスバッジ */
+.lab-badge {
+    font-size: 0.65rem;
+    padding: 2px 8px;
+    border-radius: 12px;
+    font-weight: bold;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+}
+.badge-stable { background: #dcfce7; color: #166534; border: 1px solid #bbf7d0; }
+.badge-beta   { background: #ffedd5; color: #9a3412; border: 1px solid #fed7aa; }
+.badge-exp    { background: #f3e8ff; color: #6b21a8; border: 1px solid #d8b4fe; }
+.badge-danger { background: #fee2e2; color: #991b1b; border: 1px solid #fecaca; }
+
+.dark .badge-stable { background: #064e3b; color: #86efac; border-color: #065f46; }
+.dark .badge-beta   { background: #431407; color: #fdba74; border-color: #7c2d12; }
+.dark .badge-exp    { background: #3b0764; color: #d8b4fe; border-color: #581c87; }
+.dark .badge-danger { background: #450a0a; color: #fca5a5; border-color: #7f1d1d; }
+
+/* フッター (詳細へ) */
+.lab-card-footer {
+    margin-top: auto;
+    padding-top: 10px;
+    border-top: 1px dashed rgba(128,128,128,0.2);
+    font-size: 0.75rem;
+    color: var(--text-sub);
+    text-align: right;
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    gap: 5px;
+    opacity: 0.7;
+    transition: opacity 0.2s;
+}
+.lab-glass-card:hover .lab-card-footer {
+    opacity: 1;
+    color: var(--accent-red);
+}
         
         .history-overlay {
             position: absolute;
