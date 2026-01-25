@@ -7286,34 +7286,67 @@ function createPaginationHTML(type, current, total) {
         }
     };
 
-    // 2. 「社務所だより」：上部に総記事数を表示するように修正
+    // 2. 「社務所だより」描画関数（モダン・瓦版UI版）
 window.renderFullNewsView = function() {
     const container = document.getElementById('view-news-list');
     const pagination = document.getElementById('news-pagination');
-    const titleArea = document.querySelector('#view-news h2'); // タイトル部分を取得
+    const titleArea = document.querySelector('#view-news h2');
+    
     if (!container) return;
 
     const { data, totalPages, currentPage, totalItems } = getPaginatedData('news', newsData);
 
-    // タイトル横に件数を表示（検索中ならヒット数、通常なら全件数）
+    // タイトル横の件数表示
     const countDisplay = listState.news.query 
-        ? `<span class="text-sm font-normal ml-3 text-gray-500">検索結果: ${totalItems}件 / 全${newsData.length}件</span>`
-        : `<span class="text-sm font-normal ml-3 text-gray-500">全${newsData.length}件</span>`;
+        ? `<span class="text-sm font-normal ml-3 text-gray-500">Hit: ${totalItems}</span>`
+        : `<span class="text-sm font-normal ml-3 text-gray-500">Total: ${newsData.length}</span>`;
     titleArea.innerHTML = `社務所だより ${countDisplay}`;
 
     if (totalItems === 0) {
-        container.innerHTML = '<p class="text-center text-gray-500 py-8">該当する記事が見つかりませんでした。</p>';
+        container.innerHTML = `
+            <div class="col-span-full text-center py-10 text-gray-400">
+                <i class="bi bi-inbox text-4xl mb-3 opacity-50"></i>
+                <p>該当する記事が見つかりませんでした。</p>
+            </div>`;
         pagination.innerHTML = '';
         return;
     }
 
-    container.innerHTML = data.map(item => `
-        <article class="themed-card p-4 rounded shadow border-l-4 ${item.borderColor || 'border-gray-400'} cursor-pointer hover:opacity-80 transition" onclick="openArticle('news', ${item.id})">
-            <div class="text-sm themed-text-sub">${item.date} ${item.time || ''} <span class="ml-2 font-bold ${item.tagColor}">${item.tag}</span></div>
-            <h3 class="font-bold text-lg ${item.tag === '重要' ? 'text-red-600' : ''}">${item.title}</h3>
-            <p class="text-sm mt-2 truncate themed-text-sub">${item.desc}</p>
-        </article>
-    `).join('');
+    container.innerHTML = data.map(item => {
+        // タグによるスタイルの分岐
+        let tagClass = "tag-info";
+        let iconClass = "icon-news-info";
+
+        if (item.tag.includes("重要") || item.tag.includes("障害")) {
+            tagClass = "tag-important";
+            iconClass = "icon-news-alert";
+        } else if (item.tag.includes("更新") || item.tag.includes("機能") || item.tag.includes("システム")) {
+            tagClass = "tag-update";
+            iconClass = "icon-news-update";
+        } else if (item.tag.includes("新機能")) {
+            tagClass = "tag-system"; // 黄色系
+            iconClass = "icon-news-star";
+        } else if (item.tag.includes("開発") || item.tag.includes("裏話")) {
+            tagClass = "tag-green";
+            iconClass = "icon-news-chat";
+        }
+
+        return `
+            <article class="news-card ${iconClass}" onclick="openArticle('news', ${item.id})">
+                <!-- 上部メタ情報 -->
+                <div class="news-meta">
+                    <span class="news-tag ${tagClass}">${item.tag}</span>
+                    <span class="news-date">${item.date}</span>
+                </div>
+                
+                <!-- コンテンツ -->
+                <div>
+                    <h3 class="news-title">${item.title}</h3>
+                    <p class="news-desc">${item.desc || '詳細をご覧ください。'}</p>
+                </div>
+            </article>
+        `;
+    }).join('');
 
     pagination.innerHTML = createPaginationHTML('news', currentPage, totalPages);
 };
