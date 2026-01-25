@@ -11481,7 +11481,7 @@ function backToAuthStep1() {
     document.getElementById('auth-step-1').classList.remove('hidden');
 }
 
-// 4. 認証コード送信 (UI制御の更新)
+// 4. 認証コード送信 (Turnstile対応版)
 async function initiateAuth(mode) {
     const emailInputId = (mode === 'login') ? 'login-email' : 'reg-email';
     const email = document.getElementById(emailInputId).value.trim().toLowerCase();
@@ -11490,6 +11490,13 @@ async function initiateAuth(mode) {
 
     if(!email || !pass) return alert("メールアドレスとパスワードを入力してください");
     if(mode === 'register' && !username) return alert("ユーザー名を入力してください");
+
+    // ▼▼▼ 追加: Turnstileトークン取得 ▼▼▼
+    const token = turnstile.getResponse();
+    if (!token) {
+        return alert("セキュリティチェックを完了してください");
+    }
+    // ▲▲▲ 追加ここまで ▲▲▲
 
     showLoading(true);
     try {
@@ -11500,31 +11507,36 @@ async function initiateAuth(mode) {
                 email, 
                 password: pass, 
                 username: mode === 'register' ? username : undefined,
-                mode: mode 
+                mode: mode,
+                token: token // ★トークンを送信
             }) 
         });
         
         const data = await res.json();
         
-        // レート制限チェック
         if (res.status === 429) {
             showToast(data.message, 'warning', '天命の戒め');
+            // Turnstileをリセット（重要）
+            turnstile.reset();
             return;
         }
 
         if(res.ok && data.success) {
-            // 画面遷移: 入力フォーム -> コード入力
             document.getElementById('auth-step-1').classList.add('hidden');
             document.getElementById('auth-step-2').classList.remove('hidden');
-            
             const codeInput = document.getElementById('auth-code-input');
-            codeInput.value = ''; // 空にする
+            codeInput.value = '';
             codeInput.focus();
+            
+            // 成功後もリセットしておく（次回用）
+            turnstile.reset();
         } else {
             alert(`送信エラー: ${data.error || '不明なエラー'}`);
+            turnstile.reset();
         }
     } catch(e) { 
         alert("通信エラー"); 
+        turnstile.reset();
     } finally { 
         showLoading(false); 
     }
