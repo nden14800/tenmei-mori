@@ -11087,7 +11087,7 @@ async function showResultDetail(isNewDraw, dataOverride = null) {
         let historyAbortController = null;
         let currentHistoryRequestId = 0; // 最新のリクエストIDを管理
 
-// 履歴読み込み関数 (修正版: 無限ロード対策・エラーハンドリング強化)
+        // 履歴読み込み関数 (完全修正版: 5秒タイムアウト導入)
 async function loadHistory(page = 1) {
     const list = document.getElementById('history-list');
     const container = document.getElementById('history-container');
@@ -11097,7 +11097,7 @@ async function loadHistory(page = 1) {
     const globalCountEl = document.getElementById('global-history-count');
     const searchResultCount = document.getElementById('search-result-count');
 
-    // リクエストIDを更新（競合防止）
+    // リクエストIDを更新（古い通信の結果を無視するため）
     const requestId = ++currentHistoryRequestId;
 
     // 前回の通信をキャンセル
@@ -11107,33 +11107,38 @@ async function loadHistory(page = 1) {
     historyAbortController = new AbortController();
     const signal = historyAbortController.signal;
 
-    // 未ログイン時の処理
+    // --- 未ログイン時の処理 ---
     if(!currentState.user) {
         container.classList.add('history-blurred');
         overlay.classList.remove('hidden');
         if(viewMode) viewMode.textContent = "";
         if(myCountEl) myCountEl.textContent = "-";
         if(globalCountEl) globalCountEl.textContent = "-";
-        
-        // ダミー表示
-        let html = '';
-        for(let i=0; i<5; i++) html += `<div class="bg-gray-50 dark:bg-zinc-800 p-3 rounded mb-2 h-12 border-l-4 border-gray-300"></div>`;
-        list.innerHTML = html;
+        list.innerHTML = Array(5).fill('<div class="bg-gray-50 dark:bg-zinc-800 p-3 rounded mb-2 h-12 border-l-4 border-gray-300"></div>').join('');
         return;
     }
 
-    // UI初期化
+    // --- UI初期化 ---
     container.classList.remove('history-blurred');
     overlay.classList.add('hidden');
     if(viewMode) viewMode.textContent = "全参拝者の記録 (全期間)";
     list.innerHTML = '<div class="text-center py-8"><div class="spinner-border text-red-500" role="status"></div> 読み込み中...</div>';
     
-    // カウンター表示（既存の値を維持）
     if (currentState.liveCount > 0 && globalCountEl) {
         globalCountEl.textContent = currentState.liveCount.toLocaleString() + "本";
     }
 
     showLoading(true);
+
+    // ★重要: タイムアウト設定 (5000ms = 5秒)
+    // 5秒経っても応答がなければ強制的にエラーにする
+    const timeoutId = setTimeout(() => {
+        if (requestId === currentHistoryRequestId) {
+            historyAbortController.abort();
+            showLoading(false);
+            list.innerHTML = '<p class="text-center text-red-500 py-4">通信が混み合っています。<br><button onclick="loadHistory(1)" class="mt-2 underline font-bold">ここを押して再読み込み</button></p>';
+        }
+    }, 5000);
 
     try {
         const type = document.getElementById('search-type').value;
@@ -11154,7 +11159,8 @@ async function loadHistory(page = 1) {
             signal: signal 
         });
         
-        // 最新のリクエストでなければ処理を中断（ただしfinallyは実行される）
+        clearTimeout(timeoutId); // 成功したらタイムアウト解除
+
         if (requestId !== currentHistoryRequestId) return;
 
         if(res.ok) {
@@ -11174,19 +11180,19 @@ async function loadHistory(page = 1) {
             renderServerPagination(data.page, data.totalItems, 100);
         } else {
             console.error("Load failed status:", res.status);
-            list.innerHTML = '<p class="text-center text-red-500 py-4">情報の取得に失敗しました。<br><button onclick="loadHistory(1)" class="mt-2 underline">再読み込み</button></p>';
+            list.innerHTML = '<p class="text-center text-red-500 py-4">情報の取得に失敗しました。<br><button onclick="loadHistory(1)" class="mt-2 underline font-bold">再読み込み</button></p>';
         }
     } catch(e) {
-        // AbortErrorは無視（新しいリクエストが始まったため）
         if (e.name !== 'AbortError') {
             console.error("Load history error:", e);
             if (requestId === currentHistoryRequestId) {
-                list.innerHTML = '<p class="text-center text-red-500 py-4">通信エラーが発生しました。<br>しばらく待ってから再読み込みしてください。</p>';
+                list.innerHTML = '<p class="text-center text-red-500 py-4">通信エラーが発生しました。<br><button onclick="loadHistory(1)" class="mt-2 underline font-bold">再読み込み</button></p>';
             }
         }
     } finally {
-        // 自分が最新のリクエストであれば、必ずローディングを消す
+        // 自分が最新のリクエストなら必ずローディングを消す
         if (requestId === currentHistoryRequestId) {
+            clearTimeout(timeoutId);
             showLoading(false);
         }
     }
