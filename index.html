@@ -15,8 +15,9 @@
    <!-- QRCode.js -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
     
-   <!-- html2canvasを削除し、dom-to-image-more を追加 -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/dom-to-image-more/3.3.0/dom-to-image-more.min.js"></script>
+    <!-- jsPDF & html2canvas -->
+    <!-- 修正: jspdfを削除し、html2canvasのみ残す -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     
     <!-- フォント -->
     <link href="https://fonts.googleapis.com/css2?family=Shippori+Mincho:wght@400;500;600;800&family=Zen+Old+Mincho:wght@400;700;900&display=swap" rel="stylesheet">
@@ -11132,75 +11133,76 @@ function resetSearch() {
             document.getElementById('history-detail-modal').style.display = 'none';
         }
 
-        // --- シェア用画像生成 (ライブラリ変更版：dom-to-image-more 使用) ---
+        // --- シェア用画像生成 (大吉バグ修正版) ---
         function generateResultImage() {
             const status = document.getElementById('gen-img-status');
-            status.textContent = "画像を生成中...画面を動かさないでください";
+            status.textContent = "シェア画像を生成中...フォント読み込み待機";
             
-            // 画像化対象の要素
             const target = document.getElementById('result-capture-container');
-            const resultCard = document.getElementById('result-card-outer');
-            
             const container = document.getElementById('generated-image-container');
             container.innerHTML = '';
             container.classList.add('hidden');
             
-            // フォント読み込み待機
             document.fonts.ready.then(() => {
-                
-                // 高画質化のためのスケール設定 (3倍)
-                const scale = 3;
-                
-                // dom-to-image-more の実行
-                domtoimage.toPng(target, {
-                    width: target.offsetWidth * scale,
-                    height: target.offsetHeight * scale,
-                    style: {
-                        // 内部的に要素を拡大して高画質化する
-                        transform: `scale(${scale})`,
-                        transformOrigin: 'top left',
-                        width: target.offsetWidth + 'px',
-                        height: target.offsetHeight + 'px',
-                        // 余計なマージンを排除
-                        margin: '0'
-                    },
-                    // 背景色を透明にするか、指定色にするか（nullなら透明）
-                    bgcolor: null 
-                })
-                .then(function (dataUrl) {
+                const originalScrollPos = window.scrollY;
+
+                html2canvas(target, { 
+                    scale: 3, 
+                    useCORS: true, 
+                    allowTaint: true,
+                    backgroundColor: null, 
+                    scrollX: 0,
+                    scrollY: -window.scrollY, 
+                    // ここが修正の肝です
+                    onclone: (clonedDoc) => {
+                        const clonedOuter = clonedDoc.getElementById('result-card-outer');
+                        if (clonedOuter) {
+                            // 1. 縦書きレイアウト崩れ防止ハック
+                            const verticals = clonedOuter.querySelectorAll('.result-poem-vertical, .result-advice-box, .detail-column');
+                            verticals.forEach(el => {
+                                el.style.letterSpacing = '0.1em'; 
+                                el.style.lineHeight = '1.6';
+                                el.style.fontFamily = "'Zen Old Mincho', serif"; 
+                            });
+
+                            // 2. 【重要】大吉の背景SVGを削除する (これでクラッシュを防ぐ)
+                            // 模様は消えますが、背景色の金色(#f3c845)は残るので見た目は金色のままです
+                            clonedOuter.style.backgroundImage = 'none';
+
+                            clonedOuter.style.height = 'auto';
+                            clonedOuter.style.minHeight = '1200px'; 
+                            clonedOuter.style.transform = 'none'; 
+                        }
+                    }
+                }).then(canvas => {
                     status.textContent = "";
                     
-                    // Blob変換処理
-                    fetch(dataUrl)
-                    .then(res => res.blob())
-                    .then(blob => {
+                    container.innerHTML = '<p class="text-green-600 font-bold mb-2">画像の生成完了</p>';
+                    
+                    canvas.toBlob(blob => {
                         currentState.lastImageBlob = blob;
                         const url = URL.createObjectURL(blob);
                         
-                        // 生成完了表示
-                        container.innerHTML = '<p class="text-green-600 font-bold mb-2">画像の生成完了</p>';
-                        container.classList.remove('hidden');
-
-                        // プレビュー画像
                         const img = document.createElement('img');
                         img.src = url;
-                        img.className = "mx-auto rounded border w-40 mb-3 shadow-lg"; 
+                        img.className = "mx-auto rounded border w-32 mb-2 shadow-sm"; 
                         container.appendChild(img);
+                        container.classList.remove('hidden');
 
-                        // ダウンロードボタン
                         const dlLink = document.createElement('a');
                         dlLink.href = url;
                         dlLink.download = `tenmei_omikuji_${Date.now()}.png`;
-                        dlLink.className = "btn-primary text-sm w-full justify-center py-3 shadow-md";
-                        dlLink.innerHTML = '<i class="bi bi-download"></i> 画像を保存する';
+                        dlLink.className = "btn-primary text-sm mt-2 inline-block";
+                        dlLink.innerHTML = '<i class="bi bi-download"></i> ダウンロード';
                         container.appendChild(dlLink);
-                    });
-                })
-                .catch(function (error) {
-                    console.error('画像生成エラー:', error);
+                    }, 'image/png');
+
+                    window.scrollTo(0, originalScrollPos);
+
+                }).catch(err => {
+                    console.error(err);
                     status.textContent = "画像の生成に失敗しました。";
-                    // エラー内容をアラートで出す（デバッグ用）
-                    // alert("生成エラー: " + error.message);
+                    window.scrollTo(0, originalScrollPos);
                 });
             });
         }
