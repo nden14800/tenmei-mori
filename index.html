@@ -11081,11 +11081,8 @@ async function showResultDetail(isNewDraw, dataOverride = null) {
         let historyAbortController = null;
         let currentHistoryRequestId = 0; // 最新のリクエストIDを管理
 
-// 履歴読み込み関数 (修正版: 0上書き防止)
+// 履歴読み込み関数 (修正版: 無限ロード対策・エラーハンドリング強化)
 async function loadHistory(page = 1) {
-    // リクエストIDを更新
-    const requestId = ++currentHistoryRequestId;
-
     const list = document.getElementById('history-list');
     const container = document.getElementById('history-container');
     const overlay = document.getElementById('history-login-overlay');
@@ -11094,46 +11091,50 @@ async function loadHistory(page = 1) {
     const globalCountEl = document.getElementById('global-history-count');
     const searchResultCount = document.getElementById('search-result-count');
 
-    // 検索条件
-    const type = document.getElementById('search-type').value;
-    const keyword = document.getElementById('search-keyword').value;
-    const dateStart = document.getElementById('search-date-start').value;
-    const dateEnd = document.getElementById('search-date-end').value;
+    // リクエストIDを更新（競合防止）
+    const requestId = ++currentHistoryRequestId;
 
-    if(!currentState.user) {
-        container.classList.add('history-blurred');
-        overlay.classList.remove('hidden');
-        viewMode.textContent = "";
-        myCountEl.textContent = "-";
-        globalCountEl.textContent = "-";
-        // ダミー表示
-        let html = '';
-        for(let i=0; i<10; i++) html += `<div class="bg-gray-50 dark:bg-zinc-800 p-3 rounded mb-2 h-12 border-l-4 border-gray-300"></div>`;
-        list.innerHTML = html;
-        return;
-    }
-
-    // 前回の通信が生きていればキャンセル
+    // 前回の通信をキャンセル
     if (historyAbortController) {
         historyAbortController.abort();
     }
     historyAbortController = new AbortController();
     const signal = historyAbortController.signal;
 
+    // 未ログイン時の処理
+    if(!currentState.user) {
+        container.classList.add('history-blurred');
+        overlay.classList.remove('hidden');
+        if(viewMode) viewMode.textContent = "";
+        if(myCountEl) myCountEl.textContent = "-";
+        if(globalCountEl) globalCountEl.textContent = "-";
+        
+        // ダミー表示
+        let html = '';
+        for(let i=0; i<5; i++) html += `<div class="bg-gray-50 dark:bg-zinc-800 p-3 rounded mb-2 h-12 border-l-4 border-gray-300"></div>`;
+        list.innerHTML = html;
+        return;
+    }
+
     // UI初期化
     container.classList.remove('history-blurred');
     overlay.classList.add('hidden');
-    viewMode.textContent = "全参拝者の記録 (全期間)";
+    if(viewMode) viewMode.textContent = "全参拝者の記録 (全期間)";
     list.innerHTML = '<div class="text-center py-8"><div class="spinner-border text-red-500" role="status"></div> 読み込み中...</div>';
     
-    // ★修正: 0の場合は上書きしない（startLiveCounterに任せる）、既に値があれば表示
-    if (currentState.liveCount > 0) {
+    // カウンター表示（既存の値を維持）
+    if (currentState.liveCount > 0 && globalCountEl) {
         globalCountEl.textContent = currentState.liveCount.toLocaleString() + "本";
     }
 
     showLoading(true);
 
     try {
+        const type = document.getElementById('search-type').value;
+        const keyword = document.getElementById('search-keyword').value;
+        const dateStart = document.getElementById('search-date-start').value;
+        const dateEnd = document.getElementById('search-date-end').value;
+
         const params = new URLSearchParams({
             page: page,
             type: type,
@@ -11142,25 +11143,22 @@ async function loadHistory(page = 1) {
             dateEnd: dateEnd
         });
 
-        // 通信実行
         const res = await authFetch(`${API_BASE}/api/history/global?${params.toString()}`, {
             method: 'GET',
             signal: signal 
         });
         
-        if (requestId !== currentHistoryRequestId) return; 
+        // 最新のリクエストでなければ処理を中断（ただしfinallyは実行される）
+        if (requestId !== currentHistoryRequestId) return;
 
         if(res.ok) {
             const data = await res.json();
             
-            myCountEl.textContent = (data.personalTotal || 0).toLocaleString() + "回";
-            
-            // サーバーから返ってきた最新のライブカウントがあれば更新、なければ既存を維持
-            if (currentState.liveCount > 0) {
+            if(myCountEl) myCountEl.textContent = (data.personalTotal || 0).toLocaleString() + "回";
+            if(globalCountEl && currentState.liveCount > 0) {
                 globalCountEl.textContent = currentState.liveCount.toLocaleString() + "本";
             }
-            
-            searchResultCount.textContent = (data.totalItems || 0).toLocaleString();
+            if(searchResultCount) searchResultCount.textContent = (data.totalItems || 0).toLocaleString();
 
             historyPageState.page = data.page;
             historyPageState.totalItems = data.totalItems;
@@ -11169,17 +11167,19 @@ async function loadHistory(page = 1) {
             renderHistoryList(data.global);
             renderServerPagination(data.page, data.totalItems, 100);
         } else {
-            console.error("Load failed:", res.status);
-            list.innerHTML = '<p class="text-center text-red-500">情報の取得に失敗しました。</p>';
+            console.error("Load failed status:", res.status);
+            list.innerHTML = '<p class="text-center text-red-500 py-4">情報の取得に失敗しました。<br><button onclick="loadHistory(1)" class="mt-2 underline">再読み込み</button></p>';
         }
     } catch(e) {
+        // AbortErrorは無視（新しいリクエストが始まったため）
         if (e.name !== 'AbortError') {
-            console.error(e);
+            console.error("Load history error:", e);
             if (requestId === currentHistoryRequestId) {
-                list.innerHTML = '<p class="text-center text-red-500">通信エラーが発生しました。</p>';
+                list.innerHTML = '<p class="text-center text-red-500 py-4">通信エラーが発生しました。<br>しばらく待ってから再読み込みしてください。</p>';
             }
         }
     } finally {
+        // 自分が最新のリクエストであれば、必ずローディングを消す
         if (requestId === currentHistoryRequestId) {
             showLoading(false);
         }
