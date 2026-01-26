@@ -11040,35 +11040,6 @@ async function showResultDetail(isNewDraw, dataOverride = null) {
         let historyAbortController = null;
         let currentHistoryRequestId = 0; // 最新のリクエストIDを管理
 
-        // ホームカウンター更新 (修正版: 履歴画面の数字も同期させる)
-async function startLiveCounter() {
-    const el = document.getElementById('live-counter'); // ホーム: 発行総数
-    const uEl = document.getElementById('worshipper-counter'); // ホーム: 参拝者数
-    const historyGlobalEl = document.getElementById('global-history-count'); // ★追加: 履歴画面の参拝数
-
-    async function fetchCount() {
-        try {
-            const res = await fetch(`${API_BASE}/api/counter`);
-            if(res.ok) {
-                const data = await res.json();
-                const countVal = Number(data.count || 0);
-                
-                // 状態を更新
-                currentState.liveCount = countVal;
-
-                // 各要素に反映
-                if(el) el.textContent = countVal.toLocaleString() + "本";
-                if(uEl) uEl.textContent = Number(data.userCount || 0).toLocaleString() + "名";
-                
-                // ★追加: 履歴画面の要素があれば更新
-                if(historyGlobalEl) historyGlobalEl.textContent = countVal.toLocaleString() + "本";
-            }
-        } catch(e) { console.error(e); }
-    }
-    fetchCount();
-    setInterval(fetchCount, 60000);
-}
-
 // 履歴読み込み関数 (修正版: 0上書き防止)
 async function loadHistory(page = 1) {
     // リクエストIDを更新
