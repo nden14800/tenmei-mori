@@ -11129,9 +11129,13 @@ function resetSearch() {
             document.getElementById('history-detail-modal').style.display = 'none';
         }
 
-        // --- シェア用画像生成 (html-to-image版) ---
+        // --- シェア用画像生成 (軽量化・フリーズ対策版) ---
         function generateResultImage() {
             const status = document.getElementById('gen-img-status');
+            const btn = event.target.closest('button'); // 押されたボタン
+            
+            // 連打防止
+            if (btn) btn.disabled = true;
             status.textContent = "画像を生成中...画面を動かさないでください";
             
             const target = document.getElementById('result-capture-container');
@@ -11143,55 +11147,54 @@ function resetSearch() {
             // フォント読み込み待機
             document.fonts.ready.then(() => {
                 
-                // html-to-image を使用
-                // htmlToImage はグローバル変数として読み込まれます
-                htmlToImage.toPng(target, {
-                    quality: 1.0,
-                    pixelRatio: 3, // 3倍高画質
-                    backgroundColor: null, // 背景透過
+                // ★修正点: toPng ではなく toBlob を使用してメモリ節約
+                htmlToImage.toBlob(target, {
+                    quality: 0.95,     // 画質設定
+                    pixelRatio: 2,     // ★重要: 3だと重すぎるので2にする (十分高画質です)
+                    backgroundColor: null, 
                     style: {
-                        // iOSでの縦書き崩れを防ぐためのスタイル補正
-                        // 描画時だけマージンをリセットし、確実に描画させる
                         margin: '0',
                         transform: 'none',
-                        // アイコンフォント(Bootstrap Icons)を確実に読み込ませる
+                        // アイコンやフォントを確実に反映
                         fontFamily: "'Zen Old Mincho', serif, 'bootstrap-icons'"
                     },
-                    // アイコンフォントの読み込みを待機する設定
                     skipAutoScale: true,
                     cacheBust: true
                 })
-                .then(function (dataUrl) {
-                    status.textContent = "";
+                .then(function (blob) {
+                    if (!blob) {
+                        throw new Error("Blob生成失敗");
+                    }
                     
-                    fetch(dataUrl)
-                    .then(res => res.blob())
-                    .then(blob => {
-                        currentState.lastImageBlob = blob;
-                        const url = URL.createObjectURL(blob);
-                        
-                        // 生成完了表示
-                        container.innerHTML = '<p class="text-green-600 font-bold mb-2">画像の生成完了</p>';
-                        container.classList.remove('hidden');
+                    status.textContent = "";
+                    currentState.lastImageBlob = blob;
+                    const url = URL.createObjectURL(blob);
+                    
+                    // 生成完了表示
+                    container.innerHTML = '<p class="text-green-600 font-bold mb-2">画像の生成完了</p>';
+                    container.classList.remove('hidden');
 
-                        // プレビュー画像
-                        const img = document.createElement('img');
-                        img.src = url;
-                        img.className = "mx-auto rounded border w-40 mb-3 shadow-lg"; 
-                        container.appendChild(img);
+                    // プレビュー画像
+                    const img = document.createElement('img');
+                    img.src = url;
+                    img.className = "mx-auto rounded border w-40 mb-3 shadow-lg"; 
+                    container.appendChild(img);
 
-                        // ダウンロードボタン
-                        const dlLink = document.createElement('a');
-                        dlLink.href = url;
-                        dlLink.download = `tenmei_omikuji_${Date.now()}.png`;
-                        dlLink.className = "btn-primary text-sm w-full justify-center py-3 shadow-md";
-                        dlLink.innerHTML = '<i class="bi bi-download"></i> 画像を保存する';
-                        container.appendChild(dlLink);
-                    });
+                    // ダウンロードボタン
+                    const dlLink = document.createElement('a');
+                    dlLink.href = url;
+                    dlLink.download = `tenmei_omikuji_${Date.now()}.png`;
+                    dlLink.className = "btn-primary text-sm w-full justify-center py-3 shadow-md";
+                    dlLink.innerHTML = '<i class="bi bi-download"></i> 画像を保存する';
+                    container.appendChild(dlLink);
+                    
+                    // ボタン復活
+                    if (btn) btn.disabled = false;
                 })
                 .catch(function (error) {
                     console.error('生成エラー:', error);
-                    status.textContent = "生成に失敗しました。もう一度お試しください。";
+                    status.textContent = "生成に失敗しました。";
+                    if (btn) btn.disabled = false;
                 });
             });
         }
