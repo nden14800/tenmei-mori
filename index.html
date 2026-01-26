@@ -11132,41 +11132,49 @@ async function showResultDetail(isNewDraw, dataOverride = null) {
         let historyAbortController = null;
         let currentHistoryRequestId = 0; // 最新のリクエストIDを管理
 
-        // 履歴読み込み関数 (ローディング対策・修正版)
+        // 履歴読み込み関数 (根本修正版: 競合状態の解消と確実な終了処理)
 async function loadHistory(page = 1) {
     const list = document.getElementById('history-list');
     const container = document.getElementById('history-container');
     const overlay = document.getElementById('history-login-overlay');
     const viewMode = document.getElementById('history-view-mode');
     
-    // リクエストID管理
-    const requestId = ++currentHistoryRequestId;
-
-    // 前回の通信をキャンセル
-    if (historyAbortController) {
-        historyAbortController.abort();
-    }
-    historyAbortController = new AbortController();
-    const signal = historyAbortController.signal;
-
-    // 未ログイン時
+    // 未ログイン時の処理（ここは変更なし）
     if(!currentState.user) {
-        container.classList.add('history-blurred');
-        overlay.classList.remove('hidden');
+        if(container) container.classList.add('history-blurred');
+        if(overlay) overlay.classList.remove('hidden');
         if(viewMode) viewMode.textContent = "";
-        // ダミー
-        list.innerHTML = Array(5).fill('<div class="bg-gray-50 dark:bg-zinc-800 p-3 rounded mb-2 h-12 border-l-4 border-gray-300"></div>').join('');
+        if(list) list.innerHTML = Array(5).fill('<div class="bg-gray-50 dark:bg-zinc-800 p-3 rounded mb-2 h-12 border-l-4 border-gray-300"></div>').join('');
         return;
     }
 
     // UI初期化
-    container.classList.remove('history-blurred');
-    overlay.classList.add('hidden');
-    list.innerHTML = '<div class="text-center py-8"><div class="spinner-border text-red-500" role="status"></div> 読み込み中...</div>';
+    if(container) container.classList.remove('history-blurred');
+    if(overlay) overlay.classList.add('hidden');
+    if(viewMode) viewMode.textContent = "全参拝者の記録 (全期間)";
+    if(list) list.innerHTML = '<div class="text-center py-8"><div class="spinner-border text-red-500" role="status"></div> 読み込み中...</div>';
     
+    // カウンター表示更新
+    const globalCountEl = document.getElementById('global-history-count');
+    if (currentState.liveCount > 0 && globalCountEl) {
+        globalCountEl.textContent = currentState.liveCount.toLocaleString() + "本";
+    }
+
+    // --- 通信制御 ---
+    
+    // 1. 前回の通信が生きていればキャンセル
+    if (historyAbortController) {
+        historyAbortController.abort();
+    }
+    // 2. 新しいコントローラーを作成
+    historyAbortController = new AbortController();
+    const signal = historyAbortController.signal;
+
+    // 3. ローディング開始
     showLoading(true);
 
     try {
+        // パラメータ取得
         const type = document.getElementById('search-type').value;
         const keyword = document.getElementById('search-keyword').value;
         const dateStart = document.getElementById('search-date-start').value;
@@ -11180,42 +11188,52 @@ async function loadHistory(page = 1) {
             dateEnd: dateEnd
         });
 
+        // 4. 通信実行
         const res = await authFetch(`${API_BASE}/api/history/global?${params.toString()}`, {
             method: 'GET',
             signal: signal 
         });
-        
-        if (requestId !== currentHistoryRequestId) return; // 古いリクエストは無視
 
         if(res.ok) {
             const data = await res.json();
             
-            // カウンター更新
+            // データの反映
             const myCountEl = document.getElementById('personal-history-count');
             const searchResultCount = document.getElementById('search-result-count');
+            
             if(myCountEl) myCountEl.textContent = (data.personalTotal || 0).toLocaleString() + "回";
             if(searchResultCount) searchResultCount.textContent = (data.totalItems || 0).toLocaleString();
 
+            // 状態更新
             historyPageState.page = data.page;
             historyPageState.totalItems = data.totalItems;
             historyPageState.filteredData = data.global;
 
             renderHistoryList(data.global);
             renderServerPagination(data.page, data.totalItems, 100);
+            
         } else {
-            list.innerHTML = '<p class="text-center text-red-500 py-4">情報の取得に失敗しました。<button onclick="loadHistory(1)" class="underline ml-2">再試行</button></p>';
+            // サーバーエラー時
+            console.error("Load failed status:", res.status);
+            if(list) list.innerHTML = '<p class="text-center text-red-500 py-4">情報の取得に失敗しました。<br><button onclick="loadHistory(1)" class="mt-2 underline font-bold">再読み込み</button></p>';
         }
+
     } catch(e) {
-        if (e.name !== 'AbortError') {
+        // 5. エラーハンドリング
+        if (e.name === 'AbortError') {
+            console.log("Fetch aborted");
+            // キャンセルされた場合は何もしない（新しいリクエストが動いているため）
+        } else {
             console.error("Load history error:", e);
-            if (requestId === currentHistoryRequestId) {
-                list.innerHTML = '<p class="text-center text-red-500 py-4">通信エラーが発生しました。<button onclick="loadHistory(1)" class="underline ml-2">再試行</button></p>';
-            }
+            if(list) list.innerHTML = '<p class="text-center text-red-500 py-4">通信エラーが発生しました。<br><button onclick="loadHistory(1)" class="mt-2 underline font-bold">再読み込み</button></p>';
         }
     } finally {
-        // ★重要: 必ずローディングを消す
-        if (requestId === currentHistoryRequestId) {
+        // 6. 終了処理（ここが最重要）
+        // キャンセルされた場合(signal.aborted)は、新しいリクエストがすぐに始まるのでローディングを消さない
+        // 正常終了またはエラー終了の場合のみローディングを消す
+        if (!signal.aborted) {
             showLoading(false);
+            historyAbortController = null; // コントローラーをリセット
         }
     }
 }
