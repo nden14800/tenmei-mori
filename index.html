@@ -11152,21 +11152,30 @@ async function showResultDetail(isNewDraw, dataOverride = null) {
         let historyAbortController = null;
         let currentHistoryRequestId = 0; // 最新のリクエストIDを管理
 
-        // 履歴読み込み関数 (根本修正版: 競合状態の解消と確実な終了処理)
+        // 履歴読み込み関数 (グラフ削除 & ローディング修正版)
 async function loadHistory(page = 1) {
     const list = document.getElementById('history-list');
     const container = document.getElementById('history-container');
     const overlay = document.getElementById('history-login-overlay');
     const viewMode = document.getElementById('history-view-mode');
-    
-    // 未ログイン時の処理（ここは変更なし）
+    const searchResultCount = document.getElementById('search-result-count');
+
+    // 未ログイン時の処理
     if(!currentState.user) {
         if(container) container.classList.add('history-blurred');
         if(overlay) overlay.classList.remove('hidden');
         if(viewMode) viewMode.textContent = "";
+        // ダミー表示
         if(list) list.innerHTML = Array(5).fill('<div class="bg-gray-50 dark:bg-zinc-800 p-3 rounded mb-2 h-12 border-l-4 border-gray-300"></div>').join('');
         return;
     }
+
+    // 前回の通信が生きていればキャンセル
+    if (historyAbortController) {
+        historyAbortController.abort();
+    }
+    historyAbortController = new AbortController();
+    const signal = historyAbortController.signal;
 
     // UI初期化
     if(container) container.classList.remove('history-blurred');
@@ -11174,27 +11183,10 @@ async function loadHistory(page = 1) {
     if(viewMode) viewMode.textContent = "全参拝者の記録 (全期間)";
     if(list) list.innerHTML = '<div class="text-center py-8"><div class="spinner-border text-red-500" role="status"></div> 読み込み中...</div>';
     
-    // カウンター表示更新
-    const globalCountEl = document.getElementById('global-history-count');
-    if (currentState.liveCount > 0 && globalCountEl) {
-        globalCountEl.textContent = currentState.liveCount.toLocaleString() + "本";
-    }
-
-    // --- 通信制御 ---
-    
-    // 1. 前回の通信が生きていればキャンセル
-    if (historyAbortController) {
-        historyAbortController.abort();
-    }
-    // 2. 新しいコントローラーを作成
-    historyAbortController = new AbortController();
-    const signal = historyAbortController.signal;
-
-    // 3. ローディング開始
+    // ★ローディング開始（カウンター+1）
     showLoading(true);
 
     try {
-        // パラメータ取得
         const type = document.getElementById('search-type').value;
         const keyword = document.getElementById('search-keyword').value;
         const dateStart = document.getElementById('search-date-start').value;
@@ -11208,7 +11200,6 @@ async function loadHistory(page = 1) {
             dateEnd: dateEnd
         });
 
-        // 4. 通信実行
         const res = await authFetch(`${API_BASE}/api/history/global?${params.toString()}`, {
             method: 'GET',
             signal: signal 
@@ -11217,11 +11208,7 @@ async function loadHistory(page = 1) {
         if(res.ok) {
             const data = await res.json();
             
-            // データの反映
-            const myCountEl = document.getElementById('personal-history-count');
-            const searchResultCount = document.getElementById('search-result-count');
-            
-            if(myCountEl) myCountEl.textContent = (data.personalTotal || 0).toLocaleString() + "回";
+            // 件数更新
             if(searchResultCount) searchResultCount.textContent = (data.totalItems || 0).toLocaleString();
 
             // 状態更新
@@ -11229,32 +11216,26 @@ async function loadHistory(page = 1) {
             historyPageState.totalItems = data.totalItems;
             historyPageState.filteredData = data.global;
 
+            // リスト描画（グラフ描画処理は削除済み）
             renderHistoryList(data.global);
             renderServerPagination(data.page, data.totalItems, 100);
             
         } else {
-            // サーバーエラー時
             console.error("Load failed status:", res.status);
             if(list) list.innerHTML = '<p class="text-center text-red-500 py-4">情報の取得に失敗しました。<br><button onclick="loadHistory(1)" class="mt-2 underline font-bold">再読み込み</button></p>';
         }
 
     } catch(e) {
-        // 5. エラーハンドリング
         if (e.name === 'AbortError') {
+            // キャンセルされた場合はログだけ残して何もしない
             console.log("Fetch aborted");
-            // キャンセルされた場合は何もしない（新しいリクエストが動いているため）
         } else {
             console.error("Load history error:", e);
             if(list) list.innerHTML = '<p class="text-center text-red-500 py-4">通信エラーが発生しました。<br><button onclick="loadHistory(1)" class="mt-2 underline font-bold">再読み込み</button></p>';
         }
     } finally {
-        // 6. 終了処理（ここが最重要）
-        // キャンセルされた場合(signal.aborted)は、新しいリクエストがすぐに始まるのでローディングを消さない
-        // 正常終了またはエラー終了の場合のみローディングを消す
-        if (!signal.aborted) {
-            showLoading(false);
-            historyAbortController = null; // コントローラーをリセット
-        }
+        // ★最重要: 成功・失敗・キャンセル問わず、必ずローディングを終了させる（カウンター-1）
+        showLoading(false);
     }
 }
 
