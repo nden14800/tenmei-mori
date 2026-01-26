@@ -9496,54 +9496,50 @@ function createTopCard(item, rank, iconClass, rankClass, colorClass) {
         document.getElementById('omamori-step-3').classList.remove('hidden');
     },
 
-        // 画像保存（修正版）
+        // 画像保存（修正版：html-to-image使用）
         saveImage: function() {
+            // 保存対象の要素を取得（.omamori-body を直接狙う）
             const target = document.querySelector('.omamori-body'); 
-            if(!target) return;
             
+            // ボタンの表示変更
             const btn = event.target.closest('button');
             const originalText = btn.innerHTML;
             btn.innerHTML = '<i class="bi bi-hourglass-split"></i> 生成中...';
             btn.disabled = true;
 
-            // 保存前に、角を隠している疑似要素の色を「透過」にするか、
-            // 背景色を一時的に透明にして、canvas側で処理させる
-            // html2canvasの設定を調整して、角丸をきれいに切り抜く
-            
-            html2canvas(target, {
-                scale: 4, // 高画質
-                backgroundColor: null, // 背景透明
-                useCORS: true,
-                logging: false,
-                // 疑似要素（角の切り欠き）が背景色と混ざらないようにする
-                onclone: (clonedDoc) => {
-                    const clonedBody = clonedDoc.querySelector('.omamori-body');
-                    // 保存時は影を消して、きれいな形にする
-                    clonedBody.style.boxShadow = 'none';
-                    // 疑似要素（切り欠き）を非表示にして、純粋なborder-radiusで形を出す
-                    const style = clonedDoc.createElement('style');
-                    style.innerHTML = '.omamori-body::before, .omamori-body::after { display: none !important; }';
-                    clonedDoc.body.appendChild(style);
-                }
-            }).then(canvas => {
-                const link = document.createElement('a');
-                link.download = `omamori_${Date.now()}.png`;
-                link.href = canvas.toDataURL('image/png');
-                link.click();
-                
-                btn.innerHTML = originalText;
-                btn.disabled = false;
-                
-                // 完了アラートは味気ないので削除または控えめに
-                // alert("保存しました"); 
-            }).catch(e => {
-                console.error(e);
-                alert("保存に失敗しました。");
-                btn.innerHTML = originalText;
-                btn.disabled = false;
+            // フォント読み込み待機後に実行
+            document.fonts.ready.then(() => {
+                htmlToImage.toPng(target, {
+                    quality: 1.0,
+                    pixelRatio: 4, // かなり高画質に
+                    backgroundColor: null, // 背景透明（角丸を綺麗に出すため）
+                    style: {
+                        // 保存時のみ影を消してスッキリさせる（お好みで調整可）
+                        boxShadow: 'none',
+                        // 画面上の位置調整の影響を受けないようにリセット
+                        margin: '0',
+                        transform: 'none'
+                    }
+                })
+                .then(function (dataUrl) {
+                    // ダウンロード処理
+                    const link = document.createElement('a');
+                    link.download = `omamori_${Date.now()}.png`;
+                    link.href = dataUrl;
+                    link.click();
+                    
+                    // ボタンを元に戻す
+                    btn.innerHTML = originalText;
+                    btn.disabled = false;
+                })
+                .catch(function (error) {
+                    console.error('御守生成エラー:', error);
+                    alert("保存に失敗しました。");
+                    btn.innerHTML = originalText;
+                    btn.disabled = false;
+                });
             });
         }
-    };
 
         
 // --- 認証付きFetchラッパー (Cookie & Header 両対応) ---
