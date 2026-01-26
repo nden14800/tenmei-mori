@@ -14312,29 +14312,60 @@ async function initiateAuth(mode) {
 }
         
 // ==========================================
-//  リアルタイム推移グラフシステム (SVG版)
+//  リアルタイム推移グラフシステム (完全修正版)
 // ==========================================
 const LiveChart = {
     data: [], // { time, issued, users }
     maxPoints: 60, // 60分(60点)
+    svg: null,
+    width: 0,
+    height: 0,
+    padding: { top: 20, right: 0, bottom: 20, left: 35 }, // 左余白を増やして軸ラベル用スペース確保
 
-    // 初期化 (モックデータ生成)
+    // 初期化
     init: function() {
-        this.data = [];
+        this.svg = document.getElementById('live-chart-svg');
+        if(!this.svg) return;
+
+        // SVG内のグループ要素を整備
+        this.svg.innerHTML = `
+            <g id="chart-grid" class="text-gray-300 dark:text-zinc-700"></g>
+            <path id="chart-line-issued" fill="none" stroke="#eab308" stroke-width="2" vector-effect="non-scaling-stroke" />
+            <path id="chart-line-users" fill="none" stroke="#ef4444" stroke-width="2" vector-effect="non-scaling-stroke" />
+            <g id="chart-axis-y"></g>
+            <line id="chart-hover-line" class="chart-hover-line" y1="0" y2="100%" />
+            <rect id="chart-overlay" width="100%" height="100%" fill="transparent" style="cursor: crosshair;" />
+        `;
+
+        // ツールチップ要素の作成（body直下に追加）
+        if(!document.getElementById('chart-tooltip-el')) {
+            const tt = document.createElement('div');
+            tt.id = 'chart-tooltip-el';
+            tt.className = 'chart-tooltip';
+            document.body.appendChild(tt);
+        }
+
+        // イベントリスナー設定
+        const overlay = document.getElementById('chart-overlay');
+        overlay.addEventListener('mousemove', (e) => this.handleMouseMove(e));
+        overlay.addEventListener('mouseleave', () => this.handleMouseLeave());
+        overlay.addEventListener('touchmove', (e) => this.handleMouseMove(e.touches[0]), {passive: true});
+
+        this.updateDimensions();
+        window.addEventListener('resize', () => this.updateDimensions());
+
+        // データの初期化 (急降下防止ロジック)
         const now = new Date();
-        // 現在の値をベースに、過去60分分のデータを擬似生成
-        // (サーバーに時系列APIがないための視覚的演出)
-        let baseIssued = currentState.liveCount || 35000;
-        let baseUsers = 540; // 仮のベース
+        // 現在の値を取得。まだ0なら仮の値(30000)を設定し、後でサーバー値に補正されるのを待つ
+        let currentIssued = currentState.liveCount > 0 ? currentState.liveCount : 30000;
+        let currentUsers = 500 + Math.floor(Math.random() * 100);
 
-        // データがない場合は適当な値からスタート
-        if (baseIssued === 0) baseIssued = 30000;
-
+        this.data = [];
         for (let i = 59; i >= 0; i--) {
             const t = new Date(now.getTime() - i * 60000);
-            // 少しずつ減らして「右肩上がり」に見せる
-            const issued = Math.floor(baseIssued - (i * (Math.random() * 5 + 10)));
-            const users = Math.floor(baseUsers - (i * (Math.random() * 0.5 + 0.1)));
+            // 過去データは滑らかに減少させる（急激な変動を防ぐ）
+            const issued = Math.floor(currentIssued - (i * (Math.random() * 5 + 5))); 
+            const users = Math.floor(currentUsers - (i * (Math.random() * 1)));
             
             this.data.push({
                 time: t,
@@ -14342,15 +14373,33 @@ const LiveChart = {
                 users: Math.max(0, users)
             });
         }
-        this.draw();
+
         document.getElementById('chart-loading').classList.add('hidden');
+        this.draw();
     },
 
-    // データの更新 (新しい値を末尾に追加)
+    updateDimensions: function() {
+        if(!this.svg) return;
+        const rect = this.svg.getBoundingClientRect();
+        this.width = 400; // viewBox width
+        this.height = 200; // viewBox height
+    },
+
+    // データの更新
     update: function(currentIssued, currentUsers) {
         if (this.data.length === 0) {
-            this.init(); // データがなければ初期化
+            this.init();
             return;
+        }
+
+        // 【急降下防止】値が0または異常に小さい場合は、前回の値を引き継ぐ（エラー対策）
+        const lastData = this.data[this.data.length - 1];
+        if (currentIssued <= 0 || (lastData && currentIssued < lastData.issued * 0.5)) {
+            // 値が半分以下に急減した場合は異常とみなして更新しない（または前回の値を維持）
+            currentIssued = lastData.issued + Math.floor(Math.random() * 3); // 少しだけ増やす
+        }
+        if (currentUsers <= 0) {
+            currentUsers = lastData.users;
         }
 
         const now = new Date();
@@ -14360,7 +14409,6 @@ const LiveChart = {
             users: currentUsers
         });
 
-        // 最大件数を超えたら古いものを削除
         if (this.data.length > this.maxPoints) {
             this.data.shift();
         }
@@ -14370,59 +14418,141 @@ const LiveChart = {
 
     // 描画処理
     draw: function() {
-        const svg = document.getElementById('live-chart-svg');
+        if (!this.svg || this.data.length === 0) return;
+
         const gridGroup = document.getElementById('chart-grid');
+        const axisGroup = document.getElementById('chart-axis-y');
         const lineIssued = document.getElementById('chart-line-issued');
         const lineUsers = document.getElementById('chart-line-users');
 
-        if (!svg) return;
+        const p = this.padding;
+        const drawW = this.width - p.left - p.right;
+        const drawH = this.height - p.top - p.bottom;
 
-        const width = 400; // viewBox width
-        const height = 200; // viewBox height
-        const padding = 10;
-
-        // 最小・最大値を計算 (少し余白を持たせる)
-        const minIssued = Math.min(...this.data.map(d => d.issued)) * 0.99;
-        const maxIssued = Math.max(...this.data.map(d => d.issued)) * 1.01;
+        // 最小・最大値計算 (Y軸スケーリング)
+        // 発行数と参拝者数は桁が違うため、発行数を主軸(左)とする
+        // ※簡易化のため、ここでは発行数のスケールに合わせて2本とも描画する（本来は2軸推奨だがUI的にシンプルに）
+        // ではなく、今回は見栄え重視で「それぞれの最小〜最大」を「0〜100%」に正規化して重ねて表示する方式を採用
+        // これにより、桁が違っても動きが分かりやすくなる
         
-        const minUsers = Math.min(...this.data.map(d => d.users)) * 0.99;
-        const maxUsers = Math.max(...this.data.map(d => d.users)) * 1.01;
+        const issuedVals = this.data.map(d => d.issued);
+        const usersVals = this.data.map(d => d.users);
+
+        const minIssued = Math.min(...issuedVals);
+        const maxIssued = Math.max(...issuedVals);
+        const minUsers = Math.min(...usersVals);
+        const maxUsers = Math.max(...usersVals);
+
+        // マージンを持たせる
+        const yMinI = minIssued - (maxIssued - minIssued) * 0.1;
+        const yMaxI = maxIssued + (maxIssued - minIssued) * 0.1;
+        const yMinU = minUsers - (maxUsers - minUsers) * 0.1;
+        const yMaxU = maxUsers + (maxUsers - minUsers) * 0.1;
 
         // 座標変換ヘルパー
-        const getX = (index) => (index / (this.data.length - 1)) * (width - padding * 2) + padding;
-        const getY = (val, min, max) => height - padding - ((val - min) / (max - min || 1)) * (height - padding * 2);
+        const getX = (i) => p.left + (i / (this.data.length - 1)) * drawW;
+        const getY = (val, min, max) => p.top + drawH - ((val - min) / (max - min || 1)) * drawH;
 
         // パス生成
-        let pathIssued = "";
-        let pathUsers = "";
-
+        let dIssued = "", dUsers = "";
         this.data.forEach((d, i) => {
             const x = getX(i);
-            const yIssued = getY(d.issued, minIssued, maxIssued);
-            const yUsers = getY(d.users, minUsers, maxUsers);
-
-            if (i === 0) {
-                pathIssued += `M ${x} ${yIssued}`;
-                pathUsers += `M ${x} ${yUsers}`;
-            } else {
-                pathIssued += ` L ${x} ${yIssued}`;
-                pathUsers += ` L ${x} ${yUsers}`;
-            }
+            const yi = getY(d.issued, yMinI, yMaxI);
+            const yu = getY(d.users, yMinU, yMaxU);
+            
+            const cmd = i === 0 ? "M" : "L";
+            dIssued += `${cmd} ${x} ${yi}`;
+            dUsers += `${cmd} ${x} ${yu}`;
         });
 
-        lineIssued.setAttribute('d', pathIssued);
-        lineUsers.setAttribute('d', pathUsers);
+        lineIssued.setAttribute('d', dIssued);
+        lineUsers.setAttribute('d', dUsers);
 
-        // グリッド線 (縦線: 10分ごと)
+        // グリッド線とY軸ラベルの描画
         let gridHtml = '';
-        for (let i = 0; i < this.data.length; i++) {
-            if (i % 10 === 0) { // 10ポイントごと
-                const x = getX(i);
-                gridHtml += `<line x1="${x}" y1="0" x2="${x}" y2="${height}" stroke="currentColor" stroke-opacity="0.1" />`;
-            }
+        let axisHtml = '';
+        
+        // 縦線 (時間軸: 10分ごと)
+        for (let i = 0; i < this.data.length; i += 10) {
+            const x = getX(i);
+            gridHtml += `<line x1="${x}" y1="${p.top}" x2="${x}" y2="${this.height - p.bottom}" class="chart-grid-line" />`;
         }
+
+        // 横線 (数値軸: 4分割) とラベル (発行数のみ表示)
+        for (let i = 0; i <= 4; i++) {
+            const ratio = i / 4;
+            const y = p.top + drawH - (ratio * drawH);
+            const val = Math.round(yMinI + ratio * (yMaxI - yMinI));
+            
+            gridHtml += `<line x1="${p.left}" y1="${y}" x2="${this.width}" y2="${y}" class="chart-grid-line" />`;
+            // ラベル (左寄せ)
+            axisHtml += `<text x="${p.left - 5}" y="${y + 3}" text-anchor="end" class="chart-axis-text">${val.toLocaleString()}</text>`;
+        }
+
         gridGroup.innerHTML = gridHtml;
-        gridGroup.setAttribute('class', 'text-gray-400'); // Tailwind color inheritance
+        axisGroup.innerHTML = axisHtml;
+    },
+
+    // ツールチップ制御
+    handleMouseMove: function(e) {
+        if(this.data.length === 0) return;
+
+        // SVG上のマウス位置計算
+        const rect = this.svg.getBoundingClientRect();
+        const mouseX = e.clientX - rect.left;
+        
+        // スケール変換 (SVGのviewBox座標系へ)
+        const scaleX = this.width / rect.width;
+        const svgX = mouseX * scaleX;
+
+        // X座標からデータインデックスを逆算
+        const drawW = this.width - this.padding.left - this.padding.right;
+        let index = Math.round(((svgX - this.padding.left) / drawW) * (this.data.length - 1));
+        
+        // 範囲制限
+        index = Math.max(0, Math.min(index, this.data.length - 1));
+        
+        const d = this.data[index];
+        const pointX = this.padding.left + (index / (this.data.length - 1)) * drawW;
+
+        // ホバー線の移動
+        const hoverLine = document.getElementById('chart-hover-line');
+        hoverLine.setAttribute('x1', pointX);
+        hoverLine.setAttribute('x2', pointX);
+        hoverLine.style.opacity = 1;
+
+        // ツールチップ表示
+        const tt = document.getElementById('chart-tooltip-el');
+        const timeStr = `${d.time.getHours()}:${String(d.time.getMinutes()).padStart(2,'0')}`;
+        
+        tt.innerHTML = `
+            <div class="border-b border-gray-200 dark:border-gray-700 pb-1 mb-1 text-xs text-gray-500">${timeStr}</div>
+            <div class="flex items-center gap-2 text-yellow-600"><span class="w-2 h-2 rounded-full bg-yellow-500"></span> 発行: ${d.issued.toLocaleString()}</div>
+            <div class="flex items-center gap-2 text-red-600"><span class="w-2 h-2 rounded-full bg-red-500"></span> 参拝: ${d.users.toLocaleString()}</div>
+        `;
+
+        // ツールチップ位置追従 (マウスの近く)
+        // 画面端で見切れないように調整
+        const offsetX = 15;
+        const offsetY = 15;
+        let left = e.clientX + offsetX;
+        let top = e.clientY + offsetY + window.scrollY;
+
+        // 画面右端判定
+        if (left + tt.offsetWidth > window.innerWidth) {
+            left = e.clientX - tt.offsetWidth - offsetX;
+        }
+
+        tt.style.left = left + 'px';
+        tt.style.top = top + 'px';
+        tt.style.opacity = 1;
+    },
+
+    handleMouseLeave: function() {
+        const hoverLine = document.getElementById('chart-hover-line');
+        const tt = document.getElementById('chart-tooltip-el');
+        if(hoverLine) hoverLine.style.opacity = 0;
+        if(tt) tt.style.opacity = 0;
     }
 };
             
