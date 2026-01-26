@@ -10481,24 +10481,34 @@ function handleInputQuiz(button, correctAnswers, questionId) {
     button.innerText = '回答済み';
 }
 
-        // ローディング表示関数 (完全修正版)
-// タイムアウトやクリック制限を撤廃し、純粋に表示/非表示を切り替える
+        // ローディング制御 (カウンター方式・完全修正版)
+let loadingCounter = 0;
+
 function showLoading(show) {
     const overlay = document.getElementById('loading-overlay');
     if (!overlay) return;
 
     if (show) {
-        overlay.style.display = 'flex';
-        // 即座にフェードイン
-        requestAnimationFrame(() => overlay.classList.add('visible'));
+        loadingCounter++;
+        // カウンターが1以上なら表示
+        if (loadingCounter > 0) {
+            overlay.style.display = 'flex';
+            requestAnimationFrame(() => overlay.classList.add('visible'));
+        }
     } else {
-        overlay.classList.remove('visible');
-        // フェードアウト後に非表示
-        setTimeout(() => {
-            if (!overlay.classList.contains('visible')) {
-                overlay.style.display = 'none';
-            }
-        }, 300);
+        // カウンターを減らす（0未満にはしない）
+        loadingCounter = Math.max(0, loadingCounter - 1);
+        
+        // カウンターが0になったら非表示
+        if (loadingCounter === 0) {
+            overlay.classList.remove('visible');
+            setTimeout(() => {
+                // アニメーション中に新しいリクエストが来ていなければ消す
+                if (loadingCounter === 0) {
+                    overlay.style.display = 'none';
+                }
+            }, 300);
+        }
     }
 }
 
