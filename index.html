@@ -14324,33 +14324,37 @@ async function initiateAuth(mode) {
 }
         
 // ==========================================
-//  リアルタイム推移グラフシステム (累積・右肩上がり修正版)
+//  リアルタイム推移グラフシステム (左右2軸・累積版)
 // ==========================================
 const LiveChart = {
-    data: [], // { time, issued, users }
-    maxPoints: 60, // 60分(60点)
+    data: [],
+    maxPoints: 60,
     svg: null,
     width: 0,
     height: 0,
-    // ★修正: 左余白を60pxに設定し、大きな桁の数字も見切れないようにする
-    padding: { top: 20, right: 10, bottom: 20, left: 60 },
+    // ★修正: 左右の余白を広げて、両方の数値が見えるようにする
+    padding: { top: 20, right: 50, bottom: 20, left: 60 },
 
     // 初期化
     init: function() {
         this.svg = document.getElementById('live-chart-svg');
         if(!this.svg) return;
 
-        // SVG内の要素を整備
+        // SVG内の要素を整備 (左右の軸グループを追加)
         this.svg.innerHTML = `
             <g id="chart-grid" class="text-gray-300 dark:text-zinc-700"></g>
             <path id="chart-line-issued" fill="none" stroke="#eab308" stroke-width="2" vector-effect="non-scaling-stroke" />
             <path id="chart-line-users" fill="none" stroke="#ef4444" stroke-width="2" vector-effect="non-scaling-stroke" />
-            <g id="chart-axis-y"></g>
+            
+            <!-- 左軸（発行数） -->
+            <g id="chart-axis-y-left"></g>
+            <!-- 右軸（参拝者数） -->
+            <g id="chart-axis-y-right"></g>
+            
             <line id="chart-hover-line" class="chart-hover-line" y1="0" y2="100%" />
             <rect id="chart-overlay" width="100%" height="100%" fill="transparent" style="cursor: crosshair;" />
         `;
 
-        // ツールチップ要素の作成（なければ）
         if(!document.getElementById('chart-tooltip-el')) {
             const tt = document.createElement('div');
             tt.id = 'chart-tooltip-el';
@@ -14358,7 +14362,6 @@ const LiveChart = {
             document.body.appendChild(tt);
         }
 
-        // イベントリスナー
         const overlay = document.getElementById('chart-overlay');
         overlay.addEventListener('mousemove', (e) => this.handleMouseMove(e));
         overlay.addEventListener('mouseleave', () => this.handleMouseLeave());
@@ -14370,47 +14373,41 @@ const LiveChart = {
 
     updateDimensions: function() {
         if(!this.svg) return;
-        this.width = 400; // viewBox width
-        this.height = 200; // viewBox height
+        this.width = 400; 
+        this.height = 200; 
     },
 
-    // データの更新 (サーバーから値が来たときに呼ばれる)
+    // データの更新
     update: function(currentIssued, currentUsers) {
-        // 値が不正、またはまだ0の場合は無視（正しい値が来るのを待つ）
         if (!currentIssued || currentIssued <= 0) return;
         if (!currentUsers) currentUsers = 0;
 
         const now = new Date();
 
-        // --- 初回データ生成 (累積グラフとして自然な過去データを生成) ---
+        // --- 初回データ生成 ---
         if (this.data.length === 0) {
             this.data = [];
             
-            // 1分あたりの平均増加数（仮定）
-            const avgIncIssued = 15; // 1分に15本
-            const avgIncUsers = 0.5; // 2分に1人
+            // 過去60分を逆算して生成
+            const avgIncIssued = 15;
+            const avgIncUsers = 0.5;
             
-            // 60分前の「仮想スタート値」を計算
             let simIssued = Math.max(0, currentIssued - (avgIncIssued * 60));
             let simUsers = Math.max(0, currentUsers - (avgIncUsers * 60));
 
             for (let i = 0; i < 60; i++) {
-                // 59分前 〜 0分前(現在) まで時間を進める
                 const t = new Date(now.getTime() - (59 - i) * 60000);
                 
-                // 現在(i=59)は必ず実測値にする
                 if (i === 59) {
                     simIssued = currentIssued;
                     simUsers = currentUsers;
                 } else {
-                    // 徐々に増やす（ランダムな揺らぎあり、かつ絶対に減らさない）
-                    const incI = Math.floor(Math.random() * 10 + 5); // 5~15増
-                    const incU = Math.random() < 0.3 ? 1 : 0; // 30%の確率で1増
+                    const incI = Math.floor(Math.random() * 10 + 5); 
+                    const incU = Math.random() < 0.3 ? 1 : 0;
                     
                     simIssued += incI;
                     simUsers += incU;
                     
-                    // 現在値を超えないようにキャップ
                     if(simIssued > currentIssued) simIssued = currentIssued;
                     if(simUsers > currentUsers) simUsers = currentUsers;
                 }
@@ -14421,15 +14418,13 @@ const LiveChart = {
                     users: Math.floor(simUsers)
                 });
             }
-
-            // ローディングを消す
+            
             const loader = document.getElementById('chart-loading');
             if(loader) loader.classList.add('hidden');
         } else {
-            // --- 2回目以降: 最新データを追加 ---
-            
-            // 前回の値より減っている場合は異常なので、前回の値を維持する（累積グラフの原則）
+            // --- 2回目以降 ---
             const last = this.data[this.data.length - 1];
+            // 累積なので減らないように補正
             if (currentIssued < last.issued) currentIssued = last.issued;
             if (currentUsers < last.users) currentUsers = last.users;
 
@@ -14439,7 +14434,6 @@ const LiveChart = {
                 users: currentUsers
             });
 
-            // 古いデータを削除
             if (this.data.length > this.maxPoints) {
                 this.data.shift();
             }
@@ -14453,7 +14447,8 @@ const LiveChart = {
         if (!this.svg || this.data.length === 0) return;
 
         const gridGroup = document.getElementById('chart-grid');
-        const axisGroup = document.getElementById('chart-axis-y');
+        const axisLeft = document.getElementById('chart-axis-y-left');
+        const axisRight = document.getElementById('chart-axis-y-right');
         const lineIssued = document.getElementById('chart-line-issued');
         const lineUsers = document.getElementById('chart-line-users');
 
@@ -14461,7 +14456,6 @@ const LiveChart = {
         const drawW = this.width - p.left - p.right;
         const drawH = this.height - p.top - p.bottom;
 
-        // 値の範囲計算
         const issuedVals = this.data.map(d => d.issued);
         const usersVals = this.data.map(d => d.users);
 
@@ -14470,29 +14464,21 @@ const LiveChart = {
         let minUsers = Math.min(...usersVals);
         let maxUsers = Math.max(...usersVals);
 
-        // グラフが平坦にならないようマージンを持たせる
-        if (minIssued === maxIssued) {
-            minIssued -= 10;
-            maxIssued += 10;
-        } else {
-            const marginI = (maxIssued - minIssued) * 0.2; // 上下に余裕
-            minIssued -= marginI;
-            maxIssued += marginI;
+        // マージン処理
+        if (minIssued === maxIssued) { minIssued -= 10; maxIssued += 10; }
+        else {
+            const marginI = (maxIssued - minIssued) * 0.1;
+            minIssued -= marginI; maxIssued += marginI;
         }
 
-        if (minUsers === maxUsers) {
-            minUsers -= 2;
-            maxUsers += 2;
-        } else {
-            const marginU = (maxUsers - minUsers) * 0.2;
-            minUsers -= marginU;
-            maxUsers += marginU;
+        if (minUsers === maxUsers) { minUsers -= 2; maxUsers += 2; }
+        else {
+            const marginU = (maxUsers - minUsers) * 0.1;
+            minUsers -= marginU; maxUsers += marginU;
         }
 
         // 座標変換ヘルパー
         const getX = (i) => p.left + (i / (this.data.length - 1)) * drawW;
-        
-        // ゼロ除算防止付きY座標計算（正規化して重ねる）
         const getY = (val, min, max) => {
             const range = max - min || 1;
             return p.top + drawH - ((val - min) / range) * drawH;
@@ -14513,9 +14499,10 @@ const LiveChart = {
         lineIssued.setAttribute('d', dIssued);
         lineUsers.setAttribute('d', dUsers);
 
-        // --- グリッドと軸ラベルの描画 ---
+        // --- 軸とグリッドの描画 ---
         let gridHtml = '';
-        let axisHtml = '';
+        let leftAxisHtml = '';
+        let rightAxisHtml = '';
         
         // 縦線 (時間軸: 10分ごと)
         for (let i = 0; i < this.data.length; i += 10) {
@@ -14523,25 +14510,29 @@ const LiveChart = {
             gridHtml += `<line x1="${x}" y1="${p.top}" x2="${x}" y2="${this.height - p.bottom}" class="chart-grid-line" />`;
         }
 
-        // 横線 (数値軸: 4分割) とラベル
-        // ここでは「発行数」の値を軸ラベルとして表示する
+        // 横線 (数値軸: 4分割) と 左右のラベル
         for (let i = 0; i <= 4; i++) {
             const ratio = i / 4;
             const y = p.top + drawH - (ratio * drawH);
             
-            const val = Math.round(minIssued + ratio * (maxIssued - minIssued));
-            
+            // グリッド線
             gridHtml += `<line x1="${p.left}" y1="${y}" x2="${this.width - p.right}" y2="${y}" class="chart-grid-line" />`;
             
-            // ラベル (左余白に右寄せで配置)
-            axisHtml += `<text x="${p.left - 8}" y="${y + 3}" text-anchor="end" class="chart-axis-text">${val.toLocaleString()}</text>`;
+            // 左ラベル（発行数：黄色）
+            const valIssued = Math.round(minIssued + ratio * (maxIssued - minIssued));
+            leftAxisHtml += `<text x="${p.left - 8}" y="${y + 3}" text-anchor="end" class="chart-axis-text">${valIssued.toLocaleString()}</text>`;
+
+            // 右ラベル（参拝者数：赤色）
+            const valUsers = Math.round(minUsers + ratio * (maxUsers - minUsers));
+            rightAxisHtml += `<text x="${this.width - p.right + 8}" y="${y + 3}" class="chart-axis-text-right">${valUsers.toLocaleString()}</text>`;
         }
 
         gridGroup.innerHTML = gridHtml;
-        axisGroup.innerHTML = axisHtml;
+        axisLeft.innerHTML = leftAxisHtml;
+        axisRight.innerHTML = rightAxisHtml;
     },
 
-    // ツールチップ制御
+    // ツールチップ
     handleMouseMove: function(e) {
         if(this.data.length === 0) return;
 
@@ -14549,17 +14540,14 @@ const LiveChart = {
         const mouseX = e.clientX - rect.left;
         const scaleX = this.width / rect.width;
         const svgX = mouseX * scaleX;
-
         const drawW = this.width - this.padding.left - this.padding.right;
         
-        // マウス位置からデータインデックスを逆算
         let index = Math.round(((svgX - this.padding.left) / drawW) * (this.data.length - 1));
         index = Math.max(0, Math.min(index, this.data.length - 1));
         
         const d = this.data[index];
         const pointX = this.padding.left + (index / (this.data.length - 1)) * drawW;
 
-        // ホバー線の移動
         const hoverLine = document.getElementById('chart-hover-line');
         if(hoverLine) {
             hoverLine.setAttribute('x1', pointX);
@@ -14567,7 +14555,6 @@ const LiveChart = {
             hoverLine.style.opacity = 1;
         }
 
-        // ツールチップ表示
         const tt = document.getElementById('chart-tooltip-el');
         if(tt) {
             const timeStr = `${d.time.getHours()}:${String(d.time.getMinutes()).padStart(2,'0')}`;
@@ -14582,7 +14569,6 @@ const LiveChart = {
             let left = e.clientX + offsetX;
             let top = e.clientY + offsetY + window.scrollY;
 
-            // 画面右端ではみ出さないように調整
             if (left + tt.offsetWidth > window.innerWidth) {
                 left = e.clientX - tt.offsetWidth - offsetX;
             }
