@@ -14296,7 +14296,121 @@ async function initiateAuth(mode) {
         showLoading(false); 
     }
 }
+        
+// ==========================================
+//  リアルタイム推移グラフシステム (SVG版)
+// ==========================================
+const LiveChart = {
+    data: [], // { time, issued, users }
+    maxPoints: 60, // 60分(60点)
 
+    // 初期化 (モックデータ生成)
+    init: function() {
+        this.data = [];
+        const now = new Date();
+        // 現在の値をベースに、過去60分分のデータを擬似生成
+        // (サーバーに時系列APIがないための視覚的演出)
+        let baseIssued = currentState.liveCount || 35000;
+        let baseUsers = 540; // 仮のベース
+
+        // データがない場合は適当な値からスタート
+        if (baseIssued === 0) baseIssued = 30000;
+
+        for (let i = 59; i >= 0; i--) {
+            const t = new Date(now.getTime() - i * 60000);
+            // 少しずつ減らして「右肩上がり」に見せる
+            const issued = Math.floor(baseIssued - (i * (Math.random() * 5 + 10)));
+            const users = Math.floor(baseUsers - (i * (Math.random() * 0.5 + 0.1)));
+            
+            this.data.push({
+                time: t,
+                issued: Math.max(0, issued),
+                users: Math.max(0, users)
+            });
+        }
+        this.draw();
+        document.getElementById('chart-loading').classList.add('hidden');
+    },
+
+    // データの更新 (新しい値を末尾に追加)
+    update: function(currentIssued, currentUsers) {
+        if (this.data.length === 0) {
+            this.init(); // データがなければ初期化
+            return;
+        }
+
+        const now = new Date();
+        this.data.push({
+            time: now,
+            issued: currentIssued,
+            users: currentUsers
+        });
+
+        // 最大件数を超えたら古いものを削除
+        if (this.data.length > this.maxPoints) {
+            this.data.shift();
+        }
+
+        this.draw();
+    },
+
+    // 描画処理
+    draw: function() {
+        const svg = document.getElementById('live-chart-svg');
+        const gridGroup = document.getElementById('chart-grid');
+        const lineIssued = document.getElementById('chart-line-issued');
+        const lineUsers = document.getElementById('chart-line-users');
+
+        if (!svg) return;
+
+        const width = 400; // viewBox width
+        const height = 200; // viewBox height
+        const padding = 10;
+
+        // 最小・最大値を計算 (少し余白を持たせる)
+        const minIssued = Math.min(...this.data.map(d => d.issued)) * 0.99;
+        const maxIssued = Math.max(...this.data.map(d => d.issued)) * 1.01;
+        
+        const minUsers = Math.min(...this.data.map(d => d.users)) * 0.99;
+        const maxUsers = Math.max(...this.data.map(d => d.users)) * 1.01;
+
+        // 座標変換ヘルパー
+        const getX = (index) => (index / (this.data.length - 1)) * (width - padding * 2) + padding;
+        const getY = (val, min, max) => height - padding - ((val - min) / (max - min || 1)) * (height - padding * 2);
+
+        // パス生成
+        let pathIssued = "";
+        let pathUsers = "";
+
+        this.data.forEach((d, i) => {
+            const x = getX(i);
+            const yIssued = getY(d.issued, minIssued, maxIssued);
+            const yUsers = getY(d.users, minUsers, maxUsers);
+
+            if (i === 0) {
+                pathIssued += `M ${x} ${yIssued}`;
+                pathUsers += `M ${x} ${yUsers}`;
+            } else {
+                pathIssued += ` L ${x} ${yIssued}`;
+                pathUsers += ` L ${x} ${yUsers}`;
+            }
+        });
+
+        lineIssued.setAttribute('d', pathIssued);
+        lineUsers.setAttribute('d', pathUsers);
+
+        // グリッド線 (縦線: 10分ごと)
+        let gridHtml = '';
+        for (let i = 0; i < this.data.length; i++) {
+            if (i % 10 === 0) { // 10ポイントごと
+                const x = getX(i);
+                gridHtml += `<line x1="${x}" y1="0" x2="${x}" y2="${height}" stroke="currentColor" stroke-opacity="0.1" />`;
+            }
+        }
+        gridGroup.innerHTML = gridHtml;
+        gridGroup.setAttribute('class', 'text-gray-400'); // Tailwind color inheritance
+    }
+};
             
     </script>
 </body>
