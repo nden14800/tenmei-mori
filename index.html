@@ -11133,79 +11133,104 @@ function resetSearch() {
             document.getElementById('history-detail-modal').style.display = 'none';
         }
 
-        // --- シェア用画像生成 (大吉バグ修正版) ---
-        function generateResultImage() {
-            const status = document.getElementById('gen-img-status');
-            status.textContent = "シェア画像を生成中...フォント読み込み待機";
+        // --- シェア用画像生成 (崩れ防止・修正版) ---
+function generateResultImage() {
+    const status = document.getElementById('gen-img-status');
+    status.textContent = "シェア画像を生成中...フォント読み込み待機";
+    
+    // 画像化する対象のID
+    const target = document.getElementById('result-card-outer'); // 直接カード本体を指定
+    
+    const container = document.getElementById('generated-image-container');
+    container.innerHTML = '';
+    container.classList.add('hidden');
+    
+    // フォント読み込み待機
+    document.fonts.ready.then(() => {
+        const originalScrollPos = window.scrollY;
+
+        // html2canvasの設定
+        html2canvas(target, { 
+            scale: 3, // 高画質化
+            useCORS: true, 
+            allowTaint: true,
+            backgroundColor: null, // 背景透過（CSSの背景色が適用される）
             
-            const target = document.getElementById('result-capture-container');
-            const container = document.getElementById('generated-image-container');
-            container.innerHTML = '';
-            container.classList.add('hidden');
+            // 【重要】スマホでの崩れ防止設定
+            windowWidth: 1280, // 仮想ウィンドウ幅をPC並みに広げる
+            width: 600,        // キャプチャする幅をカード幅に固定
             
-            document.fonts.ready.then(() => {
-                const originalScrollPos = window.scrollY;
-
-                html2canvas(target, { 
-                    scale: 3, 
-                    useCORS: true, 
-                    allowTaint: true,
-                    backgroundColor: null, 
-                    scrollX: 0,
-                    scrollY: -window.scrollY, 
-                    // ここが修正の肝です
-                    onclone: (clonedDoc) => {
-                        const clonedOuter = clonedDoc.getElementById('result-card-outer');
-                        if (clonedOuter) {
-                            // 1. 縦書きレイアウト崩れ防止ハック
-                            const verticals = clonedOuter.querySelectorAll('.result-poem-vertical, .result-advice-box, .detail-column');
-                            verticals.forEach(el => {
-                                el.style.letterSpacing = '0.1em'; 
-                                el.style.lineHeight = '1.6';
-                                el.style.fontFamily = "'Zen Old Mincho', serif"; 
-                            });
-
-                            // 2. 【重要】大吉の背景SVGを削除する (これでクラッシュを防ぐ)
-                            // 模様は消えますが、背景色の金色(#f3c845)は残るので見た目は金色のままです
-                            clonedOuter.style.backgroundImage = 'none';
-
-                            clonedOuter.style.height = 'auto';
-                            clonedOuter.style.minHeight = '1200px'; 
-                            clonedOuter.style.transform = 'none'; 
-                        }
-                    }
-                }).then(canvas => {
-                    status.textContent = "";
+            scrollX: 0,
+            scrollY: 0, // スクロール位置の影響を排除
+            
+            // クローン要素（画像化専用の一時データ）のスタイル調整
+            onclone: (clonedDoc) => {
+                const clonedOuter = clonedDoc.getElementById('result-card-outer');
+                if (clonedOuter) {
+                    // 1. サイズと余白を強制固定 (崩れ防止の要)
+                    clonedOuter.style.width = '600px';
+                    clonedOuter.style.minWidth = '600px'; // 縮小防止
+                    clonedOuter.style.maxWidth = '600px';
+                    clonedOuter.style.height = 'auto';
+                    clonedOuter.style.minHeight = '1200px'; 
+                    clonedOuter.style.margin = '0 auto';
+                    clonedOuter.style.padding = '40px'; // 余白を確保
+                    clonedOuter.style.boxSizing = 'border-box';
                     
-                    container.innerHTML = '<p class="text-green-600 font-bold mb-2">画像の生成完了</p>';
+                    // 2. 変形や位置ズレの解除
+                    clonedOuter.style.transform = 'none';
+                    clonedOuter.style.position = 'static';
                     
-                    canvas.toBlob(blob => {
-                        currentState.lastImageBlob = blob;
-                        const url = URL.createObjectURL(blob);
-                        
-                        const img = document.createElement('img');
-                        img.src = url;
-                        img.className = "mx-auto rounded border w-32 mb-2 shadow-sm"; 
-                        container.appendChild(img);
-                        container.classList.remove('hidden');
+                    // 3. 大吉の場合の和紙テクスチャ(SVG)を削除して単色にする
+                    // (ここはお好みですが、テクスチャが原因で重くなるのを防ぎます)
+                    clonedOuter.style.backgroundImage = 'none'; 
 
-                        const dlLink = document.createElement('a');
-                        dlLink.href = url;
-                        dlLink.download = `tenmei_omikuji_${Date.now()}.png`;
-                        dlLink.className = "btn-primary text-sm mt-2 inline-block";
-                        dlLink.innerHTML = '<i class="bi bi-download"></i> ダウンロード';
-                        container.appendChild(dlLink);
-                    }, 'image/png');
+                    // 4. 縦書きテキストのレイアウト崩れ補正
+                    const verticals = clonedOuter.querySelectorAll('.result-poem-vertical, .result-advice-box, .detail-column');
+                    verticals.forEach(el => {
+                        el.style.letterSpacing = '0.1em'; // 文字間隔を適正に
+                        el.style.lineHeight = '1.6';      // 行間を確保
+                        el.style.fontFamily = "'Zen Old Mincho', serif"; 
+                        // Safari等での縦書きバグ対策
+                        el.style.height = 'auto'; 
+                        el.style.minHeight = '300px';
+                    });
+                }
+            }
+        }).then(canvas => {
+            status.textContent = "";
+            
+            container.innerHTML = '<p class="text-green-600 font-bold mb-2">画像の生成完了</p>';
+            
+            canvas.toBlob(blob => {
+                currentState.lastImageBlob = blob;
+                const url = URL.createObjectURL(blob);
+                
+                // プレビュー画像表示
+                const img = document.createElement('img');
+                img.src = url;
+                img.className = "mx-auto rounded border w-48 mb-2 shadow-sm"; // プレビューは見やすく
+                container.appendChild(img);
+                container.classList.remove('hidden');
 
-                    window.scrollTo(0, originalScrollPos);
+                // ダウンロードボタン
+                const dlLink = document.createElement('a');
+                dlLink.href = url;
+                dlLink.download = `tenmei_omikuji_${Date.now()}.png`;
+                dlLink.className = "btn-primary text-sm mt-2 inline-block";
+                dlLink.innerHTML = '<i class="bi bi-download"></i> ダウンロード';
+                container.appendChild(dlLink);
+            }, 'image/png');
 
-                }).catch(err => {
-                    console.error(err);
-                    status.textContent = "画像の生成に失敗しました。";
-                    window.scrollTo(0, originalScrollPos);
-                });
-            });
-        }
+            window.scrollTo(0, originalScrollPos);
+
+        }).catch(err => {
+            console.error(err);
+            status.textContent = "画像の生成に失敗しました。";
+            window.scrollTo(0, originalScrollPos);
+        });
+    });
+}
 
         // サイトルートURLを返す（生成URL廃止）
         function getShareUrl() {
