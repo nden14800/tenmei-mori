@@ -5098,114 +5098,7 @@ body.theme-newyear {
     <!-- コンテンツコンテナ -->
     <div id="history-container">
         
-        <!-- 1. 統計ダッシュボード -->
-        <div class="history-stats-grid">
-            <div class="history-stat-card stat-card-personal">
-                <div class="stat-label">あなたの参拝数</div>
-                <div class="stat-value text-red-600" id="personal-history-count">-</div>
-            </div>
-            <div class="history-stat-card stat-card-global">
-                <div class="stat-label">みんなの参拝数</div>
-                <div class="stat-value text-indigo-600 dark:text-indigo-400" id="global-history-count">-</div>
-            </div>
-        </div>
-
-        <!-- ▼▼▼ 追加: 詳細統計＆推移グラフエリア ▼▼▼ -->
-        <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-6">
-            
-            <!-- A. 本日の傾向 (ホームと同じもの) -->
-            <div class="bento-card" style="min-height: 300px;">
-                <div class="flex justify-between items-center mb-4 border-b border-gray-200 dark:border-gray-700 pb-2">
-                    <h3 class="font-bold flex items-center gap-2 text-sm"><i class="bi bi-bar-chart-line-fill text-red-500"></i> 本日の傾向 (詳細)</h3>
-                </div>
-                <div class="overflow-y-auto pr-2 custom-scrollbar" style="height: 200px;">
-                    <div class="space-y-2 text-xs">
-                        <!-- 大吉 -->
-                        <div><div class="flex justify-between mb-1"><span>大吉</span><span><span id="hist-cnt-daikichi" class="mr-2 opacity-70 font-mono">0</span><span id="hist-stat-daikichi">0.00%</span></span></div><div class="w-full bg-gray-100 dark:bg-zinc-700 h-1.5 rounded"><div id="hist-bar-daikichi" class="bg-yellow-400 h-1.5 rounded transition-all duration-1000" style="width: 0%"></div></div></div>
-                        <!-- 中吉 -->
-                        <div><div class="flex justify-between mb-1"><span>中吉</span><span><span id="hist-cnt-chukichi" class="mr-2 opacity-70 font-mono">0</span><span id="hist-stat-chukichi">0.00%</span></span></div><div class="w-full bg-gray-100 dark:bg-zinc-700 h-1.5 rounded"><div id="hist-bar-chukichi" class="bg-orange-400 h-1.5 rounded transition-all duration-1000" style="width: 0%"></div></div></div>
-                        <!-- 小吉 -->
-                        <div><div class="flex justify-between mb-1"><span>小吉</span><span><span id="hist-cnt-shokichi" class="mr-2 opacity-70 font-mono">0</span><span id="hist-stat-shokichi">0.00%</span></span></div><div class="w-full bg-gray-100 dark:bg-zinc-700 h-1.5 rounded"><div id="hist-bar-shokichi" class="bg-green-400 h-1.5 rounded transition-all duration-1000" style="width: 0%"></div></div></div>
-                        <!-- 吉 -->
-                        <div><div class="flex justify-between mb-1"><span>吉</span><span><span id="hist-cnt-kichi" class="mr-2 opacity-70 font-mono">0</span><span id="hist-stat-kichi">0.00%</span></span></div><div class="w-full bg-gray-100 dark:bg-zinc-700 h-1.5 rounded"><div id="hist-bar-kichi" class="bg-red-400 h-1.5 rounded transition-all duration-1000" style="width: 0%"></div></div></div>
-                        <!-- 半吉 -->
-                        <div><div class="flex justify-between mb-1"><span>半吉</span><span><span id="hist-cnt-hankichi" class="mr-2 opacity-70 font-mono">0</span><span id="hist-stat-hankichi">0.00%</span></span></div><div class="w-full bg-gray-100 dark:bg-zinc-700 h-1.5 rounded"><div id="hist-bar-hankichi" class="bg-red-300 h-1.5 rounded transition-all duration-1000" style="width: 0%"></div></div></div>
-                        <!-- 末吉 -->
-                        <div><div class="flex justify-between mb-1"><span>末吉</span><span><span id="hist-cnt-suekichi" class="mr-2 opacity-70 font-mono">0</span><span id="hist-stat-suekichi">0.00%</span></span></div><div class="w-full bg-gray-100 dark:bg-zinc-700 h-1.5 rounded"><div id="hist-bar-suekichi" class="bg-blue-400 h-1.5 rounded transition-all duration-1000" style="width: 0%"></div></div></div>
-                        <!-- 末小吉 -->
-                        <div><div class="flex justify-between mb-1"><span>末小吉</span><span><span id="hist-cnt-sueshokichi" class="mr-2 opacity-70 font-mono">0</span><span id="hist-stat-sueshokichi">0.00%</span></span></div><div class="w-full bg-gray-100 dark:bg-zinc-700 h-1.5 rounded"><div id="hist-bar-sueshokichi" class="bg-blue-300 h-1.5 rounded transition-all duration-1000" style="width: 0%"></div></div></div>
-                        <!-- 凶 -->
-                        <div><div class="flex justify-between mb-1"><span>凶</span><span><span id="hist-cnt-kyo" class="mr-2 opacity-70 font-mono">0</span><span id="hist-stat-kyo">0.00%</span></span></div><div class="w-full bg-gray-100 dark:bg-zinc-700 h-1.5 rounded"><div id="hist-bar-kyo" class="bg-gray-400 h-1.5 rounded transition-all duration-1000" style="width: 0%"></div></div></div>
-                        <!-- 小凶 -->
-                        <div><div class="flex justify-between mb-1"><span>小凶</span><span><span id="hist-cnt-shokyo" class="mr-2 opacity-70 font-mono">0</span><span id="hist-stat-shokyo">0.00%</span></span></div><div class="w-full bg-gray-100 dark:bg-zinc-700 h-1.5 rounded"><div id="hist-bar-shokyo" class="bg-gray-500 h-1.5 rounded transition-all duration-1000" style="width: 0%"></div></div></div>
-                        <!-- 半凶 -->
-                        <div><div class="flex justify-between mb-1"><span>半凶</span><span><span id="hist-cnt-hankyo" class="mr-2 opacity-70 font-mono">0</span><span id="hist-stat-hankyo">0.00%</span></span></div><div class="w-full bg-gray-100 dark:bg-zinc-700 h-1.5 rounded"><div id="hist-bar-hankyo" class="bg-gray-600 dark:bg-gray-400 h-1.5 rounded transition-all duration-1000" style="width: 0%"></div></div></div>
-                        <!-- 末凶 -->
-                        <div><div class="flex justify-between mb-1"><span>末凶</span><span><span id="hist-cnt-suekyo" class="mr-2 opacity-70 font-mono">0</span><span id="hist-stat-suekyo">0.00%</span></span></div><div class="w-full bg-gray-100 dark:bg-zinc-700 h-1.5 rounded"><div id="hist-bar-suekyo" class="bg-gray-700 h-1.5 rounded transition-all duration-1000" style="width: 0%"></div></div></div>
-                        <!-- 大凶 -->
-                        <div><div class="flex justify-between mb-1"><span>大凶</span><span><span id="hist-cnt-daikyo" class="mr-2 opacity-70 font-mono">0</span><span id="hist-stat-daikyo">0.00%</span></span></div><div class="w-full bg-gray-100 dark:bg-zinc-700 h-1.5 rounded"><div id="hist-bar-daikyo" class="bg-black h-1.5 rounded transition-all duration-1000" style="width: 0%"></div></div></div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- B. リアルタイム推移グラフ (ダブル表示) -->
-            <div class="bento-card relative overflow-hidden" style="grid-column: span 12; min-height: 320px;">
-                <div class="flex justify-between items-center mb-4 border-b border-gray-200 dark:border-gray-700 pb-2 z-10 relative">
-                    <h3 class="font-bold flex items-center gap-2 text-sm">
-                        <i class="bi bi-activity text-indigo-500"></i> 
-                        <span>リアルタイム推移 (1分足)</span>
-                    </h3>
-                    <div class="flex gap-3 text-[10px]">
-                        <span class="flex items-center gap-1"><span class="w-2 h-2 rounded-full bg-yellow-500"></span>発行数</span>
-                        <span class="flex items-center gap-1"><span class="w-2 h-2 rounded-full bg-red-500"></span>参拝者</span>
-                    </div>
-                </div>
-                
-                <!-- 2つのグラフを並べるラッパー -->
-                <div class="charts-wrapper" id="charts-container">
-                    
-                    <!-- 左：累計グラフ -->
-                    <div class="chart-box">
-                        <p class="absolute top-0 left-10 text-[10px] text-gray-400 font-bold">▼ 累計 (合計値)</p>
-                        <svg id="chart-svg-total" width="100%" height="100%" viewBox="0 0 400 200" preserveAspectRatio="none" class="w-full h-full">
-                            <g id="grid-total" class="text-gray-300 dark:text-zinc-700"></g>
-                            <path id="line-total-issued" fill="none" stroke="#eab308" stroke-width="2" vector-effect="non-scaling-stroke" />
-                            <path id="line-total-users" fill="none" stroke="#ef4444" stroke-width="2" vector-effect="non-scaling-stroke" />
-                            <g id="axis-total-left"></g>
-                            <g id="axis-total-right"></g>
-                            <line id="hover-line-total" class="chart-hover-line" y1="0" y2="100%" />
-                            <rect id="overlay-total" width="100%" height="100%" fill="transparent" style="cursor: crosshair;" />
-                        </svg>
-                    </div>
-
-                    <!-- 右：変化量グラフ -->
-                    <div class="chart-box">
-                        <p class="absolute top-0 left-10 text-[10px] text-gray-400 font-bold">▼ 変化 (1分ごとの増加数)</p>
-                        <svg id="chart-svg-delta" width="100%" height="100%" viewBox="0 0 400 200" preserveAspectRatio="none" class="w-full h-full">
-                            <g id="grid-delta" class="text-gray-300 dark:text-zinc-700"></g>
-                            <path id="line-delta-issued" fill="none" stroke="#eab308" stroke-width="2" vector-effect="non-scaling-stroke" />
-                            <path id="line-delta-users" fill="none" stroke="#ef4444" stroke-width="2" vector-effect="non-scaling-stroke" />
-                            <g id="axis-delta-left"></g>
-                            <g id="axis-delta-right"></g>
-                            <line id="hover-line-delta" class="chart-hover-line" y1="0" y2="100%" />
-                            <rect id="overlay-delta" width="100%" height="100%" fill="transparent" style="cursor: crosshair;" />
-                        </svg>
-                    </div>
-
-                </div>
-                
-                <!-- ローディング表示 -->
-                <div id="chart-loading" class="absolute inset-0 flex items-center justify-center text-gray-400 text-xs bg-white/80 dark:bg-black/80 z-20">
-                    データ収集中...
-                </div>
-            </div>
-                
-                <p class="text-[10px] text-gray-400 text-right mt-1 z-10 relative">※過去60分間の推移 (毎分更新)</p>
-            </div>
-        </div>
-        <!-- ▲▲▲ 追加ここまで ▲▲▲ -->
-
-        <!-- 2. コントロールバー (検索) -->
+        <!-- コントロールバー (検索) -->
         <div class="history-control-bar">
             <div class="flex items-center gap-2 mb-1">
                 <i class="bi bi-sliders text-gray-400"></i>
@@ -5252,7 +5145,7 @@ body.theme-newyear {
             </div>
         </div>
 
-        <!-- 3. タイムラインリスト -->
+        <!-- タイムラインリスト -->
         <div class="bg-white dark:bg-zinc-900 rounded-2xl p-6 shadow-sm border border-gray-100 dark:border-gray-800">
             <div class="timeline-container" id="history-list">
                 <!-- JSでここにアイテムが挿入されます -->
