@@ -15,8 +15,8 @@
    <!-- QRCode.js -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
     
-   <!-- 最新の画像生成ライブラリ html-to-image -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/html-to-image/1.11.11/html-to-image.js"></script>
+   <!-- html2canvasを削除し、dom-to-image-more を追加 -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/dom-to-image-more/3.3.0/dom-to-image-more.min.js"></script>
     
     <!-- フォント -->
     <link href="https://fonts.googleapis.com/css2?family=Shippori+Mincho:wght@400;500;600;800&family=Zen+Old+Mincho:wght@400;700;900&display=swap" rel="stylesheet">
@@ -9496,51 +9496,53 @@ function createTopCard(item, rank, iconClass, rankClass, colorClass) {
         document.getElementById('omamori-step-3').classList.remove('hidden');
     },
 
-       // 画像保存（軽量化・フリーズ対策版）
+        // 画像保存（修正版）
         saveImage: function() {
             const target = document.querySelector('.omamori-body'); 
+            if(!target) return;
+            
             const btn = event.target.closest('button');
             const originalText = btn.innerHTML;
-            
-            // 連打防止
             btn.innerHTML = '<i class="bi bi-hourglass-split"></i> 生成中...';
             btn.disabled = true;
 
-            document.fonts.ready.then(() => {
-                // ★修正点: toBlobを使用、pixelRatioを2に下げる
-                htmlToImage.toBlob(target, {
-                    quality: 0.95,
-                    pixelRatio: 2, // 4だと重すぎて固まるので2にする
-                    backgroundColor: null,
-                    style: {
-                        boxShadow: 'none',
-                        margin: '0',
-                        transform: 'none'
-                    }
-                })
-                .then(function (blob) {
-                    if (!blob) throw new Error("Blob生成失敗");
-
-                    const url = URL.createObjectURL(blob);
-                    const link = document.createElement('a');
-                    link.download = `omamori_${Date.now()}.png`;
-                    link.href = url;
-                    link.click();
-                    
-                    // 処理完了後にURLを解放
-                    setTimeout(() => URL.revokeObjectURL(url), 1000);
-                    
-                    btn.innerHTML = originalText;
-                    btn.disabled = false;
-                })
-                .catch(function (error) {
-                    console.error('御守生成エラー:', error);
-                    alert("保存に失敗しました。端末のメモリ不足の可能性があります。");
-                    btn.innerHTML = originalText;
-                    btn.disabled = false;
-                });
+            // 保存前に、角を隠している疑似要素の色を「透過」にするか、
+            // 背景色を一時的に透明にして、canvas側で処理させる
+            // html2canvasの設定を調整して、角丸をきれいに切り抜く
+            
+            html2canvas(target, {
+                scale: 4, // 高画質
+                backgroundColor: null, // 背景透明
+                useCORS: true,
+                logging: false,
+                // 疑似要素（角の切り欠き）が背景色と混ざらないようにする
+                onclone: (clonedDoc) => {
+                    const clonedBody = clonedDoc.querySelector('.omamori-body');
+                    // 保存時は影を消して、きれいな形にする
+                    clonedBody.style.boxShadow = 'none';
+                    // 疑似要素（切り欠き）を非表示にして、純粋なborder-radiusで形を出す
+                    const style = clonedDoc.createElement('style');
+                    style.innerHTML = '.omamori-body::before, .omamori-body::after { display: none !important; }';
+                    clonedDoc.body.appendChild(style);
+                }
+            }).then(canvas => {
+                const link = document.createElement('a');
+                link.download = `omamori_${Date.now()}.png`;
+                link.href = canvas.toDataURL('image/png');
+                link.click();
+                
+                btn.innerHTML = originalText;
+                btn.disabled = false;
+                
+                // 完了アラートは味気ないので削除または控えめに
+                // alert("保存しました"); 
+            }).catch(e => {
+                console.error(e);
+                alert("保存に失敗しました。");
+                btn.innerHTML = originalText;
+                btn.disabled = false;
             });
-        } 
+        }
     };
 
         
@@ -11130,72 +11132,75 @@ function resetSearch() {
             document.getElementById('history-detail-modal').style.display = 'none';
         }
 
-        // --- シェア用画像生成 (軽量化・フリーズ対策版) ---
+        // --- シェア用画像生成 (ライブラリ変更版：dom-to-image-more 使用) ---
         function generateResultImage() {
             const status = document.getElementById('gen-img-status');
-            const btn = event.target.closest('button'); // 押されたボタン
-            
-            // 連打防止
-            if (btn) btn.disabled = true;
             status.textContent = "画像を生成中...画面を動かさないでください";
             
+            // 画像化対象の要素
             const target = document.getElementById('result-capture-container');
-            const container = document.getElementById('generated-image-container');
+            const resultCard = document.getElementById('result-card-outer');
             
+            const container = document.getElementById('generated-image-container');
             container.innerHTML = '';
             container.classList.add('hidden');
             
             // フォント読み込み待機
             document.fonts.ready.then(() => {
                 
-                // ★修正点: toPng ではなく toBlob を使用してメモリ節約
-                htmlToImage.toBlob(target, {
-                    quality: 0.95,     // 画質設定
-                    pixelRatio: 2,     // ★重要: 3だと重すぎるので2にする (十分高画質です)
-                    backgroundColor: null, 
+                // 高画質化のためのスケール設定 (3倍)
+                const scale = 3;
+                
+                // dom-to-image-more の実行
+                domtoimage.toPng(target, {
+                    width: target.offsetWidth * scale,
+                    height: target.offsetHeight * scale,
                     style: {
-                        margin: '0',
-                        transform: 'none',
-                        // アイコンやフォントを確実に反映
-                        fontFamily: "'Zen Old Mincho', serif, 'bootstrap-icons'"
+                        // 内部的に要素を拡大して高画質化する
+                        transform: `scale(${scale})`,
+                        transformOrigin: 'top left',
+                        width: target.offsetWidth + 'px',
+                        height: target.offsetHeight + 'px',
+                        // 余計なマージンを排除
+                        margin: '0'
                     },
-                    skipAutoScale: true,
-                    cacheBust: true
+                    // 背景色を透明にするか、指定色にするか（nullなら透明）
+                    bgcolor: null 
                 })
-                .then(function (blob) {
-                    if (!blob) {
-                        throw new Error("Blob生成失敗");
-                    }
-                    
+                .then(function (dataUrl) {
                     status.textContent = "";
-                    currentState.lastImageBlob = blob;
-                    const url = URL.createObjectURL(blob);
                     
-                    // 生成完了表示
-                    container.innerHTML = '<p class="text-green-600 font-bold mb-2">画像の生成完了</p>';
-                    container.classList.remove('hidden');
+                    // Blob変換処理
+                    fetch(dataUrl)
+                    .then(res => res.blob())
+                    .then(blob => {
+                        currentState.lastImageBlob = blob;
+                        const url = URL.createObjectURL(blob);
+                        
+                        // 生成完了表示
+                        container.innerHTML = '<p class="text-green-600 font-bold mb-2">画像の生成完了</p>';
+                        container.classList.remove('hidden');
 
-                    // プレビュー画像
-                    const img = document.createElement('img');
-                    img.src = url;
-                    img.className = "mx-auto rounded border w-40 mb-3 shadow-lg"; 
-                    container.appendChild(img);
+                        // プレビュー画像
+                        const img = document.createElement('img');
+                        img.src = url;
+                        img.className = "mx-auto rounded border w-40 mb-3 shadow-lg"; 
+                        container.appendChild(img);
 
-                    // ダウンロードボタン
-                    const dlLink = document.createElement('a');
-                    dlLink.href = url;
-                    dlLink.download = `tenmei_omikuji_${Date.now()}.png`;
-                    dlLink.className = "btn-primary text-sm w-full justify-center py-3 shadow-md";
-                    dlLink.innerHTML = '<i class="bi bi-download"></i> 画像を保存する';
-                    container.appendChild(dlLink);
-                    
-                    // ボタン復活
-                    if (btn) btn.disabled = false;
+                        // ダウンロードボタン
+                        const dlLink = document.createElement('a');
+                        dlLink.href = url;
+                        dlLink.download = `tenmei_omikuji_${Date.now()}.png`;
+                        dlLink.className = "btn-primary text-sm w-full justify-center py-3 shadow-md";
+                        dlLink.innerHTML = '<i class="bi bi-download"></i> 画像を保存する';
+                        container.appendChild(dlLink);
+                    });
                 })
                 .catch(function (error) {
-                    console.error('生成エラー:', error);
-                    status.textContent = "生成に失敗しました。";
-                    if (btn) btn.disabled = false;
+                    console.error('画像生成エラー:', error);
+                    status.textContent = "画像の生成に失敗しました。";
+                    // エラー内容をアラートで出す（デバッグ用）
+                    // alert("生成エラー: " + error.message);
                 });
             });
         }
