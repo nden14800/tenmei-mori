@@ -10857,7 +10857,7 @@ async function showResultDetail(isNewDraw, dataOverride = null) {
             luckyArea.appendChild(uBox);
             outer.appendChild(luckyArea);
 
-            // 8. フッター情報
+           // 8. フッター情報
             if (withFooter) {
                 const footer = document.createElement('div');
                 footer.className = 'result-footer-info accent-border';
@@ -10883,15 +10883,20 @@ async function showResultDetail(isNewDraw, dataOverride = null) {
                 footer.appendChild(metaDiv);
                 footer.appendChild(qrDiv);
                 outer.appendChild(footer);
+                
                 setTimeout(() => {
+                    // ★修正箇所: widthとheightを 60 → 128 に変更
+                    // これで内部的に高画質で生成され、CSSで60pxに縮小表示されます
                     new QRCode(qrTarget, {
-                        text: SITE_URL, width: 60, height: 60,
-                        colorDark : "#000000", colorLight : "#ffffff",
+                        text: SITE_URL, 
+                        width: 128,  // 大きく作る
+                        height: 128, // 大きく作る
+                        colorDark : "#000000", 
+                        colorLight : "#ffffff",
                         correctLevel : QRCode.CorrectLevel.H
                     });
                 }, 100);
             }
-        }
 
        // --- 履歴・おみくじの轍 (連打フリーズ完全対策版) ---
         
