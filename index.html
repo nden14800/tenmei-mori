@@ -9496,50 +9496,51 @@ function createTopCard(item, rank, iconClass, rankClass, colorClass) {
         document.getElementById('omamori-step-3').classList.remove('hidden');
     },
 
-        // 画像保存（修正版：html-to-image使用）
+       // 画像保存（軽量化・フリーズ対策版）
         saveImage: function() {
-            // 保存対象の要素を取得（.omamori-body を直接狙う）
             const target = document.querySelector('.omamori-body'); 
-            
-            // ボタンの表示変更
             const btn = event.target.closest('button');
             const originalText = btn.innerHTML;
+            
+            // 連打防止
             btn.innerHTML = '<i class="bi bi-hourglass-split"></i> 生成中...';
             btn.disabled = true;
 
-            // フォント読み込み待機後に実行
             document.fonts.ready.then(() => {
-                htmlToImage.toPng(target, {
-                    quality: 1.0,
-                    pixelRatio: 4, // かなり高画質に
-                    backgroundColor: null, // 背景透明（角丸を綺麗に出すため）
+                // ★修正点: toBlobを使用、pixelRatioを2に下げる
+                htmlToImage.toBlob(target, {
+                    quality: 0.95,
+                    pixelRatio: 2, // 4だと重すぎて固まるので2にする
+                    backgroundColor: null,
                     style: {
-                        // 保存時のみ影を消してスッキリさせる（お好みで調整可）
                         boxShadow: 'none',
-                        // 画面上の位置調整の影響を受けないようにリセット
                         margin: '0',
                         transform: 'none'
                     }
                 })
-                .then(function (dataUrl) {
-                    // ダウンロード処理
+                .then(function (blob) {
+                    if (!blob) throw new Error("Blob生成失敗");
+
+                    const url = URL.createObjectURL(blob);
                     const link = document.createElement('a');
                     link.download = `omamori_${Date.now()}.png`;
-                    link.href = dataUrl;
+                    link.href = url;
                     link.click();
                     
-                    // ボタンを元に戻す
+                    // 処理完了後にURLを解放
+                    setTimeout(() => URL.revokeObjectURL(url), 1000);
+                    
                     btn.innerHTML = originalText;
                     btn.disabled = false;
                 })
                 .catch(function (error) {
                     console.error('御守生成エラー:', error);
-                    alert("保存に失敗しました。");
+                    alert("保存に失敗しました。端末のメモリ不足の可能性があります。");
                     btn.innerHTML = originalText;
                     btn.disabled = false;
                 });
             });
-        }
+        } 
     };
 
         
