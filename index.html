@@ -14312,7 +14312,7 @@ async function initiateAuth(mode) {
 }
         
 // ==========================================
-//  リアルタイム推移グラフシステム (完全修正版 v2)
+//  リアルタイム推移グラフシステム (累積・右肩上がり修正版)
 // ==========================================
 const LiveChart = {
     data: [], // { time, issued, users }
@@ -14320,10 +14320,10 @@ const LiveChart = {
     svg: null,
     width: 0,
     height: 0,
-    // ★修正: 左余白を60pxに拡大して数値が見切れないようにする
+    // ★修正: 左余白を60pxに設定し、大きな桁の数字も見切れないようにする
     padding: { top: 20, right: 10, bottom: 20, left: 60 },
 
-    // 初期化 (枠組みだけ作成)
+    // 初期化
     init: function() {
         this.svg = document.getElementById('live-chart-svg');
         if(!this.svg) return;
@@ -14354,62 +14354,72 @@ const LiveChart = {
 
         this.updateDimensions();
         window.addEventListener('resize', () => this.updateDimensions());
-        
-        // ★変更: ここではデータを生成せず、最初のupdateを待つ（ローディング表示のまま）
     },
 
     updateDimensions: function() {
         if(!this.svg) return;
-        const rect = this.svg.getBoundingClientRect();
-        // SVGの内部座標系を定義
-        this.width = 400; 
-        this.height = 200; 
+        this.width = 400; // viewBox width
+        this.height = 200; // viewBox height
     },
 
     // データの更新 (サーバーから値が来たときに呼ばれる)
     update: function(currentIssued, currentUsers) {
-        // 値が不正な場合は無視
+        // 値が不正、またはまだ0の場合は無視（正しい値が来るのを待つ）
         if (!currentIssued || currentIssued <= 0) return;
         if (!currentUsers) currentUsers = 0;
 
         const now = new Date();
 
-        // --- 初回データ生成ロジック (整合性重視) ---
+        // --- 初回データ生成 (累積グラフとして自然な過去データを生成) ---
         if (this.data.length === 0) {
-            // ★重要: 最新の値(currentIssued)をゴールとして、過去へ向かって自然に減らしていく
-            // これにより、グラフが「めちゃくちゃ」にならず、現在値に綺麗に接続される
+            this.data = [];
             
-            for (let i = 59; i >= 0; i--) {
-                const t = new Date(now.getTime() - i * 60000);
-                
-                // 過去の値を「逆算」で生成（1分あたり平均5〜15増える想定でランダムに引く）
-                // i=0 (現在) のときは currentIssued そのものになる
-                // i=59 (60分前) のときは かなり減った値になる
-                const diffIssued = i * (Math.random() * 10 + 5); 
-                const diffUsers = i * (Math.random() * 0.5 + 0.1);
+            // 1分あたりの平均増加数（仮定）
+            const avgIncIssued = 15; // 1分に15本
+            const avgIncUsers = 0.5; // 2分に1人
+            
+            // 60分前の「仮想スタート値」を計算
+            let simIssued = Math.max(0, currentIssued - (avgIncIssued * 60));
+            let simUsers = Math.max(0, currentUsers - (avgIncUsers * 60));
 
-                const simIssued = Math.max(0, Math.floor(currentIssued - diffIssued));
-                const simUsers = Math.max(0, Math.floor(currentUsers - diffUsers));
+            for (let i = 0; i < 60; i++) {
+                // 59分前 〜 0分前(現在) まで時間を進める
+                const t = new Date(now.getTime() - (59 - i) * 60000);
                 
+                // 現在(i=59)は必ず実測値にする
+                if (i === 59) {
+                    simIssued = currentIssued;
+                    simUsers = currentUsers;
+                } else {
+                    // 徐々に増やす（ランダムな揺らぎあり、かつ絶対に減らさない）
+                    const incI = Math.floor(Math.random() * 10 + 5); // 5~15増
+                    const incU = Math.random() < 0.3 ? 1 : 0; // 30%の確率で1増
+                    
+                    simIssued += incI;
+                    simUsers += incU;
+                    
+                    // 現在値を超えないようにキャップ
+                    if(simIssued > currentIssued) simIssued = currentIssued;
+                    if(simUsers > currentUsers) simUsers = currentUsers;
+                }
+
                 this.data.push({
                     time: t,
-                    issued: simIssued,
-                    users: simUsers
+                    issued: Math.floor(simIssued),
+                    users: Math.floor(simUsers)
                 });
             }
-            
-            // ローディングを消して描画
+
+            // ローディングを消す
             const loader = document.getElementById('chart-loading');
             if(loader) loader.classList.add('hidden');
         } else {
             // --- 2回目以降: 最新データを追加 ---
             
-            // 急激な変動（バグ）の簡易フィルタ
+            // 前回の値より減っている場合は異常なので、前回の値を維持する（累積グラフの原則）
             const last = this.data[this.data.length - 1];
-            if (currentIssued < last.issued * 0.8) {
-                // 値が20%以上減るのは異常なので、前回の値に少し足したものを採用
-                currentIssued = last.issued + Math.floor(Math.random() * 5);
-            }
+            if (currentIssued < last.issued) currentIssued = last.issued;
+            if (currentUsers < last.users) currentUsers = last.users;
 
             this.data.push({
                 time: now,
@@ -14448,22 +14458,21 @@ const LiveChart = {
         let minUsers = Math.min(...usersVals);
         let maxUsers = Math.max(...usersVals);
 
-        // グラフが平坦にならないよう、最小値と最大値に少しマージンを持たせる
-        // 値が全く変わらない場合（min==max）の対策も含む
+        // グラフが平坦にならないようマージンを持たせる
         if (minIssued === maxIssued) {
             minIssued -= 10;
             maxIssued += 10;
         } else {
-            const marginI = (maxIssued - minIssued) * 0.1;
+            const marginI = (maxIssued - minIssued) * 0.2; // 上下に余裕
             minIssued -= marginI;
             maxIssued += marginI;
         }
 
         if (minUsers === maxUsers) {
-            minUsers -= 5;
-            maxUsers += 5;
+            minUsers -= 2;
+            maxUsers += 2;
         } else {
-            const marginU = (maxUsers - minUsers) * 0.1;
+            const marginU = (maxUsers - minUsers) * 0.2;
             minUsers -= marginU;
             maxUsers += marginU;
         }
@@ -14471,7 +14480,7 @@ const LiveChart = {
         // 座標変換ヘルパー
         const getX = (i) => p.left + (i / (this.data.length - 1)) * drawW;
         
-        // ゼロ除算防止付きY座標計算
+        // ゼロ除算防止付きY座標計算（正規化して重ねる）
         const getY = (val, min, max) => {
             const range = max - min || 1;
             return p.top + drawH - ((val - min) / range) * drawH;
@@ -14503,16 +14512,16 @@ const LiveChart = {
         }
 
         // 横線 (数値軸: 4分割) とラベル
+        // ここでは「発行数」の値を軸ラベルとして表示する
         for (let i = 0; i <= 4; i++) {
             const ratio = i / 4;
             const y = p.top + drawH - (ratio * drawH);
             
-            // 目安数値 (発行数を基準に表示)
             const val = Math.round(minIssued + ratio * (maxIssued - minIssued));
             
             gridHtml += `<line x1="${p.left}" y1="${y}" x2="${this.width - p.right}" y2="${y}" class="chart-grid-line" />`;
             
-            // ラベル (右揃えで配置)
+            // ラベル (左余白に右寄せで配置)
             axisHtml += `<text x="${p.left - 8}" y="${y + 3}" text-anchor="end" class="chart-axis-text">${val.toLocaleString()}</text>`;
         }
 
@@ -14551,9 +14560,9 @@ const LiveChart = {
         if(tt) {
             const timeStr = `${d.time.getHours()}:${String(d.time.getMinutes()).padStart(2,'0')}`;
             tt.innerHTML = `
-                <div class="border-b border-gray-200 dark:border-gray-700 pb-1 mb-1 text-xs text-gray-500">${timeStr}</div>
-                <div class="flex items-center gap-2 text-yellow-600"><span class="w-2 h-2 rounded-full bg-yellow-500"></span> 発行: ${d.issued.toLocaleString()}</div>
-                <div class="flex items-center gap-2 text-red-600"><span class="w-2 h-2 rounded-full bg-red-500"></span> 参拝: ${d.users.toLocaleString()}</div>
+                <div class="border-b border-gray-200 dark:border-gray-700 pb-1 mb-1 text-xs text-gray-500 font-mono">${timeStr}</div>
+                <div class="flex items-center gap-2 text-yellow-600 text-xs font-bold font-mono"><span class="w-2 h-2 rounded-full bg-yellow-500"></span> 発行: ${d.issued.toLocaleString()}</div>
+                <div class="flex items-center gap-2 text-red-600 text-xs font-bold font-mono"><span class="w-2 h-2 rounded-full bg-red-500"></span> 参拝: ${d.users.toLocaleString()}</div>
             `;
 
             const offsetX = 15;
