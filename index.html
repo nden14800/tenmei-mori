@@ -5138,31 +5138,57 @@ body.theme-newyear {
                 </div>
             </div>
 
-            <!-- B. リアルタイム推移グラフ -->
-            <div class="bento-card relative overflow-hidden" style="min-height: 300px;">
-                <div class="flex justify-between items-center mb-2 border-b border-gray-200 dark:border-gray-700 pb-2 z-10 relative">
-                    <h3 class="font-bold flex items-center gap-2 text-sm"><i class="bi bi-activity text-indigo-500"></i> リアルタイム推移 (1分足)</h3>
+            <!-- B. リアルタイム推移グラフ (ダブル表示) -->
+            <div class="bento-card relative overflow-hidden" style="grid-column: span 12; min-height: 320px;">
+                <div class="flex justify-between items-center mb-4 border-b border-gray-200 dark:border-gray-700 pb-2 z-10 relative">
+                    <h3 class="font-bold flex items-center gap-2 text-sm">
+                        <i class="bi bi-activity text-indigo-500"></i> 
+                        <span>リアルタイム推移 (1分足)</span>
+                    </h3>
                     <div class="flex gap-3 text-[10px]">
                         <span class="flex items-center gap-1"><span class="w-2 h-2 rounded-full bg-yellow-500"></span>発行数</span>
                         <span class="flex items-center gap-1"><span class="w-2 h-2 rounded-full bg-red-500"></span>参拝者</span>
                     </div>
                 </div>
                 
-                <!-- SVGチャート描画エリア -->
-                <div class="flex-1 w-full h-full relative" id="chart-container">
-                    <svg id="live-chart-svg" width="100%" height="100%" viewBox="0 0 400 200" preserveAspectRatio="none" class="w-full h-full">
-                        <!-- グリッド線 (JSで生成) -->
-                        <g id="chart-grid"></g>
-                        <!-- 折れ線: 発行総数 -->
-                        <path id="chart-line-issued" fill="none" stroke="#eab308" stroke-width="2" vector-effect="non-scaling-stroke" />
-                        <!-- 折れ線: 参拝者数 -->
-                        <path id="chart-line-users" fill="none" stroke="#ef4444" stroke-width="2" vector-effect="non-scaling-stroke" />
-                    </svg>
-                    <!-- ローディング表示 -->
-                    <div id="chart-loading" class="absolute inset-0 flex items-center justify-center text-gray-400 text-xs bg-white/50 dark:bg-black/50">
-                        データ収集中...
+                <!-- 2つのグラフを並べるラッパー -->
+                <div class="charts-wrapper" id="charts-container">
+                    
+                    <!-- 左：累計グラフ -->
+                    <div class="chart-box">
+                        <p class="absolute top-0 left-10 text-[10px] text-gray-400 font-bold">▼ 累計 (合計値)</p>
+                        <svg id="chart-svg-total" width="100%" height="100%" viewBox="0 0 400 200" preserveAspectRatio="none" class="w-full h-full">
+                            <g id="grid-total" class="text-gray-300 dark:text-zinc-700"></g>
+                            <path id="line-total-issued" fill="none" stroke="#eab308" stroke-width="2" vector-effect="non-scaling-stroke" />
+                            <path id="line-total-users" fill="none" stroke="#ef4444" stroke-width="2" vector-effect="non-scaling-stroke" />
+                            <g id="axis-total-left"></g>
+                            <g id="axis-total-right"></g>
+                            <line id="hover-line-total" class="chart-hover-line" y1="0" y2="100%" />
+                            <rect id="overlay-total" width="100%" height="100%" fill="transparent" style="cursor: crosshair;" />
+                        </svg>
                     </div>
+
+                    <!-- 右：変化量グラフ -->
+                    <div class="chart-box">
+                        <p class="absolute top-0 left-10 text-[10px] text-gray-400 font-bold">▼ 変化 (1分ごとの増加数)</p>
+                        <svg id="chart-svg-delta" width="100%" height="100%" viewBox="0 0 400 200" preserveAspectRatio="none" class="w-full h-full">
+                            <g id="grid-delta" class="text-gray-300 dark:text-zinc-700"></g>
+                            <path id="line-delta-issued" fill="none" stroke="#eab308" stroke-width="2" vector-effect="non-scaling-stroke" />
+                            <path id="line-delta-users" fill="none" stroke="#ef4444" stroke-width="2" vector-effect="non-scaling-stroke" />
+                            <g id="axis-delta-left"></g>
+                            <g id="axis-delta-right"></g>
+                            <line id="hover-line-delta" class="chart-hover-line" y1="0" y2="100%" />
+                            <rect id="overlay-delta" width="100%" height="100%" fill="transparent" style="cursor: crosshair;" />
+                        </svg>
+                    </div>
+
                 </div>
+                
+                <!-- ローディング表示 -->
+                <div id="chart-loading" class="absolute inset-0 flex items-center justify-center text-gray-400 text-xs bg-white/80 dark:bg-black/80 z-20">
+                    データ収集中...
+                </div>
+            </div>
                 
                 <p class="text-[10px] text-gray-400 text-right mt-1 z-10 relative">※過去60分間の推移 (毎分更新)</p>
             </div>
