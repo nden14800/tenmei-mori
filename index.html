@@ -15,8 +15,8 @@
    <!-- QRCode.js -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
     
-   <!-- 最新かつ最も安定した画像生成ライブラリ -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/html-to-image/1.11.11/html-to-image.min.js"></script>
+   <!-- html2canvasを削除し、dom-to-image-more を追加 -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/dom-to-image-more/3.3.0/dom-to-image-more.min.js"></script>
     
     <!-- フォント -->
     <link href="https://fonts.googleapis.com/css2?family=Shippori+Mincho:wght@400;500;600;800&family=Zen+Old+Mincho:wght@400;700;900&display=swap" rel="stylesheet">
@@ -9496,9 +9496,8 @@ function createTopCard(item, rank, iconClass, rankClass, colorClass) {
         document.getElementById('omamori-step-3').classList.remove('hidden');
     },
 
-        // --- 御守システムの画像保存 (html-to-image対応版) ---
-        // ※ OmamoriSystemオブジェクトの中にある saveImage 関数をこれで上書きしてください
-        saveImage: async function() {
+        // 画像保存（修正版）
+        saveImage: function() {
             const target = document.querySelector('.omamori-body'); 
             if(!target) return;
             
@@ -9507,38 +9506,44 @@ function createTopCard(item, rank, iconClass, rankClass, colorClass) {
             btn.innerHTML = '<i class="bi bi-hourglass-split"></i> 生成中...';
             btn.disabled = true;
 
-            try {
-                await document.fonts.ready;
-
-                // ウォームアップ（アイコン落ち防止）
-                await htmlToImage.toPng(target, { quality: 0.1 });
-
-                // 本番生成
-                const dataUrl = await htmlToImage.toPng(target, {
-                    quality: 1.0,
-                    pixelRatio: 4, // 4倍高画質
-                    backgroundColor: null, // 背景透過
-                    style: {
-                        // 保存時は影を消してフラットにする（切り抜きを綺麗にするため）
-                        boxShadow: 'none',
-                        // 画面上の位置調整用マージンをリセット
-                        margin: '0'
-                    }
-                });
-
+            // 保存前に、角を隠している疑似要素の色を「透過」にするか、
+            // 背景色を一時的に透明にして、canvas側で処理させる
+            // html2canvasの設定を調整して、角丸をきれいに切り抜く
+            
+            html2canvas(target, {
+                scale: 4, // 高画質
+                backgroundColor: null, // 背景透明
+                useCORS: true,
+                logging: false,
+                // 疑似要素（角の切り欠き）が背景色と混ざらないようにする
+                onclone: (clonedDoc) => {
+                    const clonedBody = clonedDoc.querySelector('.omamori-body');
+                    // 保存時は影を消して、きれいな形にする
+                    clonedBody.style.boxShadow = 'none';
+                    // 疑似要素（切り欠き）を非表示にして、純粋なborder-radiusで形を出す
+                    const style = clonedDoc.createElement('style');
+                    style.innerHTML = '.omamori-body::before, .omamori-body::after { display: none !important; }';
+                    clonedDoc.body.appendChild(style);
+                }
+            }).then(canvas => {
                 const link = document.createElement('a');
                 link.download = `omamori_${Date.now()}.png`;
-                link.href = dataUrl;
+                link.href = canvas.toDataURL('image/png');
                 link.click();
-
-            } catch (e) {
-                console.error(e);
-                alert("保存に失敗しました。");
-            } finally {
+                
                 btn.innerHTML = originalText;
                 btn.disabled = false;
-            }
-        },
+                
+                // 完了アラートは味気ないので削除または控えめに
+                // alert("保存しました"); 
+            }).catch(e => {
+                console.error(e);
+                alert("保存に失敗しました。");
+                btn.innerHTML = originalText;
+                btn.disabled = false;
+            });
+        }
+    };
 
         
 // --- 認証付きFetchラッパー (Cookie & Header 両対応) ---
@@ -11127,79 +11132,77 @@ function resetSearch() {
             document.getElementById('history-detail-modal').style.display = 'none';
         }
 
-        // --- シェア用画像生成 (html-to-image採用・Safariフォント落ち対策強化版) ---
-        async function generateResultImage() {
+        // --- シェア用画像生成 (ライブラリ変更版：dom-to-image-more 使用) ---
+        function generateResultImage() {
             const status = document.getElementById('gen-img-status');
-            status.textContent = "画像を生成中...そのままでお待ちください";
+            status.textContent = "画像を生成中...画面を動かさないでください";
             
+            // 画像化対象の要素
             const target = document.getElementById('result-capture-container');
+            const resultCard = document.getElementById('result-card-outer');
+            
             const container = document.getElementById('generated-image-container');
             container.innerHTML = '';
             container.classList.add('hidden');
             
-            // 現在のスクロール位置を保存
-            const originalScrollPos = window.scrollY;
-            window.scrollTo(0, 0); // 描画ズレ防止のため一旦上へ
-
             // フォント読み込み待機
-            await document.fonts.ready;
-
-            try {
-                // 【重要】Safari対策: 一度ダミーで実行してフォントキャッシュを温める（ウォームアップ）
-                // これをやらないと、初回だけアイコンが豆腐（□）になることがあります。
-                await htmlToImage.toPng(target, { quality: 0.1 });
-                await new Promise(r => setTimeout(r, 100)); // 少し待つ
-
-                // 本番生成
-                const dataUrl = await htmlToImage.toPng(target, {
-                    quality: 1.0,
-                    pixelRatio: 3, // 3倍高画質
-                    backgroundColor: null, // 背景透過を維持
+            document.fonts.ready.then(() => {
+                
+                // 高画質化のためのスケール設定 (3倍)
+                const scale = 3;
+                
+                // dom-to-image-more の実行
+                domtoimage.toPng(target, {
+                    width: target.offsetWidth * scale,
+                    height: target.offsetHeight * scale,
                     style: {
-                        // 画像化の瞬間だけレイアウトを安定させる
-                        margin: '0',
-                        transform: 'none'
+                        // 内部的に要素を拡大して高画質化する
+                        transform: `scale(${scale})`,
+                        transformOrigin: 'top left',
+                        width: target.offsetWidth + 'px',
+                        height: target.offsetHeight + 'px',
+                        // 余計なマージンを排除
+                        margin: '0'
                     },
-                    // Webフォントの読み込みを確実にするフィルター
-                    filter: (node) => {
-                        // 不要なタグを除外（もしあれば）
-                        return (node.tagName !== 'LINK' || !node.href.includes('stylesheet'));
-                    }
+                    // 背景色を透明にするか、指定色にするか（nullなら透明）
+                    bgcolor: null 
+                })
+                .then(function (dataUrl) {
+                    status.textContent = "";
+                    
+                    // Blob変換処理
+                    fetch(dataUrl)
+                    .then(res => res.blob())
+                    .then(blob => {
+                        currentState.lastImageBlob = blob;
+                        const url = URL.createObjectURL(blob);
+                        
+                        // 生成完了表示
+                        container.innerHTML = '<p class="text-green-600 font-bold mb-2">画像の生成完了</p>';
+                        container.classList.remove('hidden');
+
+                        // プレビュー画像
+                        const img = document.createElement('img');
+                        img.src = url;
+                        img.className = "mx-auto rounded border w-40 mb-3 shadow-lg"; 
+                        container.appendChild(img);
+
+                        // ダウンロードボタン
+                        const dlLink = document.createElement('a');
+                        dlLink.href = url;
+                        dlLink.download = `tenmei_omikuji_${Date.now()}.png`;
+                        dlLink.className = "btn-primary text-sm w-full justify-center py-3 shadow-md";
+                        dlLink.innerHTML = '<i class="bi bi-download"></i> 画像を保存する';
+                        container.appendChild(dlLink);
+                    });
+                })
+                .catch(function (error) {
+                    console.error('画像生成エラー:', error);
+                    status.textContent = "画像の生成に失敗しました。";
+                    // エラー内容をアラートで出す（デバッグ用）
+                    // alert("生成エラー: " + error.message);
                 });
-
-                status.textContent = "";
-                
-                // Blob変換と表示処理
-                const res = await fetch(dataUrl);
-                const blob = await res.blob();
-                currentState.lastImageBlob = blob;
-                const url = URL.createObjectURL(blob);
-                
-                // プレビュー表示
-                container.innerHTML = '<p class="text-green-600 font-bold mb-2">画像の生成完了</p>';
-                container.classList.remove('hidden');
-
-                const img = document.createElement('img');
-                img.src = url;
-                img.className = "mx-auto rounded border w-40 mb-3 shadow-lg"; 
-                container.appendChild(img);
-
-                // ダウンロードボタン
-                const dlLink = document.createElement('a');
-                dlLink.href = url;
-                dlLink.download = `tenmei_omikuji_${Date.now()}.png`;
-                dlLink.className = "btn-primary text-sm w-full justify-center py-3 shadow-md";
-                dlLink.innerHTML = '<i class="bi bi-download"></i> 画像を保存する';
-                container.appendChild(dlLink);
-
-            } catch (error) {
-                console.error('画像生成エラー:', error);
-                status.textContent = "画像の生成に失敗しました。";
-                alert("生成エラー: " + error.message);
-            } finally {
-                // 元の位置に戻る
-                window.scrollTo(0, originalScrollPos);
-            }
+            });
         }
 
         // サイトルートURLを返す（生成URL廃止）
