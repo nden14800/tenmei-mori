@@ -14933,6 +14933,149 @@ const LiveChart = {
         // ▼ 全問終了チェック
         checkQuizCompletion();
     };
+
+        // 全問終了チェックと結果表示
+    function checkQuizCompletion() {
+        if (currentQuizState.articleId === null) return;
+        
+        // 全ての問題を解き終わったか？
+        if (currentQuizState.answeredCount >= currentQuizState.totalQuestions) {
+            setTimeout(() => {
+                showQuizFinalResult();
+                saveQuizHistory();
+            }, 800); // 少し余韻を持たせて表示
+        }
+    }
+
+    // 結果カードの表示
+    function showQuizFinalResult() {
+        const area = document.getElementById('quiz-final-result-area');
+        const { totalQuestions, correctCount, articleTitle } = currentQuizState;
+        
+        // 正答率
+        const percentage = Math.round((correctCount / totalQuestions) * 100);
+        
+        // 評価メッセージ
+        let comment = "";
+        let icon = "";
+        if (percentage === 100) {
+            comment = "素晴らしい！全問正解です。博識ですね！";
+            icon = "bi-trophy-fill text-yellow-500";
+        } else if (percentage >= 60) {
+            comment = "お見事！かなりの知識をお持ちです。";
+            icon = "bi-award-fill text-indigo-500";
+        } else {
+            comment = "挑戦お疲れ様でした。新しい知識が増えましたね。";
+            icon = "bi-book-half text-green-500";
+        }
+
+        // シェア用テキスト（文字数考慮）
+        // 記事名が長い場合は省略
+        const shortTitle = articleTitle.length > 20 ? articleTitle.substring(0, 20) + "..." : articleTitle;
+        const shareText = `⛩️ 天命乃杜 クイズ挑戦\n【${shortTitle}】\n結果：${totalQuestions}問中 ${correctCount}問正解 (${percentage}%)\n\n#天命乃杜 #神社検定\n${SITE_URL}`;
+
+        area.innerHTML = `
+            <div class="quiz-result-card">
+                <div class="text-4xl mb-2 ${icon}"><i class="bi ${icon.split(' ')[0]}"></i></div>
+                <h3 class="text-xl font-bold mb-2">結果発表</h3>
+                <div class="text-sm text-gray-500 font-bold mb-1">正解数</div>
+                <div class="quiz-score-big">
+                    ${correctCount} <span class="text-2xl text-gray-400">/ ${totalQuestions}</span>
+                </div>
+                <div class="text-lg font-bold mb-4 text-[var(--accent-red)]">正答率 ${percentage}%</div>
+                <p class="text-sm mb-6">${comment}</p>
+                
+                <button onclick="shareQuizResult(\`${encodeURIComponent(shareText)}\`)" class="btn-primary w-full py-3 shadow-lg justify-center">
+                    <i class="bi bi-twitter-x"></i> 結果をXでシェア
+                </button>
+            </div>
+        `;
+        
+        // 結果エリアへスクロール
+        area.scrollIntoView({ behavior: 'smooth' });
+    }
+
+    // シェア実行
+    window.shareQuizResult = function(encodedText) {
+        const text = decodeURIComponent(encodedText);
+        const intent = `https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}`;
+        window.open(intent, '_blank');
+    };
+
+    // 履歴の保存 (LocalStorage)
+    function saveQuizHistory() {
+        const historyKey = 'tenmei_quiz_history';
+        let history = JSON.parse(localStorage.getItem(historyKey) || '[]');
+        
+        const newRecord = {
+            id: currentQuizState.articleId,
+            title: currentQuizState.articleTitle,
+            correct: currentQuizState.correctCount,
+            total: currentQuizState.totalQuestions,
+            date: Date.now()
+        };
+
+        // 同じ記事の履歴があれば上書き（最新の結果にする）
+        const existingIndex = history.findIndex(h => h.id === newRecord.id);
+        if (existingIndex !== -1) {
+            history[existingIndex] = newRecord;
+        } else {
+            history.unshift(newRecord); // 先頭に追加
+        }
+
+        // 最大50件まで保存
+        if (history.length > 50) history.pop();
+
+        localStorage.setItem(historyKey, JSON.stringify(history));
+    }
+
+    // 履歴モーダルを開く
+    window.openQuizHistory = function() {
+        const modal = document.getElementById('quiz-history-modal');
+        const list = document.getElementById('quiz-history-list');
+        const history = JSON.parse(localStorage.getItem('tenmei_quiz_history') || '[]');
+
+        modal.style.display = 'flex';
+
+        if (history.length === 0) {
+            list.innerHTML = `
+                <div class="text-center py-10 text-gray-400">
+                    <i class="bi bi-pencil-square text-4xl mb-3 opacity-50"></i>
+                    <p>まだ履歴がありません。<br>神籤草子のクイズに挑戦してみましょう。</p>
+                </div>
+            `;
+            return;
+        }
+
+        list.innerHTML = history.map(h => {
+            const date = new Date(h.date);
+            const dateStr = `${date.getMonth()+1}/${date.getDate()} ${date.getHours()}:${String(date.getMinutes()).padStart(2,'0')}`;
+            const percentage = Math.round((h.correct / h.total) * 100);
+            
+            // 正答率による色分け
+            let badgeColor = "bg-gray-100 text-gray-600";
+            if(percentage === 100) badgeColor = "bg-yellow-100 text-yellow-700 border-yellow-300";
+            else if(percentage >= 60) badgeColor = "bg-indigo-100 text-indigo-700 border-indigo-300";
+
+            return `
+                <div onclick="openArticle('column', ${h.id}); document.getElementById('quiz-history-modal').style.display='none';" 
+                     class="bg-white dark:bg-zinc-800 p-4 rounded-lg border border-gray-200 dark:border-gray-700 cursor-pointer hover:shadow-md transition">
+                    <div class="flex justify-between items-start mb-2">
+                        <h4 class="font-bold text-sm line-clamp-2 flex-1 mr-2">${h.title}</h4>
+                        <span class="text-[10px] text-gray-400 whitespace-nowrap">${dateStr}</span>
+                    </div>
+                    <div class="flex justify-between items-center">
+                        <span class="text-xs border ${badgeColor} px-2 py-1 rounded font-bold">
+                            正解 ${h.correct}/${h.total} (${percentage}%)
+                        </span>
+                        <span class="text-xs text-blue-500 font-bold flex items-center">
+                            再挑戦 <i class="bi bi-chevron-right ml-1"></i>
+                        </span>
+                    </div>
+                </div>
+            `;
+        }).join('');
+    };
             
     </script>
 </body>
