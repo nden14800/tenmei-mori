@@ -14890,6 +14890,49 @@ const LiveChart = {
         answeredCount: 0,
         correctCount: 0
     };
+
+        // 入力式クイズの判定関数 (集計機能追加版)
+    window.handleInputQuiz = function(button, correctAnswers, questionId) {
+        const inputField = button.parentElement.querySelector('input');
+        const userValue = inputField.value.trim();
+        const parent = button.closest('.my-8');
+        const resultArea = parent.querySelector('.quiz-result');
+        const msgArea = resultArea.querySelector('.quiz-msg');
+        
+        if (!resultArea.classList.contains('hidden') && resultArea.dataset.answered === "true") return;
+
+        // 集計更新
+        if (currentQuizState.articleId !== null) {
+            currentQuizState.answeredCount++;
+        }
+
+        const isCorrect = correctAnswers.some(ans => ans === userValue);
+
+        resultArea.classList.remove('hidden');
+        resultArea.dataset.answered = "true";
+        
+        if (isCorrect) {
+            if (currentQuizState.articleId !== null) currentQuizState.correctCount++; // 正解数加算
+            
+            msgArea.innerHTML = '<span class="text-green-600">正解！</span>';
+            msgArea.classList.add('text-green-600');
+            inputField.classList.add('border-green-500', 'bg-green-900', 'text-green-100');
+            inputField.classList.remove('bg-gray-800');
+        } else {
+            msgArea.innerHTML = '<span class="text-red-500">残念...</span>';
+            msgArea.classList.add('text-red-500');
+            inputField.classList.add('border-red-500', 'bg-red-900', 'text-red-100');
+            inputField.classList.remove('bg-gray-800');
+        }
+        
+        inputField.disabled = true;
+        button.disabled = true;
+        button.classList.add('opacity-50', 'cursor-not-allowed');
+        button.innerText = '回答済み';
+
+        // ▼ 全問終了チェック
+        checkQuizCompletion();
+    };
             
     </script>
 </body>
