@@ -9576,7 +9576,7 @@ window.renderFullColumnView = function() {
 };
 
 
-    // 4. 記事詳細表示
+    // 4. 記事詳細表示 (クイズ初期化機能追加版)
     window.openArticle = function(type, id) {
         let item;
         if (type === 'news') item = newsData.find(d => d.id === id);
@@ -9596,8 +9596,31 @@ window.renderFullColumnView = function() {
                         ${item.category ? `<span class="article-tag">${item.category}</span>` : ''}
                     </div>
                 </div>
-                <div class="article-content">${item.content}</div>
+                <div class="article-content" id="article-body-content">${item.content}</div>
+                <!-- クイズ結果表示エリア -->
+                <div id="quiz-final-result-area"></div>
             `;
+            
+            // --- ▼ 追加: クイズ状態の初期化 ▼ ---
+            if (type === 'column') {
+                // 記事内のクイズコンテナ(.my-8)の数をカウント
+                const quizContainers = container.querySelectorAll('.my-8');
+                const totalQ = quizContainers.length;
+                
+                if (totalQ > 0) {
+                    currentQuizState = {
+                        articleId: item.id,
+                        articleTitle: item.title,
+                        totalQuestions: totalQ,
+                        answeredCount: 0,
+                        correctCount: 0
+                    };
+                } else {
+                    currentQuizState = { articleId: null, totalQuestions: 0 };
+                }
+            }
+            // --- ▲ 追加ここまで ▲ ---
+
             showView('article-detail');
             window.scrollTo(0, 0);
         }
