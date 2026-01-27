@@ -9626,17 +9626,27 @@ window.renderFullColumnView = function() {
         }
     };
 
-    // 5. クイズ機能ロジック
+    // 5. クイズ機能ロジック (集計機能追加版)
     window.handleQuiz = function(btn, isCorrect, correctIndex) {
         const optionsArea = btn.parentElement;
         const allBtns = optionsArea.querySelectorAll('button');
         const resultArea = optionsArea.nextElementSibling;
         const msg = resultArea.querySelector('.quiz-msg');
 
+        // 既に回答済みの場合は処理しない（二重カウント防止）
+        if(optionsArea.dataset.answered === "true") return;
+        optionsArea.dataset.answered = "true";
+
         allBtns.forEach(b => {
             b.disabled = true;
             b.classList.add('opacity-50', 'cursor-not-allowed');
         });
+
+        // 集計更新
+        if (currentQuizState.articleId !== null) {
+            currentQuizState.answeredCount++;
+            if (isCorrect) currentQuizState.correctCount++;
+        }
 
         if (isCorrect) {
             btn.classList.remove('bg-white', 'dark:bg-black', 'border-gray-300', 'opacity-50');
@@ -9656,6 +9666,9 @@ window.renderFullColumnView = function() {
             }
         }
         resultArea.classList.remove('hidden');
+
+        // ▼ 全問終了チェック
+        checkQuizCompletion();
     };
 
         // ==========================================
