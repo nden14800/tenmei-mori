@@ -9628,28 +9628,36 @@ window.renderFullColumnView = function() {
         }
     };
 
-    // 5. クイズ機能ロジック (集計機能追加版)
+    // ==========================================
+    //  クイズ機能 (保存分岐・アイコン修正版)
+    // ==========================================
+
+    // 5. 選択式クイズの判定ロジック (完了判定・保存対応版)
     window.handleQuiz = function(btn, isCorrect, correctIndex) {
+        // 選択肢の親要素を取得
         const optionsArea = btn.parentElement;
         const allBtns = optionsArea.querySelectorAll('button');
+        // 解説エリアを取得
         const resultArea = optionsArea.nextElementSibling;
         const msg = resultArea.querySelector('.quiz-msg');
 
-        // 既に回答済みの場合は処理しない（二重カウント防止）
+        // ▼ 既に回答済みの場合は処理しない（連打・重複カウント防止）
         if(optionsArea.dataset.answered === "true") return;
         optionsArea.dataset.answered = "true";
 
+        // ボタン無効化
         allBtns.forEach(b => {
             b.disabled = true;
             b.classList.add('opacity-50', 'cursor-not-allowed');
         });
 
-        // 集計更新
+        // ▼ 集計更新 (記事IDがある場合のみ)
         if (currentQuizState.articleId !== null) {
             currentQuizState.answeredCount++;
             if (isCorrect) currentQuizState.correctCount++;
         }
 
+        // 正誤演出
         if (isCorrect) {
             btn.classList.remove('bg-white', 'dark:bg-black', 'border-gray-300', 'opacity-50');
             btn.classList.add('bg-green-100', 'dark:bg-green-900', 'border-green-500', 'text-green-800', 'dark:text-green-100', 'ring-2', 'ring-green-500');
@@ -9660,6 +9668,8 @@ window.renderFullColumnView = function() {
             btn.classList.add('bg-red-100', 'dark:bg-red-900', 'border-red-500', 'text-red-800', 'dark:text-red-100');
             btn.innerHTML = '<i class="bi bi-x-lg text-xl mr-2"></i> ' + btn.innerText;
             msg.innerHTML = '<span class="text-red-600"><i class="bi bi-x-circle-fill"></i> 不正解...</span>';
+            
+            // 正解のボタンを強調表示
             const correctBtn = allBtns[correctIndex]; 
             if(correctBtn) {
                 correctBtn.classList.remove('opacity-50', 'bg-white', 'dark:bg-black', 'border-gray-300');
@@ -9667,9 +9677,11 @@ window.renderFullColumnView = function() {
                 correctBtn.innerHTML = '<i class="bi bi-circle text-xl mr-2"></i> ' + correctBtn.innerText;
             }
         }
+        
+        // 解説を表示
         resultArea.classList.remove('hidden');
 
-        // ▼ 全問終了チェック
+        // ▼ 全問終了チェックを実行
         checkQuizCompletion();
     };
 
