@@ -9198,94 +9198,96 @@ function createPaginationHTML(type, current, total) {
         }
     };
 
-    // 2. 「社務所だより」描画関数（モダン・瓦版UI・バリエーション拡張版）
-window.renderFullNewsView = function() {
-    const container = document.getElementById('view-news-list');
-    const pagination = document.getElementById('news-pagination');
-    const titleArea = document.querySelector('#view-news h2');
-    
-    if (!container) return;
+    // 2. 「社務所だより」描画関数
+    window.renderFullNewsView = function() {
+        const container = document.getElementById('view-news-list');
+        const pagination = document.getElementById('news-pagination');
+        const titleArea = document.querySelector('#view-news h2');
+        
+        if (!container) return;
 
-    const { data, totalPages, currentPage, totalItems } = getPaginatedData('news', newsData);
+        const { data, totalPages, currentPage, totalItems } = getPaginatedData('news', newsData);
 
-    // タイトル横の件数表示
-    const countDisplay = listState.news.query 
-        ? `<span class="text-sm font-normal ml-3 text-gray-500">Hit: ${totalItems}</span>`
-        : `<span class="text-sm font-normal ml-3 text-gray-500">Total: ${newsData.length}</span>`;
-    titleArea.innerHTML = `社務所だより ${countDisplay}`;
+        const countDisplay = listState.news.query 
+            ? `<span class="text-sm font-normal ml-3 text-gray-500">Hit: ${totalItems}</span>`
+            : `<span class="text-sm font-normal ml-3 text-gray-500">Total: ${newsData.length}</span>`;
+        titleArea.innerHTML = `社務所だより ${countDisplay}`;
 
-    if (totalItems === 0) {
-        container.innerHTML = `
-            <div class="col-span-full text-center py-10 text-gray-400">
-                <i class="bi bi-inbox text-4xl mb-3 opacity-50"></i>
-                <p>該当する記事が見つかりませんでした。</p>
-            </div>`;
-        pagination.innerHTML = '';
-        return;
-    }
-
-    container.innerHTML = data.map(item => {
-        // タグの文字列によるスタイル分岐 (バリエーション強化)
-        let tagClass = "tag-info";
-        let iconClass = "icon-news-info";
-        const t = item.tag; // 短縮
-
-        if (t.includes("重要") || t.includes("障害")) {
-            tagClass = "tag-important"; // 赤
-            iconClass = "icon-news-alert";
-        } 
-        else if (t.includes("不具合") || t.includes("バグ")) {
-            tagClass = "tag-important"; // 赤
-            iconClass = "icon-news-bug";
-        }
-        else if (t.includes("メンテナンス") || t.includes("システム")) {
-            tagClass = "tag-purple";    // 紫
-            iconClass = "icon-news-maint";
-        }
-        else if (t.includes("新機能")) {
-            tagClass = "tag-system";    // 黄
-            iconClass = "icon-news-star";
-        } 
-        else if (t.includes("デザイン") || t.includes("意匠") || t.includes("改装")) {
-            tagClass = "tag-teal";      // 青緑
-            iconClass = "icon-news-design";
-        }
-        else if (t.includes("解説") || t.includes("規約") || t.includes("技術")) {
-            tagClass = "tag-orange";    // 橙
-            iconClass = "icon-news-book";
-        }
-        else if (t.includes("挨拶") || t.includes("イベント")) {
-            tagClass = "tag-pink";      // ピンク
-            iconClass = "icon-news-flower";
-        }
-        else if (t.includes("開発") || t.includes("裏話")) {
-            tagClass = "tag-green";     // 緑
-            iconClass = "icon-news-chat";
-        }
-        else if (t.includes("更新") || t.includes("機能") || t.includes("改善")) {
-            tagClass = "tag-update";    // 青
-            iconClass = "icon-news-update";
+        if (totalItems === 0) {
+            container.innerHTML = `
+                <div class="col-span-full text-center py-10 text-gray-400">
+                    <i class="bi bi-inbox text-4xl mb-3 opacity-50"></i>
+                    <p>該当する記事が見つかりませんでした。</p>
+                </div>`;
+            pagination.innerHTML = '';
+            return;
         }
 
-        return `
-            <article class="news-card ${iconClass}" onclick="openArticle('news', ${item.id})">
-                <!-- 上部メタ情報 -->
-                <div class="news-meta">
-                    <span class="news-tag ${tagClass}">${item.tag}</span>
-                    <span class="news-date">${item.date}</span>
-                </div>
-                
-                <!-- コンテンツ -->
-                <div>
-                    <h3 class="news-title">${item.title}</h3>
-                    <p class="news-desc">${item.desc || '詳細をご覧ください。'}</p>
-                </div>
-            </article>
-        `;
-    }).join('');
+        container.innerHTML = data.map(item => {
+            // ▼▼▼ 修正: ここで bi- アイコン名を直接指定 ▼▼▼
+            let tagClass = "tag-info";
+            let iconName = "bi-info-circle"; // デフォルト
+            const t = item.tag;
 
-    pagination.innerHTML = createPaginationHTML('news', currentPage, totalPages);
-};
+            if (t.includes("重要") || t.includes("障害")) {
+                tagClass = "tag-important"; 
+                iconName = "bi-exclamation-triangle";
+            } 
+            else if (t.includes("不具合") || t.includes("バグ")) {
+                tagClass = "tag-important"; 
+                iconName = "bi-bug";
+            }
+            else if (t.includes("メンテナンス") || t.includes("システム")) {
+                tagClass = "tag-purple";    
+                iconName = "bi-cone-striped";
+            }
+            else if (t.includes("新機能")) {
+                tagClass = "tag-system";    
+                iconName = "bi-stars";
+            } 
+            else if (t.includes("デザイン") || t.includes("意匠") || t.includes("改装")) {
+                tagClass = "tag-teal";      
+                iconName = "bi-palette";
+            }
+            else if (t.includes("解説") || t.includes("規約") || t.includes("技術")) {
+                tagClass = "tag-orange";    
+                iconName = "bi-book";
+            }
+            else if (t.includes("挨拶") || t.includes("イベント")) {
+                tagClass = "tag-pink";      
+                iconName = "bi-flower1";
+            }
+            else if (t.includes("開発") || t.includes("裏話")) {
+                tagClass = "tag-green";     
+                iconName = "bi-chat-quote";
+            }
+            else if (t.includes("更新") || t.includes("機能") || t.includes("改善")) {
+                tagClass = "tag-update";    
+                iconName = "bi-arrow-repeat";
+            }
+
+            return `
+                <article class="news-card" onclick="openArticle('news', ${item.id})">
+                    <!-- ▼▼▼ 修正: ここに背景アイコンをHTMLタグで配置 ▼▼▼ -->
+                    <i class="bi ${iconName} news-bg-icon"></i>
+
+                    <!-- 上部メタ情報 -->
+                    <div class="news-meta">
+                        <span class="news-tag ${tagClass}">${item.tag}</span>
+                        <span class="news-date">${item.date}</span>
+                    </div>
+                    
+                    <!-- コンテンツ -->
+                    <div>
+                        <h3 class="news-title">${item.title}</h3>
+                        <p class="news-desc">${item.desc || '詳細をご覧ください。'}</p>
+                    </div>
+                </article>
+            `;
+        }).join('');
+
+        pagination.innerHTML = createPaginationHTML('news', currentPage, totalPages);
+    };
 
         
 // 3. 「神籤草子」描画関数（モダン・書架UI版）
