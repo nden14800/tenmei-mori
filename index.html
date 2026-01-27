@@ -15063,11 +15063,8 @@ const LiveChart = {
         if(url) window.open(url, '_blank');
     };
 
-    // 履歴の保存 (LocalStorage)
-    function saveQuizHistory() {
-        const historyKey = 'tenmei_quiz_history';
-        let history = JSON.parse(localStorage.getItem(historyKey) || '[]');
-        
+    // 履歴の保存 (サーバー/ローカル分岐版)
+    async function saveQuizHistory() {
         const newRecord = {
             id: currentQuizState.articleId,
             title: currentQuizState.articleTitle,
@@ -15076,31 +15073,69 @@ const LiveChart = {
             date: Date.now()
         };
 
-        // 同じ記事の履歴があれば上書き（最新の結果にする）
-        const existingIndex = history.findIndex(h => h.id === newRecord.id);
-        if (existingIndex !== -1) {
-            history[existingIndex] = newRecord;
+        if (currentState.user) {
+            // ▼ ログイン時: サーバーへ保存
+            try {
+                // ※サーバー側に /api/user/quiz_history エンドポイントの実装が必要です
+                await authFetch(`${API_BASE}/api/user/quiz_history`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(newRecord)
+                });
+                console.log("クイズ結果をクラウドに保存しました");
+            } catch(e) {
+                console.error("クイズ保存エラー (Server):", e);
+            }
         } else {
-            history.unshift(newRecord); // 先頭に追加
+            // ▼ 未ログイン時: localStorageへ保存
+            const historyKey = 'tenmei_quiz_history';
+            let history = JSON.parse(localStorage.getItem(historyKey) || '[]');
+            
+            // 重複チェック (同じ記事IDなら最新に更新)
+            const existingIndex = history.findIndex(h => h.id === newRecord.id);
+            if (existingIndex !== -1) {
+                history[existingIndex] = newRecord;
+            } else {
+                history.unshift(newRecord);
+            }
+            if (history.length > 50) history.pop(); // 最大50件
+            
+            localStorage.setItem(historyKey, JSON.stringify(history));
         }
-
-        // 最大50件まで保存
-        if (history.length > 50) history.pop();
-
-        localStorage.setItem(historyKey, JSON.stringify(history));
     }
 
-    // クイズ履歴の読み込みと表示 (ページネーション対応)
-    window.loadQuizHistory = function(page = 1) {
+    // クイズ履歴の読み込み (サーバー/ローカル分岐版)
+    window.loadQuizHistory = async function(page = 1) {
         const modal = document.getElementById('quiz-history-modal');
         const list = document.getElementById('quiz-history-list');
-        
-        // 履歴データの取得
-        const allHistory = JSON.parse(localStorage.getItem('tenmei_quiz_history') || '[]');
-        
         modal.style.display = 'flex';
         
-        if (allHistory.length === 0) {
+        list.innerHTML = '<div class="text-center py-8"><div class="spinner-border text-indigo-500" role="status"></div> 読み込み中...</div>';
+
+        let historyData = [];
+
+        if (currentState.user) {
+            // ▼ ログイン時: サーバーから取得
+            try {
+                // ※サーバー側に /api/user/quiz_history?page=... エンドポイントの実装が必要です
+                const res = await authFetch(`${API_BASE}/api/user/quiz_history?page=${page}`, { method: 'GET' });
+                if (res.ok) {
+                    const data = await res.json();
+                    historyData = data.history || []; // サーバーレスポンスの形式に合わせて調整
+                    // サーバー側でページネーション済みの場合はそのまま使用
+                    // 今回は簡易的に全件取得または独自形式と仮定してクライアント側で処理する場合も考慮
+                }
+            } catch(e) {
+                console.error("履歴取得エラー:", e);
+                list.innerHTML = '<p class="text-center text-red-500 py-4">通信エラーが発生しました</p>';
+                return;
+            }
+        } else {
+            // ▼ 未ログイン時: localStorageから取得
+            historyData = JSON.parse(localStorage.getItem('tenmei_quiz_history') || '[]');
+        }
+
+        if (historyData.length === 0) {
             list.innerHTML = `
                 <div class="text-center py-10 text-gray-400">
                     <i class="bi bi-pencil-square text-4xl mb-3 opacity-50"></i>
@@ -15110,27 +15145,27 @@ const LiveChart = {
             return;
         }
 
-        // ページネーション計算
+        // ページネーション処理 (クライアント側で実施)
         quizHistoryState.page = page;
         const perPage = quizHistoryState.perPage;
-        const totalItems = allHistory.length;
+        const totalItems = historyData.length;
         const totalPages = Math.ceil(totalItems / perPage);
         
-        // 範囲外ページの補正
         if (page < 1) page = 1;
-        if (page > totalPages) page = totalPages;
+        if (page > totalPages && totalPages > 0) page = totalPages;
 
+        // もしサーバー側ですでにページングされている場合はここを調整
+        // ここでは全件配列から切り出す方式
         const startIndex = (page - 1) * perPage;
         const endIndex = startIndex + perPage;
-        const pageData = allHistory.slice(startIndex, endIndex);
+        const pageData = historyData.slice(startIndex, endIndex);
 
         // リスト描画
         list.innerHTML = pageData.map(h => {
-            const date = new Date(h.date);
+            const date = new Date(Number(h.date)); // タイムスタンプ変換
             const dateStr = `${date.getMonth()+1}/${date.getDate()} ${date.getHours()}:${String(date.getMinutes()).padStart(2,'0')}`;
             const percentage = Math.round((h.correct / h.total) * 100);
             
-            // 正答率による色分け
             let badgeColor = "bg-gray-100 text-gray-600 dark:bg-zinc-700 dark:text-gray-300";
             if(percentage === 100) badgeColor = "bg-yellow-100 text-yellow-700 border-yellow-300 dark:bg-yellow-900/30 dark:text-yellow-200 dark:border-yellow-800";
             else if(percentage >= 60) badgeColor = "bg-indigo-100 text-indigo-700 border-indigo-300 dark:bg-indigo-900/30 dark:text-indigo-200 dark:border-indigo-800";
@@ -15154,7 +15189,7 @@ const LiveChart = {
             `;
         }).join('');
 
-        // ページネーションボタンの追加
+        // ページ送りボタン
         list.insertAdjacentHTML('beforeend', renderQuizHistoryPagination(page, totalPages));
     };
 
