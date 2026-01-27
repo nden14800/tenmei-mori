@@ -14949,7 +14949,7 @@ const LiveChart = {
         }
     }
 
-    // 結果カードの表示
+    // 結果カードの表示 (SNSボタン拡充版)
     function showQuizFinalResult() {
         const area = document.getElementById('quiz-final-result-area');
         const { totalQuestions, correctCount, articleTitle } = currentQuizState;
@@ -14971,10 +14971,15 @@ const LiveChart = {
             icon = "bi-book-half text-green-500";
         }
 
-        // シェア用テキスト（文字数考慮）
-        // 記事名が長い場合は省略
-        const shortTitle = articleTitle.length > 20 ? articleTitle.substring(0, 20) + "..." : articleTitle;
-        const shareText = `⛩️ 天命乃杜 クイズ挑戦\n【${shortTitle}】\n結果：${totalQuestions}問中 ${correctCount}問正解 (${percentage}%)\n\n#天命乃杜 #神社検定\n${SITE_URL}`;
+        // シェア用データ
+        const shareData = {
+            title: articleTitle,
+            score: correctCount,
+            total: totalQuestions,
+            percent: percentage
+        };
+        // JSON文字列化して属性に埋め込む
+        const dataStr = encodeURIComponent(JSON.stringify(shareData));
 
         area.innerHTML = `
             <div class="quiz-result-card">
@@ -14987,9 +14992,30 @@ const LiveChart = {
                 <div class="text-lg font-bold mb-4 text-[var(--accent-red)]">正答率 ${percentage}%</div>
                 <p class="text-sm mb-6">${comment}</p>
                 
-                <button onclick="shareQuizResult(\`${encodeURIComponent(shareText)}\`)" class="btn-primary w-full py-3 shadow-lg justify-center">
-                    <i class="bi bi-twitter-x"></i> 結果をXでシェア
-                </button>
+                <div class="text-left mb-2">
+                    <p class="text-xs font-bold text-gray-400 ml-1">結果をシェアする</p>
+                </div>
+                <div class="result-action-grid mt-0">
+                    <button onclick="shareQuiz('x', '${dataStr}')" class="action-card-btn btn-x">
+                        <i class="bi bi-twitter-x"></i>
+                        <span>X</span>
+                    </button>
+                    <button onclick="shareQuiz('fb', '${dataStr}')" class="action-card-btn btn-fb">
+                        <i class="bi bi-facebook"></i>
+                        <span>Facebook</span>
+                    </button>
+                    <button onclick="shareQuiz('line', '${dataStr}')" class="action-card-btn btn-line">
+                        <i class="bi bi-line"></i>
+                        <span>LINE</span>
+                    </button>
+                    <button onclick="shareQuiz('bsky', '${dataStr}')" class="action-card-btn btn-bsky">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 600 530" width="16" height="16"><path d="M135.72 44.03c66.496 49.921 138.02 151.14 164.28 205.46 26.262-54.316 97.782-155.54 164.28-205.46 47.98-36.021 125.72-63.892 125.72 24.317 0 59.31-21.66 205.49-51.942 258.85-39.826 70.198-111.2 30.083-161.01-12.506 39.998 52.346 42.422 133.55-23.731 133.55-58.261 0-77.921-27.995-77.31-79.626 2.593-219.06-189.28-169.87-192.31-169.87-2.917 0-3.666-51.059-3.666-87.876 0-87.653 76.789-58.86 125.69-22.349z"/></svg>
+                        <span>Bluesky</span>
+                    </button>
+                    <button onclick="shareQuiz('misskey', '${dataStr}')" class="action-card-btn btn-misskey col-span-2">
+                        <span>Misskey.io</span>
+                    </button>
+                </div>
             </div>
         `;
         
@@ -14997,11 +15023,37 @@ const LiveChart = {
         area.scrollIntoView({ behavior: 'smooth' });
     }
 
-    // シェア実行
-    window.shareQuizResult = function(encodedText) {
-        const text = decodeURIComponent(encodedText);
-        const intent = `https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}`;
-        window.open(intent, '_blank');
+    // 汎用シェア関数
+    window.shareQuiz = function(platform, dataStr) {
+        const data = JSON.parse(decodeURIComponent(dataStr));
+        const shortTitle = data.title.length > 20 ? data.title.substring(0, 20) + "..." : data.title;
+        
+        // シェア用テキスト
+        const text = `⛩️ 天命乃杜 クイズ挑戦\n【${shortTitle}】\n結果：${data.total}問中 ${data.score}問正解 (${data.percent}%)\n\n#天命乃杜 #神社検定\n${SITE_URL}`;
+        const encodedText = encodeURIComponent(text);
+        const encodedUrl = encodeURIComponent(SITE_URL);
+
+        let url = "";
+        switch(platform) {
+            case 'x':
+                url = `https://twitter.com/intent/tweet?text=${encodedText}`;
+                break;
+            case 'fb':
+                // Facebookはテキストを事前入力できないためURLのみ
+                url = `https://www.facebook.com/sharer/sharer.php?u=${encodedUrl}`;
+                break;
+            case 'line':
+                url = `https://social-plugins.line.me/lineit/share?text=${encodedText}`;
+                break;
+            case 'bsky':
+                url = `https://bsky.app/intent/compose?text=${encodedText}`;
+                break;
+            case 'misskey':
+                url = `https://misskey.io/share?text=${encodedText}`;
+                break;
+        }
+        
+        if(url) window.open(url, '_blank');
     };
 
     // 履歴の保存 (LocalStorage)
