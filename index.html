@@ -15083,15 +15083,17 @@ const LiveChart = {
         localStorage.setItem(historyKey, JSON.stringify(history));
     }
 
-    // 履歴モーダルを開く
-    window.openQuizHistory = function() {
+    // クイズ履歴の読み込みと表示 (ページネーション対応)
+    window.loadQuizHistory = function(page = 1) {
         const modal = document.getElementById('quiz-history-modal');
         const list = document.getElementById('quiz-history-list');
-        const history = JSON.parse(localStorage.getItem('tenmei_quiz_history') || '[]');
-
+        
+        // 履歴データの取得
+        const allHistory = JSON.parse(localStorage.getItem('tenmei_quiz_history') || '[]');
+        
         modal.style.display = 'flex';
-
-        if (history.length === 0) {
+        
+        if (allHistory.length === 0) {
             list.innerHTML = `
                 <div class="text-center py-10 text-gray-400">
                     <i class="bi bi-pencil-square text-4xl mb-3 opacity-50"></i>
@@ -15101,19 +15103,34 @@ const LiveChart = {
             return;
         }
 
-        list.innerHTML = history.map(h => {
+        // ページネーション計算
+        quizHistoryState.page = page;
+        const perPage = quizHistoryState.perPage;
+        const totalItems = allHistory.length;
+        const totalPages = Math.ceil(totalItems / perPage);
+        
+        // 範囲外ページの補正
+        if (page < 1) page = 1;
+        if (page > totalPages) page = totalPages;
+
+        const startIndex = (page - 1) * perPage;
+        const endIndex = startIndex + perPage;
+        const pageData = allHistory.slice(startIndex, endIndex);
+
+        // リスト描画
+        list.innerHTML = pageData.map(h => {
             const date = new Date(h.date);
             const dateStr = `${date.getMonth()+1}/${date.getDate()} ${date.getHours()}:${String(date.getMinutes()).padStart(2,'0')}`;
             const percentage = Math.round((h.correct / h.total) * 100);
             
             // 正答率による色分け
-            let badgeColor = "bg-gray-100 text-gray-600";
-            if(percentage === 100) badgeColor = "bg-yellow-100 text-yellow-700 border-yellow-300";
-            else if(percentage >= 60) badgeColor = "bg-indigo-100 text-indigo-700 border-indigo-300";
+            let badgeColor = "bg-gray-100 text-gray-600 dark:bg-zinc-700 dark:text-gray-300";
+            if(percentage === 100) badgeColor = "bg-yellow-100 text-yellow-700 border-yellow-300 dark:bg-yellow-900/30 dark:text-yellow-200 dark:border-yellow-800";
+            else if(percentage >= 60) badgeColor = "bg-indigo-100 text-indigo-700 border-indigo-300 dark:bg-indigo-900/30 dark:text-indigo-200 dark:border-indigo-800";
 
             return `
                 <div onclick="openArticle('column', ${h.id}); document.getElementById('quiz-history-modal').style.display='none';" 
-                     class="bg-white dark:bg-zinc-800 p-4 rounded-lg border border-gray-200 dark:border-gray-700 cursor-pointer hover:shadow-md transition">
+                     class="bg-white dark:bg-zinc-800 p-4 rounded-lg border border-gray-200 dark:border-gray-700 cursor-pointer hover:shadow-md transition mb-2">
                     <div class="flex justify-between items-start mb-2">
                         <h4 class="font-bold text-sm line-clamp-2 flex-1 mr-2">${h.title}</h4>
                         <span class="text-[10px] text-gray-400 whitespace-nowrap">${dateStr}</span>
@@ -15129,7 +15146,31 @@ const LiveChart = {
                 </div>
             `;
         }).join('');
+
+        // ページネーションボタンの追加
+        list.insertAdjacentHTML('beforeend', renderQuizHistoryPagination(page, totalPages));
     };
+
+    // 履歴用ページネーションボタン生成
+    function renderQuizHistoryPagination(current, total) {
+        if (total <= 1) return '';
+
+        return `
+            <div class="flex justify-center items-center gap-4 mt-4 py-2 border-t border-gray-100 dark:border-gray-700">
+                <button onclick="loadQuizHistory(${current - 1})" 
+                        class="px-3 py-1 rounded border bg-white dark:bg-zinc-800 hover:bg-gray-100 dark:hover:bg-zinc-700 disabled:opacity-50 transition text-sm"
+                        ${current === 1 ? 'disabled' : ''}>
+                    前へ
+                </button>
+                <span class="text-sm font-mono font-bold">${current} / ${total}</span>
+                <button onclick="loadQuizHistory(${current + 1})" 
+                        class="px-3 py-1 rounded border bg-white dark:bg-zinc-800 hover:bg-gray-100 dark:hover:bg-zinc-700 disabled:opacity-50 transition text-sm"
+                        ${current === total ? 'disabled' : ''}>
+                    次へ
+                </button>
+            </div>
+        `;
+    }
             
     </script>
 </body>
