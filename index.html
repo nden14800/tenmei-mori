@@ -9579,7 +9579,7 @@ window.renderFullColumnView = function() {
 };
 
 
-    // 4. 記事詳細表示 (クイズ初期化機能追加版)
+    // 4. 記事詳細表示 (修正版: 設問カウント方法の改善)
     window.openArticle = function(type, id) {
         let item;
         if (type === 'news') item = newsData.find(d => d.id === id);
@@ -9604,17 +9604,17 @@ window.renderFullColumnView = function() {
                 <div id="quiz-final-result-area"></div>
             `;
             
-            // --- ▼ 追加: クイズ状態の初期化 ▼ ---
+            // --- クイズ状態の初期化 ---
             if (type === 'column') {
-                // 記事内のクイズコンテナ(.my-8)の数をカウント
-                const quizContainers = container.querySelectorAll('.my-8');
-                const totalQ = quizContainers.length;
+                // 修正: '.my-8' ではなく '.quiz-msg' (解説エリア) の数で設問数をカウントする
+                // これにより、レイアウトクラスが異なっていても確実に検知できる
+                const quizCount = container.querySelectorAll('.quiz-msg').length;
                 
-                if (totalQ > 0) {
+                if (quizCount > 0) {
                     currentQuizState = {
                         articleId: item.id,
                         articleTitle: item.title,
-                        totalQuestions: totalQ,
+                        totalQuestions: quizCount,
                         answeredCount: 0,
                         correctCount: 0
                     };
@@ -9622,7 +9622,6 @@ window.renderFullColumnView = function() {
                     currentQuizState = { articleId: null, totalQuestions: 0 };
                 }
             }
-            // --- ▲ 追加ここまで ▲ ---
 
             showView('article-detail');
             window.scrollTo(0, 0);
