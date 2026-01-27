@@ -14961,41 +14961,44 @@ const LiveChart = {
         }
     }
 
-    // 結果カードの表示 (SNSボタン拡充版)
+    // 結果カードの表示 (アイコン重複修正版)
     function showQuizFinalResult() {
         const area = document.getElementById('quiz-final-result-area');
         const { totalQuestions, correctCount, articleTitle } = currentQuizState;
         
-        // 正答率
         const percentage = Math.round((correctCount / totalQuestions) * 100);
         
-        // 評価メッセージ
         let comment = "";
-        let icon = "";
+        let iconClass = "";
+        let colorClass = "";
+
         if (percentage === 100) {
             comment = "素晴らしい！全問正解です。博識ですね！";
-            icon = "bi-trophy-fill text-yellow-500";
+            iconClass = "bi-trophy-fill";
+            colorClass = "text-yellow-500";
         } else if (percentage >= 60) {
             comment = "お見事！かなりの知識をお持ちです。";
-            icon = "bi-award-fill text-indigo-500";
+            iconClass = "bi-award-fill";
+            colorClass = "text-indigo-500";
         } else {
             comment = "挑戦お疲れ様でした。新しい知識が増えましたね。";
-            icon = "bi-book-half text-green-500";
+            iconClass = "bi-book-half";
+            colorClass = "text-green-500";
         }
 
-        // シェア用データ
         const shareData = {
             title: articleTitle,
             score: correctCount,
             total: totalQuestions,
             percent: percentage
         };
-        // JSON文字列化して属性に埋め込む
         const dataStr = encodeURIComponent(JSON.stringify(shareData));
 
         area.innerHTML = `
             <div class="quiz-result-card">
-                <div class="text-4xl mb-2 ${icon}"><i class="bi ${icon.split(' ')[0]}"></i></div>
+                <!-- ▼ 修正: クラスを分離して二重表示を解消 -->
+                <div class="text-4xl mb-2 ${colorClass}"><i class="bi ${iconClass}"></i></div>
+                
                 <h3 class="text-xl font-bold mb-2">結果発表</h3>
                 <div class="text-sm text-gray-500 font-bold mb-1">正解数</div>
                 <div class="quiz-score-big">
@@ -15009,29 +15012,21 @@ const LiveChart = {
                 </div>
                 <div class="result-action-grid mt-0">
                     <button onclick="shareQuiz('x', '${dataStr}')" class="action-card-btn btn-x">
-                        <i class="bi bi-twitter-x"></i>
-                        <span>X</span>
-                    </button>
-                    <button onclick="shareQuiz('fb', '${dataStr}')" class="action-card-btn btn-fb">
-                        <i class="bi bi-facebook"></i>
-                        <span>Facebook</span>
+                        <i class="bi bi-twitter-x"></i> <span>X</span>
                     </button>
                     <button onclick="shareQuiz('line', '${dataStr}')" class="action-card-btn btn-line">
-                        <i class="bi bi-line"></i>
-                        <span>LINE</span>
+                        <i class="bi bi-line"></i> <span>LINE</span>
                     </button>
                     <button onclick="shareQuiz('bsky', '${dataStr}')" class="action-card-btn btn-bsky">
                         <svg xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 600 530" width="16" height="16"><path d="M135.72 44.03c66.496 49.921 138.02 151.14 164.28 205.46 26.262-54.316 97.782-155.54 164.28-205.46 47.98-36.021 125.72-63.892 125.72 24.317 0 59.31-21.66 205.49-51.942 258.85-39.826 70.198-111.2 30.083-161.01-12.506 39.998 52.346 42.422 133.55-23.731 133.55-58.261 0-77.921-27.995-77.31-79.626 2.593-219.06-189.28-169.87-192.31-169.87-2.917 0-3.666-51.059-3.666-87.876 0-87.653 76.789-58.86 125.69-22.349z"/></svg>
                         <span>Bluesky</span>
                     </button>
-                    <button onclick="shareQuiz('misskey', '${dataStr}')" class="action-card-btn btn-misskey col-span-2">
-                        <span>Misskey.io</span>
+                    <button onclick="shareQuiz('misskey', '${dataStr}')" class="action-card-btn btn-misskey">
+                        <span>Misskey</span>
                     </button>
                 </div>
             </div>
         `;
-        
-        // 結果エリアへスクロール
         area.scrollIntoView({ behavior: 'smooth' });
     }
 
