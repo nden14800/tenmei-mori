@@ -148,11 +148,11 @@
             border: 1px solid var(--card-border);
         }
 
-        /* --- サイドバー (すりガラス効果強化) --- */
+        /* --- サイドバー (縦に1ページに収めるための修正) --- */
         #sidebar {
             width: var(--sidebar-width);
             background-color: var(--sidebar-bg);
-            backdrop-filter: blur(15px); /* すりガラス効果 */
+            backdrop-filter: blur(15px);
             -webkit-backdrop-filter: blur(15px);
             border-right: 1px solid var(--glass-border);
             height: 100vh;
@@ -164,18 +164,17 @@
             display: flex;
             flex-direction: column;
             align-items: flex-start;
-            padding-top: 20px;
-            overflow: hidden;
+            padding-top: 10px; /* 余白を少し詰める */
+            padding-bottom: 10px;
+            overflow: hidden; /* サイドバー自体のスクロールを禁止 */
             box-shadow: 2px 0 10px rgba(0,0,0,0.05);
         }
-        #sidebar:hover {
-            width: var(--sidebar-width-expanded);
-        }
+
         .nav-btn {
             width: 100%;
             display: flex;
             align-items: center;
-            padding: 15px 20px;
+            padding: 0 20px; /* 上下のpaddingを0にしてフレックスに任せる */
             color: var(--text-main);
             background: none;
             border: none;
@@ -183,33 +182,41 @@
             transition: background 0.2s;
             white-space: nowrap;
             text-decoration: none;
-            height: 60px;
-        }
-        .nav-btn:hover {
-            background-color: rgba(128,128,128,0.1);
-        }
-        .nav-btn i {
-            font-size: 1.5rem;
-            min-width: 40px;
-            text-align: center;
-        }
-        /* サイドバー用フラスコSVGのスタイル */
-        .nav-btn svg {
-            min-width: 40px; /* アイコンの幅を確保 */
-            width: 32px;
-            height: 32px;
-            margin: 0; /* 左寄せではなく中央になるようにマージン調整が必要だがflexで制御 */
-            display: block;
-            flex-shrink: 0;
+            
+            /* ▼ 修正の肝：高さを固定せず、画面に合わせて伸縮させる ▼ */
+            flex: 1 1 auto; /* 柔軟に伸び縮みさせる */
+            min-height: 32px; /* 押しやすさの最低ライン */
+            max-height: 60px; /* 大きな画面でも間延びしない最大値 */
         }
 
-        .nav-text {
-            opacity: 0;
-            transform: translateX(-10px);
-            transition: all 0.3s;
-            font-weight: bold;
-            font-family: 'Zen Old Mincho', serif;
-            margin-left: 10px;
+        /* 下部のボタン（当サイトについて・プライバシー）を包むdivもフレックス対応 */
+        #sidebar > div[style*="margin-top: auto"] {
+            margin-top: auto !important;
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            flex: 0 1 auto; /* 内容物の数に応じて縮む */
+        }
+
+        /* アイコンサイズの調整（画面が極端に短い時用） */
+        @media (max-height: 700px) {
+            .nav-btn i {
+                font-size: 1.2rem !important; /* アイコンを少し小さく */
+            }
+            .nav-btn svg {
+                width: 28px !important;
+                height: 28px !important;
+            }
+            .nav-text {
+                font-size: 0.85rem; /* 文字を少し小さく */
+            }
+        }
+
+        /* スマホなどの超低画面高（横向きスマホ等）対策 */
+        @media (max-height: 500px) {
+            #sidebar { padding-top: 5px; }
+            .nav-btn i { font-size: 1rem !important; }
+            .nav-btn svg { width: 22px !important; height: 22px !important; }
         }
         #sidebar:hover .nav-text {
             opacity: 1;
