@@ -4102,7 +4102,119 @@ body.theme-newyear {
             color: #ffffff !important;
             border-color: #4b5563 !important;
             caret-color: #ffffff !important; /* ★追加: カーソルを白くする */
-        }   
+        }  
+
+        /* --- ▼▼▼ スマホUI見切れ・スクロール対策 (修正箇所) ▼▼▼ --- */
+
+        /* 1. モーダル（ポップアップ）の共通修正 
+           縦に長いコンテンツでも画面内に収まり、全体をスクロール可能にする設定 */
+        #edit-profile-modal,
+        #follow-list-modal,
+        #verified-modal,
+        #verification-apply-modal,
+        #admin-verify-modal,
+        #history-detail-modal,
+        #zodiac-login-modal,
+        .lab-modal-overlay {
+            /* 固定配置とサイズ確保 */
+            position: fixed !important;
+            top: 0 !important;
+            left: 0 !important;
+            width: 100% !important;
+            height: 100dvh !important; /* アドレスバーを含まない実質画面高 */
+            z-index: 3000 !important;
+            
+            /* フレックス配置（上寄せ＋中央） */
+            display: none; /* JSでflexに切り替わります */
+            flex-direction: column !important;
+            align-items: center !important; 
+            justify-content: flex-start !important; /* 上寄せにすることで上部の見切れを防止 */
+            
+            /* スクロール許可 */
+            overflow-y: auto !important; 
+            -webkit-overflow-scrolling: touch; /* iOSでの慣性スクロール */
+            padding: 20px 10px !important; /* スマホでの余白確保 */
+            box-sizing: border-box !important;
+            
+            /* 背景 */
+            background: rgba(0,0,0,0.6);
+            backdrop-filter: blur(5px);
+        }
+
+        /* モーダルが表示される時のスタイル（JSのinline styleを上書きして強制適用） */
+        #edit-profile-modal[style*="display: flex"],
+        #follow-list-modal[style*="display: flex"],
+        #verified-modal[style*="display: flex"],
+        #verification-apply-modal[style*="display: flex"],
+        #admin-verify-modal[style*="display: flex"],
+        #history-detail-modal[style*="display: flex"],
+        #zodiac-login-modal[style*="display: flex"],
+        .lab-modal-overlay.active {
+            display: flex !important;
+        }
+
+        /* モーダルの中身（白いカード部分） */
+        #edit-profile-modal > div,
+        #follow-list-modal > div,
+        #verified-modal > div,
+        #verification-apply-modal > div,
+        #admin-verify-modal > div,
+        #zodiac-login-modal > div,
+        .lab-modal-card {
+            /* 画面中央に配置しつつ、スクロール時は自然に流れるように */
+            margin: auto !important; /* これで縦中央寄せ＋スクロール時の余白確保を実現 */
+            width: 100% !important;
+            max-width: 500px !important; /* PCで広がりすぎないように */
+            height: auto !important;
+            max-height: none !important; /* 内部スクロールではなく全体スクロールにする */
+            position: relative !important;
+            transform: none !important; /* 配置崩れ防止 */
+            flex-shrink: 0 !important; /* 潰れ防止 */
+        }
+
+        /* 2. おみくじ結果カードの横スクロール完全対応 */
+        #result-display-area > div {
+            /* 親コンテナでのスクロール許可 */
+            width: 100%;
+            overflow-x: auto !important;
+            -webkit-overflow-scrolling: touch;
+            display: flex;
+            /* スマホでは左寄せスタート（中央寄せだと左側が見切れるため） */
+            justify-content: flex-start; 
+            padding: 0 10px 20px 10px; /* 下にスクロールバー用の余白 */
+        }
+        
+        /* 画面幅が広いときは中央寄せに戻す */
+        @media (min-width: 640px) {
+            #result-display-area > div {
+                justify-content: center;
+            }
+        }
+
+        /* カード本体 */
+        .result-card-outer {
+            flex-shrink: 0 !important; /* 勝手に縮ませない */
+            margin: 0 auto; /* PCでの中央寄せ用 */
+        }
+
+        /* 3. グリッドレイアウトのスマホ最適化（1列強制） */
+        @media (max-width: 640px) {
+            .lab-grid-container,
+            .news-grid-container,
+            .column-grid-container,
+            .omamori-grid-container {
+                grid-template-columns: 1fr !important; /* スマホは1列 */
+                gap: 15px !important;
+            }
+            
+            /* 12星座の入力フォームも縦並びに */
+            .zodiac-input-grid {
+                grid-template-columns: 1fr !important;
+            }
+            .zodiac-input-grid > div {
+                grid-column: span 1 !important;
+            }
+        }
 
     </style>
 </head>
