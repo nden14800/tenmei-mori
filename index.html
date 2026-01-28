@@ -148,14 +148,18 @@
             border: 1px solid var(--card-border);
         }
 
-        /* --- サイドバー (すりガラス効果強化) --- */
+        /* --- サイドバー (画面収まり改善版) --- */
         #sidebar {
             width: var(--sidebar-width);
             background-color: var(--sidebar-bg);
-            backdrop-filter: blur(15px); /* すりガラス効果 */
+            backdrop-filter: blur(15px);
             -webkit-backdrop-filter: blur(15px);
             border-right: 1px solid var(--glass-border);
+            
+            /* ▼▼▼ 修正: スマホのアドレスバー対策 (dvh) とスクロール許可 ▼▼▼ */
             height: 100vh;
+            height: 100dvh; /* Dynamic Viewport Height */
+            
             position: fixed;
             left: 0;
             top: 0;
@@ -164,18 +168,31 @@
             display: flex;
             flex-direction: column;
             align-items: flex-start;
-            padding-top: 20px;
-            overflow: hidden;
-            box-shadow: 2px 0 10px rgba(0,0,0,0.05);
+            
+            /* ▼▼▼ 修正: 上下の余白を減らす ▼▼▼ */
+            padding-top: 10px;
+            padding-bottom: 10px; /* 下部にも余白確保 */
+            
+            /* ▼▼▼ 修正: 万が一溢れた場合に備えてスクロール可にするが、バーは隠す ▼▼▼ */
+            overflow-y: auto; 
+            scrollbar-width: none; /* Firefox用 */
         }
+        #sidebar::-webkit-scrollbar {
+            display: none; /* Chrome/Safari用 */
+        }
+
         #sidebar:hover {
             width: var(--sidebar-width-expanded);
         }
+
         .nav-btn {
             width: 100%;
             display: flex;
             align-items: center;
-            padding: 15px 20px;
+            
+            /* ▼▼▼ 修正: 余白を狭くし、高さを自動調整・圧縮可能にする ▼▼▼ */
+            padding: 8px 10px; /* 上下パディングを大幅縮小 */
+            
             color: var(--text-main);
             background: none;
             border: none;
@@ -183,7 +200,43 @@
             transition: background 0.2s;
             white-space: nowrap;
             text-decoration: none;
-            height: 60px;
+            
+            /* ▼▼▼ 修正: 固定高さ(60px)を廃止し、最小高さを設定 ▼▼▼ */
+            height: auto; 
+            min-height: 44px; /* タップしやすい最小サイズ */
+            
+            /* 画面が狭いときはボタン自体を縮めることを許可 */
+            flex-shrink: 1; 
+        }
+        
+        /* 画面の縦幅が狭い場合（スマホ横持ちや小さいタブレット）向けの超圧縮モード */
+        @media (max-height: 700px) {
+            .nav-btn {
+                padding: 4px 10px; /* さらに余白を詰める */
+                min-height: 36px;  /* 最小高さも下げる */
+            }
+            #sidebar {
+                padding-top: 5px;
+            }
+            .nav-btn i {
+                font-size: 1.2rem; /* アイコンも少し小さく */
+            }
+            .nav-btn svg {
+                width: 24px;       /* フラスコアイコンも小さく */
+                height: 24px;
+            }
+        }
+
+        .nav-btn:hover {
+            background-color: rgba(128,128,128,0.1);
+        }
+        .nav-btn i {
+            font-size: 1.5rem;
+            min-width: 40px;
+            text-align: center;
+            display: flex; /* アイコンの垂直中央揃え強化 */
+            align-items: center;
+            justify-content: center;
         }
         .nav-btn:hover {
             background-color: rgba(128,128,128,0.1);
