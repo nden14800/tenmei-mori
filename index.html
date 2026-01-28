@@ -9648,36 +9648,56 @@ window.renderFullColumnView = function() {
         "熊本県","大分県","宮崎県","鹿児島県","沖縄県"
     ];
 
-    // ランキング生成・描画関数（ダッシュボードUI版）
-window.renderPrefectureRanking = function() {
+    window.renderPrefectureRanking = function() {
     const listContainer = document.getElementById('prefecture-list');
     const top3Container = document.getElementById('prefecture-top3');
     const dateDisplay = document.getElementById('pref-date-display');
     
     if (!listContainer || !top3Container) return;
 
-    // 日付表示
     const dateStr = getJSTDateString(); 
     if (dateDisplay) {
         const dateParts = dateStr.split('-');
         dateDisplay.innerHTML = `${dateParts[0]}年${dateParts[1]}月${dateParts[2]}日`;
     }
 
-    // 1. データ生成 (47都道府県計算)
-    let rankingData = prefecturesList.map((pref, index) => {
+    // 1. まず全員の「生の乱数(0〜1)」を取得する
+    let rawData = prefecturesList.map((pref, index) => {
         const seed = dateStr + "_" + pref;
         const rng = new SeededRandom(seed);
-        const score = Math.floor(rng.next() * 52) + 49;
+        return { name: pref, raw: rng.next(), index: index };
+    });
+
+    // 2. 最大値と最小値を特定
+    const maxRaw = Math.max(...rawData.map(d => d.raw));
+    const minRaw = Math.min(...rawData.map(d => d.raw));
+
+    // 3. その日のターゲット上限・下限をシードで決定
+    const limitRng = new SeededRandom(dateStr + "_pref_limits");
+    const targetTop = Math.floor(limitRng.next() * 6) + 95;   // 95-100
+    const targetBottom = Math.floor(limitRng.next() * 7) + 49; // 49-55
+
+    // 4. 生の乱数をターゲット範囲にスケーリング
+    let rankingData = rawData.map(d => {
+        // (今の値 - 最小) / (最大 - 最小) で 0.0〜1.0 に変換
+        const normalized = (d.raw - minRaw) / (maxRaw - minRaw);
+        // ターゲット範囲に引き伸ばす
+        const finalScore = Math.floor(normalized * (targetTop - targetBottom) + targetBottom);
         
+        // テキスト生成用のrngを再生成
+        const seed = dateStr + "_" + d.name;
+        const textRng = new SeededRandom(seed);
+
         return {
-            name: pref,
-            score: score,
-            text: generatePrefectureText(pref, score, rng, index)
+            name: d.name,
+            score: finalScore,
+            text: generatePrefectureText(d.name, finalScore, textRng, d.index)
         };
     });
 
-    // 2. ソート (高得点順)
+    // 5. ソートして描画
     rankingData.sort((a, b) => b.score - a.score);
+    // (以下、TOP3とリストの描画処理は元のまま)
 
     // 3. 描画 (TOP3とそれ以外に分割)
     const top3Data = rankingData.slice(0, 3);
