@@ -9703,28 +9703,24 @@ window.renderFullColumnView = function() {
     const top3Data = rankingData.slice(0, 3);
     const restData = rankingData.slice(3);
 
-    // --- A. TOP3の描画 ---
-    // 配列順序を [2位, 1位, 3位] の並びにして、1位を真ん中にする（PC表示時）
-    // スマホ(flex-col)では上から順に表示したいので、HTML構造順は 1->2->3 にし、CSS orderで制御も可能だが
-    // 今回はシンプルに 1->2->3 の順でDOM生成し、CSSで特別感を出す
-    
+    // --- A. TOP3の描画 (モバイルは1-2-3順、PCは2-1-3の順に並び替え) ---
     let top3Html = '';
     
-    // 1位
-    top3Html += createTopCard(top3Data[0], 1, 'crown-gold', 'top-rank-1', 'text-yellow-600');
-    // 2位
-    top3Html += createTopCard(top3Data[1], 2, 'crown-silver', 'top-rank-2', 'text-gray-500');
-    // 3位
-    top3Html += createTopCard(top3Data[2], 3, 'crown-bronze', 'top-rank-3', 'text-orange-600');
+    // 1位: モバイルで1番目、PCで2番目(真ん中)に配置
+    top3Html += createTopCard(top3Data[0], 1, 'crown-gold', 'top-rank-1 order-1 md:order-2', 'text-yellow-600');
+    
+    // 2位: モバイルで2番目、PCで1番目(左側)に配置
+    top3Html += createTopCard(top3Data[1], 2, 'crown-silver', 'top-rank-2 order-2 md:order-1', 'text-gray-500');
+    
+    // 3位: モバイルで3番目、PCで3番目(右側)に配置
+    top3Html += createTopCard(top3Data[2], 3, 'crown-bronze', 'top-rank-3 order-3 md:order-3', 'text-orange-600');
 
     top3Container.innerHTML = top3Html;
 
-    // --- B. 4位以下の描画 ---
+    // --- B. 4位以下の描画 (ここから下は変更なし) ---
     let listHtml = '';
     restData.forEach((item, index) => {
         const rank = index + 4;
-        
-        // バーの色判定
         let barClass = "bar-C";
         if (item.score >= 80) barClass = "bar-A";
         else if (item.score >= 60) barClass = "bar-B";
@@ -9738,12 +9734,9 @@ window.renderFullColumnView = function() {
                     </div>
                     <span class="pref-score-sm">${item.score}</span>
                 </div>
-                
-                <!-- スコアバー -->
                 <div class="pref-bar-bg">
                     <div class="pref-bar-fill ${barClass}" style="width: ${item.score}%;"></div>
                 </div>
-
                 <p class="text-xs text-gray-500 dark:text-gray-400 leading-relaxed mt-1 text-justify">
                     ${item.text}
                 </p>
@@ -9751,7 +9744,6 @@ window.renderFullColumnView = function() {
         `;
     });
     listContainer.innerHTML = listHtml;
-};
 
 // ヘルパー関数: TOP3カード生成
 function createTopCard(item, rank, iconClass, rankClass, colorClass) {
