@@ -12362,10 +12362,34 @@ async function logout() {
     }
 
     function generateDailyRanking(dateStr) {
-        let scoredData = calculateScoresForDate(dateStr);
-        const decoRng = new SeededRandom(dateStr + "_decoration");
+    let scoredData = calculateScoresForDate(dateStr);
+    const decoRng = new SeededRandom(dateStr + "_decoration");
+    
+    // --- 修正箇所：スコアの正規化 ---
+    // 1. 現在の計算結果から最大と最小の合計スコアを探す
+    const currentMax = Math.max(...scoredData.map(d => d.totalScore));
+    const currentMin = Math.min(...scoredData.map(d => d.totalScore));
+
+    // 2. ターゲットの上限・下限を決定
+    const limitRng = new SeededRandom(dateStr + "_zodiac_limits");
+    const targetTop = Math.floor(limitRng.next() * 6) + 95;   // 95-100
+    const targetBottom = Math.floor(limitRng.next() * 7) + 49; // 49-55
+
+    // 3. 全員のスコアをこの範囲に強制調整
+    scoredData.forEach(d => {
+        const normalized = (d.totalScore - currentMin) / (currentMax - currentMin);
+        d.totalScore = Math.floor(normalized * (targetTop - targetBottom) + targetBottom);
         
-        scoredData.sort((a, b) => b.totalScore - a.totalScore);
+        // 各カテゴリ（恋愛・金運・仕事）もトータルに引きずられる形で調整
+        // ※カテゴリごとの順位は維持しつつ、絶対値を底上げ・調整します
+        const scaleFactor = d.totalScore / ((d.love.score + d.money.score + d.work.score) / 3);
+        d.love.score = Math.min(100, Math.floor(d.love.score * scaleFactor));
+        d.money.score = Math.min(100, Math.floor(d.money.score * scaleFactor));
+        d.work.score = Math.min(100, Math.floor(d.work.score * scaleFactor));
+    });
+    // --- 修正ここまで ---
+
+    scoredData.sort((a, b) => b.totalScore - a.totalScore);
         scoredData.forEach((d, i) => { 
             d.rank = i + 1;
             const totalRank = getRank(d.totalScore);
