@@ -4216,119 +4216,6 @@ body.theme-newyear {
             }
         }
 
-        /* --- ▼▼▼ おみくじ結果カード：スマホ最適化（1画面収め）スタイル ▼▼▼ --- */
-
-/* PCなど大画面用の基本設定 (既存維持) */
-.result-card-outer {
-    width: 600px;
-    min-height: 1200px;
-    padding: 30px 40px;
-    box-sizing: border-box;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    position: relative;
-    font-family: 'Zen Old Mincho', serif;
-    background-color: #ffffff;
-    /* 影をつけてカード感を出す */
-    box-shadow: 0 10px 25px rgba(0,0,0,0.1); 
-    margin-bottom: 20px;
-}
-
-/* ★★★ ここからスマホ用の上書き設定 ★★★ */
-@media (max-width: 640px) {
-    #result-capture-container {
-        width: 100% !important; /* コンテナ幅を画面に合わせる */
-        display: flex;
-        justify-content: center;
-    }
-
-    .result-card-outer {
-        width: 95% !important; /* 画面幅いっぱいではなく少し余白を残す */
-        max-width: 360px !important; /* スマホで適切な最大幅 */
-        min-height: auto !important; /* 高さを自動調整に */
-        padding: 20px 15px !important; /* 余白を大幅に削減 */
-        border-width: 4px !important; /* 枠線を少し細く */
-    }
-
-    /* 家紋とタイトル */
-    .result-kamon { font-size: 2rem !important; margin-bottom: 0 !important; }
-    .result-title-text { font-size: 1rem !important; letter-spacing: 0.1em !important; }
-    .result-issue-num { font-size: 0.7rem !important; margin-bottom: 10px !important; }
-
-    /* 運勢ハンコ（円） */
-    .result-circle-box {
-        width: 100px !important;
-        height: 100px !important;
-        margin-bottom: 10px !important;
-        border-width: 2px !important;
-    }
-    /* ハンコ内の文字サイズ調整はJS側で行いますが、CSSでも基準を下げる */
-    .result-kanji-main { font-size: 2.2rem !important; }
-
-    /* メインメッセージエリア（詩と助言） */
-    .result-main-message-area {
-        gap: 10px !important;
-        margin-bottom: 20px !important;
-        height: auto !important; /* 高さを自動に */
-        min-height: 200px !important; /* 最低限の高さを確保 */
-    }
-
-    /* 縦書きエリアの高さをスマホ用に圧縮 */
-    .result-poem-vertical {
-        font-size: 1.3rem !important;
-        height: 220px !important; /* 縦書きの高さを制限 */
-        line-height: 1.4 !important;
-    }
-    .result-advice-box {
-        font-size: 0.8rem !important;
-        padding: 8px 4px !important;
-        height: 220px !important;
-    }
-
-    /* 詳細項目（願事など）エリア */
-    .result-details-grid {
-        gap: 5px !important;
-        padding: 10px 0 !important;
-        margin-bottom: 15px !important;
-        flex-wrap: wrap-reverse; /* 折り返しを許可して画面内に収める */
-        justify-content: center;
-    }
-    .detail-column {
-        height: 140px !important; /* 高さを短く */
-        font-size: 0.75rem !important; /* 文字を小さく */
-        margin: 0 2px !important;
-        writing-mode: vertical-rl;
-    }
-    
-    /* ラッキーアイテムエリア */
-    .lucky-area {
-        grid-template-columns: 1fr !important; /* 1列にして縦に並べる */
-        gap: 10px !important;
-        margin-bottom: 10px !important;
-    }
-    .lucky-box, .unlucky-box {
-        padding: 10px !important;
-    }
-    .lucky-row { font-size: 0.75rem !important; }
-
-    /* フッター */
-    .result-footer-info {
-        padding-top: 10px !important;
-        flex-direction: row;
-        align-items: center;
-    }
-    .result-user-name { font-size: 0.9rem !important; }
-    .result-date { font-size: 0.7rem !important; }
-    
-    /* QRコード */
-    .result-qr-container img, 
-    .result-qr-container canvas {
-        width: 40px !important; /* スマホではQRも小さく */
-        height: 40px !important;
-    }
-}
-
     </style>
 </head>
 <body>
@@ -11552,172 +11439,152 @@ async function showResultDetail(isNewDraw, dataOverride = null) {
         // updateURL は廃止（空関数にして互換性維持）
         function updateURL(resultData) {}
 
-        // ==========================================
-//  【修正版】結果カード描画関数（スマホ対応）
-// ==========================================
-function renderResultToCard(outerId, data, withFooter) {
-    const outer = document.getElementById(outerId);
-    outer.innerHTML = ''; 
+        function renderResultToCard(outerId, data, withFooter) {
+            const outer = document.getElementById(outerId);
+            outer.innerHTML = ''; 
 
-    // クラスの適用
-    outer.className = 'result-card-outer';
-    
-    // スタイル分岐
-    if (data.type === "大吉") {
-        outer.classList.add("style-daikichi");
-    } else if (data.type === "大凶") {
-        outer.classList.add("style-daikyo");
-    } else {
-        outer.classList.add("style-normal");
-    }
+            // クラスの適用
+            outer.className = 'result-card-outer';
+            if (data.type === "大吉") {
+                outer.classList.add("style-daikichi");
+            } else if (data.type === "大凶") {
+                outer.classList.add("style-daikyo");
+            } else {
+                outer.classList.add("style-normal");
+            }
 
-    // --- 1. ロゴ・タイトル ---
-    const headerDiv = document.createElement('div');
-    headerDiv.className = 'result-logo-area';
-    headerDiv.innerHTML = `
-        <div class="result-kamon accent-text"><i class="bi bi-flower1"></i></div>
-        <div class="result-title-text accent-text">運勢・天命乃杜</div>
-    `;
-    outer.appendChild(headerDiv);
+            // 1. ロゴ・タイトル
+            const headerDiv = document.createElement('div');
+            headerDiv.className = 'result-logo-area';
+            headerDiv.innerHTML = `
+                <div class="result-kamon accent-text"><i class="bi bi-flower1"></i></div>
+                <div class="result-title-text accent-text">運勢・天命乃杜</div>
+            `;
+            outer.appendChild(headerDiv);
 
-    // --- 2. 本数カウンター ---
-    const issueDiv = document.createElement('div');
-    issueDiv.className = 'result-issue-num accent-text';
-    // 発行番号の取得（なければ現在のライブカウント）
-    let displayIssueNum = data.issue_number || currentState.liveCount || 0;
-    issueDiv.textContent = `第 ${Number(displayIssueNum).toLocaleString()} 番`;
-    outer.appendChild(issueDiv);
+            // 2. 本数カウンター (★ここを修正: 個別の発行番号があればそれを表示)
+            const issueDiv = document.createElement('div');
+            issueDiv.className = 'result-issue-num accent-text';
+            
+            // data.issue_number があればそれを使い、なければ現在のライブカウント、それもなければ0
+            // ※「第〇〇番」のような表記にするため、履歴データに issue_number が保存されている必要があります
+            let displayIssueNum = data.issue_number || currentState.liveCount || 0;
+            
+            issueDiv.textContent = `第 ${Number(displayIssueNum).toLocaleString()} 番`;
+            outer.appendChild(issueDiv);
 
-    // --- 3. 運勢ハンコ（文字サイズ自動調整） ---
-    const circleBox = document.createElement('div');
-    circleBox.className = 'result-circle-box';
-    
-    // 文字数に応じて基本サイズを調整（スマホCSSでさらに縮小されます）
-    let fs = "4.2rem"; 
-    // 画面幅が狭い場合(スマホ)はJS側でも少し小さめの値をセットしておく
-    const isMobile = window.innerWidth <= 640;
-    
-    if (data.type.length === 3) fs = isMobile ? "2.0rem" : "2.9rem"; 
-    else if (data.type.length >= 4) fs = isMobile ? "1.6rem" : "2.4rem";
-    else fs = isMobile ? "3.0rem" : "4.2rem"; // 2文字(大吉など)の場合
+            // 3. 運勢ハンコ（縦書き・画像風）
+            const circleBox = document.createElement('div');
+            circleBox.className = 'result-circle-box';
+            let fs = "4.2rem"; 
+            
+            if (data.type.length === 3) fs = "2.9rem"; 
+            if (data.type.length >= 4) fs = "2.4rem";
+            
+            circleBox.innerHTML = `<div class="result-kanji-main" style="font-size: ${fs}; white-space: nowrap;">${data.type}</div>`;
+            outer.appendChild(circleBox);
 
-    circleBox.innerHTML = `<div class="result-kanji-main accent-text" style="font-size: ${fs}; white-space: nowrap; color: inherit;">${data.type}</div>`;
-    outer.appendChild(circleBox);
+            // 4. ラベル
+            const labelSub = document.createElement('div');
+            labelSub.className = 'result-label-sub accent-text';
+            labelSub.textContent = '運勢';
+            outer.appendChild(labelSub);
 
-    // --- 4. ラベル ---
-    const labelSub = document.createElement('div');
-    labelSub.className = 'result-label-sub accent-text';
-    labelSub.textContent = '運勢';
-    outer.appendChild(labelSub);
+            // 5. メッセージエリア
+            const msgArea = document.createElement('div');
+            msgArea.className = 'result-main-message-area';
+            const adviceBox = document.createElement('div');
+            adviceBox.className = 'result-advice-box accent-border';
+            adviceBox.innerHTML = `<span class="advice-label accent-text">助言</span> <span class="accent-text">${data.desc || "心穏やかに過ごすべし。"}</span>`;
+            const poemDiv = document.createElement('div');
+            poemDiv.className = 'result-poem-vertical accent-text';
+            poemDiv.textContent = data.poem;
+            msgArea.appendChild(adviceBox);
+            msgArea.appendChild(poemDiv);
+            outer.appendChild(msgArea);
 
-    // --- 5. メッセージエリア（詩と助言） ---
-    const msgArea = document.createElement('div');
-    msgArea.className = 'result-main-message-area';
-    
-    // 助言ボックス
-    const adviceBox = document.createElement('div');
-    adviceBox.className = 'result-advice-box accent-border';
-    adviceBox.innerHTML = `<span class="advice-label accent-text">助言</span> <span class="accent-text" style="display:inline-block; margin-top:5px;">${data.desc || "心穏やかに過ごすべし。"}</span>`;
-    
-    // 和歌エリア
-    const poemDiv = document.createElement('div');
-    poemDiv.className = 'result-poem-vertical accent-text';
-    poemDiv.textContent = data.poem;
-    
-    msgArea.appendChild(adviceBox);
-    msgArea.appendChild(poemDiv);
-    outer.appendChild(msgArea);
+            // 6. 詳細項目
+            const detailGrid = document.createElement('div');
+            detailGrid.className = 'result-details-grid accent-border';
+            if (data.detail) {
+                data.detail.forEach(d => {
+                    const col = document.createElement('div');
+                    col.className = 'detail-column';
+                    col.innerHTML = `<span class="detail-item-label accent-text">${d.title}</span> <span class="detail-item-content accent-text">${d.content}</span>`;
+                    detailGrid.appendChild(col);
+                });
+            }
+            outer.appendChild(detailGrid);
 
-    // --- 6. 詳細項目（願事など） ---
-    const detailGrid = document.createElement('div');
-    detailGrid.className = 'result-details-grid accent-border';
-    if (data.detail) {
-        data.detail.forEach(d => {
-            const col = document.createElement('div');
-            col.className = 'detail-column';
-            col.innerHTML = `<span class="detail-item-label accent-text">${d.title}</span> <span class="detail-item-content accent-text">${d.content}</span>`;
-            detailGrid.appendChild(col);
-        });
-    }
-    outer.appendChild(detailGrid);
+            // 7. 開運・不運エリア
+            const luckyArea = document.createElement('div');
+            luckyArea.className = 'lucky-area';
+            const lBox = document.createElement('div');
+            lBox.className = 'lucky-box accent-border';
+            if (data.lucky) {
+                lBox.innerHTML = `
+                    <div class="lucky-title accent-text">開運</div>
+                    <div class="lucky-row accent-text"><span class="lucky-icon"><i class="bi bi-stars"></i></span>物：${data.lucky.item}</div>
+                    <div class="lucky-row accent-text"><span class="lucky-icon"><i class="bi bi-geo-alt"></i></span>所：${data.lucky.spot}</div>
+                    <div class="lucky-row accent-text"><span class="lucky-icon"><i class="bi bi-palette"></i></span>色：${data.lucky.color}</div>
+                    <div class="lucky-row accent-text"><span class="lucky-icon"><i class="bi bi-person"></i></span>人：${data.lucky.person}</div>
+                `;
+            }
+            const uBox = document.createElement('div');
+            uBox.className = 'unlucky-box accent-border';
+            if (data.unlucky) {
+                uBox.innerHTML = `
+                    <div class="lucky-title accent-text red-text" style="color:inherit">不運・注意</div>
+                    <div class="lucky-row accent-text"><span class="lucky-icon"><i class="bi bi-exclamation-triangle"></i></span>物：${data.unlucky.item}</div>
+                    <div class="lucky-row accent-text"><span class="lucky-icon"><i class="bi bi-x-octagon"></i></span>所：${data.unlucky.spot}</div>
+                    <div class="lucky-row accent-text"><span class="lucky-icon"><i class="bi bi-person-x"></i></span>人：${data.unlucky.person}</div>
+                `;
+            }
+            luckyArea.appendChild(lBox);
+            luckyArea.appendChild(uBox);
+            outer.appendChild(luckyArea);
 
-    // --- 7. 開運・不運エリア ---
-    const luckyArea = document.createElement('div');
-    luckyArea.className = 'lucky-area';
-    
-    // 開運
-    const lBox = document.createElement('div');
-    lBox.className = 'lucky-box accent-border';
-    if (data.lucky) {
-        lBox.innerHTML = `
-            <div class="lucky-title accent-text">開運</div>
-            <div class="lucky-row accent-text"><span class="lucky-icon"><i class="bi bi-stars"></i></span>物：${data.lucky.item}</div>
-            <div class="lucky-row accent-text"><span class="lucky-icon"><i class="bi bi-geo-alt"></i></span>所：${data.lucky.spot}</div>
-            <div class="lucky-row accent-text"><span class="lucky-icon"><i class="bi bi-palette"></i></span>色：${data.lucky.color}</div>
-            <div class="lucky-row accent-text"><span class="lucky-icon"><i class="bi bi-person"></i></span>人：${data.lucky.person}</div>
-        `;
-    }
-    
-    // 不運・注意
-    const uBox = document.createElement('div');
-    uBox.className = 'unlucky-box accent-border';
-    if (data.unlucky) {
-        uBox.innerHTML = `
-            <div class="lucky-title accent-text red-text" style="color:inherit">不運・注意</div>
-            <div class="lucky-row accent-text"><span class="lucky-icon"><i class="bi bi-exclamation-triangle"></i></span>物：${data.unlucky.item}</div>
-            <div class="lucky-row accent-text"><span class="lucky-icon"><i class="bi bi-x-octagon"></i></span>所：${data.unlucky.spot}</div>
-            <div class="lucky-row accent-text"><span class="lucky-icon"><i class="bi bi-person-x"></i></span>人：${data.unlucky.person}</div>
-        `;
-    }
-    luckyArea.appendChild(lBox);
-    luckyArea.appendChild(uBox);
-    outer.appendChild(luckyArea);
-
-    // --- 8. フッター情報（日時・QR） ---
-    if (withFooter) {
-        const footer = document.createElement('div');
-        footer.className = 'result-footer-info accent-border';
-        
-        const metaDiv = document.createElement('div');
-        metaDiv.style.textAlign = 'left';
-        const name = data.username || "参拝者";
-        
-        // 日時の処理
-        let ts = Number(data.timestamp);
-        if (isNaN(ts) || ts === 0) {
-            ts = Date.now();
+           // 8. フッター情報
+            if (withFooter) {
+                const footer = document.createElement('div');
+                footer.className = 'result-footer-info accent-border';
+                const metaDiv = document.createElement('div');
+                metaDiv.style.textAlign = 'left';
+                const name = data.username || "参拝者";
+                
+                let ts = Number(data.timestamp);
+                if (isNaN(ts) || ts === 0) {
+                    ts = Date.now();
+                }
+                const date = new Date(ts);
+                const dateStr = `${date.getFullYear()}年${date.getMonth()+1}月${date.getDate()}日 ${date.getHours()}:${String(date.getMinutes()).padStart(2,'0')}`;
+                
+                metaDiv.innerHTML = `
+                    <div class="result-user-name accent-text">${escapeHtml(name)} 様の運勢</div>
+                    <div class="result-date accent-text">参拝日: ${dateStr}</div>
+                `;
+                const qrDiv = document.createElement('div');
+                qrDiv.className = 'result-qr-container';
+                const qrTarget = document.createElement('div');
+                qrDiv.appendChild(qrTarget);
+                footer.appendChild(metaDiv);
+                footer.appendChild(qrDiv);
+                outer.appendChild(footer);
+                
+                setTimeout(() => {
+                    // ★修正箇所: widthとheightを 60 → 128 に変更
+                    // これで内部的に高画質で生成され、CSSで60pxに縮小表示されます
+                    new QRCode(qrTarget, {
+                        text: SITE_URL, 
+                        width: 128,  // 大きく作る
+                        height: 128, // 大きく作る
+                        colorDark : "#000000", 
+                        colorLight : "#ffffff",
+                        correctLevel : QRCode.CorrectLevel.H
+                    });
+                }, 100);
+            }
         }
-        const date = new Date(ts);
-        const dateStr = `${date.getFullYear()}年${date.getMonth()+1}月${date.getDate()}日 ${date.getHours()}:${String(date.getMinutes()).padStart(2,'0')}`;
-        
-        metaDiv.innerHTML = `
-            <div class="result-user-name accent-text">${escapeHtml(name)} 様の運勢</div>
-            <div class="result-date accent-text">参拝日: ${dateStr}</div>
-        `;
-        
-        const qrDiv = document.createElement('div');
-        qrDiv.className = 'result-qr-container';
-        const qrTarget = document.createElement('div');
-        qrDiv.appendChild(qrTarget);
-        
-        footer.appendChild(metaDiv);
-        footer.appendChild(qrDiv);
-        outer.appendChild(footer);
-        
-        // QRコード生成（少し遅らせて実行）
-        setTimeout(() => {
-            // 画像保存のために高解像度で作るが、CSSで小さく表示する
-            new QRCode(qrTarget, {
-                text: "https://tenmei-mori.pages.dev", 
-                width: 128,  
-                height: 128, 
-                colorDark : "#000000", 
-                colorLight : "#ffffff",
-                correctLevel : QRCode.CorrectLevel.H
-            });
-        }, 100);
-    }
-}
 
        // --- 履歴・おみくじの轍 (連打フリーズ完全対策版) ---
         
