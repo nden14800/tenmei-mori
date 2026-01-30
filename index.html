@@ -736,9 +736,24 @@
         .result-date {
             font-size: 0.9rem;
         }
+        /* QRコードを高画質にするための縮小表示設定 (修正版) */
         .result-qr-container {
-            background: #fff;
-            padding: 5px;
+            width: 60px;
+            height: 60px;
+            /* 親要素が狭くなっても絶対に縮ませない設定 */
+            flex-shrink: 0 !important; 
+        }
+        
+        .result-qr-container img, 
+        .result-qr-container canvas {
+            width: 60px !important;
+            height: 60px !important;
+            /* Tailwind等のレスポンシブ設定(max-width:100%)を強制解除して変形を防ぐ */
+            max-width: none !important; 
+            max-height: none !important;
+            object-fit: contain;
+            display: block;
+            margin: 0;
         }
 
         /* 12星座カード */
