@@ -11924,27 +11924,42 @@ function resetSearch() {
 
                     container.innerHTML = '<p class="text-green-600 font-bold mb-2 text-sm"><i class="bi bi-check-circle-fill"></i> 画像の生成完了</p>';
                     
+                    // ▼▼▼ canvas.toBlob の中身をここから下と差し替え ▼▼▼
                     canvas.toBlob(blob => {
                         if (!blob) return;
                         currentState.lastImageBlob = blob;
                         const url = URL.createObjectURL(blob);
                         
-                        // プレビュー画像（小さく表示）
-                        const img = document.createElement('img');
-                        img.src = url;
-                        img.className = "mx-auto rounded border w-32 mb-3 shadow-sm"; 
-                        container.appendChild(img);
-                        container.classList.remove('hidden');
+                        // リッチな完了UIの生成
+                        container.innerHTML = `
+                            <div class="flex flex-col items-center text-center animate-fade-in">
+                                <!-- 成功メッセージ -->
+                                <div class="text-green-600 dark:text-green-400 font-bold mb-4 flex items-center gap-2 bg-green-50 dark:bg-green-900/20 px-4 py-2 rounded-full border border-green-200 dark:border-green-800">
+                                    <i class="bi bi-check-circle-fill"></i>
+                                    <span class="text-sm">おみくじ画像を生成しました</span>
+                                </div>
+                                
+                                <!-- プレビュー画像 (影付きで見やすく) -->
+                                <div class="relative w-full max-w-[200px] mx-auto mb-5">
+                                    <img src="${url}" class="w-full rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 transform hover:scale-105 transition duration-300">
+                                </div>
 
-                        // ダウンロードボタン
-                        const dlLink = document.createElement('a');
-                        dlLink.href = url;
-                        dlLink.download = `tenmei_omikuji_${Date.now()}.png`;
-                        dlLink.className = "btn-primary text-sm inline-flex items-center gap-2 py-2 px-6";
-                        dlLink.innerHTML = '<i class="bi bi-download"></i> 画像を保存';
-                        container.appendChild(dlLink);
+                                <!-- 保存アクション -->
+                                <div class="flex flex-col w-full gap-3 max-w-xs">
+                                    <a href="${url}" download="tenmei_omikuji_${Date.now()}.png" class="btn-primary w-full justify-center py-3 shadow-lg no-underline flex items-center gap-2 text-white font-bold text-sm">
+                                        <i class="bi bi-download text-lg"></i> 端末に保存する
+                                    </a>
+                                    <button onclick="document.getElementById('generated-image-container').classList.add('hidden')" class="text-xs text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 py-2 underline decoration-gray-300">
+                                        閉じる
+                                    </button>
+                                </div>
+                            </div>
+                        `;
+                        
+                        container.classList.remove('hidden');
                         
                     }, 'image/png');
+                    // ▲▲▲ 差し替えここまで ▲▲▲
 
                 }).catch(err => {
                     console.error("Image Gen Error:", err);
