@@ -4573,8 +4573,8 @@ body.theme-newyear {
                     詳細は<button onclick="showView('about'); window.scrollTo(0,0);" class="text-[var(--accent-red)] hover:underline font-bold ml-1">利用規約</button>をご確認ください。
                 </div>
 
-                <!-- アクションエリア (Bento Grid) -->
-                <div class="max-w-2xl mx-auto mt-8 px-4">
+                <!-- アクションエリア (統合Bento Grid版) -->
+                <div class="result-actions-container">
                     
                     <!-- 生成ステータス表示 -->
                     <div id="gen-img-status" class="text-sm font-bold text-gray-500 mb-2 h-6"></div>
@@ -4582,27 +4582,35 @@ body.theme-newyear {
                         <!-- 生成画像がここに入ります -->
                     </div>
 
-                    <!-- 保存・戻るアクション -->
-                    <div class="grid grid-cols-2 gap-4 mb-6">
-                        <button onclick="generateResultImage()" class="action-card-btn action-primary col-span-2">
-                            <i class="bi bi-download"></i>
+                    <!-- 統合グリッド: 全てのアクションをここで整列 -->
+                    <div class="unified-result-grid">
+                        
+                        <!-- 1. メインアクション -->
+                        <!-- 画像保存（最重要：赤色・横幅いっぱい） -->
+                        <button onclick="generateResultImage()" class="action-card-btn action-primary grid-span-full" style="min-height: 80px; font-size: 1.1rem;">
+                            <i class="bi bi-download" style="font-size: 2rem;"></i>
                             <span>画像を保存する</span>
                         </button>
+
+                        <!-- ホームへ -->
                         <button onclick="showView('home')" class="action-card-btn">
                             <i class="bi bi-house-door"></i>
                             <span>ホームへ</span>
                         </button>
+
+                        <!-- もう一度引く -->
                         <button onclick="startOmikuji()" class="action-card-btn">
                             <i class="bi bi-arrow-counterclockwise"></i>
                             <span>もう一度引く</span>
                         </button>
-                    </div>
 
-                    <!-- SNSシェアグリッド -->
-                    <div class="text-left mb-2">
-                        <p class="text-xs font-bold text-gray-400 ml-2">SNSでシェア（画像は手動添付）</p>
-                    </div>
-                    <div class="result-action-grid mt-0">
+                        <!-- 2. SNSシェア（区切り線） -->
+                        <div class="sns-separator">
+                            <span class="sns-separator-text">SNSでシェア</span>
+                            <div class="sns-separator-line"></div>
+                        </div>
+
+                        <!-- SNSボタン群 -->
                         <button onclick="shareToX()" class="action-card-btn btn-x">
                             <i class="bi bi-twitter-x"></i>
                             <span>X (Twitter)</span>
@@ -4616,15 +4624,16 @@ body.theme-newyear {
                             <span>LINE</span>
                         </button>
                         <button onclick="shareToBluesky()" class="action-card-btn btn-bsky">
-                            <svg xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 600 530"><path d="M135.72 44.03c66.496 49.921 138.02 151.14 164.28 205.46 26.262-54.316 97.782-155.54 164.28-205.46 47.98-36.021 125.72-63.892 125.72 24.317 0 59.31-21.66 205.49-51.942 258.85-39.826 70.198-111.2 30.083-161.01-12.506 39.998 52.346 42.422 133.55-23.731 133.55-58.261 0-77.921-27.995-77.31-79.626 2.593-219.06-189.28-169.87-192.31-169.87-2.917 0-3.666-51.059-3.666-87.876 0-87.653 76.789-58.86 125.69-22.349z"/></svg>
+                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" viewBox="0 0 600 530" style="width:28px; height:28px; margin-bottom:8px;"><path d="M135.72 44.03c66.496 49.921 138.02 151.14 164.28 205.46 26.262-54.316 97.782-155.54 164.28-205.46 47.98-36.021 125.72-63.892 125.72 24.317 0 59.31-21.66 205.49-51.942 258.85-39.826 70.198-111.2 30.083-161.01-12.506 39.998 52.346 42.422 133.55-23.731 133.55-58.261 0-77.921-27.995-77.31-79.626 2.593-219.06-189.28-169.87-192.31-169.87-2.917 0-3.666-51.059-3.666-87.876 0-87.653 76.789-58.86 125.69-22.349z"/></svg>
                             <span>Bluesky</span>
                         </button>
-                        <button onclick="shareToMisskey()" class="action-card-btn btn-misskey col-span-2">
-                            <svg xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 16 16"><path d="M8 0a8 8 0 1 0 0 16A8 8 0 0 0 8 0zm3.669 4.382c.074.225.137.458.19.697a4.67 4.67 0 0 1 .066.727c0 .193-.01.383-.028.57a3.86 3.86 0 0 1-.09.53 4.2 4.2 0 0 1-.72 1.621 3.96 3.96 0 0 1-.397.47c-.126.13-.263.25-.408.36-.146.113-.301.214-.465.304-.326.179-.675.316-1.038.406-.364.09-.74.136-1.119.136a4.7 4.7 0 0 1-1.12-.136 4.3 4.3 0 0 1-1.037-.406 4.1 4.1 0 0 1-.465-.304 3.9 3.9 0 0 1-.409-.36 4 4 0 0 1-.396-.47 4.2 4.2 0 0 1-.72-1.62 3.86 3.86 0 0 1-.09-.531 4.7 4.7 0 0 1-.028-.57c0-.246.022-.49.065-.727.054-.24.117-.472.19-.697A8 8 0 0 0 8 4.382z"/></svg>
+                        
+                        <!-- Misskeyは横長にしてバランスを取る -->
+                        <button onclick="shareToMisskey()" class="action-card-btn btn-misskey grid-span-full">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" viewBox="0 0 16 16" style="width:28px; height:28px; margin-bottom:8px;"><path d="M8 0a8 8 0 1 0 0 16A8 8 0 0 0 8 0zm3.669 4.382c.074.225.137.458.19.697a4.67 4.67 0 0 1 .066.727c0 .193-.01.383-.028.57a3.86 3.86 0 0 1-.09.53 4.2 4.2 0 0 1-.72 1.621 3.96 3.96 0 0 1-.397.47c-.126.13-.263.25-.408.36-.146.113-.301.214-.465.304-.326.179-.675.316-1.038.406-.364.09-.74.136-1.119.136a4.7 4.7 0 0 1-1.12-.136 4.3 4.3 0 0 1-1.037-.406 4.1 4.1 0 0 1-.465-.304 3.9 3.9 0 0 1-.409-.36 4 4 0 0 1-.396-.47 4.2 4.2 0 0 1-.72-1.62 3.86 3.86 0 0 1-.09-.531 4.7 4.7 0 0 1-.028-.57c0-.246.022-.49.065-.727.054-.24.117-.472.19-.697A8 8 0 0 0 8 4.382z"/></svg>
                             <span>Misskey.io</span>
                         </button>
-                    </div>
-                    
+                        
                 </div>
             </div>
         </section>
