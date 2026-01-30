@@ -4216,128 +4216,145 @@ body.theme-newyear {
             }
         }
 
-        /* ▼▼▼ スマホ最適化・1ページ収め用スタイル (追加) ▼▼▼ */
+        /* ▼▼▼ モバイル・タブレット最適化・1ページ収め用スタイル (修正完全版) ▼▼▼ */
 
-@media (max-width: 768px) {
-    /* 1. おみくじ結果カードのコンパクト化 */
+/* スマホ〜タブレット（幅1100px以下）に適用範囲を拡大 */
+@media (max-width: 1100px) {
+    
+    /* 1. おみくじ結果カードの強制コンパクト化 */
     #result-capture-container {
-        width: 100% !important; /* 固定幅600pxを解除 */
-        max-width: 100%;
-        transform: none !important; /* 縮小表示ではなくレスポンシブに */
+        width: 100% !important;
+        max-width: 600px !important; /* タブレットならこれくらいが適正 */
+        transform: none !important;
+        margin: 0 auto !important;
     }
 
     .result-card-outer {
         width: 100% !important;
-        min-height: auto !important; /* 固定高さ1200pxを解除 */
-        padding: 20px 15px !important; /* 余白を詰める */
-        border-width: 4px !important; /* 枠線を少し細く */
+        min-height: auto !important; /* ★諸悪の根源(固定高さ)を解除 */
+        height: auto !important;
+        padding: 25px 20px !important; /* 余白を詰める */
+        border-width: 4px !important;
         box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+        box-sizing: border-box !important;
     }
 
-    /* ロゴ・タイトル周り */
+    /* 文字・パーツのサイズを一括縮小 */
     .result-kamon { font-size: 2rem !important; margin-bottom: 0 !important; }
-    .result-title-text { font-size: 1.1rem !important; letter-spacing: 0.1em !important; }
-    .result-issue-num { font-size: 0.7rem !important; margin-bottom: 10px !important; }
+    .result-title-text { font-size: 1.2rem !important; letter-spacing: 0.1em !important; }
+    .result-issue-num { font-size: 0.75rem !important; margin-bottom: 10px !important; }
 
-    /* ハンコ（運勢） */
+    /* ハンコ */
     .result-circle-box {
-        width: 100px !important;
-        height: 100px !important;
+        width: 110px !important;
+        height: 110px !important;
         margin-bottom: 10px !important;
     }
-    .result-kanji-main {
-        /* 文字サイズをハンコに合わせて調整 */
-        font-size: 2.5rem !important; 
-    }
-    /* 文字数が多い場合（末小吉など）の微調整 */
-    .style-normal .result-kanji-main[style*="2.4rem"] { font-size: 1.8rem !important; }
+    .result-kanji-main { font-size: 2.8rem !important; }
+    .style-normal .result-kanji-main[style*="2.4rem"] { font-size: 2rem !important; }
 
-    /* メッセージ・和歌エリア（高さを詰める） */
+    /* 長文エリアの圧縮 */
     .result-main-message-area {
         gap: 10px !important;
-        margin-bottom: 20px !important;
-        height: auto !important; /* 高さを自動に */
+        margin-bottom: 15px !important;
+        flex-direction: row !important; /* 横並び維持 */
     }
     .result-poem-vertical {
-        height: 220px !important; /* 高さを短縮 */
+        height: auto !important;
+        min-height: 180px !important;
         font-size: 1.3rem !important;
         line-height: 1.4 !important;
+        writing-mode: vertical-rl;
     }
     .result-advice-box {
-        height: 220px !important; /* 高さを短縮 */
+        height: auto !important;
+        min-height: 180px !important;
         font-size: 0.85rem !important;
-        padding: 10px 5px !important;
+        padding: 10px 8px !important;
         line-height: 1.5 !important;
+        writing-mode: vertical-rl;
     }
 
-    /* 詳細項目グリッド */
+    /* 詳細・ラッキー項目の圧縮 */
     .result-details-grid {
-        gap: 5px !important;
         padding: 10px 0 !important;
-        margin-bottom: 20px !important;
+        margin-bottom: 15px !important;
+        gap: 5px !important;
     }
     .detail-column {
-        height: 140px !important; /* 高さを短縮 */
+        height: 130px !important;
         font-size: 0.8rem !important;
-        writing-mode: vertical-rl; /* 縦書きは維持 */
     }
-    .detail-item-label { margin-bottom: 5px !important; }
-
-    /* ラッキーアイテムエリア（2列のままコンパクトに） */
+    
     .lucky-area {
+        gap: 8px !important;
+        margin-bottom: 15px !important;
+        grid-template-columns: 1fr 1fr !important;
+    }
+    .lucky-box, .unlucky-box { padding: 8px !important; }
+    .lucky-title { font-size: 0.85rem !important; margin-bottom: 3px !important; }
+    .lucky-row { font-size: 0.7rem !important; }
+
+    /* フッター */
+    .result-footer-info { padding-top: 10px !important; margin-top: 0 !important; }
+    .result-qr-container img, .result-qr-container canvas {
+        width: 40px !important; height: 40px !important;
+    }
+
+    /* 2. アクションエリア（ボタン群）のレイアウト崩れ修正 */
+    /* ここでボタンとSNSシェアが重ならないように整理 */
+    
+    /* 親コンテナを強制的に1カラムにする（横並び崩れ防止） */
+    #view-result .max-w-2xl {
+        max-width: 500px !important; /* 幅を制限して中央寄せ */
+        padding: 0 20px !important;
+    }
+
+    /* 保存ボタンエリア */
+    #view-result .grid.grid-cols-2 {
+        display: grid !important;
+        grid-template-columns: 1fr 1fr !important;
         gap: 10px !important;
         margin-bottom: 15px !important;
     }
-    .lucky-box, .unlucky-box {
-        padding: 10px !important;
-    }
-    .lucky-title { font-size: 0.9rem !important; margin-bottom: 5px !important; }
-    .lucky-row { font-size: 0.7rem !important; margin-bottom: 2px !important; }
-
-    /* フッター */
-    .result-footer-info { padding-top: 10px !important; }
-    .result-user-name { font-size: 0.9rem !important; }
-    .result-date { font-size: 0.7rem !important; }
     
-    /* QRコードを少し小さく */
-    .result-qr-container img, 
-    .result-qr-container canvas {
-        width: 40px !important;
-        height: 40px !important;
+    /* 「SNSでシェア」の文字位置修正 */
+    #view-result .text-left.mb-2 {
+        text-align: center !important; /* 中央揃えで見やすく */
+        margin-top: 10px !important;
+        margin-bottom: 5px !important;
     }
 
-    /* 2. おみくじを引く画面（筒・棒）の調整 */
-    .omikuji-pool {
-        padding-bottom: 100px !important; /* 下部余白を減らす */
-        gap: 8px !important;
-    }
-    .omikuji-stick {
-        width: 40px !important;  /* 棒を細く */
-        height: 120px !important; /* 棒を短く */
-        border-width: 2px !important;
-    }
-    .stick-icon { font-size: 0.9rem !important; }
-    .stick-text { font-size: 0.9rem !important; }
-    .stick-footer { font-size: 0.5rem !important; }
-
-    /* 固定ヘッダー（案内文）を少し小さく */
-    .draw-header-card {
-        padding: 12px !important;
-        margin: 10px auto !important;
-    }
-    .draw-header-card h2 { font-size: 1.1rem !important; margin-bottom: 4px !important; }
-    .draw-header-card p { font-size: 0.75rem !important; line-height: 1.4 !important; }
-
-    /* 3. 結果画面のアクションボタン */
+    /* SNSボタンエリア */
     .result-action-grid {
-        grid-template-columns: 1fr 1fr !important; /* 2列維持 */
+        display: grid !important;
+        grid-template-columns: repeat(4, 1fr) !important; /* 4列で小さく並べる */
         gap: 8px !important;
+        margin-top: 0 !important;
     }
+    /* Misskeyボタンだけ2列分使う */
+    .result-action-grid .col-span-2 {
+        grid-column: span 4 !important; /* スマホなら全幅、タブレットなら調整 */
+    }
+
     .action-card-btn {
-        padding: 12px 5px !important;
-        font-size: 0.8rem !important;
+        padding: 10px 4px !important;
+        min-height: 60px !important;
     }
-    .action-card-btn i { font-size: 1.4rem !important; margin-bottom: 4px !important; }
+    .action-card-btn span { font-size: 0.65rem !important; }
+    .action-card-btn i, .action-card-btn svg { 
+        font-size: 1.2rem !important; width: 20px !important; height: 20px !important; margin-bottom: 2px !important;
+    }
+}
+
+/* さらに画面が狭いスマホ用（縦幅が足りない時）の超圧縮設定 */
+@media (max-height: 800px) and (max-width: 600px) {
+    .result-card-outer { padding: 15px 10px !important; }
+    .result-kamon { display: none !important; } /* 家紋を消してスペース確保 */
+    .result-circle-box { width: 80px !important; height: 80px !important; }
+    .result-kanji-main { font-size: 2rem !important; }
+    .result-poem-vertical, .result-advice-box { min-height: 140px !important; }
+    .detail-column { height: 100px !important; }
 }
 
     </style>
