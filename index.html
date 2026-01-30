@@ -4258,6 +4258,83 @@ body.theme-newyear {
     padding: 0 16px 60px; /* 下部に余白確保 */
 }
 
+        /* ▼▼▼ スマホ収まり対応用CSS (ここから追記) ▼▼▼ */
+
+        /* 1. カード自体の幅を画面に合わせる */
+        #result-capture-container {
+            width: 100% !important;
+            max-width: 600px !important;
+            margin: 0 auto;
+        }
+        
+        .result-card-outer {
+            width: 100% !important;
+            min-height: auto !important; /* 高さを中身に合わせる */
+            padding: 25px 15px !important; /* 余白を少し詰める */
+            box-sizing: border-box;
+        }
+
+        /* 2. スマホ時の各パーツのサイズ調整 */
+        @media (max-width: 640px) {
+            /* 家紋とタイトル */
+            .result-kamon { font-size: 2rem !important; }
+            .result-title-text { font-size: 1.2rem !important; }
+            
+            /* メインのハンコ */
+            .result-circle-box {
+                width: 120px !important;
+                height: 120px !important;
+                padding: 5px !important;
+            }
+            .result-kanji-main {
+                /* ハンコ内の文字サイズを計算式で縮小 */
+                font-size: calc(100% + 4vw) !important; 
+            }
+
+            /* 和歌と助言エリア（縦書き） */
+            .result-main-message-area {
+                gap: 10px !important; /* 間隔を詰める */
+                margin-bottom: 25px !important;
+                padding: 0 5px !important;
+            }
+            .result-poem-vertical {
+                font-size: 1.4rem !important; /* 文字を小さく */
+                height: auto !important;
+                min-height: 280px !important; /* 最低高さを確保 */
+                line-height: 1.4 !important;
+            }
+            .result-advice-box {
+                font-size: 0.85rem !important;
+                height: auto !important;
+                min-height: 280px !important;
+                padding: 10px 5px !important;
+            }
+
+            /* 詳細項目（願い事など） */
+            .result-details-grid {
+                gap: 4px !important; /* 列間隔を極限まで詰める */
+                padding: 15px 0 !important;
+            }
+            .detail-column {
+                height: 180px !important; /* 高さをスマホ用に短く */
+                font-size: 0.85rem !important; /* 文字サイズ縮小 */
+                line-height: 1.3 !important;
+            }
+            .detail-item-label {
+                margin-bottom: 5px !important;
+            }
+
+            /* ラッキーアイテム欄 */
+            .lucky-area {
+                grid-template-columns: 1fr !important; /* 縦並びにして幅を確保 */
+                gap: 10px !important;
+            }
+            .lucky-row {
+                font-size: 0.85rem !important;
+            }
+        }
+        /* ▲▲▲ スマホ収まり対応用CSS ここまで ▲▲▲ */
+
     </style>
 </head>
 <body>
