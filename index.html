@@ -4216,6 +4216,119 @@ body.theme-newyear {
             }
         }
 
+        /* --- ▼▼▼ おみくじ結果カード：スマホ最適化（1画面収め）スタイル ▼▼▼ --- */
+
+/* PCなど大画面用の基本設定 (既存維持) */
+.result-card-outer {
+    width: 600px;
+    min-height: 1200px;
+    padding: 30px 40px;
+    box-sizing: border-box;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    position: relative;
+    font-family: 'Zen Old Mincho', serif;
+    background-color: #ffffff;
+    /* 影をつけてカード感を出す */
+    box-shadow: 0 10px 25px rgba(0,0,0,0.1); 
+    margin-bottom: 20px;
+}
+
+/* ★★★ ここからスマホ用の上書き設定 ★★★ */
+@media (max-width: 640px) {
+    #result-capture-container {
+        width: 100% !important; /* コンテナ幅を画面に合わせる */
+        display: flex;
+        justify-content: center;
+    }
+
+    .result-card-outer {
+        width: 95% !important; /* 画面幅いっぱいではなく少し余白を残す */
+        max-width: 360px !important; /* スマホで適切な最大幅 */
+        min-height: auto !important; /* 高さを自動調整に */
+        padding: 20px 15px !important; /* 余白を大幅に削減 */
+        border-width: 4px !important; /* 枠線を少し細く */
+    }
+
+    /* 家紋とタイトル */
+    .result-kamon { font-size: 2rem !important; margin-bottom: 0 !important; }
+    .result-title-text { font-size: 1rem !important; letter-spacing: 0.1em !important; }
+    .result-issue-num { font-size: 0.7rem !important; margin-bottom: 10px !important; }
+
+    /* 運勢ハンコ（円） */
+    .result-circle-box {
+        width: 100px !important;
+        height: 100px !important;
+        margin-bottom: 10px !important;
+        border-width: 2px !important;
+    }
+    /* ハンコ内の文字サイズ調整はJS側で行いますが、CSSでも基準を下げる */
+    .result-kanji-main { font-size: 2.2rem !important; }
+
+    /* メインメッセージエリア（詩と助言） */
+    .result-main-message-area {
+        gap: 10px !important;
+        margin-bottom: 20px !important;
+        height: auto !important; /* 高さを自動に */
+        min-height: 200px !important; /* 最低限の高さを確保 */
+    }
+
+    /* 縦書きエリアの高さをスマホ用に圧縮 */
+    .result-poem-vertical {
+        font-size: 1.3rem !important;
+        height: 220px !important; /* 縦書きの高さを制限 */
+        line-height: 1.4 !important;
+    }
+    .result-advice-box {
+        font-size: 0.8rem !important;
+        padding: 8px 4px !important;
+        height: 220px !important;
+    }
+
+    /* 詳細項目（願事など）エリア */
+    .result-details-grid {
+        gap: 5px !important;
+        padding: 10px 0 !important;
+        margin-bottom: 15px !important;
+        flex-wrap: wrap-reverse; /* 折り返しを許可して画面内に収める */
+        justify-content: center;
+    }
+    .detail-column {
+        height: 140px !important; /* 高さを短く */
+        font-size: 0.75rem !important; /* 文字を小さく */
+        margin: 0 2px !important;
+        writing-mode: vertical-rl;
+    }
+    
+    /* ラッキーアイテムエリア */
+    .lucky-area {
+        grid-template-columns: 1fr !important; /* 1列にして縦に並べる */
+        gap: 10px !important;
+        margin-bottom: 10px !important;
+    }
+    .lucky-box, .unlucky-box {
+        padding: 10px !important;
+    }
+    .lucky-row { font-size: 0.75rem !important; }
+
+    /* フッター */
+    .result-footer-info {
+        padding-top: 10px !important;
+        flex-direction: row;
+        align-items: center;
+    }
+    .result-user-name { font-size: 0.9rem !important; }
+    .result-date { font-size: 0.7rem !important; }
+    
+    /* QRコード */
+    .result-qr-container img, 
+    .result-qr-container canvas {
+        width: 40px !important; /* スマホではQRも小さく */
+        height: 40px !important;
+    }
+}
+
     </style>
 </head>
 <body>
