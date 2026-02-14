@@ -6366,58 +6366,47 @@ body.theme-newyear {
         </div>
     </div>
 
-    <!-- ガチ再現：Minecraft風カスタム確認モーダル -->
-    <div id="custom-confirm-modal" class="fixed top-0 left-0 w-full h-full bg-black/70 z-[9999] hidden items-center justify-center p-4 font-sans animate-fade-in">
-        <!-- ウィンドウ本体: 画像の色味(#313233)を完全再現 -->
-        <div class="bg-[#313233] text-white w-full max-w-[500px] shadow-[0_20px_50px_rgba(0,0,0,0.5)] relative border-none">
+    <!-- カスタム確認モーダル (Minecraft風UI) -->
+    <div id="custom-confirm-modal" class="fixed top-0 left-0 w-full h-full bg-black/80 z-[9999] hidden items-center justify-center p-4 backdrop-blur-sm animate-fade-in">
+        <!-- カード本体: ダークグレー背景、少し角ばったデザイン -->
+        <div class="bg-[#1f2937] dark:bg-[#18181b] text-white w-full max-w-md rounded-lg shadow-2xl border border-gray-600 transform scale-100 transition-all flex flex-col relative">
             
-            <!-- ヘッダーエリア -->
-            <div class="flex justify-between items-center px-5 py-4">
-                <span id="confirm-title" class="text-sm font-bold text-[#DCDDDE] tracking-tight"></span>
-                <button onclick="closeConfirm(false)" class="text-[#A0A0A0] hover:text-white transition-colors text-xl">
+            <!-- ヘッダー -->
+            <div class="flex justify-between items-center p-4 border-b border-gray-700 bg-black/20 rounded-t-lg">
+                <h3 id="confirm-title" class="text-base font-bold text-gray-200 tracking-wider">確認</h3>
+                <button onclick="closeConfirm(false)" class="text-gray-400 hover:text-white transition">
                     <i class="bi bi-x-lg"></i>
                 </button>
             </div>
 
-            <!-- 中央イラスト・アイコンエリア (画像のキャラ配置を模倣) -->
-            <div class="flex flex-col items-center px-10 pb-6 text-center">
-                <div id="confirm-illustration" class="mb-6 flex justify-center items-end h-[100px] w-full">
-                    <!-- 警告アイコンを中央に配置 -->
-                    <div class="text-6xl text-red-500 drop-shadow-[0_4px_0_rgba(0,0,0,0.3)] animate-bounce">
-                        <i class="bi bi-exclamation-triangle-fill"></i>
-                    </div>
+            <!-- ボディ -->
+            <div class="p-8 text-center flex flex-col items-center justify-center min-h-[200px]">
+                 <!-- アイコンエリア (警告) -->
+                <div class="mb-6 text-6xl drop-shadow-md" id="confirm-icon-area">
+                     <i class="bi bi-exclamation-triangle-fill text-red-500"></i>
                 </div>
-
-                <!-- メインメッセージ -->
-                <h4 id="confirm-main-msg" class="text-base font-bold mb-6 leading-snug"></h4>
-
-                <!-- 箇条書きリスト (画像のドットリストを再現) -->
-                <ul id="confirm-list-area" class="text-left text-sm text-[#BABBBC] space-y-2 mb-8 w-full max-w-[350px]">
-                    <li class="flex items-start">
-                        <span class="mr-2 text-xs mt-1">•</span>
-                        <span id="confirm-list-1">一度削除すると、過去の運勢（轍）は二度と見られなくなります。</span>
-                    </li>
-                    <li class="flex items-start">
-                        <span class="mr-2 text-xs mt-1">•</span>
-                        <span id="confirm-list-2">作成したデジタル御守や、お気に入り設定も全て消滅します。</span>
-                    </li>
-                    <li class="flex items-start">
-                        <span class="mr-2 text-xs mt-1">•</span>
-                        <span id="confirm-list-3">同じメールアドレスでの再登録は可能ですが、データは引き継げません。</span>
-                    </li>
-                </ul>
+                
+                <!-- メッセージ -->
+                <p id="confirm-message" class="text-sm text-gray-300 leading-relaxed font-medium">
+                    メッセージがここに入ります
+                </p>
+                
+                <!-- 補足リスト (箇条書き用) -->
+                <div id="confirm-list" class="text-left text-xs text-gray-400 mt-4 space-y-1 bg-black/20 p-3 rounded w-full hidden">
+                    <!-- JSで挿入 -->
+                </div>
             </div>
 
-            <!-- 下部ボタンエリア: 画像の配置を完全再現 -->
-            <div class="grid grid-cols-2 gap-4 px-6 pb-8">
-                <!-- 左：キャンセルボタン (画像と同じ明るいグレー) -->
-                <button onclick="closeConfirm(false)" 
-                    class="relative bg-[#D3D3D3] hover:bg-[#E0E0E0] text-[#1A1A1A] font-bold py-3 px-4 border-b-[4px] border-[#8D8D8D] active:border-b-0 active:translate-y-[4px] transition-all">
+            <!-- フッター (ボタンエリア) -->
+            <div class="p-4 bg-black/20 border-t border-gray-700 rounded-b-lg flex gap-3">
+                <!-- キャンセル (グレー) -->
+                <button onclick="closeConfirm(false)" id="confirm-cancel-btn" 
+                        class="flex-1 py-3 px-4 bg-[#374151] hover:bg-[#4b5563] text-gray-200 font-bold text-sm rounded shadow-md transition border border-gray-600">
                     キャンセル
                 </button>
-                <!-- 右：削除ボタン (画像と同じ形状の赤色版) -->
-                <button onclick="closeConfirm(true)" 
-                    class="relative bg-[#B91C1C] hover:bg-[#DC2626] text-white font-bold py-3 px-4 border-b-[4px] border-[#7F1D1D] active:border-b-0 active:translate-y-[4px] transition-all">
+                <!-- 実行 (赤) -->
+                <button onclick="closeConfirm(true)" id="confirm-ok-btn" 
+                        class="flex-1 py-3 px-4 bg-red-600 hover:bg-red-700 text-white font-bold text-sm rounded shadow-md transition border border-red-800">
                     削除する
                 </button>
             </div>
