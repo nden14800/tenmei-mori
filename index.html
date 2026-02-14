@@ -13137,54 +13137,44 @@ async function logout() {
         return calendarDays;
     }
 
-    // ==========================================
-//  お気に入り切り替え機能（修正版）
-// ==========================================
-async function toggleFavorite(signId, bloodType) {
-    // ボタンのクリックイベントがカードの開閉等に伝播しないようにする
-    if(event) event.stopPropagation();
+    // --- お気に入り切り替え (toggleFavorite) ---
+    async function toggleFavorite(signId, bloodType) {
+        if(event) event.stopPropagation();
 
-    // ユーザーチェック
-    if (!currentState.user) {
-        // 未ログイン時はモーダルを出す（既存の関数を使用）
-        const modal = document.getElementById('zodiac-login-modal');
-        if(modal) modal.style.display = 'flex'; // hiddenクラスを消すかdisplay制御
-        modal.classList.remove('hidden');
-        return;
-    }
-
-    // お気に入りリストにあるか確認
-    const index = favoriteList.findIndex(f => f.sign === signId && f.blood === bloodType);
-    
-    if (index === -1) {
-        // 追加 (最大5件)
-        if (favoriteList.length >= 5) {
-            alert("お気に入りは5件までです");
+        if (!currentState.user) {
+            const modal = document.getElementById('zodiac-login-modal');
+            if(modal) modal.style.display = 'flex';
+            modal.classList.remove('hidden');
             return;
         }
-        favoriteList.push({ sign: signId, blood: bloodType });
-    } else {
-        // 削除
-        favoriteList.splice(index, 1);
-    }
 
-    // UIを即座に更新（再描画）
-    renderRanking();
-    
-    // サーバーに保存 (非同期でバックグラウンド実行)
-    try {
-        await authFetch(`${API_BASE}/api/favorites`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ favorites: favoriteList })
-        });
-        // 保存完了後にバッジ更新
-        const badge = document.getElementById('fav-status-badge');
-        if(badge) badge.textContent = "保存完了";
-    } catch(e) {
-        console.error("Favorite save failed", e);
+        const index = favoriteList.findIndex(f => f.sign === signId && f.blood === bloodType);
+        
+        if (index === -1) {
+            if (favoriteList.length >= 5) {
+                // ▼ alert置き換え
+                showToast("お気に入りは5件までです", "warning");
+                return;
+            }
+            favoriteList.push({ sign: signId, blood: bloodType });
+        } else {
+            favoriteList.splice(index, 1);
+        }
+
+        renderRanking();
+        
+        try {
+            await authFetch(`${API_BASE}/api/favorites`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ favorites: favoriteList })
+            });
+            const badge = document.getElementById('fav-status-badge');
+            if(badge) badge.textContent = "保存完了";
+        } catch(e) {
+            console.error("Favorite save failed", e);
+        }
     }
-}
 
 // カードHTML生成関数 (文字ラベル復活版)
 function createCardHTML(data) {
