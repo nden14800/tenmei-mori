@@ -12618,8 +12618,19 @@ ${getShareUrl()}`;
 
         // --- アカウント削除 (deleteAccount) ---
     async function deleteAccount() {
-        // ※ confirmはユーザー選択が必要なため、alert系とは異なりそのまま使用します
-        if(!confirm("本当にアカウントを削除しますか？\n履歴やお気に入りデータも完全に消去されます。")) return;
+        // ▼▼▼ ここをカスタムモーダルに変更 ▼▼▼
+        const confirmed = await openCustomConfirm(
+            "アカウント削除の確認",
+            "本当にアカウントを削除しますか？<br>この操作は取り消すことができません。",
+            "削除する", // ボタン文言
+            "キャンセル", 
+            "danger"   // 赤色モード
+        );
+
+        // キャンセルなら終了
+        if (!confirmed) return;
+        
+        // 念押し（大事なことなので2回聞くなどしても良いが、今回はUIリッチなので1回で実行）
         
         showLoading(true);
         try {
@@ -12633,23 +12644,18 @@ ${getShareUrl()}`;
             if (contentType && contentType.indexOf("application/json") !== -1) {
                 const data = await res.json();
                 if(data.success) {
-                    // ▼ alert置き換え
                     showToast("アカウントを削除しました。\nご利用ありがとうございました。", "success");
-                    // 少し待ってからログアウト処理
                     setTimeout(() => logout(), 2000);
                 } else {
-                    // ▼ alert置き換え
                     showToast("削除失敗: " + (data.message || data.error), "error");
                 }
             } else {
                 const text = await res.text();
                 console.error("Delete Error:", text);
-                // ▼ alert置き換え
                 showToast("削除処理中にエラーが発生しました。", "error");
             }
         } catch(e) { 
             console.error(e);
-            // ▼ alert置き換え
             showToast("通信エラーが発生しました。", "error"); 
         }
         finally { showLoading(false); }
