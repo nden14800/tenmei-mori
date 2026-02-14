@@ -12569,38 +12569,44 @@ ${getShareUrl()}`;
         }
     }
 
-        async function deleteAccount() {
-            if(!confirm("本当にアカウントを削除しますか？\n履歴やお気に入りデータも完全に消去されます。")) return;
+        // --- アカウント削除 (deleteAccount) ---
+    async function deleteAccount() {
+        // ※ confirmはユーザー選択が必要なため、alert系とは異なりそのまま使用します
+        if(!confirm("本当にアカウントを削除しますか？\n履歴やお気に入りデータも完全に消去されます。")) return;
+        
+        showLoading(true);
+        try {
+            const res = await authFetch(`${API_BASE}/api/user/delete`, {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({})
+            });
             
-            showLoading(true);
-            try {
-                // ★修正: authFetchに変更
-                const res = await authFetch(`${API_BASE}/api/user/delete`, {
-                    method: 'POST',
-                    headers: {'Content-Type': 'application/json'},
-                    body: JSON.stringify({})
-                });
-                
-                const contentType = res.headers.get("content-type");
-                if (contentType && contentType.indexOf("application/json") !== -1) {
-                    const data = await res.json();
-                    if(data.success) {
-                        alert("アカウントを削除しました。ご利用ありがとうございました。");
-                        logout();
-                    } else {
-                        alert("削除失敗: " + (data.message || data.error));
-                    }
+            const contentType = res.headers.get("content-type");
+            if (contentType && contentType.indexOf("application/json") !== -1) {
+                const data = await res.json();
+                if(data.success) {
+                    // ▼ alert置き換え
+                    showToast("アカウントを削除しました。\nご利用ありがとうございました。", "success");
+                    // 少し待ってからログアウト処理
+                    setTimeout(() => logout(), 2000);
                 } else {
-                    const text = await res.text();
-                    console.error("Delete Error:", text);
-                    alert("削除処理中にエラーが発生しました。");
+                    // ▼ alert置き換え
+                    showToast("削除失敗: " + (data.message || data.error), "error");
                 }
-            } catch(e) { 
-                console.error(e);
-                alert("通信エラーが発生しました。"); 
+            } else {
+                const text = await res.text();
+                console.error("Delete Error:", text);
+                // ▼ alert置き換え
+                showToast("削除処理中にエラーが発生しました。", "error");
             }
-            finally { showLoading(false); }
+        } catch(e) { 
+            console.error(e);
+            // ▼ alert置き換え
+            showToast("通信エラーが発生しました。", "error"); 
         }
+        finally { showLoading(false); }
+    }
 
         // --- 認証系 (Bento UI対応) ---
 
