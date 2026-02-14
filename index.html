@@ -15631,6 +15631,65 @@ const LiveChart = {
         if(tt) tt.style.opacity = 0;
     }
 };
+
+        // --- カスタム確認ダイアログ制御 ---
+    let confirmResolve = null;
+
+    /**
+     * カスタム確認モーダルを表示する関数
+     * @param {string} title タイトル
+     * @param {string} message 本文
+     * @param {string} okText 実行ボタンの文字
+     * @param {string} cancelText キャンセルボタンの文字
+     * @param {string} type 'danger'(赤) | 'normal'(青/緑)
+     * @returns {Promise<boolean>} OKならtrue, キャンセルならfalse
+     */
+    function openCustomConfirm(title, message, okText = "OK", cancelText = "キャンセル", type = "normal") {
+        return new Promise((resolve) => {
+            confirmResolve = resolve;
+            
+            // テキスト設定
+            document.getElementById('confirm-title').textContent = title;
+            document.getElementById('confirm-message').innerHTML = message; // HTML許可
+            
+            const okBtn = document.getElementById('confirm-ok-btn');
+            const cancelBtn = document.getElementById('confirm-cancel-btn');
+            const iconArea = document.getElementById('confirm-icon-area');
+            const listArea = document.getElementById('confirm-list');
+            
+            okBtn.textContent = okText;
+            cancelBtn.textContent = cancelText;
+            listArea.classList.add('hidden'); // リストは一旦隠す
+            
+            // デザイン切り替え
+            if (type === 'danger') {
+                // 危険（削除など）：赤ボタン、警告アイコン
+                okBtn.className = "flex-1 py-3 px-4 bg-red-600 hover:bg-red-700 text-white font-bold text-sm rounded shadow-md transition border border-red-800";
+                iconArea.innerHTML = '<i class="bi bi-exclamation-triangle-fill text-red-500 animate-pulse"></i>';
+            } else {
+                // 通常：緑/青ボタン、情報アイコン
+                okBtn.className = "flex-1 py-3 px-4 bg-green-600 hover:bg-green-700 text-white font-bold text-sm rounded shadow-md transition border border-green-800";
+                iconArea.innerHTML = '<i class="bi bi-info-circle-fill text-blue-400"></i>';
+            }
+
+            // モーダル表示
+            const modal = document.getElementById('custom-confirm-modal');
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+        });
+    }
+
+    // モーダルを閉じて結果を返す
+    function closeConfirm(result) {
+        const modal = document.getElementById('custom-confirm-modal');
+        modal.classList.add('hidden');
+        modal.classList.remove('flex');
+        
+        if (confirmResolve) {
+            confirmResolve(result);
+            confirmResolve = null;
+        }
+    }
             
     </script>
 </body>
