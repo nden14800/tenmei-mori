@@ -12338,13 +12338,16 @@ function resetSearch() {
                     // ▲▲▲ 差し替えここまで ▲▲▲
 
                 }).catch(err => {
-                    console.error("Image Gen Error:", err);
-                    status.textContent = "画像の生成に失敗しました。";
-                    status.className = "text-sm font-bold text-red-500 mb-2 h-6";
-                    window.scrollTo(0, originalScrollPos);
-                });
+                console.error("Image Gen Error:", err);
+                status.textContent = "画像の生成に失敗しました。";
+                status.className = "text-sm font-bold text-red-500 mb-2 h-6";
+                window.scrollTo(0, originalScrollPos);
+                
+                // alertの代わり
+                showToast("画像の生成に失敗しました。\nもう一度お試しください。", "error");
             });
-        }
+        });
+    }
 
         // サイトルートURLを返す（生成URL廃止）
         function getShareUrl() {
