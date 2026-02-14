@@ -6366,6 +6366,53 @@ body.theme-newyear {
         </div>
     </div>
 
+    <!-- カスタム確認モーダル (Minecraft風UI) -->
+    <div id="custom-confirm-modal" class="fixed top-0 left-0 w-full h-full bg-black/80 z-[9999] hidden items-center justify-center p-4 backdrop-blur-sm animate-fade-in">
+        <!-- カード本体: ダークグレー背景、少し角ばったデザイン -->
+        <div class="bg-[#1f2937] dark:bg-[#18181b] text-white w-full max-w-md rounded-lg shadow-2xl border border-gray-600 transform scale-100 transition-all flex flex-col relative">
+            
+            <!-- ヘッダー -->
+            <div class="flex justify-between items-center p-4 border-b border-gray-700 bg-black/20 rounded-t-lg">
+                <h3 id="confirm-title" class="text-base font-bold text-gray-200 tracking-wider">確認</h3>
+                <button onclick="closeConfirm(false)" class="text-gray-400 hover:text-white transition">
+                    <i class="bi bi-x-lg"></i>
+                </button>
+            </div>
+
+            <!-- ボディ -->
+            <div class="p-8 text-center flex flex-col items-center justify-center min-h-[200px]">
+                 <!-- アイコンエリア (警告) -->
+                <div class="mb-6 text-6xl drop-shadow-md" id="confirm-icon-area">
+                     <i class="bi bi-exclamation-triangle-fill text-red-500"></i>
+                </div>
+                
+                <!-- メッセージ -->
+                <p id="confirm-message" class="text-sm text-gray-300 leading-relaxed font-medium">
+                    メッセージがここに入ります
+                </p>
+                
+                <!-- 補足リスト (箇条書き用) -->
+                <div id="confirm-list" class="text-left text-xs text-gray-400 mt-4 space-y-1 bg-black/20 p-3 rounded w-full hidden">
+                    <!-- JSで挿入 -->
+                </div>
+            </div>
+
+            <!-- フッター (ボタンエリア) -->
+            <div class="p-4 bg-black/20 border-t border-gray-700 rounded-b-lg flex gap-3">
+                <!-- キャンセル (グレー) -->
+                <button onclick="closeConfirm(false)" id="confirm-cancel-btn" 
+                        class="flex-1 py-3 px-4 bg-[#374151] hover:bg-[#4b5563] text-gray-200 font-bold text-sm rounded shadow-md transition border border-gray-600">
+                    キャンセル
+                </button>
+                <!-- 実行 (赤) -->
+                <button onclick="closeConfirm(true)" id="confirm-ok-btn" 
+                        class="flex-1 py-3 px-4 bg-red-600 hover:bg-red-700 text-white font-bold text-sm rounded shadow-md transition border border-red-800">
+                    削除する
+                </button>
+            </div>
+        </div>
+    </div>
+
 
     <!-- JavaScript ロジック -->
     <script>
