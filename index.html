@@ -13649,16 +13649,54 @@ function handleProfileClick() {
     }
 }
 
-// アカウント設定ダッシュボードの描画関数
-function renderSettingsDashboard() {
+// ランク判定ロジック
+function calculateMemberRank(stats) {
+    const draws = stats.totalDraws || 0;
+    const daikichi = stats.daikichiCount || stats.userFortunes?.['大吉'] || 0;
+
+    // 条件判定 (上から順に厳しい条件)
+    if (draws >= 300 && daikichi >= 10) {
+        return { name: "徳高き守り人", class: "rank-platinum", icon: "bi-gem" };
+    }
+    if (draws >= 100) {
+        return { name: "金の氏子", class: "rank-gold", icon: "bi-trophy-fill" };
+    }
+    if (draws >= 50) {
+        return { name: "銀の氏子", class: "rank-silver", icon: "bi-award-fill" };
+    }
+    if (draws >= 10) {
+        return { name: "銅の氏子", class: "rank-bronze", icon: "bi-award" };
+    }
+    
+    // デフォルト
+    return { name: "一般参拝者", class: "rank-normal", icon: "bi-person" };
+}
+
+// アカウント設定ダッシュボードの描画関数（非同期化・ランク機能実装版）
+async function renderSettingsDashboard() {
     const container = document.getElementById('profile-dashboard-content');
     if (!container || !currentState.user) return;
 
+    // ローディング表示
+    container.innerHTML = '<div class="text-center py-10"><div class="spinner-border text-red-500" role="status"></div><p class="text-gray-400 text-xs mt-2">会員情報を照会中...</p></div>';
+
     const user = currentState.user;
-    
-    // メールアドレスの表示用加工
     const safeEmail = escapeHtml(user.email);
     const safeName = escapeHtml(user.username);
+
+    // 統計データの取得（ランク判定のため）
+    let rankInfo = { name: "確認中...", class: "rank-normal", icon: "bi-hourglass" };
+    
+    try {
+        const res = await authFetch(`${API_BASE}/api/user/profile?username=${encodeURIComponent(user.username)}`, { method: 'GET' });
+        if (res.ok) {
+            const data = await res.json();
+            // ランク計算
+            rankInfo = calculateMemberRank(data.stats);
+        }
+    } catch(e) {
+        console.error("Rank fetch failed", e);
+    }
 
     // HTML生成
     container.innerHTML = `
@@ -13671,7 +13709,10 @@ function renderSettingsDashboard() {
                 </div>
                 <div class="flex-1">
                     <div class="mb-2">
-                        <span class="member-rank-badge"><i class="bi bi-patch-check-fill"></i> 天命乃杜 会員</span>
+                        <!-- ▼ 変更箇所: 動的ランクバッジ ▼ -->
+                        <span class="rank-badge-base ${rankInfo.class}">
+                            <i class="bi ${rankInfo.icon}"></i> ${rankInfo.name}
+                        </span>
                     </div>
                     <h3 class="text-2xl font-black mb-1" style="font-family: 'Zen Old Mincho'">${safeName}</h3>
                     <p class="text-sm text-gray-500 font-mono">${safeEmail}</p>
