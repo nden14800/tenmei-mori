@@ -14945,7 +14945,13 @@ async function renderSettingsDashboard() {
             return showToast("変更する項目を入力してください", "warning");
         }
 
-        if (!confirm("入力した内容でアカウント情報を更新しますか？")) return;
+        // (例) updateAccountSettings 内の confirm 置き換え
+    if (!await openCustomConfirm(
+        "変更の保存", 
+        "入力した内容でアカウント情報を更新しますか？", 
+        "更新する", 
+        "戻る"
+    )) return;
 
         showLoading(true);
         try {
