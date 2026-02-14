@@ -15291,71 +15291,65 @@ window.onloadTurnstileCallback = function() {
     });
 };
 
-// 4. 認証コード送信 (全てのCAPTCHA/Turnstileを完全に除去した最新版)
-async function initiateAuth(mode) {
-    // 入力要素の取得
-    const emailInputId = (mode === 'login') ? 'login-email' : 'reg-email';
-    const emailEl = document.getElementById(emailInputId);
-    const usernameEl = document.getElementById('reg-username');
-    const passEl = document.getElementById(mode === 'login' ? 'login-password' : 'reg-password');
+// --- 認証コード送信 (initiateAuth) ---
+    async function initiateAuth(mode) {
+        const emailInputId = (mode === 'login') ? 'login-email' : 'reg-email';
+        const emailEl = document.getElementById(emailInputId);
+        const usernameEl = document.getElementById('reg-username');
+        const passEl = document.getElementById(mode === 'login' ? 'login-password' : 'reg-password');
 
-    // 要素が存在しない場合の安全策
-    if (!emailEl || !passEl) return; 
+        if (!emailEl || !passEl) return; 
 
-    const email = emailEl.value.trim().toLowerCase();
-    const pass = passEl.value;
-    const username = usernameEl ? usernameEl.value : "";
+        const email = emailEl.value.trim().toLowerCase();
+        const pass = passEl.value;
+        const username = usernameEl ? usernameEl.value : "";
 
-    // 基本入力チェック
-    if(!email || !pass) return alert("メールアドレスとパスワードを入力してください");
-    if(mode === 'register' && !username) return alert("ユーザー名を入力してください");
+        // ▼ alert置き換え
+        if(!email || !pass) return showToast("メールアドレスとパスワードを入力してください", "warning");
+        if(mode === 'register' && !username) return showToast("ユーザー名を入力してください", "warning");
 
-    // 読み込み中表示
-    showLoading(true);
+        showLoading(true);
 
-    try {
-        // API送信 (tokenなしの純粋なリクエスト)
-        const res = await fetch(`${API_BASE}/api/auth/send`, { 
-            method: 'POST', 
-            headers: {'Content-Type': 'application/json'},
-            body: JSON.stringify({ 
-                email, 
-                password: pass, 
-                username: mode === 'register' ? username : undefined,
-                mode: mode 
-            }) 
-        });
-        
-        const data = await res.json();
-        
-        // レート制限（結界）のチェック
-        if (res.status === 429) {
-            showToast(data.message, 'warning', '天命の戒め');
-            return;
-        }
-
-        if(res.ok && data.success) {
-            // 成功：認証コード入力画面へ切り替え
-            document.getElementById('auth-step-1').classList.add('hidden');
-            document.getElementById('auth-step-2').classList.remove('hidden');
+        try {
+            const res = await fetch(`${API_BASE}/api/auth/send`, { 
+                method: 'POST', 
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({ 
+                    email, 
+                    password: pass, 
+                    username: mode === 'register' ? username : undefined,
+                    mode: mode 
+                }) 
+            });
             
-            const codeInput = document.getElementById('auth-code-input');
-            if(codeInput) {
-                codeInput.value = '';
-                codeInput.focus();
+            const data = await res.json();
+            
+            if (res.status === 429) {
+                showToast(data.message, 'warning', '天命の戒め');
+                return;
             }
-        } else {
-            // サーバー側からのエラーを表示
-            alert(`送信エラー: ${data.error || data.message || '不明なエラー'}`);
+
+            if(res.ok && data.success) {
+                document.getElementById('auth-step-1').classList.add('hidden');
+                document.getElementById('auth-step-2').classList.remove('hidden');
+                const codeInput = document.getElementById('auth-code-input');
+                if(codeInput) {
+                    codeInput.value = '';
+                    codeInput.focus();
+                }
+                showToast("認証コードを送信しました", "success");
+            } else {
+                // ▼ alert置き換え
+                showToast(`送信エラー: ${data.error || data.message || '不明なエラー'}`, "error");
+            }
+        } catch(e) { 
+            console.error("Auth Error:", e);
+            // ▼ alert置き換え
+            showToast("通信エラーが発生しました。\nインターネット接続を確認してください。", "error"); 
+        } finally { 
+            showLoading(false); 
         }
-    } catch(e) { 
-        console.error("Auth Error:", e);
-        alert("通信エラーが発生しました。インターネット接続を確認してください。"); 
-    } finally { 
-        // 成功・失敗に関わらず読み込み中を消す
-        showLoading(false); 
     }
-}
         // ==========================================
 //  リアルタイム推移グラフ (Wチャート・完全版)
 // ==========================================
