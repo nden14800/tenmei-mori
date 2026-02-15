@@ -1546,174 +1546,271 @@
 .bar-B { background: #3b82f6; } /* 青 */
 .bar-C { background: #6b7280; } /* 灰 */
 
-        /* --- 参拝の記録：ダッシュボードUI --- */
+       /* --- 参拝の記録：ダッシュボードUI (スマホ対応修正版) --- */
 
-/* 1. ヒーローセクション (主要スコア) */
-.stats-hero-grid {
-    display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    gap: 16px;
-    margin-bottom: 30px;
-}
+        /* 1. ヒーローセクション (主要スコア) */
+        .stats-hero-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 16px;
+            margin-bottom: 30px;
+        }
+        /* スマホ時の調整 */
+        @media (max-width: 640px) {
+            .stats-hero-grid {
+                gap: 10px; /* 間隔を詰める */
+                margin-bottom: 20px;
+            }
+        }
 
-.stats-hero-card {
-    background-color: var(--card-bg);
-    border: 1px solid var(--card-border);
-    border-radius: 20px;
-    padding: 24px;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    position: relative;
-    overflow: hidden;
-    box-shadow: 0 4px 10px rgba(0,0,0,0.03);
-}
+        .stats-hero-card {
+            background-color: var(--card-bg);
+            border: 1px solid var(--card-border);
+            border-radius: 20px;
+            padding: 24px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.03);
+        }
+        /* スマホ時の調整 */
+        @media (max-width: 640px) {
+            .stats-hero-card {
+                padding: 16px 10px; /* 余白を減らす */
+                border-radius: 16px;
+            }
+        }
 
-/* 背景の巨大文字装飾 */
-.stats-hero-card::after {
-    content: attr(data-bg-text);
-    position: absolute;
-    bottom: -15px;
-    right: -10px;
-    font-size: 5rem;
-    font-weight: 900;
-    color: currentColor;
-    opacity: 0.07;
-    font-family: 'Zen Old Mincho', serif;
-    pointer-events: none;
-}
+        /* 背景の巨大文字装飾 */
+        .stats-hero-card::after {
+            content: attr(data-bg-text);
+            position: absolute;
+            bottom: -15px;
+            right: -10px;
+            font-size: 5rem;
+            font-weight: 900;
+            color: currentColor;
+            opacity: 0.07;
+            font-family: 'Zen Old Mincho', serif;
+            pointer-events: none;
+        }
 
-.stats-hero-label {
-    font-size: 0.8rem;
-    font-weight: bold;
-    color: var(--text-sub);
-    margin-bottom: 5px;
-    z-index: 1;
-}
+        .stats-hero-label {
+            font-size: 0.8rem;
+            font-weight: bold;
+            color: var(--text-sub);
+            margin-bottom: 5px;
+            z-index: 1;
+            white-space: nowrap; /* 折り返し防止 */
+        }
+        @media (max-width: 640px) {
+            .stats-hero-label {
+                font-size: 0.7rem; /* 文字サイズ縮小 */
+                margin-bottom: 2px;
+            }
+        }
 
-.stats-hero-value {
-    font-size: 2.2rem;
-    font-weight: 900;
-    font-family: monospace; /* 数字は見やすく */
-    line-height: 1;
-    z-index: 1;
-}
+        .stats-hero-value {
+            font-size: 2.2rem;
+            font-weight: 900;
+            font-family: monospace;
+            line-height: 1;
+            z-index: 1;
+        }
+        @media (max-width: 640px) {
+            .stats-hero-value {
+                font-size: 1.6rem; /* 数字がはみ出ないよう縮小 */
+            }
+        }
 
-/* 色分け */
-.hero-total { color: var(--text-main); }
-.hero-daikichi { color: #d4af37; border-color: #fcd34d; background: linear-gradient(to bottom right, #fff, #fffbef); }
-.dark .hero-daikichi { background: linear-gradient(to bottom right, #1a1a1a, #3f2c00); border-color: #854d0e; }
+        /* 色分け */
+        .hero-total { color: var(--text-main); }
+        .hero-daikichi { color: #d4af37; border-color: #fcd34d; background: linear-gradient(to bottom right, #fff, #fffbef); }
+        .dark .hero-daikichi { background: linear-gradient(to bottom right, #1a1a1a, #3f2c00); border-color: #854d0e; }
 
-/* 2. インサイトエリア (比較) */
-.stats-insight-box {
-    background-color: var(--card-bg);
-    border-left: 4px solid var(--accent-red);
-    border-radius: 8px;
-    padding: 20px;
-    margin-bottom: 30px;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.05);
-}
+        /* 2. インサイトエリア (比較) */
+        .stats-insight-box {
+            background-color: var(--card-bg);
+            border-left: 4px solid var(--accent-red);
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 30px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+        }
+        @media (max-width: 640px) {
+            .stats-insight-box {
+                padding: 15px;
+                margin-bottom: 20px;
+            }
+        }
 
-.stats-insight-text {
-    font-size: 0.9rem;
-    line-height: 1.8;
-    color: var(--text-main);
-}
-.stats-insight-highlight {
-    font-weight: 900;
-    font-size: 1.2rem;
-    color: var(--accent-red);
-    margin: 0 4px;
-}
+        .stats-insight-text {
+            font-size: 0.9rem;
+            line-height: 1.8;
+            color: var(--text-main);
+        }
+        @media (max-width: 640px) {
+            .stats-insight-text {
+                font-size: 0.8rem;
+                line-height: 1.6;
+            }
+        }
 
-/* 3. 運勢スペクトル (グラフ) */
-.stats-graph-container {
-    background-color: var(--card-bg);
-    border: 1px solid var(--card-border);
-    border-radius: 16px;
-    padding: 24px;
-    position: relative;
-}
+        .stats-insight-highlight {
+            font-weight: 900;
+            font-size: 1.2rem;
+            color: var(--accent-red);
+            margin: 0 4px;
+        }
 
-.stats-graph-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 20px;
-    border-bottom: 1px solid var(--card-border);
-    padding-bottom: 10px;
-}
+        /* --- 参拝の記録：インタラクティブUI & 独立グラフ (スマホ対応修正版) --- */
 
-.stats-row {
-    display: flex;
-    align-items: center;
-    margin-bottom: 12px;
-    height: 28px; /* 行の高さ固定 */
-}
+        /* クリック・ホバーできるカード */
+        .stats-card-interactive {
+            transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+            cursor: pointer;
+            border: 1px solid var(--card-border);
+            position: relative;
+            z-index: 1;
+            background-color: var(--card-bg);
+            overflow: hidden;
+        }
 
-.stats-label-col {
-    width: 60px;
-    font-size: 0.75rem;
-    font-weight: bold;
-    color: var(--text-sub);
-    flex-shrink: 0;
-}
+        .stats-card-interactive:hover {
+            transform: translateY(-4px) scale(1.01);
+            box-shadow: 0 15px 30px -5px rgba(185, 28, 28, 0.15);
+            border-color: var(--accent-red);
+            z-index: 10;
+        }
 
-.stats-bar-area {
-    flex: 1;
-    height: 100%;
-    position: relative;
-    background: rgba(0,0,0,0.03);
-    border-radius: 6px;
-    overflow: hidden;
-    margin: 0 10px;
-    display: flex;
-}
+        /* グラフコンテナ */
+        .stats-graph-container {
+            padding-top: 40px;
+            margin-top: 20px;
+            border-radius: 16px;
+            position: relative;
+        }
 
-/* 2つのバーを重ねるためのスタイル */
-.stats-bar-avg {
-    height: 100%;
-    background-color: #d1d5db; /* 平均はグレー */
-    opacity: 0.5;
-    border-right: 1px solid #fff;
-}
-.dark .stats-bar-avg { background-color: #52525b; border-right-color: #000; }
+        /* 目盛り線（グリッド）レイヤー */
+        .graph-grid-overlay {
+            position: absolute;
+            top: 45px;
+            bottom: 20px;
+            left: 70px; /* PC用ラベル幅 */
+            right: 20px;
+            pointer-events: none;
+            z-index: 0;
+        }
+        /* スマホ時のグリッド位置調整 */
+        @media (max-width: 640px) {
+            .graph-grid-overlay {
+                left: 50px; /* ラベル幅縮小に合わせて左寄せ */
+                right: 10px; /* 右余白も減らす */
+                top: 40px;
+            }
+        }
 
-.stats-bar-user {
-    height: 100%;
-    background-color: var(--accent-red); /* 自分は赤 */
-    position: absolute; /* 平均の上に重ねる */
-    top: 0; left: 0;
-    border-radius: 6px;
-    opacity: 0.9;
-    box-shadow: 2px 0 5px rgba(0,0,0,0.1);
-    
-    /* アニメーション用 */
-    width: 0; 
-    transition: width 1s cubic-bezier(0.22, 1, 0.36, 1);
-}
+        .grid-line-item {
+            position: absolute;
+            top: 0;
+            bottom: 0;
+            width: 1px;
+            background-color: rgba(128, 128, 128, 0.1);
+        }
 
-/* 特別な色のバー */
-.bar-color-gold { background-color: #d4af37 !important; } /* 大吉 */
-.bar-color-black { background-color: #1f2937 !important; } /* 大凶 */
-.dark .bar-color-black { background-color: #9ca3af !important; }
+        .grid-label-text {
+            position: absolute;
+            top: -20px;
+            transform: translateX(-50%);
+            font-size: 0.65rem;
+            color: var(--text-sub);
+            opacity: 0.5;
+            font-family: monospace;
+            white-space: nowrap;
+        }
+        @media (max-width: 640px) {
+            .grid-label-text {
+                font-size: 0.55rem; /* 更に小さく */
+                top: -16px;
+            }
+        }
 
-.stats-val-col {
-    width: 80px;
-    font-family: monospace;
-    text-align: right;
-    font-size: 0.75rem;
-    color: var(--text-main);
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    line-height: 1.1;
-}
-.val-sub {
-    font-size: 0.65rem;
-    color: #9ca3af;
-}
+        /* グラフの行レイアウト */
+        .stats-row-dual {
+            display: flex;
+            align-items: center;
+            margin-bottom: 12px;
+            position: relative;
+            z-index: 1;
+            padding-right: 20px;
+        }
+        @media (max-width: 640px) {
+            .stats-row-dual {
+                padding-right: 10px; /* 右余白削減 */
+                margin-bottom: 10px;
+            }
+        }
+
+        /* グラフのラベル（左側） */
+        .stats-label-modern {
+            width: 70px; /* PC用 */
+            font-size: 0.75rem;
+            font-weight: bold;
+            color: var(--text-sub);
+            flex-shrink: 0;
+            padding-right: 10px;
+            text-align: right;
+            display: flex;
+            align-items: center;
+            justify-content: flex-end;
+            height: 100%;
+        }
+        /* スマホ時のラベル調整 */
+        @media (max-width: 640px) {
+            .stats-label-modern {
+                width: 50px; /* 幅を狭くしてバー領域を確保 */
+                padding-right: 6px;
+                font-size: 0.65rem; /* 文字サイズ縮小 */
+            }
+        }
+
+        /* バーエリア */
+        .stats-bar-area-dual {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+            justify-content: center;
+        }
+
+        /* バーの共通スタイル */
+        .stats-bar-base {
+            height: 10px;
+            border-radius: 3px;
+            width: 0;
+            transition: width 1s cubic-bezier(0.22, 1, 0.36, 1);
+            position: relative;
+        }
+        @media (max-width: 640px) {
+            .stats-bar-base {
+                height: 8px; /* 少し細く */
+            }
+        }
+
+        /* 色定義 */
+        .bar-gold  { background-color: #d4af37; } 
+        .dark .bar-gold { background-color: #fbbf24; }
+
+        .bar-black { background-color: #374151; } 
+        .dark .bar-black { background-color: #9ca3af; }
+
+        .bar-red   { background-color: var(--accent-red); }
+
+        .bar-avg   { background-color: #e5e7eb; }
+        .dark .bar-avg { background-color: #3f3f46; } 
 
 
 /* --- 参拝の記録：インタラクティブUI & 独立グラフ --- */
