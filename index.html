@@ -31,7 +31,6 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Tailwind Config -->
     <script>
-    function toggleSidebar() { document.body.classList.toggle("sidebar-collapsed"); }
       tailwind.config = {
         darkMode: 'class',
       }
@@ -4479,12 +4478,42 @@ body.theme-newyear {
 
     </style>
 <style>
-body.sidebar-collapsed #sidebar { width: 80px !important; }
-body.sidebar-collapsed #sidebar .nav-text, body.sidebar-collapsed #sidebar .nav-group-title { display: none !important; }
-body.sidebar-collapsed #sidebar .nav-btn { justify-content: center !important; padding: 12px 0 !important; }
-body.sidebar-collapsed #sidebar .nav-btn i, body.sidebar-collapsed #sidebar .nav-btn svg { margin-right: 0 !important; }
-body.sidebar-collapsed #main-content { margin-left: 110px !important; width: calc(100% - 110px) !important; }
-@media (max-width: 1024px) { #sidebar-toggle-btn { display: none !important; } }
+<style>
+/* デスクトップ用: ホバーで開閉するサイドバー */
+@media (min-width: 1025px) {
+    #sidebar {
+        width: 80px !important;
+        transition: width 0.3s cubic-bezier(0.2, 0.8, 0.2, 1) !important;
+        overflow-x: hidden !important;
+    }
+    #sidebar:hover {
+        width: 260px !important;
+    }
+    #sidebar .nav-text, #sidebar .nav-group-title {
+        opacity: 0 !important;
+        transition: opacity 0.2s !important;
+        white-space: nowrap !important;
+    }
+    #sidebar:hover .nav-text, #sidebar:hover .nav-group-title {
+        opacity: 1 !important;
+    }
+    #sidebar .nav-btn {
+        justify-content: flex-start !important;
+        padding: 12px 16px !important;
+        min-width: 220px !important;
+    }
+    #sidebar .nav-btn i, #sidebar .nav-btn svg {
+        margin-right: 14px !important;
+        flex-shrink: 0 !important;
+    }
+    #main-content {
+        margin-left: 110px !important;
+        width: calc(100% - 110px) !important;
+        transition: margin-left 0.3s !important;
+    }
+    /* サイドバーが展開された時にメインコンテンツを少し押し出す場合はここを調整 */
+    /* 今回は重なりを防ぐため固定マージンにします */
+}
 </style>
 </head>
 <body>
@@ -4505,7 +4534,6 @@ body.sidebar-collapsed #main-content { margin-left: 110px !important; width: cal
 
     <!-- サイドバー (Modern Glass Dock) -->
 <nav id="sidebar">
-    <div id="sidebar-toggle-btn" onclick="toggleSidebar()" style="position: absolute; right: -12px; top: 30px; width: 24px; height: 24px; background: #b91c1c; color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; z-index: 101; border: 2px solid white; box-shadow: 0 2px 8px rgba(0,0,0,0.2);"><i class="bi bi-chevron-left"></i></div>
     <!-- 1. メイン機能グループ (モバイルにも表示) -->
     <div class="nav-group w-full">
         <div class="nav-group-title hidden lg:block">Main Menu</div>
@@ -6480,7 +6508,6 @@ body.sidebar-collapsed #main-content { margin-left: 110px !important; width: cal
 
     <!-- JavaScript ロジック -->
     <script>
-    function toggleSidebar() { document.body.classList.toggle("sidebar-collapsed"); }
         // ==========================================
         //  設定: Cloudflare WorkerのURL
         // ==========================================
