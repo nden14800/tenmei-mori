@@ -50,60 +50,61 @@
     <style>
         :root {
             /* ライトモード変数 */
-            /* ▼▼▼ 背景パターンはそのまま、色だけ真っ白に変更 ▼▼▼ */
-            --bg-pattern: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23d4d4d4' fill-opacity='0.15'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
-            --bg-color: #ffffff; /* ← ここを #fdfbf7 から #ffffff に変更 */
-            --text-main: #2b2b2b;
-            --text-sub: #555555;
-            --card-bg: #ffffff;
-            --card-border: #e6e6e6;
+            /* ▼▼▼ 背景を「白(#ffffff)」から「クリーム(#fdfbf7)」へ変更 ▼▼▼ */
+            --bg-pattern: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23d4d4d4' fill-opacity='0.1'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+            --bg-color: #fdfbf7; /* 温かみのあるクリーム色 */
+            --text-main: #2c2c2c; /* 真っ黒ではなく濃いグレーで柔らかく */
+            --text-sub: #666666;
+            
+            /* カード背景：完全な白ではなく、少し透過させて背景と馴染ませる */
+            --card-bg: rgba(255, 255, 255, 0.8);
+            
+            /* 枠線は極限まで薄くし、影で表現する */
+            --card-border: rgba(0, 0, 0, 0.03);
+            --shadow-soft: 0 10px 40px -10px rgba(0, 0, 0, 0.08); /* 現代的な柔らかい影 */
+            --shadow-hover: 0 20px 50px -10px rgba(185, 28, 28, 0.15); /* ホバー時の影 */
+
             --accent-red: #b91c1c;
             --accent-gold: #c5a059;
             --glass-bg: rgba(255, 255, 255, 0.85);
             --glass-border: rgba(255, 255, 255, 0.3);
-            --sidebar-bg: rgba(255, 255, 255, 0.75); /* すりガラス用に透明度アップ */
+            --sidebar-bg: rgba(253, 251, 247, 0.85); /* サイドバーも馴染ませる */
             --input-bg: #ffffff;
             --omi-paper: #fffcf2; 
             --sidebar-width: 80px;
             --sidebar-width-expanded: 240px;
         }
 
-        /* --- ダークモード変数定義 (システム検知) --- */
+        /* --- ダークモード変数定義 --- */
         @media (prefers-color-scheme: dark) {
             :root {
-                --accent-red: #b91c1c; 
-                /* ▼▼▼ 修正: 不透明度を 0.05 -> 0.02 に下げて、ライトモードと同等の薄さに調整 ▼▼▼ */
+                --accent-red: #ef4444; /* ダークモードでは少し明るい赤に */
                 --bg-pattern: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.02'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
-                --bg-color: #1a1a1a;
-                --text-main: #e0e0e0;
-                --text-sub: #b0b0b0;
-                --card-bg: #2c2c2c;
-                --card-border: #444444;
-                --accent-gold: #e5c07b;
+                --bg-color: #121212; /* より深い黒 */
+                --text-main: #f0f0f0;
+                --text-sub: #a0a0a0;
+                --card-bg: rgba(30, 30, 30, 0.6); /* ガラス感を強める */
+                --card-border: rgba(255, 255, 255, 0.08);
+                --shadow-soft: 0 10px 40px -10px rgba(0, 0, 0, 0.5);
+                --shadow-hover: 0 20px 50px -10px rgba(239, 68, 68, 0.2);
+                
+                --accent-gold: #fbbf24;
                 --glass-bg: rgba(30, 30, 30, 0.9);
                 --glass-border: rgba(255, 255, 255, 0.1);
-                --sidebar-bg: rgba(30, 30, 30, 0.75);
-                --input-bg: #333333;
-                --omi-paper: #fffcf2; 
+                --sidebar-bg: rgba(18, 18, 18, 0.8);
+                --input-bg: #222222;
             }
         }
-
-        /* 手動切り替え (.darkクラス付与時) */
+        
+        /* 手動切り替え (.darkクラス) */
         .dark {
-            --accent-red: #b91c1c !important;
-            /* ▼▼▼ 修正: 不透明度を 0.05 -> 0.02 に下げて、ライトモードと同等の薄さに調整 ▼▼▼ */
-            --bg-pattern: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.02'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E") !important;
-            --bg-color: #1a1a1a !important;
-            --text-main: #e0e0e0 !important;
-            --text-sub: #b0b0b0 !important;
-            --card-bg: #2c2c2c !important;
-            --card-border: #444444 !important;
-            --accent-gold: #e5c07b !important;
-            --glass-bg: rgba(30, 30, 30, 0.9) !important;
-            --glass-border: rgba(255, 255, 255, 0.1) !important;
-            --sidebar-bg: rgba(30, 30, 30, 0.75) !important;
-            --input-bg: #333333 !important;
-            --omi-paper: #fffcf2 !important; 
+            --bg-color: #121212 !important;
+            --text-main: #f0f0f0 !important;
+            --card-bg: rgba(30, 30, 30, 0.6) !important;
+            --card-border: rgba(255, 255, 255, 0.08) !important;
+            --shadow-soft: 0 10px 40px -10px rgba(0, 0, 0, 0.5) !important;
+            --shadow-hover: 0 20px 50px -10px rgba(239, 68, 68, 0.2) !important;
+            /* 他の変数はメディアクエリと同じ */
         }
 
         /* Lab: 迎春・雅モード */
