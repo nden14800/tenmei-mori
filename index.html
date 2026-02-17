@@ -323,25 +323,25 @@
             background-color: rgba(128,128,128,0.1);
         }
 
-        /* --- 新ローディングスピナー（リニューアル版） --- */
+        /* --- 新ローディングスピナー（リニューアル版：うにょうにょ） --- */
         #loading-overlay {
             position: fixed;
             top: 0; left: 0; width: 100%; height: 100%;
-            /* 競合サイトに合わせて白ベースのすりガラス風に変更 */
-            background: rgba(255, 255, 255, 0.92);
-            backdrop-filter: blur(8px);
-            -webkit-backdrop-filter: blur(8px);
+            /* 背景を「白のすりガラス」に変更 */
+            background: rgba(255, 255, 255, 0.9);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
             z-index: 9999;
             display: none;
-            flex-direction: column; /* アイコンと文字を縦並びに */
+            flex-direction: column;
             align-items: center;
             justify-content: center;
             opacity: 0;
             transition: opacity 0.3s ease;
         }
-        /* ダークモード時は黒ベースに */
+        /* ダークモード対応（黒のすりガラス） */
         .dark #loading-overlay {
-            background: rgba(20, 20, 20, 0.92);
+            background: rgba(20, 20, 20, 0.9);
         }
 
         #loading-overlay.visible {
@@ -351,37 +351,39 @@
         .loader-svg {
             width: 60px;
             height: 60px;
+            /* 全体を回転させる */
             animation: rotate 2s linear infinite;
             transform-origin: center center;
-            /* 影をつけて立体感を出す */
-            filter: drop-shadow(0 2px 4px rgba(185, 28, 28, 0.2));
+            /* 紅い影をつけて発光感を出す */
+            filter: drop-shadow(0 0 4px rgba(185, 28, 28, 0.3));
         }
         
         .loader-path {
-            /* 白から「紅（アクセントカラー）」に変更 */
-            stroke: var(--accent-red); 
-            stroke-width: 4; /* 線を少し太く */
-            stroke-linecap: round;
+            /* 色を「紅」に変更 */
+            stroke: var(--accent-red);
+            stroke-width: 5; /* 線を太くして存在感を出す */
+            stroke-linecap: round; /* 端っこを丸くする（重要） */
             fill: none;
-            /* 伸び縮みするアニメーションを追加 */
+            /* 「うにょうにょ」する伸縮アニメーション */
             animation: dash 1.5s ease-in-out infinite;
         }
 
-        /* 読み込み中の文字（オプション） */
+        /* 下に表示する文字（オプション） */
         .loading-text {
-            margin-top: 15px;
+            margin-top: 20px;
             font-family: 'Zen Old Mincho', serif;
-            font-weight: bold;
-            font-size: 0.9rem;
+            font-weight: 900;
+            font-size: 0.85rem;
             color: var(--accent-red);
-            letter-spacing: 0.2em;
-            animation: pulse 1.5s infinite ease-in-out;
+            letter-spacing: 0.1em;
+            animation: pulse-text 1.5s ease-in-out infinite;
         }
 
         @keyframes rotate {
             100% { transform: rotate(360deg); }
         }
 
+        /* 独特な「変な動き」を作る伸縮アニメーション */
         @keyframes dash {
             0% {
                 stroke-dasharray: 1, 150;
@@ -397,9 +399,9 @@
             }
         }
 
-        @keyframes pulse {
+        @keyframes pulse-text {
             0%, 100% { opacity: 1; }
-            50% { opacity: 0.5; }
+            50% { opacity: 0.6; }
         }
 
         /* --- ホーム画面 (札デザイン統一版) --- */
