@@ -13727,75 +13727,88 @@ function changeHistoryPage(newPage) {
     //  ビュー制御・参拝の記録システム (プロフィール廃止・統計特化版)
     // ==========================================
 
-    // 画面切り替え関数 (サイドバー連動版)
-window.showView = function(viewId) {
-    // 1. サイドバーのアクティブ状態を更新
-    document.querySelectorAll('.nav-btn').forEach(btn => btn.classList.remove('active'));
-    const activeBtn = document.getElementById(`nav-${viewId}`);
-    if (activeBtn) {
-        activeBtn.classList.add('active');
-    } else {
-        // IDが一致しない場合（detailなど）は親カテゴリをアクティブにする等の処理があればここへ
-        // 例: 記事詳細は「社務所だより」をアクティブになど
-        if (viewId === 'article-detail') {
-            // 直前のビューに応じてハイライト（簡易的にnewsにしておく）
-            const newsBtn = document.getElementById('nav-news');
-            if(newsBtn) newsBtn.classList.add('active');
-        }
-    }
-
-    // 2. Lab機能へのアクセス制限処理
-    if(viewId === 'lab') {
-        const lock = document.getElementById('lab-lock');
-        const wrapper = document.getElementById('lab-content-wrapper');
-        
-        if(!currentState.user) {
-            lock.classList.remove('hidden');
-            wrapper.classList.add('lab-blurred');
+    // 画面切り替え関数 (サイドバー連動・完全修正版)
+    window.showView = function(viewId) {
+        // 1. サイドバーのアクティブ状態を更新
+        document.querySelectorAll('.nav-btn').forEach(btn => btn.classList.remove('active'));
+        const activeBtn = document.getElementById(`nav-${viewId}`);
+        if (activeBtn) {
+            activeBtn.classList.add('active');
         } else {
-            lock.classList.add('hidden');
-            wrapper.classList.remove('lab-blurred');
+            // 詳細画面など、サイドバーにIDがない場合の親アクティブ化処理
+            if (viewId === 'article-detail') {
+                const newsBtn = document.getElementById('nav-news');
+                if(newsBtn) newsBtn.classList.add('active');
+            }
         }
-    }
 
-    // 3. 画面の切り替え（フェードアニメーション）
-    document.querySelectorAll('.view-section').forEach(el => {
-        el.classList.remove('active');
-        setTimeout(() => {
-            if(!el.classList.contains('active')) el.style.display = 'none';
-        }, 500);
-    });
-    
-    const target = document.getElementById(`view-${viewId}`);
-    if (target) {
-        target.style.display = 'block';
-        void target.offsetWidth; // リフロー
-        target.classList.add('active');
+        // 2. Lab機能へのアクセス制限処理 (ロック画面の制御)
+        if(viewId === 'lab') {
+            const lock = document.getElementById('lab-lock');
+            const wrapper = document.getElementById('lab-content-wrapper');
+            
+            if(!currentState.user) {
+                // 未ログイン時
+                if(lock) lock.classList.remove('hidden');
+                if(wrapper) wrapper.classList.add('lab-blurred');
+            } else {
+                // ログイン時
+                if(lock) lock.classList.add('hidden');
+                if(wrapper) wrapper.classList.remove('lab-blurred');
+            }
+        }
+
+        // 3. 画面の切り替え（フェードアニメーション）
+        document.querySelectorAll('.view-section').forEach(el => {
+            el.classList.remove('active');
+            setTimeout(() => {
+                if(!el.classList.contains('active')) el.style.display = 'none';
+            }, 500);
+        });
         
-        // ページトップへスクロール
-        window.scrollTo({ top: 0, behavior: 'smooth' });
-    }
-    currentState.view = viewId;
-
-    // --- ビューごとの固有処理 ---
-    if(viewId === 'draw') resetOmikujiPool();
-    if(viewId === 'history') loadHistory();
-    if(viewId === 'prefecture') renderPrefectureRanking();
-    if(viewId === 'omamori') OmamoriSystem.reset();
-    if(viewId === 'about' || viewId === 'privacy') initTOC(viewId);
-    if(viewId === 'stats') {
-        const lock = document.getElementById('stats-lock');
-        const wrapper = document.getElementById('stats-content-wrapper');
-        if(!currentState.user) {
-            if(lock) lock.classList.remove('hidden');
-            if(wrapper) wrapper.classList.add('lab-blurred');
-        } else {
-            if(lock) lock.classList.add('hidden');
-            if(wrapper) wrapper.classList.remove('lab-blurred');
-            loadMyStats();
+        const target = document.getElementById(`view-${viewId}`);
+        if (target) {
+            target.style.display = 'block';
+            void target.offsetWidth; // リフロー強制
+            target.classList.add('active');
+            
+            // ページトップへスクロール
+            window.scrollTo({ top: 0, behavior: 'smooth' });
         }
-    }
-};
+        currentState.view = viewId;
+
+        // --- ビューごとの固有初期化処理 ---
+        if(viewId === 'draw') resetOmikujiPool();
+        if(viewId === 'history') loadHistory();
+        if(viewId === 'prefecture') renderPrefectureRanking();
+        if(viewId === 'about' || viewId === 'privacy') initTOC(viewId);
+        
+        // 御守授与所のリセット
+        if(viewId === 'omamori' && typeof OmamoriSystem !== 'undefined') {
+            OmamoriSystem.reset();
+        }
+
+        // 参拝の記録（統計）のロック制御
+        if(viewId === 'stats') {
+            const lock = document.getElementById('stats-lock');
+            const wrapper = document.getElementById('stats-content-wrapper');
+            if(!currentState.user) {
+                if(lock) lock.classList.remove('hidden');
+                if(wrapper) {
+                    wrapper.classList.add('lab-blurred');
+                    // ダミー表示
+                    const totalEl = document.getElementById('hero-total-val');
+                    if(totalEl) totalEl.textContent = "-";
+                    const daikichiEl = document.getElementById('hero-daikichi-val');
+                    if(daikichiEl) daikichiEl.textContent = "-";
+                }
+            } else {
+                if(lock) lock.classList.add('hidden');
+                if(wrapper) wrapper.classList.remove('lab-blurred');
+                loadMyStats();
+            }
+        }
+    };
 
         // ■ TENMEI Labs (lab)
         if(viewId === 'lab') {
