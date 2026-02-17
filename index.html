@@ -13741,7 +13741,7 @@ function calculateMemberRank(stats) {
     return { name: "一般参拝者", class: "rank-normal", icon: "bi-person" };
 }
 
-// アカウント設定ダッシュボードの描画関数（非同期化・ランク機能実装版）
+// アカウント設定ダッシュボードの描画関数（環境設定追加版）
 async function renderSettingsDashboard() {
     const container = document.getElementById('profile-dashboard-content');
     if (!container || !currentState.user) return;
@@ -13760,12 +13760,14 @@ async function renderSettingsDashboard() {
         const res = await authFetch(`${API_BASE}/api/user/profile?username=${encodeURIComponent(user.username)}`, { method: 'GET' });
         if (res.ok) {
             const data = await res.json();
-            // ランク計算
             rankInfo = calculateMemberRank(data.stats);
         }
     } catch(e) {
         console.error("Rank fetch failed", e);
     }
+
+    // 現在の設定値を取得（AppConfigヘルパー利用）
+    const settings = AppConfig.getCurrent();
 
     // HTML生成
     container.innerHTML = `
@@ -13778,7 +13780,6 @@ async function renderSettingsDashboard() {
                 </div>
                 <div class="flex-1">
                     <div class="mb-2">
-                        <!-- ▼ 変更箇所: 動的ランクバッジ ▼ -->
                         <span class="rank-badge-base ${rankInfo.class}">
                             <i class="bi ${rankInfo.icon}"></i> ${rankInfo.name}
                         </span>
@@ -13788,21 +13789,68 @@ async function renderSettingsDashboard() {
                 </div>
             </div>
 
-            <!-- 2. Status Card (クラウド同期状況) -->
-            <div class="stats-card-interactive profile-card-status p-6 rounded-2xl">
-                <div class="flex items-center gap-2 mb-2 text-green-600 font-bold text-sm">
-                    <i class="bi bi-cloud-check-fill text-xl"></i>
-                    <span>クラウド同期: 有効</span>
+            <!-- ★NEW: 環境設定 (Formal Settings) -->
+            <div class="stats-card-interactive profile-card-status p-6 rounded-2xl bg-white dark:bg-zinc-900 border-l-4 border-l-indigo-500">
+                <div class="flex items-center gap-2 mb-4 text-indigo-600 dark:text-indigo-400">
+                    <i class="bi bi-sliders text-xl"></i>
+                    <h4 class="font-bold text-sm">環境設定</h4>
                 </div>
-                <p class="text-xs text-gray-500 leading-relaxed">
-                    あなたの参拝記録、お気に入り、Labs設定は安全にクラウドへ保存されています。
-                </p>
-                <div class="mt-4 w-full bg-gray-100 dark:bg-zinc-800 h-2 rounded-full overflow-hidden">
-                    <div class="bg-green-500 h-full w-full opacity-50"></div>
+                
+                <div class="space-y-4">
+                    <!-- 1. 宵闇の刻 (ダークモード) -->
+                    <div class="flex justify-between items-center">
+                        <div class="flex items-center gap-2">
+                            <div class="w-8 h-8 rounded-full bg-purple-100 dark:bg-purple-900/30 flex items-center justify-center text-purple-600">
+                                <i class="bi bi-moon-stars-fill"></i>
+                            </div>
+                            <div class="text-sm font-bold text-gray-700 dark:text-gray-300">
+                                宵闇の刻
+                                <span class="block text-[10px] text-gray-400 font-normal">常時ダークモードを適用</span>
+                            </div>
+                        </div>
+                        <label class="toggle-switch scale-90">
+                            <input type="checkbox" ${settings.dark ? 'checked' : ''} onchange="AppConfig.toggle('dark', this.checked)">
+                            <span class="slider"></span>
+                        </label>
+                    </div>
+
+                    <!-- 2. 神速の祈り (アニメーション短縮) -->
+                    <div class="flex justify-between items-center">
+                        <div class="flex items-center gap-2">
+                            <div class="w-8 h-8 rounded-full bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center text-blue-600">
+                                <i class="bi bi-lightning-charge-fill"></i>
+                            </div>
+                            <div class="text-sm font-bold text-gray-700 dark:text-gray-300">
+                                神速の祈り
+                                <span class="block text-[10px] text-gray-400 font-normal">おみくじ演出を省略</span>
+                            </div>
+                        </div>
+                        <label class="toggle-switch scale-90">
+                            <input type="checkbox" ${settings.speed ? 'checked' : ''} onchange="AppConfig.toggle('speed', this.checked)">
+                            <span class="slider"></span>
+                        </label>
+                    </div>
+
+                    <!-- 3. 雅モード (テーマ) -->
+                    <div class="flex justify-between items-center">
+                        <div class="flex items-center gap-2">
+                            <div class="w-8 h-8 rounded-full bg-red-100 dark:bg-red-900/30 flex items-center justify-center text-red-600">
+                                <i class="bi bi-flower1"></i>
+                            </div>
+                            <div class="text-sm font-bold text-gray-700 dark:text-gray-300">
+                                迎春・雅モード
+                                <span class="block text-[10px] text-gray-400 font-normal">紅白の祝いテーマを適用</span>
+                            </div>
+                        </div>
+                        <label class="toggle-switch scale-90">
+                            <input type="checkbox" ${settings.newyear ? 'checked' : ''} onchange="AppConfig.toggle('newyear', this.checked)">
+                            <span class="slider"></span>
+                        </label>
+                    </div>
                 </div>
             </div>
 
-            <!-- 3. Edit Form (登録情報変更) -->
+            <!-- 4. Edit Form (登録情報変更) -->
             <div class="stats-card-interactive profile-card-edit p-6 rounded-2xl bg-white dark:bg-zinc-900">
                 <div class="flex items-center gap-2 mb-6 border-b border-gray-100 dark:border-gray-700 pb-3">
                     <i class="bi bi-pencil-square text-blue-500"></i>
@@ -13828,7 +13876,7 @@ async function renderSettingsDashboard() {
                 </div>
             </div>
 
-            <!-- 4. Danger Zone (ログアウト・削除) -->
+            <!-- 5. Danger Zone (ログアウト・削除) -->
             <div class="stats-card-interactive profile-card-danger p-6 rounded-2xl bg-red-50 dark:bg-red-900/10 border-red-100 dark:border-red-900">
                 <div class="flex items-center gap-2 mb-4 text-[var(--accent-red)]">
                     <i class="bi bi-shield-exclamation"></i>
@@ -13844,10 +13892,6 @@ async function renderSettingsDashboard() {
                         <i class="bi bi-trash"></i> アカウント削除
                     </button>
                 </div>
-                
-                <p class="text-[10px] text-red-500 mt-3 text-center leading-tight opacity-70">
-                    ※削除したデータは復元できません。
-                </p>
             </div>
 
         </div>
