@@ -4494,38 +4494,37 @@ body.theme-newyear {
         </svg>
     </div>
 
-    <!-- サイドバー -->
-    <nav id="sidebar">
-        <button class="nav-btn" onclick="showView('home')">
-            <i class="bi bi-house-door"></i>
+    <!-- サイドバー (Modern Glass Dock) -->
+<nav id="sidebar">
+    <!-- 1. メイン機能グループ (モバイルにも表示) -->
+    <div class="nav-group w-full">
+        <div class="nav-group-title hidden lg:block">Main Menu</div>
+        
+        <button class="nav-btn active" onclick="showView('home')" id="nav-home">
+            <i class="bi bi-house-door-fill"></i>
             <span class="nav-text">ホーム</span>
         </button>
-        <button class="nav-btn" onclick="showView('zodiac')">
+        
+        <button class="nav-btn" onclick="showView('zodiac')" id="nav-zodiac">
             <i class="bi bi-stars"></i>
-            <span class="nav-text">12星座×血液型占い</span>
+            <span class="nav-text">12星座</span>
         </button>
-        <button class="nav-btn" onclick="showView('history')">
-            <i class="bi bi-clock-history"></i>
-            <span class="nav-text">おみくじの轍</span>
+        
+        <button class="nav-btn" onclick="showView('stats')" id="nav-stats">
+            <i class="bi bi-bar-chart-line-fill"></i>
+            <span class="nav-text">参拝記録</span>
         </button>
-        <button class="nav-btn" onclick="showView('news')">
-            <i class="bi bi-bell"></i>
-            <span class="nav-text">社務所だより</span>
-        </button>
-        <button class="nav-btn" onclick="showView('column')">
-            <i class="bi bi-book"></i>
-            <span class="nav-text">神籤草子</span>
-        </button>
-        <!-- サイドバー内に追加 -->
-        <button class="nav-btn" onclick="showView('omamori')">
-            <!-- 盾のアイコンで「守り」を表現 -->
+
+        <button class="nav-btn" onclick="showView('omamori')" id="nav-omamori">
             <i class="bi bi-shield-fill-check"></i>
-            <span class="nav-text">御守授与所</span>
+            <span class="nav-text">御守</span>
         </button>
-        <!-- サイドバーボタン: TENMEI Labs -->
-        <button class="nav-btn" onclick="showView('lab')">
-            <div class="nav-flask-anim">
-                <svg viewBox="0 0 200 200" overflow="hidden" style="width:100%; height:100%;">
+
+        <!-- Labs (モバイルでも表示) -->
+        <button class="nav-btn" onclick="showView('lab')" id="nav-lab">
+            <div style="display:flex; justify-content:center; align-items:center;">
+                <!-- アイコンとしてSVGを直接埋め込み -->
+                <svg viewBox="0 0 200 200" overflow="hidden">
                     <defs>
                         <clipPath id="flaskClipNav">
                              <path d="M80 20 L120 20 L120 70 L170 170 C175 180, 165 190, 150 190 L50 190 C35 190, 25 180, 30 170 L80 70 Z" />
@@ -4534,47 +4533,63 @@ body.theme-newyear {
                     <g class="flask-container">
                         <g clip-path="url(#flaskClipNav)">
                             <g class="liquid-container">
-                                <!-- サイドバーは視認性重視で手前の波のみ表示 -->
-                                <path class="wave-path wave-front" 
-                                      d="M0 120 Q50 140 100 120 T200 120 T300 120 T400 120 V250 H0 Z" />
+                                <path class="wave-path wave-front" d="M0 120 Q50 140 100 120 T200 120 T300 120 T400 120 V250 H0 Z" fill="currentColor"/>
                             </g>
                         </g>
-                        <!-- ガラス容器 -->
-                        <path class="glass-stroke" fill="none" stroke-width="12"
-                              d="M80 20 L120 20 L120 70 L170 170 C175 180, 165 190, 150 190 L50 190 C35 190, 25 180, 30 170 L80 70 Z" />
+                        <path class="glass-stroke" fill="none" stroke="currentColor" stroke-width="12" d="M80 20 L120 20 L120 70 L170 170 C175 180, 165 190, 150 190 L50 190 C35 190, 25 180, 30 170 L80 70 Z" />
                     </g>
                 </svg>
             </div>
-            <span class="nav-text">TENMEI Labs</span>
+            <span class="nav-text">Labs</span>
         </button>
+    </div>
 
-        <button class="nav-btn" onclick="showView('prefecture')">
-            <i class="bi bi-list-columns-reverse"></i>
+    <!-- 2. コンテンツグループ (デスクトップ推奨) -->
+    <!-- モバイルではスペース節約のためハンバーガーか「その他」に入れるのが一般的ですが、今回は一旦デスクトップのみ表示するクラスを付与 -->
+    <div class="nav-group desktop-only">
+        <div class="nav-group-title">Contents</div>
+        
+        <button class="nav-btn" onclick="showView('history')" id="nav-history">
+            <i class="bi bi-clock-history"></i>
+            <span class="nav-text">おみくじの轍</span>
+        </button>
+        
+        <button class="nav-btn" onclick="showView('prefecture')" id="nav-prefecture">
+            <i class="bi bi-map-fill"></i>
             <span class="nav-text">全国の運気</span>
         </button>
 
-        <!-- ▼▼ 変更: 参拝者台帳を削除し、統計ボタンに変更 ▼▼ -->
-    <button class="nav-btn" onclick="showView('stats')">
-        <i class="bi bi-bar-chart-line-fill"></i>
-        <span class="nav-text">参拝の記録</span>
-    </button>
-        
-        <button class="nav-btn" onclick="handleProfileClick()" id="nav-login-btn">
-            <i class="bi bi-person-circle"></i>
-            <span class="nav-text">ログイン/登録</span>
+        <button class="nav-btn" onclick="showView('news')" id="nav-news">
+            <i class="bi bi-bell-fill"></i>
+            <span class="nav-text">社務所だより</span>
         </button>
         
-        <div style="margin-top: auto; width: 100%;">
-            <button class="nav-btn" onclick="showView('about')">
-                <i class="bi bi-info-circle"></i>
-                <span class="nav-text">当サイトについて</span>
-            </button>
-            <button class="nav-btn" onclick="showView('privacy')">
-                <i class="bi bi-shield-lock"></i>
-                <span class="nav-text">プライバシー</span>
-            </button>
-        </div>
-    </nav>
+        <button class="nav-btn" onclick="showView('column')" id="nav-column">
+            <i class="bi bi-journal-text"></i>
+            <span class="nav-text">神籤草子</span>
+        </button>
+    </div>
+
+    <!-- 3. システムグループ (下寄せ) -->
+    <div style="margin-top: auto;" class="nav-group desktop-only">
+        <div class="nav-group-title">System</div>
+        
+        <button class="nav-btn special-auth" onclick="handleProfileClick()" id="nav-login-btn">
+            <i class="bi bi-person-circle"></i>
+            <span class="nav-text">ログイン</span>
+        </button>
+
+        <button class="nav-btn" onclick="showView('about')" id="nav-about">
+            <i class="bi bi-info-circle"></i>
+            <span class="nav-text">当サイトについて</span>
+        </button>
+        
+        <button class="nav-btn" onclick="showView('privacy')" id="nav-privacy">
+            <i class="bi bi-shield-lock"></i>
+            <span class="nav-text">プライバシー</span>
+        </button>
+    </div>
+</nav>
 
     <!-- メインエリア -->
     <main id="main-content">
