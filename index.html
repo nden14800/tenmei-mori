@@ -13810,39 +13810,6 @@ function changeHistoryPage(newPage) {
         }
     };
 
-        // その他の機能の初期化
-        if(viewId === 'draw') resetOmikujiPool();
-        if(viewId === 'history') loadHistory();
-        if(viewId === 'prefecture') renderPrefectureRanking();
-        if(viewId === 'about' || viewId === 'privacy') initTOC(viewId);
-        
-        // 御守授与所のリセット
-        if(viewId === 'omamori' && typeof OmamoriSystem !== 'undefined') {
-            OmamoriSystem.reset();
-        }
-    };
-
-        // ■ TENMEI Labs (lab)
-        if(viewId === 'lab') {
-            const lock = document.getElementById('lab-lock');
-            const wrapper = document.getElementById('lab-content-wrapper');
-            if(!currentState.user) {
-                if(lock) lock.classList.remove('hidden');
-                if(wrapper) wrapper.classList.add('lab-blurred');
-            } else {
-                if(lock) lock.classList.add('hidden');
-                if(wrapper) wrapper.classList.remove('lab-blurred');
-            }
-        }
-
-        // その他の初期化処理
-        if(viewId === 'draw') resetOmikujiPool();
-        if(viewId === 'history') loadHistory();
-        if(viewId === 'prefecture') renderPrefectureRanking();
-        if(viewId === 'about' || viewId === 'privacy') initTOC(viewId);
-        if(viewId === 'omamori') OmamoriSystem.reset();
-    };
-
         // プロフィールボタン（ナビゲーション）の挙動
 function handleProfileClick() {
     if (currentState.user) {
