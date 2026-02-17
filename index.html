@@ -15783,6 +15783,168 @@ const LiveChart = {
             confirmResolve = null;
         }
     }
+
+        // --- アプリ全体の設定管理 (Labs機能含む) ---
+const AppConfig = {
+    // デフォルト設定
+    defaults: {
+        dark: false,    // 宵闇の刻
+        speed: false,   // 神速の祈り
+        newyear: false, // 雅モード
+        // Labs機能
+        bigtext: false,
+        mist: false,
+        gold: false
+    },
+
+    // 現在の設定を取得 (LocalStorage優先)
+    getCurrent: function() {
+        let settings = { ...this.defaults };
+        // ログイン時はユーザー個別、未ログイン時はゲスト設定
+        const key = currentState.user 
+            ? `lab_settings_${currentState.user.email}` 
+            : 'lab_settings_guest';
+        
+        try {
+            const saved = localStorage.getItem(key);
+            if (saved) settings = { ...settings, ...JSON.parse(saved) };
+        } catch(e) {}
+        return settings;
+    },
+
+    // 設定の切り替え (UIからの呼び出し用)
+    toggle: function(key, isActive) {
+        // 即時反映ロジック
+        if(key === 'dark') {
+            applyThemeByConfig(isActive); // ※後述のapplyTheme修正版を利用
+        } else if(key === 'speed') {
+            window.labSpeedMode = isActive;
+        } else if(key === 'newyear') {
+            if(isActive) document.body.classList.add('theme-newyear');
+            else document.body.classList.remove('theme-newyear');
+        }
+
+        // 保存処理
+        saveLabSettings(); // 既存の保存関数を再利用（内部でDOMの状態を見て保存するため）
+    }
+};
+
+// --- 既存の saveLabSettings / loadLabSettings を改修 ---
+
+// 1. 設定保存（DOMの状態を集めて保存）
+async function saveLabSettings() {
+    // 正式機能 + Labs機能 の現在の状態を取得
+    const settings = {
+        // 正式機能: DOMがない場合(未表示)は現在の設定値を維持する工夫が必要だが、
+        // 簡易的にAppConfig.getCurrent()をベースに、存在するDOMの値だけ上書きする
+        ...AppConfig.getCurrent(),
+    };
+
+    // 正式機能のスイッチがあれば上書き (プロフィール画面にいる場合)
+    // ない場合は変更しない（getCurrentの値のまま）
+    const swDark = document.querySelector('input[onchange*="AppConfig.toggle(\'dark\'"]');
+    if(swDark) settings.dark = swDark.checked;
+
+    const swSpeed = document.querySelector('input[onchange*="AppConfig.toggle(\'speed\'"]');
+    if(swSpeed) settings.speed = swSpeed.checked;
+
+    const swNewYear = document.querySelector('input[onchange*="AppConfig.toggle(\'newyear\'"]');
+    if(swNewYear) settings.newyear = swNewYear.checked;
+
+    // Labs機能のスイッチがあれば上書き (Labsモーダルを開いている場合)
+    const swBigText = document.getElementById('switch-bigtext');
+    if(swBigText) settings.bigtext = swBigText.checked;
+
+    const swMist = document.getElementById('switch-mist');
+    if(swMist) settings.mist = swMist.checked;
+
+    const swGold = document.getElementById('switch-gold');
+    if(swGold) settings.gold = swGold.checked;
+
+    // 保存処理 (LocalStorage + Cloud)
+    if (currentState.user) {
+        localStorage.setItem(`lab_settings_${currentState.user.email}`, JSON.stringify(settings));
+        try {
+            await authFetch(`${API_BASE}/api/user/settings`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ settings: settings })
+            });
+        } catch (e) { console.error("Sync Failed", e); }
+    } else {
+        localStorage.setItem('lab_settings_guest', JSON.stringify(settings));
+    }
+}
+
+// 2. 設定読み込み＆適用
+async function loadLabSettings() {
+    let settings = null;
+
+    // クラウド取得試行
+    if (currentState.user) {
+        try {
+            const res = await authFetch(`${API_BASE}/api/user/settings`, { method: 'GET' });
+            if (res.ok) {
+                const data = await res.json();
+                settings = data.settings;
+                if(settings) localStorage.setItem(`lab_settings_${currentState.user.email}`, JSON.stringify(settings));
+            }
+        } catch (e) {}
+        if(!settings) {
+            const local = localStorage.getItem(`lab_settings_${currentState.user.email}`);
+            if(local) settings = JSON.parse(local);
+        }
+    } else {
+        const local = localStorage.getItem('lab_settings_guest');
+        if(local) settings = JSON.parse(local);
+    }
+
+    if (!settings) settings = AppConfig.defaults;
+
+    // --- 設定値の適用 ---
+    
+    // 1. 宵闇の刻 (ダークモード)
+    applyThemeByConfig(settings.dark);
+
+    // 2. 神速の祈り
+    window.labSpeedMode = !!settings.speed;
+
+    // 3. 雅モード
+    if(settings.newyear) document.body.classList.add('theme-newyear');
+    else document.body.classList.remove('theme-newyear');
+
+    // 4. Labs機能群
+    if(settings.bigtext) document.documentElement.classList.add('lab-big-text');
+    else document.documentElement.classList.remove('lab-big-text');
+
+    const mistContainer = document.getElementById('mist-container');
+    if(mistContainer) {
+        if(settings.mist) mistContainer.classList.add('active');
+        else mistContainer.classList.remove('active');
+    }
+
+    if(settings.gold) document.body.classList.add('theme-gold');
+    else document.body.classList.remove('theme-gold');
+
+    // Labs詳細設定（スライダー値など）も適用
+    TenmeiLab.applyAllCSS();
+}
+
+// テーマ適用ヘルパー（OS設定との連動含む）
+function applyThemeByConfig(forceDark) {
+    const systemDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+    if (forceDark || systemDark) {
+        document.documentElement.classList.add('dark');
+    } else {
+        document.documentElement.classList.remove('dark');
+    }
+}
+
+// 既存の applyTheme 関数を上書きして、設定値ベースで動くようにする
+window.applyTheme = function() {
+    const settings = AppConfig.getCurrent();
+    applyThemeByConfig(settings.dark);
+};
             
     </script>
 </body>
