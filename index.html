@@ -13742,7 +13742,23 @@ function changeHistoryPage(newPage) {
             }
         }
 
-        // 2. 画面の切り替え（フェードアニメーション）
+        // 2. Lab機能へのアクセス制限処理 (ロック画面の制御)
+        if(viewId === 'lab') {
+            const lock = document.getElementById('lab-lock');
+            const wrapper = document.getElementById('lab-content-wrapper');
+            
+            if(!currentState.user) {
+                // 未ログイン時
+                if(lock) lock.classList.remove('hidden');
+                if(wrapper) wrapper.classList.add('lab-blurred');
+            } else {
+                // ログイン時
+                if(lock) lock.classList.add('hidden');
+                if(wrapper) wrapper.classList.remove('lab-blurred');
+            }
+        }
+
+        // 3. 画面の切り替え（フェードアニメーション）
         document.querySelectorAll('.view-section').forEach(el => {
             el.classList.remove('active');
             setTimeout(() => {
@@ -13761,22 +13777,15 @@ function changeHistoryPage(newPage) {
         }
         currentState.view = viewId;
 
-        // --- 3. ビューごとの固有初期化処理 ---
-
-        // Lab機能へのアクセス制限処理 (ロック画面の制御)
-        if(viewId === 'lab') {
-            const lock = document.getElementById('lab-lock');
-            const wrapper = document.getElementById('lab-content-wrapper');
-            
-            if(!currentState.user) {
-                // 未ログイン時
-                if(lock) lock.classList.remove('hidden');
-                if(wrapper) wrapper.classList.add('lab-blurred');
-            } else {
-                // ログイン時
-                if(lock) lock.classList.add('hidden');
-                if(wrapper) wrapper.classList.remove('lab-blurred');
-            }
+        // --- ビューごとの固有初期化処理 ---
+        if(viewId === 'draw') resetOmikujiPool();
+        if(viewId === 'history') loadHistory();
+        if(viewId === 'prefecture') renderPrefectureRanking();
+        if(viewId === 'about' || viewId === 'privacy') initTOC(viewId);
+        
+        // 御守授与所のリセット
+        if(viewId === 'omamori' && typeof OmamoriSystem !== 'undefined') {
+            OmamoriSystem.reset();
         }
 
         // 参拝の記録（統計）のロック制御
@@ -13799,6 +13808,7 @@ function changeHistoryPage(newPage) {
                 loadMyStats();
             }
         }
+    };
 
         // その他の機能の初期化
         if(viewId === 'draw') resetOmikujiPool();
