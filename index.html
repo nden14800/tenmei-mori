@@ -323,50 +323,37 @@
             background-color: rgba(128,128,128,0.1);
         }
 
-        /* ローディング画面の親コンテナ */
-#loading-wrapper {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100vh;
-  background-color: #ffffff; /* 動画に合わせた白背景 */
-  z-index: 9999;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  transition: opacity 0.5s ease, visibility 0.5s ease; /* フェードアウト用のアニメーション */
-}
-
-/* 読み込み完了時に付与するクラス（非表示用） */
-#loading-wrapper.loaded {
-  opacity: 0;
-  visibility: hidden;
-  pointer-events: none;
-}
-
-/* スピナー本体（動画の赤い回転アニメーション） */
-.custom-spinner {
-  width: 40px;  /* サイズ調整 */
-  height: 40px;
-  border-radius: 50%;
-  border: 3px solid transparent; /* ベースは透明 */
-  border-top-color: #d32f2f;     /* 動画のような濃い赤色 */
-  border-right-color: #d32f2f;   /* 右側にも色を付けて円弧を長くする */
-  /* もし円弧を短くしたい場合は border-right-color を削除してください */
-  
-  animation: spin 0.8s linear infinite; /* くるくる回るアニメーション */
-}
-
-/* 回転アニメーションの定義 */
-@keyframes spin {
-  0% {
-    transform: rotate(0deg);
-  }
-  100% {
-    transform: rotate(360deg);
-  }
-}
+        /* --- 新ローディングスピナー --- */
+        #loading-overlay {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.6);
+            z-index: 9999;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            transition: opacity 0.3s ease; /* 滑らかなフェード */
+        }
+        #loading-overlay.visible {
+            opacity: 1;
+        }
+        
+        .loader-svg {
+            width: 80px;
+            height: 80px;
+            animation: rotate 1s linear infinite;
+            transform-origin: center center;
+        }
+        .loader-path {
+            stroke: #ffffff; /* 白色の線 */
+            stroke-linecap: round;
+            stroke-dasharray: 89 150;
+            stroke-dashoffset: 0;
+        }
+        @keyframes rotate {
+            100% { transform: rotate(360deg); }
+        }
 
         /* --- ホーム画面 (札デザイン統一版) --- */
         .home-circle-container {
@@ -6359,13 +6346,6 @@ body.theme-newyear {
             </div>
         </div>
     </div>
-
-    <div id="loading-wrapper">
-  <div class="custom-spinner"></div>
-</div>
-
-<div class="main-content">
-  </div>
 
 
     <!-- JavaScript ロジック -->
@@ -15941,24 +15921,6 @@ window.applyTheme = function() {
     const settings = AppConfig.getCurrent();
     applyThemeByConfig(settings.dark);
 };
-
-        window.addEventListener('load', function() {
-  const loader = document.getElementById('loading-wrapper');
-  
-  // 読み込み完了から少しだけ余韻を持たせてフェードアウト（0.5秒後）
-  // すぐ消したい場合は setTimeoutを外して中の処理だけ書いてください
-  setTimeout(() => {
-    loader.classList.add('loaded');
-  }, 500); 
-});
-
-// 万が一読み込みが止まった場合でも、5秒後には強制的に表示する（安全策）
-setTimeout(() => {
-  const loader = document.getElementById('loading-wrapper');
-  if (loader && !loader.classList.contains('loaded')) {
-    loader.classList.add('loaded');
-  }
-}, 5000);
             
     </script>
 </body>
