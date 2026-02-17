@@ -10947,41 +10947,74 @@ async function authFetch(url, options = {}) {
     return fetch(url, options);
 }
 
+        // 統合された初期化処理
+    window.onload = async function() {
+        // 1. 基本設定の初期化
+        checkMaintenance();
+        initHomeAnimation();
+        initZodiacSystem();
         
-    // ==========================================
-//  統合された初期化処理 (window.onload) - 修正版
-// ==========================================
-// ---------------------------------------------------------------
-// 3. 初期化処理 (エラーの原因となっていた checkGoshuin を削除)
-// ---------------------------------------------------------------
-window.onload = async function() {
-    checkMaintenance();
-    initHomeAnimation();
-    initZodiacSystem();
-    window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', applyTheme);
+        // 2. Labs設定の初期化 (TenmeiLabオブジェクトが存在する場合)
+        if (typeof TenmeiLab !== 'undefined') {
+            TenmeiLab.init();
+        }
+        await loadLabSettings(); // テーマ適用（非同期）
 
-    await checkSession();
+        // 3. テーマ変更の監視
+        window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', applyTheme);
 
-    startLiveCounter();
-    fetchHistoryStats();
-    setInterval(fetchHistoryStats, 60000); 
-    loadFavorites();
+        // 4. クイズハンドラの定義（グローバルスコープへの登録）
+        window.handleQuiz = function(btn, isCorrect, correctIndex) {
+             const optionsArea = btn.parentElement;
+             const allBtns = optionsArea.querySelectorAll('button');
+             const resultArea = optionsArea.nextElementSibling;
+             const msg = resultArea.querySelector('.quiz-msg');
 
-    const url = new URL(window.location);
-    if (url.searchParams.has('d')) {
-        url.searchParams.delete('d');
-        window.history.replaceState({}, '', url);
-    }
+             allBtns.forEach(b => { b.disabled = true; b.classList.add('opacity-50', 'cursor-not-allowed'); });
 
-    BoardSystem.init();
+             if (isCorrect) {
+                 btn.classList.remove('bg-white', 'dark:bg-black', 'border-gray-300', 'opacity-50');
+                 btn.classList.add('bg-green-100', 'dark:bg-green-900', 'border-green-500', 'text-green-800', 'dark:text-green-100', 'ring-2', 'ring-green-500');
+                 btn.innerHTML = '<i class="bi bi-circle text-xl mr-2"></i> ' + btn.innerText;
+                 msg.innerHTML = '<span class="text-green-600"><i class="bi bi-check-circle-fill"></i> 正解！</span>';
+             } else {
+                 btn.classList.remove('bg-white', 'dark:bg-black', 'border-gray-300', 'opacity-50');
+                 btn.classList.add('bg-red-100', 'dark:bg-red-900', 'border-red-500', 'text-red-800', 'dark:text-red-100');
+                 btn.innerHTML = '<i class="bi bi-x-lg text-xl mr-2"></i> ' + btn.innerText;
+                 msg.innerHTML = '<span class="text-red-600"><i class="bi bi-x-circle-fill"></i> 不正解...</span>';
+                 const correctBtn = allBtns[correctIndex]; 
+                 if(correctBtn) {
+                     correctBtn.classList.remove('opacity-50', 'bg-white', 'dark:bg-black', 'border-gray-300');
+                     correctBtn.classList.add('bg-green-50', 'dark:bg-green-900/30', 'border-green-500', 'font-black', 'text-green-700', 'dark:text-green-300');
+                     correctBtn.innerHTML = '<i class="bi bi-circle text-xl mr-2"></i> ' + correctBtn.innerText;
+                 }
+             }
+             resultArea.classList.remove('hidden');
+        };
 
-    renderHomeLists();      
-    renderFullNewsView();   
-    renderFullColumnView();
-    
-    // ★削除: if (currentState.user) { checkGoshuin(); } 
-    // 定義されていない関数を呼ぶとここでスクリプトが止まり、以降の描画が行われません。
-};
+        // 5. セッションチェックとデータ読み込み
+        await checkSession();
+
+        startLiveCounter();
+        fetchHistoryStats();
+        setInterval(fetchHistoryStats, 60000); 
+        loadFavorites();
+
+        // 6. 掲示板初期化
+        if (typeof BoardSystem !== 'undefined') BoardSystem.init();
+
+        // 7. URLパラメータのクリーニング
+        const url = new URL(window.location);
+        if (url.searchParams.has('d')) {
+            url.searchParams.delete('d');
+            window.history.replaceState({}, '', url);
+        }
+
+        // 8. 各種リストの描画
+        renderHomeLists();      
+        renderFullNewsView();   
+        renderFullColumnView();
+    };
 
 // ---------------------------------------------------------------
 // 2. セッションチェック (エラーの原因となっていた checkGoshuin を削除)
