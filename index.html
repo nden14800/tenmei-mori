@@ -4845,82 +4845,91 @@ body.theme-newyear {
         </section>
 
         
-<!-- ビュー: 12星座×血液型占い (修正版) -->
+<!-- ビュー: 12星座×血液型占い (Modern UI) -->
         <section id="view-zodiac" class="view-section">
-            <div class="max-w-5xl mx-auto">
+            <div class="max-w-5xl mx-auto pb-20">
                 
-                <!-- ヘッダー -->
-                <div class="bento-card mb-8 flex flex-col md:flex-row items-center justify-between gap-4 bg-gradient-to-r from-gray-50 to-white dark:from-zinc-900 dark:to-black">
-                    <div>
-                        <h2 class="text-2xl md:text-3xl font-black mb-2 flex items-center gap-3">
-                            <span class="text-yellow-500 text-4xl"><i class="bi bi-stars"></i></span>
-                            <span>最強運勢ランキング</span>
-                        </h2>
-                        <p class="text-sm font-bold text-gray-500 dark:text-gray-400" id="current-date-display">---</p>
-                    </div>
-                    <div class="text-right hidden md:block">
-                        <p class="text-xs text-gray-400 font-bold uppercase tracking-widest">DAILY FORTUNE</p>
-                        <p class="text-xs text-gray-400">12 Signs × 4 Blood Types</p>
-                    </div>
+                <!-- ヘッダー (シンプルに) -->
+                <div class="text-center mb-10">
+                    <h2 class="text-3xl md:text-4xl font-black mb-2 tracking-widest text-gray-800 dark:text-gray-100" style="font-family: 'Zen Old Mincho'">最強運勢ランキング</h2>
+                    <p class="text-xs font-bold text-gray-400 dark:text-gray-500 uppercase tracking-[0.3em]">DAILY HOROSCOPE</p>
+                    <p class="text-sm font-bold text-gray-500 dark:text-gray-400 mt-4 bg-white/50 dark:bg-black/20 inline-block px-4 py-1 rounded-full backdrop-blur-sm" id="current-date-display">---</p>
                 </div>
         
-                <!-- 判定フォーム -->
-                <div class="bento-card mb-10 border-l-4 border-l-red-500">
-                    <h3 class="font-bold text-lg mb-4"><i class="bi bi-search"></i> あなたの順位をチェック</h3>
+                <!-- 検索フォーム (モダンカード化) -->
+                <div class="zodiac-search-card">
+                    <div class="flex items-center gap-2 mb-4 text-[var(--accent-red)]">
+                        <i class="bi bi-search"></i>
+                        <span class="text-sm font-bold">あなたの順位をチェック</span>
+                    </div>
+                    
                     <div class="zodiac-input-grid">
-                        <div style="grid-column: span 5;">
-                            <select id="user-sign" class="modern-select">
-    <option value="aries">♈ 牡羊座 (3/21-4/19)</option>
-    <option value="taurus">♉ 牡牛座 (4/20-5/20)</option>
-    <option value="gemini">♊ 双子座 (5/21-6/21)</option>
-    <option value="cancer">♋ 蟹座 (6/22-7/22)</option>
-    <option value="leo">♌ 獅子座 (7/23-8/22)</option>
-    <option value="virgo">♍ 乙女座 (8/23-9/22)</option>
-    <option value="libra">♎ 天秤座 (9/23-10/23)</option>
-    <option value="scorpio">♏ 蠍座 (10/24-11/22)</option>
-    <option value="sagittarius">♐ 射手座 (11/23-12/21)</option>
-    <option value="capricorn">♑ 山羊座 (12/22-1/19)</option>
-    <option value="aquarius">♒ 水瓶座 (1/20-2/18)</option>
-    <option value="pisces">♓ 魚座 (2/19-3/20)</option>
-</select>
+                        <!-- 星座選択 -->
+                        <div style="grid-column: span 12; @media (min-width: 768px) { grid-column: span 5; }" class="md:col-span-5 col-span-12">
+                            <div class="modern-select-wrapper">
+                                <select id="user-sign" class="modern-select">
+                                    <option value="aries">♈ 牡羊座 (3/21-4/19)</option>
+                                    <option value="taurus">♉ 牡牛座 (4/20-5/20)</option>
+                                    <option value="gemini">♊ 双子座 (5/21-6/21)</option>
+                                    <option value="cancer">♋ 蟹座 (6/22-7/22)</option>
+                                    <option value="leo">♌ 獅子座 (7/23-8/22)</option>
+                                    <option value="virgo">♍ 乙女座 (8/23-9/22)</option>
+                                    <option value="libra">♎ 天秤座 (9/23-10/23)</option>
+                                    <option value="scorpio">♏ 蠍座 (10/24-11/22)</option>
+                                    <option value="sagittarius">♐ 射手座 (11/23-12/21)</option>
+                                    <option value="capricorn">♑ 山羊座 (12/22-1/19)</option>
+                                    <option value="aquarius">♒ 水瓶座 (1/20-2/18)</option>
+                                    <option value="pisces">♓ 魚座 (2/19-3/20)</option>
+                                </select>
+                            </div>
                         </div>
-                        <div style="grid-column: span 4;">
-                            <select id="user-blood" class="modern-select">
-                                <option value="A">A型</option>
-                                <option value="B">B型</option>
-                                <option value="O">O型</option>
-                                <option value="AB">AB型</option>
-                            </select>
+                        <!-- 血液型選択 -->
+                        <div style="grid-column: span 12; @media (min-width: 768px) { grid-column: span 4; }" class="md:col-span-4 col-span-12">
+                            <div class="modern-select-wrapper">
+                                <select id="user-blood" class="modern-select">
+                                    <option value="A">A型</option>
+                                    <option value="B">B型</option>
+                                    <option value="O">O型</option>
+                                    <option value="AB">AB型</option>
+                                </select>
+                            </div>
                         </div>
-                        <div style="grid-column: span 3;">
-                            <button onclick="findMyRank()" class="modern-search-btn w-full h-full py-3 md:py-0">判定する</button>
+                        <!-- ボタン -->
+                        <div style="grid-column: span 12; @media (min-width: 768px) { grid-column: span 3; }" class="md:col-span-3 col-span-12">
+                            <button onclick="findMyRank()" class="modern-search-btn">
+                                <span>判定する</span>
+                                <i class="bi bi-arrow-right-circle-fill"></i>
+                            </button>
                         </div>
                     </div>
+
                     <!-- 結果表示エリア -->
-                    <div id="my-rank-result" class="hidden pt-6 border-t border-gray-100 dark:border-gray-800"></div>
+                    <div id="my-rank-result" class="hidden mt-8 pt-8 border-t border-gray-200 dark:border-gray-700 animate-fade-in"></div>
                 </div>
         
                 <!-- お気に入りセクション -->
-<div id="favorites-section" class="hidden mb-10">
-    <div class="flex items-center justify-between mb-4 px-2">
-        <!-- ★修正: (最大5件) を追加 -->
-        <h3 class="text-lg font-bold text-yellow-500">
-            <i class="bi bi-star-fill"></i> お気に入り <span class="text-xs text-gray-400 font-normal ml-1">(最大5件)</span>
-        </h3>
-        <span id="fav-status-badge" class="text-[10px] bg-gray-100 dark:bg-zinc-800 px-2 py-1 rounded"></span>
-    </div>
-    <div id="favorites-list" class="space-y-4"></div>
-</div>
+                <div id="favorites-section" class="hidden mb-12">
+                    <div class="flex items-center justify-between mb-4 px-2">
+                        <h3 class="text-lg font-bold text-yellow-500 flex items-center gap-2">
+                            <i class="bi bi-star-fill"></i> 保存した星座 <span class="text-xs text-gray-400 font-normal">(最大5件)</span>
+                        </h3>
+                        <span id="fav-status-badge" class="text-[10px] bg-gray-100 dark:bg-zinc-800 text-gray-500 px-3 py-1 rounded-full"></span>
+                    </div>
+                    <div id="favorites-list" class="space-y-6"></div>
+                </div>
         
                 <!-- 全ランキングリスト -->
-                <h3 class="font-bold text-xl mb-4 px-2">本日の順位（全48通り）</h3>
+                <div class="mb-6 px-2 flex items-center gap-3">
+                    <h3 class="font-bold text-xl text-gray-800 dark:text-gray-200">本日の順位</h3>
+                    <span class="text-xs text-gray-400 font-bold bg-gray-100 dark:bg-zinc-800 px-2 py-1 rounded">全48通り</span>
+                </div>
                 
                 <!-- TOP3表示用 -->
                 <div id="ranking-list" class="space-y-6"></div>
                 
                 <!-- 4位以下を見るボタン -->
-                <div class="text-center mt-10 mb-6">
-                    <button onclick="showFullRanking()" class="inline-flex items-center gap-2 text-sm font-bold px-8 py-3 rounded-full bg-gray-200 dark:bg-zinc-700 hover:bg-red-500 hover:text-white transition">
+                <div class="text-center mt-12 mb-8">
+                    <button onclick="showFullRanking()" class="show-more-btn">
                         <span id="show-ranking-text">4位以下を見る</span>
                         <i class="bi bi-chevron-down"></i>
                     </button>
@@ -4929,34 +4938,29 @@ body.theme-newyear {
                 <!-- 4位以下リスト (初期は hidden) -->
                 <div id="full-ranking-list" class="hidden space-y-4"></div>
 
-                <!-- ログインモーダル (修正版) -->
-<div id="zodiac-login-modal" 
-     class="fixed top-0 left-0 w-full h-full bg-black/60 z-[3000] hidden items-center justify-center backdrop-blur-sm" 
-     onclick="closeZodiacModal(event)">
-    
-    <!-- カード本体: stopPropagationで親への伝播を止める -->
-    <div class="themed-card p-8 rounded-xl shadow-2xl max-w-sm w-full text-center border border-gray-200 dark:border-gray-700 relative" 
-         onclick="event.stopPropagation()">
-        
-        <!-- 閉じるボタン: nullではなくeventを渡すか、単に関数のみ呼ぶ -->
-        <button onclick="closeZodiacModal(null)" 
-                class="absolute top-4 right-4 text-gray-400 hover:text-red-500 w-10 h-10 flex items-center justify-center rounded-full hover:bg-gray-100 dark:hover:bg-zinc-800 transition">
-            <i class="bi bi-x-lg text-lg"></i>
-        </button>
-        
-        <div class="mb-4 text-yellow-400 text-5xl"><i class="bi bi-star-fill"></i></div>
-        <h3 class="text-xl font-bold mb-2">会員限定機能</h3>
-        <p class="text-sm themed-text-sub mb-6">お気に入りは会員限定です。<br>ログインして天命を記録しましょう。</p>
-        <button onclick="showView('auth'); closeZodiacModal(null);" class="btn-primary w-full justify-center py-3">
-            ログイン / 登録
-        </button>
-    </div>
-</div>
+                <!-- ログインモーダル (既存のまま) -->
+                <div id="zodiac-login-modal" 
+                     class="fixed top-0 left-0 w-full h-full bg-black/60 z-[3000] hidden items-center justify-center backdrop-blur-sm" 
+                     onclick="closeZodiacModal(event)">
+                    
+                    <div class="bento-card p-8 rounded-3xl shadow-2xl max-w-sm w-full text-center relative mx-4" onclick="event.stopPropagation()">
+                        <button onclick="closeZodiacModal(null)" 
+                                class="absolute top-4 right-4 text-gray-400 hover:text-red-500 w-10 h-10 flex items-center justify-center rounded-full hover:bg-gray-100 dark:hover:bg-zinc-800 transition">
+                            <i class="bi bi-x-lg text-lg"></i>
+                        </button>
+                        
+                        <div class="mb-4 text-yellow-400 text-5xl drop-shadow-md"><i class="bi bi-star-fill"></i></div>
+                        <h3 class="text-xl font-bold mb-2">会員限定機能</h3>
+                        <p class="text-sm text-gray-500 mb-6 leading-relaxed">
+                            お気に入りの保存は会員限定です。<br>ログインして天命を記録しましょう。
+                        </p>
+                        <button onclick="showView('auth'); closeZodiacModal(null);" class="btn-primary w-full justify-center py-3 shadow-lg">
+                            ログイン / 登録
+                        </button>
+                    </div>
+                </div>
             </div>
         </section>
-        
-        </div>
-    </div>
         
         <!-- ビュー: TENMEI Labs (動画風モダンUI版) -->
         <section id="view-lab" class="view-section max-w-4xl mx-auto">
