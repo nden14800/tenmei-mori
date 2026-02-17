@@ -323,36 +323,83 @@
             background-color: rgba(128,128,128,0.1);
         }
 
-        /* --- 新ローディングスピナー --- */
+        /* --- 新ローディングスピナー（リニューアル版） --- */
         #loading-overlay {
             position: fixed;
             top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0,0,0,0.6);
+            /* 競合サイトに合わせて白ベースのすりガラス風に変更 */
+            background: rgba(255, 255, 255, 0.92);
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
             z-index: 9999;
             display: none;
+            flex-direction: column; /* アイコンと文字を縦並びに */
             align-items: center;
             justify-content: center;
             opacity: 0;
-            transition: opacity 0.3s ease; /* 滑らかなフェード */
+            transition: opacity 0.3s ease;
         }
+        /* ダークモード時は黒ベースに */
+        .dark #loading-overlay {
+            background: rgba(20, 20, 20, 0.92);
+        }
+
         #loading-overlay.visible {
             opacity: 1;
         }
         
         .loader-svg {
-            width: 80px;
-            height: 80px;
-            animation: rotate 1s linear infinite;
+            width: 60px;
+            height: 60px;
+            animation: rotate 2s linear infinite;
             transform-origin: center center;
+            /* 影をつけて立体感を出す */
+            filter: drop-shadow(0 2px 4px rgba(185, 28, 28, 0.2));
         }
+        
         .loader-path {
-            stroke: #ffffff; /* 白色の線 */
+            /* 白から「紅（アクセントカラー）」に変更 */
+            stroke: var(--accent-red); 
+            stroke-width: 4; /* 線を少し太く */
             stroke-linecap: round;
-            stroke-dasharray: 89 150;
-            stroke-dashoffset: 0;
+            fill: none;
+            /* 伸び縮みするアニメーションを追加 */
+            animation: dash 1.5s ease-in-out infinite;
         }
+
+        /* 読み込み中の文字（オプション） */
+        .loading-text {
+            margin-top: 15px;
+            font-family: 'Zen Old Mincho', serif;
+            font-weight: bold;
+            font-size: 0.9rem;
+            color: var(--accent-red);
+            letter-spacing: 0.2em;
+            animation: pulse 1.5s infinite ease-in-out;
+        }
+
         @keyframes rotate {
             100% { transform: rotate(360deg); }
+        }
+
+        @keyframes dash {
+            0% {
+                stroke-dasharray: 1, 150;
+                stroke-dashoffset: 0;
+            }
+            50% {
+                stroke-dasharray: 90, 150;
+                stroke-dashoffset: -35;
+            }
+            100% {
+                stroke-dasharray: 90, 150;
+                stroke-dashoffset: -124;
+            }
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
         }
 
         /* --- ホーム画面 (札デザイン統一版) --- */
