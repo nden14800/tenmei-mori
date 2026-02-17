@@ -115,6 +115,7 @@
             --card-border: #d4af37;
         }
         body.theme-newyear .nav-btn {
+        min-width: 60px;
             color: #333;
         }
         body.theme-newyear #sidebar {
@@ -156,7 +157,7 @@
     left: 16px; /* 画面端から浮かせる */
     top: 16px;
     bottom: 16px;
-    width: 80px; overflow-x: hidden; transition: width 0.3s cubic-bezier(0.2, 0.8, 0.2, 1), transform 0.3s;
+    width: 80px; overflow: hidden; transition: width 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
     background: rgba(255, 255, 255, 0.65); /* かなり透明度を上げる */
     backdrop-filter: blur(20px) saturate(180%);
     -webkit-backdrop-filter: blur(20px) saturate(180%);
@@ -175,7 +176,6 @@
 #sidebar:hover { width: 260px; }
 #sidebar .nav-text, #sidebar .nav-group-title { opacity: 0; transition: opacity 0.2s; white-space: nowrap; }
 #sidebar:hover .nav-text, #sidebar:hover .nav-group-title { opacity: 1; }
-.dark #sidebar {
     background: rgba(30, 30, 30, 0.6);
     border-color: rgba(255, 255, 255, 0.08);
     box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
@@ -204,6 +204,7 @@
 
 /* ボタンのスタイル (Pill Shape) */
 .nav-btn {
+        min-width: 60px;
     display: flex;
     align-items: center;
     width: 100%;
@@ -275,8 +276,8 @@
 
 /* メインコンテンツの位置調整 (デスクトップ) */
 #main-content {
-    margin-left: 110px; /* サイドバー幅 + 余白 */
-    width: calc(100% - 290px);
+    margin-left: 96px;
+    width: calc(100% - 96px);
     padding: 30px;
     transition: margin-left 0.3s;
 }
@@ -292,13 +293,14 @@
         height: auto; /* 高さは中身なり */
         border-radius: 20px 20px 0 0; /* 上だけ丸く */
         flex-direction: row; /* 横並び */
-        justify-content: space-around; /* 均等配置 */
+        justify-content: flex-start; /* 均等配置 */
         padding: 12px 8px 24px 8px; /* iPhoneのホームバー考慮 */
         background: rgba(255, 255, 255, 0.9);
         border: none;
         border-top: 1px solid rgba(0,0,0,0.05);
         box-shadow: 0 -4px 20px rgba(0,0,0,0.05);
         z-index: 9999;
+        overflow-x: auto;
     }
     .dark #sidebar {
         background: rgba(20, 20, 20, 0.9);
@@ -307,8 +309,8 @@
 
     /* メインコンテンツの余白調整 */
     #main-content {
-        margin-left: 0;
-        width: 100%;
+        margin-left: 96px;
+        width: calc(100% - 96px);
         padding: 20px;
         padding-bottom: 100px; /* ボトムバーに隠れないように */
     }
@@ -319,7 +321,7 @@
         gap: 0;
         margin: 0;
         width: 100%;
-        justify-content: space-around;
+        justify-content: flex-start;
     }
     
     /* タイトルや「その他」のグループは隠す */
@@ -330,6 +332,7 @@
 
     /* ボタンのスタイル変更 (アイコンメイン) */
     .nav-btn {
+        min-width: 60px;
         flex-direction: column; /* 縦並び */
         justify-content: center;
         width: auto;
@@ -435,6 +438,7 @@
             top: 0; left: 0; width: 100%; height: 100%;
             background: rgba(0,0,0,0.6);
             z-index: 9999;
+        overflow-x: auto;
             display: none;
             align-items: center;
             justify-content: center;
@@ -3323,7 +3327,7 @@
             #main-content {
                 margin: 0 !important;
                 padding: 0 !important;
-                width: 100% !important;
+                width: calc(100% - 96px);
             }
             .view-section {
                 display: none !important; /* 一旦全部消す */
