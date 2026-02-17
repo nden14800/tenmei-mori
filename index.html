@@ -156,7 +156,7 @@
     left: 16px; /* 画面端から浮かせる */
     top: 16px;
     bottom: 16px;
-    width: 260px; /* 最初から展開サイズで見やすく */
+    width: 80px; overflow-x: hidden; transition: width 0.3s cubic-bezier(0.2, 0.8, 0.2, 1), transform 0.3s;
     background: rgba(255, 255, 255, 0.65); /* かなり透明度を上げる */
     backdrop-filter: blur(20px) saturate(180%);
     -webkit-backdrop-filter: blur(20px) saturate(180%);
@@ -167,13 +167,14 @@
     display: flex;
     flex-direction: column;
     padding: 20px 16px;
-    transition: transform 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
-    height: calc(100vh - 32px); /* 上下の余白分を引く */
     overflow-y: auto;
     scrollbar-width: none;
 }
 
 /* ダークモード対応 */
+#sidebar:hover { width: 260px; }
+#sidebar .nav-text, #sidebar .nav-group-title { opacity: 0; transition: opacity 0.2s; white-space: nowrap; }
+#sidebar:hover .nav-text, #sidebar:hover .nav-group-title { opacity: 1; }
 .dark #sidebar {
     background: rgba(30, 30, 30, 0.6);
     border-color: rgba(255, 255, 255, 0.08);
@@ -274,7 +275,7 @@
 
 /* メインコンテンツの位置調整 (デスクトップ) */
 #main-content {
-    margin-left: 290px; /* サイドバー幅 + 余白 */
+    margin-left: 110px; /* サイドバー幅 + 余白 */
     width: calc(100% - 290px);
     padding: 30px;
     transition: margin-left 0.3s;
@@ -4479,42 +4480,6 @@ body.theme-newyear {
     </style>
 <style>
 <style>
-/* デスクトップ用: ホバーで開閉するサイドバー */
-@media (min-width: 1025px) {
-    #sidebar {
-        width: 80px !important;
-        transition: width 0.3s cubic-bezier(0.2, 0.8, 0.2, 1) !important;
-        overflow-x: hidden !important;
-    }
-    #sidebar:hover {
-        width: 260px !important;
-    }
-    #sidebar .nav-text, #sidebar .nav-group-title {
-        opacity: 0 !important;
-        transition: opacity 0.2s !important;
-        white-space: nowrap !important;
-    }
-    #sidebar:hover .nav-text, #sidebar:hover .nav-group-title {
-        opacity: 1 !important;
-    }
-    #sidebar .nav-btn {
-        justify-content: flex-start !important;
-        padding: 12px 16px !important;
-        min-width: 220px !important;
-    }
-    #sidebar .nav-btn i, #sidebar .nav-btn svg {
-        margin-right: 14px !important;
-        flex-shrink: 0 !important;
-    }
-    #main-content {
-        margin-left: 110px !important;
-        width: calc(100% - 110px) !important;
-        transition: margin-left 0.3s !important;
-    }
-    /* サイドバーが展開された時にメインコンテンツを少し押し出す場合はここを調整 */
-    /* 今回は重なりを防ぐため固定マージンにします */
-}
-</style>
 </head>
 <body>
 
