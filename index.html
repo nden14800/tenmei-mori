@@ -6360,6 +6360,13 @@ body.theme-newyear {
         </div>
     </div>
 
+    <div id="loading-wrapper">
+  <div class="custom-spinner"></div>
+</div>
+
+<div class="main-content">
+  </div>
+
 
     <!-- JavaScript ロジック -->
     <script>
@@ -15934,6 +15941,24 @@ window.applyTheme = function() {
     const settings = AppConfig.getCurrent();
     applyThemeByConfig(settings.dark);
 };
+
+        window.addEventListener('load', function() {
+  const loader = document.getElementById('loading-wrapper');
+  
+  // 読み込み完了から少しだけ余韻を持たせてフェードアウト（0.5秒後）
+  // すぐ消したい場合は setTimeoutを外して中の処理だけ書いてください
+  setTimeout(() => {
+    loader.classList.add('loaded');
+  }, 500); 
+});
+
+// 万が一読み込みが止まった場合でも、5秒後には強制的に表示する（安全策）
+setTimeout(() => {
+  const loader = document.getElementById('loading-wrapper');
+  if (loader && !loader.classList.contains('loaded')) {
+    loader.classList.add('loaded');
+  }
+}, 5000);
             
     </script>
 </body>
