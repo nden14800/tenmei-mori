@@ -2558,112 +2558,145 @@
     100% { transform: translateY(-80px) scale(1.2); opacity: 0; }
 }
 
-        /* --- Bento Grid UI (モダン・グリッドレイアウト) --- */
+        /* --- モダン Bento Grid UI (2026 Style) --- */
         .bento-grid {
             display: grid;
             grid-template-columns: repeat(12, 1fr);
-            grid-auto-rows: minmax(100px, auto); /* 行の高さを自動調整 */
-            gap: 20px;
+            grid-auto-rows: minmax(140px, auto); /* 行の高さを少し広げる */
+            gap: 24px; /* 間隔を広げてゆとりを持たせる */
             width: 100%;
-            max-width: 1200px;
+            max-width: 1100px; /* 横幅を少し抑えて視線移動を減らす */
             margin: 0 auto;
-            padding-bottom: 60px;
+            padding-bottom: 80px;
         }
 
         .bento-card {
             background-color: var(--card-bg);
             border: 1px solid var(--card-border);
-            border-radius: 24px; /* 角丸を大きくモダンに */
-            padding: 24px;
+            /* ガラスの質感（Blur）を追加 */
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            
+            border-radius: 32px; /* 角丸をさらに大きく */
+            padding: 28px;
+            
             position: relative;
             overflow: hidden;
-            transition: all 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
+            
+            /* アニメーションを滑らかに */
+            transition: all 0.5s cubic-bezier(0.2, 0.8, 0.2, 1);
+            
             display: flex;
             flex-direction: column;
             justify-content: space-between;
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
+            
+            /* 現代的な柔らかい影 */
+            box-shadow: var(--shadow-soft);
         }
 
         .bento-card:hover {
-            transform: translateY(-4px) scale(1.01);
-            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
-            border-color: var(--accent-red); /* ホバー時に紅色の枠 */
+            transform: translateY(-6px) scale(1.01);
+            box-shadow: var(--shadow-hover);
+            border-color: rgba(185, 28, 28, 0.2); /* ほのかな赤枠 */
             z-index: 10;
         }
 
-        /* 挨拶エリア（ヘッダー） */
+        /* 挨拶エリア（ヘッダー）：透過グラデーション */
         .bento-welcome {
-            grid-column: span 12; /* 横幅いっぱい */
-            background: linear-gradient(135deg, var(--card-bg) 0%, var(--bg-color) 100%);
-            display: flex;
-            flex-direction: row;
-            align-items: center;
-            justify-content: space-between;
-            min-height: 120px;
-        }
-
-        /* タイトルエリア */
-        .bento-title {
-            grid-column: span 8;
-            grid-row: span 2;
+            grid-column: span 8; /* 横幅を調整 */
+            background: linear-gradient(120deg, var(--card-bg) 0%, rgba(255,255,255,0.4) 100%);
             display: flex;
             flex-direction: column;
             justify-content: center;
-            align-items: center;
-            text-align: center;
-            background-image: var(--bg-pattern);
+            align-items: flex-start;
+        }
+        .dark .bento-welcome {
+            background: linear-gradient(120deg, var(--card-bg) 0%, rgba(50,50,50,0.4) 100%);
         }
 
-        /* アクションエリア（おみくじを引く） */
+        /* おみくじアクション（最重要CTA） */
         .bento-action {
             grid-column: span 4;
-            grid-row: span 2;
-            background-color: var(--accent-red);
+            grid-row: span 2; /* 縦に長く */
+            background: linear-gradient(135deg, var(--accent-red), #991b1b);
             color: white;
             border: none;
             align-items: center;
             justify-content: center;
             cursor: pointer;
             text-align: center;
+            position: relative;
+            box-shadow: 0 15px 30px rgba(185, 28, 28, 0.4); /* 発光感 */
         }
-        .bento-action:hover {
-            background-color: #a01818; /* 少し濃く */
+        /* 波紋エフェクト用の装飾 */
+        .bento-action::before {
+            content: '';
+            position: absolute;
+            top: -50%; left: -50%; width: 200%; height: 200%;
+            background: radial-gradient(circle, rgba(255,255,255,0.2) 0%, transparent 60%);
+            animation: pulse-bg 3s infinite;
+            pointer-events: none;
         }
-        .bento-action h3 {
-            font-size: 1.5rem;
-            font-weight: 900;
-            margin-bottom: 10px;
+        @keyframes pulse-bg {
+            0% { transform: scale(0.8); opacity: 0; }
+            50% { opacity: 1; }
+            100% { transform: scale(1.2); opacity: 0; }
         }
-        
-        /* 統計エリア・ニュース・コラム */
-        .bento-stats { grid-column: span 4; grid-row: span 2; }
-        .bento-news  { grid-column: span 4; grid-row: span 2; }
-        .bento-col   { grid-column: span 4; grid-row: span 2; }
+
+        /* タイトルエリア（ブランドイメージ） */
+        .bento-title {
+            grid-column: span 4; /* コンパクトに */
+            grid-row: span 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background-color: transparent; /* 背景なしで馴染ませる */
+            box-shadow: none; /* 影なし */
+            border: none;
+        }
 
         /* カウンター小窓 */
         .bento-mini {
-            grid-column: span 6;
+            grid-column: span 2;
             display: flex;
-            flex-direction: row;
+            flex-direction: column; /* 縦並びに変更 */
             align-items: center;
-            gap: 15px;
+            justify-content: center;
+            text-align: center;
+            padding: 15px;
+            gap: 5px;
         }
 
-        /* --- モバイル対応（1カラムにする） --- */
+        /* 統計・ニュース・コラム */
+        .bento-content-card {
+            grid-column: span 4;
+            grid-row: span 2;
+        }
+
+        /* --- モバイル対応（レイアウト調整） --- */
         @media (max-width: 768px) {
             .bento-grid {
                 display: flex;
                 flex-direction: column;
+                gap: 16px;
+                padding-bottom: 100px;
             }
             .bento-card {
+                padding: 20px;
+                border-radius: 24px;
                 min-height: auto;
             }
-            /* モバイルでは挨拶エリアを縦並びに */
-            .bento-welcome {
-                flex-direction: column;
-                text-align: center;
-                gap: 10px;
-                padding: 30px;
+            .bento-action {
+                min-height: 160px; /* スマホでも押しやすく */
+            }
+            /* スマホでは2列グリッドにする箇所 */
+            .mobile-grid-2 {
+                display: grid;
+                grid-template-columns: 1fr 1fr;
+                gap: 12px;
+            }
+            .bento-mini {
+                grid-column: auto; /* グリッド解除 */
             }
         }
         
