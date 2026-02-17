@@ -323,70 +323,36 @@
             background-color: rgba(128,128,128,0.1);
         }
 
-        /* --- 新ローディングスピナー (動画風・Snake Animation) --- */
+        /* --- 新ローディングスピナー --- */
         #loading-overlay {
             position: fixed;
             top: 0; left: 0; width: 100%; height: 100%;
-            
-            /* 動画に合わせて背景を「真っ白（ダーク時は黒）」に変更 */
-            background: #ffffff;
-            
+            background: rgba(0,0,0,0.6);
             z-index: 9999;
             display: none;
             align-items: center;
             justify-content: center;
             opacity: 0;
-            transition: opacity 0.3s ease;
+            transition: opacity 0.3s ease; /* 滑らかなフェード */
         }
-        /* ダークモード時の背景色 */
-        .dark #loading-overlay {
-            background: #1a1a1a;
-        }
-
         #loading-overlay.visible {
             opacity: 1;
         }
         
         .loader-svg {
-            width: 60px; /* 動画に合わせて少し小さく上品に */
-            height: 60px;
-            animation: loader-rotate 2s linear infinite; /* 全体の回転 */
+            width: 80px;
+            height: 80px;
+            animation: rotate 1s linear infinite;
             transform-origin: center center;
         }
-        
         .loader-path {
-            fill: none;
-            stroke: var(--accent-red); /* サイトのテーマカラー(紅)を使用 */
-            stroke-width: 4; /* 線を少し太く */
-            stroke-linecap: round; /* 先端を丸く */
-            
-            /* スネークアニメーションの定義 */
-            stroke-dasharray: 1, 200;
+            stroke: #ffffff; /* 白色の線 */
+            stroke-linecap: round;
+            stroke-dasharray: 89 150;
             stroke-dashoffset: 0;
-            animation: loader-dash 1.5s ease-in-out infinite;
         }
-
-        /* 全体を回すアニメーション */
-        @keyframes loader-rotate {
-            100% {
-                transform: rotate(360deg);
-            }
-        }
-
-        /* 線が伸び縮みするアニメーション (動画の動きを再現) */
-        @keyframes loader-dash {
-            0% {
-                stroke-dasharray: 1, 200;
-                stroke-dashoffset: 0;
-            }
-            50% {
-                stroke-dasharray: 89, 200;
-                stroke-dashoffset: -35px;
-            }
-            100% {
-                stroke-dasharray: 89, 200;
-                stroke-dashoffset: -124px;
-            }
+        @keyframes rotate {
+            100% { transform: rotate(360deg); }
         }
 
         /* --- ホーム画面 (札デザイン統一版) --- */
