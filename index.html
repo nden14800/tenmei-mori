@@ -10947,74 +10947,41 @@ async function authFetch(url, options = {}) {
     return fetch(url, options);
 }
 
-        // 統合された初期化処理
-    window.onload = async function() {
-        // 1. 基本設定の初期化
-        checkMaintenance();
-        initHomeAnimation();
-        initZodiacSystem();
         
-        // 2. Labs設定の初期化 (TenmeiLabオブジェクトが存在する場合)
-        if (typeof TenmeiLab !== 'undefined') {
-            TenmeiLab.init();
-        }
-        await loadLabSettings(); // テーマ適用（非同期）
+    // ==========================================
+//  統合された初期化処理 (window.onload) - 修正版
+// ==========================================
+// ---------------------------------------------------------------
+// 3. 初期化処理 (エラーの原因となっていた checkGoshuin を削除)
+// ---------------------------------------------------------------
+window.onload = async function() {
+    checkMaintenance();
+    initHomeAnimation();
+    initZodiacSystem();
+    window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', applyTheme);
 
-        // 3. テーマ変更の監視
-        window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', applyTheme);
+    await checkSession();
 
-        // 4. クイズハンドラの定義（グローバルスコープへの登録）
-        window.handleQuiz = function(btn, isCorrect, correctIndex) {
-             const optionsArea = btn.parentElement;
-             const allBtns = optionsArea.querySelectorAll('button');
-             const resultArea = optionsArea.nextElementSibling;
-             const msg = resultArea.querySelector('.quiz-msg');
+    startLiveCounter();
+    fetchHistoryStats();
+    setInterval(fetchHistoryStats, 60000); 
+    loadFavorites();
 
-             allBtns.forEach(b => { b.disabled = true; b.classList.add('opacity-50', 'cursor-not-allowed'); });
+    const url = new URL(window.location);
+    if (url.searchParams.has('d')) {
+        url.searchParams.delete('d');
+        window.history.replaceState({}, '', url);
+    }
 
-             if (isCorrect) {
-                 btn.classList.remove('bg-white', 'dark:bg-black', 'border-gray-300', 'opacity-50');
-                 btn.classList.add('bg-green-100', 'dark:bg-green-900', 'border-green-500', 'text-green-800', 'dark:text-green-100', 'ring-2', 'ring-green-500');
-                 btn.innerHTML = '<i class="bi bi-circle text-xl mr-2"></i> ' + btn.innerText;
-                 msg.innerHTML = '<span class="text-green-600"><i class="bi bi-check-circle-fill"></i> 正解！</span>';
-             } else {
-                 btn.classList.remove('bg-white', 'dark:bg-black', 'border-gray-300', 'opacity-50');
-                 btn.classList.add('bg-red-100', 'dark:bg-red-900', 'border-red-500', 'text-red-800', 'dark:text-red-100');
-                 btn.innerHTML = '<i class="bi bi-x-lg text-xl mr-2"></i> ' + btn.innerText;
-                 msg.innerHTML = '<span class="text-red-600"><i class="bi bi-x-circle-fill"></i> 不正解...</span>';
-                 const correctBtn = allBtns[correctIndex]; 
-                 if(correctBtn) {
-                     correctBtn.classList.remove('opacity-50', 'bg-white', 'dark:bg-black', 'border-gray-300');
-                     correctBtn.classList.add('bg-green-50', 'dark:bg-green-900/30', 'border-green-500', 'font-black', 'text-green-700', 'dark:text-green-300');
-                     correctBtn.innerHTML = '<i class="bi bi-circle text-xl mr-2"></i> ' + correctBtn.innerText;
-                 }
-             }
-             resultArea.classList.remove('hidden');
-        };
+    BoardSystem.init();
 
-        // 5. セッションチェックとデータ読み込み
-        await checkSession();
-
-        startLiveCounter();
-        fetchHistoryStats();
-        setInterval(fetchHistoryStats, 60000); 
-        loadFavorites();
-
-        // 6. 掲示板初期化
-        if (typeof BoardSystem !== 'undefined') BoardSystem.init();
-
-        // 7. URLパラメータのクリーニング
-        const url = new URL(window.location);
-        if (url.searchParams.has('d')) {
-            url.searchParams.delete('d');
-            window.history.replaceState({}, '', url);
-        }
-
-        // 8. 各種リストの描画
-        renderHomeLists();      
-        renderFullNewsView();   
-        renderFullColumnView();
-    };
+    renderHomeLists();      
+    renderFullNewsView();   
+    renderFullColumnView();
+    
+    // ★削除: if (currentState.user) { checkGoshuin(); } 
+    // 定義されていない関数を呼ぶとここでスクリプトが止まり、以降の描画が行われません。
+};
 
 // ---------------------------------------------------------------
 // 2. セッションチェック (エラーの原因となっていた checkGoshuin を削除)
@@ -13760,88 +13727,75 @@ function changeHistoryPage(newPage) {
     //  ビュー制御・参拝の記録システム (プロフィール廃止・統計特化版)
     // ==========================================
 
-    // 画面切り替え関数 (サイドバー連動・完全修正版)
-    window.showView = function(viewId) {
-        // 1. サイドバーのアクティブ状態を更新
-        document.querySelectorAll('.nav-btn').forEach(btn => btn.classList.remove('active'));
-        const activeBtn = document.getElementById(`nav-${viewId}`);
-        if (activeBtn) {
-            activeBtn.classList.add('active');
+    // 画面切り替え関数 (サイドバー連動版)
+window.showView = function(viewId) {
+    // 1. サイドバーのアクティブ状態を更新
+    document.querySelectorAll('.nav-btn').forEach(btn => btn.classList.remove('active'));
+    const activeBtn = document.getElementById(`nav-${viewId}`);
+    if (activeBtn) {
+        activeBtn.classList.add('active');
+    } else {
+        // IDが一致しない場合（detailなど）は親カテゴリをアクティブにする等の処理があればここへ
+        // 例: 記事詳細は「社務所だより」をアクティブになど
+        if (viewId === 'article-detail') {
+            // 直前のビューに応じてハイライト（簡易的にnewsにしておく）
+            const newsBtn = document.getElementById('nav-news');
+            if(newsBtn) newsBtn.classList.add('active');
+        }
+    }
+
+    // 2. Lab機能へのアクセス制限処理
+    if(viewId === 'lab') {
+        const lock = document.getElementById('lab-lock');
+        const wrapper = document.getElementById('lab-content-wrapper');
+        
+        if(!currentState.user) {
+            lock.classList.remove('hidden');
+            wrapper.classList.add('lab-blurred');
         } else {
-            // 詳細画面など、サイドバーにIDがない場合の親アクティブ化処理
-            if (viewId === 'article-detail') {
-                const newsBtn = document.getElementById('nav-news');
-                if(newsBtn) newsBtn.classList.add('active');
-            }
+            lock.classList.add('hidden');
+            wrapper.classList.remove('lab-blurred');
         }
+    }
 
-        // 2. Lab機能へのアクセス制限処理 (ロック画面の制御)
-        if(viewId === 'lab') {
-            const lock = document.getElementById('lab-lock');
-            const wrapper = document.getElementById('lab-content-wrapper');
-            
-            if(!currentState.user) {
-                // 未ログイン時
-                if(lock) lock.classList.remove('hidden');
-                if(wrapper) wrapper.classList.add('lab-blurred');
-            } else {
-                // ログイン時
-                if(lock) lock.classList.add('hidden');
-                if(wrapper) wrapper.classList.remove('lab-blurred');
-            }
-        }
-
-        // 3. 画面の切り替え（フェードアニメーション）
-        document.querySelectorAll('.view-section').forEach(el => {
-            el.classList.remove('active');
-            setTimeout(() => {
-                if(!el.classList.contains('active')) el.style.display = 'none';
-            }, 500);
-        });
+    // 3. 画面の切り替え（フェードアニメーション）
+    document.querySelectorAll('.view-section').forEach(el => {
+        el.classList.remove('active');
+        setTimeout(() => {
+            if(!el.classList.contains('active')) el.style.display = 'none';
+        }, 500);
+    });
+    
+    const target = document.getElementById(`view-${viewId}`);
+    if (target) {
+        target.style.display = 'block';
+        void target.offsetWidth; // リフロー
+        target.classList.add('active');
         
-        const target = document.getElementById(`view-${viewId}`);
-        if (target) {
-            target.style.display = 'block';
-            void target.offsetWidth; // リフロー強制
-            target.classList.add('active');
-            
-            // ページトップへスクロール
-            window.scrollTo({ top: 0, behavior: 'smooth' });
-        }
-        currentState.view = viewId;
+        // ページトップへスクロール
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+    currentState.view = viewId;
 
-        // --- ビューごとの固有初期化処理 ---
-        if(viewId === 'draw') resetOmikujiPool();
-        if(viewId === 'history') loadHistory();
-        if(viewId === 'prefecture') renderPrefectureRanking();
-        if(viewId === 'about' || viewId === 'privacy') initTOC(viewId);
-        
-        // 御守授与所のリセット
-        if(viewId === 'omamori' && typeof OmamoriSystem !== 'undefined') {
-            OmamoriSystem.reset();
+    // --- ビューごとの固有処理 ---
+    if(viewId === 'draw') resetOmikujiPool();
+    if(viewId === 'history') loadHistory();
+    if(viewId === 'prefecture') renderPrefectureRanking();
+    if(viewId === 'omamori') OmamoriSystem.reset();
+    if(viewId === 'about' || viewId === 'privacy') initTOC(viewId);
+    if(viewId === 'stats') {
+        const lock = document.getElementById('stats-lock');
+        const wrapper = document.getElementById('stats-content-wrapper');
+        if(!currentState.user) {
+            if(lock) lock.classList.remove('hidden');
+            if(wrapper) wrapper.classList.add('lab-blurred');
+        } else {
+            if(lock) lock.classList.add('hidden');
+            if(wrapper) wrapper.classList.remove('lab-blurred');
+            loadMyStats();
         }
-
-        // 参拝の記録（統計）のロック制御
-        if(viewId === 'stats') {
-            const lock = document.getElementById('stats-lock');
-            const wrapper = document.getElementById('stats-content-wrapper');
-            if(!currentState.user) {
-                if(lock) lock.classList.remove('hidden');
-                if(wrapper) {
-                    wrapper.classList.add('lab-blurred');
-                    // ダミー表示
-                    const totalEl = document.getElementById('hero-total-val');
-                    if(totalEl) totalEl.textContent = "-";
-                    const daikichiEl = document.getElementById('hero-daikichi-val');
-                    if(daikichiEl) daikichiEl.textContent = "-";
-                }
-            } else {
-                if(lock) lock.classList.add('hidden');
-                if(wrapper) wrapper.classList.remove('lab-blurred');
-                loadMyStats();
-            }
-        }
-    };
+    }
+};
 
         // ■ TENMEI Labs (lab)
         if(viewId === 'lab') {
