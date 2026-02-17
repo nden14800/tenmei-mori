@@ -323,74 +323,50 @@
             background-color: rgba(128,128,128,0.1);
         }
 
-        /* --- 新ローディングスピナー（完全再現版） --- */
-        #loading-overlay {
-            position: fixed;
-            top: 0; left: 0; width: 100%; height: 100%;
-            /* 動画に合わせて背景を「ほぼ真っ白」に変更 */
-            background: rgba(255, 255, 255, 0.95);
-            z-index: 9999;
-            display: none;
-            align-items: center;
-            justify-content: center;
-            opacity: 0;
-            transition: opacity 0.3s ease;
-        }
-        /* ダークモード時は黒背景に */
-        .dark #loading-overlay {
-            background: rgba(20, 20, 20, 0.95);
-        }
+        /* ローディング画面の親コンテナ */
+#loading-wrapper {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100vh;
+  background-color: #ffffff; /* 動画に合わせた白背景 */
+  z-index: 9999;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  transition: opacity 0.5s ease, visibility 0.5s ease; /* フェードアウト用のアニメーション */
+}
 
-        #loading-overlay.visible {
-            opacity: 1;
-        }
+/* 読み込み完了時に付与するクラス（非表示用） */
+#loading-wrapper.loaded {
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+}
 
-        /* スピナーのコンテナ */
-        .spinner-box {
-            width: 50px;
-            height: 50px;
-            position: relative;
-        }
+/* スピナー本体（動画の赤い回転アニメーション） */
+.custom-spinner {
+  width: 40px;  /* サイズ調整 */
+  height: 40px;
+  border-radius: 50%;
+  border: 3px solid transparent; /* ベースは透明 */
+  border-top-color: #d32f2f;     /* 動画のような濃い赤色 */
+  border-right-color: #d32f2f;   /* 右側にも色を付けて円弧を長くする */
+  /* もし円弧を短くしたい場合は border-right-color を削除してください */
+  
+  animation: spin 0.8s linear infinite; /* くるくる回るアニメーション */
+}
 
-        /* 回転アニメーション（全体） */
-        .circular-loader {
-            animation: rotate 2s linear infinite;
-            height: 100%;
-            transform-origin: center center;
-            width: 100%;
-            position: absolute;
-            top: 0; bottom: 0; left: 0; right: 0;
-            margin: auto;
-        }
-
-        /* 線の伸縮アニメーション（ここが重要） */
-        .loader-path {
-            stroke-dasharray: 1, 200; /* 初期状態 */
-            stroke-dashoffset: 0;
-            animation: dash 1.5s ease-in-out infinite;
-            stroke-linecap: round; /* 端を丸く */
-            stroke: var(--accent-red); /* 紅色 */
-            stroke-width: 4px; /* 動画に合わせて少し細く */
-        }
-
-        @keyframes rotate {
-            100% { transform: rotate(360deg); }
-        }
-
-        @keyframes dash {
-            0% {
-                stroke-dasharray: 1, 200;
-                stroke-dashoffset: 0;
-            }
-            50% {
-                stroke-dasharray: 89, 200; /* グワッと伸びる */
-                stroke-dashoffset: -35px;
-            }
-            100% {
-                stroke-dasharray: 89, 200;
-                stroke-dashoffset: -124px; /* お尻が追いついて縮む */
-            }
-        }
+/* 回転アニメーションの定義 */
+@keyframes spin {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
 
         /* --- ホーム画面 (札デザイン統一版) --- */
         .home-circle-container {
