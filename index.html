@@ -2655,103 +2655,51 @@
     100% { transform: translateY(-80px) scale(1.2); opacity: 0; }
 }
 
-        /* ===== Ver.2.0 ホーム ===== */
-
-        @keyframes bentoIn {
-            0%   { opacity: 0; transform: translateY(24px) scale(0.97); }
-            100% { opacity: 1; transform: translateY(0)    scale(1);    }
-        }
-        @keyframes heroShimmer {
-            0%   { background-position: -200% center; }
-            100% { background-position:  200% center; }
-        }
-        @keyframes orbFloat {
-            0%, 100% { transform: translateY(0) scale(1); }
-            50%       { transform: translateY(-12px) scale(1.04); }
-        }
-        @keyframes pulseRing {
-            0%   { transform: scale(1);   opacity: 0.6; }
-            100% { transform: scale(1.8); opacity: 0;   }
-        }
-
-        /* ---- グリッド ---- */
+        /* --- Bento Grid UI (モダン・グリッドレイアウト) --- */
         .bento-grid {
             display: grid;
             grid-template-columns: repeat(12, 1fr);
-            grid-auto-rows: minmax(100px, auto);
-            gap: 14px;
+            grid-auto-rows: minmax(100px, auto); /* 行の高さを自動調整 */
+            gap: 20px;
             width: 100%;
-            max-width: 1100px;
+            max-width: 1200px;
             margin: 0 auto;
-            padding: 8px 4px 60px;
+            padding-bottom: 60px;
         }
 
-        /* ---- 共通カード ---- */
         .bento-card {
             background-color: var(--card-bg);
             border: 1px solid var(--card-border);
-            border-radius: 22px;
+            border-radius: 24px; /* 角丸を大きくモダンに */
             padding: 24px;
             position: relative;
             overflow: hidden;
+            transition: all 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
             display: flex;
             flex-direction: column;
             justify-content: space-between;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.06);
-            opacity: 0;
-            animation: bentoIn 0.6s cubic-bezier(0.22,1,0.36,1) forwards;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
         }
-        .bento-card::after {
-            content: '';
-            position: absolute;
-            inset: 0;
-            border-radius: inherit;
-            background: linear-gradient(135deg, rgba(255,255,255,0.05) 0%, transparent 50%);
-            pointer-events: none;
-        }
-        .bento-card:nth-child(1) { animation-delay: 0.04s; }
-        .bento-card:nth-child(2) { animation-delay: 0.11s; }
-        .bento-card:nth-child(3) { animation-delay: 0.18s; }
-        .bento-card:nth-child(4) { animation-delay: 0.24s; }
-        .bento-card:nth-child(5) { animation-delay: 0.29s; }
-        .bento-card:nth-child(6) { animation-delay: 0.34s; }
-        .bento-card:nth-child(7) { animation-delay: 0.38s; }
-        .bento-card:nth-child(8) { animation-delay: 0.42s; }
 
         .bento-card:hover {
-            transform: translateY(-5px) scale(1.008);
-            box-shadow: 0 20px 48px -8px rgba(0,0,0,0.14), 0 0 0 1px var(--accent-red);
+            transform: translateY(-4px) scale(1.01);
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+            border-color: var(--accent-red); /* ホバー時に紅色の枠 */
             z-index: 10;
-            transition: transform 0.3s cubic-bezier(0.22,1,0.36,1),
-                        box-shadow 0.3s cubic-bezier(0.22,1,0.36,1);
         }
 
-        /* ---- Welcome ---- */
+        /* 挨拶エリア（ヘッダー） */
         .bento-welcome {
-            grid-column: span 12;
+            grid-column: span 12; /* 横幅いっぱい */
+            background: linear-gradient(135deg, var(--card-bg) 0%, var(--bg-color) 100%);
             display: flex;
             flex-direction: row;
             align-items: center;
             justify-content: space-between;
-            min-height: 96px;
-            background: linear-gradient(105deg,
-                color-mix(in srgb, var(--accent-red) 8%, var(--card-bg)) 0%,
-                var(--card-bg) 60%);
-            border-left: 3px solid var(--accent-red);
-        }
-        .bento-welcome .deco-jp {
-            font-family: 'Zen Old Mincho', serif;
-            font-size: 3.5rem;
-            font-weight: 900;
-            line-height: 1;
-            color: var(--accent-red);
-            opacity: 0.12;
-            letter-spacing: -0.05em;
-            user-select: none;
-            pointer-events: none;
+            min-height: 120px;
         }
 
-        /* ---- Title（ヒーロー）---- */
+        /* タイトルエリア */
         .bento-title {
             grid-column: span 8;
             grid-row: span 2;
@@ -2760,226 +2708,60 @@
             justify-content: center;
             align-items: center;
             text-align: center;
-            min-height: 260px;
-            background:
-                radial-gradient(ellipse 80% 70% at 50% 50%,
-                    color-mix(in srgb, var(--accent-red) 10%, transparent) 0%,
-                    transparent 70%),
-                var(--card-bg);
-            border: 1px solid color-mix(in srgb, var(--accent-red) 20%, transparent);
-        }
-        .bento-title .bg-watermark {
-            position: absolute;
-            inset: 0;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-family: 'Zen Old Mincho', serif;
-            font-size: clamp(90px, 20vw, 180px);
-            font-weight: 900;
-            color: var(--accent-red);
-            opacity: 0.035;
-            letter-spacing: -0.05em;
-            pointer-events: none;
-            user-select: none;
-            overflow: hidden;
-        }
-        .bento-title .hero-label {
-            font-size: 10px;
-            letter-spacing: 0.45em;
-            color: var(--accent-red);
-            opacity: 0.7;
-            margin-bottom: 14px;
-            text-transform: uppercase;
-            font-family: monospace;
-        }
-        .bento-title h1 {
-            font-family: 'Zen Old Mincho', serif;
-            font-size: clamp(2rem, 4.5vw, 3.2rem);
-            font-weight: 900;
-            letter-spacing: 0.15em;
-            line-height: 1.1;
-            margin-bottom: 14px;
-            background: linear-gradient(135deg,
-                var(--text-main) 0%,
-                color-mix(in srgb, var(--accent-red) 60%, var(--text-main)) 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-        }
-        .bento-title .hero-divider {
-            width: 36px; height: 2px;
-            background: linear-gradient(90deg, var(--accent-red), transparent);
-            margin: 0 auto 14px;
-        }
-        .bento-title .hero-sub {
-            font-size: 0.85rem;
-            line-height: 1.9;
-            opacity: 0.55;
+            background-image: var(--bg-pattern);
         }
 
-        /* ---- Action（おみくじを引く）---- */
+        /* アクションエリア（おみくじを引く） */
         .bento-action {
             grid-column: span 4;
             grid-row: span 2;
-            background: linear-gradient(150deg, #c41c1c 0%, #8b1111 100%);
+            background-color: var(--accent-red);
             color: white;
             border: none;
             align-items: center;
             justify-content: center;
             cursor: pointer;
             text-align: center;
-            box-shadow:
-                0 12px 32px -4px rgba(185,28,28,0.5),
-                inset 0 1px 0 rgba(255,255,255,0.15),
-                inset 0 -2px 0 rgba(0,0,0,0.2);
         }
         .bento-action:hover {
-            background: linear-gradient(150deg, #d42020 0%, #9b1414 100%);
-            box-shadow:
-                0 20px 48px -4px rgba(185,28,28,0.65),
-                inset 0 1px 0 rgba(255,255,255,0.2);
-            border-color: transparent;
-            transform: translateY(-7px) scale(1.02);
-        }
-        .bento-action .action-orb {
-            width: 80px; height: 80px;
-            border-radius: 50%;
-            background: rgba(255,255,255,0.12);
-            border: 1.5px solid rgba(255,255,255,0.25);
-            display: flex; align-items: center; justify-content: center;
-            margin: 0 auto 18px;
-            animation: orbFloat 3.5s ease-in-out infinite;
-            position: relative;
-        }
-        .bento-action .action-orb::before {
-            content: '';
-            position: absolute;
-            inset: -4px;
-            border-radius: 50%;
-            border: 1px solid rgba(255,255,255,0.15);
-            animation: pulseRing 2.5s ease-out infinite;
+            background-color: #a01818; /* 少し濃く */
         }
         .bento-action h3 {
-            font-size: 1.35rem;
+            font-size: 1.5rem;
             font-weight: 900;
-            margin-bottom: 8px;
-            letter-spacing: 0.1em;
+            margin-bottom: 10px;
         }
-        .bento-action p {
-            font-size: 0.72rem;
-            opacity: 0.75;
-            letter-spacing: 0.18em;
-        }
+        
+        /* 統計エリア・ニュース・コラム */
+        .bento-stats { grid-column: span 4; grid-row: span 2; }
+        .bento-news  { grid-column: span 4; grid-row: span 2; }
+        .bento-col   { grid-column: span 4; grid-row: span 2; }
 
-        /* ---- Mini cards ---- */
+        /* カウンター小窓 */
         .bento-mini {
             grid-column: span 6;
             display: flex;
             flex-direction: row;
             align-items: center;
-            gap: 16px;
-            background: linear-gradient(135deg,
-                var(--card-bg) 0%,
-                color-mix(in srgb, var(--accent-red) 4%, var(--card-bg)) 100%);
-        }
-        .bento-mini .mini-icon-wrap {
-            width: 50px; height: 50px;
-            border-radius: 14px;
-            display: flex; align-items: center; justify-content: center;
-            flex-shrink: 0;
-            transition: transform 0.3s cubic-bezier(0.22,1,0.36,1);
-        }
-        .bento-mini:hover .mini-icon-wrap {
-            transform: scale(1.12) rotate(-5deg);
-        }
-        .bento-mini .mini-label {
-            font-size: 10px;
-            font-weight: 700;
-            letter-spacing: 0.12em;
-            opacity: 0.5;
-            margin-bottom: 3px;
-            text-transform: uppercase;
-        }
-        .bento-mini .mini-val {
-            font-size: 1.6rem;
-            font-weight: 900;
-            font-variant-numeric: tabular-nums;
-            line-height: 1;
+            gap: 15px;
         }
 
-        /* ---- Stats / News / Col ---- */
-        .bento-stats { grid-column: span 4; grid-row: span 2; }
-        .bento-news  { grid-column: span 4; grid-row: span 2; }
-        .bento-col   { grid-column: span 4; grid-row: span 2; }
-
-        .bento-stats [id^="bar-"],
-        .bento-news  [id^="bar-"],
-        .bento-col   [id^="bar-"] {
-            transition: width 0.9s cubic-bezier(0.22,1,0.36,1);
-        }
-
-        .bento-card .section-head {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding-bottom: 10px;
-            margin-bottom: 10px;
-            border-bottom: 1px solid var(--card-border);
-        }
-        .bento-card .section-head h3 {
-            font-size: 0.82rem;
-            font-weight: 700;
-            display: flex;
-            align-items: center;
-            gap: 7px;
-            letter-spacing: 0.04em;
-        }
-        .bento-card .section-head .view-link {
-            font-size: 0.7rem;
-            font-weight: 600;
-            padding: 3px 10px;
-            border-radius: 20px;
-            border: 1px solid var(--card-border);
-            transition: all 0.2s;
-            cursor: pointer;
-            background: transparent;
-        }
-        .bento-card .section-head .view-link:hover {
-            border-color: var(--accent-red);
-            color: var(--accent-red);
-        }
-
-        #home-news-list li,
-        #home-column-list li {
-            padding: 7px 6px;
-            margin: 0 -6px;
-            border-radius: 8px;
-            transition: background 0.18s;
-        }
-        #home-news-list li:hover,
-        #home-column-list li:hover {
-            background: color-mix(in srgb, var(--accent-red) 7%, transparent);
-        }
-
-        /* ---- モバイル ---- */
+        /* --- モバイル対応（1カラムにする） --- */
         @media (max-width: 768px) {
             .bento-grid {
                 display: flex;
                 flex-direction: column;
-                gap: 10px;
             }
-            .bento-card { min-height: auto; }
+            .bento-card {
+                min-height: auto;
+            }
+            /* モバイルでは挨拶エリアを縦並びに */
             .bento-welcome {
                 flex-direction: column;
                 text-align: center;
-                gap: 8px;
-                padding: 22px;
-                border-left: none;
-                border-top: 3px solid var(--accent-red);
+                gap: 10px;
+                padding: 30px;
             }
-            .bento-welcome .deco-jp { display: none; }
-            .bento-title { min-height: 200px; }
         }
         
         /* --- 12星座占い モダンUI --- */
@@ -5271,137 +5053,163 @@ body.sidebar-collapsed #sidebar:hover .nav-group-title {
     <!-- メインエリア -->
     <main id="main-content">
         
-        <!-- ビュー: ホーム (Ver.2.0 Bento Grid UI) -->
+        <!-- ビュー: ホーム (Bento Grid UI) -->
         <section id="view-home" class="view-section active">
+            
             <div class="bento-grid">
-
-                <!-- 1. Welcome -->
+                
+                <!-- 1. 挨拶エリア (Welcome) -->
                 <div class="bento-card bento-welcome">
-                    <div>
-                        <p class="text-xs font-bold tracking-[0.22em] uppercase mb-2" style="color:var(--accent-red);opacity:0.65;" id="welcome-date">---</p>
-                        <h2 class="text-2xl md:text-3xl font-black tracking-wide leading-snug" style="font-family:'Zen Old Mincho',serif;">
-                            <span id="welcome-username" class="text-[var(--accent-red)]">ゲスト</span> さん
-                        </h2>
-                        <p class="text-sm mt-1.5" style="opacity:0.6;">ようこそ、運勢・天命乃杜へ</p>
+                    <div class="text-left md:text-left text-center w-full">
+                        <p class="text-sm font-bold text-gray-500 dark:text-gray-400 mb-1" id="welcome-date">---</p>
+                        <h2 class="text-2xl md:text-3xl font-black tracking-wide" style="font-family: 'Zen Old Mincho', serif;">
+    <!-- ▼▼▼ 修正: クラスを text-[var(--accent-red)] に変更し、モード問わず「紅」に固定 ▼▼▼ -->
+    <span id="welcome-username" class="text-[var(--accent-red)]">ゲスト</span> さん
+</h2>
+                        <p class="text-lg text-gray-700 dark:text-gray-300 font-medium mt-1">ようこそ、運勢・天命乃杜へ</p>
                     </div>
-                    <div class="deco-jp hidden md:block">天命</div>
+                    <!-- 右側にちょっとした装飾 -->
+                    <div class="hidden md:block opacity-20 text-6xl text-red-500">
+                        <i class="bi bi-flower1"></i>
+                    </div>
                 </div>
 
-                <!-- 2. Title Hero -->
+                <!-- 2. タイトル＆メインビジュアル -->
                 <div class="bento-card bento-title relative">
-                    <div class="bg-watermark">天命</div>
-                    <div class="absolute top-0 left-0 w-full h-full opacity-[0.07] pointer-events-none">
-                        <div class="home-circle-container" id="home-anim-container" style="border:none;width:100%;height:100%;"></div>
+                    <div class="absolute top-0 left-0 w-full h-full opacity-10 pointer-events-none">
+                        <!-- 背景装飾 -->
+                        <div class="home-circle-container" id="home-anim-container" style="transform: scale(0.8); border:none; width:100%; height:100%;"></div>
                     </div>
-                    <div class="z-10 flex flex-col items-center">
-                        <p class="hero-label">Fortune Telling</p>
-                        <h1>運勢・天命乃杜</h1>
-                        <div class="hero-divider"></div>
-                        <p class="hero-sub themed-text-sub">
-                            天命が導く、日々の道しるべ<br>災いを避け、福を招く
-                        </p>
+                    <div class="z-10">
+                        <p class="text-xs font-serif tracking-[0.3em] uppercase mb-2">FORTUNE TELLING</p>
+                        <h1 class="text-4xl md:text-5xl font-black mb-4 tracking-widest" style="font-family: 'Zen Old Mincho'">運勢・天命乃杜</h1>
+                        <!-- 変更後 -->
+<p class="text-sm font-serif themed-text-sub leading-relaxed">
+    天命が導く、日々の道しるべ<br>災いを避け、福を招く
+</p>
                     </div>
                 </div>
 
-                <!-- 3. おみくじを引く -->
+                <!-- 3. おみくじを引く (アクションボタン) -->
                 <button onclick="startOmikuji()" class="bento-card bento-action group">
-                    <div class="z-10 flex flex-col items-center">
-                        <div class="action-orb">
-                            <i class="bi bi-box-seam-fill" style="font-size:2rem;"></i>
-                        </div>
+                    <div class="transform transition group-hover:scale-110 duration-300">
+                        <i class="bi bi-box-seam-fill text-5xl mb-4 block"></i>
                         <h3>おみくじを引く</h3>
-                        <p>心を鎮め、天命を問う</p>
+                        <p class="text-xs opacity-90">心を鎮め、天命を問う</p>
                     </div>
                 </button>
 
-                <!-- 4a. 累計参拝者数 -->
-                <div class="bento-card bento-mini" style="grid-column:span 6;">
-                    <div class="mini-icon-wrap bg-red-100 dark:bg-red-900/30 text-red-600">
-                        <i class="bi bi-people-fill text-xl"></i>
+                <!-- 4. カウンター (ミニカード) -->
+                <div class="bento-card bento-mini" style="grid-column: span 6;">
+                    <div class="w-12 h-12 rounded-full bg-red-100 dark:bg-red-900/30 flex items-center justify-center text-red-600">
+                        <i class="bi bi-people-fill text-2xl"></i>
                     </div>
                     <div>
-                        <p class="mini-label">累計参拝者数</p>
-                        <p class="mini-val font-mono" id="worshipper-counter">---</p>
+                        <p class="text-xs text-gray-500 font-bold">累計参拝者数</p>
+                        <p class="text-2xl font-black font-mono" id="worshipper-counter">---</p>
                     </div>
                 </div>
 
-                <!-- 4b. 発行総数 -->
-                <div class="bento-card bento-mini" style="grid-column:span 6;">
-                    <div class="mini-icon-wrap bg-yellow-100 dark:bg-yellow-900/30 text-yellow-600">
-                        <i class="bi bi-layers-fill text-xl"></i>
+                <div class="bento-card bento-mini" style="grid-column: span 6;">
+                    <div class="w-12 h-12 rounded-full bg-yellow-100 dark:bg-yellow-900/30 flex items-center justify-center text-yellow-600">
+                        <i class="bi bi-layers-fill text-2xl"></i>
                     </div>
                     <div>
-                        <p class="mini-label">おみくじ発行総数</p>
-                        <p class="mini-val font-mono" id="live-counter">---</p>
+                        <p class="text-xs text-gray-500 font-bold">おみくじ発行総数</p>
+                        <p class="text-2xl font-black font-mono" id="live-counter">---</p>
                     </div>
                 </div>
 
-                <!-- 5. 全体の傾向 -->
+                <!-- 5. 統計 (おみくじの轍・完全版) -->
                 <div class="bento-card bento-stats">
-                    <div class="section-head">
-                        <h3><i class="bi bi-bar-chart-line-fill text-red-500"></i> 全体の傾向</h3>
-                        <span class="text-[10px] bg-gray-100 dark:bg-gray-800 px-2 py-1 rounded-md font-mono" id="stats-update-time">--:--:--</span>
+                    <div class="flex justify-between items-center mb-2 border-b border-gray-200 dark:border-gray-700 pb-2">
+                        <!-- ▼ 修正箇所: 「本日の傾向」から「全体の傾向」へ変更 -->
+                        <h3 class="font-bold flex items-center gap-2"><i class="bi bi-bar-chart-line-fill text-red-500"></i> 全体の傾向</h3>
+                        <span class="text-[10px] bg-gray-100 dark:bg-gray-700 px-2 py-1 rounded" id="stats-update-time">--:--:--</span>
                     </div>
-                    <div class="overflow-y-auto pr-1 custom-scrollbar" style="max-height:240px;">
+                    
+                    <!-- スクロール可能エリアとして全12種を表示 -->
+                    <div class="overflow-y-auto pr-2 custom-scrollbar" style="max-height: 240px;">
                         <div id="home-history-stats" class="space-y-2">
-                            <div class="grid grid-cols-1 gap-1">
-                                <div class="flex justify-between text-xs"><span>大吉</span><span><span id="cnt-daikichi" class="mr-2 font-mono opacity-70">0</span><span id="stat-daikichi">0.00%</span></span></div>
-                                <div class="w-full bg-gray-200 dark:bg-zinc-700 h-1.5 rounded-full mb-1"><div id="bar-daikichi" class="bg-yellow-400 h-1.5 rounded-full" style="width:0%"></div></div>
+                             <!-- 12段階 統計表示 -->
+                             <div class="grid grid-cols-1 gap-1">
+                                 <!-- 大吉 -->
+                                 <div class="flex justify-between text-xs"><span>大吉</span><span><span id="cnt-daikichi" class="mr-2 font-mono opacity-70">0</span><span id="stat-daikichi">0.00%</span></span></div>
+                                 <div class="w-full bg-gray-200 dark:bg-zinc-700 h-1.5 rounded mb-1"><div id="bar-daikichi" class="bg-yellow-400 h-1.5 rounded" style="width: 0%"></div></div>
+                                 
+                                 <!-- 中吉 -->
+                                 <div class="flex justify-between text-xs"><span>中吉</span><span><span id="cnt-chukichi" class="mr-2 font-mono opacity-70">0</span><span id="stat-chukichi">0.00%</span></span></div>
+                                 <div class="w-full bg-gray-200 dark:bg-zinc-700 h-1.5 rounded mb-1"><div id="bar-chukichi" class="bg-orange-400 h-1.5 rounded" style="width: 0%"></div></div>
 
-                                <div class="flex justify-between text-xs"><span>中吉</span><span><span id="cnt-chukichi" class="mr-2 font-mono opacity-70">0</span><span id="stat-chukichi">0.00%</span></span></div>
-                                <div class="w-full bg-gray-200 dark:bg-zinc-700 h-1.5 rounded-full mb-1"><div id="bar-chukichi" class="bg-orange-400 h-1.5 rounded-full" style="width:0%"></div></div>
+                                 <!-- 小吉 -->
+                                 <div class="flex justify-between text-xs"><span>小吉</span><span><span id="cnt-shokichi" class="mr-2 font-mono opacity-70">0</span><span id="stat-shokichi">0.00%</span></span></div>
+                                 <div class="w-full bg-gray-200 dark:bg-zinc-700 h-1.5 rounded mb-1"><div id="bar-shokichi" class="bg-green-400 h-1.5 rounded" style="width: 0%"></div></div>
 
-                                <div class="flex justify-between text-xs"><span>小吉</span><span><span id="cnt-shokichi" class="mr-2 font-mono opacity-70">0</span><span id="stat-shokichi">0.00%</span></span></div>
-                                <div class="w-full bg-gray-200 dark:bg-zinc-700 h-1.5 rounded-full mb-1"><div id="bar-shokichi" class="bg-green-400 h-1.5 rounded-full" style="width:0%"></div></div>
+                                 <!-- 吉 -->
+                                 <div class="flex justify-between text-xs"><span>吉</span><span><span id="cnt-kichi" class="mr-2 font-mono opacity-70">0</span><span id="stat-kichi">0.00%</span></span></div>
+                                 <div class="w-full bg-gray-200 dark:bg-zinc-700 h-1.5 rounded mb-1"><div id="bar-kichi" class="bg-red-400 h-1.5 rounded" style="width: 0%"></div></div>
 
-                                <div class="flex justify-between text-xs"><span>吉</span><span><span id="cnt-kichi" class="mr-2 font-mono opacity-70">0</span><span id="stat-kichi">0.00%</span></span></div>
-                                <div class="w-full bg-gray-200 dark:bg-zinc-700 h-1.5 rounded-full mb-1"><div id="bar-kichi" class="bg-red-400 h-1.5 rounded-full" style="width:0%"></div></div>
+                                 <!-- 半吉 -->
+                                 <div class="flex justify-between text-xs"><span>半吉</span><span><span id="cnt-hankichi" class="mr-2 font-mono opacity-70">0</span><span id="stat-hankichi">0.00%</span></span></div>
+                                 <div class="w-full bg-gray-200 dark:bg-zinc-700 h-1.5 rounded mb-1"><div id="bar-hankichi" class="bg-red-300 h-1.5 rounded" style="width: 0%"></div></div>
 
-                                <div class="flex justify-between text-xs"><span>半吉</span><span><span id="cnt-hankichi" class="mr-2 font-mono opacity-70">0</span><span id="stat-hankichi">0.00%</span></span></div>
-                                <div class="w-full bg-gray-200 dark:bg-zinc-700 h-1.5 rounded-full mb-1"><div id="bar-hankichi" class="bg-red-300 h-1.5 rounded-full" style="width:0%"></div></div>
+                                 <!-- 末吉 -->
+                                 <div class="flex justify-between text-xs"><span>末吉</span><span><span id="cnt-suekichi" class="mr-2 font-mono opacity-70">0</span><span id="stat-suekichi">0.00%</span></span></div>
+                                 <div class="w-full bg-gray-200 dark:bg-zinc-700 h-1.5 rounded mb-1"><div id="bar-suekichi" class="bg-blue-400 h-1.5 rounded" style="width: 0%"></div></div>
 
-                                <div class="flex justify-between text-xs"><span>末吉</span><span><span id="cnt-suekichi" class="mr-2 font-mono opacity-70">0</span><span id="stat-suekichi">0.00%</span></span></div>
-                                <div class="w-full bg-gray-200 dark:bg-zinc-700 h-1.5 rounded-full mb-1"><div id="bar-suekichi" class="bg-blue-400 h-1.5 rounded-full" style="width:0%"></div></div>
+                                 <!-- 末小吉 -->
+                                 <div class="flex justify-between text-xs"><span>末小吉</span><span><span id="cnt-sueshokichi" class="mr-2 font-mono opacity-70">0</span><span id="stat-sueshokichi">0.00%</span></span></div>
+                                 <div class="w-full bg-gray-200 dark:bg-zinc-700 h-1.5 rounded mb-1"><div id="bar-sueshokichi" class="bg-blue-300 h-1.5 rounded" style="width: 0%"></div></div>
 
-                                <div class="flex justify-between text-xs"><span>末小吉</span><span><span id="cnt-sueshokichi" class="mr-2 font-mono opacity-70">0</span><span id="stat-sueshokichi">0.00%</span></span></div>
-                                <div class="w-full bg-gray-200 dark:bg-zinc-700 h-1.5 rounded-full mb-1"><div id="bar-sueshokichi" class="bg-blue-300 h-1.5 rounded-full" style="width:0%"></div></div>
+                                 <!-- 凶 -->
+                                 <div class="flex justify-between text-xs"><span>凶</span><span><span id="cnt-kyo" class="mr-2 font-mono opacity-70">0</span><span id="stat-kyo">0.00%</span></span></div>
+                                 <div class="w-full bg-gray-200 dark:bg-zinc-700 h-1.5 rounded mb-1"><div id="bar-kyo" class="bg-gray-400 h-1.5 rounded" style="width: 0%"></div></div>
 
-                                <div class="flex justify-between text-xs"><span>凶</span><span><span id="cnt-kyo" class="mr-2 font-mono opacity-70">0</span><span id="stat-kyo">0.00%</span></span></div>
-                                <div class="w-full bg-gray-200 dark:bg-zinc-700 h-1.5 rounded-full mb-1"><div id="bar-kyo" class="bg-gray-400 h-1.5 rounded-full" style="width:0%"></div></div>
+                                 <!-- 小凶 -->
+                                 <div class="flex justify-between text-xs"><span>小凶</span><span><span id="cnt-shokyo" class="mr-2 font-mono opacity-70">0</span><span id="stat-shokyo">0.00%</span></span></div>
+                                 <div class="w-full bg-gray-200 dark:bg-zinc-700 h-1.5 rounded mb-1"><div id="bar-shokyo" class="bg-gray-500 h-1.5 rounded" style="width: 0%"></div></div>
 
-                                <div class="flex justify-between text-xs"><span>小凶</span><span><span id="cnt-shokyo" class="mr-2 font-mono opacity-70">0</span><span id="stat-shokyo">0.00%</span></span></div>
-                                <div class="w-full bg-gray-200 dark:bg-zinc-700 h-1.5 rounded-full mb-1"><div id="bar-shokyo" class="bg-gray-500 h-1.5 rounded-full" style="width:0%"></div></div>
+                                 <!-- 半凶 -->
+                                 <div class="flex justify-between text-xs"><span>半凶</span><span><span id="cnt-hankyo" class="mr-2 font-mono opacity-70">0</span><span id="stat-hankyo">0.00%</span></span></div>
+                                 <div class="w-full bg-gray-200 dark:bg-zinc-700 h-1.5 rounded mb-1">
+                                     <div id="bar-hankyo" class="bg-gray-600 dark:bg-gray-400 h-1.5 rounded" style="width: 0%"></div>
+                                 </div>
 
-                                <div class="flex justify-between text-xs"><span>半凶</span><span><span id="cnt-hankyo" class="mr-2 font-mono opacity-70">0</span><span id="stat-hankyo">0.00%</span></span></div>
-                                <div class="w-full bg-gray-200 dark:bg-zinc-700 h-1.5 rounded-full mb-1"><div id="bar-hankyo" class="bg-gray-600 dark:bg-gray-400 h-1.5 rounded-full" style="width:0%"></div></div>
+                                 <!-- 末凶 -->
+                                 <div class="flex justify-between text-xs"><span>末凶</span><span><span id="cnt-suekyo" class="mr-2 font-mono opacity-70">0</span><span id="stat-suekyo">0.00%</span></span></div>
+                                 <div class="w-full bg-gray-200 dark:bg-zinc-700 h-1.5 rounded mb-1"><div id="bar-suekyo" class="bg-gray-700 h-1.5 rounded" style="width: 0%"></div></div>
 
-                                <div class="flex justify-between text-xs"><span>末凶</span><span><span id="cnt-suekyo" class="mr-2 font-mono opacity-70">0</span><span id="stat-suekyo">0.00%</span></span></div>
-                                <div class="w-full bg-gray-200 dark:bg-zinc-700 h-1.5 rounded-full mb-1"><div id="bar-suekyo" class="bg-gray-700 h-1.5 rounded-full" style="width:0%"></div></div>
-
-                                <div class="flex justify-between text-xs"><span>大凶</span><span><span id="cnt-daikyo" class="mr-2 font-mono opacity-70">0</span><span id="stat-daikyo">0.00%</span></span></div>
-                                <div class="w-full bg-gray-200 dark:bg-zinc-700 h-1.5 rounded-full mb-1"><div id="bar-daikyo" class="bg-black h-1.5 rounded-full" style="width:0%"></div></div>
-                            </div>
+                                 <!-- 大凶 -->
+                                 <div class="flex justify-between text-xs"><span>大凶</span><span><span id="cnt-daikyo" class="mr-2 font-mono opacity-70">0</span><span id="stat-daikyo">0.00%</span></span></div>
+                                 <div class="w-full bg-gray-200 dark:bg-zinc-700 h-1.5 rounded mb-1"><div id="bar-daikyo" class="bg-black h-1.5 rounded" style="width: 0%"></div></div>
+                             </div>
                         </div>
-                        <button onclick="showView('history')" class="text-center w-full text-xs text-gray-400 mt-4 hover:text-red-500 transition pt-2" style="border-top:1px solid var(--card-border);">履歴一覧へ移動</button>
+                        <button onclick="showView('history')" class="text-center w-full text-xs text-gray-400 mt-4 hover:text-red-500 transition border-t border-gray-100 dark:border-gray-800 pt-2">履歴一覧へ移動</button>
                     </div>
                 </div>
 
-                <!-- 6. 社務所だより -->
+               <!-- 6. 社務所だより (隙間修正版) -->
                 <div class="bento-card bento-news">
-                    <div class="section-head">
-                        <h3><i class="bi bi-bell-fill text-blue-500"></i> 社務所だより</h3>
-                        <button onclick="showView('news')" class="view-link text-blue-500">一覧</button>
+                    <div class="flex justify-between items-center mb-2 border-b border-gray-200 dark:border-gray-700 pb-2">
+                        <h3 class="font-bold flex items-center gap-2"><i class="bi bi-bell-fill text-blue-500"></i> 社務所だより</h3>
+                        <button onclick="showView('news')" class="text-xs text-blue-500 hover:underline">一覧</button>
                     </div>
-                    <ul class="text-sm divide-y divide-gray-100 dark:divide-gray-800" id="home-news-list"></ul>
+                    <!-- space-y-3 を space-y-0 にし、隙間をなくして境界線を追加 -->
+                    <ul class="text-sm space-y-0 divide-y divide-gray-100 dark:divide-gray-800" id="home-news-list">
+                        <!-- JSで自動挿入 -->
+                    </ul>
                 </div>
 
-                <!-- 7. 神籤草子 -->
+                <!-- 7. 神籤草子 (隙間修正版) -->
                 <div class="bento-card bento-col">
-                    <div class="section-head">
-                        <h3><i class="bi bi-book-half text-green-500"></i> 神籤草子</h3>
-                        <button onclick="showView('column')" class="view-link text-green-500">一覧</button>
+                    <div class="flex justify-between items-center mb-2 border-b border-gray-200 dark:border-gray-700 pb-2">
+                        <h3 class="font-bold flex items-center gap-2"><i class="bi bi-book-half text-green-500"></i> 神籤草子</h3>
+                        <button onclick="showView('column')" class="text-xs text-green-500 hover:underline">一覧</button>
                     </div>
-                    <ul class="text-sm divide-y divide-gray-100 dark:divide-gray-800" id="home-column-list"></ul>
+                    <!-- 同様に隙間を修正 -->
+                    <ul class="text-sm space-y-0 divide-y divide-gray-100 dark:divide-gray-800" id="home-column-list">
+                        <!-- JSで自動挿入 -->
+                    </ul>
                 </div>
 
             </div>
