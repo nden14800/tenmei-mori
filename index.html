@@ -6182,406 +6182,486 @@ body.sidebar-collapsed #sidebar:hover .nav-group-title {
         </section>
 
         
-    <!-- ビュー: 当サイトについて・利用規約・詳細解説 (目次・PDF対応版) -->
-        <section id="view-about" class="view-section max-w-4xl mx-auto">
-            <!-- PDF化する対象エリア（カード全体） -->
-            <div id="about-content-area" class="themed-card p-10 rounded shadow-lg text-justify leading-loose bg-white dark:bg-zinc-800">
-                <h2 class="text-3xl font-bold mb-8 text-center border-b border-gray-300 dark:border-gray-600 pb-4">当サイトについて・利用規約・詳細解説</h2>
+    <!-- ビュー: 当サイトについて・利用規約・詳細解説 (モダンUI刷新版) -->
+        <section id="view-about" class="view-section max-w-5xl mx-auto pb-20">
+            
+            <!-- ヘッダーカード -->
+            <div class="bento-card mb-6 flex flex-col items-center text-center p-10 bg-gradient-to-br from-white to-gray-50 dark:from-zinc-900 dark:to-zinc-950">
+                <div class="w-16 h-16 rounded-2xl bg-gray-900 text-white flex items-center justify-center text-3xl mb-4 shadow-lg">
+                    <i class="bi bi-info-lg"></i>
+                </div>
+                <h2 class="text-3xl font-black mb-2 tracking-widest" style="font-family: 'Zen Old Mincho'">当サイトについて</h2>
+                <p class="text-xs font-bold text-gray-400 uppercase tracking-widest">ABOUT & TERMS OF SERVICE</p>
                 
-                <div class="text-right text-sm themed-text-sub mb-8">
-                    制定日: 2026年1月2日<br>
-                    改定日: 2026年1月25日 (第7版)<br>
-                    運営・開発: nden148<br>
-                    基盤技術: Cloudflare Workers / Turso (LibSQL)
+                <div class="mt-6 flex flex-wrap justify-center gap-4 text-xs font-mono text-gray-500 bg-white dark:bg-zinc-800 px-6 py-3 rounded-full border border-gray-200 dark:border-gray-700 shadow-sm">
+                    <span>制定: 2026/01/02</span>
+                    <span class="text-gray-300 dark:text-gray-600">|</span>
+                    <span>改定: 2026/01/25 (第7版)</span>
+                    <span class="text-gray-300 dark:text-gray-600">|</span>
+                    <span>運営: nden148</span>
+                </div>
+            </div>
+
+            <!-- 目次 (TOC) -->
+            <div id="about-toc-container" class="hidden mb-6">
+                <div class="bg-white/80 dark:bg-zinc-900/80 backdrop-blur p-6 rounded-2xl border border-gray-200 dark:border-gray-700">
+                    <h3 class="font-bold text-sm text-gray-500 mb-3 uppercase tracking-wider"><i class="bi bi-list-ul mr-2"></i>目次</h3>
+                    <ul class="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-2 text-sm font-medium" id="about-toc-list"></ul>
+                </div>
+            </div>
+
+            <!-- 本文エリア（PDF化対象） -->
+            <div id="about-content-area" class="space-y-8">
+                
+                <!-- 導入 -->
+                <div class="bento-card p-8 text-center font-serif text-lg leading-loose text-gray-700 dark:text-gray-300">
+                    <i class="bi bi-quote text-4xl text-gray-200 dark:text-gray-700 block mb-2"></i>
+                    天命乃杜は、テクノロジーで再定義された<br>「現代の鎮守の杜」です
                 </div>
 
-                <div id="about-toc-container" class="mb-8 p-6 bg-gray-50 dark:bg-black/20 rounded-xl border border-gray-200 dark:border-gray-700 hidden" data-html2canvas-ignore="true">
-                    <div class="flex justify-between items-center mb-4 border-b border-gray-300 dark:border-gray-600 pb-2">
-                        <h3 class="font-bold text-lg m-0 p-0 border-none"><i class="bi bi-list-ul mr-2"></i>目次</h3>
+                <!-- 第1章：比較表 -->
+                <div class="bento-card p-0 overflow-hidden">
+                    <div class="p-6 border-b border-gray-100 dark:border-gray-800 bg-gray-50 dark:bg-zinc-900/50">
+                        <h3 class="text-xl font-black flex items-center gap-3">
+                            <span class="flex items-center justify-center w-8 h-8 rounded bg-red-600 text-white text-sm">01</span>
+                            サービス性能・機能比較（完全版）
+                        </h3>
                     </div>
-                    <ul class="text-sm space-y-2 list-none m-0 p-0 text-gray-700 dark:text-gray-300" id="about-toc-list"></ul>
+                    <div class="p-6 md:p-8">
+                        <p class="mb-6 text-sm text-gray-600 dark:text-gray-400 leading-relaxed">
+                            本表は、当サイト「天命乃杜」と、インターネット上に存在する主要な占いサービス形式（老舗Webサイト型、神社公式型、大手ポータル型、ネイティブアプリ型）の仕様を、客観的な技術指標に基づき比較したものです。特定の他社サービスを貶める意図はなく、利用者が自身のニーズに合ったサービスを選択するための判断材料として提供します。
+                        </p>
+                        
+                        <div class="overflow-x-auto rounded-xl border border-gray-200 dark:border-gray-700 shadow-inner custom-scrollbar">
+                            <table class="comparison-table w-full text-left border-collapse" style="font-size: 0.8rem; min-width: 900px; white-space: nowrap;">
+                                <thead>
+                                    <tr class="bg-gray-100 dark:bg-zinc-800 text-gray-700 dark:text-gray-300">
+                                        <th class="p-4 border-b dark:border-gray-700 sticky left-0 bg-gray-100 dark:bg-zinc-800 z-10">大分類</th>
+                                        <th class="p-4 border-b dark:border-gray-700">詳細項目</th>
+                                        <th class="p-4 border-b border-red-200 dark:border-red-900 bg-red-50 dark:bg-red-900/20 text-red-800 dark:text-red-200 font-bold border-l-4 border-l-red-500">
+                                            <div class="text-lg mb-1">⛩️ 運勢・天命乃杜</div>
+                                            <div class="text-xs opacity-70 font-normal">(当サイト)</div>
+                                        </th>
+                                        <th class="p-4 border-b dark:border-gray-700">某老舗WebサイトA<br><span class="text-xs font-normal opacity-70">(シンプル型)</span></th>
+                                        <th class="p-4 border-b dark:border-gray-700">某神社公式Web B<br><span class="text-xs font-normal opacity-70">(儀式型)</span></th>
+                                        <th class="p-4 border-b dark:border-gray-700">某大手ポータルC<br><span class="text-xs font-normal opacity-70">(メディア型)</span></th>
+                                        <th class="p-4 border-b dark:border-gray-700">有料アプリD<br><span class="text-xs font-normal opacity-70">(課金型)</span></th>
+                                    </tr>
+                                </thead>
+                                <tbody class="divide-y divide-gray-100 dark:divide-gray-800">
+                                    <!-- 1. 基本設計 -->
+                                    <tr class="hover:bg-gray-50 dark:hover:bg-zinc-800/50">
+                                        <td rowspan="6" class="p-4 font-bold bg-gray-50 dark:bg-zinc-800/80 sticky left-0 z-10 border-r border-gray-200 dark:border-gray-700">基本設計</td>
+                                        <td class="p-3 font-bold text-gray-600 dark:text-gray-400">利用料金</td>
+                                        <td class="p-3 bg-red-50/50 dark:bg-red-900/10 font-bold text-red-600 border-l-4 border-l-red-500">完全無料</td>
+                                        <td class="p-3">無料</td>
+                                        <td class="p-3">無料</td>
+                                        <td class="p-3">無料 (一部有料)</td>
+                                        <td class="p-3">月額/都度課金</td>
+                                    </tr>
+                                    <tr class="hover:bg-gray-50 dark:hover:bg-zinc-800/50">
+                                        <td class="p-3 font-bold text-gray-600 dark:text-gray-400">広告表示</td>
+                                        <td class="p-3 bg-red-50/50 dark:bg-red-900/10 font-bold text-red-600 border-l-4 border-l-red-500">なし (静寂重視)</td>
+                                        <td class="p-3">あり (追尾広告等)</td>
+                                        <td class="p-3">なし</td>
+                                        <td class="p-3">大量にあり</td>
+                                        <td class="p-3">あり (無料版)</td>
+                                    </tr>
+                                    <tr class="hover:bg-gray-50 dark:hover:bg-zinc-800/50">
+                                        <td class="p-3 font-bold text-gray-600 dark:text-gray-400">会員登録</td>
+                                        <td class="p-3 bg-red-50/50 dark:bg-red-900/10 border-l-4 border-l-red-500">任意 (メール認証)</td>
+                                        <td class="p-3">なし</td>
+                                        <td class="p-3">なし (参拝者入力のみ)</td>
+                                        <td class="p-3">ID登録必須</td>
+                                        <td class="p-3">必須</td>
+                                    </tr>
+                                    <tr class="hover:bg-gray-50 dark:hover:bg-zinc-800/50">
+                                        <td class="p-3 font-bold text-gray-600 dark:text-gray-400">更新頻度</td>
+                                        <td class="p-3 bg-red-50/50 dark:bg-red-900/10 border-l-4 border-l-red-500">安定稼働 (完成済)</td>
+                                        <td class="p-3">低 (数年放置)</td>
+                                        <td class="p-3">低 (行事毎のみ)</td>
+                                        <td class="p-3">高 (記事追加)</td>
+                                        <td class="p-3">中 (バグ修正)</td>
+                                    </tr>
+                                    <tr class="hover:bg-gray-50 dark:hover:bg-zinc-800/50">
+                                        <td class="p-3 font-bold text-gray-600 dark:text-gray-400">動作環境</td>
+                                        <td class="p-3 bg-red-50/50 dark:bg-red-900/10 border-l-4 border-l-red-500">SPA (アプリ的挙動)</td>
+                                        <td class="p-3">MPA (ページ遷移有)</td>
+                                        <td class="p-3">MPA / Flash代替</td>
+                                        <td class="p-3">MPA (重い)</td>
+                                        <td class="p-3">iOS/Android</td>
+                                    </tr>
+                                    <tr class="hover:bg-gray-50 dark:hover:bg-zinc-800/50">
+                                        <td class="p-3 font-bold text-gray-600 dark:text-gray-400">スマホ最適化</td>
+                                        <td class="p-3 bg-red-50/50 dark:bg-red-900/10 border-l-4 border-l-red-500">◎ 完全レスポンシブ</td>
+                                        <td class="p-3">△ PCレイアウト残り</td>
+                                        <td class="p-3">○ 対応</td>
+                                        <td class="p-3">○ 対応</td>
+                                        <td class="p-3">◎ ネイティブ</td>
+                                    </tr>
+
+                                    <!-- 2. おみくじ機能 -->
+                                    <tr class="hover:bg-gray-50 dark:hover:bg-zinc-800/50">
+                                        <td rowspan="7" class="p-4 font-bold bg-gray-50 dark:bg-zinc-800/80 sticky left-0 z-10 border-r border-gray-200 dark:border-gray-700">おみくじ<br>体験</td>
+                                        <td class="p-3 font-bold text-gray-600 dark:text-gray-400">抽選ロジック</td>
+                                        <td class="p-3 bg-red-50/50 dark:bg-red-900/10 border-l-4 border-l-red-500">12段階 + パラメータ</td>
+                                        <td class="p-3">7段階 (標準)</td>
+                                        <td class="p-3">7段階 (標準)</td>
+                                        <td class="p-3">不明</td>
+                                        <td class="p-3">操作の可能性有</td>
+                                    </tr>
+                                    <tr class="hover:bg-gray-50 dark:hover:bg-zinc-800/50">
+                                        <td class="p-3 font-bold text-gray-600 dark:text-gray-400">アニメーション</td>
+                                        <td class="p-3 bg-red-50/50 dark:bg-red-900/10 border-l-4 border-l-red-500">物理演算風・和風演出</td>
+                                        <td class="p-3">なし (静止画)</td>
+                                        <td class="p-3">箱を振る動画等</td>
+                                        <td class="p-3">簡素</td>
+                                        <td class="p-3">豪華エフェクト</td>
+                                    </tr>
+                                    <tr class="hover:bg-gray-50 dark:hover:bg-zinc-800/50">
+                                        <td class="p-3 font-bold text-gray-600 dark:text-gray-400">結果の種別</td>
+                                        <td class="p-3 bg-red-50/50 dark:bg-red-900/10 border-l-4 border-l-red-500">動的生成 (数億通り)</td>
+                                        <td class="p-3">固定画像 (数十枚)</td>
+                                        <td class="p-3">固定画像 (数十枚)</td>
+                                        <td class="p-3">テキストDB</td>
+                                        <td class="p-3">テキストDB</td>
+                                    </tr>
+                                    <tr class="hover:bg-gray-50 dark:hover:bg-zinc-800/50">
+                                        <td class="p-3 font-bold text-gray-600 dark:text-gray-400">和歌・漢詩</td>
+                                        <td class="p-3 bg-red-50/50 dark:bg-red-900/10 border-l-4 border-l-red-500">あり (独自解釈付)</td>
+                                        <td class="p-3">なし</td>
+                                        <td class="p-3">あり (本格的)</td>
+                                        <td class="p-3">なし</td>
+                                        <td class="p-3">一部あり</td>
+                                    </tr>
+                                    <tr class="hover:bg-gray-50 dark:hover:bg-zinc-800/50">
+                                        <td class="p-3 font-bold text-gray-600 dark:text-gray-400">ラッキー項目</td>
+                                        <td class="p-3 bg-red-50/50 dark:bg-red-900/10 border-l-4 border-l-red-500">物・色・場所・人</td>
+                                        <td class="p-3">なし</td>
+                                        <td class="p-3">なし</td>
+                                        <td class="p-3">物・色</td>
+                                        <td class="p-3">多数</td>
+                                    </tr>
+                                    <tr class="hover:bg-gray-50 dark:hover:bg-zinc-800/50">
+                                        <td class="p-3 font-bold text-gray-600 dark:text-gray-400">願事・待人等</td>
+                                        <td class="p-3 bg-red-50/50 dark:bg-red-900/10 border-l-4 border-l-red-500">7項目詳細</td>
+                                        <td class="p-3">一言のみ</td>
+                                        <td class="p-3">あり</td>
+                                        <td class="p-3">あり</td>
+                                        <td class="p-3">あり</td>
+                                    </tr>
+                                    <tr class="hover:bg-gray-50 dark:hover:bg-zinc-800/50">
+                                        <td class="p-3 font-bold text-gray-600 dark:text-gray-400">効果音</td>
+                                        <td class="p-3 bg-red-50/50 dark:bg-red-900/10 border-l-4 border-l-red-500">なし (静寂)</td>
+                                        <td class="p-3">なし</td>
+                                        <td class="p-3">あり (鈴・拍手等)</td>
+                                        <td class="p-3">なし</td>
+                                        <td class="p-3">あり</td>
+                                    </tr>
+
+                                    <!-- 3. データ管理 -->
+                                    <tr class="hover:bg-gray-50 dark:hover:bg-zinc-800/50">
+                                        <td rowspan="6" class="p-4 font-bold bg-gray-50 dark:bg-zinc-800/80 sticky left-0 z-10 border-r border-gray-200 dark:border-gray-700">データ<br>保存</td>
+                                        <td class="p-3 font-bold text-gray-600 dark:text-gray-400">履歴保存</td>
+                                        <td class="p-3 bg-red-50/50 dark:bg-red-900/10 font-bold text-red-600 border-l-4 border-l-red-500">◎ 永続保存 (轍)</td>
+                                        <td class="p-3">× 不可 (消失)</td>
+                                        <td class="p-3">× 不可</td>
+                                        <td class="p-3">△ Cookieのみ</td>
+                                        <td class="p-3">○ アプリ内</td>
+                                    </tr>
+                                    <tr class="hover:bg-gray-50 dark:hover:bg-zinc-800/50">
+                                        <td class="p-3 font-bold text-gray-600 dark:text-gray-400">クラウド同期</td>
+                                        <td class="p-3 bg-red-50/50 dark:bg-red-900/10 border-l-4 border-l-red-500">◎ 可能 (Turso)</td>
+                                        <td class="p-3">× 不可</td>
+                                        <td class="p-3">× 不可</td>
+                                        <td class="p-3">○ ID連携時</td>
+                                        <td class="p-3">○ ID連携時</td>
+                                    </tr>
+                                    <tr class="hover:bg-gray-50 dark:hover:bg-zinc-800/50">
+                                        <td class="p-3 font-bold text-gray-600 dark:text-gray-400">履歴検索</td>
+                                        <td class="p-3 bg-red-50/50 dark:bg-red-900/10 border-l-4 border-l-red-500">◎ 検索・ページ機能</td>
+                                        <td class="p-3">-</td>
+                                        <td class="p-3">-</td>
+                                        <td class="p-3">× なし</td>
+                                        <td class="p-3">△ 最近のみ</td>
+                                    </tr>
+                                    <tr class="hover:bg-gray-50 dark:hover:bg-zinc-800/50">
+                                        <td class="p-3 font-bold text-gray-600 dark:text-gray-400">結果再表示</td>
+                                        <td class="p-3 bg-red-50/50 dark:bg-red-900/10 border-l-4 border-l-red-500">◎ いつでも可能</td>
+                                        <td class="p-3">× 不可</td>
+                                        <td class="p-3">× 不可</td>
+                                        <td class="p-3">× 不可</td>
+                                        <td class="p-3">○ 可能</td>
+                                    </tr>
+                                    <tr class="hover:bg-gray-50 dark:hover:bg-zinc-800/50">
+                                        <td class="p-3 font-bold text-gray-600 dark:text-gray-400">統計閲覧</td>
+                                        <td class="p-3 bg-red-50/50 dark:bg-red-900/10 border-l-4 border-l-red-500">◎ リアルタイム詳細</td>
+                                        <td class="p-3">△ 累計のみ(不正確)</td>
+                                        <td class="p-3">× なし</td>
+                                        <td class="p-3">× なし</td>
+                                        <td class="p-3">× なし</td>
+                                    </tr>
+                                    <tr class="hover:bg-gray-50 dark:hover:bg-zinc-800/50">
+                                        <td class="p-3 font-bold text-gray-600 dark:text-gray-400">エクスポート</td>
+                                        <td class="p-3 bg-red-50/50 dark:bg-red-900/10 border-l-4 border-l-red-500">画像保存 (高画質)</td>
+                                        <td class="p-3">テキスト選択のみ</td>
+                                        <td class="p-3">不可</td>
+                                        <td class="p-3">スクショ推奨</td>
+                                        <td class="p-3">スクショ推奨</td>
+                                    </tr>
+
+                                    <!-- 4. 複合機能 -->
+                                    <tr class="hover:bg-gray-50 dark:hover:bg-zinc-800/50">
+                                        <td rowspan="7" class="p-4 font-bold bg-gray-50 dark:bg-zinc-800/80 sticky left-0 z-10 border-r border-gray-200 dark:border-gray-700">12星座<br>その他</td>
+                                        <td class="p-3 font-bold text-gray-600 dark:text-gray-400">12星座占い</td>
+                                        <td class="p-3 bg-red-50/50 dark:bg-red-900/10 font-bold text-red-600 border-l-4 border-l-red-500">◎ あり (血液型掛合)</td>
+                                        <td class="p-3">× なし</td>
+                                        <td class="p-3">× なし</td>
+                                        <td class="p-3">◎ あり (メイン)</td>
+                                        <td class="p-3">◎ あり</td>
+                                    </tr>
+                                    <tr class="hover:bg-gray-50 dark:hover:bg-zinc-800/50">
+                                        <td class="p-3 font-bold text-gray-600 dark:text-gray-400">再現性(運命)</td>
+                                        <td class="p-3 bg-red-50/50 dark:bg-red-900/10 border-l-4 border-l-red-500">日付シード固定</td>
+                                        <td class="p-3">-</td>
+                                        <td class="p-3">-</td>
+                                        <td class="p-3">ランダム多し</td>
+                                        <td class="p-3">固定</td>
+                                    </tr>
+                                    <tr class="hover:bg-gray-50 dark:hover:bg-zinc-800/50">
+                                        <td class="p-3 font-bold text-gray-600 dark:text-gray-400">土地の運気</td>
+                                        <td class="p-3 bg-red-50/50 dark:bg-red-900/10 font-bold text-red-600 border-l-4 border-l-red-500">◎ 47都道府県ランク</td>
+                                        <td class="p-3">× なし</td>
+                                        <td class="p-3">× なし</td>
+                                        <td class="p-3">× なし</td>
+                                        <td class="p-3">△ 有料機能</td>
+                                    </tr>
+                                    <tr class="hover:bg-gray-50 dark:hover:bg-zinc-800/50">
+                                        <td class="p-3 font-bold text-gray-600 dark:text-gray-400">デジタル授与品</td>
+                                        <td class="p-3 bg-red-50/50 dark:bg-red-900/10 font-bold text-red-600 border-l-4 border-l-red-500">◎ 御守作成 (名前入)</td>
+                                        <td class="p-3">× なし</td>
+                                        <td class="p-3">△ 画像のみ</td>
+                                        <td class="p-3">× なし</td>
+                                        <td class="p-3">× なし</td>
+                                    </tr>
+                                    <tr class="hover:bg-gray-50 dark:hover:bg-zinc-800/50">
+                                        <td class="p-3 font-bold text-gray-600 dark:text-gray-400">カレンダー</td>
+                                        <td class="p-3 bg-red-50/50 dark:bg-red-900/10 border-l-4 border-l-red-500">30日予報グラフ</td>
+                                        <td class="p-3">-</td>
+                                        <td class="p-3">-</td>
+                                        <td class="p-3">簡易表示</td>
+                                        <td class="p-3">有料</td>
+                                    </tr>
+                                    <tr class="hover:bg-gray-50 dark:hover:bg-zinc-800/50">
+                                        <td class="p-3 font-bold text-gray-600 dark:text-gray-400">お気に入り</td>
+                                        <td class="p-3 bg-red-50/50 dark:bg-red-900/10 border-l-4 border-l-red-500">あり (5件まで)</td>
+                                        <td class="p-3">-</td>
+                                        <td class="p-3">-</td>
+                                        <td class="p-3">あり</td>
+                                        <td class="p-3">あり</td>
+                                    </tr>
+                                    <tr class="hover:bg-gray-50 dark:hover:bg-zinc-800/50">
+                                        <td class="p-3 font-bold text-gray-600 dark:text-gray-400">コラム・記事</td>
+                                        <td class="p-3 bg-red-50/50 dark:bg-red-900/10 border-l-4 border-l-red-500">あり (神籤草子)</td>
+                                        <td class="p-3">なし</td>
+                                        <td class="p-3">由緒書き等</td>
+                                        <td class="p-3">大量 (SEO用)</td>
+                                        <td class="p-3">日替わり</td>
+                                    </tr>
+
+                                    <!-- 5. 技術仕様 -->
+                                    <tr class="hover:bg-gray-50 dark:hover:bg-zinc-800/50">
+                                        <td rowspan="5" class="p-4 font-bold bg-gray-50 dark:bg-zinc-800/80 sticky left-0 z-10 border-r border-gray-200 dark:border-gray-700">技術・<br>セキュリティ</td>
+                                        <td class="p-3 font-bold text-gray-600 dark:text-gray-400">サーバー基盤</td>
+                                        <td class="p-3 bg-red-50/50 dark:bg-red-900/10 border-l-4 border-l-red-500">Cloudflare Edge</td>
+                                        <td class="p-3">共用レンタル鯖</td>
+                                        <td class="p-3">専用サーバー</td>
+                                        <td class="p-3">クラウド(AWS等)</td>
+                                        <td class="p-3">APIサーバー</td>
+                                    </tr>
+                                    <tr class="hover:bg-gray-50 dark:hover:bg-zinc-800/50">
+                                        <td class="p-3 font-bold text-gray-600 dark:text-gray-400">認証方式</td>
+                                        <td class="p-3 bg-red-50/50 dark:bg-red-900/10 border-l-4 border-l-red-500">OTPメール (GAS)</td>
+                                        <td class="p-3">-</td>
+                                        <td class="p-3">-</td>
+                                        <td class="p-3">Social Login</td>
+                                        <td class="p-3">OS依存</td>
+                                    </tr>
+                                    <tr class="hover:bg-gray-50 dark:hover:bg-zinc-800/50">
+                                        <td class="p-3 font-bold text-gray-600 dark:text-gray-400">DB堅牢性</td>
+                                        <td class="p-3 bg-red-50/50 dark:bg-red-900/10 border-l-4 border-l-red-500">Turso (Edge SQLite)</td>
+                                        <td class="p-3">ファイル (脆弱)</td>
+                                        <td class="p-3">保存しない</td>
+                                        <td class="p-3">RDB</td>
+                                        <td class="p-3">RDB / SQLite</td>
+                                    </tr>
+                                    <tr class="hover:bg-gray-50 dark:hover:bg-zinc-800/50">
+                                        <td class="p-3 font-bold text-gray-600 dark:text-gray-400">パスワード</td>
+                                        <td class="p-3 bg-red-50/50 dark:bg-red-900/10 border-l-4 border-l-red-500">SHA-256ハッシュ</td>
+                                        <td class="p-3">-</td>
+                                        <td class="p-3">-</td>
+                                        <td class="p-3">暗号化</td>
+                                        <td class="p-3">トークン</td>
+                                    </tr>
+                                    <tr class="hover:bg-gray-50 dark:hover:bg-zinc-800/50">
+                                        <td class="p-3 font-bold text-gray-600 dark:text-gray-400">シェア画像</td>
+                                        <td class="p-3 bg-red-50/50 dark:bg-red-900/10 border-l-4 border-l-red-500">html2canvas生成</td>
+                                        <td class="p-3">なし</td>
+                                        <td class="p-3">なし</td>
+                                        <td class="p-3">なし</td>
+                                        <td class="p-3">OS共有機能</td>
+                                    </tr>
+
+                                    <!-- 6. 拡張性 -->
+                                    <tr class="hover:bg-gray-50 dark:hover:bg-zinc-800/50">
+                                        <td rowspan="4" class="p-4 font-bold bg-gray-50 dark:bg-zinc-800/80 sticky left-0 z-10 border-r border-gray-200 dark:border-gray-700">拡張性・<br>UX</td>
+                                        <td class="p-3 font-bold text-gray-600 dark:text-gray-400">ダークモード</td>
+                                        <td class="p-3 bg-red-50/50 dark:bg-red-900/10 font-bold text-red-600 border-l-4 border-l-red-500">完全対応 + 強制機能</td>
+                                        <td class="p-3">非対応</td>
+                                        <td class="p-3">非対応</td>
+                                        <td class="p-3">一部対応</td>
+                                        <td class="p-3">対応</td>
+                                    </tr>
+                                    <tr class="hover:bg-gray-50 dark:hover:bg-zinc-800/50">
+                                        <td class="p-3 font-bold text-gray-600 dark:text-gray-400">表示カスタマイズ</td>
+                                        <td class="p-3 bg-red-50/50 dark:bg-red-900/10 border-l-4 border-l-red-500">Labs (迎春/文字等)</td>
+                                        <td class="p-3">不可</td>
+                                        <td class="p-3">不可</td>
+                                        <td class="p-3">不可</td>
+                                        <td class="p-3">着せ替え(有料)</td>
+                                    </tr>
+                                    <tr class="hover:bg-gray-50 dark:hover:bg-zinc-800/50">
+                                        <td class="p-3 font-bold text-gray-600 dark:text-gray-400">読込速度</td>
+                                        <td class="p-3 bg-red-50/50 dark:bg-red-900/10 border-l-4 border-l-red-500">爆速 (エッジ配信)</td>
+                                        <td class="p-3">普通〜遅い</td>
+                                        <td class="p-3">普通</td>
+                                        <td class="p-3">遅い (広告重)</td>
+                                        <td class="p-3">速い</td>
+                                    </tr>
+                                    <tr class="hover:bg-gray-50 dark:hover:bg-zinc-800/50">
+                                        <td class="p-3 font-bold text-gray-600 dark:text-gray-400">アクセシビリティ</td>
+                                        <td class="p-3 bg-red-50/50 dark:bg-red-900/10 border-l-4 border-l-red-500">文字サイズ変更可</td>
+                                        <td class="p-3">ブラウザ依存</td>
+                                        <td class="p-3">固定</td>
+                                        <td class="p-3">固定</td>
+                                        <td class="p-3">OS設定依存</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
                 </div>
 
-                <p class="mb-6 font-bold text-center">
-                    〜 天命乃杜は、テクノロジーで再定義された「現代の鎮守の杜」です 〜
-                </p>
+                <!-- 第2章 -->
+                <div class="bento-card p-0 overflow-hidden">
+                    <div class="p-6 border-b border-gray-100 dark:border-gray-800 bg-gray-50 dark:bg-zinc-900/50">
+                        <h3 class="text-xl font-black flex items-center gap-3">
+                            <span class="flex items-center justify-center w-8 h-8 rounded bg-gray-700 text-white text-sm">02</span>
+                            当サイトの運用ポリシーと技術的背景
+                        </h3>
+                    </div>
+                    <div class="p-6 md:p-8 text-sm leading-8 text-gray-700 dark:text-gray-300">
+                        <p class="mb-4">
+                            「運勢・天命乃杜」は、最新のWeb技術を用いて構築された、極めて現代的かつ実験的な占いプラットフォームです。一般的な商用サイトとは異なり、開発者（nden148）が個人で設計・実装・運営を行っております。
+                        </p>
+                        
+                        <h4 class="font-bold mt-6 mb-2 flex items-center gap-2 text-base text-gray-900 dark:text-white">
+                            <i class="bi bi-caret-right-fill text-gray-400"></i> 1. 更新頻度と今後の開発方針について
+                        </h4>
+                        <p class="mb-4 pl-6">
+                            当サイトは2026年1月25日の大規模アップデートをもって、おみくじ、統計、アカウント、Labs、御守といった主要機能の基盤構築が一通り完了いたしました。現在はシステムとして安定したフェーズに移行しておりますが、これは「開発終了」を意味するものではありません。現時点で予定されている大規模な更新はございませんが、今後も新たな着想や技術的進歩があった場合には、不定期に新機能の追加や改良を行っていく方針です。基本的には安定稼働を最優先としつつ、杜は静かに進化を続けてまいります。
+                        </p>
+                        
+                        <h4 class="font-bold mt-6 mb-2 flex items-center gap-2 text-base text-gray-900 dark:text-white">
+                            <i class="bi bi-caret-right-fill text-gray-400"></i> 2. エッジデータベース「Turso」による高速応答
+                        </h4>
+                        <p class="mb-4 pl-6">
+                            当サイトは、幾多の変遷を経て、最終的に<strong>エッジ特化型データベース「Turso（SQLite互換）」</strong>を採用いたしました。
+                            Tursoは、HTTPプロトコル（Pipeline）を通じて世界中のどこからでも低遅延でアクセスできる特性を持っており、Cloudflare Workersで構築された当サイトのサーバーレスアーキテクチャと最も親和性が高いシステムです。
+                            これにより、物理的な距離や接続数の制限による遅延を極限まで排除し、おみくじを引いた瞬間に結果が返ってくる「神速」のレスポンスを実現しています。
+                        </p>
 
-                <!-- 徹底比較表 -->
-                <h3 class="text-xl font-bold mt-8 mb-4 border-l-4 border-red-500 pl-3">第1章 サービス性能・機能比較（完全版）</h3>
-                <p class="mb-4 text-sm">
-                    本表は、当サイト「天命乃杜」と、インターネット上に存在する主要な占いサービス形式（老舗Webサイト型、神社公式型、大手ポータル型、ネイティブアプリ型）の仕様を、客観的な技術指標に基づき比較したものです。特定の他社サービスを貶める意図はなく、利用者が自身のニーズに合ったサービスを選択するための判断材料として提供します。
-                </p>
-                <div class="overflow-x-auto mb-8">
-                    <table class="comparison-table" style="font-size: 0.75rem; min-width: 900px; white-space: nowrap;">
-                        <thead>
-                            <tr class="bg-gray-200 dark:bg-zinc-700">
-                                <th class="p-2 border border-gray-300 dark:border-gray-600" style="width: 10%;">大分類</th>
-                                <th class="p-2 border border-gray-300 dark:border-gray-600" style="width: 15%;">詳細項目</th>
-                                <th class="p-2 border border-gray-300 dark:border-gray-600 bg-red-100 dark:bg-red-900 text-red-900 dark:text-red-100 font-bold" style="width: 25%;">⛩️ 運勢・天命乃杜<br>(当サイト)</th>
-                                <th class="p-2 border border-gray-300 dark:border-gray-600" style="width: 12%;">某老舗WebサイトA<br>(シンプル型)</th>
-                                <th class="p-2 border border-gray-300 dark:border-gray-600" style="width: 12%;">某神社公式Web B<br>(儀式型)</th>
-                                <th class="p-2 border border-gray-300 dark:border-gray-600" style="width: 12%;">某大手ポータルC<br>(メディア型)</th>
-                                <th class="p-2 border border-gray-300 dark:border-gray-600" style="width: 14%;">有料アプリD<br>(課金型)</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <!-- 1. 基本設計 -->
-                            <tr><td rowspan="6" class="font-bold bg-gray-50 dark:bg-zinc-800">基本設計</td>
-                                <td class="font-bold">利用料金</td>
-                                <td class="highlight font-bold">完全無料</td>
-                                <td>無料</td>
-                                <td>無料</td>
-                                <td>無料 (一部有料)</td>
-                                <td>月額/都度課金</td>
-                            </tr>
-                            <tr>
-                                <td class="font-bold">広告表示</td>
-                                <td class="highlight font-bold">なし (静寂重視)</td>
-                                <td>あり (追尾広告等)</td>
-                                <td>なし</td>
-                                <td>大量にあり</td>
-                                <td>あり (無料版)</td>
-                            </tr>
-                            <tr>
-                                <td class="font-bold">会員登録</td>
-                                <td class="highlight">任意 (メール認証)</td>
-                                <td>なし</td>
-                                <td>なし (参拝者入力のみ)</td>
-                                <td>ID登録必須</td>
-                                <td>必須</td>
-                            </tr>
-                            <tr>
-                                <td class="font-bold">更新頻度</td>
-                                <td class="highlight">安定稼働 (完成済)</td>
-                                <td>低 (数年放置)</td>
-                                <td>低 (行事毎のみ)</td>
-                                <td>高 (記事追加)</td>
-                                <td>中 (バグ修正)</td>
-                            </tr>
-                            <tr>
-                                <td class="font-bold">動作環境</td>
-                                <td class="highlight">SPA (アプリ的挙動)</td>
-                                <td>MPA (ページ遷移有)</td>
-                                <td>MPA / Flash代替</td>
-                                <td>MPA (重い)</td>
-                                <td>iOS/Android</td>
-                            </tr>
-                            <tr>
-                                <td class="font-bold">スマホ最適化</td>
-                                <td class="highlight">◎ 完全レスポンシブ</td>
-                                <td>△ PCレイアウト残り</td>
-                                <td>○ 対応</td>
-                                <td>○ 対応</td>
-                                <td>◎ ネイティブ</td>
-                            </tr>
-
-                            <!-- 2. おみくじ機能 -->
-                            <tr><td rowspan="7" class="font-bold bg-gray-50 dark:bg-zinc-800">おみくじ<br>体験</td>
-                                <td class="font-bold">抽選ロジック</td>
-                                <td class="highlight">12段階 + パラメータ</td>
-                                <td>7段階 (標準)</td>
-                                <td>7段階 (標準)</td>
-                                <td>不明</td>
-                                <td>操作の可能性有</td>
-                            </tr>
-                            <tr>
-                                <td class="font-bold">アニメーション</td>
-                                <td class="highlight">物理演算風・和風演出</td>
-                                <td>なし (静止画)</td>
-                                <td>箱を振る動画等</td>
-                                <td>簡素</td>
-                                <td>豪華エフェクト</td>
-                            </tr>
-                            <tr>
-                                <td class="font-bold">結果の種別</td>
-                                <td class="highlight">動的生成 (数億通り)</td>
-                                <td>固定画像 (数十枚)</td>
-                                <td>固定画像 (数十枚)</td>
-                                <td>テキストDB</td>
-                                <td>テキストDB</td>
-                            </tr>
-                            <tr>
-                                <td class="font-bold">和歌・漢詩</td>
-                                <td class="highlight">あり (独自解釈付)</td>
-                                <td>なし</td>
-                                <td>あり (本格的)</td>
-                                <td>なし</td>
-                                <td>一部あり</td>
-                            </tr>
-                            <tr>
-                                <td class="font-bold">ラッキー項目</td>
-                                <td class="highlight">物・色・場所・人</td>
-                                <td>なし</td>
-                                <td>なし</td>
-                                <td>物・色</td>
-                                <td>多数</td>
-                            </tr>
-                            <tr>
-                                <td class="font-bold">願事・待人等</td>
-                                <td class="highlight">7項目詳細</td>
-                                <td>一言のみ</td>
-                                <td>あり</td>
-                                <td>あり</td>
-                                <td>あり</td>
-                            </tr>
-                            <tr>
-                                <td class="font-bold">効果音</td>
-                                <td class="highlight">なし (静寂)</td>
-                                <td>なし</td>
-                                <td>あり (鈴・拍手等)</td>
-                                <td>なし</td>
-                                <td>あり</td>
-                            </tr>
-
-                            <!-- 3. データ管理 -->
-                            <tr><td rowspan="6" class="font-bold bg-gray-50 dark:bg-zinc-800">データ<br>保存</td>
-                                <td class="font-bold">履歴保存</td>
-                                <td class="highlight font-bold">◎ 永続保存 (轍)</td>
-                                <td>× 不可 (消失)</td>
-                                <td>× 不可</td>
-                                <td>△ Cookieのみ</td>
-                                <td>○ アプリ内</td>
-                            </tr>
-                            <tr>
-                                <td class="font-bold">クラウド同期</td>
-                                <td class="highlight">◎ 可能 (Turso)</td>
-                                <td>× 不可</td>
-                                <td>× 不可</td>
-                                <td>○ ID連携時</td>
-                                <td>○ ID連携時</td>
-                            </tr>
-                            <tr>
-                                <td class="font-bold">履歴検索</td>
-                                <td class="highlight">◎ 検索・ページ機能</td>
-                                <td>-</td>
-                                <td>-</td>
-                                <td>× なし</td>
-                                <td>△ 最近のみ</td>
-                            </tr>
-                            <tr>
-                                <td class="font-bold">結果再表示</td>
-                                <td class="highlight">◎ いつでも可能</td>
-                                <td>× 不可</td>
-                                <td>× 不可</td>
-                                <td>× 不可</td>
-                                <td>○ 可能</td>
-                            </tr>
-                            <tr>
-                                <td class="font-bold">統計閲覧</td>
-                                <td class="highlight">◎ リアルタイム詳細</td>
-                                <td>△ 累計のみ(不正確)</td>
-                                <td>× なし</td>
-                                <td>× なし</td>
-                                <td>× なし</td>
-                            </tr>
-                            <tr>
-                                <td class="font-bold">エクスポート</td>
-                                <td class="highlight">画像保存 (高画質)</td>
-                                <td>テキスト選択のみ</td>
-                                <td>不可</td>
-                                <td>スクショ推奨</td>
-                                <td>スクショ推奨</td>
-                            </tr>
-
-                            <!-- 4. 複合機能 -->
-                            <tr><td rowspan="7" class="font-bold bg-gray-50 dark:bg-zinc-800">12星座<br>その他</td>
-                                <td class="font-bold">12星座占い</td>
-                                <td class="highlight font-bold">◎ あり (血液型掛合)</td>
-                                <td>× なし</td>
-                                <td>× なし</td>
-                                <td>◎ あり (メイン)</td>
-                                <td>◎ あり</td>
-                            </tr>
-                            <tr>
-                                <td class="font-bold">再現性(運命)</td>
-                                <td class="highlight">日付シード固定</td>
-                                <td>-</td>
-                                <td>-</td>
-                                <td>ランダム多し</td>
-                                <td>固定</td>
-                            </tr>
-                            <tr>
-                                <td class="font-bold">土地の運気</td>
-                                <td class="highlight font-bold">◎ 47都道府県ランク</td>
-                                <td>× なし</td>
-                                <td>× なし</td>
-                                <td>× なし</td>
-                                <td>△ 有料機能</td>
-                            </tr>
-                            <tr>
-                                <td class="font-bold">デジタル授与品</td>
-                                <td class="highlight font-bold">◎ 御守作成 (名前入)</td>
-                                <td>× なし</td>
-                                <td>△ 画像のみ</td>
-                                <td>× なし</td>
-                                <td>× なし</td>
-                            </tr>
-                            <tr>
-                                <td class="font-bold">カレンダー</td>
-                                <td class="highlight">30日予報グラフ</td>
-                                <td>-</td>
-                                <td>-</td>
-                                <td>簡易表示</td>
-                                <td>有料</td>
-                            </tr>
-                            <tr>
-                                <td class="font-bold">お気に入り</td>
-                                <td class="highlight">あり (5件まで)</td>
-                                <td>-</td>
-                                <td>-</td>
-                                <td>あり</td>
-                                <td>あり</td>
-                            </tr>
-                            <tr>
-                                <td class="font-bold">コラム・記事</td>
-                                <td class="highlight">あり (神籤草子)</td>
-                                <td>なし</td>
-                                <td>由緒書き等</td>
-                                <td>大量 (SEO用)</td>
-                                <td>日替わり</td>
-                            </tr>
-
-                            <!-- 5. 技術仕様 -->
-                            <tr><td rowspan="5" class="font-bold bg-gray-50 dark:bg-zinc-800">技術・<br>セキュリティ</td>
-                                <td class="font-bold">サーバー基盤</td>
-                                <td class="highlight">Cloudflare Edge</td>
-                                <td>共用レンタル鯖</td>
-                                <td>専用サーバー</td>
-                                <td>クラウド(AWS等)</td>
-                                <td>APIサーバー</td>
-                            </tr>
-                            <tr>
-                                <td class="font-bold">認証方式</td>
-                                <td class="highlight">OTPメール (GAS)</td>
-                                <td>-</td>
-                                <td>-</td>
-                                <td>Social Login</td>
-                                <td>OS依存</td>
-                            </tr>
-                            <tr>
-                                <td class="font-bold">DB堅牢性</td>
-                                <td class="highlight">Turso (Edge SQLite)</td>
-                                <td>ファイル (脆弱)</td>
-                                <td>保存しない</td>
-                                <td>RDB</td>
-                                <td>RDB / SQLite</td>
-                            </tr>
-                            <tr>
-                                <td class="font-bold">パスワード</td>
-                                <td class="highlight">SHA-256ハッシュ</td>
-                                <td>-</td>
-                                <td>-</td>
-                                <td>暗号化</td>
-                                <td>トークン</td>
-                            </tr>
-                            <tr>
-                                <td class="font-bold">シェア画像</td>
-                                <td class="highlight">html2canvas生成</td>
-                                <td>なし</td>
-                                <td>なし</td>
-                                <td>なし</td>
-                                <td>OS共有機能</td>
-                            </tr>
-
-                            <!-- 6. 拡張性 -->
-                            <tr><td rowspan="4" class="font-bold bg-gray-50 dark:bg-zinc-800">拡張性・<br>UX</td>
-                                <td class="font-bold">ダークモード</td>
-                                <td class="highlight font-bold">完全対応 + 強制機能</td>
-                                <td>非対応</td>
-                                <td>非対応</td>
-                                <td>一部対応</td>
-                                <td>対応</td>
-                            </tr>
-                            <tr>
-                                <td class="font-bold">表示カスタマイズ</td>
-                                <td class="highlight">Labs (迎春/文字等)</td>
-                                <td>不可</td>
-                                <td>不可</td>
-                                <td>不可</td>
-                                <td>着せ替え(有料)</td>
-                            </tr>
-                            <tr>
-                                <td class="font-bold">読込速度</td>
-                                <td class="highlight">爆速 (エッジ配信)</td>
-                                <td>普通〜遅い</td>
-                                <td>普通</td>
-                                <td>遅い (広告重)</td>
-                                <td>速い</td>
-                            </tr>
-                            <tr>
-                                <td class="font-bold">アクセシビリティ</td>
-                                <td class="highlight">文字サイズ変更可</td>
-                                <td>ブラウザ依存</td>
-                                <td>固定</td>
-                                <td>固定</td>
-                                <td>OS設定依存</td>
-                            </tr>
-                        </tbody>
-                    </table>
+                        <h4 class="font-bold mt-6 mb-2 flex items-center gap-2 text-base text-gray-900 dark:text-white">
+                            <i class="bi bi-caret-right-fill text-gray-400"></i> 3. 真正性への取り組みと日付更新
+                        </h4>
+                        <p class="mb-4 pl-6">
+                            占いの結果生成において、当サイトは「真正性」を重視しています。12星座×血液型占いおよび全国運気ランキングにおいては、その日の日付（日本時間 JST 0:00基準）をシード値（種）とした決定論的乱数生成アルゴリズム（Seeded Random）を採用しており、リロードを繰り返して良い結果が出るまでやり直す「リセマラ」を防止しています。これは、占いを単なるゲームではなく、その日の運命（天命）として受け入れていただくための仕様です。
+                        </p>
+                    </div>
                 </div>
 
-                <h3 class="text-xl font-bold mt-8 mb-4 border-l-4 border-red-500 pl-3">第2章 当サイトの運用ポリシーと技術的背景</h3>
-                <p class="mb-4">
-                    「運勢・天命乃杜」は、最新のWeb技術を用いて構築された、極めて現代的かつ実験的な占いプラットフォームです。一般的な商用サイトとは異なり、開発者（nden148）が個人で設計・実装・運営を行っております。
-                </p>
-                
-                <h4 class="font-bold mt-4 border-b border-gray-300 dark:border-gray-600 pb-1">1. 更新頻度と今後の開発方針について</h4>
-                <p class="mb-4">
-                    当サイトは2026年1月25日の大規模アップデートをもって、おみくじ、統計、アカウント、Labs、御守といった主要機能の基盤構築が一通り完了いたしました。現在はシステムとして安定したフェーズに移行しておりますが、これは「開発終了」を意味するものではありません。現時点で予定されている大規模な更新はございませんが、今後も新たな着想や技術的進歩があった場合には、不定期に新機能の追加や改良を行っていく方針です。基本的には安定稼働を最優先としつつ、杜は静かに進化を続けてまいります。
-                </p>
-                
-                <h4 class="font-bold mt-4 border-b border-gray-300 dark:border-gray-600 pb-1">2. エッジデータベース「Turso」による高速応答</h4>
-                <p class="mb-4">
-                    当サイトは、幾多の変遷を経て、最終的に<strong>エッジ特化型データベース「Turso（SQLite互換）」</strong>を採用いたしました。
-                    Tursoは、HTTPプロトコル（Pipeline）を通じて世界中のどこからでも低遅延でアクセスできる特性を持っており、Cloudflare Workersで構築された当サイトのサーバーレスアーキテクチャと最も親和性が高いシステムです。
-                    これにより、物理的な距離や接続数の制限による遅延を極限まで排除し、おみくじを引いた瞬間に結果が返ってくる「神速」のレスポンスを実現しています。
-                </p>
+                <!-- 第3章 -->
+                <div class="bento-card p-0 overflow-hidden">
+                    <div class="p-6 border-b border-gray-100 dark:border-gray-800 bg-gray-50 dark:bg-zinc-900/50">
+                        <h3 class="text-xl font-black flex items-center gap-3">
+                            <span class="flex items-center justify-center w-8 h-8 rounded bg-gray-700 text-white text-sm">03</span>
+                            利用規約
+                        </h3>
+                    </div>
+                    <div class="p-6 md:p-8 text-sm leading-8 text-gray-700 dark:text-gray-300">
+                        <p class="mb-4 font-medium text-gray-500">本サービスを利用される全ての参拝者（ユーザー）は、以下の規約に同意したものとみなされます。</p>
+                        
+                        <div class="space-y-6">
+                            <div class="pl-4 border-l-2 border-gray-200 dark:border-gray-700">
+                                <h4 class="font-bold text-base mb-2 text-gray-900 dark:text-white">第1条（サービスの性質）</h4>
+                                <p>本サービスは娯楽目的で提供されるものであり、その結果の正確性や効果を保証するものではありません。結果に基づく行動はユーザーの自己責任となります。特に「全国・土地の運気ランキング」は、独自のアルゴリズムに基づくエンターテインメントコンテンツであり、実際の気象情報や地質学的データとは無関係です。</p>
+                            </div>
 
-                <h4 class="font-bold mt-4 border-b border-gray-300 dark:border-gray-600 pb-1">3. 真正性への取り組みと日付更新</h4>
-                <p class="mb-4">
-                    占いの結果生成において、当サイトは「真正性」を重視しています。12星座×血液型占いおよび全国運気ランキングにおいては、その日の日付（日本時間 JST 0:00基準）をシード値（種）とした決定論的乱数生成アルゴリズム（Seeded Random）を採用しており、リロードを繰り返して良い結果が出るまでやり直す「リセマラ」を防止しています。これは、占いを単なるゲームではなく、その日の運命（天命）として受け入れていただくための仕様です。
-                </p>
+                            <div class="pl-4 border-l-2 border-gray-200 dark:border-gray-700">
+                                <h4 class="font-bold text-base mb-2 text-gray-900 dark:text-white">第2条（アカウント管理）</h4>
+                                <p>1. アカウントのパスワードはSHA-256でハッシュ化され、運営者も閲覧不可能な状態で保存されます。パスワードの紛失時はアカウントの復旧ができません。<br>
+                                2. 認証メールの送信にはGoogle Apps Scriptを使用しています。認証コードの有効期限は5分間です。</p>
+                            </div>
 
-                <h3 class="text-xl font-bold mt-8 mb-4 border-l-4 border-red-500 pl-3">第3章 利用規約</h3>
-                <p class="mb-2">本サービスを利用される全ての参拝者（ユーザー）は、以下の規約に同意したものとみなされます。</p>
-                
-                <h4 class="font-bold mt-4">第1条（サービスの性質）</h4>
-                <p class="mb-2 text-sm">
-                    本サービスは娯楽目的で提供されるものであり、その結果の正確性や効果を保証するものではありません。結果に基づく行動はユーザーの自己責任となります。特に「全国・土地の運気ランキング」は、独自のアルゴリズムに基づくエンターテインメントコンテンツであり、実際の気象情報や地質学的データとは無関係です。
-                </p>
+                            <div class="pl-4 border-l-2 border-gray-200 dark:border-gray-700">
+                                <h4 class="font-bold text-base mb-2 text-gray-900 dark:text-white">第3条（禁止事項）</h4>
+                                <p>1. 自動化ツール（Bot、スクレイピングツール等）を用いて、おみくじを大量に引く行為、またはサーバーに過度な負荷をかける行為。これに対し、システム側で1分間あたりの通信回数制限（レートリミット）を設けています。<br>
+                                2. APIの脆弱性を意図的に突く行為、またはリバースエンジニアリング。<br>
+                                3. 生成されたおみくじ結果画像を改竄し、事実と異なる内容（当サイトが意図しない不適切な文言等）をSNS等で流布する行為。<br>
+                                4. 他者のメールアドレスを不正に使用してアカウント登録を行う行為。</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
 
-                <h4 class="font-bold mt-4">第2条（アカウント管理）</h4>
-                <p class="mb-2 text-sm">
-                    1. アカウントのパスワードはSHA-256でハッシュ化され、運営者も閲覧不可能な状態で保存されます。パスワードの紛失時はアカウントの復旧ができません。<br>
-                    2. 認証メールの送信にはGoogle Apps Scriptを使用しています。認証コードの有効期限は5分間です。
-                </p>
+                <!-- 第4章 -->
+                <div class="bento-card p-0 overflow-hidden">
+                    <div class="p-6 border-b border-gray-100 dark:border-gray-800 bg-gray-50 dark:bg-zinc-900/50">
+                        <h3 class="text-xl font-black flex items-center gap-3">
+                            <span class="flex items-center justify-center w-8 h-8 rounded bg-gray-700 text-white text-sm">04</span>
+                            著作権と二次利用
+                        </h3>
+                    </div>
+                    <div class="p-6 md:p-8 text-sm leading-8 text-gray-700 dark:text-gray-300">
+                        <p class="mb-4">
+                            1. 本サイトを構成するプログラムコード、デザイン、文章、ロゴ、および「TENMEI Labs」等の独自機能に関する知的財産権は、運営者（nden148）に帰属します。<br>
+                            2. ただし、本サイトの機能を用いて生成された<strong>「おみくじ結果画像」および「デジタル御守画像」</strong>については、ユーザー個人のSNS（X, Instagram, LINE等）での共有を目的とする限りにおいて、ユーザーはこれを自由に利用（複製、公衆送信）することができます。この際、画像に含まれるQRコードやサイトURLを削除しないことを推奨します。
+                        </p>
+                    </div>
+                </div>
 
-                <h4 class="font-bold mt-4">第3条（禁止事項）</h4>
-                <p class="mb-2 text-sm">
-                    1. 自動化ツール（Bot、スクレイピングツール等）を用いて、おみくじを大量に引く行為、またはサーバーに過度な負荷をかける行為。これに対し、システム側で1分間あたりの通信回数制限（レートリミット）を設けています。<br>
-                    2. APIの脆弱性を意図的に突く行為、またはリバースエンジニアリング。<br>
-                    3. 生成されたおみくじ結果画像を改竄し、事実と異なる内容（当サイトが意図しない不適切な文言等）をSNS等で流布する行為。<br>
-                    4. 他者のメールアドレスを不正に使用してアカウント登録を行う行為。
-                </p>
+                <!-- 第5章 -->
+                <div class="bento-card p-0 overflow-hidden border-red-200 dark:border-red-900">
+                    <div class="p-6 border-b border-red-100 dark:border-red-900 bg-red-50 dark:bg-red-900/20">
+                        <h3 class="text-xl font-black flex items-center gap-3 text-red-800 dark:text-red-200">
+                            <span class="flex items-center justify-center w-8 h-8 rounded bg-red-600 text-white text-sm">05</span>
+                            免責事項およびサポートの非提供
+                        </h3>
+                    </div>
+                    <div class="p-6 md:p-8 text-sm leading-8 text-gray-700 dark:text-gray-300">
+                        <p class="mb-4 text-red-600 dark:text-red-400 font-bold bg-white dark:bg-black/20 p-3 rounded border border-red-100 dark:border-red-900/50 text-center">
+                            <i class="bi bi-exclamation-triangle-fill mr-2"></i>【重要】お問い合わせについて
+                        </p>
+                        <p class="mb-4">
+                            1. 当運営は、本サービスの提供の中断、停止、終了、利用不能、またはデータの消失（ユーザーによる退会処理や、不可抗力によるサーバー障害を含む）によってユーザーに生じた損害について、一切の責任を負いません。<br>
+                            2. 「おみくじの轍（履歴）」機能は、ユーザーの利便性のために提供されるものですが、永続的なデータ保存を法的に保証するものではありません。重要な結果については、画像保存機能を用いてユーザー自身の端末に物理的に保存することを強く推奨します。<br>
+                            3. 本サービスからリンクされている外部サイト（SNSシェア先等）の内容やプライバシー保護については、当運営は責任を負いません。<br>
+                            4. <strong>本サービスは個人開発による実験的プロジェクトであり、専任のサポート窓口やお問い合わせフォームは一切設置しておりません。また、運営者のSNSアカウント等を通じた個別の連絡、不具合報告、機能要望への対応も、アカウント凍結等の事情により一切行うことができません。</strong><br>
+                            5. 万が一、本サービスの利用により何らかの問題が生じた場合、または個人情報の取扱いに関して懸念が生じた場合は、直ちに本サービスの利用を中止し、「アカウント削除」機能を用いてご自身のデータを完全に消去する措置をとってください。これ以外の個別対応は致しかねますことを、あらかじめご了承ください。
+                        </p>
+                    </div>
+                </div>
 
-                <h3 class="text-xl font-bold mt-8 mb-4 border-l-4 border-red-500 pl-3">第4章 著作権と二次利用</h3>
-                <p class="mb-4">
-                    1. 本サイトを構成するプログラムコード、デザイン、文章、ロゴ、および「TENMEI Labs」等の独自機能に関する知的財産権は、運営者（nden148）に帰属します。<br>
-                    2. ただし、本サイトの機能を用いて生成された<strong>「おみくじ結果画像」および「デジタル御守画像」</strong>については、ユーザー個人のSNS（X, Instagram, LINE等）での共有を目的とする限りにおいて、ユーザーはこれを自由に利用（複製、公衆送信）することができます。この際、画像に含まれるQRコードやサイトURLを削除しないことを推奨します。
-                </p>
-
-                <h3 class="text-xl font-bold mt-8 mb-4 border-l-4 border-red-500 pl-3">第5章 免責事項およびサポートの非提供</h3>
-                <!-- 変更後 -->
-                <p class="mb-4 text-[var(--accent-red)] font-bold border border-red-500 p-3 rounded bg-red-50 dark:bg-red-900/20">
-                    【重要】お問い合わせについて
-                </p>
-                <p class="mb-4">
-                    1. 当運営は、本サービスの提供の中断、停止、終了、利用不能、またはデータの消失（ユーザーによる退会処理や、不可抗力によるサーバー障害を含む）によってユーザーに生じた損害について、一切の責任を負いません。<br>
-                    2. 「おみくじの轍（履歴）」機能は、ユーザーの利便性のために提供されるものですが、永続的なデータ保存を法的に保証するものではありません。重要な結果については、画像保存機能を用いてユーザー自身の端末に物理的に保存することを強く推奨します。<br>
-                    3. 本サービスからリンクされている外部サイト（SNSシェア先等）の内容やプライバシー保護については、当運営は責任を負いません。<br>
-                    4. <strong>本サービスは個人開発による実験的プロジェクトであり、専任のサポート窓口やお問い合わせフォームは一切設置しておりません。また、運営者のSNSアカウント等を通じた個別の連絡、不具合報告、機能要望への対応も、アカウント凍結等の事情により一切行うことができません。</strong><br>
-                    5. 万が一、本サービスの利用により何らかの問題が生じた場合、または個人情報の取扱いに関して懸念が生じた場合は、直ちに本サービスの利用を中止し、「アカウント削除」機能を用いてご自身のデータを完全に消去する措置をとってください。これ以外の個別対応は致しかねますことを、あらかじめご了承ください。
-                </p>
             </div>
         </section>
 
