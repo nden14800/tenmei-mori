@@ -4634,115 +4634,136 @@ body.theme-newyear {
     #sidebar-toggle-btn { display: none !important; }
 
     /* ▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼
-       【絶対位置固定パッチ】
-       畳んでいる時も「隙間（カテゴリ名）」を消さずに透明にするだけで残します。
-       これにより、開閉してもボタンの縦位置が一切動かなくなります。
+       【最終完全修正版】サイドバー挙動・配置固定パッチ
+       ・開閉でアイコン位置を1ミリも動かさない
+       ・畳んでいる時のクリック不可問題を解消
        ▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼ */
 
-    /* 1. カテゴリ名（Main Menu等）の場所を強制確保 */
+    /* 1. 【重要】透明になった要素がクリックを邪魔しないようにする */
+    /* これで「畳んでいる時に押せない」問題が直ります */
+    .nav-group-title, .nav-text {
+        pointer-events: none !important; 
+    }
+    /* 開いている時だけ文字のクリック判定を戻すなら以下ですが、
+       基本ボタンごと押すので文字自体はnoneのままでOKです */
+
+    /* 2. カテゴリタイトル: 見えなくても「高さ」と「場所」を死守する */
     .nav-group-title {
-        display: block !important;      /* 絶対に消さない */
-        height: 20px !important;        /* 高さを固定 */
-        margin-top: 24px !important;    /* 上の余白を固定 */
-        margin-bottom: 8px !important;  /* 下の余白を固定 */
-        padding-left: 24px !important;  /* 左の位置も固定 */
+        display: block !important;     /* 絶対に消さない */
+        height: 20px !important;       /* 高さ固定 */
+        margin-bottom: 8px !important; /* 余白固定 */
+        margin-top: 4px !important;    
+        padding-left: 24px !important;
         
-        /* 畳んでいる時は透明にするが、場所(レイアウト)は残す */
-        visibility: visible !important; 
-        opacity: 1 !important;
-        transition: opacity 0.2s !important;
+        font-family: 'Zen Old Mincho', serif;
+        font-size: 0.75rem;
+        font-weight: 900;
+        letter-spacing: 0.15em;
+        color: var(--text-sub);
         
-        /* 文字があふれないように */
-        white-space: nowrap !important;
-        overflow: hidden !important;
-        color: var(--text-sub) !important;
+        white-space: nowrap;
+        overflow: hidden;
+        
+        /* アニメーション */
+        transition: opacity 0.2s ease !important;
+        opacity: 1;
     }
 
-    /* 畳んでいる時の挙動：透明にするだけ（visibility: hidden だとクリックを透過できる） */
-    /* ※ display: none は絶対に使いません。使うと位置がズレます */
+    /* 閉じた時は透明にするだけ（場所は残る＝ズレない） */
     body.sidebar-collapsed #sidebar:not(:hover) .nav-group-title {
-        opacity: 0 !important; 
-        visibility: hidden !important; 
+        opacity: 0 !important;
     }
 
-    /* 2. ボタンの位置とサイズをガチガチに固定 */
+    /* 3. ボタンの配置: 常に「左寄せ」で統一（中央寄せの挙動を完全に消す） */
     .nav-btn {
         display: flex !important;
+        justify-content: flex-start !important; /* 常に左始まり！ */
         align-items: center !important;
-        justify-content: flex-start !important; /* 常に左寄せ */
         
-        height: 48px !important;       /* 高さを固定 */
-        margin: 4px 8px !important;    /* 余白を固定 */
-        padding: 0 !important;         /* パディングで調整しない */
         width: calc(100% - 16px) !important; 
+        margin: 0 8px !important;
+        height: 44px !important; 
+        padding: 0 !important;   /* パディングで位置調整しない */
     }
 
-    /* 3. アイコンが入る「箱」のサイズを固定 */
-    /* これにより、サイドバーが伸び縮みしてもアイコンは同じ場所に留まります */
+    /* 4. アイコンの箱: 幅を「64px」に完全固定 */
+    /* これにより、サイドバーが伸び縮みしてもアイコンは
+       「左端から常に同じ距離」に固定されます */
     .nav-icon-box {
-        width: 64px !important;  /* 閉じた時の幅に合わせて固定 */
-        height: 48px !important; /* ボタンの高さに合わせる */
+        width: 64px !important;  /* 閉じた時のボタン幅に合わせて固定 */
+        height: 44px !important;
         
         display: flex !important;
         align-items: center !important;
         justify-content: center !important; /* 箱の中では中央 */
-        flex-shrink: 0 !important; /* 縮ませない */
         
-        margin: 0 !important;
+        flex-shrink: 0 !important; /* 絶対に縮ませない */
+        margin: 0 !important;      /* 余計な余白を消す */
+        background: transparent !important;
     }
 
-    /* 4. アイコン自体の余白を排除（ズレの原因になるため） */
+    /* アイコン自体の余白もゼロにする（干渉防止） */
     .nav-btn i, .nav-btn svg {
         margin: 0 !important;
     }
 
-    /* 5. メニュー文字（ホーム、12星座...）の制御 */
+    /* 5. テキスト: 場所は nav-btn の中に確保し、閉じたら透明にする */
     .nav-text {
-        display: block !important;
+        display: block !important; /* 消さない */
         white-space: nowrap !important;
-        opacity: 1 !important;
-        transition: opacity 0.2s !important;
-        padding-left: 0 !important;
+        padding-left: 4px !important;
+        
+        transition: opacity 0.2s ease !important;
+        opacity: 1;
     }
-
-    /* 畳んでいる時は文字を透明にするだけ（場所確保） */
+    
+    /* 閉じた時は透明にする */
     body.sidebar-collapsed #sidebar:not(:hover) .nav-text {
         opacity: 0 !important;
-        visibility: hidden !important;
     }
 
-    /* 6. サイドバー本体のアニメーション設定 */
+    /* 6. サイドバー本体のアニメーション */
     #sidebar {
-        /* 幅の変更のみアニメーションさせる */
-        transition: width 0.3s cubic-bezier(0.2, 0.8, 0.2, 1) !important;
+        transition: width 0.3s cubic-bezier(0.2, 0.8, 0.2, 1), 
+                    background-color 0.3s ease, 
+                    box-shadow 0.3s ease !important;
         will-change: width;
-        overflow: hidden !important;
-        
-        /* 閉じた時の幅を固定 */
-        width: 80px !important;
+        overflow: hidden; /* はみ出し防止 */
     }
 
-    /* --- PC/タブレット（ホバーで開く端末） --- */
+    /* --- PC設定 (幅の指定) --- */
     @media (min-width: 1025px) {
+        /* 閉じた時 */
+        body.sidebar-collapsed #sidebar { 
+            width: 80px !important; 
+        }
+        /* 開いた時（ホバー時） */
         body.sidebar-collapsed #sidebar:hover {
-            width: 260px !important; /* 開いた時の幅 */
+            width: 260px !important;
+        }
+        
+        /* 開いた時はタイトルを少し薄く表示 */
+        body.sidebar-collapsed #sidebar:hover .nav-group-title {
+            opacity: 0.6 !important;
         }
     }
 
-    /* --- スマホ（常に閉じたまま使う端末） --- */
+    /* --- スマホ設定 (常に閉じた見た目だが、操作可能にする) --- */
     @media (max-width: 1024px) {
-        /* スマホでも「隙間」を維持して、PCと同じ配置間隔にする */
-        /* もしスマホだけ詰めたい場合はここを display: none にしますが、
-           「位置を同じにする」要望を優先してここも display: block のままにします */
-        
-        #sidebar {
-            width: 80px !important;
+        /* スマホは開閉しないので、タイトルを完全に消して詰める（ズレ問題とは無関係） */
+        .nav-group-title {
+            display: none !important; 
+        }
+        .nav-text {
+            display: none !important;
         }
         
-        /* 文字等は完全に見えなくする */
-        .nav-text, .nav-group-title {
-            opacity: 0 !important;
-            visibility: hidden !important;
+        /* スマホはアイコン中央揃え */
+        .nav-btn {
+            justify-content: center !important;
+        }
+        .nav-icon-box {
+            width: 100% !important;
         }
     }
     
