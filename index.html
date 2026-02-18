@@ -149,10 +149,11 @@
             border: 1px solid var(--card-border);
         }
 
-        /* --- ▼▼▼ サイドバー修正・最終完全版 (クリックズレ解消・スクロール対応) ▼▼▼ --- */
+        /* --- ▼▼▼ サイドバー修正・最終デザイン調整版 ▼▼▼ --- */
 
     /* 1. サイドバー本体 (上下ピン留め・スクロール独立) */
     #sidebar {
+        /* アドレスバー対策：画面の上下に強制固定 */
         position: fixed;
         top: 16px !important;
         bottom: 16px !important;
@@ -174,12 +175,12 @@
         /* スクロール設定 */
         overflow-y: auto !important;
         overflow-x: hidden !important;
-        overscroll-behavior: contain; /* スクロール連鎖防止 */
+        overscroll-behavior: contain;
         -webkit-overflow-scrolling: touch;
         
-        padding: 20px 0;
+        padding: 24px 0;
         
-        /* アニメーション設定 */
+        /* アニメーション */
         transition: width 0.3s cubic-bezier(0.2, 0.8, 0.2, 1), 
                     background-color 0.3s ease, 
                     box-shadow 0.3s ease;
@@ -203,42 +204,27 @@
         width: 100%;
         flex-shrink: 0;
         
-        /* ★修正: ボタン間の隙間を均等にする */
+        /* ボタン間の隙間 */
         gap: 6px; 
         
-        /* ★修正: カテゴリタイトルの代わりに、グループ下に余白と区切り線を設ける */
-        margin-bottom: 12px;
-        padding-bottom: 12px;
-        border-bottom: 1px solid rgba(0,0,0,0.05); /* 薄い線で区切る */
-    }
-    
-    .dark .nav-group {
-        border-bottom-color: rgba(255,255,255,0.05);
-    }
-
-    /* 最後のグループは線なし */
-    .nav-group:last-child {
-        border-bottom: none;
-        margin-bottom: 0;
+        /* 線は削除し、余白だけで区切る */
+        margin-bottom: 24px;
+        border: none !important; /* ★線を削除 */
         padding-bottom: 0;
     }
     
-    /* 下部グループ（System） */
+    /* 下部グループ */
     .nav-group-bottom {
         margin-top: auto; 
-        padding-top: 10px;
-        border-top: 1px solid rgba(0,0,0,0.05); /* 上に線を入れる */
-        border-bottom: none;
+        margin-bottom: 0;
+        border: none !important; /* ★線を削除 */
+        padding-top: 0;
         padding-bottom: env(safe-area-inset-bottom); 
     }
-    .dark .nav-group-bottom {
-        border-top-color: rgba(255,255,255,0.05);
-    }
 
-    /* 3. グループタイトル (★最重要修正★) */
+    /* 3. グループタイトル (普段は消す) */
     .nav-group-title {
-        /* ★デフォルト(閉じた時)は「存在を消す」 */
-        /* これにより、ボタン間に見えない要素が挟まってクリックを吸うのを防ぐ */
+        /* ★重要: 閉じた時は完全に消して、クリックの邪魔をさせない */
         display: none !important; 
     }
 
@@ -249,7 +235,7 @@
         width: calc(100% - 16px); 
         margin: 0 8px;
         
-        /* 高さ固定 */
+        /* 高さ固定 (ズレ防止) */
         height: 44px; 
         min-height: 44px;
         max-height: 44px;
@@ -287,19 +273,15 @@
         pointer-events: none;
     }
 
-    /* テキストラベル */
+    /* テキストラベル (普段は消す) */
     .nav-text {
         font-family: 'Zen Old Mincho', serif;
         font-weight: 600;
         font-size: 0.9rem;
         opacity: 0;
-        transform: translateX(10px);
-        transition: opacity 0.2s ease, transform 0.2s ease;
         white-space: nowrap;
         pointer-events: none;
-        
-        /* 閉じた時は完全に非表示にしてレイアウト干渉を防ぐ */
-        display: none; 
+        display: none; /* 閉じた時は非表示 */
     }
 
     /* アクティブ状態 */
@@ -324,33 +306,36 @@
             background: rgba(30, 30, 30, 0.98);
         }
         
-        /* 展開時：タイトルを復活させる */
+        /* 展開時：タイトルを復活 & デザイン修正 */
         #sidebar:hover .nav-group-title {
-            display: block !important; /* ここで初めて表示 */
-            font-size: 0.65rem;
-            font-weight: 900;
+            display: block !important;
+            
+            /* ★修正: 文字デザインを「しょぼくない」ものに戻す */
+            font-family: 'Zen Old Mincho', serif; /* 和風フォント */
+            font-size: 0.75rem; /* 少し大きく */
+            font-weight: 900;   /* 極太 */
+            letter-spacing: 0.15em; /* 文字間隔を広めに */
             color: var(--text-sub);
+            opacity: 0.6;
+            
             padding-left: 24px;
-            margin-bottom: 4px;
+            margin-bottom: 8px;
             margin-top: 4px;
-            letter-spacing: 0.15em;
             text-transform: uppercase;
             white-space: nowrap;
-            animation: fadeInSimple 0.2s forwards;
-        }
-        
-        /* 展開時：区切り線を消す（テキストで分かれるため） */
-        #sidebar:hover .nav-group {
-            border-bottom: none;
-            margin-bottom: 24px;
-            padding-bottom: 0;
+            
+            /* フェードインアニメーション */
+            animation: fadeInSimple 0.3s ease-out forwards;
         }
 
-        /* 展開時：テキストを復活させる */
+        /* 展開時：テキストを復活 */
         #sidebar:hover .nav-text {
             display: block;
             opacity: 1;
             transform: translateX(0);
+            /* 位置調整 */
+            padding-left: 4px;
+            animation: fadeInSimple 0.3s ease-out forwards;
         }
         
         .nav-btn:hover {
@@ -367,7 +352,8 @@
     }
     
     @keyframes fadeInSimple {
-        from { opacity: 0; } to { opacity: 0.6; }
+        from { opacity: 0; transform: translateX(-5px); }
+        to { opacity: 1; transform: translateX(0); } /* 文字の透明度は親指定に依存 */
     }
 
     /* メインコンテンツ位置 */
