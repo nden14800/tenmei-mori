@@ -149,15 +149,16 @@
             border: 1px solid var(--card-border);
         }
 
-        /* --- ▼▼▼ サイドバー修正：位置完全固定・デザイン復旧版 ▼▼▼ --- */
+        /* --- ▼▼▼ サイドバー修正・最終デザイン調整版 ▼▼▼ --- */
 
     /* 1. サイドバー本体 (上下ピン留め・スクロール独立) */
     #sidebar {
+        /* アドレスバー対策：画面の上下に強制固定 */
         position: fixed;
         top: 16px !important;
         bottom: 16px !important;
         left: 16px !important;
-        width: 80px; /* 閉じ状態 */
+        width: 80px; /* 閉じた状態 */
         height: auto !important;
         
         background: rgba(255, 255, 255, 0.85);
@@ -165,27 +166,31 @@
         -webkit-backdrop-filter: blur(20px);
         border: 1px solid rgba(255, 255, 255, 0.4);
         border-radius: 24px;
-        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15);
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
         z-index: 9999;
         
         display: flex;
         flex-direction: column;
         
+        /* スクロール設定 */
         overflow-y: auto !important;
         overflow-x: hidden !important;
         overscroll-behavior: contain;
         -webkit-overflow-scrolling: touch;
         
-        padding: 20px 0;
+        padding: 24px 0;
         
-        /* 幅のみアニメーションさせる */
-        transition: width 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
+        /* アニメーション */
+        transition: width 0.3s cubic-bezier(0.2, 0.8, 0.2, 1), 
+                    background-color 0.3s ease, 
+                    box-shadow 0.3s ease;
     }
 
     /* スクロールバー非表示 */
     #sidebar::-webkit-scrollbar { display: none; }
     #sidebar { -ms-overflow-style: none; scrollbar-width: none; }
 
+    /* ダークモード */
     .dark #sidebar {
         background: rgba(30, 30, 30, 0.85);
         border-color: rgba(255, 255, 255, 0.1);
@@ -198,37 +203,29 @@
         flex-direction: column;
         width: 100%;
         flex-shrink: 0;
-        gap: 2px; /* ボタン間隔を一定に */
-        margin-bottom: 20px; /* グループ間の余白 */
+        
+        /* ボタン間の隙間 */
+        gap: 6px; 
+        
+        /* 線は削除し、余白だけで区切る */
+        margin-bottom: 24px;
+        border: none !important; /* ★線を削除 */
+        padding-bottom: 0;
     }
     
+    /* 下部グループ */
     .nav-group-bottom {
         margin-top: auto; 
         margin-bottom: 0;
+        border: none !important; /* ★線を削除 */
+        padding-top: 0;
         padding-bottom: env(safe-area-inset-bottom); 
     }
 
-    /* 3. グループタイトル (★位置固定のポイント★) */
+    /* 3. グループタイトル (普段は消す) */
     .nav-group-title {
-        /* display: none を使わず、高さを固定して維持する */
-        display: block !important;
-        height: 30px; 
-        line-height: 30px;
-        
-        font-family: 'Zen Old Mincho', serif;
-        font-size: 0.75rem;
-        font-weight: 900;
-        letter-spacing: 0.15em;
-        color: var(--text-sub);
-        padding-left: 24px;
-        text-transform: uppercase;
-        white-space: nowrap;
-        
-        /* 閉じている時は透明にするだけ(場所は取る) */
-        opacity: 0; 
-        transition: opacity 0.2s ease;
-        pointer-events: none;
-        flex-shrink: 0;
+        /* ★重要: 閉じた時は完全に消して、クリックの邪魔をさせない */
+        display: none !important; 
     }
 
     /* 4. ボタン本体 */
@@ -238,9 +235,10 @@
         width: calc(100% - 16px); 
         margin: 0 8px;
         
-        height: 46px; 
-        min-height: 46px;
-        max-height: 46px;
+        /* 高さ固定 (ズレ防止) */
+        height: 44px; 
+        min-height: 44px;
+        max-height: 44px;
         
         padding: 0;
         border-radius: 12px;
@@ -253,17 +251,18 @@
         overflow: hidden;
         white-space: nowrap;
         flex-shrink: 0;
+        
         -webkit-tap-highlight-color: transparent;
     }
 
-    /* アイコンボックス (80pxの幅の中で中央に来るように) */
+    /* アイコンボックス */
     .nav-icon-box {
         width: 64px; 
-        height: 46px;
+        height: 44px;
         display: flex;
         align-items: center;
         justify-content: center;
-        font-size: 1.25rem;
+        font-size: 1.2rem;
         flex-shrink: 0;
     }
     
@@ -271,58 +270,93 @@
         width: 24px;
         height: 24px;
         display: block;
+        pointer-events: none;
     }
 
-    /* テキストラベル (閉じている時は消す) */
+    /* テキストラベル (普段は消す) */
     .nav-text {
         font-family: 'Zen Old Mincho', serif;
         font-weight: 600;
-        font-size: 0.95rem;
+        font-size: 0.9rem;
         opacity: 0;
-        transition: opacity 0.2s ease, transform 0.2s ease;
-        transform: translateX(10px);
         white-space: nowrap;
         pointer-events: none;
+        display: none; /* 閉じた時は非表示 */
     }
 
     /* アクティブ状態 */
     .nav-btn.active {
-        background-color: var(--accent-red) !important;
-        color: #ffffff !important;
+        background-color: var(--accent-red);
+        color: #ffffff;
         box-shadow: 0 4px 12px rgba(185, 28, 28, 0.3);
     }
     #nav-login-btn.active {
-        background-color: #2563eb !important;
+        background-color: #2563eb;
         box-shadow: 0 4px 12px rgba(37, 99, 235, 0.4);
     }
 
-    /* --- ホバー展開設定 (iPadでもタップで展開される場合がありますが位置はズレません) --- */
-    #sidebar:hover {
-        width: 260px;
-        background: rgba(255, 255, 255, 0.98);
-    }
-    .dark #sidebar:hover {
-        background: rgba(30, 30, 30, 0.98);
+    /* --- ▼▼▼ PC(マウス)のみ展開する設定 ▼▼▼ --- */
+    @media (min-width: 1025px) and (hover: hover) {
+        #sidebar:hover {
+            width: 260px;
+            background: rgba(255, 255, 255, 0.98);
+            box-shadow: 10px 0 40px rgba(0, 0, 0, 0.15);
+        }
+        .dark #sidebar:hover {
+            background: rgba(30, 30, 30, 0.98);
+        }
+        
+        /* 展開時：タイトルを復活 & デザイン修正 */
+        #sidebar:hover .nav-group-title {
+            display: block !important;
+            
+            /* ★修正: 文字デザインを「しょぼくない」ものに戻す */
+            font-family: 'Zen Old Mincho', serif; /* 和風フォント */
+            font-size: 0.75rem; /* 少し大きく */
+            font-weight: 900;   /* 極太 */
+            letter-spacing: 0.15em; /* 文字間隔を広めに */
+            color: var(--text-sub);
+            opacity: 0.6;
+            
+            padding-left: 24px;
+            margin-bottom: 8px;
+            margin-top: 4px;
+            text-transform: uppercase;
+            white-space: nowrap;
+            
+            /* フェードインアニメーション */
+            animation: fadeInSimple 0.3s ease-out forwards;
+        }
+
+        /* 展開時：テキストを復活 */
+        #sidebar:hover .nav-text {
+            display: block;
+            opacity: 1;
+            transform: translateX(0);
+            /* 位置調整 */
+            padding-left: 4px;
+            animation: fadeInSimple 0.3s ease-out forwards;
+        }
+        
+        .nav-btn:hover {
+            background-color: rgba(0, 0, 0, 0.05);
+            color: var(--text-main);
+        }
+        .dark .nav-btn:hover {
+            background-color: rgba(255, 255, 255, 0.08);
+        }
+        .nav-btn.active:hover {
+            background-color: var(--accent-red); 
+            color: #fff;
+        }
     }
     
-    /* 展開時に文字を表示 */
-    #sidebar:hover .nav-group-title {
-        opacity: 0.6;
-    }
-    #sidebar:hover .nav-text {
-        opacity: 1;
-        transform: translateX(0);
-    }
-    
-    .nav-btn:hover {
-        background-color: rgba(0, 0, 0, 0.05);
-        color: var(--text-main);
-    }
-    .dark .nav-btn:hover {
-        background-color: rgba(255, 255, 255, 0.08);
+    @keyframes fadeInSimple {
+        from { opacity: 0; transform: translateX(-5px); }
+        to { opacity: 1; transform: translateX(0); } /* 文字の透明度は親指定に依存 */
     }
 
-    /* コンテンツ位置 */
+    /* メインコンテンツ位置 */
     #main-content {
         margin-left: 96px;
         width: calc(100% - 96px);
@@ -331,11 +365,15 @@
         transition: margin-left 0.3s;
     }
 
-    /* モバイル調整 */
+    /* タブレット・モバイル調整 */
     @media (max-width: 1024px) {
-        #sidebar { width: 80px !important; }
-        .nav-text, .nav-group-title { opacity: 0 !important; } /* タイトル等は場所だけ取って見せない */
-        .nav-btn { justify-content: flex-start; }
+        #sidebar { 
+            width: 80px !important;
+        }
+        /* 絶対に展開させない */
+        .nav-text, .nav-group-title { display: none !important; }
+        .nav-btn { justify-content: center; }
+        .nav-icon-box { margin: 0 auto; width: 100%; } 
     }
 
         /* --- 共通コンポーネント --- */
