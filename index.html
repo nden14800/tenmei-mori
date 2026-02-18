@@ -31,6 +31,7 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Tailwind Config -->
     <script>
+    function toggleSidebar() { document.body.classList.toggle("sidebar-collapsed"); }
       tailwind.config = {
         darkMode: 'class',
       }
@@ -115,11 +116,9 @@
             --card-border: #d4af37;
         }
         body.theme-newyear .nav-btn {
-        min-width: 80px; flex-shrink: 0;
             color: #333;
         }
         body.theme-newyear #sidebar {
-        scrollbar-width: none; -ms-overflow-style: none;
             background-color: rgba(255, 252, 240, 0.85);
             border-right: 1px solid #d4af37;
         }
@@ -154,12 +153,11 @@
 
 /* デスクトップ: 左側に浮くグラス・ナビゲーション */
 #sidebar {
-        scrollbar-width: none; -ms-overflow-style: none;
     position: fixed;
     left: 16px; /* 画面端から浮かせる */
     top: 16px;
     bottom: 16px;
-    width: 80px; overflow: hidden; transition: width 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
+    width: 260px; /* 最初から展開サイズで見やすく */
     background: rgba(255, 255, 255, 0.65); /* かなり透明度を上げる */
     backdrop-filter: blur(20px) saturate(180%);
     -webkit-backdrop-filter: blur(20px) saturate(180%);
@@ -170,21 +168,21 @@
     display: flex;
     flex-direction: column;
     padding: 20px 16px;
+    transition: transform 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
+    height: calc(100vh - 32px); /* 上下の余白分を引く */
     overflow-y: auto;
     scrollbar-width: none;
 }
 
-    #sidebar:hover { width: 260px; }
-    #sidebar .nav-text, #sidebar .nav-group-title { opacity: 0; transition: opacity 0.2s; white-space: nowrap; }
-    #sidebar:hover .nav-text, #sidebar:hover .nav-group-title { opacity: 1; }
+/* ダークモード対応 */
+.dark #sidebar {
+    background: rgba(30, 30, 30, 0.6);
+    border-color: rgba(255, 255, 255, 0.08);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+}
 
 #sidebar::-webkit-scrollbar { display: none; }
-    #sidebar::-webkit-scrollbar { display: none; }
-    .dark #sidebar {
-        background: rgba(20, 20, 20, 0.9) !important;
-        border-top: 1px solid rgba(255,255,255,0.1) !important;
-        color: rgba(255, 255, 255, 0.9) !important;
-    }
+
 /* ナビゲーションのグルーピング */
 .nav-group {
     display: flex;
@@ -206,7 +204,6 @@
 
 /* ボタンのスタイル (Pill Shape) */
 .nav-btn {
-        min-width: 80px; flex-shrink: 0;
     display: flex;
     align-items: center;
     width: 100%;
@@ -227,8 +224,6 @@
 
 /* アイコン */
 .nav-btn i {
-        font-size: 1.2rem !important;
-        font-size: 1.2rem !important;
     font-size: 1.25rem;
     width: 24px;
     text-align: center;
@@ -280,12 +275,147 @@
 
 /* メインコンテンツの位置調整 (デスクトップ) */
 #main-content {
-    margin-left: 96px;
-    #main-content {
-        margin-left: 96px !important;
-        width: calc(100% - 96px) !important;
-        padding: 20px !important;
+    margin-left: 290px; /* サイドバー幅 + 余白 */
+    width: calc(100% - 290px);
+    padding: 30px;
+    transition: margin-left 0.3s;
+}
+
+/* --- モバイル対応: 下部固定ドック (Bottom Navigation) --- */
+@media (max-width: 1024px) {
+    /* サイドバーを下に移動して変形 */
+    #sidebar {
+        top: auto;
+        bottom: 0;
+        left: 0;
+        width: 100%;
+        height: auto; /* 高さは中身なり */
+        border-radius: 20px 20px 0 0; /* 上だけ丸く */
+        flex-direction: row; /* 横並び */
+        justify-content: space-around; /* 均等配置 */
+        padding: 12px 8px 24px 8px; /* iPhoneのホームバー考慮 */
+        background: rgba(255, 255, 255, 0.9);
+        border: none;
+        border-top: 1px solid rgba(0,0,0,0.05);
+        box-shadow: 0 -4px 20px rgba(0,0,0,0.05);
+        z-index: 9999;
     }
+    .dark #sidebar {
+        background: rgba(20, 20, 20, 0.9);
+        border-top: 1px solid rgba(255,255,255,0.1);
+    }
+
+    /* メインコンテンツの余白調整 */
+    #main-content {
+        margin-left: 0;
+        width: 100%;
+        padding: 20px;
+        padding-bottom: 100px; /* ボトムバーに隠れないように */
+    }
+
+    /* モバイルではグルーピングを解除してフラットに */
+    .nav-group {
+        flex-direction: row;
+        gap: 0;
+        margin: 0;
+        width: 100%;
+        justify-content: space-around;
+    }
+    
+    /* タイトルや「その他」のグループは隠す */
+    .nav-group-title, 
+    .nav-group.desktop-only {
+        display: none;
+    }
+
+    /* ボタンのスタイル変更 (アイコンメイン) */
+    .nav-btn {
+        flex-direction: column; /* 縦並び */
+        justify-content: center;
+        width: auto;
+        padding: 6px 4px;
+        border-radius: 12px;
+        gap: 4px;
+    }
+    
+    .nav-btn:hover {
+        transform: none;
+        background: transparent;
+    }
+
+    /* アイコンサイズ調整 */
+    .nav-btn i {
+        margin-right: 0;
+        font-size: 1.4rem;
+        margin-bottom: 2px;
+    }
+    .nav-btn svg {
+        margin-right: 0;
+        width: 24px;
+        height: 24px;
+        margin-bottom: 2px;
+    }
+
+    /* テキストラベル (極小化) */
+    .nav-text {
+        font-size: 0.6rem;
+        opacity: 1 !important; /* 常時表示 */
+        transform: none !important;
+        margin-left: 0;
+        font-weight: bold;
+    }
+
+    /* アクティブ時のスタイル (モバイル版) */
+    .nav-btn.active {
+        background: transparent; /* 背景色なし */
+        color: var(--accent-red); /* 文字色を変える */
+        box-shadow: none;
+    }
+    
+    /* アクティブ時に上に小さな点をつける */
+    .nav-btn.active::after {
+        content: '';
+        position: absolute;
+        top: 0;
+        width: 20px;
+        height: 3px;
+        background: var(--accent-red);
+        border-radius: 2px;
+    }
+}
+
+        /* --- 共通コンポーネント --- */
+        .btn-primary {
+            background-color: var(--accent-red);
+            color: white;
+            padding: 12px 30px;
+            border-radius: 30px;
+            font-weight: bold;
+            transition: all 0.3s;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.2);
+            border: none;
+            cursor: pointer;
+            font-size: 1.1rem;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            justify-content: center;
+        }
+        .btn-primary:hover {
+            filter: brightness(1.1);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 12px rgba(0,0,0,0.3);
+        }
+        .btn-primary:disabled {
+            background-color: #999;
+            cursor: not-allowed;
+            transform: none;
+        }
+        .btn-outline {
+            background-color: transparent;
+            color: var(--text-main);
+            border: 2px solid var(--text-main);
+            padding: 10px 25px;
             border-radius: 30px;
             font-weight: bold;
             transition: all 0.3s;
@@ -305,7 +435,6 @@
             top: 0; left: 0; width: 100%; height: 100%;
             background: rgba(0,0,0,0.6);
             z-index: 9999;
-        overflow-x: auto;
             display: none;
             align-items: center;
             justify-content: center;
@@ -3194,7 +3323,7 @@
             #main-content {
                 margin: 0 !important;
                 padding: 0 !important;
-                width: calc(100% - 96px);
+                width: 100% !important;
             }
             .view-section {
                 display: none !important; /* 一旦全部消す */
@@ -4348,78 +4477,15 @@ body.theme-newyear {
             color: #bfdbfe; border-color: #2563eb; 
         }
 
-        /* ▼▼▼ 修正・追加用CSS (ここをコピーして貼り付け) ▼▼▼ */
-
-/* 1. メインコンテンツの表示修正（フルスクリーン化） */
-#main-content {
-    /* サイドバーの幅(80px) + 左の余白(16px) + コンテンツとの隙間(約20px) = 116px */
-    margin-left: 116px !important;
-    /* 幅を「100% - 上記のマージン」に設定して画面いっぱいに広げる */
-    width: calc(100% - 116px) !important;
-    max-width: none !important; /* 最大幅制限を解除 */
-    flex: 1; /* 余った領域を全て埋める */
-    padding: 20px !important;
-    box-sizing: border-box; /* パディングを含めた幅計算にする */
-}
-
-/* スマホ・タブレットなど画面が狭い時の調整 */
-@media (max-width: 768px) {
-    #main-content {
-        margin-left: 96px !important; /* 少し詰める */
-        width: calc(100% - 96px) !important;
-        padding: 15px !important;
-    }
-}
-
-/* 2. サイドメニュー（赤い枠）の表示崩れ修正 */
-#sidebar {
-    /* サイドバー内部の余白を調整 */
-    padding: 20px 10px !important; 
-    /* ボタンを中央揃えにする */
-    align-items: center !important; 
-    box-sizing: border-box;
-}
-
-.nav-btn {
-    /* はみ出しの原因だった最小幅(80px)を解除 */
-    min-width: 0 !important; 
-    /* サイドバーの幅に合わせて伸縮させる */
-    width: 100% !important;
-    /* 内部の余白調整 */
-    padding: 12px 0 !important; 
-    /* アイコンを中央に配置 */
-    justify-content: center !important; 
-    margin-bottom: 8px;
-}
-
-/* アイコンの位置調整 */
-.nav-btn i, 
-.nav-btn svg {
-    margin-right: 0 !important; /* 通常時はアイコン横の余白を消す */
-    width: 24px;
-    text-align: center;
-}
-
-/* 選択中（赤い枠）のデザイン調整 */
-.nav-btn.active {
-    box-shadow: 0 4px 10px rgba(185, 28, 28, 0.2) !important;
-    /* 赤い枠がボタンの形に綺麗に収まるように */
-    width: 100% !important; 
-}
-
-/* サイドバーにマウスを乗せて広がった時の挙動（PC用） */
-#sidebar:hover .nav-btn {
-    justify-content: flex-start !important; /* 左寄せに戻す */
-    padding-left: 20px !important; /* 左に余白を入れる */
-}
-#sidebar:hover .nav-btn i, 
-#sidebar:hover .nav-btn svg {
-    margin-right: 14px !important; /* アイコンと文字の間隔を戻す */
-}
-
-/* ▲▲▲ 修正・追加用CSS ここまで ▲▲▲ */
-
     </style>
+<style>
+body.sidebar-collapsed #sidebar { width: 80px !important; }
+body.sidebar-collapsed #sidebar .nav-text, body.sidebar-collapsed #sidebar .nav-group-title { display: none !important; }
+body.sidebar-collapsed #sidebar .nav-btn { justify-content: center !important; padding: 12px 0 !important; }
+body.sidebar-collapsed #sidebar .nav-btn i, body.sidebar-collapsed #sidebar .nav-btn svg { margin-right: 0 !important; }
+body.sidebar-collapsed #main-content { margin-left: 110px !important; width: calc(100% - 110px) !important; }
+@media (max-width: 1024px) { #sidebar-toggle-btn { display: none !important; } }
+</style>
 </head>
 <body>
 
@@ -4439,6 +4505,7 @@ body.theme-newyear {
 
     <!-- サイドバー (Modern Glass Dock) -->
 <nav id="sidebar">
+    <div id="sidebar-toggle-btn" onclick="toggleSidebar()" style="position: absolute; right: -12px; top: 30px; width: 24px; height: 24px; background: #b91c1c; color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; z-index: 101; border: 2px solid white; box-shadow: 0 2px 8px rgba(0,0,0,0.2);"><i class="bi bi-chevron-left"></i></div>
     <!-- 1. メイン機能グループ (モバイルにも表示) -->
     <div class="nav-group w-full">
         <div class="nav-group-title hidden lg:block">Main Menu</div>
@@ -6413,6 +6480,7 @@ body.theme-newyear {
 
     <!-- JavaScript ロジック -->
     <script>
+    function toggleSidebar() { document.body.classList.toggle("sidebar-collapsed"); }
         // ==========================================
         //  設定: Cloudflare WorkerのURL
         // ==========================================
