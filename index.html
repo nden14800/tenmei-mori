@@ -2655,51 +2655,103 @@
     100% { transform: translateY(-80px) scale(1.2); opacity: 0; }
 }
 
-        /* --- Bento Grid UI (モダン・グリッドレイアウト) --- */
+        /* ===== Ver.2.0 ホーム ===== */
+
+        @keyframes bentoIn {
+            0%   { opacity: 0; transform: translateY(24px) scale(0.97); }
+            100% { opacity: 1; transform: translateY(0)    scale(1);    }
+        }
+        @keyframes heroShimmer {
+            0%   { background-position: -200% center; }
+            100% { background-position:  200% center; }
+        }
+        @keyframes orbFloat {
+            0%, 100% { transform: translateY(0) scale(1); }
+            50%       { transform: translateY(-12px) scale(1.04); }
+        }
+        @keyframes pulseRing {
+            0%   { transform: scale(1);   opacity: 0.6; }
+            100% { transform: scale(1.8); opacity: 0;   }
+        }
+
+        /* ---- グリッド ---- */
         .bento-grid {
             display: grid;
             grid-template-columns: repeat(12, 1fr);
-            grid-auto-rows: minmax(100px, auto); /* 行の高さを自動調整 */
-            gap: 20px;
+            grid-auto-rows: minmax(100px, auto);
+            gap: 14px;
             width: 100%;
-            max-width: 1200px;
+            max-width: 1100px;
             margin: 0 auto;
-            padding-bottom: 60px;
+            padding: 8px 4px 60px;
         }
 
+        /* ---- 共通カード ---- */
         .bento-card {
             background-color: var(--card-bg);
             border: 1px solid var(--card-border);
-            border-radius: 24px; /* 角丸を大きくモダンに */
+            border-radius: 22px;
             padding: 24px;
             position: relative;
             overflow: hidden;
-            transition: all 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
             display: flex;
             flex-direction: column;
             justify-content: space-between;
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
+            box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+            opacity: 0;
+            animation: bentoIn 0.6s cubic-bezier(0.22,1,0.36,1) forwards;
         }
+        .bento-card::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            border-radius: inherit;
+            background: linear-gradient(135deg, rgba(255,255,255,0.05) 0%, transparent 50%);
+            pointer-events: none;
+        }
+        .bento-card:nth-child(1) { animation-delay: 0.04s; }
+        .bento-card:nth-child(2) { animation-delay: 0.11s; }
+        .bento-card:nth-child(3) { animation-delay: 0.18s; }
+        .bento-card:nth-child(4) { animation-delay: 0.24s; }
+        .bento-card:nth-child(5) { animation-delay: 0.29s; }
+        .bento-card:nth-child(6) { animation-delay: 0.34s; }
+        .bento-card:nth-child(7) { animation-delay: 0.38s; }
+        .bento-card:nth-child(8) { animation-delay: 0.42s; }
 
         .bento-card:hover {
-            transform: translateY(-4px) scale(1.01);
-            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
-            border-color: var(--accent-red); /* ホバー時に紅色の枠 */
+            transform: translateY(-5px) scale(1.008);
+            box-shadow: 0 20px 48px -8px rgba(0,0,0,0.14), 0 0 0 1px var(--accent-red);
             z-index: 10;
+            transition: transform 0.3s cubic-bezier(0.22,1,0.36,1),
+                        box-shadow 0.3s cubic-bezier(0.22,1,0.36,1);
         }
 
-        /* 挨拶エリア（ヘッダー） */
+        /* ---- Welcome ---- */
         .bento-welcome {
-            grid-column: span 12; /* 横幅いっぱい */
-            background: linear-gradient(135deg, var(--card-bg) 0%, var(--bg-color) 100%);
+            grid-column: span 12;
             display: flex;
             flex-direction: row;
             align-items: center;
             justify-content: space-between;
-            min-height: 120px;
+            min-height: 96px;
+            background: linear-gradient(105deg,
+                color-mix(in srgb, var(--accent-red) 8%, var(--card-bg)) 0%,
+                var(--card-bg) 60%);
+            border-left: 3px solid var(--accent-red);
+        }
+        .bento-welcome .deco-jp {
+            font-family: 'Zen Old Mincho', serif;
+            font-size: 3.5rem;
+            font-weight: 900;
+            line-height: 1;
+            color: var(--accent-red);
+            opacity: 0.12;
+            letter-spacing: -0.05em;
+            user-select: none;
+            pointer-events: none;
         }
 
-        /* タイトルエリア */
+        /* ---- Title（ヒーロー）---- */
         .bento-title {
             grid-column: span 8;
             grid-row: span 2;
@@ -2708,60 +2760,226 @@
             justify-content: center;
             align-items: center;
             text-align: center;
-            background-image: var(--bg-pattern);
+            min-height: 260px;
+            background:
+                radial-gradient(ellipse 80% 70% at 50% 50%,
+                    color-mix(in srgb, var(--accent-red) 10%, transparent) 0%,
+                    transparent 70%),
+                var(--card-bg);
+            border: 1px solid color-mix(in srgb, var(--accent-red) 20%, transparent);
+        }
+        .bento-title .bg-watermark {
+            position: absolute;
+            inset: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: 'Zen Old Mincho', serif;
+            font-size: clamp(90px, 20vw, 180px);
+            font-weight: 900;
+            color: var(--accent-red);
+            opacity: 0.035;
+            letter-spacing: -0.05em;
+            pointer-events: none;
+            user-select: none;
+            overflow: hidden;
+        }
+        .bento-title .hero-label {
+            font-size: 10px;
+            letter-spacing: 0.45em;
+            color: var(--accent-red);
+            opacity: 0.7;
+            margin-bottom: 14px;
+            text-transform: uppercase;
+            font-family: monospace;
+        }
+        .bento-title h1 {
+            font-family: 'Zen Old Mincho', serif;
+            font-size: clamp(2rem, 4.5vw, 3.2rem);
+            font-weight: 900;
+            letter-spacing: 0.15em;
+            line-height: 1.1;
+            margin-bottom: 14px;
+            background: linear-gradient(135deg,
+                var(--text-main) 0%,
+                color-mix(in srgb, var(--accent-red) 60%, var(--text-main)) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        .bento-title .hero-divider {
+            width: 36px; height: 2px;
+            background: linear-gradient(90deg, var(--accent-red), transparent);
+            margin: 0 auto 14px;
+        }
+        .bento-title .hero-sub {
+            font-size: 0.85rem;
+            line-height: 1.9;
+            opacity: 0.55;
         }
 
-        /* アクションエリア（おみくじを引く） */
+        /* ---- Action（おみくじを引く）---- */
         .bento-action {
             grid-column: span 4;
             grid-row: span 2;
-            background-color: var(--accent-red);
+            background: linear-gradient(150deg, #c41c1c 0%, #8b1111 100%);
             color: white;
             border: none;
             align-items: center;
             justify-content: center;
             cursor: pointer;
             text-align: center;
+            box-shadow:
+                0 12px 32px -4px rgba(185,28,28,0.5),
+                inset 0 1px 0 rgba(255,255,255,0.15),
+                inset 0 -2px 0 rgba(0,0,0,0.2);
         }
         .bento-action:hover {
-            background-color: #a01818; /* 少し濃く */
+            background: linear-gradient(150deg, #d42020 0%, #9b1414 100%);
+            box-shadow:
+                0 20px 48px -4px rgba(185,28,28,0.65),
+                inset 0 1px 0 rgba(255,255,255,0.2);
+            border-color: transparent;
+            transform: translateY(-7px) scale(1.02);
+        }
+        .bento-action .action-orb {
+            width: 80px; height: 80px;
+            border-radius: 50%;
+            background: rgba(255,255,255,0.12);
+            border: 1.5px solid rgba(255,255,255,0.25);
+            display: flex; align-items: center; justify-content: center;
+            margin: 0 auto 18px;
+            animation: orbFloat 3.5s ease-in-out infinite;
+            position: relative;
+        }
+        .bento-action .action-orb::before {
+            content: '';
+            position: absolute;
+            inset: -4px;
+            border-radius: 50%;
+            border: 1px solid rgba(255,255,255,0.15);
+            animation: pulseRing 2.5s ease-out infinite;
         }
         .bento-action h3 {
-            font-size: 1.5rem;
+            font-size: 1.35rem;
             font-weight: 900;
-            margin-bottom: 10px;
+            margin-bottom: 8px;
+            letter-spacing: 0.1em;
         }
-        
-        /* 統計エリア・ニュース・コラム */
-        .bento-stats { grid-column: span 4; grid-row: span 2; }
-        .bento-news  { grid-column: span 4; grid-row: span 2; }
-        .bento-col   { grid-column: span 4; grid-row: span 2; }
+        .bento-action p {
+            font-size: 0.72rem;
+            opacity: 0.75;
+            letter-spacing: 0.18em;
+        }
 
-        /* カウンター小窓 */
+        /* ---- Mini cards ---- */
         .bento-mini {
             grid-column: span 6;
             display: flex;
             flex-direction: row;
             align-items: center;
-            gap: 15px;
+            gap: 16px;
+            background: linear-gradient(135deg,
+                var(--card-bg) 0%,
+                color-mix(in srgb, var(--accent-red) 4%, var(--card-bg)) 100%);
+        }
+        .bento-mini .mini-icon-wrap {
+            width: 50px; height: 50px;
+            border-radius: 14px;
+            display: flex; align-items: center; justify-content: center;
+            flex-shrink: 0;
+            transition: transform 0.3s cubic-bezier(0.22,1,0.36,1);
+        }
+        .bento-mini:hover .mini-icon-wrap {
+            transform: scale(1.12) rotate(-5deg);
+        }
+        .bento-mini .mini-label {
+            font-size: 10px;
+            font-weight: 700;
+            letter-spacing: 0.12em;
+            opacity: 0.5;
+            margin-bottom: 3px;
+            text-transform: uppercase;
+        }
+        .bento-mini .mini-val {
+            font-size: 1.6rem;
+            font-weight: 900;
+            font-variant-numeric: tabular-nums;
+            line-height: 1;
         }
 
-        /* --- モバイル対応（1カラムにする） --- */
+        /* ---- Stats / News / Col ---- */
+        .bento-stats { grid-column: span 4; grid-row: span 2; }
+        .bento-news  { grid-column: span 4; grid-row: span 2; }
+        .bento-col   { grid-column: span 4; grid-row: span 2; }
+
+        .bento-stats [id^="bar-"],
+        .bento-news  [id^="bar-"],
+        .bento-col   [id^="bar-"] {
+            transition: width 0.9s cubic-bezier(0.22,1,0.36,1);
+        }
+
+        .bento-card .section-head {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding-bottom: 10px;
+            margin-bottom: 10px;
+            border-bottom: 1px solid var(--card-border);
+        }
+        .bento-card .section-head h3 {
+            font-size: 0.82rem;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 7px;
+            letter-spacing: 0.04em;
+        }
+        .bento-card .section-head .view-link {
+            font-size: 0.7rem;
+            font-weight: 600;
+            padding: 3px 10px;
+            border-radius: 20px;
+            border: 1px solid var(--card-border);
+            transition: all 0.2s;
+            cursor: pointer;
+            background: transparent;
+        }
+        .bento-card .section-head .view-link:hover {
+            border-color: var(--accent-red);
+            color: var(--accent-red);
+        }
+
+        #home-news-list li,
+        #home-column-list li {
+            padding: 7px 6px;
+            margin: 0 -6px;
+            border-radius: 8px;
+            transition: background 0.18s;
+        }
+        #home-news-list li:hover,
+        #home-column-list li:hover {
+            background: color-mix(in srgb, var(--accent-red) 7%, transparent);
+        }
+
+        /* ---- モバイル ---- */
         @media (max-width: 768px) {
             .bento-grid {
                 display: flex;
                 flex-direction: column;
+                gap: 10px;
             }
-            .bento-card {
-                min-height: auto;
-            }
-            /* モバイルでは挨拶エリアを縦並びに */
+            .bento-card { min-height: auto; }
             .bento-welcome {
                 flex-direction: column;
                 text-align: center;
-                gap: 10px;
-                padding: 30px;
+                gap: 8px;
+                padding: 22px;
+                border-left: none;
+                border-top: 3px solid var(--accent-red);
             }
+            .bento-welcome .deco-jp { display: none; }
+            .bento-title { min-height: 200px; }
         }
         
         /* --- 12星座占い モダンUI --- */
