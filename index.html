@@ -4882,7 +4882,6 @@ body.sidebar-collapsed #sidebar .nav-group-title {
 }
 
     /* ===== 完全決定版：開閉でスペースを完全一致させる ===== */
-/* タイトルは常に同じ高さ・余白で存在させる。見えないだけ。 */
 
 #sidebar .nav-group-title,
 body.sidebar-collapsed #sidebar .nav-group-title,
@@ -4893,22 +4892,31 @@ body.sidebar-collapsed #sidebar:not(:hover) .nav-group-title {
     max-height: 20px !important;
     margin-top: 18px !important;
     margin-bottom: 8px !important;
-    padding-left: 28px !important;
+    padding-left: 0 !important;        /* 畳んだ時は中央寄せ */
     padding-top: 0 !important;
     padding-bottom: 0 !important;
     position: static !important;
     overflow: hidden !important;
     transform: none !important;
     pointer-events: none !important;
-    opacity: 0 !important; /* 見えないだけ。スペースは保持 */
+    
+    /* 小さく表示 */
+    opacity: 0.5 !important;           /* 少し薄め */
+    font-size: 0.45rem !important;     /* 小さく */
+    letter-spacing: 0.2em !important;
+    text-align: center !important;     /* 中央揃え */
 }
 
-/* ホバーで開いた時だけ表示 */
+/* ホバーで開いた時は通常サイズに戻す */
 body.sidebar-collapsed #sidebar:hover .nav-group-title {
     opacity: 1 !important;
+    font-size: 0.65rem !important;
+    letter-spacing: 0.25em !important;
+    text-align: left !important;
+    padding-left: 28px !important;
 }
 
-/* スマホも同様（開閉なしでも同じスペース確保） */
+/* スマホも同様 */
 @media (max-width: 1024px) {
     #sidebar .nav-group-title {
         display: block !important;
@@ -4917,7 +4925,11 @@ body.sidebar-collapsed #sidebar:hover .nav-group-title {
         max-height: 20px !important;
         margin-top: 18px !important;
         margin-bottom: 8px !important;
-        opacity: 0 !important;
+        padding-left: 0 !important;
+        opacity: 0.5 !important;
+        font-size: 0.45rem !important;
+        letter-spacing: 0.2em !important;
+        text-align: center !important;
         overflow: hidden !important;
         position: static !important;
     }
