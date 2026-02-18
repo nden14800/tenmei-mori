@@ -4844,6 +4844,42 @@ body.sidebar-collapsed #sidebar .nav-group-title {
             opacity: 1 !important;
         }
     }
+
+    /* ====== 決定版バグ修正：透明タイトルの不要スペース完全除去 ====== */
+
+/* タブレット・モバイル：タイトルを完全に消してスペースゼロにする */
+@media (max-width: 1024px) {
+    #sidebar .nav-group-title {
+        display: none !important;
+        height: 0 !important;
+        min-height: 0 !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        overflow: hidden !important;
+    }
+}
+
+/* PC：閉じた状態（ホバー前）もスペースゼロ */
+@media (min-width: 1025px) {
+    body.sidebar-collapsed #sidebar:not(:hover) .nav-group-title {
+        height: 0 !important;
+        min-height: 0 !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        opacity: 0 !important;
+        overflow: hidden !important;
+    }
+    /* ホバー展開時は元のデザインに戻す */
+    body.sidebar-collapsed #sidebar:hover .nav-group-title {
+        display: block !important;
+        height: 20px !important;
+        margin-top: 18px !important;
+        margin-bottom: 8px !important;
+        padding-left: 28px !important;
+        opacity: 1 !important;
+        overflow: visible !important;
+    }
+}
     
     </style>
 </head>
