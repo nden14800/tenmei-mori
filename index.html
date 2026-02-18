@@ -149,24 +149,30 @@
             border: 1px solid var(--card-border);
         }
 
-        /* --- ▼▼▼ 新・モダンサイドバー (全デバイス統一・ホバー開閉版) ▼▼▼ --- */
+        /* --- ▼▼▼ 新・モダンサイドバー (修正・完全版) ▼▼▼ --- */
 
-    /* 1. サイドバー本体 (全デバイス共通) */
+    /* 1. サイドバー本体 (全デバイス共通・スクロール対応) */
     #sidebar {
         position: fixed;
         left: 16px;
         top: 16px;
         bottom: 16px;
         
-        /* デフォルト: 閉じた状態 (80px) */
+        /* ▼ デフォルト(閉じた状態)の幅 */
         width: 80px; 
         
-        /* 高さ: 画面いっぱい */
+        /* ▼ 縦スクロールを許可 (見切れる対策) */
         height: calc(100vh - 32px);
+        overflow-y: auto; 
+        overflow-x: hidden; /* 横スクロールは禁止 */
         
-        background: rgba(255, 255, 255, 0.65);
-        backdrop-filter: blur(20px) saturate(180%);
-        -webkit-backdrop-filter: blur(20px) saturate(180%);
+        /* スクロールバーを隠す (見た目をモダンに) */
+        scrollbar-width: none; /* Firefox */
+        -ms-overflow-style: none; /* IE/Edge */
+
+        background: rgba(255, 255, 255, 0.75); /* 少し透け感を下げる */
+        backdrop-filter: blur(20px);
+        -webkit-backdrop-filter: blur(20px);
         border: 1px solid rgba(255, 255, 255, 0.4);
         border-radius: 24px;
         box-shadow: 0 8px 32px rgba(0, 0, 0, 0.05);
@@ -176,38 +182,33 @@
         flex-direction: column;
         padding: 20px 0; /* 横パディング0でアイコン位置を制御 */
         
-        /* 滑らかなアニメーション */
-        transition: width 0.4s cubic-bezier(0.2, 0.8, 0.2, 1), 
+        /* ▼ 滑らかなアニメーション設定 */
+        transition: width 0.3s cubic-bezier(0.25, 0.8, 0.25, 1), 
                     background-color 0.3s ease, 
                     box-shadow 0.3s ease;
         
-        overflow-x: hidden; /* 横はみ出し防止 */
-        overflow-y: auto;   /* 縦スクロール許可 */
-        scrollbar-width: none;
         white-space: nowrap; /* テキスト折り返し防止 */
     }
 
-    #sidebar::-webkit-scrollbar { display: none; }
+    #sidebar::-webkit-scrollbar { display: none; } /* Chrome/Safari */
 
     /* ダークモード対応 */
     .dark #sidebar {
-        background: rgba(30, 30, 30, 0.6);
-        border-color: rgba(255, 255, 255, 0.08);
+        background: rgba(30, 30, 30, 0.75);
+        border-color: rgba(255, 255, 255, 0.1);
         box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
     }
 
-    /* 2. 展開アクション (ホバー または タップ) */
-    /* PCはマウス乗せ、スマホはタップでこの状態になります */
+    /* 2. 展開アクション (ホバー または アクティブ時) */
+    /* PCはマウス乗せ、スマホはタップなどでこの状態になります */
     #sidebar:hover,
-    #sidebar:active,
     #sidebar:focus-within {
         width: 260px; /* 幅を広げる */
-        background: rgba(255, 255, 255, 0.95);
+        background: rgba(255, 255, 255, 0.95); /* 読みやすく不透明に */
         box-shadow: 10px 0 50px rgba(0, 0, 0, 0.15);
-        z-index: 2000; /* メインコンテンツより手前に */
+        z-index: 2000; /* コンテンツより手前に */
     }
     .dark #sidebar:hover,
-    .dark #sidebar:active,
     .dark #sidebar:focus-within {
         background: rgba(30, 30, 30, 0.95);
     }
@@ -218,17 +219,17 @@
     .nav-group {
         display: flex;
         flex-direction: column;
-        gap: 4px;
+        gap: 8px; /* ボタン間の隙間 */
         margin-bottom: 24px;
         width: 100%;
     }
     
-    /* モバイルでも隠さず表示させる (desktop-onlyクラスを無効化) */
+    /* モバイルでも隠さず表示させる */
     .nav-group.desktop-only {
         display: flex !important; 
     }
 
-    /* タイトル (閉じた時は非表示) */
+    /* グループタイトル (閉じた時は非表示) */
     .nav-group-title {
         font-size: 0.7rem;
         font-weight: 900;
@@ -240,14 +241,14 @@
         margin-bottom: 4px;
         letter-spacing: 0.1em;
         text-transform: uppercase;
-        pointer-events: none;
+        pointer-events: none; /* クリック不可 */
     }
     /* 開いた時に表示 */
     #sidebar:hover .nav-group-title,
     #sidebar:focus-within .nav-group-title {
         opacity: 0.6;
         transform: translateX(0);
-        transition-delay: 0.1s;
+        transition-delay: 0.1s; /* 少し遅れて表示 */
         pointer-events: auto;
     }
 
@@ -255,10 +256,12 @@
     .nav-btn {
         display: flex;
         align-items: center;
-        width: 100%;
-        padding: 12px 0; /* アイコンのみの時は左右パディングなし */
-        justify-content: flex-start; /* 左寄せ */
-        border-radius: 0;
+        width: auto; /* 幅は親に合わせる */
+        height: 48px; /* 高さ固定でガタつき防止 */
+        margin: 0 12px; /* 左右に余白 */
+        padding: 0; /* パディングはFlex配置で代用 */
+        
+        border-radius: 16px; /* 常に角丸 */
         background: transparent;
         color: var(--text-sub);
         font-family: 'Zen Old Mincho', serif;
@@ -266,43 +269,27 @@
         font-size: 0.95rem;
         text-decoration: none;
         cursor: pointer;
-        transition: all 0.2s;
+        
+        transition: background-color 0.2s, color 0.2s, box-shadow 0.2s;
         position: relative;
+        overflow: hidden; /* はみ出し防止 */
     }
 
-    /* 開いた時のボタン調整 */
-    #sidebar:hover .nav-btn,
-    #sidebar:focus-within .nav-btn {
-        border-radius: 16px;
-        margin: 2px 12px; /* 左右に余白 */
-        width: auto; /* 幅自動 */
-        padding-left: 12px; /* テキスト用余白 */
-    }
-
-    /* アイコン (位置固定) */
+    /* アイコン (位置固定・サイズ固定) */
+    /* ここが「キモい動き」をなくす肝です。アイコンの位置を固定します */
     .nav-btn i, .nav-btn svg {
-        font-size: 1.25rem;
-        /* 閉じたサイドバーの幅(80px)と同じ幅を持たせて中央配置に見せる */
-        min-width: 80px; 
-        text-align: center;
-        margin-right: 0;
+        font-size: 1.3rem;
+        width: 56px; /* 閉じた状態の幅に合わせて固定 */
+        height: 100%;
         display: flex;
         align-items: center;
         justify-content: center;
-        transition: min-width 0.3s, transform 0.2s;
-    }
-
-    /* 開いた時はアイコンの幅を狭めてテキストと近づける */
-    #sidebar:hover .nav-btn i, 
-    #sidebar:hover .nav-btn svg,
-    #sidebar:focus-within .nav-btn i, 
-    #sidebar:focus-within .nav-btn svg {
-        min-width: 40px;
-        margin-right: 4px;
+        flex-shrink: 0; /* 縮小禁止 */
+        transition: transform 0.2s;
     }
     
     /* SVGサイズ調整 */
-    .nav-btn svg { width: 24px; height: 24px; }
+    .nav-btn svg { width: 24px; height: 24px; margin: auto; }
 
     /* テキストラベル (閉じた時は非表示) */
     .nav-text {
@@ -311,65 +298,47 @@
         transition: opacity 0.2s ease, transform 0.2s ease;
         font-size: 0.95rem;
         pointer-events: none;
+        white-space: nowrap;
     }
     /* 開いた時に表示 */
     #sidebar:hover .nav-text,
     #sidebar:focus-within .nav-text {
         opacity: 1;
         transform: translateX(0);
-        transition-delay: 0.1s;
+        transition-delay: 0.15s; /* アイコンより遅れて表示 */
         pointer-events: auto;
     }
 
     /* ホバー効果 */
     .nav-btn:hover {
-        background-color: rgba(0, 0, 0, 0.04);
+        background-color: rgba(0, 0, 0, 0.05);
         color: var(--text-main);
     }
-    .dark .nav-btn:hover { background-color: rgba(255, 255, 255, 0.05); }
+    .dark .nav-btn:hover { background-color: rgba(255, 255, 255, 0.08); }
 
-    /* アクティブ状態 */
+    /* ▼▼▼ アクティブ状態 (赤い選択枠の修正) ▼▼▼ */
+    /* 閉じていても開いていても、常にこのスタイルを適用 */
     .nav-btn.active {
-        color: var(--accent-red);
+        background-color: var(--accent-red) !important; /* 強制的に赤背景 */
+        color: #ffffff !important; /* 強制的に白文字 */
+        box-shadow: 0 4px 10px rgba(185, 28, 28, 0.4);
         font-weight: 900;
     }
-    /* 開いた時だけ背景色をつける */
-    #sidebar:hover .nav-btn.active,
-    #sidebar:focus-within .nav-btn.active {
-        background-color: var(--accent-red);
-        color: #ffffff;
-        box-shadow: 0 4px 12px rgba(185, 28, 28, 0.3);
-    }
-    .theme-gold #sidebar:hover .nav-btn.active {
-        box-shadow: 0 4px 12px rgba(212, 175, 55, 0.4);
+    /* 黄金モード用 */
+    .theme-gold .nav-btn.active {
+        box-shadow: 0 4px 10px rgba(212, 175, 55, 0.4);
     }
 
     /* 4. メインコンテンツの位置調整 (全デバイス共通) */
     #main-content {
-        /* サイドバー幅(80px) + 隙間 */
-        margin-left: 96px; 
+        margin-left: 96px; /* サイドバー(80px) + 隙間 */
         width: calc(100% - 96px);
         padding: 20px;
         padding-bottom: 60px;
-        transition: margin-left 0.4s;
-    }
-    
-    /* スマホで余白が広すぎないよう調整 */
-    @media (max-width: 768px) {
-        #sidebar {
-            left: 0; top: 0; bottom: 0;
-            height: 100vh;
-            border-radius: 0 24px 24px 0; /* 右側だけ丸く */
-            border-left: none;
-        }
-        #main-content {
-            margin-left: 80px;
-            width: calc(100% - 80px);
-            padding: 15px;
-        }
+        transition: margin-left 0.3s;
     }
 
-    /* 矢印ボタンやその他の不要な要素を消す */
+    /* 矢印ボタンは不要なので非表示 */
     #sidebar-toggle-btn { display: none !important; }
 
         /* --- 共通コンポーネント --- */
