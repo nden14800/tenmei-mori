@@ -13064,13 +13064,13 @@ async function logout() {
         // 旧: performLogin / performRegister (finalizeAuthに統合)
 
     // ==========================================
-    //  認証状態のUI更新ロジック (Bento UI対応版)
+    //  認証状態のUI更新ロジック (修正版)
     // ==========================================
     function updateAuthUI() {
         const badge = document.getElementById('fav-status-badge');
         const navBtn = document.getElementById('nav-login-btn');
         
-        // ▼▼▼ Bento UI用の挨拶エリア更新処理 ▼▼▼
+        // 挨拶エリアの更新
         const welcomeName = document.getElementById('welcome-username');
         const welcomeDate = document.getElementById('welcome-date');
         
@@ -13084,24 +13084,24 @@ async function logout() {
         if (currentState.user) {
             // ログイン中
             if (navBtn) {
-                navBtn.innerHTML = `<i class="bi bi-person-check-fill text-green-400"></i><span class="nav-text">会員: ${escapeHtml(currentState.user.username)}</span>`;
+                // ★修正: アイコンを <div class="nav-icon-box"> で囲み、位置ズレを解消
+                navBtn.innerHTML = `<div class="nav-icon-box"><i class="bi bi-person-check-fill text-green-400"></i></div><span class="nav-text">会員: ${escapeHtml(currentState.user.username)}</span>`;
             }
             if (badge) {
                 badge.textContent = "クラウド保存済み";
             }
-            // 挨拶の名前更新
             if (welcomeName) {
                 welcomeName.textContent = currentState.user.username;
             }
         } else {
             // 未ログイン
             if (navBtn) {
-                navBtn.innerHTML = `<i class="bi bi-person-circle"></i><span class="nav-text">ログイン/登録</span>`;
+                // ★修正: こちらも同様に <div class="nav-icon-box"> で囲む
+                navBtn.innerHTML = `<div class="nav-icon-box"><i class="bi bi-person-circle"></i></div><span class="nav-text">ログイン/登録</span>`;
             }
             if (badge) {
                 badge.textContent = "端末に保存中";
             }
-            // 挨拶の名前更新
             if (welcomeName) {
                 welcomeName.textContent = "ゲスト";
             }
