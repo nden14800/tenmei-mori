@@ -259,15 +259,13 @@
         transition-delay: 0.1s;
     }
 
-    /* ボタン (基本スタイル) */
+    /* --- ▼▼▼ 修正: ボタンの挙動安定化 (描画ズレ防止) ▼▼▼ --- */
     .nav-btn {
         display: flex;
         align-items: center;
         width: auto;
-        height: 44px; /* 高さを少しコンパクトに */
-        margin: 0 12px; /* 左右に余白 */
-        
-        /* ▼ 修正: 内部パディングでアイコン位置を調整 */
+        height: 44px;
+        margin: 0 12px;
         padding: 0 12px;
         
         border-radius: 12px;
@@ -282,6 +280,10 @@
         position: relative;
         overflow: hidden;
         white-space: nowrap;
+        
+        /* これを追加：ハードウェアアクセラレーションを有効にして描画ズレを防ぐ */
+        transform: translateZ(0);
+        -webkit-transform: translateZ(0);
     }
 
     /* アイコンラッパー (位置固定の肝) */
