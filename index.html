@@ -4766,6 +4766,61 @@ body.theme-newyear {
             width: 100% !important;
         }
     }
+
+    /* ▼▼▼ カテゴリタイトルのデザイン修正 (画像合わせ) ▼▼▼ */
+    .nav-group-title {
+        /* フォントと文字のデザイン */
+        font-family: 'Zen Old Mincho', serif !important; /* 和風明朝体 */
+        font-size: 0.65rem !important;      /* 文字サイズを小さく上品に */
+        font-weight: 700 !important;        /* 細すぎず、くっきりとした太さ */
+        letter-spacing: 0.25em !important;  /* 文字の間隔を広く空ける */
+        text-transform: uppercase !important; /* 英語小文字を強制的に大文字にする */
+        color: #9ca3af !important;          /* 落ち着いた薄いグレー */
+        
+        /* 配置と余白の調整 */
+        display: block !important;          /* 常に存在させる */
+        padding-left: 28px !important;      /* アイコンのラインに合わせる左余白 */
+        margin-top: 18px !important;        /* 前のグループとの間隔 */
+        margin-bottom: 8px !important;      /* 下のボタンとの間隔 */
+        line-height: 1 !important;
+        
+        /* アニメーション設定 */
+        transition: opacity 0.3s ease, transform 0.3s ease !important;
+        white-space: nowrap !important;     /* 折り返し禁止 */
+        pointer-events: none !important;    /* クリックの邪魔をしない設定 */
+    }
+
+    /* ダークモード時の文字色調整 */
+    .dark .nav-group-title {
+        color: #6b7280 !important;
+    }
+
+    /* 【PC】閉じた状態：透明にして隠す（位置ズレ防止のため消さずに透明化） */
+    body.sidebar-collapsed #sidebar:not(:hover) .nav-group-title {
+        opacity: 0 !important;
+        transform: translateX(5px); /* 閉じる時は少し右へフェードアウト */
+    }
+
+    /* 【PC】開いた状態（ホバー時）：ふんわり表示 */
+    body.sidebar-collapsed #sidebar:hover .nav-group-title {
+        opacity: 1 !important;
+        transform: translateX(0);
+    }
+
+    /* 【タブレット・スマホ】強制非表示設定を解除 */
+    @media (max-width: 1024px) {
+        .nav-group-title {
+            display: block !important; /* 画面が狭くても表示を許可 */
+        }
+        /* スマホ等でサイドバーが閉じている時は透明に */
+        body.sidebar-collapsed #sidebar .nav-group-title {
+            opacity: 0 !important;
+        }
+        /* サイドバーが開いている状態なら表示 */
+        body:not(.sidebar-collapsed) #sidebar .nav-group-title {
+            opacity: 1 !important;
+        }
+    }
     
     </style>
 </head>
