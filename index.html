@@ -4766,67 +4766,6 @@ body.theme-newyear {
             width: 100% !important;
         }
     }
-
-    /* ▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼
-       【クリック判定修正・緊急パッチ】
-       畳んでいる時の誤クリック・無反応を完全に防ぐ設定
-       ※畳んでいる時は「文字」や「カテゴリ」を完全に消滅させて、ボタンだけを並べます
-       ▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼ */
-
-    /* 1. 畳んでいる時は、カテゴリ名（Main Menu等）とテキストを「完全に消す」 */
-    /* opacityではなく display: none にすることで、判定ごとなしにします */
-    body.sidebar-collapsed #sidebar:not(:hover) .nav-group-title,
-    body.sidebar-collapsed #sidebar:not(:hover) .nav-text {
-        display: none !important;
-        width: 0 !important;
-        height: 0 !important;
-        margin: 0 !important;
-        padding: 0 !important;
-        opacity: 0 !important;
-        pointer-events: none !important; /* 絶対にクリックを吸わせない */
-    }
-
-    /* 2. 畳んでいる時のボタン配置を「中央・隙間なし」に強制固定 */
-    /* これにより、見た目のアイコンとクリック判定エリアが完全に一致します */
-    body.sidebar-collapsed #sidebar:not(:hover) .nav-btn {
-        display: flex !important;
-        justify-content: center !important; /* 強制的に中央寄せ */
-        align-items: center !important;
-        width: 100% !important;             /* 横幅いっぱい */
-        margin: 4px 0 !important;           /* 上下の隙間を最小限に統一 */
-        padding: 0 !important;
-        height: 50px !important;            /* 高さを少し広げて押しやすくする */
-        pointer-events: auto !important;    /* 確実に押せるようにする */
-        transform: none !important;         /* 変なズレ防止 */
-    }
-
-    /* 3. アイコンの位置をボタンのど真ん中に固定 */
-    body.sidebar-collapsed #sidebar:not(:hover) .nav-icon-box {
-        width: 100% !important;
-        height: 100% !important;
-        display: flex !important;
-        align-items: center !important;
-        justify-content: center !important;
-        margin: 0 !important;
-        padding: 0 !important;
-        background: transparent !important;
-    }
-
-    /* 4. アイコン自体の余白をリセット */
-    body.sidebar-collapsed #sidebar:not(:hover) .nav-icon-box i,
-    body.sidebar-collapsed #sidebar:not(:hover) .nav-icon-box svg {
-        margin: 0 !important;
-        display: block !important;
-    }
-
-    /* 5. グループ（塊）の余白調整 */
-    /* 畳んでいる時は要素が詰まるので、グループ間の余白だけ少し確保します */
-    body.sidebar-collapsed #sidebar:not(:hover) .nav-group {
-        gap: 0 !important;              /* ボタン間の隙間リセット */
-        margin-bottom: 10px !important; /* グループ間の隙間 */
-        padding: 0 !important;
-        border: none !important;
-    }
     
     </style>
 </head>
