@@ -222,66 +222,72 @@
         padding-bottom: env(safe-area-inset-bottom); 
     }
 
-    /* 3. グループタイトル (普段は消す) */
+    /* ▼▼▼ サイドバーのズレ完全修正（位置固定） ▼▼▼ */
+
+    /* 1. カテゴリタイトル（Main Menuなど）の場所を常に確保する */
     .nav-group-title {
-        /* ★重要: 閉じた時は完全に消して、クリックの邪魔をさせない */
-        display: none !important; 
+        display: block !important; /* 常に表示扱いにし、場所を消さない */
+        height: 20px !important;   /* 高さを固定 */
+        margin-bottom: 8px !important; /* 下の余白も固定 */
+        margin-top: 4px !important;    /* 上の余白も固定 */
+        
+        /* 文字のスタイル */
+        font-family: 'Zen Old Mincho', serif;
+        font-size: 0.75rem;
+        font-weight: 900;
+        letter-spacing: 0.15em;
+        color: var(--text-sub);
+        opacity: 1; /* 開いている時は見える */
+        
+        padding-left: 24px;
+        white-space: nowrap;
+        overflow: hidden;
+        transition: opacity 0.2s ease; /* 透明度だけアニメーションさせる */
     }
 
-    /* 4. ボタン本体 */
+    /* 2. 閉じている時は「透明」にするだけ（場所は残す） */
+    body.sidebar-collapsed #sidebar:not(:hover) .nav-group-title {
+        opacity: 0 !important; /* 見えなくする */
+        /* display: none; は絶対に書かないこと！これがズレの原因です */
+    }
+
+    /* 3. ボタンの配置も完全に固定する */
     .nav-btn {
         display: flex;
         align-items: center;
-        width: calc(100% - 16px); 
-        margin: 0 8px;
+        width: calc(100% - 16px) !important; 
+        margin: 0 8px !important;
+        height: 44px !important; /* 高さ固定 */
+        padding: 0 !important;   /* パディングで位置調整しない */
         
-        /* 高さ固定 (ズレ防止) */
-        height: 44px; 
-        min-height: 44px;
-        max-height: 44px;
-        
-        padding: 0;
-        border-radius: 12px;
-        background: transparent;
-        color: var(--text-sub);
-        text-decoration: none;
-        cursor: pointer;
-        transition: background-color 0.2s, color 0.2s;
-        position: relative;
-        overflow: hidden;
-        white-space: nowrap;
-        flex-shrink: 0;
-        
-        -webkit-tap-highlight-color: transparent;
+        /* 中身の配置を「左寄せ」で固定し、アイコンボックスで中央揃えを制御する */
+        justify-content: flex-start !important; 
     }
 
-    /* アイコンボックス */
+    /* 4. アイコンの位置を絶対固定 */
     .nav-icon-box {
-        width: 64px; 
-        height: 44px;
+        width: 64px !important; /* 閉じた時のサイドバー幅(80px)に近い幅で固定 */
+        height: 44px !important;
         display: flex;
         align-items: center;
-        justify-content: center;
-        font-size: 1.2rem;
+        justify-content: center; /* アイコンは常にこのボックスの真ん中 */
         flex-shrink: 0;
-    }
-    
-    .nav-icon-box svg {
-        width: 24px;
-        height: 24px;
-        display: block;
-        pointer-events: none;
+        
+        /* マージン等は一切変えない */
+        margin: 0 !important;
     }
 
-    /* テキストラベル (普段は消す) */
+    /* 5. テキストラベルの制御 */
     .nav-text {
-        font-family: 'Zen Old Mincho', serif;
-        font-weight: 600;
-        font-size: 0.9rem;
-        opacity: 0;
         white-space: nowrap;
-        pointer-events: none;
-        display: none; /* 閉じた時は非表示 */
+        opacity: 1;
+        transition: opacity 0.2s ease;
+        padding-left: 4px;
+    }
+
+    /* 閉じている時はテキストを透明にする */
+    body.sidebar-collapsed #sidebar:not(:hover) .nav-text {
+        opacity: 0 !important;
     }
 
     /* アクティブ状態 */
