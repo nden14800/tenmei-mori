@@ -4547,6 +4547,100 @@ body.theme-newyear {
     @media (max-width: 1024px) { 
         #sidebar-toggle-btn { display: none !important; } 
     }
+
+/* ▼▼▼ 追加修正: 滑らかでモダンなホバー開閉アニメーション ▼▼▼ */
+
+    /* PC画面のみ適用 (スマホは下部固定のまま) */
+    @media (min-width: 1025px) {
+        
+        /* 1. サイドバー本体のアニメーション設定 */
+        #sidebar {
+            /* 物理的な幅の変更を滑らかに */
+            transition: width 0.4s cubic-bezier(0.2, 0.8, 0.2, 1), 
+                        background-color 0.3s ease, 
+                        box-shadow 0.3s ease !important;
+            overflow: hidden; /* 縮むときにはみ出た文字を隠す */
+            will-change: width; /* 描画最適化 */
+        }
+
+        /* 2. デフォルト（閉じた状態） */
+        body.sidebar-collapsed #sidebar {
+            width: 80px !important;
+            z-index: 1000;
+        }
+
+        /* 3. ホバー時（開いた状態） */
+        body.sidebar-collapsed #sidebar:hover {
+            width: 260px !important;
+            background: rgba(255, 255, 255, 0.95) !important; /* 読みやすく背景を濃く */
+            box-shadow: 10px 0 30px rgba(0, 0, 0, 0.1) !important; /* 浮き上がり効果 */
+        }
+        /* ダークモード時のホバー背景 */
+        .dark body.sidebar-collapsed #sidebar:hover {
+            background: rgba(30, 30, 30, 0.95) !important;
+            box-shadow: 10px 0 30px rgba(0, 0, 0, 0.3) !important;
+        }
+
+        /* --- 内部要素のアニメーション --- */
+
+        /* テキストとタイトルの共通設定 */
+        .nav-text, .nav-group-title {
+            white-space: nowrap; /* 折り返し防止 */
+            opacity: 1;
+            transform: translateX(0);
+            transition: opacity 0.2s ease, transform 0.2s ease;
+        }
+
+        /* 閉じた状態：テキストを透明にして隠す */
+        body.sidebar-collapsed #sidebar .nav-text,
+        body.sidebar-collapsed #sidebar .nav-group-title {
+            opacity: 0 !important;
+            transform: translateX(10px); /* 右に少しずらしておく */
+            pointer-events: none;
+            /* display: none ではなく opacity で消すことで滑らかさを維持 */
+            position: absolute; /* レイアウト崩れ防止のために浮かせる */
+            left: 60px; /* アイコンの右側に配置 */
+        }
+
+        /* 閉じた状態：ボタン（アイコン）を中央寄せ */
+        body.sidebar-collapsed #sidebar .nav-btn {
+            justify-content: center !important;
+            padding: 12px 0 !important;
+            transition: all 0.3s ease;
+        }
+        body.sidebar-collapsed #sidebar .nav-btn i,
+        body.sidebar-collapsed #sidebar .nav-btn svg {
+            margin-right: 0 !important;
+            transition: margin-right 0.3s ease;
+        }
+
+        /* --- ホバー時（展開時）の復帰アニメーション --- */
+
+        /* テキストをふわっと表示（遅延させることで高級感を出す） */
+        body.sidebar-collapsed #sidebar:hover .nav-text,
+        body.sidebar-collapsed #sidebar:hover .nav-group-title {
+            opacity: 1 !important;
+            transform: translateX(0);
+            position: static; /* 元の配置に戻す */
+            transition: opacity 0.3s 0.1s ease-out, transform 0.3s 0.1s ease-out; /* 0.1秒待ってから表示 */
+        }
+
+        /* ボタンのレイアウトを左寄せに戻す */
+        body.sidebar-collapsed #sidebar:hover .nav-btn {
+            justify-content: flex-start !important;
+            padding: 12px 16px !important;
+        }
+
+        /* アイコンの右余白を戻す */
+        body.sidebar-collapsed #sidebar:hover .nav-btn i,
+        body.sidebar-collapsed #sidebar:hover .nav-btn svg {
+            margin-right: 14px !important;
+        }
+    }
+
+    /* スマホなどでトグルボタンが出ないようにする */
+    #sidebar-toggle-btn { display: none !important; }
+    
     </style>
 </head>
 <body>
