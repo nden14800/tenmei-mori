@@ -149,19 +149,16 @@
             border: 1px solid var(--card-border);
         }
 
-        /* --- ▼▼▼ サイドバー修正・最終版 (見切れ・スクロール完全対策) ▼▼▼ --- */
+        /* --- ▼▼▼ サイドバー修正・最終完全版 (クリックズレ解消・スクロール対応) ▼▼▼ --- */
 
-    /* 1. サイドバー本体 */
+    /* 1. サイドバー本体 (上下ピン留め・スクロール独立) */
     #sidebar {
-        /* 高さ計算(calc)をやめ、上下を固定座標でピン留めする */
-        /* これにより、アドレスバーが動いても「画面の表示領域」に強制的に追従します */
         position: fixed;
         top: 16px !important;
         bottom: 16px !important;
         left: 16px !important;
-        
         width: 80px; /* 閉じた状態 */
-        height: auto !important; /* 上下固定なのでautoでOK */
+        height: auto !important;
         
         background: rgba(255, 255, 255, 0.85);
         backdrop-filter: blur(20px);
@@ -174,34 +171,25 @@
         display: flex;
         flex-direction: column;
         
-        /* ▼ スクロール設定の強化 ▼ */
-        overflow-y: auto !important;    /* 縦スクロールを強制 */
-        overflow-x: hidden !important;  /* 横スクロールは禁止 */
-        
-        /* スクロール連鎖を止める（サイドバーをスクロールしても背景を動かさない） */
-        overscroll-behavior: contain;
-        -ms-scroll-chaining: none;
-        
-        /* タッチ操作の明示（縦スクロールのみ許可） */
-        touch-action: pan-y;
-        
-        /* 慣性スクロール */
+        /* スクロール設定 */
+        overflow-y: auto !important;
+        overflow-x: hidden !important;
+        overscroll-behavior: contain; /* スクロール連鎖防止 */
         -webkit-overflow-scrolling: touch;
         
-        /* パディング調整 */
         padding: 20px 0;
         
-        /* アニメーション */
+        /* アニメーション設定 */
         transition: width 0.3s cubic-bezier(0.2, 0.8, 0.2, 1), 
                     background-color 0.3s ease, 
                     box-shadow 0.3s ease;
     }
 
-    /* スクロールバーを完全に消す（操作はできるが見えなくする） */
+    /* スクロールバー非表示 */
     #sidebar::-webkit-scrollbar { display: none; }
     #sidebar { -ms-overflow-style: none; scrollbar-width: none; }
 
-    /* ダークモード対応 */
+    /* ダークモード */
     .dark #sidebar {
         background: rgba(30, 30, 30, 0.85);
         border-color: rgba(255, 255, 255, 0.1);
@@ -213,47 +201,55 @@
         display: flex;
         flex-direction: column;
         width: 100%;
-        flex-shrink: 0; /* 縮小禁止 */
+        flex-shrink: 0;
         
-        /* グループ間の余白 */
-        margin-bottom: 16px;
+        /* ★修正: ボタン間の隙間を均等にする */
+        gap: 6px; 
+        
+        /* ★修正: カテゴリタイトルの代わりに、グループ下に余白と区切り線を設ける */
+        margin-bottom: 12px;
+        padding-bottom: 12px;
+        border-bottom: 1px solid rgba(0,0,0,0.05); /* 薄い線で区切る */
     }
     
-    /* 下部のシステムグループ */
-    .nav-group-bottom {
-        margin-top: auto; /* 余白があれば下に押し下げる */
+    .dark .nav-group {
+        border-bottom-color: rgba(255,255,255,0.05);
+    }
+
+    /* 最後のグループは線なし */
+    .nav-group:last-child {
+        border-bottom: none;
         margin-bottom: 0;
+        padding-bottom: 0;
+    }
+    
+    /* 下部グループ（System） */
+    .nav-group-bottom {
+        margin-top: auto; 
         padding-top: 10px;
-        /* iPadなどで下のバーに被らないよう余白確保 */
+        border-top: 1px solid rgba(0,0,0,0.05); /* 上に線を入れる */
+        border-bottom: none;
         padding-bottom: env(safe-area-inset-bottom); 
     }
-
-    /* 3. グループタイトル */
-    .nav-group-title {
-        height: 18px;
-        font-size: 0.65rem;
-        font-weight: 900;
-        color: var(--text-sub);
-        padding-left: 24px;
-        margin-bottom: 2px;
-        letter-spacing: 0.15em;
-        text-transform: uppercase;
-        white-space: nowrap;
-        overflow: hidden;
-        opacity: 0;
-        transition: opacity 0.2s ease;
-        pointer-events: none;
-        flex-shrink: 0;
+    .dark .nav-group-bottom {
+        border-top-color: rgba(255,255,255,0.05);
     }
 
-    /* 4. ボタン本体 (高さを少し詰めて1画面に収まりやすくする) */
+    /* 3. グループタイトル (★最重要修正★) */
+    .nav-group-title {
+        /* ★デフォルト(閉じた時)は「存在を消す」 */
+        /* これにより、ボタン間に見えない要素が挟まってクリックを吸うのを防ぐ */
+        display: none !important; 
+    }
+
+    /* 4. ボタン本体 */
     .nav-btn {
         display: flex;
         align-items: center;
         width: calc(100% - 16px); 
-        margin: 2px 8px; /* ボタン同士の間隔を詰める */
+        margin: 0 8px;
         
-        /* 高さ固定: 44px (タップしやすい最小限かつコンパクトに) */
+        /* 高さ固定 */
         height: 44px; 
         min-height: 44px;
         max-height: 44px;
@@ -275,7 +271,6 @@
 
     /* アイコンボックス */
     .nav-icon-box {
-        /* 閉じた時の幅80 - 左右マージン16 = 64px */
         width: 64px; 
         height: 44px;
         display: flex;
@@ -285,7 +280,6 @@
         flex-shrink: 0;
     }
     
-    /* Labsアイコンサイズ確保 */
     .nav-icon-box svg {
         width: 24px;
         height: 24px;
@@ -303,6 +297,9 @@
         transition: opacity 0.2s ease, transform 0.2s ease;
         white-space: nowrap;
         pointer-events: none;
+        
+        /* 閉じた時は完全に非表示にしてレイアウト干渉を防ぐ */
+        display: none; 
     }
 
     /* アクティブ状態 */
@@ -316,7 +313,7 @@
         box-shadow: 0 4px 12px rgba(37, 99, 235, 0.4);
     }
 
-    /* --- ホバー展開 (PC・マウスのみ) --- */
+    /* --- ▼▼▼ PC(マウス)のみ展開する設定 ▼▼▼ --- */
     @media (min-width: 1025px) and (hover: hover) {
         #sidebar:hover {
             width: 260px;
@@ -326,15 +323,36 @@
         .dark #sidebar:hover {
             background: rgba(30, 30, 30, 0.98);
         }
+        
+        /* 展開時：タイトルを復活させる */
         #sidebar:hover .nav-group-title {
-            opacity: 0.6;
-            transition-delay: 0.1s;
+            display: block !important; /* ここで初めて表示 */
+            font-size: 0.65rem;
+            font-weight: 900;
+            color: var(--text-sub);
+            padding-left: 24px;
+            margin-bottom: 4px;
+            margin-top: 4px;
+            letter-spacing: 0.15em;
+            text-transform: uppercase;
+            white-space: nowrap;
+            animation: fadeInSimple 0.2s forwards;
         }
+        
+        /* 展開時：区切り線を消す（テキストで分かれるため） */
+        #sidebar:hover .nav-group {
+            border-bottom: none;
+            margin-bottom: 24px;
+            padding-bottom: 0;
+        }
+
+        /* 展開時：テキストを復活させる */
         #sidebar:hover .nav-text {
+            display: block;
             opacity: 1;
             transform: translateX(0);
-            transition-delay: 0.1s;
         }
+        
         .nav-btn:hover {
             background-color: rgba(0, 0, 0, 0.05);
             color: var(--text-main);
@@ -347,10 +365,14 @@
             color: #fff;
         }
     }
+    
+    @keyframes fadeInSimple {
+        from { opacity: 0; } to { opacity: 0.6; }
+    }
 
-    /* メインコンテンツの位置 (サイドバーに被らないよう調整) */
+    /* メインコンテンツ位置 */
     #main-content {
-        margin-left: 96px; /* サイドバー80px + 隙間16px */
+        margin-left: 96px;
         width: calc(100% - 96px);
         padding: 20px;
         padding-bottom: 100px;
@@ -362,9 +384,9 @@
         #sidebar { 
             width: 80px !important;
         }
+        /* 絶対に展開させない */
         .nav-text, .nav-group-title { display: none !important; }
         .nav-btn { justify-content: center; }
-        /* アイコン位置の微調整 */
         .nav-icon-box { margin: 0 auto; width: 100%; } 
     }
 
