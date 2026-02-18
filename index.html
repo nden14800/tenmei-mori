@@ -11235,7 +11235,7 @@ window.renderFullColumnView = function() {
 };
 
 
-   // 4. 記事詳細表示 (戻るボタンの挙動修正版)
+   // 4. 記事詳細表示 (一覧画面のデザイン・色・アイコンを完全継承版)
     window.openArticle = function(type, id) {
         let item;
         if (type === 'news') item = newsData.find(d => d.id === id);
@@ -11243,67 +11243,118 @@ window.renderFullColumnView = function() {
 
         if (!item) return;
 
-        // ▼▼▼ 修正: 戻るボタンの行き先を動的に書き換え ▼▼▼
+        // 戻るボタンの制御
         const backBtn = document.querySelector('#view-article-detail button');
         if (backBtn) {
-            // type ('news' or 'column') に応じて、正しい一覧画面に戻るようにセット
             backBtn.setAttribute('onclick', `showView('${type}')`);
-            
-            // ボタンの文字も分かりやすく変更
             const span = backBtn.querySelector('span');
             if(span) span.textContent = (type === 'news' ? '社務所だより一覧へ' : '神籤草子一覧へ');
         }
 
         const container = document.getElementById('article-detail-content');
         if (container) {
-            // ヘッダー背景色の決定
-            let bgGradient = "from-gray-100 to-gray-200 dark:from-zinc-800 dark:to-zinc-900";
-            let iconColor = "text-gray-500";
-            let iconClass = "bi-file-text";
+            
+            // --- デザイン決定ロジック (一覧画面と完全に同じ判定を行う) ---
+            let iconClass = "";      // アイコンクラス (bi-xxx)
+            let iconColorClass = ""; // アイコンの色 (text-xxx)
+            let headerBgClass = "";  // ヘッダー背景色 (from-xxx to-xxx)
+            let tagHtml = "";        // タグのHTML
 
             if (type === 'news') {
-                iconClass = "bi-bell-fill";
-                if (item.tag.includes("重要") || item.tag.includes("障害")) {
-                    bgGradient = "from-red-50 to-red-100 dark:from-red-900/30 dark:to-red-900/10";
-                    iconColor = "text-red-500";
-                } else if (item.tag.includes("新機能")) {
-                    bgGradient = "from-yellow-50 to-yellow-100 dark:from-yellow-900/30 dark:to-yellow-900/10";
-                    iconColor = "text-yellow-600";
-                } else {
-                    bgGradient = "from-blue-50 to-blue-100 dark:from-blue-900/30 dark:to-blue-900/10";
-                    iconColor = "text-blue-500";
+                // ■ ニュースの場合：一覧のロジックを完全再現
+                let tagClass = "tag-info";
+                let iconName = "bi-info-circle";
+                const t = item.tag;
+
+                // 判定ロジック (renderFullNewsViewと同一)
+                if (t.includes("重要") || t.includes("障害")) {
+                    tagClass = "tag-important"; iconName = "bi-exclamation-triangle";
+                } else if (t.includes("不具合") || t.includes("バグ")) {
+                    tagClass = "tag-important"; iconName = "bi-bug";
+                } else if (t.includes("メンテナンス") || t.includes("システム")) {
+                    tagClass = "tag-purple"; iconName = "bi-cone-striped";
+                } else if (t.includes("新機能")) {
+                    tagClass = "tag-system"; iconName = "bi-stars";
+                } else if (t.includes("デザイン") || t.includes("意匠") || t.includes("改装")) {
+                    tagClass = "tag-teal"; iconName = "bi-palette";
+                } else if (t.includes("解説") || t.includes("規約") || t.includes("技術")) {
+                    tagClass = "tag-orange"; iconName = "bi-book";
+                } else if (t.includes("挨拶") || t.includes("イベント")) {
+                    tagClass = "tag-pink"; iconName = "bi-flower1";
+                } else if (t.includes("開発") || t.includes("裏話")) {
+                    tagClass = "tag-green"; iconName = "bi-chat-quote";
+                } else if (t.includes("更新") || t.includes("機能") || t.includes("改善")) {
+                    tagClass = "tag-update"; iconName = "bi-arrow-repeat";
                 }
+
+                iconClass = iconName;
+
+                // タグクラスに応じた配色マッピング (詳細ヘッダー用)
+                const styleMap = {
+                    "tag-important": { bg: "from-red-50 to-red-100 dark:from-red-900/40 dark:to-red-900/20", icon: "text-red-600" },
+                    "tag-update":    { bg: "from-blue-50 to-blue-100 dark:from-blue-900/40 dark:to-blue-900/20", icon: "text-blue-600" },
+                    "tag-info":      { bg: "from-gray-50 to-gray-100 dark:from-zinc-800 dark:to-zinc-900", icon: "text-gray-500" },
+                    "tag-system":    { bg: "from-yellow-50 to-yellow-100 dark:from-yellow-900/40 dark:to-yellow-900/20", icon: "text-yellow-600" },
+                    "tag-green":     { bg: "from-green-50 to-green-100 dark:from-green-900/40 dark:to-green-900/20", icon: "text-green-600" },
+                    "tag-purple":    { bg: "from-purple-50 to-purple-100 dark:from-purple-900/40 dark:to-purple-900/20", icon: "text-purple-600" },
+                    "tag-pink":      { bg: "from-pink-50 to-pink-100 dark:from-pink-900/40 dark:to-pink-900/20", icon: "text-pink-600" },
+                    "tag-teal":      { bg: "from-teal-50 to-teal-100 dark:from-teal-900/40 dark:to-teal-900/20", icon: "text-teal-600" },
+                    "tag-orange":    { bg: "from-orange-50 to-orange-100 dark:from-orange-900/40 dark:to-orange-900/20", icon: "text-orange-600" }
+                };
+
+                const style = styleMap[tagClass] || styleMap["tag-info"];
+                headerBgClass = style.bg;
+                iconColorClass = style.icon;
+
+                // タグのHTML (一覧と全く同じCSSクラス 'news-tag' と判定された 'tagClass' を使用)
+                tagHtml = `<span class="news-tag ${tagClass} px-3 py-1 text-xs rounded-full border border-black/5 shadow-sm">${item.tag}</span>`;
+
             } else {
-                // コラムの場合
+                // ■ コラムの場合：一覧のデータプロパティを完全使用
                 iconClass = item.icon || "bi-journal-text";
                 const colorKey = item.colorClass || 'gray';
-                // 簡易マッピング
-                const colors = {
-                    red: "text-red-500", blue: "text-blue-500", green: "text-green-600",
-                    yellow: "text-yellow-600", purple: "text-purple-500", indigo: "text-indigo-500",
-                    orange: "text-orange-500", pink: "text-pink-500"
+                
+                // コラム用の配色マッピング
+                const colorMap = {
+                    indigo: { bg: "from-indigo-50 to-indigo-100 dark:from-indigo-900/40 dark:to-indigo-900/20", text: "text-indigo-600", tagBg: "bg-indigo-100 dark:bg-indigo-900", tagText: "text-indigo-800 dark:text-indigo-200" },
+                    blue:   { bg: "from-blue-50 to-blue-100 dark:from-blue-900/40 dark:to-blue-900/20", text: "text-blue-600", tagBg: "bg-blue-100 dark:bg-blue-900", tagText: "text-blue-800 dark:text-blue-200" },
+                    gray:   { bg: "from-gray-50 to-gray-100 dark:from-zinc-800 dark:to-zinc-900", text: "text-gray-600", tagBg: "bg-gray-100 dark:bg-zinc-700", tagText: "text-gray-800 dark:text-gray-300" },
+                    green:  { bg: "from-green-50 to-green-100 dark:from-green-900/40 dark:to-green-900/20", text: "text-green-600", tagBg: "bg-green-100 dark:bg-green-900", tagText: "text-green-800 dark:text-green-200" },
+                    purple: { bg: "from-purple-50 to-purple-100 dark:from-purple-900/40 dark:to-purple-900/20", text: "text-purple-600", tagBg: "bg-purple-100 dark:bg-purple-900", tagText: "text-purple-800 dark:text-purple-200" },
+                    orange: { bg: "from-orange-50 to-orange-100 dark:from-orange-900/40 dark:to-orange-900/20", text: "text-orange-600", tagBg: "bg-orange-100 dark:bg-orange-900", tagText: "text-orange-800 dark:text-orange-200" },
+                    pink:   { bg: "from-pink-50 to-pink-100 dark:from-pink-900/40 dark:to-pink-900/20", text: "text-pink-600", tagBg: "bg-pink-100 dark:bg-pink-900", tagText: "text-pink-800 dark:text-pink-200" },
+                    yellow: { bg: "from-yellow-50 to-yellow-100 dark:from-yellow-900/40 dark:to-yellow-900/20", text: "text-yellow-600", tagBg: "bg-yellow-100 dark:bg-yellow-900", tagText: "text-yellow-800 dark:text-yellow-200" },
+                    red:    { bg: "from-red-50 to-red-100 dark:from-red-900/40 dark:to-red-900/20", text: "text-red-600", tagBg: "bg-red-100 dark:bg-red-900", tagText: "text-red-800 dark:text-red-200" }
                 };
-                iconColor = colors[colorKey] || "text-gray-500";
-                bgGradient = "from-gray-50 to-white dark:from-zinc-900 dark:to-zinc-800";
+
+                const style = colorMap[colorKey] || colorMap['gray'];
+                headerBgClass = style.bg;
+                iconColorClass = style.text;
+
+                // コラム用タグのHTML
+                tagHtml = `<span class="${style.tagBg} ${style.tagText} px-3 py-1 rounded-full text-xs font-bold shadow-sm border border-black/5">${item.category}</span>`;
             }
 
+            // HTML生成
             container.innerHTML = `
-                <!-- 記事ヘッダー -->
-                <div class="bg-gradient-to-b ${bgGradient} p-8 md:p-12 border-b border-gray-100 dark:border-gray-800">
+                <!-- 記事ヘッダー (動的スタイル適用) -->
+                <div class="bg-gradient-to-b ${headerBgClass} p-8 md:p-12 border-b border-gray-100 dark:border-gray-800">
                     <div class="flex flex-col items-center text-center">
-                        <div class="mb-4 text-4xl ${iconColor} drop-shadow-sm">
+                        <!-- アイコン -->
+                        <div class="mb-4 text-5xl ${iconColorClass} drop-shadow-sm transform transition hover:scale-110 duration-500">
                             <i class="bi ${iconClass}"></i>
                         </div>
                         
-                        <div class="flex flex-wrap justify-center gap-2 mb-4">
-                            <span class="px-3 py-1 rounded-full bg-white/80 dark:bg-black/50 backdrop-blur text-xs font-bold shadow-sm border border-black/5">
+                        <!-- メタ情報 (日付・タグ) -->
+                        <div class="flex flex-wrap justify-center items-center gap-3 mb-5">
+                            <span class="px-3 py-1 rounded-full bg-white/80 dark:bg-black/50 backdrop-blur text-xs font-bold shadow-sm border border-black/5 text-gray-500 font-mono">
                                 ${item.date} ${item.time || ''}
                             </span>
-                            ${item.tag ? `<span class="px-3 py-1 rounded-full bg-white/80 dark:bg-black/50 backdrop-blur text-xs font-bold shadow-sm border border-black/5 ${iconColor}">${item.tag}</span>` : ''}
-                            ${item.category ? `<span class="px-3 py-1 rounded-full bg-white/80 dark:bg-black/50 backdrop-blur text-xs font-bold shadow-sm border border-black/5 ${iconColor}">${item.category}</span>` : ''}
+                            ${tagHtml}
                         </div>
 
-                        <h2 class="text-2xl md:text-3xl font-black leading-relaxed tracking-tight text-gray-900 dark:text-white" style="font-family: 'Zen Old Mincho', serif;">
+                        <!-- タイトル -->
+                        <h2 class="text-2xl md:text-3xl font-black leading-relaxed tracking-tight text-gray-900 dark:text-white drop-shadow-sm" style="font-family: 'Zen Old Mincho', serif;">
                             ${item.title}
                         </h2>
                     </div>
