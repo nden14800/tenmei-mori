@@ -5120,18 +5120,17 @@ body.sidebar-collapsed #sidebar:hover .nav-group-title {
                     </div>
                 </div>
 
-                <!-- 5. 統計 (おみくじの轍・完全版) -->
-                <div class="bento-card bento-stats">
+                <!-- 5. 統計 (おみくじの轍・抜粋版) -->
+                <div class="bento-card bento-stats relative">
                     <div class="flex justify-between items-center mb-2 border-b border-gray-200 dark:border-gray-700 pb-2">
-                        <!-- ▼ 修正箇所: 「本日の傾向」から「全体の傾向」へ変更 -->
                         <h3 class="font-bold flex items-center gap-2"><i class="bi bi-bar-chart-line-fill text-red-500"></i> 全体の傾向</h3>
                         <span class="text-[10px] bg-gray-100 dark:bg-gray-700 px-2 py-1 rounded" id="stats-update-time">--:--:--</span>
                     </div>
                     
-                    <!-- スクロール可能エリアとして全12種を表示 -->
-                    <div class="overflow-y-auto pr-2 custom-scrollbar" style="max-height: 240px;">
-                        <div id="home-history-stats" class="space-y-2">
-                             <!-- 12段階 統計表示 -->
+                    <!-- 表示エリア: 高さを制限し、はみ出した部分は隠す(overflow-hidden) -->
+                    <div class="relative overflow-hidden" style="height: 180px;">
+                        <div id="home-history-stats" class="space-y-2 pb-20">
+                             <!-- 12段階 統計表示 (要素は全て置いておくが、CSSで見えなくなる) -->
                              <div class="grid grid-cols-1 gap-1">
                                  <!-- 大吉 -->
                                  <div class="flex justify-between text-xs"><span>大吉</span><span><span id="cnt-daikichi" class="mr-2 font-mono opacity-70">0</span><span id="stat-daikichi">0.00%</span></span></div>
@@ -5153,38 +5152,37 @@ body.sidebar-collapsed #sidebar:hover .nav-group-title {
                                  <div class="flex justify-between text-xs"><span>半吉</span><span><span id="cnt-hankichi" class="mr-2 font-mono opacity-70">0</span><span id="stat-hankichi">0.00%</span></span></div>
                                  <div class="w-full bg-gray-200 dark:bg-zinc-700 h-1.5 rounded mb-1"><div id="bar-hankichi" class="bg-red-300 h-1.5 rounded" style="width: 0%"></div></div>
 
+                                 <!-- 以下、隠れる要素（データ更新のために存在はさせる） -->
                                  <!-- 末吉 -->
                                  <div class="flex justify-between text-xs"><span>末吉</span><span><span id="cnt-suekichi" class="mr-2 font-mono opacity-70">0</span><span id="stat-suekichi">0.00%</span></span></div>
                                  <div class="w-full bg-gray-200 dark:bg-zinc-700 h-1.5 rounded mb-1"><div id="bar-suekichi" class="bg-blue-400 h-1.5 rounded" style="width: 0%"></div></div>
-
                                  <!-- 末小吉 -->
                                  <div class="flex justify-between text-xs"><span>末小吉</span><span><span id="cnt-sueshokichi" class="mr-2 font-mono opacity-70">0</span><span id="stat-sueshokichi">0.00%</span></span></div>
                                  <div class="w-full bg-gray-200 dark:bg-zinc-700 h-1.5 rounded mb-1"><div id="bar-sueshokichi" class="bg-blue-300 h-1.5 rounded" style="width: 0%"></div></div>
-
                                  <!-- 凶 -->
                                  <div class="flex justify-between text-xs"><span>凶</span><span><span id="cnt-kyo" class="mr-2 font-mono opacity-70">0</span><span id="stat-kyo">0.00%</span></span></div>
                                  <div class="w-full bg-gray-200 dark:bg-zinc-700 h-1.5 rounded mb-1"><div id="bar-kyo" class="bg-gray-400 h-1.5 rounded" style="width: 0%"></div></div>
-
                                  <!-- 小凶 -->
                                  <div class="flex justify-between text-xs"><span>小凶</span><span><span id="cnt-shokyo" class="mr-2 font-mono opacity-70">0</span><span id="stat-shokyo">0.00%</span></span></div>
                                  <div class="w-full bg-gray-200 dark:bg-zinc-700 h-1.5 rounded mb-1"><div id="bar-shokyo" class="bg-gray-500 h-1.5 rounded" style="width: 0%"></div></div>
-
                                  <!-- 半凶 -->
                                  <div class="flex justify-between text-xs"><span>半凶</span><span><span id="cnt-hankyo" class="mr-2 font-mono opacity-70">0</span><span id="stat-hankyo">0.00%</span></span></div>
-                                 <div class="w-full bg-gray-200 dark:bg-zinc-700 h-1.5 rounded mb-1">
-                                     <div id="bar-hankyo" class="bg-gray-600 dark:bg-gray-400 h-1.5 rounded" style="width: 0%"></div>
-                                 </div>
-
+                                 <div class="w-full bg-gray-200 dark:bg-zinc-700 h-1.5 rounded mb-1"><div id="bar-hankyo" class="bg-gray-600 dark:bg-gray-400 h-1.5 rounded" style="width: 0%"></div></div>
                                  <!-- 末凶 -->
                                  <div class="flex justify-between text-xs"><span>末凶</span><span><span id="cnt-suekyo" class="mr-2 font-mono opacity-70">0</span><span id="stat-suekyo">0.00%</span></span></div>
                                  <div class="w-full bg-gray-200 dark:bg-zinc-700 h-1.5 rounded mb-1"><div id="bar-suekyo" class="bg-gray-700 h-1.5 rounded" style="width: 0%"></div></div>
-
                                  <!-- 大凶 -->
                                  <div class="flex justify-between text-xs"><span>大凶</span><span><span id="cnt-daikyo" class="mr-2 font-mono opacity-70">0</span><span id="stat-daikyo">0.00%</span></span></div>
                                  <div class="w-full bg-gray-200 dark:bg-zinc-700 h-1.5 rounded mb-1"><div id="bar-daikyo" class="bg-black h-1.5 rounded" style="width: 0%"></div></div>
                              </div>
                         </div>
-                        <button onclick="showView('history')" class="text-center w-full text-xs text-gray-400 mt-4 hover:text-red-500 transition border-t border-gray-100 dark:border-gray-800 pt-2">履歴一覧へ移動</button>
+                        
+                        <!-- グラデーションマスクと誘導ボタン -->
+                        <div class="absolute bottom-0 left-0 w-full h-24 bg-gradient-to-t from-white via-white/95 to-transparent dark:from-[#2c2c2c] dark:via-[#2c2c2c]/95 flex items-end justify-center pb-0">
+                            <button onclick="showView('history')" class="btn-primary py-3 px-6 shadow-lg text-sm font-bold w-full mb-0 flex items-center justify-center gap-2 transform transition hover:scale-105">
+                                <i class="bi bi-bar-chart-line"></i> すべての統計を見る
+                            </button>
+                        </div>
                     </div>
                 </div>
 
