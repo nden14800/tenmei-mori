@@ -4348,6 +4348,77 @@ body.theme-newyear {
             color: #bfdbfe; border-color: #2563eb; 
         }
 
+        /* ▼▼▼ 修正・追加用CSS (ここをコピーして貼り付け) ▼▼▼ */
+
+/* 1. メインコンテンツの表示修正（フルスクリーン化） */
+#main-content {
+    /* サイドバーの幅(80px) + 左の余白(16px) + コンテンツとの隙間(約20px) = 116px */
+    margin-left: 116px !important;
+    /* 幅を「100% - 上記のマージン」に設定して画面いっぱいに広げる */
+    width: calc(100% - 116px) !important;
+    max-width: none !important; /* 最大幅制限を解除 */
+    flex: 1; /* 余った領域を全て埋める */
+    padding: 20px !important;
+    box-sizing: border-box; /* パディングを含めた幅計算にする */
+}
+
+/* スマホ・タブレットなど画面が狭い時の調整 */
+@media (max-width: 768px) {
+    #main-content {
+        margin-left: 96px !important; /* 少し詰める */
+        width: calc(100% - 96px) !important;
+        padding: 15px !important;
+    }
+}
+
+/* 2. サイドメニュー（赤い枠）の表示崩れ修正 */
+#sidebar {
+    /* サイドバー内部の余白を調整 */
+    padding: 20px 10px !important; 
+    /* ボタンを中央揃えにする */
+    align-items: center !important; 
+    box-sizing: border-box;
+}
+
+.nav-btn {
+    /* はみ出しの原因だった最小幅(80px)を解除 */
+    min-width: 0 !important; 
+    /* サイドバーの幅に合わせて伸縮させる */
+    width: 100% !important;
+    /* 内部の余白調整 */
+    padding: 12px 0 !important; 
+    /* アイコンを中央に配置 */
+    justify-content: center !important; 
+    margin-bottom: 8px;
+}
+
+/* アイコンの位置調整 */
+.nav-btn i, 
+.nav-btn svg {
+    margin-right: 0 !important; /* 通常時はアイコン横の余白を消す */
+    width: 24px;
+    text-align: center;
+}
+
+/* 選択中（赤い枠）のデザイン調整 */
+.nav-btn.active {
+    box-shadow: 0 4px 10px rgba(185, 28, 28, 0.2) !important;
+    /* 赤い枠がボタンの形に綺麗に収まるように */
+    width: 100% !important; 
+}
+
+/* サイドバーにマウスを乗せて広がった時の挙動（PC用） */
+#sidebar:hover .nav-btn {
+    justify-content: flex-start !important; /* 左寄せに戻す */
+    padding-left: 20px !important; /* 左に余白を入れる */
+}
+#sidebar:hover .nav-btn i, 
+#sidebar:hover .nav-btn svg {
+    margin-right: 14px !important; /* アイコンと文字の間隔を戻す */
+}
+
+/* ▲▲▲ 修正・追加用CSS ここまで ▲▲▲ */
+
     </style>
 </head>
 <body>
