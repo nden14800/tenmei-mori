@@ -149,17 +149,15 @@
             border: 1px solid var(--card-border);
         }
 
-        /* --- ▼▼▼ 新・モダンサイドバー (修正・完全版) ▼▼▼ --- */
+        /* --- ▼▼▼ サイドバー修正・完全版 (誤タップ・ズレ防止) ▼▼▼ --- */
 
-    /* 1. サイドバー本体 (全デバイス共通・スクロール対応) */
+    /* 1. サイドバー本体 (ベース設定) */
     #sidebar {
         position: fixed;
         left: 16px;
         top: 16px;
-        /* 画面下端から16pxの余白を残し、高さを動的に確保 */
         height: calc(100dvh - 32px);
-        /* デフォルト(閉じた状態)の幅 */
-        width: 80px; 
+        width: 80px; /* デフォルトは閉じた状態 */
         
         background: rgba(255, 255, 255, 0.75);
         backdrop-filter: blur(20px);
@@ -171,24 +169,20 @@
         
         display: flex;
         flex-direction: column;
-        
-        /* ▼ 修正: スクロール設定を強化 */
-        overflow-y: auto; 
-        overflow-x: hidden;
-        
-        /* ▼ 修正: 上下のパディングを少し広めに */
         padding: 24px 0;
         
-        /* アニメーション設定 */
-        transition: width 0.3s cubic-bezier(0.25, 0.8, 0.25, 1), 
+        /* 内部スクロール設定 */
+        overflow-y: auto; 
+        overflow-x: hidden; /* 横にはみ出さないようにする */
+        
+        /* アニメーションの滑らかさを調整 */
+        transition: width 0.3s cubic-bezier(0.2, 0.8, 0.2, 1), 
                     background-color 0.3s ease, 
                     box-shadow 0.3s ease;
+        
+        /* 描画最適化 */
+        will-change: width;
     }
-
-    /* スクロールバーを細く目立たなくする */
-    #sidebar::-webkit-scrollbar { width: 4px; }
-    #sidebar::-webkit-scrollbar-thumb { background: rgba(0,0,0,0.1); border-radius: 4px; }
-    #sidebar:hover::-webkit-scrollbar-thumb { background: rgba(0,0,0,0.2); }
 
     /* ダークモード対応 */
     .dark #sidebar {
@@ -196,186 +190,176 @@
         border-color: rgba(255, 255, 255, 0.1);
         box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
     }
-    .dark #sidebar::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); }
 
-    /* 2. 展開アクション (ホバー または アクティブ時) */
-    #sidebar:hover,
-    #sidebar:focus-within {
-        width: 260px;
-        background: rgba(255, 255, 255, 0.95);
-        box-shadow: 10px 0 50px rgba(0, 0, 0, 0.15);
-        z-index: 2000;
-    }
-    .dark #sidebar:hover,
-    .dark #sidebar:focus-within {
-        background: rgba(30, 30, 30, 0.95);
-    }
-
-    /* 3. 内部パーツの制御 */
-
-    /* ナビゲーショングループ */
+    /* 2. ナビゲーショングループ */
     .nav-group {
         display: flex;
         flex-direction: column;
-        gap: 4px; /* ボタン間の隙間を少し詰める */
+        gap: 8px; /* ボタンの間隔を固定 */
         margin-bottom: 24px;
         width: 100%;
-        /* 縮小を許可しない（見切れ防止） */
         flex-shrink: 0;
     }
-    
-    /* Systemグループ（最下部）用の特別なクラス */
     .nav-group-bottom {
-        margin-top: auto; /* これで下に押し下げる */
+        margin-top: auto;
         margin-bottom: 0;
         padding-top: 16px;
     }
 
-    /* グループタイトル (位置調整済み) */
+    /* 3. グループタイトル (位置ズレ防止のため絶対配置を使用しない) */
     .nav-group-title {
+        height: 20px; /* 高さ固定 */
         font-size: 0.65rem;
         font-weight: 900;
         color: var(--text-sub);
-        opacity: 0;
-        transform: translateX(10px);
-        transition: opacity 0.2s, transform 0.2s;
-        
-        /* ▼ 修正: 文字開始位置の調整 */
-        /* ボタンの左パディング(12px) + アイコンエリア(40px) + ギャップ(12px) = 64px */
-        /* アイコンの中心ではなく、テキストの開始位置に合わせる場合 */
-        padding-left: 24px; 
-        margin-bottom: 8px;
-        
+        padding-left: 24px;
+        margin-bottom: 4px;
         letter-spacing: 0.15em;
         text-transform: uppercase;
-        pointer-events: none;
         white-space: nowrap;
-    }
-    
-    #sidebar:hover .nav-group-title,
-    #sidebar:focus-within .nav-group-title {
-        opacity: 0.6;
-        transform: translateX(0);
-        transition-delay: 0.1s;
+        overflow: hidden;
+        opacity: 0; /* 閉じた時は見えないが高さは維持する(重要) */
+        transition: opacity 0.2s ease;
+        pointer-events: none;
     }
 
-    /* --- ▼▼▼ 修正: ボタンの挙動安定化 (描画ズレ防止) ▼▼▼ --- */
+    /* 4. ボタン本体 (★ここが修正の肝★) */
     .nav-btn {
         display: flex;
         align-items: center;
-        width: auto;
-        height: 44px;
+        /* 幅は親に合わせるが、余白で調整 */
+        width: calc(100% - 24px); 
         margin: 0 12px;
-        padding: 0 12px;
         
+        /* ★高さを完全に固定する (ズレ防止) */
+        height: 48px; 
+        min-height: 48px;
+        max-height: 48px;
+        
+        padding: 0; /* パディングでの調整をやめる */
         border-radius: 12px;
         background: transparent;
         color: var(--text-sub);
-        font-family: 'Zen Old Mincho', serif;
-        font-weight: 600;
-        font-size: 0.95rem;
         text-decoration: none;
         cursor: pointer;
-        transition: all 0.2s;
+        transition: background-color 0.2s, color 0.2s, box-shadow 0.2s;
         position: relative;
         overflow: hidden;
         white-space: nowrap;
+        flex-shrink: 0; /* 縮ませない */
         
-        /* これを追加：ハードウェアアクセラレーションを有効にして描画ズレを防ぐ */
-        transform: translateZ(0);
-        -webkit-transform: translateZ(0);
+        /* タップ時のハイライト色を消す(iPad対策) */
+        -webkit-tap-highlight-color: transparent;
     }
 
-    /* アイコンラッパー (位置固定の肝) */
+    /* アイコンボックス (常に左側に固定・中央寄せ) */
     .nav-icon-box {
+        width: 56px; /* 閉じた時のサイドバー幅(80)-左右マージン(24) = 56px */
+        height: 48px;
         display: flex;
         align-items: center;
         justify-content: center;
-        width: 32px; /* アイコンエリアの幅を固定 */
-        height: 32px;
         font-size: 1.25rem;
-        flex-shrink: 0; /* 縮小禁止 */
-        margin-right: 12px; /* テキストとの間隔 */
-        transition: transform 0.2s;
+        flex-shrink: 0; /* 絶対に縮ませない */
     }
-    
-    /* SVGアイコン対応 */
-    .nav-icon-box svg { width: 22px; height: 22px; }
 
     /* テキストラベル */
     .nav-text {
-        opacity: 0;
+        font-family: 'Zen Old Mincho', serif;
+        font-weight: 600;
+        font-size: 0.95rem;
+        opacity: 0; /* デフォルトは透明 */
         transform: translateX(10px);
         transition: opacity 0.2s ease, transform 0.2s ease;
-        font-size: 0.9rem;
-        pointer-events: none;
-        
-        /* ▼ 修正: 文字位置を揃えるための設定 */
-        flex-grow: 1;
-        text-align: left;
+        white-space: nowrap;
+        pointer-events: none; /* 閉じた時はクリック判定を消す */
     }
-    
-    #sidebar:hover .nav-text,
-    #sidebar:focus-within .nav-text {
-        opacity: 1;
-        transform: translateX(0);
-        transition-delay: 0.1s;
-        pointer-events: auto;
-    }
-
-    /* ホバー効果 */
-    .nav-btn:hover {
-        background-color: rgba(0, 0, 0, 0.05);
-        color: var(--text-main);
-    }
-    .dark .nav-btn:hover { background-color: rgba(255, 255, 255, 0.08); }
 
     /* アクティブ状態 */
     .nav-btn.active {
-        background-color: var(--accent-red) !important;
-        color: #ffffff !important;
+        background-color: var(--accent-red);
+        color: #ffffff;
         box-shadow: 0 4px 12px rgba(185, 28, 28, 0.3);
-        font-weight: 900;
     }
-        
-    /* ▼▼▼ 追加: 会員ボタン(ログイン)だけはアクティブ時に「青」にする ▼▼▼ */
     #nav-login-btn.active {
-        background-color: #2563eb !important; /* 鮮やかな青 */
-        box-shadow: 0 4px 12px rgba(37, 99, 235, 0.4) !important; /* 青い影 */
+        background-color: #2563eb;
+        box-shadow: 0 4px 12px rgba(37, 99, 235, 0.4);
     }
+
+    /* --- ▼▼▼ ホバー展開ロジック (PC・マウス操作時のみ適用) ▼▼▼ --- */
+    
+    /* 
+       @media (hover: hover) を使うことで、
+       iPadなどの「タッチデバイス」ではホバー展開を無効化し、
+       誤作動やちらつきを完全に防ぎます。
+    */
+    @media (min-width: 1025px) and (hover: hover) {
         
-    .theme-gold .nav-btn.active {
-        box-shadow: 0 4px 12px rgba(212, 175, 55, 0.3);
-    }
-    
-    /* アクティブ時のアイコン微調整 */
-    .nav-btn.active .nav-icon-box {
-        transform: scale(1.1);
+        /* サイドバーにマウスが乗った時 */
+        #sidebar:hover {
+            width: 260px; /* 幅を広げる */
+            background: rgba(255, 255, 255, 0.98); /* 背景を濃く */
+            box-shadow: 10px 0 40px rgba(0, 0, 0, 0.15);
+        }
+        .dark #sidebar:hover {
+            background: rgba(30, 30, 30, 0.98);
+        }
+
+        /* 展開時にタイトルを表示 */
+        #sidebar:hover .nav-group-title {
+            opacity: 0.6;
+            transition-delay: 0.1s;
+        }
+
+        /* 展開時にテキストを表示 */
+        #sidebar:hover .nav-text {
+            opacity: 1;
+            transform: translateX(0);
+            transition-delay: 0.1s;
+        }
+        
+        /* ホバー時のボタン背景 */
+        .nav-btn:hover {
+            background-color: rgba(0, 0, 0, 0.05);
+            color: var(--text-main);
+        }
+        .dark .nav-btn:hover {
+            background-color: rgba(255, 255, 255, 0.08);
+        }
+        /* アクティブ時はホバー色を上書きしない */
+        .nav-btn.active:hover {
+            background-color: var(--accent-red); 
+            color: #fff;
+        }
     }
 
-    /* 閉じた状態（通常時）のスタイル上書き */
-    body.sidebar-collapsed #sidebar .nav-text, 
-    body.sidebar-collapsed #sidebar .nav-group-title { 
-        /* 完全に非表示にするのではなく透明にしてレイアウトを維持しつつ隠す手法もあるが、
-           今回はシンプルにopacity制御で行う */
-    }
-    
-    /* 閉じた時のアイコン中央寄せ調整 */
-    /* width 80px - padding-left/right 0 = 80px content box */
-    /* btn margin 12px * 2 = 24px => btn width 56px */
-    /* icon-box 32px. padding 12px * 2 = 24px. 32+24 = 56px. Just fit! */
-
-    /* 4. メインコンテンツの位置調整 (全デバイス共通) */
+    /* --- メインコンテンツの位置調整 --- */
     #main-content {
-        margin-left: 96px; /* サイドバー(80px) + 隙間 */
+        margin-left: 96px; /* 固定: サイドバー幅(80) + 余白(16) */
         width: calc(100% - 96px);
         padding: 20px;
-        padding-bottom: 60px;
+        padding-bottom: 80px;
         transition: margin-left 0.3s;
     }
 
-    /* 矢印ボタンは不要なので非表示 */
-    #sidebar-toggle-btn { display: none !important; }
+    /* モバイル・タブレット縦などの調整 */
+    @media (max-width: 1024px) {
+        /* スマホ・タブレットではサイドバーは固定幅のまま */
+        #sidebar {
+            width: 80px !important;
+        }
+        /* テキストは常に非表示 */
+        .nav-text, .nav-group-title {
+            display: none !important;
+        }
+        /* アイコンのみで操作 */
+        .nav-btn {
+            justify-content: center;
+        }
+        .nav-icon-box {
+            margin: 0;
+        }
+    }
 
         /* --- 共通コンポーネント --- */
         .btn-primary {
