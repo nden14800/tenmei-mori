@@ -4469,6 +4469,23 @@ body.theme-newyear {
             color: #bfdbfe; border-color: #2563eb; 
         }
 
+        /* ===== アイコン縦位置ズレ修正パッチ ===== */
+/* nav-group-titleが畳んだ時にposition:absoluteになり
+   スペースが消えてボタンが上ズレするバグを修正。
+   透明にするだけで、スペースは常に保持する。 */
+body.sidebar-collapsed #sidebar .nav-group-title {
+    position: static !important;
+    opacity: 0 !important;
+    pointer-events: none !important;
+    transform: none !important;
+}
+
+/* ホバー（展開）時は表示 */
+body.sidebar-collapsed #sidebar:hover .nav-group-title {
+    opacity: 0.6 !important;
+    transform: none !important;
+}
+
     </style>
 <style>
     /* ▼▼▼ 修正: ホバー開閉用のスタイル設定 ▼▼▼ */
