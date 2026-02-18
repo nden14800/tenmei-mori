@@ -11235,13 +11235,24 @@ window.renderFullColumnView = function() {
 };
 
 
-   // 4. 記事詳細表示 (モダンUI版)
+   // 4. 記事詳細表示 (戻るボタンの挙動修正版)
     window.openArticle = function(type, id) {
         let item;
         if (type === 'news') item = newsData.find(d => d.id === id);
         else if (type === 'column') item = columnData.find(d => d.id === id);
 
         if (!item) return;
+
+        // ▼▼▼ 修正: 戻るボタンの行き先を動的に書き換え ▼▼▼
+        const backBtn = document.querySelector('#view-article-detail button');
+        if (backBtn) {
+            // type ('news' or 'column') に応じて、正しい一覧画面に戻るようにセット
+            backBtn.setAttribute('onclick', `showView('${type}')`);
+            
+            // ボタンの文字も分かりやすく変更
+            const span = backBtn.querySelector('span');
+            if(span) span.textContent = (type === 'news' ? '社務所だより一覧へ' : '神籤草子一覧へ');
+        }
 
         const container = document.getElementById('article-detail-content');
         if (container) {
