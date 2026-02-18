@@ -16456,6 +16456,54 @@ window.applyTheme = function() {
     const settings = AppConfig.getCurrent();
     applyThemeByConfig(settings.dark);
 };
+
+        // ===== サイドバー クリック位置修正 =====
+// CSSのズレに関係なく、クリックした位置に最も近いアイコンのボタンを確実に実行する
+(function() {
+    function initSidebarClickFix() {
+        const sidebar = document.getElementById('sidebar');
+        if (!sidebar) return;
+
+        sidebar.addEventListener('click', function(e) {
+            // サイドバーが広がっている時（260px）は通常通り動作させる
+            if (sidebar.offsetWidth > 100) return;
+
+            // 全ボタンのアイコン位置を取得
+            const iconBoxes = sidebar.querySelectorAll('.nav-icon-box');
+            const clickY = e.clientY;
+
+            let bestBtn = null;
+            let bestDist = Infinity;
+
+            iconBoxes.forEach(function(box) {
+                const rect = box.getBoundingClientRect();
+                const centerY = rect.top + rect.height / 2;
+                const dist = Math.abs(centerY - clickY);
+                if (dist < bestDist) {
+                    bestDist = dist;
+                    bestBtn = box.closest('.nav-btn');
+                }
+            });
+
+            if (!bestBtn || bestDist > 35) return;
+
+            // すでに正しいボタンがクリックされていれば何もしない
+            if (e.target.closest('.nav-btn') === bestBtn) return;
+
+            // 間違ったボタンへの伝播を止めて、正しいボタンを実行
+            e.preventDefault();
+            e.stopPropagation();
+            bestBtn.click();
+
+        }, true); // capture=trueで最優先に処理
+    }
+
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', initSidebarClickFix);
+    } else {
+        initSidebarClickFix();
+    }
+})();
             
     </script>
 </body>
