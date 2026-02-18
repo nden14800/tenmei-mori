@@ -4600,16 +4600,22 @@ body.sidebar-collapsed #sidebar:hover .nav-group-title {
             transition: opacity 0.2s ease, transform 0.2s ease;
         }
 
-        /* 閉じた状態：テキストを透明にして隠す */
-        body.sidebar-collapsed #sidebar .nav-text,
-        body.sidebar-collapsed #sidebar .nav-group-title {
-            opacity: 0 !important;
-            transform: translateX(10px); /* 右に少しずらしておく */
-            pointer-events: none;
-            /* display: none ではなく opacity で消すことで滑らかさを維持 */
-            position: absolute; /* レイアウト崩れ防止のために浮かせる */
-            left: 60px; /* アイコンの右側に配置 */
-        }
+        /* nav-text は absolute で隠す（テキストのみ） */
+body.sidebar-collapsed #sidebar .nav-text {
+    opacity: 0 !important;
+    transform: translateX(10px);
+    pointer-events: none;
+    position: absolute;
+    left: 60px;
+}
+
+/* nav-group-title はスペースを保持したまま透明にする */
+body.sidebar-collapsed #sidebar .nav-group-title {
+    opacity: 0 !important;
+    transform: translateX(5px);
+    pointer-events: none;
+    position: static !important; /* スペースを保持することでボタン位置が開閉で変わらない */
+}
 
         /* 閉じた状態：ボタン（アイコン）を中央寄せ */
         body.sidebar-collapsed #sidebar .nav-btn {
