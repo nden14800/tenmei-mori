@@ -11095,7 +11095,7 @@ window.renderFullColumnView = function() {
 };
 
 
-    // 4. 記事詳細表示
+   // 4. 記事詳細表示 (モダンUI版)
     window.openArticle = function(type, id) {
         let item;
         if (type === 'news') item = newsData.find(d => d.id === id);
@@ -11105,18 +11105,67 @@ window.renderFullColumnView = function() {
 
         const container = document.getElementById('article-detail-content');
         if (container) {
-            const headerTitleClass = (type === 'news' && item.tag === '重要') ? 'text-red-600' : '';
+            // ヘッダー背景色の決定
+            let bgGradient = "from-gray-100 to-gray-200 dark:from-zinc-800 dark:to-zinc-900";
+            let iconColor = "text-gray-500";
+            let iconClass = "bi-file-text";
+
+            if (type === 'news') {
+                iconClass = "bi-bell-fill";
+                if (item.tag.includes("重要") || item.tag.includes("障害")) {
+                    bgGradient = "from-red-50 to-red-100 dark:from-red-900/30 dark:to-red-900/10";
+                    iconColor = "text-red-500";
+                } else if (item.tag.includes("新機能")) {
+                    bgGradient = "from-yellow-50 to-yellow-100 dark:from-yellow-900/30 dark:to-yellow-900/10";
+                    iconColor = "text-yellow-600";
+                } else {
+                    bgGradient = "from-blue-50 to-blue-100 dark:from-blue-900/30 dark:to-blue-900/10";
+                    iconColor = "text-blue-500";
+                }
+            } else {
+                // コラムの場合
+                iconClass = item.icon || "bi-journal-text";
+                const colorKey = item.colorClass || 'gray';
+                // 簡易マッピング
+                const colors = {
+                    red: "text-red-500", blue: "text-blue-500", green: "text-green-600",
+                    yellow: "text-yellow-600", purple: "text-purple-500", indigo: "text-indigo-500",
+                    orange: "text-orange-500", pink: "text-pink-500"
+                };
+                iconColor = colors[colorKey] || "text-gray-500";
+                bgGradient = "from-gray-50 to-white dark:from-zinc-900 dark:to-zinc-800";
+            }
+
             container.innerHTML = `
-                <div class="article-header">
-                    <h2 class="article-title ${headerTitleClass}">${item.title}</h2>
-                    <div class="article-meta">
-                        <span>${item.date} ${item.time || ''}</span>
-                        ${item.tag ? `<span class="article-tag">${item.tag}</span>` : ''}
-                        ${item.category ? `<span class="article-tag">${item.category}</span>` : ''}
+                <!-- 記事ヘッダー -->
+                <div class="bg-gradient-to-b ${bgGradient} p-8 md:p-12 border-b border-gray-100 dark:border-gray-800">
+                    <div class="flex flex-col items-center text-center">
+                        <div class="mb-4 text-4xl ${iconColor} drop-shadow-sm">
+                            <i class="bi ${iconClass}"></i>
+                        </div>
+                        
+                        <div class="flex flex-wrap justify-center gap-2 mb-4">
+                            <span class="px-3 py-1 rounded-full bg-white/80 dark:bg-black/50 backdrop-blur text-xs font-bold shadow-sm border border-black/5">
+                                ${item.date} ${item.time || ''}
+                            </span>
+                            ${item.tag ? `<span class="px-3 py-1 rounded-full bg-white/80 dark:bg-black/50 backdrop-blur text-xs font-bold shadow-sm border border-black/5 ${iconColor}">${item.tag}</span>` : ''}
+                            ${item.category ? `<span class="px-3 py-1 rounded-full bg-white/80 dark:bg-black/50 backdrop-blur text-xs font-bold shadow-sm border border-black/5 ${iconColor}">${item.category}</span>` : ''}
+                        </div>
+
+                        <h2 class="text-2xl md:text-3xl font-black leading-relaxed tracking-tight text-gray-900 dark:text-white" style="font-family: 'Zen Old Mincho', serif;">
+                            ${item.title}
+                        </h2>
                     </div>
                 </div>
-                <div class="article-content">${item.content}</div>
+
+                <!-- 記事本文 -->
+                <div class="p-6 md:p-12 bg-white dark:bg-zinc-900">
+                    <div class="article-content prose dark:prose-invert max-w-none leading-loose text-justify font-serif">
+                        ${item.content}
+                    </div>
+                </div>
             `;
+            
             showView('article-detail');
             window.scrollTo(0, 0);
         }
