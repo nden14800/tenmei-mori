@@ -12126,6 +12126,17 @@ const TenmeiLab = {
 
     // モーダル表示ロジック（変更なし）
     openModal: (key) => {
+        // ▼▼▼ ここから追加：ログインチェック ▼▼▼
+        if (!currentState.user) {
+            // 未ログインなら警告を出して、処理を強制終了(return)する
+            showToast("会員限定の機能です。ログインして入室してください。", "warning");
+            
+            // 念のため、剥がされたロック画面を再度強制的に被せる
+            document.getElementById('lab-lock').classList.remove('hidden');
+            document.getElementById('lab-content-wrapper').classList.add('lab-blurred');
+            return;
+        }
+        // ▲▲▲ 追加ここまで ▲▲▲
         const data = TenmeiLab.details[key];
         if(!data) return;
         const content = document.getElementById('lab-modal-content');
