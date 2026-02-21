@@ -17107,65 +17107,53 @@ window.applyTheme = function() {
 })();
 
         // ==========================================
-//  強固なログインブロックシステム（対コンソール解除用・完全版）
-// ==========================================
-function setupStrictLoginBlocks() {
-    const checkAndBlock = (e, viewName) => {
-        // 未ログイン状態なら絶対発動
-        if (!currentState.user) {
-            // ★相手のあらゆる操作（クリック、入力、選択、フォーカス）を完全に殺す
-            e.preventDefault();
-            e.stopPropagation(); 
-            e.stopImmediatePropagation(); // さらに強力に他のイベントも止める
+        //  強固なログインブロックシステム（Labs専用）
+        // ==========================================
+        function setupStrictLoginBlocks() {
+            const checkAndBlock = (e, viewName) => {
+                // 未ログイン状態なら絶対発動
+                if (!currentState.user) {
+                    // ★相手のあらゆる操作（クリック、入力、選択、フォーカス）を完全に殺す
+                    e.preventDefault();
+                    e.stopPropagation(); 
+                    e.stopImmediatePropagation();
 
-            // 警告（連打されるとうるさいので、少し間引く処理を入れてもOK）
-            showToast("会員限定の機能です。ログインしてご利用ください。", "warning");
-            
-            // 剥がされたロック画面とぼかしを強制的に復活させる
-            if (viewName === 'history') {
-                const lock = document.getElementById('history-login-overlay');
-                const wrapper = document.getElementById('history-container');
-                if(lock) lock.classList.remove('hidden');
-                if(wrapper) wrapper.classList.add('history-blurred');
-            } else if (viewName === 'stats') {
-                const lock = document.getElementById('stats-lock');
-                const wrapper = document.getElementById('stats-content-wrapper');
-                if(lock) lock.classList.remove('hidden');
-                if(wrapper) wrapper.classList.add('lab-blurred'); 
-            } else if (viewName === 'lab') {
-                const lock = document.getElementById('lab-lock');
-                const wrapper = document.getElementById('lab-content-wrapper');
-                if(lock) lock.classList.remove('hidden');
-                if(wrapper) wrapper.classList.add('lab-blurred'); 
-            }
-            
-            // スイッチなどをいじられた場合は、強制的にフォーカスを外す（操作不能にする）
-            if (e.target && typeof e.target.blur === 'function') {
-                e.target.blur();
-            }
-        }
-    };
+                    // 警告を出す
+                    showToast("会員限定の機能です。ログインしてご利用ください。", "warning");
+                    
+                    // Labsのロック画面とぼかしを強制的に復活させる
+                    if (viewName === 'lab') {
+                        const lock = document.getElementById('lab-lock');
+                        const wrapper = document.getElementById('lab-content-wrapper');
+                        if(lock) lock.classList.remove('hidden');
+                        if(wrapper) wrapper.classList.add('lab-blurred'); 
+                    }
+                    
+                    // スイッチなどをいじられた場合は、強制的にフォーカスを外す
+                    if (e.target && typeof e.target.blur === 'function') {
+                        e.target.blur();
+                    }
+                }
+            };
 
-    // 監視するイベントの種類（クリック、入力、値の変更、フォーカス、キー入力、マウス押し下げ）
-    const eventTypes = ['click', 'input', 'change', 'focusin', 'keydown', 'mousedown', 'touchstart'];
+            const eventTypes = ['click', 'input', 'change', 'focusin', 'keydown', 'mousedown', 'touchstart'];
 
-    // 監視対象のエリア
-    const targets = [
-        { id: 'history-container', name: 'history' },
-        { id: 'stats-content-wrapper', name: 'stats' },
-        { id: 'lab-content-wrapper', name: 'lab' } // ★Labsも追加
-    ];
+            // ★修正：うまく動かなかった「おみくじの轍」「参拝の記録」の監視を削除し、
+            // 完璧に動いている「Labs」のエリア監視のみに絞りました。
+            const targets = [
+                { id: 'lab-content-wrapper', name: 'lab' } 
+            ];
 
-    targets.forEach(target => {
-        const el = document.getElementById(target.id);
-        if (el) {
-            eventTypes.forEach(evt => {
-                // true を指定することで、子要素（ボタン等）にイベントが到達する"前"に親が握り潰す
-                el.addEventListener(evt, (e) => checkAndBlock(e, target.name), true);
+            targets.forEach(target => {
+                const el = document.getElementById(target.id);
+                if (el) {
+                    eventTypes.forEach(evt => {
+                        // true を指定することで、子要素（ボタン等）にイベントが到達する"前"に親が握り潰す
+                        el.addEventListener(evt, (e) => checkAndBlock(e, target.name), true);
+                    });
+                }
             });
         }
-    });
-}
             
     </script>
 </body>
