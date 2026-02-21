@@ -14535,13 +14535,12 @@ async function logout() {
         }
     }
 
-// カードHTML生成関数 (文字ラベル復活版)
+// カードHTML生成関数 (カレンダー大型化・下部配置版)
 function createCardHTML(data) {
     // お気に入り状態チェック
     const isFav = favoriteList.some(f => f.sign === data.sign.id && f.blood === data.blood);
     
     // ランクスタイルの決定
-    // 背景色はCSSで白固定にしているため、ここでは枠線用クラスのみ指定
     let cardClass = "card-rank-normal";
     let badgeClass = "badge-normal";
     
@@ -14556,16 +14555,17 @@ function createCardHTML(data) {
         return "#3b82f6"; // 青
     };
 
-    // カレンダーHTML生成
+    // 新しい大型カレンダーのHTML生成
     const calendarHTML = data.calendar.map(d => {
         const hasMark = d.marks.length > 0;
         const cellClass = hasMark ? 'has-mark' : '';
-        const marksStr = d.marks.slice(0, 2).join(''); 
+        // セルが大きくなったので、最大3つまでマークを並べて表示する
+        const marksStr = d.marks.slice(0, 3).join(''); 
         
         return `
-            <div class="zodiac-cal-cell ${cellClass}">
-                <span class="zodiac-cal-date">${d.day}</span>
-                <div class="zodiac-cal-marks">${marksStr}</div>
+            <div class="zodiac-cal-cell-large ${cellClass}">
+                <span class="zodiac-cal-date-large">${d.day}</span>
+                <div class="zodiac-cal-marks-large">${marksStr}</div>
             </div>`;
     }).join('');
 
@@ -14593,18 +14593,15 @@ function createCardHTML(data) {
                     </div>
                 </div>
 
-                <!-- 2. 中央エリア: 文章 + カレンダー(右配置) -->
+                <!-- 2. 中央エリア: 文章 (カレンダーは下部へ移動したため横幅いっぱいに) -->
                 <div class="zodiac-content-middle">
-                    
-                    <!-- 文章エリア -->
-                    <div class="zodiac-text-area">
+                    <div class="zodiac-text-area w-full">
                         <div class="flex flex-wrap items-center gap-3 text-xs font-bold text-gray-500 mb-2">
                             <span class="bg-red-50 dark:bg-red-900/20 text-red-700 dark:text-red-300 px-2 py-1 rounded">
                                 総合: ${data.totalScore}点
                             </span>
                             <span>ラッキーNo.${data.luckyNum}</span>
                             
-                            <!-- ★修正: 文字ラベルを復活 -->
                             <span class="flex items-center gap-1">
                                 <i class="bi bi-stars text-yellow-500"></i>
                                 <span>ラッキーアイテム：${data.item}</span>
@@ -14617,14 +14614,6 @@ function createCardHTML(data) {
                         <p class="text-sm leading-6 text-justify text-gray-700 dark:text-gray-300 font-medium">
                             ${data.longDesc}
                         </p>
-                    </div>
-
-                    <!-- カレンダーエリア (右側配置・コンパクト・丸角) -->
-                    <div class="zodiac-compact-calendar">
-                        <h4>30日吉日予報</h4>
-                        <div class="zodiac-cal-grid">
-                            ${calendarHTML}
-                        </div>
                     </div>
                 </div>
 
@@ -14662,6 +14651,14 @@ function createCardHTML(data) {
                     </div>
                 </div>
 
+            </div>
+            
+            <!-- 4. 新設：下部配置の大型カレンダー -->
+            <div class="zodiac-large-calendar">
+                <h4><i class="bi bi-calendar-star text-yellow-500"></i> 30日吉日予報</h4>
+                <div class="zodiac-cal-grid-large">
+                    ${calendarHTML}
+                </div>
             </div>
         </div>
     `;
