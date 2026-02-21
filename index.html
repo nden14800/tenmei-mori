@@ -17102,6 +17102,50 @@ window.applyTheme = function() {
         initSidebarClickFix();
     }
 })();
+
+        // ==========================================
+//  強固なログインブロックシステム（対コンソール解除用）
+// ==========================================
+function setupStrictLoginBlocks() {
+    const checkAndBlock = (e, viewName) => {
+        // 未ログイン状態なら発動
+        if (!currentState.user) {
+            // ★相手のクリックやキー入力を完全に無かったことにする（絶対防御）
+            e.preventDefault();
+            e.stopPropagation(); 
+
+            // 警告を出す
+            showToast("会員限定の機能です。ログインしてご利用ください。", "warning");
+            
+            // 剥がされたロック画面とぼかしを強制的に復活させる
+            if (viewName === 'history') {
+                const lock = document.getElementById('history-login-overlay');
+                const wrapper = document.getElementById('history-container');
+                if(lock) lock.classList.remove('hidden');
+                if(wrapper) wrapper.classList.add('history-blurred');
+            } else if (viewName === 'stats') {
+                const lock = document.getElementById('stats-lock');
+                const wrapper = document.getElementById('stats-content-wrapper');
+                if(lock) lock.classList.remove('hidden');
+                if(wrapper) wrapper.classList.add('lab-blurred'); 
+            }
+        }
+    };
+
+    // 【おみくじの轍】のエリア全体を監視（true で最優先キャッチ）
+    const historyArea = document.getElementById('history-container');
+    if (historyArea) {
+        historyArea.addEventListener('click', (e) => checkAndBlock(e, 'history'), true);
+        historyArea.addEventListener('input', (e) => checkAndBlock(e, 'history'), true);
+        historyArea.addEventListener('keydown', (e) => checkAndBlock(e, 'history'), true);
+    }
+
+    // 【参拝の記録】のエリア全体を監視
+    const statsArea = document.getElementById('stats-content-wrapper');
+    if (statsArea) {
+        statsArea.addEventListener('click', (e) => checkAndBlock(e, 'stats'), true);
+    }
+}
             
     </script>
 </body>
