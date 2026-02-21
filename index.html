@@ -17107,17 +17107,18 @@ window.applyTheme = function() {
 })();
 
         // ==========================================
-//  強固なログインブロックシステム（対コンソール解除用）
+//  強固なログインブロックシステム（対コンソール解除用・完全版）
 // ==========================================
 function setupStrictLoginBlocks() {
     const checkAndBlock = (e, viewName) => {
-        // 未ログイン状態なら発動
+        // 未ログイン状態なら絶対発動
         if (!currentState.user) {
-            // ★相手のクリックやキー入力を完全に無かったことにする（絶対防御）
+            // ★相手のあらゆる操作（クリック、入力、選択、フォーカス）を完全に殺す
             e.preventDefault();
             e.stopPropagation(); 
+            e.stopImmediatePropagation(); // さらに強力に他のイベントも止める
 
-            // 警告を出す
+            // 警告（連打されるとうるさいので、少し間引く処理を入れてもOK）
             showToast("会員限定の機能です。ログインしてご利用ください。", "warning");
             
             // 剥がされたロック画面とぼかしを強制的に復活させる
@@ -17131,9 +17132,40 @@ function setupStrictLoginBlocks() {
                 const wrapper = document.getElementById('stats-content-wrapper');
                 if(lock) lock.classList.remove('hidden');
                 if(wrapper) wrapper.classList.add('lab-blurred'); 
+            } else if (viewName === 'lab') {
+                const lock = document.getElementById('lab-lock');
+                const wrapper = document.getElementById('lab-content-wrapper');
+                if(lock) lock.classList.remove('hidden');
+                if(wrapper) wrapper.classList.add('lab-blurred'); 
+            }
+            
+            // スイッチなどをいじられた場合は、強制的にフォーカスを外す（操作不能にする）
+            if (e.target && typeof e.target.blur === 'function') {
+                e.target.blur();
             }
         }
     };
+
+    // 監視するイベントの種類（クリック、入力、値の変更、フォーカス、キー入力、マウス押し下げ）
+    const eventTypes = ['click', 'input', 'change', 'focusin', 'keydown', 'mousedown', 'touchstart'];
+
+    // 監視対象のエリア
+    const targets = [
+        { id: 'history-container', name: 'history' },
+        { id: 'stats-content-wrapper', name: 'stats' },
+        { id: 'lab-content-wrapper', name: 'lab' } // ★Labsも追加
+    ];
+
+    targets.forEach(target => {
+        const el = document.getElementById(target.id);
+        if (el) {
+            eventTypes.forEach(evt => {
+                // true を指定することで、子要素（ボタン等）にイベントが到達する"前"に親が握り潰す
+                el.addEventListener(evt, (e) => checkAndBlock(e, target.name), true);
+            });
+        }
+    });
+}
 
     // 【おみくじの轍】のエリア全体を監視（true で最優先キャッチ）
     const historyArea = document.getElementById('history-container');
