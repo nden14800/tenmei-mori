@@ -4940,7 +4940,7 @@ body.sidebar-collapsed #sidebar:hover .nav-group-title {
     }
 }
 
-    /* --- 12星座占い カレンダー大型化 (追加CSS) --- */
+    /* --- 12星座占い カレンダー大型化 (本物のカレンダー形式) --- */
         .zodiac-large-calendar {
             width: 100%;
             background-color: rgba(128, 128, 128, 0.02);
@@ -4955,43 +4955,46 @@ body.sidebar-collapsed #sidebar:hover .nav-group-title {
             font-weight: bold;
             display: flex;
             align-items: center;
-            gap: 6px;
+            justify-content: space-between;
         }
 
-        /* PCは10日×3行 */
         .zodiac-cal-grid-large {
             display: grid;
-            grid-template-columns: repeat(10, 1fr); 
-            gap: 8px;
+            grid-template-columns: repeat(7, 1fr); /* 7列（日〜土）に固定 */
+            gap: 4px;
         }
 
-        /* タブレットは6日×5行 */
-        @media (max-width: 768px) {
-            .zodiac-cal-grid-large {
-                grid-template-columns: repeat(6, 1fr); 
-            }
+        /* 曜日ヘッダー */
+        .zodiac-cal-header {
+            text-align: center;
+            font-size: 0.65rem;
+            font-weight: bold;
+            color: var(--text-sub);
+            padding-bottom: 4px;
         }
+        .zodiac-cal-header.sunday { color: #ef4444; } /* 日曜は赤 */
+        .zodiac-cal-header.saturday { color: #3b82f6; } /* 土曜は青 */
 
-        /* スマホは5日×6行 */
-        @media (max-width: 480px) {
-            .zodiac-cal-grid-large {
-                grid-template-columns: repeat(5, 1fr); 
-                gap: 6px;
-            }
-        }
-
+        /* カレンダーのマス */
         .zodiac-cal-cell-large {
             background: var(--bg-color);
             border: 1px solid var(--card-border);
-            border-radius: 8px;
-            height: 48px; /* アイコンが入るよう高さを確保 */
+            border-radius: 6px;
+            height: 48px; 
             display: flex;
             flex-direction: column;
             align-items: center;
-            justify-content: center;
+            justify-content: flex-start;
+            padding-top: 4px;
             position: relative;
             overflow: hidden;
             transition: transform 0.2s, box-shadow 0.2s;
+        }
+        
+        /* 曜日合わせのための空白マス */
+        .zodiac-cal-cell-empty {
+            background: transparent;
+            border: none;
         }
 
         .zodiac-cal-cell-large:hover {
@@ -5000,23 +5003,38 @@ body.sidebar-collapsed #sidebar:hover .nav-group-title {
             box-shadow: 0 4px 12px rgba(0,0,0,0.1);
         }
 
+        /* 日付テキスト */
         .zodiac-cal-date-large {
-            font-size: 0.85rem;
-            line-height: 1.2;
+            font-size: 0.75rem;
+            line-height: 1;
             color: var(--text-sub);
             font-weight: bold;
             font-family: monospace;
+            display: flex;
+            align-items: baseline;
+        }
+        
+        /* 月テキスト (1日や今日のマスに表示) */
+        .zodiac-cal-date-month {
+            font-size: 0.55rem;
+            color: var(--accent-red);
+            margin-right: 1px;
         }
 
+        /* アイコン表示エリア */
         .zodiac-cal-marks-large {
             display: flex;
             justify-content: center;
-            gap: 3px;
-            margin-top: 3px;
+            flex-wrap: wrap;
+            gap: 2px;
+            margin-top: auto;
+            margin-bottom: 4px;
+            width: 100%;
+            padding: 0 2px;
         }
 
         .zodiac-cal-marks-large i {
-            font-size: 0.8rem; /* マークをくっきりと大きく */
+            font-size: 0.7rem; 
         }
 
         /* マークがある日の強調 */
@@ -5027,6 +5045,11 @@ body.sidebar-collapsed #sidebar:hover .nav-group-title {
         .dark .zodiac-cal-cell-large.has-mark {
             background-color: #3f2c00;
             border-color: #854d0e;
+        }
+        
+        /* 今日の強調 */
+        .zodiac-cal-cell-large.is-today {
+            border: 2px solid var(--accent-red);
         }
     
     </style>
