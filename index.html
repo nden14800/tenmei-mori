@@ -14487,12 +14487,15 @@ async function logout() {
         dailyRanking = scoredData;
     }
 
-    // 未来30日間の運勢予報ロジック（修正版：同点1位も全員マークする）
+    // 未来30日間の運勢予報ロジック（修正版：同点1位も全員マークする＋日付情報追加）
     function calculateFutureLuck(signId, bloodType, baseDateStr) {
         let calendarDays = [];
         for(let i=0; i<30; i++) {
             const targetDate = getFutureDateString(baseDateStr, i);
-            const dayOfMonth = new Date(targetDate).getDate();
+            const dObj = new Date(targetDate);
+            const dayOfMonth = dObj.getDate();
+            const month = dObj.getMonth() + 1;
+            const dayOfWeek = dObj.getDay(); // 0(日)〜6(土)
             
             // 1. その日の全48通りの運勢を計算
             let dayAllData = calculateScoresForDate(targetDate);
@@ -14509,12 +14512,18 @@ async function logout() {
             let marks = [];
 
             // 4. 自分の点数が最高点と同じならマークを付与（同点1位も含む）
-            if (me.totalScore === maxTotal) marks.push('<i class="bi bi-star-fill text-yellow-500"></i>');
-            if (me.love.score === maxLove) marks.push('<i class="bi bi-heart-fill text-pink-500"></i>');
-            if (me.money.score === maxMoney) marks.push('<i class="bi bi-currency-yen text-yellow-600"></i>');
-            if (me.work.score === maxWork) marks.push('<i class="bi bi-pencil-fill text-blue-500"></i>');
+            if (me.totalScore === maxTotal) marks.push('<i class="bi bi-star-fill text-yellow-500" title="総合1位"></i>');
+            if (me.love.score === maxLove) marks.push('<i class="bi bi-heart-fill text-pink-500" title="恋愛1位"></i>');
+            if (me.money.score === maxMoney) marks.push('<i class="bi bi-currency-yen text-yellow-600" title="金運1位"></i>');
+            if (me.work.score === maxWork) marks.push('<i class="bi bi-pencil-fill text-blue-500" title="仕事1位"></i>');
 
-            calendarDays.push({ day: dayOfMonth, marks: marks });
+            calendarDays.push({ 
+                month: month,
+                day: dayOfMonth, 
+                dayOfWeek: dayOfWeek,
+                marks: marks,
+                isToday: i === 0
+            });
         }
         return calendarDays;
     }
@@ -14558,7 +14567,7 @@ async function logout() {
         }
     }
 
-// カードHTML生成関数 (カレンダー大型化・下部配置版)
+// カードHTML生成関数 (カレンダー大型化・本物のカレンダー形式)
 function createCardHTML(data) {
     // お気に入り状態チェック
     const isFav = favoriteList.some(f => f.sign === data.sign.id && f.blood === data.blood);
@@ -14578,16 +14587,38 @@ function createCardHTML(data) {
         return "#3b82f6"; // 青
     };
 
-    // 新しい大型カレンダーのHTML生成
-    const calendarHTML = data.calendar.map(d => {
+    // 新しい大型カレンダーのHTML生成 (7列のリアルカレンダー形式)
+    const daysOfWeek = ['日', '月', '火', '水', '木', '金', '土'];
+    let calendarHTML = daysOfWeek.map((day, i) => {
+        let cls = 'zodiac-cal-header';
+        if (i === 0) cls += ' sunday';
+        if (i === 6) cls += ' saturday';
+        return `<div class="${cls}">${day}</div>`;
+    }).join('');
+
+    // 月初めの空白セルを追加（最初の日が何曜日かでズレを調整）
+    const firstDay = data.calendar[0];
+    for (let i = 0; i < firstDay.dayOfWeek; i++) {
+        calendarHTML += `<div class="zodiac-cal-cell-empty"></div>`;
+    }
+
+    // 日付セルを追加
+    calendarHTML += data.calendar.map((d, index) => {
         const hasMark = d.marks.length > 0;
-        const cellClass = hasMark ? 'has-mark' : '';
-        // セルが大きくなったので、最大3つまでマークを並べて表示する
-        const marksStr = d.marks.slice(0, 3).join(''); 
+        let cellClass = hasMark ? 'has-mark' : '';
+        if (d.isToday) cellClass += ' is-today';
+        
+        const marksStr = d.marks.slice(0, 4).join(''); 
+        
+        // 1日、または今日（最初の日）の場合は「○月」を表示する
+        let dateDisplay = d.day;
+        if (d.day === 1 || index === 0) {
+            dateDisplay = `<span class="zodiac-cal-date-month">${d.month}月</span>${d.day}`;
+        }
         
         return `
             <div class="zodiac-cal-cell-large ${cellClass}">
-                <span class="zodiac-cal-date-large">${d.day}</span>
+                <span class="zodiac-cal-date-large">${dateDisplay}</span>
                 <div class="zodiac-cal-marks-large">${marksStr}</div>
             </div>`;
     }).join('');
