@@ -11797,11 +11797,14 @@ function createTopCard(item, rank, iconClass, rankClass, colorClass) {
         else targetArray = textsB;
 
         // 【重要】乱数の相関を断ち切るために next() を空回しする
-        // （1回目の next() はスコア算出用の raw と全く同じ値になるため、スコアと文章が連動してしまう問題を防ぐ）
         rng.next();
         rng.next();
+
+        // 【重要】47都道府県それぞれに「固定のインデックス」を割り当てる
+        // index (0-46) を配列長 (15 or 16) で割った余りを使うことで被りを最小限にする
+        const shuffleOffset = Math.floor(rng.next() * targetArray.length);
+        const textIndex = (index + shuffleOffset) % targetArray.length;
         
-        const textIndex = Math.floor(rng.next() * targetArray.length);
         selectedText = targetArray[textIndex];
 
         // 最後に一言アドバイスを添える (共通)
