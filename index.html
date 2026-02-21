@@ -14393,55 +14393,58 @@ async function logout() {
         renderRanking();
     }
 
-    function generateDailyRanking(dateStr) {
-    let scoredData = calculateScoresForDate(dateStr); // L, M, W の生データ取得
-    const decoRng = new SeededRandom(dateStr + "_decoration");
-    
-    // 1. その日のターゲット上限・下限を決定
-    const limitRng = new SeededRandom(dateStr + "_zodiac_limits");
-    const targetTop = Math.floor(limitRng.next() * 6) + 95;   // 95-100
-    const targetBottom = Math.floor(limitRng.next() * 7) + 49; // 49-55
-
-    // 2. 項目（恋愛・金運・仕事）ごとに独立してスケーリング（底上げ）を行う
-    const categories = ['love', 'money', 'work'];
-    categories.forEach(cat => {
-        const scores = scoredData.map(d => d[cat].score);
-        const curMax = Math.max(...scores);
-        const curMin = Math.min(...scores);
+   function generateDailyRanking(dateStr) {
+        let scoredData = calculateScoresForDate(dateStr); // L, M, W の生データ取得
+        const decoRng = new SeededRandom(dateStr + "_decoration");
         
-        scoredData.forEach(d => {
-            // 各項目を独立して targetBottom〜targetTop の範囲に変換
-            const normalized = (d[cat].score - curMin) / (curMax - curMin);
-            d[cat].score = Math.floor(normalized * (targetTop - targetBottom) + targetBottom);
+        // 1. その日のターゲット上限・下限を決定
+        const limitRng = new SeededRandom(dateStr + "_zodiac_limits");
+        const targetTop = Math.floor(limitRng.next() * 6) + 95;   // 95-100
+        const targetBottom = Math.floor(limitRng.next() * 7) + 49; // 49-55
+
+        // 2. 項目（恋愛・金運・仕事）ごとに独立してスケーリング（底上げ）を行う
+        const categories = ['love', 'money', 'work'];
+        categories.forEach(cat => {
+            const scores = scoredData.map(d => d[cat].score);
+            const curMax = Math.max(...scores);
+            const curMin = Math.min(...scores);
+            
+            scoredData.forEach(d => {
+                // 各項目を独立して targetBottom〜targetTop の範囲に変換
+                const normalized = (d[cat].score - curMin) / (curMax - curMin);
+                d[cat].score = Math.floor(normalized * (targetTop - targetBottom) + targetBottom);
+            });
         });
-    });
 
-    // 3. スケーリングされた項目から「新しい合計平均点」を再計算
-    scoredData.forEach(d => {
-        d.totalScore = Math.floor((d.love.score + d.money.score + d.work.score) / 3);
-    });
+        // 3. スケーリングされた項目から「新しい合計平均点」を再計算
+        scoredData.forEach(d => {
+            d.totalScore = Math.floor((d.love.score + d.money.score + d.work.score) / 3);
+        });
 
-    // 4. 最後に「合計点」がピッタリ 1位=95〜100 / 最下位=49〜55 になるよう最終微調整
-    const finalMax = Math.max(...scoredData.map(d => d.totalScore));
-    const finalMin = Math.min(...scoredData.map(d => d.totalScore));
+        // 4. 最後に「合計点」がピッタリ 1位=95〜100 / 最下位=49〜55 になるよう最終微調整
+        const finalMax = Math.max(...scoredData.map(d => d.totalScore));
+        const finalMin = Math.min(...scoredData.map(d => d.totalScore));
 
-    scoredData.forEach(d => {
-        const normalized = (d.totalScore - finalMin) / (finalMax - finalMin);
-        d.totalScore = Math.floor(normalized * (targetTop - targetBottom) + targetBottom);
-        
-        // 合計点を最終調整した際、各項目の点数が合計点より極端に低くならないよう補正
-        // これにより、上位なのに特定の運勢だけ70点台といった現象を防ぎます
-        d.love.score = Math.max(d.love.score, Math.floor(d.totalScore * 0.9));
-        d.money.score = Math.max(d.money.score, Math.floor(d.totalScore * 0.9));
-        d.work.score = Math.max(d.work.score, Math.floor(d.totalScore * 0.9));
-        
-        // 100点を超えないようにキャップ
-        d.love.score = Math.min(100, d.love.score);
-        d.money.score = Math.min(100, d.money.score);
-        d.work.score = Math.min(100, d.work.score);
-    });
+        scoredData.forEach(d => {
+            const normalized = (d.totalScore - finalMin) / (finalMax - finalMin);
+            d.totalScore = Math.floor(normalized * (targetTop - targetBottom) + targetBottom);
+            
+            // 合計点を最終調整した際、各項目の点数が合計点より極端に低くならないよう補正
+            d.love.score = Math.max(d.love.score, Math.floor(d.totalScore * 0.9));
+            d.money.score = Math.max(d.money.score, Math.floor(d.totalScore * 0.9));
+            d.work.score = Math.max(d.work.score, Math.floor(d.totalScore * 0.9));
+            
+            // 100点を超えないようにキャップ
+            d.love.score = Math.min(100, d.love.score);
+            d.money.score = Math.min(100, d.money.score);
+            d.work.score = Math.min(100, d.work.score);
+        });
 
-    scoredData.sort((a, b) => b.totalScore - a.totalScore);
+        scoredData.sort((a, b) => b.totalScore - a.totalScore);
+
+        // --- バラつきを持たせるためのオフセット値を生成 ---
+        const shuffleBase = Math.floor(decoRng.next() * 100);
+
         scoredData.forEach((d, i) => { 
             d.rank = i + 1;
             const totalRank = getRank(d.totalScore);
@@ -14455,13 +14458,22 @@ async function logout() {
             const mR = getRank(d.money.score);
             const wR = getRank(d.work.score);
 
-            // 短い説明文の抽出（undefined防止）
-            d.love.desc = luckComments.loveShorts[lR][Math.floor(decoRng.next() * luckComments.loveShorts[lR].length)];
-            d.money.desc = luckComments.moneyShorts[mR][Math.floor(decoRng.next() * luckComments.moneyShorts[mR].length)];
-            d.work.desc = luckComments.workShorts[wR][Math.floor(decoRng.next() * luckComments.workShorts[wR].length)];
+            // 短い説明文の抽出（インデックスを利用して循環させ、被りを防ぐ）
+            // i (順位) + shuffleBase (日替わり乱数) を配列長で割った余りを使う
+            const lArr = luckComments.loveShorts[lR];
+            d.love.desc = lArr[(i + shuffleBase) % lArr.length];
+
+            const mArr = luckComments.moneyShorts[mR];
+            // +1 することで恋愛運とは違うパターンを選びやすくする
+            d.money.desc = mArr[(i + shuffleBase + 1) % mArr.length]; 
+
+            const wArr = luckComments.workShorts[wR];
+            // +2 することでさらにズラす
+            d.work.desc = wArr[(i + shuffleBase + 2) % wArr.length];
 
             // --- 超長文の生成ロジック ---
-            const intro = luckComments.mainIntro[totalRank][Math.floor(decoRng.next() * luckComments.mainIntro[totalRank].length)];
+            const introArr = luckComments.mainIntro[totalRank];
+            const intro = introArr[(i + shuffleBase) % introArr.length];
             
             const getDetailText = (rank, type) => {
                 if (rank <= 10) return luckComments[`${type}Detail`].high;
@@ -14473,14 +14485,17 @@ async function logout() {
             const moneyPara = `【金運：第${d.money.rank}位】${getDetailText(d.money.rank, 'money')}`;
             const workPara = `【仕事・勉強運：第${d.work.rank}位】${getDetailText(d.work.rank, 'work')}`;
             
-            const conclusion = luckComments.mainConclusion[totalRank][Math.floor(decoRng.next() * luckComments.mainConclusion[totalRank].length)];
+            const conclArr = luckComments.mainConclusion[totalRank];
+            const conclusion = conclArr[(i + shuffleBase + 3) % conclArr.length];
 
             // 全てを繋げて超長文にする
             d.longDesc = `${intro}<br><br>${lovePara}<br><br>${moneyPara}<br><br>${workPara}<br><br>${conclusion}`;
 
-            d.luckyNum = Math.floor(decoRng.next() * 9) + 1;
-            d.item = zodiacItemsList[Math.floor(decoRng.next() * zodiacItemsList.length)];
-            d.color = zodiacColorsList[Math.floor(decoRng.next() * zodiacColorsList.length)];
+            // ラッキーアイテム・カラーもインデックスで循環させて被りを減らす
+            d.luckyNum = ((i + shuffleBase) % 9) + 1;
+            d.item = zodiacItemsList[(i + shuffleBase) % zodiacItemsList.length];
+            d.color = zodiacColorsList[(i + shuffleBase) % zodiacColorsList.length];
+            
             d.calendar = calculateFutureLuck(d.sign.id, d.blood, dateStr);
         });
 
