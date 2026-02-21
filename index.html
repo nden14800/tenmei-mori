@@ -11796,18 +11796,12 @@ function createTopCard(item, rank, iconClass, rankClass, colorClass) {
         else if (score >= 70) targetArray = textsA;
         else targetArray = textsB;
 
-        // 【重要】47都道府県それぞれに「固定のインデックス」を割り当てる
-        // 配列の長さで割った余りを使うことで、ランダム性を保ちつつ
-        // "北海道はこれ" "青森はこれ" といった偏りを防ぎ、かつ配列外参照も防ぐ
-        // 日付が変われば rng の中身が変わるので、割り当てられる文章も変わる
+        // 【重要】乱数の相関を断ち切るために next() を空回しする
+        // （1回目の next() はスコア算出用の raw と全く同じ値になるため、スコアと文章が連動してしまう問題を防ぐ）
+        rng.next();
+        rng.next();
         
-        // index (0-46) を配列長 (15 or 16) で割った余りを使うと、
-        // 47都道府県がまんべんなく異なる文章になる。
-        // さらに rng.next() を加えて、日によって「どの県がどの文章になるか」をシャッフルする。
-        
-        const shuffleOffset = Math.floor(rng.next() * targetArray.length);
-        const textIndex = (index + shuffleOffset) % targetArray.length;
-        
+        const textIndex = Math.floor(rng.next() * targetArray.length);
         selectedText = targetArray[textIndex];
 
         // 最後に一言アドバイスを添える (共通)
@@ -11815,7 +11809,12 @@ function createTopCard(item, rank, iconClass, rankClass, colorClass) {
                        score >= 70 ? "笑顔を絶やさず過ごしましょう。" : 
                        "焦らずマイペースを維持してください。";
 
-        return selectedText + " " + advice;
+        // すでに文章の末尾に同じアドバイスが含まれている場合は重複を避ける
+        if (selectedText.endsWith(advice)) {
+            return selectedText;
+        } else {
+            return selectedText + " " + advice;
+        }
     }
 
 // ==========================================
