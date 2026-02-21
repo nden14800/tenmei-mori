@@ -12129,27 +12129,6 @@ const TenmeiLab = {
     },
     // ▲▲▲ 追加ここまで ▲▲▲
 
-    // ▼▼▼ 追加：共通のログインブロック関数 ▼▼▼
-    checkLoginAndBlock: (el) => {
-        if (!currentState.user) {
-            // 警告を出す
-            showToast("会員限定の機能です。ログインして入室してください。", "warning");
-            
-            // スイッチをいじられた場合は、強制的に状態を元に戻す
-            if (el) el.checked = !el.checked; 
-            
-            // 剥がされたロック画面とぼかしを強制的に復活させる
-            const lock = document.getElementById('lab-lock');
-            const wrapper = document.getElementById('lab-content-wrapper');
-            if (lock) lock.classList.remove('hidden');
-            if (wrapper) wrapper.classList.add('lab-blurred');
-            
-            return false; // 通行不可
-        }
-        return true; // 通行許可
-    },
-    // ▲▲▲ 追加ここまで ▲▲▲
-
     // Labs機能用トグルロジック（各機能の先頭でチェック関数を呼ぶように修正）
     toggleBigText: (el) => {
         // ここでチェック（弾かれたら下には進まない）
