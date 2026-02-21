@@ -13399,14 +13399,17 @@ function renderHistoryList(historyData) {
     });
 }
 
-        // 検索ボタン: 1ページ目をロード
+        
+// 検索ボタン
 function filterHistory() {
+    if (!currentState.user) return showToast("会員限定機能です", "warning"); // ←追加
     loadHistory(1);
 }
 
-// リセットボタン: 条件クリアして1ページ目をロード
+// リセットボタン
 function resetSearch() {
-    document.getElementById('search-type').value = 'all';
+    if (!currentState.user) return showToast("会員限定機能です", "warning"); // ←追加
+    document.getElementById('search-type').value = 'all'
     document.getElementById('search-keyword').value = '';
     document.getElementById('search-date-start').value = '';
     document.getElementById('search-date-end').value = '';
