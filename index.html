@@ -14555,6 +14555,32 @@ async function logout() {
         }
     };
 
+        function getRank(score) {
+        if (score >= 90) return 'S';
+        if (score >= 75) return 'A';
+        if (score >= 50) return 'B';
+        return 'C';
+    }
+
+    function calculateScoresForDate(dateStr) {
+        let results = [];
+        zodiacSigns.forEach(sign => {
+            bloodTypes.forEach(blood => {
+                const seed = `${dateStr}_${sign.id}_${blood}`;
+                const rng = new SeededRandom(seed);
+                const loveScore = Math.floor(rng.next() * 52) + 49;
+                const moneyScore = Math.floor(rng.next() * 52) + 49;
+                const workScore = Math.floor(rng.next() * 52) + 49;
+                const totalScore = Math.floor((loveScore + moneyScore + workScore) / 3);
+                results.push({
+                    sign: sign, blood: blood, totalScore: totalScore,
+                    love: { score: loveScore }, money: { score: moneyScore }, work: { score: workScore }
+                });
+            });
+        });
+        return results;
+    }
+
     function generateDailyRanking(dateStr) {
         let scoredData = calculateScoresForDate(dateStr); // L, M, W の生データ取得
         const decoRng = new SeededRandom(dateStr + "_decoration");
