@@ -12129,35 +12129,59 @@ const TenmeiLab = {
     },
     // ▲▲▲ 追加ここまで ▲▲▲
 
-    // Labs機能用トグルロジック
+    // ▼▼▼ 追加：共通のログインブロック関数 ▼▼▼
+    checkLoginAndBlock: (el) => {
+        if (!currentState.user) {
+            // 警告を出す
+            showToast("会員限定の機能です。ログインして入室してください。", "warning");
+            
+            // スイッチをいじられた場合は、強制的に状態を元に戻す
+            if (el) el.checked = !el.checked; 
+            
+            // 剥がされたロック画面とぼかしを強制的に復活させる
+            const lock = document.getElementById('lab-lock');
+            const wrapper = document.getElementById('lab-content-wrapper');
+            if (lock) lock.classList.remove('hidden');
+            if (wrapper) wrapper.classList.add('lab-blurred');
+            
+            return false; // 通行不可
+        }
+        return true; // 通行許可
+    },
+    // ▲▲▲ 追加ここまで ▲▲▲
+
+    // Labs機能用トグルロジック（各機能の先頭でチェック関数を呼ぶように修正）
     toggleBigText: (el) => {
+        // ここでチェック（弾かれたら下には進まない）
+        if (!TenmeiLab.checkLoginAndBlock(el)) return;
+        
         if(el.checked) document.documentElement.classList.add('lab-big-text');
         else document.documentElement.classList.remove('lab-big-text');
     },
+    
     toggleMist: (el) => {
+        // ここでチェック
+        if (!TenmeiLab.checkLoginAndBlock(el)) return;
+        
         const container = document.getElementById('mist-container');
         if(!container) return;
         if(el.checked) container.classList.add('active');
         else container.classList.remove('active');
     },
+    
     toggleGold: (el) => {
+        // ここでチェック
+        if (!TenmeiLab.checkLoginAndBlock(el)) return;
+        
         if(el.checked) document.body.classList.add('theme-gold');
         else document.body.classList.remove('theme-gold');
     },
 
-    // モーダル表示ロジック（変更なし）
+    // モーダル表示ロジック（前回の修正もこれに統一するとスッキリします）
     openModal: (key) => {
-        // ▼▼▼ ここから追加：ログインチェック ▼▼▼
-        if (!currentState.user) {
-            // 未ログインなら警告を出して、処理を強制終了(return)する
-            showToast("会員限定の機能です。ログインして入室してください。", "warning");
-            
-            // 念のため、剥がされたロック画面を再度強制的に被せる
-            document.getElementById('lab-lock').classList.remove('hidden');
-            document.getElementById('lab-content-wrapper').classList.add('lab-blurred');
-            return;
-        }
-        // ▲▲▲ 追加ここまで ▲▲▲
+        // ここでチェック（スイッチではないので el は null を渡す）
+        if (!TenmeiLab.checkLoginAndBlock(null)) return;
+
         const data = TenmeiLab.details[key];
         if(!data) return;
         const content = document.getElementById('lab-modal-content');
