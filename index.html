@@ -605,14 +605,225 @@
         #countdown-overlay {
             position: fixed;
             top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0,0,0,0.8);
+            background: rgba(10, 5, 5, 0.92);
             z-index: 999;
             display: none;
             align-items: center;
             justify-content: center;
-            color: #fff;
-            font-size: 8rem;
+            flex-direction: column;
             font-family: 'Zen Old Mincho', serif;
+        }
+
+        /* 背景の神社シルエット */
+        #countdown-overlay::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: radial-gradient(ellipse at center, rgba(180,28,28,0.12) 0%, transparent 70%);
+            pointer-events: none;
+        }
+
+        #countdown-inner {
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        /* 外側の回転リング */
+        #countdown-ring-wrap {
+            position: relative;
+            width: 220px;
+            height: 220px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        #countdown-svg {
+            position: absolute;
+            inset: 0;
+            width: 100%;
+            height: 100%;
+            transform: rotate(-90deg);
+        }
+
+        #countdown-ring-bg {
+            fill: none;
+            stroke: rgba(255,255,255,0.07);
+            stroke-width: 3;
+        }
+
+        #countdown-ring-progress {
+            fill: none;
+            stroke: #b91c1c;
+            stroke-width: 3;
+            stroke-linecap: round;
+            stroke-dasharray: 628;
+            stroke-dashoffset: 0;
+            filter: drop-shadow(0 0 6px rgba(185,28,28,0.8));
+        }
+
+        /* 内側のパルスリング */
+        #countdown-pulse-ring {
+            position: absolute;
+            width: 170px; height: 170px;
+            border-radius: 50%;
+            border: 1px solid rgba(197,160,89,0.25);
+            animation: cd-pulse 1s ease-out infinite;
+        }
+
+        @keyframes cd-pulse {
+            0%   { transform: scale(0.92); opacity: 0.6; }
+            50%  { transform: scale(1.04); opacity: 0.2; }
+            100% { transform: scale(0.92); opacity: 0.6; }
+        }
+
+        /* 数字 */
+        #countdown-number {
+            position: relative;
+            z-index: 2;
+            font-size: 7rem;
+            font-weight: 900;
+            color: #fff;
+            line-height: 1;
+            text-shadow: 0 0 30px rgba(185,28,28,0.7), 0 0 60px rgba(185,28,28,0.3);
+            animation: cd-num-pop 0.35s cubic-bezier(0.22,1,0.36,1) both;
+            font-family: 'Zen Old Mincho', serif;
+        }
+
+        @keyframes cd-num-pop {
+            0%   { transform: scale(1.5); opacity: 0; }
+            100% { transform: scale(1);   opacity: 1; }
+        }
+
+        /* 漢数字サブテキスト */
+        #countdown-kanji {
+            position: absolute;
+            top: 8px; right: -28px;
+            font-size: 0.85rem;
+            color: rgba(197,160,89,0.6);
+            letter-spacing: 0.15em;
+            writing-mode: vertical-rl;
+        }
+
+        /* 上下の飾り文字 */
+        #countdown-label-top {
+            font-size: 0.7rem;
+            letter-spacing: 0.5em;
+            color: rgba(255,255,255,0.35);
+            text-transform: uppercase;
+            margin-bottom: -8px;
+        }
+        #countdown-label-bottom {
+            font-size: 0.65rem;
+            letter-spacing: 0.35em;
+            color: rgba(197,160,89,0.5);
+            margin-top: 4px;
+        }
+
+        /* 角の菱形装飾 */
+        .cd-diamond {
+            width: 6px; height: 6px;
+            background: rgba(197,160,89,0.4);
+            transform: rotate(45deg);
+            display: inline-block;
+            margin: 0 12px;
+        }
+
+        /* --- バージョン表記 (おみくじ堂スタイル) --- */
+        .site-version-badge {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 2px;
+            margin-top: 10px;
+        }
+        .ver-wave {
+            font-size: 0.72rem;
+            color: var(--accent-gold);
+            opacity: 0.55;
+            letter-spacing: 0.05em;
+            line-height: 1.2;
+            display: block;
+        }
+        .ver-text {
+            font-size: 0.72rem;
+            font-family: 'Zen Old Mincho', serif;
+            color: var(--text-sub);
+            letter-spacing: 0.2em;
+            white-space: nowrap;
+            display: block;
+            padding: 1px 0;
+        }
+
+        /* --- バージョン情報カード --- */
+        .bento-version {
+            grid-column: span 12;
+        }
+        .ver-info-card {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            gap: 10px 24px;
+        }
+        .ver-info-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 0.72rem;
+            font-family: 'Zen Old Mincho', serif;
+            color: var(--text-sub);
+        }
+        .ver-info-badge .ver-info-label {
+            color: var(--text-sub);
+            opacity: 0.7;
+            font-size: 0.65rem;
+            letter-spacing: 0.1em;
+        }
+        .ver-info-badge .ver-info-value {
+            color: var(--text-main);
+            font-weight: 600;
+            font-size: 0.75rem;
+        }
+        .ver-latest-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            padding: 2px 10px;
+            border-radius: 999px;
+            font-size: 0.68rem;
+            font-family: 'Zen Old Mincho', serif;
+            font-weight: 600;
+            letter-spacing: 0.05em;
+        }
+        .ver-latest-badge.is-latest {
+            background: rgba(16,185,129,0.12);
+            color: #059669;
+            border: 1px solid rgba(16,185,129,0.3);
+        }
+        .dark .ver-latest-badge.is-latest {
+            background: rgba(16,185,129,0.15);
+            color: #34d399;
+            border-color: rgba(16,185,129,0.25);
+        }
+        .ver-latest-badge.not-latest {
+            background: rgba(245,158,11,0.12);
+            color: #d97706;
+            border: 1px solid rgba(245,158,11,0.3);
+        }
+        .dark .ver-latest-badge.not-latest {
+            background: rgba(245,158,11,0.15);
+            color: #fbbf24;
+            border-color: rgba(245,158,11,0.25);
+        }
+        .ver-divider {
+            width: 1px;
+            height: 18px;
+            background: var(--card-border);
+            opacity: 0.6;
         }
 
         /* --- おみくじ結果カード (新デザイン修正版) --- */
@@ -5237,7 +5448,26 @@ body.sidebar-collapsed #sidebar:hover .nav-group-title {
                     </div>
                 </div>
 
-                <!-- 5. 統計 (おみくじの轍・抜粋版) -->
+                <!-- 5. バージョン情報カード -->
+                <div class="bento-card bento-version">
+                    <div class="ver-info-card">
+                        <div class="ver-info-badge">
+                            <span class="ver-info-label">バージョン</span>
+                            <span class="ver-info-value">Ver. 2.1</span>
+                        </div>
+                        <div class="ver-divider"></div>
+                        <div class="ver-info-badge">
+                            <span class="ver-info-label">リリース日</span>
+                            <span class="ver-info-value">2026 / 04 / 25</span>
+                        </div>
+                        <div class="ver-divider"></div>
+                        <span class="ver-latest-badge is-latest">
+                            <i class="bi bi-patch-check-fill"></i>最新バージョン
+                        </span>
+                    </div>
+                </div>
+
+                <!-- 6. 統計 (おみくじの轍・抜粋版) -->
                 <div class="bento-card bento-stats relative">
                     <div class="flex justify-between items-center mb-2 border-b border-gray-200 dark:border-gray-700 pb-2">
                         <h3 class="font-bold flex items-center gap-2"><i class="bi bi-bar-chart-line-fill text-red-500"></i> 全体の傾向</h3>
@@ -7015,7 +7245,23 @@ body.sidebar-collapsed #sidebar:hover .nav-group-title {
 
     <!-- カウントダウンオーバーレイ -->
     <div id="countdown-overlay">
-        <div id="countdown-number">3</div>
+        <div id="countdown-inner">
+            <div id="countdown-label-top">
+                <span class="cd-diamond"></span>心を鎮め、天命を問う<span class="cd-diamond"></span>
+            </div>
+            <div id="countdown-ring-wrap">
+                <svg id="countdown-svg" viewBox="0 0 220 220" xmlns="http://www.w3.org/2000/svg">
+                    <circle id="countdown-ring-bg" cx="110" cy="110" r="100"/>
+                    <circle id="countdown-ring-progress" cx="110" cy="110" r="100"/>
+                </svg>
+                <div id="countdown-pulse-ring"></div>
+                <div style="position:relative;">
+                    <div id="countdown-number">3</div>
+                    <div id="countdown-kanji">三</div>
+                </div>
+            </div>
+            <div id="countdown-label-bottom">TENMEI&nbsp;&nbsp;MORI&nbsp;&nbsp;ORACLE</div>
+        </div>
     </div>
 
     <!-- 詳細モーダル (おみくじの轍用) -->
@@ -7413,6 +7659,47 @@ function escapeHtml(str) {
     const newsData = [
 
 
+{
+            id: 70,
+            title: "【意匠・調整】おみくじ前の刻待ち（カウントダウン）の演出刷新と、バージョン表記の整備について",
+            date: "2026/04/25",
+            time: "00:00",
+            tag: "機能改善",
+            tagColor: "text-teal-600",
+            borderColor: "border-teal-500",
+            desc: "おみくじを引く前のカウントダウン演出を円形リング＋漢数字アニメーションへと刷新し、待機時間を5秒へ変更しました。また、バージョン表記を専用カードへ移行いたしました。",
+            content: `
+                <div class="article-content">
+                    <p>いつも「運勢・天命乃杜」をご利用いただき、誠にありがとうございます。</p>
+                    <p>本日、おみくじを引く際に表示される「刻待ちの演出（カウントダウン）」の全面的な刷新と、サイトのバージョン表記に関する整備をあわせて実施いたしました。</p>
+
+                    <h3>1. カウントダウン演出の全面刷新</h3>
+                    <p>これまでの演出は、黒い幕に大きな数字が浮かぶだけの、簡素なものとなっておりました。天命を問う厳かな一瞬にふさわしい意匠へと整えるべく、以下の通り改修いたしました。</p>
+                    <ul class="list-disc ml-5 mb-4">
+                        <li><strong>円形プログレスリング：</strong> 残り時間を暗紅色の円弧で可視化し、刻が満ちていく様子を視覚的に表現しました。表示と同時に滑らかに動き始めます。</li>
+                        <li><strong>漢数字の添え書き：</strong> アラビア数字の右隣に「五・四・三・二・一」と縦書きで添えられる、静かな装飾を加えました。</li>
+                        <li><strong>金色の鼓動（パルスリング）：</strong> 内側に薄く光る輪がゆっくりと息をするように明滅し、待機中の静謐さを演出します。</li>
+                    </ul>
+
+                    <h3>2. 待機時間を3秒から5秒へ変更</h3>
+                    <p>従来3秒だった待機時間を、5秒へと延長いたしました。心を鎮め、より深く天命と向き合う時間をお取りいただくための変更です。なお、「神速の祈り（演出短縮）」をお使いの会員様は、引き続きカウントダウンを省略していただけます。</p>
+
+                    <h3>3. バージョン表記の新設</h3>
+                    <p>これまで当サイトにはバージョン情報の表記がございませんでした。今回より、ホーム画面に専用カードを設け、「バージョン」「リリース日」「最新バージョンか否か」の3項目を一覧できる形式で新たに追加いたしました。</p>
+
+                    <div class="bg-teal-50 dark:bg-teal-900/20 p-4 rounded border border-teal-200 dark:border-teal-800 my-6">
+                        <h4 class="font-bold text-teal-800 dark:text-teal-200 mb-2">
+                            <i class="bi bi-info-circle-fill"></i> 現在のバージョン
+                        </h4>
+                        <p class="text-sm">
+                            デジタルおみくじ <strong>Ver. 2.1</strong>（2026年4月25日リリース）
+                        </p>
+                    </div>
+
+                    <p>細部を丁寧に整え、天命を問う一瞬がより深いものになるよう、引き続き手を入れてまいります。</p>
+                </div>
+            `
+        },
 {
             id: 69,
             title: "【お知らせ】春の長期社務作業（メンテナンス）完了と、運営再開について",
@@ -13265,6 +13552,8 @@ async function fetchHistoryStats() {
         function drawResult(element) {
             const overlay = document.getElementById('countdown-overlay');
             const numEl = document.getElementById('countdown-number');
+            const kanjiEl = document.getElementById('countdown-kanji');
+            const ring = document.getElementById('countdown-ring-progress');
             overlay.style.display = 'flex';
             
             // Lab: 神速の祈りモードならカウントダウン省略
@@ -13273,17 +13562,39 @@ async function fetchHistoryStats() {
                 showResultDetail(true);
                 return;
             }
-            
-            let count = 3;
+
+            const kanjiMap = { 5: '五', 4: '四', 3: '三', 2: '二', 1: '一' };
+            const circumference = 628;
+
+            // リングをリセット（transitionなし）してから5秒連続アニメ開始
+            ring.style.transition = 'none';
+            ring.style.strokeDashoffset = '0';
+            ring.offsetHeight; // reflow
+            ring.style.transition = 'stroke-dashoffset 5s linear';
+            requestAnimationFrame(() => {
+                ring.style.strokeDashoffset = String(circumference);
+            });
+
+            let count = 5;
             numEl.textContent = count;
+            if(kanjiEl) kanjiEl.textContent = kanjiMap[count] || '';
+            numEl.style.animation = 'none';
+            numEl.offsetHeight;
+            numEl.style.animation = 'cd-num-pop 0.35s cubic-bezier(0.22,1,0.36,1) both';
             
             const timer = setInterval(() => {
                 count--;
                 if(count > 0) {
                     numEl.textContent = count;
+                    if(kanjiEl) kanjiEl.textContent = kanjiMap[count] || '';
+                    numEl.style.animation = 'none';
+                    numEl.offsetHeight;
+                    numEl.style.animation = 'cd-num-pop 0.35s cubic-bezier(0.22,1,0.36,1) both';
                 } else {
                     clearInterval(timer);
                     overlay.style.display = 'none';
+                    ring.style.transition = 'none';
+                    ring.style.strokeDashoffset = '0';
                     showResultDetail(true); 
                 }
             }, 1000);
