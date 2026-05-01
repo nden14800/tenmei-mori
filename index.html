@@ -5289,6 +5289,266 @@ body.sidebar-collapsed #sidebar:hover .nav-group-title {
         }
     
     </style>
+
+    <!-- ===== 更新の軌跡パネル CSS ===== -->
+    <style>
+    /* ---- オーバーレイ ---- */
+    .ver-history-overlay {
+        position: fixed; inset: 0;
+        background: rgba(0,0,0,0.45);
+        z-index: 10000;
+        opacity: 0; pointer-events: none;
+        transition: opacity 0.35s ease;
+    }
+    .ver-history-overlay.active { opacity: 1; pointer-events: auto; }
+
+    /* ---- 本体パネル（右からスライドイン）---- */
+    .ver-history-panel {
+        position: fixed; top: 0; right: 0;
+        height: 100%; width: min(480px, 95vw);
+        background: var(--card-bg);
+        border-left: 1px solid var(--card-border);
+        box-shadow: -12px 0 40px rgba(0,0,0,0.18);
+        z-index: 10001;
+        display: flex; flex-direction: column;
+        transform: translateX(100%);
+        transition: transform 0.4s cubic-bezier(0.22, 1, 0.36, 1);
+        overflow: hidden;
+    }
+    .ver-history-panel.active { transform: translateX(0); }
+    .dark .ver-history-panel { box-shadow: -12px 0 40px rgba(0,0,0,0.45); }
+
+    /* ---- パネルヘッダー ---- */
+    .ver-panel-header {
+        padding: 24px 24px 16px;
+        border-bottom: 1px solid var(--card-border);
+        display: flex; align-items: center; justify-content: space-between;
+        flex-shrink: 0;
+        background: linear-gradient(135deg, rgba(197,160,89,0.06) 0%, transparent 70%);
+    }
+    .ver-panel-title {
+        font-family: 'Zen Old Mincho', serif;
+        font-size: 1rem; font-weight: 900;
+        color: var(--text-main); letter-spacing: 0.12em;
+        display: flex; align-items: center; gap: 8px;
+    }
+    .ver-panel-title i { color: var(--accent-gold); font-size: 1.1rem; }
+    .ver-panel-close {
+        width: 36px; height: 36px; border-radius: 50%;
+        border: 1px solid var(--card-border);
+        background: transparent; color: var(--text-sub);
+        cursor: pointer; display: flex; align-items: center; justify-content: center;
+        font-size: 1rem; transition: all 0.2s;
+    }
+    .ver-panel-close:hover { background: rgba(128,128,128,0.1); color: var(--text-main); }
+
+    /* ---- スクロールエリア ---- */
+    .ver-panel-scroll {
+        flex: 1; overflow-y: auto;
+        padding: 24px 20px 40px;
+        scroll-behavior: smooth;
+    }
+    .ver-panel-scroll::-webkit-scrollbar { width: 4px; }
+    .ver-panel-scroll::-webkit-scrollbar-track { background: transparent; }
+    .ver-panel-scroll::-webkit-scrollbar-thumb { background: var(--card-border); border-radius: 2px; }
+
+    /* ---- タイムライン縦線 ---- */
+    .ver-timeline { position: relative; padding-left: 28px; }
+    .ver-timeline::before {
+        content: '';
+        position: absolute; left: 10px; top: 8px; bottom: 8px;
+        width: 2px;
+        background: linear-gradient(to bottom, var(--accent-gold), rgba(197,160,89,0.1));
+    }
+
+    /* ---- 各バージョンアイテム ---- */
+    .ver-timeline-item {
+        position: relative; margin-bottom: 14px; cursor: pointer;
+    }
+    .ver-timeline-item::before {
+        content: '';
+        position: absolute; left: -22px; top: 18px;
+        width: 12px; height: 12px; border-radius: 50%;
+        background: var(--accent-gold);
+        border: 2px solid var(--card-bg);
+        box-shadow: 0 0 0 2px var(--accent-gold);
+        transition: transform 0.2s;
+    }
+    .ver-timeline-item:hover::before { transform: scale(1.3); }
+    .ver-timeline-item.is-current::before {
+        background: #059669;
+        box-shadow: 0 0 0 2px #059669, 0 0 8px rgba(5,150,105,0.4);
+    }
+
+    /* ---- バージョンカード ---- */
+    .ver-item-card {
+        background: var(--card-bg);
+        border: 1px solid var(--card-border);
+        border-radius: 14px; padding: 14px 16px;
+        transition: all 0.25s; user-select: none;
+    }
+    .ver-item-card:hover {
+        border-color: var(--accent-gold);
+        box-shadow: 0 4px 16px rgba(197,160,89,0.15);
+        transform: translateX(4px);
+    }
+    .ver-timeline-item.is-current .ver-item-card {
+        border-color: rgba(5,150,105,0.4);
+        background: linear-gradient(135deg, rgba(5,150,105,0.04) 0%, transparent 60%);
+    }
+    .ver-item-top {
+        display: flex; align-items: flex-start;
+        justify-content: space-between; gap: 8px; margin-bottom: 4px;
+    }
+    .ver-item-ver {
+        font-family: 'Zen Old Mincho', serif;
+        font-size: 1.2rem; font-weight: 900;
+        color: var(--accent-gold); letter-spacing: 0.05em; line-height: 1;
+    }
+    .ver-timeline-item.is-current .ver-item-ver { color: #059669; }
+    .dark .ver-timeline-item.is-current .ver-item-ver { color: #34d399; }
+
+    .ver-item-badge {
+        display: inline-flex; align-items: center; gap: 3px;
+        padding: 2px 8px; border-radius: 99px;
+        font-size: 0.62rem; font-weight: 700; letter-spacing: 0.05em; flex-shrink: 0;
+    }
+    .ver-badge-current { background: rgba(5,150,105,0.12); color: #059669; border: 1px solid rgba(5,150,105,0.3); }
+    .dark .ver-badge-current { color: #34d399; }
+    .ver-badge-stable { background: rgba(197,160,89,0.12); color: var(--accent-gold); border: 1px solid rgba(197,160,89,0.3); }
+    .ver-badge-infra { background: rgba(185,28,28,0.1); color: var(--accent-red); border: 1px solid rgba(185,28,28,0.25); }
+    .ver-badge-beta { background: rgba(107,114,128,0.12); color: #6b7280; border: 1px solid rgba(107,114,128,0.3); }
+
+    .ver-item-name {
+        font-family: 'Zen Old Mincho', serif;
+        font-size: 0.88rem; font-weight: 700;
+        color: var(--text-main); margin-bottom: 3px; line-height: 1.3;
+    }
+    .ver-item-date {
+        font-size: 0.68rem; color: var(--text-sub);
+        letter-spacing: 0.05em; margin-bottom: 5px; font-family: monospace;
+    }
+    .ver-item-desc { font-size: 0.77rem; color: var(--text-sub); line-height: 1.55; }
+    .ver-item-tags {
+        display: flex; flex-wrap: wrap; gap: 4px; margin-top: 8px;
+    }
+    .ver-item-tag {
+        font-size: 0.6rem; padding: 1px 6px; border-radius: 4px;
+        background: rgba(128,128,128,0.08);
+        color: var(--text-sub); border: 1px solid var(--card-border);
+    }
+    .ver-item-more {
+        font-size: 0.67rem; color: var(--accent-gold);
+        margin-top: 7px; display: flex; align-items: center; gap: 3px;
+    }
+
+    /* ---- 詳細パネル（第二層、パネル内でさらに右からスライド）---- */
+    .ver-detail-panel {
+        position: absolute; inset: 0;
+        background: var(--card-bg);
+        z-index: 2; display: flex; flex-direction: column;
+        transform: translateX(100%);
+        transition: transform 0.35s cubic-bezier(0.22, 1, 0.36, 1);
+        overflow: hidden;
+    }
+    .ver-detail-panel.active { transform: translateX(0); }
+
+    .ver-detail-header {
+        padding: 20px 20px 14px;
+        border-bottom: 1px solid var(--card-border);
+        display: flex; align-items: center; gap: 12px; flex-shrink: 0;
+    }
+    .ver-detail-back {
+        width: 32px; height: 32px; border-radius: 8px;
+        border: 1px solid var(--card-border);
+        background: transparent; color: var(--text-sub);
+        cursor: pointer; display: flex; align-items: center; justify-content: center;
+        font-size: 0.9rem; transition: all 0.2s; flex-shrink: 0;
+    }
+    .ver-detail-back:hover { background: rgba(128,128,128,0.1); color: var(--text-main); }
+    .ver-detail-title {
+        font-family: 'Zen Old Mincho', serif;
+        font-size: 0.95rem; font-weight: 900;
+        color: var(--text-main); line-height: 1.2;
+    }
+
+    .ver-detail-scroll {
+        flex: 1; overflow-y: auto; padding: 20px;
+    }
+    .ver-detail-scroll::-webkit-scrollbar { width: 4px; }
+    .ver-detail-scroll::-webkit-scrollbar-thumb { background: var(--card-border); border-radius: 2px; }
+
+    .ver-detail-ver {
+        font-family: 'Zen Old Mincho', serif;
+        font-size: 2.4rem; font-weight: 900;
+        color: var(--accent-gold); line-height: 1; margin-bottom: 4px;
+    }
+    .ver-detail-dateline {
+        font-size: 0.73rem; color: var(--text-sub);
+        margin-bottom: 20px; font-family: monospace; line-height: 1.5;
+    }
+    .ver-detail-section { margin-bottom: 22px; }
+    .ver-detail-section h4 {
+        font-family: 'Zen Old Mincho', serif;
+        font-size: 0.82rem; font-weight: 700;
+        color: var(--text-main); margin-bottom: 8px;
+        padding-bottom: 5px; border-bottom: 1px solid var(--card-border);
+        display: flex; align-items: center; gap: 6px;
+    }
+    .ver-detail-section h4 i { color: var(--accent-gold); }
+
+    .ver-detail-change {
+        display: flex; align-items: flex-start; gap: 8px;
+        padding: 7px 0;
+        border-bottom: 1px solid rgba(128,128,128,0.07);
+        font-size: 0.79rem; line-height: 1.55; color: var(--text-main);
+    }
+    .ver-detail-change:last-child { border-bottom: none; }
+    .ver-change-dot {
+        width: 7px; height: 7px; border-radius: 50%;
+        margin-top: 6px; flex-shrink: 0;
+    }
+    .dot-new { background: #059669; }
+    .dot-fix { background: #2563eb; }
+    .dot-change { background: #d97706; }
+    .dot-remove { background: #dc2626; }
+    .dot-infra { background: #7c3aed; }
+
+    .ver-legend {
+        margin-top: 20px; padding: 10px 12px;
+        background: rgba(128,128,128,0.05);
+        border-radius: 8px; border: 1px solid var(--card-border);
+    }
+    .ver-legend-title {
+        font-size: 0.62rem; color: var(--text-sub);
+        margin-bottom: 7px; font-weight: 700; letter-spacing: 0.1em;
+    }
+    .ver-legend-items { display: flex; flex-wrap: wrap; gap: 8px; }
+    .ver-legend-item {
+        display: flex; align-items: center; gap: 4px;
+        font-size: 0.63rem; color: var(--text-sub);
+    }
+    .ver-legend-dot { width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0; }
+
+    /* ---- 履歴表示ボタン ---- */
+    .ver-history-btn {
+        display: inline-flex; align-items: center; gap: 5px;
+        margin-top: 10px; padding: 5px 12px;
+        border-radius: 99px;
+        border: 1px solid rgba(197,160,89,0.4);
+        background: rgba(197,160,89,0.08);
+        color: var(--accent-gold);
+        font-size: 0.7rem; font-family: 'Zen Old Mincho', serif;
+        font-weight: 700; letter-spacing: 0.1em;
+        cursor: pointer; transition: all 0.2s;
+    }
+    .ver-history-btn:hover {
+        background: rgba(197,160,89,0.18);
+        border-color: var(--accent-gold);
+        box-shadow: 0 2px 8px rgba(197,160,89,0.2);
+    }
+    </style>
+
 </head>
 <body>
 
@@ -5494,6 +5754,9 @@ body.sidebar-collapsed #sidebar:hover .nav-group-title {
                             <i class="bi bi-patch-check-fill"></i>最新バージョン
                         </span>
                     </div>
+                    <button class="ver-history-btn" onclick="openVerHistory()">
+                        <i class="bi bi-clock-history"></i> 更新の軌跡
+                    </button>
                 </div>
 
                 <!-- 6. 統計 (おみくじの轍・抜粋版) -->
@@ -18026,6 +18289,182 @@ window.applyTheme = function() {
     applyThemeByConfig(settings.dark);
 };
 
+        // ===== 更新の軌跡パネル =====
+    const verDetailData = {
+        v21: {
+            ver: 'Ver. 2.1',
+            name: '意匠整備・バージョン管理の確立',
+            date: '2026年4月25日',
+            sections: [
+                {
+                    icon: 'bi-palette-fill', title: '演出・意匠の刷新',
+                    changes: [
+                        { type: 'change', text: 'おみくじ刻待ち演出を全面刷新。円形プログレスリング＋漢数字の添え書き＋金色の鼓動（パルスリング）を新たに導入。' },
+                        { type: 'change', text: 'カウントダウン待機時間を3秒から5秒に延長。より深く天命と向き合う時間を確保。' },
+                    ]
+                },
+                {
+                    icon: 'bi-info-circle-fill', title: 'バージョン管理の新設',
+                    changes: [
+                        { type: 'new', text: 'ホーム画面にバージョン情報専用カードを新設。「バージョン」「リリース日」「最新版か否か」を一覧表示。' },
+                        { type: 'new', text: '天命乃杜 更新の軌跡パネルを追加（今ご覧の機能）。' },
+                    ]
+                },
+                {
+                    icon: 'bi-arrow-repeat', title: '機能拡充・不具合修正',
+                    changes: [
+                        { type: 'change', text: '2026年2〜4月の春の長期社務作業（機材移行・システム裏側保守）完了後、運営を本格再開。' },
+                        { type: 'new', text: '12星座占いの神託文章を各ランク15パターン以上に大幅増量し重複を解消。吉日予報カレンダーを大型化・本物のカレンダー形式へ刷新。' },
+                        { type: 'fix', text: '全国・土地の運気ランキングの表示崩れおよび神託文章の重複問題を修正。' },
+                        { type: 'new', text: '記事分析ダッシュボード（外部サイト）を公開。最新AI（Gemini 3.1 Pro / Claude Sonnet 4.6）による分析データを掲載。' },
+                    ]
+                }
+            ]
+        },
+        v20: {
+            ver: 'Ver. 2.0',
+            name: 'インフラ大激動・全面刷新期',
+            date: '2026年1月22日〜25日',
+            sections: [
+                {
+                    icon: 'bi-database-fill-gear', title: 'データベース大規模移行',
+                    changes: [
+                        { type: 'infra', text: 'Cloudflare D1 → Supabase (PostgreSQL) → TiDB (MySQL互換) → Turso (SQLite互換) という幾多の変遷を経て最終着地。' },
+                        { type: 'infra', text: 'TiDB移行試験中に致命的障害が発生（サイト全機能停止・長時間ダウン）。断腸の思いで全データを完全リセット（浄化）。' },
+                        { type: 'infra', text: 'エッジDB「Turso」を最終採用。月間読取5億回・書込1000万回という余裕ある処理能力を確保。HTTP API（Pipeline）接続方式で安定性を確立。' },
+                        { type: 'change', text: 'ポーリング間隔を5秒→1分に延長してKV消費量を約1/10に削減。おみくじレート制限を60回/分に整備。' },
+                    ]
+                },
+                {
+                    icon: 'bi-layout-wtf', title: 'UI大規模刷新',
+                    changes: [
+                        { type: 'change', text: 'ホーム画面をBento Grid（12カラムグリッド）デザインへ全面刷新。モダンなカードレイアウトへ移行。' },
+                        { type: 'change', text: '「参拝者台帳（プロフィール）」を「参拝の記録」へ再設計。他者との交流より自己の運勢記録に特化するよう再定義。' },
+                        { type: 'new', text: 'Labs（TENMEI Labs）UIをオーロラエフェクト背景＋モダンカード型へ全面刷新。シンボルフラスコのアニメーションも液体の揺らぎ表現を強化。' },
+                        { type: 'new', text: '全国47都道府県の運気ランキング機能を正式追加。' },
+                    ]
+                },
+                {
+                    icon: 'bi-shield-lock-fill', title: 'セキュリティ・制度整備',
+                    changes: [
+                        { type: 'new', text: 'Labsへの不正操作（開発者ツールによるロック解除）を瞬時に無効化する「絶対防壁（アクセス制御）」を実装。' },
+                        { type: 'remove', text: '「連続参拝（ログインボーナス）」機能を廃止。日付判定ロジックの不整合が解消不能と判断。' },
+                        { type: 'remove', text: '「功徳の証（実績バッジ）」機能を完全撤去。表示不整合が根幹の問題で安定提供が困難と判断。' },
+                    ]
+                }
+            ]
+        },
+        v10: {
+            ver: 'Ver. 1.0',
+            name: '天命乃杜、正式公開',
+            date: '2026年1月2日',
+            sections: [
+                {
+                    icon: 'bi-stars', title: '正式公開時の搭載機能',
+                    changes: [
+                        { type: 'new', text: '本格デジタルおみくじ。大吉〜大凶12段階の忖度なし確率制抽選。和歌・助言・7項目詳細・ラッキーアイテム・QRコード付き結果カードを生成。' },
+                        { type: 'new', text: '12星座×血液型占い（48通り）。毎日0:00更新の日替わり運勢ランキング。30日吉日予報カレンダー搭載。' },
+                        { type: 'new', text: 'アカウントシステム（メール認証）。おみくじ履歴「おみくじの轍」のクラウド保存・検索・ページネーション機能。' },
+                        { type: 'new', text: '社務所だより（お知らせ記事）・神籤草子（コラム記事）の掲載を開始。' },
+                        { type: 'new', text: '2026年1月3日 TENMEI Labs公開。宵闇の刻・神速の祈り・迎春雅モードなど実験的機能を会員限定で先行提供。' },
+                    ]
+                },
+                {
+                    icon: 'bi-wrench-adjustable-circle-fill', title: '初期バグ修正（1月上旬）',
+                    changes: [
+                        { type: 'fix', text: '認証システムの重大バグを修正（パスワード不一致でも認証通過・未登録メールにコード送信・不正アカウント削除）。1月4日対応。' },
+                        { type: 'fix', text: 'TENMEI Labs「宵闇の刻」のOS設定連動不具合・「言霊の増幅」適用範囲を修正。1月5日対応。' },
+                        { type: 'change', text: '全国・土地の運気予報（マップ機能）の開発を中止。外部ライブラリの深刻な不安定化のため。' },
+                    ]
+                }
+            ]
+        },
+        beta: {
+            ver: 'β 0.9.5',
+            name: '社務所だより第一報・プレオープン期',
+            date: '2025年12月10日〜12月31日',
+            sections: [
+                {
+                    icon: 'bi-journal-text', title: 'プレオープン期の記録',
+                    changes: [
+                        { type: 'new', text: '2025年12月10日：開設準備室より「社務所だより」第一報を発信。天命乃杜の声として、社務所だよりが始まった原点の瞬間。' },
+                        { type: 'infra', text: '2025年12月20日：データベースメンテナンス実施。応答速度の向上とシステムの最終調整を完了。' },
+                        { type: 'new', text: '2025年12月25日：一部機能を先行公開したプレオープンを開始。おみくじ・12星座占い（β版）が利用可能に。' },
+                    ]
+                },
+                {
+                    icon: 'bi-code-square', title: 'この時期の特徴',
+                    changes: [
+                        { type: 'infra', text: 'デザイン・占いロジックの最終調整段階。会員システム・履歴保存・コラム記事はまだ未実装。' },
+                        { type: 'infra', text: 'おみくじと12星座占いのアルゴリズム検証が主な作業。正式リリース（Ver.1.0）に向けた土台づくりの時期。' },
+                    ]
+                }
+            ]
+        }
+    };
+
+    function openVerHistory() {
+        document.getElementById('ver-history-overlay').classList.add('active');
+        document.getElementById('ver-history-panel').classList.add('active');
+        document.body.style.overflow = 'hidden';
+    }
+
+    function closeVerHistory() {
+        // 詳細パネルも閉じる
+        document.getElementById('ver-detail-panel').classList.remove('active');
+        document.getElementById('ver-history-overlay').classList.remove('active');
+        document.getElementById('ver-history-panel').classList.remove('active');
+        document.body.style.overflow = '';
+    }
+
+    function openVerDetail(key) {
+        const data = verDetailData[key];
+        if (!data) return;
+
+        document.getElementById('ver-detail-title').textContent = data.ver + '　' + data.name;
+
+        const dotMap = { new: 'dot-new', fix: 'dot-fix', change: 'dot-change', remove: 'dot-remove', infra: 'dot-infra' };
+
+        let html = `
+            <div class="ver-detail-ver">${data.ver}</div>
+            <div class="ver-detail-dateline">${data.date}<br>${data.name}</div>
+        `;
+
+        data.sections.forEach(section => {
+            html += `
+                <div class="ver-detail-section">
+                    <h4><i class="bi ${section.icon}"></i>${section.title}</h4>
+                    ${section.changes.map(c => `
+                        <div class="ver-detail-change">
+                            <div class="ver-change-dot ${dotMap[c.type] || 'dot-new'}"></div>
+                            <div>${c.text}</div>
+                        </div>
+                    `).join('')}
+                </div>
+            `;
+        });
+
+        html += `
+            <div class="ver-legend">
+                <div class="ver-legend-title">変更種別の凡例</div>
+                <div class="ver-legend-items">
+                    <span class="ver-legend-item"><span class="ver-legend-dot" style="background:#059669;"></span>新機能</span>
+                    <span class="ver-legend-item"><span class="ver-legend-dot" style="background:#2563eb;"></span>修正</span>
+                    <span class="ver-legend-item"><span class="ver-legend-dot" style="background:#d97706;"></span>変更</span>
+                    <span class="ver-legend-item"><span class="ver-legend-dot" style="background:#dc2626;"></span>廃止</span>
+                    <span class="ver-legend-item"><span class="ver-legend-dot" style="background:#7c3aed;"></span>インフラ</span>
+                </div>
+            </div>
+        `;
+
+        document.getElementById('ver-detail-content').innerHTML = html;
+        document.getElementById('ver-detail-panel').classList.add('active');
+    }
+
+    function closeVerDetail() {
+        document.getElementById('ver-detail-panel').classList.remove('active');
+    }
+
         // ===== サイドバー クリック位置修正 =====
 // CSSのズレに関係なく、クリックした位置に最も近いアイコンのボタンを確実に実行する
 (function() {
@@ -18123,6 +18562,119 @@ window.applyTheme = function() {
             });
         }
             
-    </script>
+    </script>    <!-- ===== 更新の軌跡パネル HTML ===== -->
+    <div class="ver-history-overlay" id="ver-history-overlay" onclick="closeVerHistory()"></div>
+    <div class="ver-history-panel" id="ver-history-panel">
+
+        <!-- パネルヘッダー -->
+        <div class="ver-panel-header">
+            <div class="ver-panel-title">
+                <i class="bi bi-clock-history"></i>
+                <span>天命乃杜 更新の軌跡</span>
+            </div>
+            <button class="ver-panel-close" onclick="closeVerHistory()">
+                <i class="bi bi-x-lg"></i>
+            </button>
+        </div>
+
+        <!-- バージョンリスト -->
+        <div class="ver-panel-scroll">
+            <div class="ver-timeline">
+
+                <!-- Ver 2.1（現在） -->
+                <div class="ver-timeline-item is-current" onclick="openVerDetail('v21')">
+                    <div class="ver-item-card">
+                        <div class="ver-item-top">
+                            <span class="ver-item-ver">Ver. 2.1</span>
+                            <span class="ver-item-badge ver-badge-current"><i class="bi bi-patch-check-fill"></i>最新版</span>
+                        </div>
+                        <div class="ver-item-date">2026年4月25日リリース</div>
+                        <div class="ver-item-name">意匠整備・バージョン管理の確立</div>
+                        <div class="ver-item-desc">バージョン表記の新設、カウントダウン演出刷新（円形リング＋漢数字）。春の長期保守完了後の運営再開と機能拡充。</div>
+                        <div class="ver-item-tags">
+                            <span class="ver-item-tag">UI刷新</span>
+                            <span class="ver-item-tag">演出強化</span>
+                            <span class="ver-item-tag">バージョン管理</span>
+                            <span class="ver-item-tag">運営再開</span>
+                        </div>
+                        <div class="ver-item-more"><i class="bi bi-chevron-right"></i>詳細を見る</div>
+                    </div>
+                </div>
+
+                <!-- Ver 2.0 -->
+                <div class="ver-timeline-item" onclick="openVerDetail('v20')">
+                    <div class="ver-item-card">
+                        <div class="ver-item-top">
+                            <span class="ver-item-ver">Ver. 2.0</span>
+                            <span class="ver-item-badge ver-badge-infra"><i class="bi bi-lightning-charge-fill"></i>激動期</span>
+                        </div>
+                        <div class="ver-item-date">2026年1月22日〜25日</div>
+                        <div class="ver-item-name">インフラ大激動・全面刷新期</div>
+                        <div class="ver-item-desc">DB大規模移行（D1→Turso）・全データリセット・UI大規模刷新（Bento Grid化）・参拝の記録への再設計。天命乃杜最大の激動の時期。</div>
+                        <div class="ver-item-tags">
+                            <span class="ver-item-tag">DB移行</span>
+                            <span class="ver-item-tag">UI全面刷新</span>
+                            <span class="ver-item-tag">全面再構築</span>
+                            <span class="ver-item-tag">セキュリティ強化</span>
+                        </div>
+                        <div class="ver-item-more"><i class="bi bi-chevron-right"></i>詳細を見る</div>
+                    </div>
+                </div>
+
+                <!-- Ver 1.0 -->
+                <div class="ver-timeline-item" onclick="openVerDetail('v10')">
+                    <div class="ver-item-card">
+                        <div class="ver-item-top">
+                            <span class="ver-item-ver">Ver. 1.0</span>
+                            <span class="ver-item-badge ver-badge-stable"><i class="bi bi-star-fill"></i>正式公開</span>
+                        </div>
+                        <div class="ver-item-date">2026年1月2日リリース</div>
+                        <div class="ver-item-name">天命乃杜、正式公開</div>
+                        <div class="ver-item-desc">おみくじ、12星座×血液型占い、アカウントシステム、記事機能を搭載して正式リリース。TENMEI Labsも同月公開。</div>
+                        <div class="ver-item-tags">
+                            <span class="ver-item-tag">正式公開</span>
+                            <span class="ver-item-tag">全機能解禁</span>
+                            <span class="ver-item-tag">Labs開設</span>
+                        </div>
+                        <div class="ver-item-more"><i class="bi bi-chevron-right"></i>詳細を見る</div>
+                    </div>
+                </div>
+
+                <!-- β 0.9.5 -->
+                <div class="ver-timeline-item" onclick="openVerDetail('beta')">
+                    <div class="ver-item-card">
+                        <div class="ver-item-top">
+                            <span class="ver-item-ver" style="color: var(--text-sub); font-size: 1rem;">β 0.9.5</span>
+                            <span class="ver-item-badge ver-badge-beta">β版</span>
+                        </div>
+                        <div class="ver-item-date">2025年12月10日〜12月31日</div>
+                        <div class="ver-item-name">社務所だより第一報・プレオープン期</div>
+                        <div class="ver-item-desc">開設準備室より最初の社務所だよりを発信。おみくじ・12星座（β版）を先行公開したプレオープン期。正式リリース前の最終調整段階。</div>
+                        <div class="ver-item-tags">
+                            <span class="ver-item-tag">β版</span>
+                            <span class="ver-item-tag">プレオープン</span>
+                            <span class="ver-item-tag">社務所だより創刊</span>
+                        </div>
+                        <div class="ver-item-more"><i class="bi bi-chevron-right"></i>詳細を見る</div>
+                    </div>
+                </div>
+
+            </div><!-- /ver-timeline -->
+        </div><!-- /ver-panel-scroll -->
+
+        <!-- 詳細パネル（第二層：パネル内でさらに右からスライドイン） -->
+        <div class="ver-detail-panel" id="ver-detail-panel">
+            <div class="ver-detail-header">
+                <button class="ver-detail-back" onclick="closeVerDetail()">
+                    <i class="bi bi-chevron-left"></i>
+                </button>
+                <div class="ver-detail-title" id="ver-detail-title">詳細</div>
+            </div>
+            <div class="ver-detail-scroll" id="ver-detail-content">
+            </div>
+        </div>
+
+    </div><!-- /ver-history-panel -->
+
 </body>
 </html>
