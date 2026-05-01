@@ -5547,6 +5547,89 @@ body.sidebar-collapsed #sidebar:hover .nav-group-title {
         border-color: var(--accent-gold);
         box-shadow: 0 2px 8px rgba(197,160,89,0.2);
     }
+
+    /* ---- ソース記事リンクアイコン ---- */
+    .ver-source-wrapper {
+        position: relative;
+        flex-shrink: 0;
+        margin-left: 6px;
+        align-self: flex-start;
+        margin-top: 3px;
+    }
+    .ver-source-btn {
+        display: flex; align-items: center; justify-content: center;
+        width: 22px; height: 22px; border-radius: 5px;
+        border: 1px solid rgba(197,160,89,0.35);
+        background: transparent;
+        color: var(--accent-gold);
+        cursor: pointer;
+        transition: all 0.2s;
+        padding: 0;
+        opacity: 0.6;
+    }
+    .ver-source-btn:hover, .ver-source-btn.active {
+        background: rgba(197,160,89,0.14);
+        border-color: var(--accent-gold);
+        opacity: 1;
+        box-shadow: 0 0 0 2px rgba(197,160,89,0.15);
+    }
+    .ver-source-tooltip {
+        position: absolute;
+        right: 0; bottom: calc(100% + 8px);
+        width: 250px;
+        background: var(--card-bg);
+        border: 1px solid var(--card-border);
+        border-radius: 10px;
+        box-shadow: 0 8px 24px rgba(0,0,0,0.18);
+        padding: 10px;
+        z-index: 99999;
+        opacity: 0; visibility: hidden; pointer-events: none;
+        transform: translateY(6px);
+        transition: opacity 0.18s, visibility 0.18s, transform 0.18s;
+    }
+    .ver-source-tooltip.visible {
+        opacity: 1; visibility: visible; pointer-events: auto;
+        transform: translateY(0);
+    }
+    .ver-source-wrapper:hover .ver-source-tooltip {
+        opacity: 1; visibility: visible; pointer-events: auto;
+        transform: translateY(0);
+    }
+    .dark .ver-source-tooltip {
+        box-shadow: 0 8px 28px rgba(0,0,0,0.5);
+    }
+    .ver-source-tooltip-title {
+        font-size: 0.6rem; color: var(--text-sub);
+        font-weight: 700; letter-spacing: 0.1em;
+        margin-bottom: 6px;
+        padding-bottom: 5px;
+        border-bottom: 1px solid var(--card-border);
+        text-transform: uppercase;
+    }
+    .ver-source-link-item {
+        display: flex; flex-direction: column;
+        padding: 5px 6px; gap: 2px;
+        border-radius: 6px;
+        text-decoration: none;
+        transition: background 0.15s;
+        margin-bottom: 2px;
+        cursor: pointer;
+        border: 1px solid transparent;
+    }
+    .ver-source-link-item:last-child { margin-bottom: 0; }
+    .ver-source-link-item:hover {
+        background: rgba(197,160,89,0.09);
+        border-color: rgba(197,160,89,0.25);
+    }
+    .ver-source-link-date {
+        font-size: 0.58rem; color: var(--text-sub);
+        font-family: monospace;
+    }
+    .ver-source-link-title {
+        font-size: 0.7rem; color: var(--text-main);
+        line-height: 1.35;
+        font-family: 'Zen Old Mincho', serif;
+    }
     </style>
 
 </head>
@@ -18299,24 +18382,24 @@ window.applyTheme = function() {
                 {
                     icon: 'bi-palette-fill', title: '演出・意匠の刷新',
                     changes: [
-                        { type: 'change', text: 'おみくじ刻待ち演出を全面刷新。円形プログレスリング＋漢数字の添え書き＋金色の鼓動（パルスリング）を新たに導入。' },
-                        { type: 'change', text: 'カウントダウン待機時間を3秒から5秒に延長。より深く天命と向き合う時間を確保。' },
+                        { type: 'change', text: 'おみくじ刻待ち演出を全面刷新。円形プログレスリング＋漢数字の添え書き＋金色の鼓動（パルスリング）を新たに導入。', sourceIds: [70] },
+                        { type: 'change', text: 'カウントダウン待機時間を3秒から5秒に延長。より深く天命と向き合う時間を確保。', sourceIds: [70] },
                     ]
                 },
                 {
                     icon: 'bi-info-circle-fill', title: 'バージョン管理の新設',
                     changes: [
-                        { type: 'new', text: 'ホーム画面にバージョン情報専用カードを新設。「バージョン」「リリース日」「最新版か否か」を一覧表示。' },
-                        { type: 'new', text: '天命乃杜 更新の軌跡パネルを追加（今ご覧の機能）。' },
+                        { type: 'new', text: 'ホーム画面にバージョン情報専用カードを新設。「バージョン」「リリース日」「最新版か否か」を一覧表示。', sourceIds: [70] },
+                        { type: 'new', text: '天命乃杜 更新の軌跡パネルを追加（今ご覧の機能）。', sourceIds: [70] },
                     ]
                 },
                 {
                     icon: 'bi-arrow-repeat', title: '機能拡充・不具合修正',
                     changes: [
-                        { type: 'change', text: '2026年2〜4月の春の長期社務作業（機材移行・システム裏側保守）完了後、運営を本格再開。' },
-                        { type: 'new', text: '12星座占いの神託文章を各ランク15パターン以上に大幅増量し重複を解消。吉日予報カレンダーを大型化・本物のカレンダー形式へ刷新。' },
-                        { type: 'fix', text: '全国・土地の運気ランキングの表示崩れおよび神託文章の重複問題を修正。' },
-                        { type: 'new', text: '記事分析ダッシュボード（外部サイト）を公開。最新AI（Gemini 3.1 Pro / Claude Sonnet 4.6）による分析データを掲載。' },
+                        { type: 'change', text: '2026年2〜4月の春の長期社務作業（機材移行・システム裏側保守）完了後、運営を本格再開。', sourceIds: [69] },
+                        { type: 'new', text: '12星座占いの神託文章を各ランク15パターン以上に大幅増量し重複を解消。吉日予報カレンダーを大型化・本物のカレンダー形式へ刷新。', sourceIds: [67] },
+                        { type: 'fix', text: '全国・土地の運気ランキングの表示崩れおよび神託文章の重複問題を修正。', sourceIds: [66] },
+                        { type: 'new', text: '記事分析ダッシュボード（外部サイト）を公開。最新AI（Gemini 3.1 Pro / Claude Sonnet 4.6）による分析データを掲載。', sourceIds: [68] },
                     ]
                 }
             ]
@@ -18329,27 +18412,27 @@ window.applyTheme = function() {
                 {
                     icon: 'bi-database-fill-gear', title: 'データベース大規模移行',
                     changes: [
-                        { type: 'infra', text: 'Cloudflare D1 → Supabase (PostgreSQL) → TiDB (MySQL互換) → Turso (SQLite互換) という幾多の変遷を経て最終着地。' },
-                        { type: 'infra', text: 'TiDB移行試験中に致命的障害が発生（サイト全機能停止・長時間ダウン）。断腸の思いで全データを完全リセット（浄化）。' },
-                        { type: 'infra', text: 'エッジDB「Turso」を最終採用。月間読取5億回・書込1000万回という余裕ある処理能力を確保。HTTP API（Pipeline）接続方式で安定性を確立。' },
-                        { type: 'change', text: 'ポーリング間隔を5秒→1分に延長してKV消費量を約1/10に削減。おみくじレート制限を60回/分に整備。' },
+                        { type: 'infra', text: 'Cloudflare D1 → Supabase (PostgreSQL) → TiDB (MySQL互換) → Turso (SQLite互換) という幾多の変遷を経て最終着地。', sourceIds: [33, 34, 35, 38] },
+                        { type: 'infra', text: 'TiDB移行試験中に致命的障害が発生（サイト全機能停止・長時間ダウン）。断腸の思いで全データを完全リセット（浄化）。', sourceIds: [37] },
+                        { type: 'infra', text: 'エッジDB「Turso」を最終採用。月間読取5億回・書込1000万回という余裕ある処理能力を確保。HTTP API（Pipeline）接続方式で安定性を確立。', sourceIds: [38] },
+                        { type: 'change', text: 'ポーリング間隔を5秒→1分に延長してKV消費量を約1/10に削減。おみくじレート制限を60回/分に整備。', sourceIds: [29, 36] },
                     ]
                 },
                 {
                     icon: 'bi-layout-wtf', title: 'UI大規模刷新',
                     changes: [
-                        { type: 'change', text: 'ホーム画面をBento Grid（12カラムグリッド）デザインへ全面刷新。モダンなカードレイアウトへ移行。' },
-                        { type: 'change', text: '「参拝者台帳（プロフィール）」を「参拝の記録」へ再設計。他者との交流より自己の運勢記録に特化するよう再定義。' },
-                        { type: 'new', text: 'Labs（TENMEI Labs）UIをオーロラエフェクト背景＋モダンカード型へ全面刷新。シンボルフラスコのアニメーションも液体の揺らぎ表現を強化。' },
-                        { type: 'new', text: '全国47都道府県の運気ランキング機能を正式追加。' },
+                        { type: 'change', text: 'ホーム画面をBento Grid（12カラムグリッド）デザインへ全面刷新。モダンなカードレイアウトへ移行。', sourceIds: [42] },
+                        { type: 'change', text: '「参拝者台帳（プロフィール）」を「参拝の記録」へ再設計。他者との交流より自己の運勢記録に特化するよう再定義。', sourceIds: [41] },
+                        { type: 'new', text: 'Labs（TENMEI Labs）UIをオーロラエフェクト背景＋モダンカード型へ全面刷新。シンボルフラスコのアニメーションも液体の揺らぎ表現を強化。', sourceIds: [43] },
+                        { type: 'new', text: '全国47都道府県の運気ランキング機能を正式追加。', sourceIds: [42] },
                     ]
                 },
                 {
                     icon: 'bi-shield-lock-fill', title: 'セキュリティ・制度整備',
                     changes: [
-                        { type: 'new', text: 'Labsへの不正操作（開発者ツールによるロック解除）を瞬時に無効化する「絶対防壁（アクセス制御）」を実装。' },
-                        { type: 'remove', text: '「連続参拝（ログインボーナス）」機能を廃止。日付判定ロジックの不整合が解消不能と判断。' },
-                        { type: 'remove', text: '「功徳の証（実績バッジ）」機能を完全撤去。表示不整合が根幹の問題で安定提供が困難と判断。' },
+                        { type: 'new', text: 'Labsへの不正操作（開発者ツールによるロック解除）を瞬時に無効化する「絶対防壁（アクセス制御）」を実装。', sourceIds: [65] },
+                        { type: 'remove', text: '「連続参拝（ログインボーナス）」機能を廃止。日付判定ロジックの不整合が解消不能と判断。', sourceIds: [39] },
+                        { type: 'remove', text: '「功徳の証（実績バッジ）」機能を完全撤去。表示不整合が根幹の問題で安定提供が困難と判断。', sourceIds: [40] },
                     ]
                 }
             ]
@@ -18362,19 +18445,19 @@ window.applyTheme = function() {
                 {
                     icon: 'bi-stars', title: '正式公開時の搭載機能',
                     changes: [
-                        { type: 'new', text: '本格デジタルおみくじ。大吉〜大凶12段階の忖度なし確率制抽選。和歌・助言・7項目詳細・ラッキーアイテム・QRコード付き結果カードを生成。' },
-                        { type: 'new', text: '12星座×血液型占い（48通り）。毎日0:00更新の日替わり運勢ランキング。30日吉日予報カレンダー搭載。' },
-                        { type: 'new', text: 'アカウントシステム（メール認証）。おみくじ履歴「おみくじの轍」のクラウド保存・検索・ページネーション機能。' },
-                        { type: 'new', text: '社務所だより（お知らせ記事）・神籤草子（コラム記事）の掲載を開始。' },
-                        { type: 'new', text: '2026年1月3日 TENMEI Labs公開。宵闇の刻・神速の祈り・迎春雅モードなど実験的機能を会員限定で先行提供。' },
+                        { type: 'new', text: '本格デジタルおみくじ。大吉〜大凶12段階の忖度なし確率制抽選。和歌・助言・7項目詳細・ラッキーアイテム・QRコード付き結果カードを生成。', sourceIds: [2] },
+                        { type: 'new', text: '12星座×血液型占い（48通り）。毎日0:00更新の日替わり運勢ランキング。30日吉日予報カレンダー搭載。', sourceIds: [2] },
+                        { type: 'new', text: 'アカウントシステム（メール認証）。おみくじ履歴「おみくじの轍」のクラウド保存・検索・ページネーション機能。', sourceIds: [2] },
+                        { type: 'new', text: '社務所だより（お知らせ記事）・神籤草子（コラム記事）の掲載を開始。', sourceIds: [2] },
+                        { type: 'new', text: '2026年1月3日 TENMEI Labs公開。宵闇の刻・神速の祈り・迎春雅モードなど実験的機能を会員限定で先行提供。', sourceIds: [6] },
                     ]
                 },
                 {
                     icon: 'bi-wrench-adjustable-circle-fill', title: '初期バグ修正（1月上旬）',
                     changes: [
-                        { type: 'fix', text: '認証システムの重大バグを修正（パスワード不一致でも認証通過・未登録メールにコード送信・不正アカウント削除）。1月4日対応。' },
-                        { type: 'fix', text: 'TENMEI Labs「宵闇の刻」のOS設定連動不具合・「言霊の増幅」適用範囲を修正。1月5日対応。' },
-                        { type: 'change', text: '全国・土地の運気予報（マップ機能）の開発を中止。外部ライブラリの深刻な不安定化のため。' },
+                        { type: 'fix', text: '認証システムの重大バグを修正（パスワード不一致でも認証通過・未登録メールにコード送信・不正アカウント削除）。1月4日対応。', sourceIds: [7] },
+                        { type: 'fix', text: 'TENMEI Labs「宵闇の刻」のOS設定連動不具合・「言霊の増幅」適用範囲を修正。1月5日対応。', sourceIds: [9] },
+                        { type: 'change', text: '全国・土地の運気予報（マップ機能）の開発を中止。外部ライブラリの深刻な不安定化のため。', sourceIds: [8] },
                     ]
                 }
             ]
@@ -18387,9 +18470,9 @@ window.applyTheme = function() {
                 {
                     icon: 'bi-journal-text', title: 'プレオープン期の記録',
                     changes: [
-                        { type: 'new', text: '2025年12月10日：開設準備室より「社務所だより」第一報を発信。天命乃杜の声として、社務所だよりが始まった原点の瞬間。' },
-                        { type: 'infra', text: '2025年12月20日：データベースメンテナンス実施。応答速度の向上とシステムの最終調整を完了。' },
-                        { type: 'new', text: '2025年12月25日：一部機能を先行公開したプレオープンを開始。おみくじ・12星座占い（β版）が利用可能に。' },
+                        { type: 'new', text: '2025年12月10日：開設準備室より「社務所だより」第一報を発信。天命乃杜の声として、社務所だよりが始まった原点の瞬間。', sourceIds: [5] },
+                        { type: 'infra', text: '2025年12月20日：データベースメンテナンス実施。応答速度の向上とシステムの最終調整を完了。', sourceIds: [4] },
+                        { type: 'new', text: '2025年12月25日：一部機能を先行公開したプレオープンを開始。おみくじ・12星座占い（β版）が利用可能に。', sourceIds: [3] },
                     ]
                 },
                 {
@@ -18434,12 +18517,44 @@ window.applyTheme = function() {
             html += `
                 <div class="ver-detail-section">
                     <h4><i class="bi ${section.icon}"></i>${section.title}</h4>
-                    ${section.changes.map(c => `
+                    ${section.changes.map(c => {
+                        // ソース記事リンクアイコンの生成
+                        let linkHtml = '';
+                        if (c.sourceIds && c.sourceIds.length > 0) {
+                            const srcArts = c.sourceIds.map(id => newsData.find(d => d.id === id)).filter(Boolean);
+                            if (srcArts.length > 0) {
+                                const tooltipId = 'vst_' + Math.random().toString(36).slice(2,8);
+                                const articlesHtml = srcArts.map(a => `
+                                    <a class="ver-source-link-item" href="#" onclick="event.stopPropagation(); verGoToArticle(${a.id}); return false;">
+                                        <span class="ver-source-link-date">${a.date}</span>
+                                        <span class="ver-source-link-title">${a.title}</span>
+                                    </a>
+                                `).join('');
+                                linkHtml = `
+                                    <div class="ver-source-wrapper">
+                                        <button class="ver-source-btn" id="${tooltipId}_btn"
+                                            onclick="event.stopPropagation(); verToggleTooltip('${tooltipId}')"
+                                            aria-label="参照記事を見る" title="参照記事を見る">
+                                            <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" fill="currentColor" viewBox="0 0 16 16">
+                                                <path d="M4.715 6.542 3.343 7.914a3 3 0 1 0 4.243 4.243l1.828-1.829A3 3 0 0 0 8.586 5.5L8 6.086a1 1 0 0 0-.154.199 2 2 0 0 1 .861 3.337L6.88 11.45a2 2 0 1 1-2.83-2.83l.793-.792a4 4 0 0 1-.128-1.287z"/>
+                                                <path d="M6.586 4.672A3 3 0 0 0 7.414 9.5l.775-.776a2 2 0 0 1-.896-3.346L9.12 3.55a2 2 0 1 1 2.83 2.83l-.793.792c.112.42.155.855.128 1.287l1.372-1.372a3 3 0 1 0-4.243-4.243z"/>
+                                            </svg>
+                                        </button>
+                                        <div class="ver-source-tooltip" id="${tooltipId}">
+                                            <div class="ver-source-tooltip-title">参照：社務所だより</div>
+                                            ${articlesHtml}
+                                        </div>
+                                    </div>
+                                `;
+                            }
+                        }
+                        return `
                         <div class="ver-detail-change">
                             <div class="ver-change-dot ${dotMap[c.type] || 'dot-new'}"></div>
-                            <div>${c.text}</div>
-                        </div>
-                    `).join('')}
+                            <div style="flex:1">${c.text}</div>
+                            ${linkHtml}
+                        </div>`;
+                    }).join('')}
                 </div>
             `;
         });
@@ -18465,9 +18580,53 @@ window.applyTheme = function() {
         document.getElementById('ver-detail-panel').classList.remove('active');
     }
 
+    // ソース記事へのナビゲーション（パネルを閉じてから記事を開く）
+    function verGoToArticle(newsId) {
+        // 全ツールチップを閉じる
+        document.querySelectorAll('.ver-source-tooltip.visible').forEach(t => {
+            t.classList.remove('visible');
+        });
+        // パネルを閉じる
+        closeVerHistory();
+        // 少し待ってから記事を開く（トランジション後）
+        setTimeout(function() {
+            if (typeof openArticle === 'function') {
+                openArticle('news', newsId);
+            }
+        }, 120);
+    }
+
+    // ツールチップの表示/非表示トグル（モバイル対応）
+    function verToggleTooltip(tooltipId) {
+        const tooltip = document.getElementById(tooltipId);
+        if (!tooltip) return;
+        const isVisible = tooltip.classList.contains('visible');
+        // 他のツールチップを全部閉じる
+        document.querySelectorAll('.ver-source-tooltip.visible').forEach(t => {
+            t.classList.remove('visible');
+            const btn = document.getElementById(t.id + '_btn');
+            if (btn) btn.classList.remove('active');
+        });
+        if (!isVisible) {
+            tooltip.classList.add('visible');
+            const btn = document.getElementById(tooltipId + '_btn');
+            if (btn) btn.classList.add('active');
+        }
+    }
+
         // ===== サイドバー クリック位置修正 =====
 // CSSのズレに関係なく、クリックした位置に最も近いアイコンのボタンを確実に実行する
 (function() {
+    // バージョン履歴パネル外クリックでツールチップを閉じる
+    document.addEventListener('click', function(e) {
+        if (!e.target.closest('.ver-source-wrapper')) {
+            document.querySelectorAll('.ver-source-tooltip.visible').forEach(function(t) {
+                t.classList.remove('visible');
+                var btn = document.getElementById(t.id + '_btn');
+                if (btn) btn.classList.remove('active');
+            });
+        }
+    });
     function initSidebarClickFix() {
         const sidebar = document.getElementById('sidebar');
         if (!sidebar) return;
