@@ -8134,7 +8134,11 @@ function escapeHtml(str) {
             <h3>4. 技術的な実装について</h3>
             <p>今回の実装はGoogle OAuth 2.0の認可フローに基づいており、当サイトのサーバー（Cloudflare Workers）がGoogleとの認証を仲介します。パスワードや認証コードを扱わないため、メール認証と比べて認証フローが大幅にシンプルになっています。内部的にはユーザーのGoogleアカウントIDをデータベースに記録する形で管理しており、Googleのメールアドレス以外の情報は取得・保存しておりません。</p>
 
-            <h3>5. プライバシーポリシーの改訂（第8版）</h3>
+            <h3>5. Google連携の解除機能について</h3>
+            <p>メールアドレスとGoogleアカウントの両方を連携しているアカウント（auth_method: both）は、アカウント設定の「Google連携」カードより<strong>連携の解除</strong>が可能になりました。</p>
+            <p>解除後は、メールアドレスとパスワードによるログインのみが有効となります（auth_methodがemailに戻ります）。再度Googleと連携したい場合は、同じ手順でいつでも連携し直すことができます。なお、Googleアカウントのみで登録したアカウント（auth_method: google）は、メールログインを持たないため連携解除はできません。</p>
+
+            <h3>6. プライバシーポリシーの改訂（第8版）</h3>
             <p>Googleアカウントでのログイン機能の追加に伴い、プライバシーポリシーを本日付けで<strong>第8版</strong>へ改訂いたしました。主な変更点は以下の通りです。</p>
             <ul class="list-disc ml-5 mb-4">
                 <li>第2条（収集する個人情報）に「GoogleユーザーID（Googleアカウントでのログインを利用する場合のみ）」を追加</li>
@@ -13315,7 +13319,11 @@ window.onload = async function() {
     } else if (googleConnect === 'success') {
         const cleanUrl = window.location.pathname;
         window.history.replaceState({}, '', cleanUrl);
+        await checkSession();
         showToast('Googleアカウントを連携しました', 'success');
+        if (document.getElementById('profile-dashboard-content')) {
+            renderSettingsDashboard();
+        }
     } else if (googleError) {
         const cleanUrl = window.location.pathname;
         window.history.replaceState({}, '', cleanUrl);
@@ -13325,6 +13333,10 @@ window.onload = async function() {
             showToast('このGoogleアカウントは既に別のアカウントに連携されています', 'error');
         } else if (googleError === 'not_logged_in') {
             showToast('Googleアカウントの連携にはログインが必要です', 'error');
+        } else if (googleError === 'session_expired') {
+            showToast('セッションが切れています。再度ログインしてからお試しください', 'error');
+        } else if (googleError === 'server_error') {
+            showToast('サーバーエラーが発生しました。しばらく時間をおいてから再度お試しください', 'error');
         } else {
             showToast('Googleログインでエラーが発生しました', 'error');
         }
@@ -15222,6 +15234,23 @@ function connectGoogleAccount() {
     window.location.href = `${API_BASE}/api/auth/google/redirect?mode=connect&token=${encodeURIComponent(token)}`;
 }
 
+// Googleアカウント連携解除
+async function disconnectGoogleAccount() {
+    if (!confirm('Googleアカウントの連携を解除しますか？\n解除後はGoogleでのログインができなくなります。\nメールアドレスとパスワードでのログインは引き続きご利用いただけます。')) return;
+    try {
+        const res = await authFetch(`${API_BASE}/api/auth/google/disconnect`, { method: 'POST' });
+        const data = await res.json();
+        if (data.success) {
+            showToast('Googleアカウントの連携を解除しました', 'success');
+            renderSettingsDashboard();
+        } else {
+            showToast(data.error || '連携解除に失敗しました', 'error');
+        }
+    } catch(e) {
+        showToast('通信エラーが発生しました', 'error');
+    }
+}
+
 
 // 1. 最初の選択 (ログイン or 登録)
 function startAuthFlow(mode) {
@@ -16678,7 +16707,10 @@ async function renderSettingsDashboard() {
                     `}
                 </div>
                 ${authMethod === 'both' ? `
-                <p class="text-xs text-gray-500 dark:text-gray-400 leading-relaxed">このアカウントはGoogleアカウントと連携されています。次回からメールログインとGoogleログインのどちらでもご参拝いただけます。</p>
+                <p class="text-xs text-gray-500 dark:text-gray-400 leading-relaxed mb-4">このアカウントはGoogleアカウントと連携されています。次回からメールログインとGoogleログインのどちらでもご参拝いただけます。</p>
+                <button onclick="disconnectGoogleAccount()" class="w-full py-2.5 rounded-xl border border-red-200 dark:border-red-800 bg-red-50 dark:bg-red-900/20 font-bold text-sm text-red-600 dark:text-red-400 hover:bg-red-100 dark:hover:bg-red-900/40 transition-all duration-200 flex items-center justify-center gap-2 shadow-sm">
+                    <i class="bi bi-x-circle"></i> Google連携を解除する
+                </button>
                 ` : `
                 <p class="text-xs text-gray-500 dark:text-gray-400 leading-relaxed mb-4">連携すると、次回からGoogleアカウントでもログインできるようになります。認証コードの入力が不要になります。</p>
                 <button onclick="connectGoogleAccount()" class="w-full py-2.5 rounded-xl border border-gray-200 dark:border-zinc-600 bg-gray-50 dark:bg-zinc-800 font-bold text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-zinc-700 transition-all duration-200 flex items-center justify-center gap-2 shadow-sm">
@@ -18771,6 +18803,7 @@ window.applyTheme = function() {
                     changes: [
                         { type: 'new', text: '「Googleでログイン」ボタンを参拝証の発行画面に追加。Google OAuth 2.0を用いた認可フローを実装。認証コード不要。', sourceIds: [74] },
                         { type: 'new', text: '既存のメールアカウントにGoogleアカウントを連携するコネクト機能を実装。設定画面の「Google連携」カードから操作可能。', sourceIds: [74] },
+                        { type: 'new', text: 'Google連携の解除機能を追加。auth_methodがbothのアカウントは設定画面から連携を解除できる。解除後はauth_methodがemailに戻る。', sourceIds: [74] },
                         { type: 'new', text: 'auth_method（email / google / both）の管理を追加。Googleのみで登録したユーザーはメール認証への切り替えを不可に設定。', sourceIds: [74] },
                         { type: 'infra', text: 'usersテーブルにgoogle_id・auth_methodカラムを追加。Cloudflare WorkersにGoogle OAuth用の環境変数（CLIENT_ID・CLIENT_SECRET・REDIRECT_URI）を設定。', sourceIds: [74] },
                     ]
