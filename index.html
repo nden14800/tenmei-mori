@@ -13298,6 +13298,18 @@ window.onload = async function() {
     initZodiacSystem();
     window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', applyTheme);
 
+    // ローカルストレージからユーザー状態を復元（セッション確認前の初期表示用）
+    const storedUser = localStorage.getItem('omikuji_user');
+    if (storedUser) {
+        try {
+            currentState.user = JSON.parse(storedUser);
+        } catch(e) {
+            console.error("Auth Data Parse Error", e);
+        }
+    }
+    updateAuthUI();
+    loadLabSettings(); // ここで applyTheme が呼ばれます
+
     await checkSession();
 
     // ▼▼▼ checkSession完了後にトースト表示 ▼▼▼
@@ -13789,39 +13801,11 @@ TenmeiLab.init();
         applyTheme();
     }
         
-        // --- window.onload への追加修正 ---
-        window.onload = function() {
-            initHomeAnimation();
-            initZodiacSystem();
-            
-            const storedUser = localStorage.getItem('omikuji_user');
-            if(storedUser) {
-                try {
-                    currentState.user = JSON.parse(storedUser);
-                } catch(e) {
-                    console.error("Auth Data Parse Error", e);
-                }
-            }
-            updateAuthUI();
-            
-            // ▼▼▼ ここに追加 ▼▼▼
-            TenmeiLab.init(); // 詳細設定（スライダー値など）の初期化
-            // ▲▲▲ 追加ここまで ▲▲▲
-            
-            loadLabSettings(); // ここで applyTheme が呼ばれます
-
-            // OSのダークモード切り替えをリアルタイム検知して反映するリスナーを追加
-            window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', () => {
-                applyTheme();
-            });
-
-            // ==========================================
-    //  クイズ機能用ロジック (3問対応版)
-    // ==========================================
-    // btn: クリックされたボタン要素
-    // isCorrect: 正解かどうか (true/false)
-    // correctIndex: 選択肢の中で正解のボタンは何番目か (0, 1, 2... 上から順)
-    window.handleQuiz = function(btn, isCorrect, correctIndex) {
+        // ==========================================
+        //  クイズ機能用ロジック (3問対応版)
+        // ==========================================
+        // ※ window.onload の外に独立した関数として定義
+        window.handleQuiz = function(btn, isCorrect, correctIndex) {
         // ボタンの親要素（選択肢コンテナ）を取得
         const optionsArea = btn.parentElement;
         // そのコンテナ内の全ボタンを取得
@@ -13868,23 +13852,6 @@ TenmeiLab.init();
         // 解説を表示
         resultArea.classList.remove('hidden');
     };
-
-            startLiveCounter();
-            fetchHistoryStats();
-            setInterval(fetchHistoryStats, 60000); 
-            
-            loadFavorites();
-
-            const url = new URL(window.location);
-            if (url.searchParams.has('d')) {
-                url.searchParams.delete('d');
-                window.history.replaceState({}, '', url);
-            }
-             // ▼ 今回の追加箇所 ▼
-    renderHomeLists();
-    renderFullNewsView();
-    renderFullColumnView();
-        };
 
         // ■ 入力式クイズの判定関数
 // button: クリックされたボタン要素
