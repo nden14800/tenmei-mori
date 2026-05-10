@@ -7441,7 +7441,7 @@ body.sidebar-collapsed #sidebar:hover .nav-group-title {
                 <div class="mt-6 flex flex-wrap justify-center gap-4 text-xs font-mono text-gray-500 bg-white dark:bg-zinc-800 px-6 py-3 rounded-full border border-gray-200 dark:border-gray-700 shadow-sm">
                     <span>制定: 2026/01/02</span>
                     <span class="text-gray-300 dark:text-gray-600">|</span>
-                    <span>改定: 2026/05/09 (第7版)</span>
+                    <span>改定: 2026/05/10 (第8版)</span>
                     <span class="text-gray-300 dark:text-gray-600">|</span>
                     <span>運営: nden148</span>
                 </div>
@@ -7491,7 +7491,8 @@ body.sidebar-collapsed #sidebar:hover .nav-group-title {
                                 <ul class="list-disc pl-5 mt-2 text-gray-600 dark:text-gray-400">
                                     <li>メールアドレス（本人確認および認証コード送信のため必須）</li>
                                     <li>ユーザー名（サービス内での表示用ニックネーム）</li>
-                                    <li>パスワード（アカウント保護のため）</li>
+                                    <li>パスワード（アカウント保護のため。メールアドレスでの登録時のみ）</li>
+                                    <li>GoogleユーザーID（Googleアカウントでのログインを利用する場合のみ。Googleが発行する固有の識別子）</li>
                                 </ul>
                             </div>
                             <div class="bg-gray-50 dark:bg-zinc-800/50 p-4 rounded-lg">
@@ -7575,6 +7576,12 @@ body.sidebar-collapsed #sidebar:hover .nav-group-title {
                                     <p class="text-gray-500">利用目的：当ウェブサイトを利用するユーザーの操作・行動（クリック位置、スクロール深度等）を可視化・分析し、UI/UXの改善およびサービス向上に役立てるため</p>
                                     <p class="text-gray-500">送信される情報：マウス操作・タップ操作の軌跡、クリック位置、スクロール深度、ページ閲覧情報（いずれも個人を特定しない形式で処理されます）</p>
                                     <p class="mt-1">特記事項：Microsoft Clarityはセッションの録画およびヒートマップ生成に使用されます。収集した情報が広告目的に使用されることはありません。Microsoftのデータ利用方針については <a href="https://privacy.microsoft.com/ja-jp/privacystatement" target="_blank" rel="noopener noreferrer" class="underline text-blue-500">Microsoft プライバシーステートメント</a> をご参照ください。</p>
+                                </div>
+                                <div class="bg-white dark:bg-black/20 p-3 rounded border border-gray-200 dark:border-gray-700 text-xs">
+                                    <p class="font-bold text-sm">6. Google Identity Services / OAuth 2.0 (Google LLC)</p>
+                                    <p class="text-gray-500">利用目的：Googleアカウントを使用したユーザー認証（ログイン・新規登録）の実現</p>
+                                    <p class="text-gray-500">送信される情報：Googleアカウントのメールアドレス、GoogleユーザーID（固有の識別子）</p>
+                                    <p class="mt-1">特記事項：当サイトはGoogle OAuth 2.0認可フローを利用してユーザーを認証します。取得する情報はメールアドレスとGoogleが発行する固有のユーザーIDのみです。パスワードはGoogle側で管理されており、当サイトへは一切送信されません。Googleのデータ利用方針については <a href="https://policies.google.com/privacy" target="_blank" rel="noopener noreferrer" class="underline text-blue-500">Google プライバシーポリシー</a> をご参照ください。</p>
                                 </div>
                             </div>
                         </div>
@@ -8126,6 +8133,14 @@ function escapeHtml(str) {
 
             <h3>4. 技術的な実装について</h3>
             <p>今回の実装はGoogle OAuth 2.0の認可フローに基づいており、当サイトのサーバー（Cloudflare Workers）がGoogleとの認証を仲介します。パスワードや認証コードを扱わないため、メール認証と比べて認証フローが大幅にシンプルになっています。内部的にはユーザーのGoogleアカウントIDをデータベースに記録する形で管理しており、Googleのメールアドレス以外の情報は取得・保存しておりません。</p>
+
+            <h3>5. プライバシーポリシーの改訂（第8版）</h3>
+            <p>Googleアカウントでのログイン機能の追加に伴い、プライバシーポリシーを本日付けで<strong>第8版</strong>へ改訂いたしました。主な変更点は以下の通りです。</p>
+            <ul class="list-disc ml-5 mb-4">
+                <li>第2条（収集する個人情報）に「GoogleユーザーID（Googleアカウントでのログインを利用する場合のみ）」を追加</li>
+                <li>第5条（外部サービスとの連携）に「6. Google Identity Services / OAuth 2.0 (Google LLC)」の項目を追加。利用目的・送信情報・Googleのプライバシーポリシーへのリンクを明記</li>
+            </ul>
+            <p>改訂後のプライバシーポリシーは、サイドメニューの「プライバシーポリシー」よりご確認いただけます。</p>
 
             <p>より多くの方に、天命乃杜へのお参りをお気軽に楽しんでいただければ幸いです。</p>
         </div>
@@ -16641,16 +16656,32 @@ async function renderSettingsDashboard() {
 
             <!-- 5. Google連携 -->
             ${authMethod !== 'google' ? `
-            <div class="stats-card-interactive p-6 rounded-2xl bg-white dark:bg-zinc-900 border-l-4 border-l-red-400">
-                <div class="flex items-center gap-2 mb-4 text-red-500">
-                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" width="20" height="20"><path fill="#EA4335" d="M24 9.5c3.14 0 5.95 1.08 8.17 2.86l6.09-6.09C34.46 3.09 29.5 1 24 1 14.82 1 7.02 6.48 3.44 14.23l7.1 5.52C12.35 13.72 17.71 9.5 24 9.5z"/><path fill="#4285F4" d="M46.5 24.5c0-1.64-.15-3.22-.42-4.75H24v9h12.71c-.55 2.97-2.22 5.49-4.73 7.19l7.27 5.65C43.32 37.61 46.5 31.49 46.5 24.5z"/><path fill="#FBBC05" d="M10.54 28.25A14.58 14.58 0 0 1 9.5 24c0-1.48.26-2.91.73-4.25l-7.1-5.52A23.86 23.86 0 0 0 0 24c0 3.87.93 7.52 2.58 10.74l7.96-6.49z"/><path fill="#34A853" d="M24 47c5.5 0 10.12-1.82 13.5-4.95l-7.27-5.65c-1.83 1.23-4.17 1.95-6.23 1.95-6.29 0-11.65-4.22-13.46-9.9l-7.96 6.49C7.02 41.52 14.82 47 24 47z"/></svg>
-                    <h4 class="font-bold text-sm">Google連携</h4>
+            <div class="stats-card-interactive profile-card-status p-6 rounded-2xl bg-white dark:bg-zinc-900 border-l-4 ${authMethod === 'both' ? 'border-l-green-500' : 'border-l-gray-300 dark:border-l-zinc-600'}">
+                <div class="flex items-center justify-between mb-4">
+                    <div class="flex items-center gap-3">
+                        <div class="w-9 h-9 rounded-full flex items-center justify-center bg-gray-100 dark:bg-zinc-800 flex-shrink-0">
+                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" width="20" height="20"><path fill="#EA4335" d="M24 9.5c3.14 0 5.95 1.08 8.17 2.86l6.09-6.09C34.46 3.09 29.5 1 24 1 14.82 1 7.02 6.48 3.44 14.23l7.1 5.52C12.35 13.72 17.71 9.5 24 9.5z"/><path fill="#4285F4" d="M46.5 24.5c0-1.64-.15-3.22-.42-4.75H24v9h12.71c-.55 2.97-2.22 5.49-4.73 7.19l7.27 5.65C43.32 37.61 46.5 31.49 46.5 24.5z"/><path fill="#FBBC05" d="M10.54 28.25A14.58 14.58 0 0 1 9.5 24c0-1.48.26-2.91.73-4.25l-7.1-5.52A23.86 23.86 0 0 0 0 24c0 3.87.93 7.52 2.58 10.74l7.96-6.49z"/><path fill="#34A853" d="M24 47c5.5 0 10.12-1.82 13.5-4.95l-7.27-5.65c-1.83 1.23-4.17 1.95-6.23 1.95-6.29 0-11.65-4.22-13.46-9.9l-7.96 6.49C7.02 41.52 14.82 47 24 47z"/></svg>
+                        </div>
+                        <div>
+                            <h4 class="font-bold text-sm text-gray-700 dark:text-gray-300">Google連携</h4>
+                            <span class="block text-[10px] text-gray-400 font-normal">Googleアカウントとの紐付け</span>
+                        </div>
+                    </div>
+                    ${authMethod === 'both' ? `
+                    <span class="text-[10px] font-bold px-2 py-1 rounded-full bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300 flex items-center gap-1">
+                        <i class="bi bi-check-circle-fill"></i> 連携済み
+                    </span>
+                    ` : `
+                    <span class="text-[10px] font-bold px-2 py-1 rounded-full bg-gray-100 dark:bg-zinc-700 text-gray-500 dark:text-gray-400">
+                        未連携
+                    </span>
+                    `}
                 </div>
                 ${authMethod === 'both' ? `
-                <p class="text-xs text-green-600 dark:text-green-400 mb-3 flex items-center gap-1"><i class="bi bi-check-circle-fill"></i> Googleアカウントと連携済みです</p>
+                <p class="text-xs text-gray-500 dark:text-gray-400 leading-relaxed">このアカウントはGoogleアカウントと連携されています。次回からメールログインとGoogleログインのどちらでもご参拝いただけます。</p>
                 ` : `
-                <p class="text-xs text-gray-500 mb-3">Googleアカウントを連携すると、次回からGoogleでもログインできます。</p>
-                <button onclick="connectGoogleAccount()" class="w-full py-2 rounded-xl border border-gray-300 dark:border-gray-600 bg-white dark:bg-black font-bold text-sm text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-zinc-800 transition flex items-center justify-center gap-2">
+                <p class="text-xs text-gray-500 dark:text-gray-400 leading-relaxed mb-4">連携すると、次回からGoogleアカウントでもログインできるようになります。認証コードの入力が不要になります。</p>
+                <button onclick="connectGoogleAccount()" class="w-full py-2.5 rounded-xl border border-gray-200 dark:border-zinc-600 bg-gray-50 dark:bg-zinc-800 font-bold text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-zinc-700 transition-all duration-200 flex items-center justify-center gap-2 shadow-sm">
                     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" width="16" height="16"><path fill="#EA4335" d="M24 9.5c3.14 0 5.95 1.08 8.17 2.86l6.09-6.09C34.46 3.09 29.5 1 24 1 14.82 1 7.02 6.48 3.44 14.23l7.1 5.52C12.35 13.72 17.71 9.5 24 9.5z"/><path fill="#4285F4" d="M46.5 24.5c0-1.64-.15-3.22-.42-4.75H24v9h12.71c-.55 2.97-2.22 5.49-4.73 7.19l7.27 5.65C43.32 37.61 46.5 31.49 46.5 24.5z"/><path fill="#FBBC05" d="M10.54 28.25A14.58 14.58 0 0 1 9.5 24c0-1.48.26-2.91.73-4.25l-7.1-5.52A23.86 23.86 0 0 0 0 24c0 3.87.93 7.52 2.58 10.74l7.96-6.49z"/><path fill="#34A853" d="M24 47c5.5 0 10.12-1.82 13.5-4.95l-7.27-5.65c-1.83 1.23-4.17 1.95-6.23 1.95-6.29 0-11.65-4.22-13.46-9.9l-7.96 6.49C7.02 41.52 14.82 47 24 47z"/></svg>
                     Googleアカウントと連携する
                 </button>
@@ -18742,6 +18773,14 @@ window.applyTheme = function() {
                         { type: 'new', text: '既存のメールアカウントにGoogleアカウントを連携するコネクト機能を実装。設定画面の「Google連携」カードから操作可能。', sourceIds: [74] },
                         { type: 'new', text: 'auth_method（email / google / both）の管理を追加。Googleのみで登録したユーザーはメール認証への切り替えを不可に設定。', sourceIds: [74] },
                         { type: 'infra', text: 'usersテーブルにgoogle_id・auth_methodカラムを追加。Cloudflare WorkersにGoogle OAuth用の環境変数（CLIENT_ID・CLIENT_SECRET・REDIRECT_URI）を設定。', sourceIds: [74] },
+                    ]
+                },
+                {
+                    icon: 'bi-file-earmark-text-fill', title: 'プライバシーポリシー改訂（第8版）',
+                    changes: [
+                        { type: 'change', text: '第2条（収集する個人情報）にGoogleユーザーIDを追加。Googleアカウントでのログインを利用する場合のみ収集する旨を明記。', sourceIds: [74] },
+                        { type: 'change', text: '第5条（外部サービス）に「Google Identity Services / OAuth 2.0 (Google LLC)」の項目を追加。利用目的・送信情報・プライバシーポリシーリンクを明記。', sourceIds: [74] },
+                        { type: 'change', text: 'プライバシーポリシー改定日を2026/05/10（第8版）に更新。', sourceIds: [74] },
                     ]
                 },
             ]
