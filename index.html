@@ -13276,33 +13276,27 @@ async function authFetch(url, options = {}) {
 // ---------------------------------------------------------------
 
 window.onload = async function() {
+    // ★★★ 最優先処理: 他の何より先にGoogleトークンを保存する ★★★
+    // （initHomeAnimation等がクラッシュしても確実に実行されるよう最初に置く）
+    const _initParams = new URLSearchParams(window.location.search);
+    const googleLogin = _initParams.get('google_login');
+    const googleConnect = _initParams.get('google_connect');
+    const googleError = _initParams.get('google_error');
+    try {
+        if (googleLogin === 'success') {
+            const _t = _initParams.get('token');
+            if (_t) localStorage.setItem('auth_token', _t);
+        }
+        if (googleLogin || googleConnect || googleError) {
+            window.history.replaceState({}, '', window.location.pathname);
+        }
+    } catch(e) { console.warn('Google token init error:', e); }
+    // ★★★ 最優先処理ここまで ★★★
+
     checkMaintenance();
     initHomeAnimation();
     initZodiacSystem();
     window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', applyTheme);
-
-    // ▼▼▼ Googleログイン コールバック処理 ▼▼▼
-    // ★修正: checkSession()より先にURLパラメータを処理し、tokenをlocalStorageに保存する
-    const urlParams = new URLSearchParams(window.location.search);
-    const googleLogin = urlParams.get('google_login');
-    const googleConnect = urlParams.get('google_connect');
-    const googleError = urlParams.get('google_error');
-
-    if (googleLogin === 'success') {
-        const googleToken = urlParams.get('token');
-        if (googleToken) {
-            localStorage.setItem('auth_token', googleToken);
-        }
-        const cleanUrl = window.location.pathname;
-        window.history.replaceState({}, '', cleanUrl);
-    } else if (googleConnect === 'success') {
-        const cleanUrl = window.location.pathname;
-        window.history.replaceState({}, '', cleanUrl);
-    } else if (googleError) {
-        const cleanUrl = window.location.pathname;
-        window.history.replaceState({}, '', cleanUrl);
-    }
-    // ▲▲▲ URLパラメータ前処理ここまで ▲▲▲
 
     await checkSession();
 
