@@ -13281,7 +13281,55 @@ window.onload = async function() {
     initZodiacSystem();
     window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', applyTheme);
 
+    // ▼▼▼ Googleログイン コールバック処理 ▼▼▼
+    // ★修正: checkSession()より先にURLパラメータを処理し、tokenをlocalStorageに保存する
+    const urlParams = new URLSearchParams(window.location.search);
+    const googleLogin = urlParams.get('google_login');
+    const googleConnect = urlParams.get('google_connect');
+    const googleError = urlParams.get('google_error');
+
+    if (googleLogin === 'success') {
+        const googleToken = urlParams.get('token');
+        if (googleToken) {
+            localStorage.setItem('auth_token', googleToken);
+        }
+        const cleanUrl = window.location.pathname;
+        window.history.replaceState({}, '', cleanUrl);
+    } else if (googleConnect === 'success') {
+        const cleanUrl = window.location.pathname;
+        window.history.replaceState({}, '', cleanUrl);
+    } else if (googleError) {
+        const cleanUrl = window.location.pathname;
+        window.history.replaceState({}, '', cleanUrl);
+    }
+    // ▲▲▲ URLパラメータ前処理ここまで ▲▲▲
+
     await checkSession();
+
+    // ▼▼▼ checkSession完了後にトースト表示 ▼▼▼
+    if (googleLogin === 'success') {
+        showToast('Googleでログインしました', 'success');
+    } else if (googleConnect === 'success') {
+        showToast('Googleアカウントを連携しました', 'success');
+        if (document.getElementById('profile-dashboard-content')) {
+            renderSettingsDashboard();
+        }
+    } else if (googleError) {
+        if (googleError === 'email_already_registered') {
+            showToast('このメールアドレスは既に登録済みです。ログイン後に設定からGoogleと連携できます', 'error');
+        } else if (googleError === 'google_id_already_used') {
+            showToast('このGoogleアカウントは既に別のアカウントに連携されています', 'error');
+        } else if (googleError === 'not_logged_in') {
+            showToast('Googleアカウントの連携にはログインが必要です', 'error');
+        } else if (googleError === 'session_expired') {
+            showToast('セッションが切れています。再度ログインしてからお試しください', 'error');
+        } else if (googleError === 'server_error') {
+            showToast('サーバーエラーが発生しました。しばらく時間をおいてから再度お試しください', 'error');
+        } else {
+            showToast('Googleログインでエラーが発生しました', 'error');
+        }
+    }
+    // ▲▲▲ Googleログイン コールバック処理ここまで ▲▲▲
 
     startLiveCounter();
     fetchHistoryStats();
@@ -13303,50 +13351,6 @@ window.onload = async function() {
     // ▼▼▼ ここに追加：防壁の起動 ▼▼▼
     setupStrictLoginBlocks();
     // ▲▲▲ 追加ここまで ▲▲▲
-
-    // ▼▼▼ Googleログイン コールバック処理 ▼▼▼
-    const urlParams = new URLSearchParams(window.location.search);
-    const googleLogin = urlParams.get('google_login');
-    const googleConnect = urlParams.get('google_connect');
-    const googleError = urlParams.get('google_error');
-
-    if (googleLogin === 'success') {
-        // URLにtokenが含まれている場合はlocalStorageに保存
-        const googleToken = urlParams.get('token');
-        if (googleToken) {
-            localStorage.setItem('auth_token', googleToken);
-        }
-        // URLパラメータを消す
-        const cleanUrl = window.location.pathname;
-        window.history.replaceState({}, '', cleanUrl);
-        await checkSession();
-        showToast('Googleでログインしました', 'success');
-    } else if (googleConnect === 'success') {
-        const cleanUrl = window.location.pathname;
-        window.history.replaceState({}, '', cleanUrl);
-        await checkSession();
-        showToast('Googleアカウントを連携しました', 'success');
-        if (document.getElementById('profile-dashboard-content')) {
-            renderSettingsDashboard();
-        }
-    } else if (googleError) {
-        const cleanUrl = window.location.pathname;
-        window.history.replaceState({}, '', cleanUrl);
-        if (googleError === 'email_already_registered') {
-            showToast('このメールアドレスは既に登録済みです。ログイン後に設定からGoogleと連携できます', 'error');
-        } else if (googleError === 'google_id_already_used') {
-            showToast('このGoogleアカウントは既に別のアカウントに連携されています', 'error');
-        } else if (googleError === 'not_logged_in') {
-            showToast('Googleアカウントの連携にはログインが必要です', 'error');
-        } else if (googleError === 'session_expired') {
-            showToast('セッションが切れています。再度ログインしてからお試しください', 'error');
-        } else if (googleError === 'server_error') {
-            showToast('サーバーエラーが発生しました。しばらく時間をおいてから再度お試しください', 'error');
-        } else {
-            showToast('Googleログインでエラーが発生しました', 'error');
-        }
-    }
-    // ▲▲▲ Googleログイン コールバック処理ここまで ▲▲▲
 };
         
 // ---------------------------------------------------------------
