@@ -13311,6 +13311,11 @@ window.onload = async function() {
     const googleError = urlParams.get('google_error');
 
     if (googleLogin === 'success') {
+        // URLにtokenが含まれている場合はlocalStorageに保存
+        const googleToken = urlParams.get('token');
+        if (googleToken) {
+            localStorage.setItem('auth_token', googleToken);
+        }
         // URLパラメータを消す
         const cleanUrl = window.location.pathname;
         window.history.replaceState({}, '', cleanUrl);
