@@ -13283,8 +13283,6 @@ window.onload = async function() {
 
     await checkSession();
 
-    TenmeiLab.init(); // 詳細設定（スライダー値など）の初期化
-
     startLiveCounter();
     fetchHistoryStats();
     setInterval(fetchHistoryStats, 60000); 
@@ -13793,7 +13791,33 @@ TenmeiLab.init();
         applyTheme();
     }
         
-        // ==========================================
+        // --- window.onload への追加修正 ---
+        window.onload = function() {
+            initHomeAnimation();
+            initZodiacSystem();
+            
+            const storedUser = localStorage.getItem('omikuji_user');
+            if(storedUser) {
+                try {
+                    currentState.user = JSON.parse(storedUser);
+                } catch(e) {
+                    console.error("Auth Data Parse Error", e);
+                }
+            }
+            updateAuthUI();
+            
+            // ▼▼▼ ここに追加 ▼▼▼
+            TenmeiLab.init(); // 詳細設定（スライダー値など）の初期化
+            // ▲▲▲ 追加ここまで ▲▲▲
+            
+            loadLabSettings(); // ここで applyTheme が呼ばれます
+
+            // OSのダークモード切り替えをリアルタイム検知して反映するリスナーを追加
+            window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', () => {
+                applyTheme();
+            });
+
+            // ==========================================
     //  クイズ機能用ロジック (3問対応版)
     // ==========================================
     // btn: クリックされたボタン要素
@@ -13846,6 +13870,23 @@ TenmeiLab.init();
         // 解説を表示
         resultArea.classList.remove('hidden');
     };
+
+            startLiveCounter();
+            fetchHistoryStats();
+            setInterval(fetchHistoryStats, 60000); 
+            
+            loadFavorites();
+
+            const url = new URL(window.location);
+            if (url.searchParams.has('d')) {
+                url.searchParams.delete('d');
+                window.history.replaceState({}, '', url);
+            }
+             // ▼ 今回の追加箇所 ▼
+    renderHomeLists();
+    renderFullNewsView();
+    renderFullColumnView();
+        };
 
         // ■ 入力式クイズの判定関数
 // button: クリックされたボタン要素
