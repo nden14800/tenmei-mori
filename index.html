@@ -5474,6 +5474,279 @@ body.sidebar-collapsed #sidebar:hover .nav-group-title {
     transform: none !important;
 }
 
+/* ========================================
+   参拝の記録 — Bento UI 2026
+   ======================================== */
+
+#view-stats.stats-page-shell {
+    width: 100%;
+    max-width: 1180px;
+    margin: 0 auto;
+    padding-bottom: 80px;
+}
+
+/* --- ヒーローパネル --- */
+#view-stats .stats-hero-panel {
+    border-radius: 30px;
+    min-height: 220px;
+    padding: clamp(26px, 4vw, 44px);
+    margin-bottom: 22px;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    color: #fff;
+    background:
+        radial-gradient(circle at 16% 10%, rgba(255,255,255,0.22), transparent 28%),
+        radial-gradient(circle at 84% 10%, rgba(197,160,89,0.34), transparent 32%),
+        linear-gradient(135deg, #2c1111 0%, #7f1d1d 48%, #b91c1c 100%);
+    position: relative;
+    overflow: hidden;
+    isolation: isolate;
+    box-shadow: 0 18px 46px rgba(35,24,18,0.12);
+}
+#view-stats .stats-hero-panel::after {
+    content: '参';
+    position: absolute;
+    right: clamp(-20px, 2vw, 18px);
+    bottom: -70px;
+    font-family: 'Zen Old Mincho', serif;
+    font-size: clamp(11rem, 22vw, 17rem);
+    line-height: 1;
+    color: rgba(255,255,255,0.08);
+    pointer-events: none;
+    z-index: 0;
+}
+#view-stats .stats-hero-panel > * { position: relative; z-index: 1; }
+
+#view-stats .stats-kicker {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    width: fit-content;
+    padding: 7px 13px;
+    border-radius: 999px;
+    border: 1px solid rgba(255,255,255,0.26);
+    background: rgba(255,255,255,0.12);
+    color: rgba(255,255,255,0.88);
+    font-size: 0.72rem;
+    font-weight: 900;
+    letter-spacing: 0.18em;
+    margin-bottom: 14px;
+}
+#view-stats .stats-hero-title {
+    font-family: 'Zen Old Mincho', serif;
+    font-size: clamp(2.2rem, 4.5vw, 4.2rem);
+    font-weight: 900;
+    line-height: 1.08;
+    letter-spacing: 0.1em;
+    margin: 0 0 14px;
+}
+#view-stats .stats-hero-copy {
+    max-width: 600px;
+    color: rgba(255,255,255,0.80);
+    line-height: 1.9;
+    font-size: 0.92rem;
+}
+
+/* --- Bento グリッド --- */
+#view-stats .stats-bento-grid {
+    display: grid;
+    grid-template-columns: repeat(12, minmax(0, 1fr));
+    gap: 18px;
+}
+
+/* Bento カード共通 */
+#view-stats .stats-bento-card {
+    border-radius: 30px;
+    border: 1px solid color-mix(in srgb, var(--card-border) 76%, transparent);
+    background:
+        radial-gradient(circle at 12% 0%, rgba(197,160,89,0.12), transparent 34%),
+        linear-gradient(145deg, rgba(255,255,255,0.96), rgba(255,255,255,0.74));
+    box-shadow: 0 18px 45px rgba(34,24,18,0.08);
+    position: relative;
+    overflow: hidden;
+    transition: transform 0.34s cubic-bezier(0.22,1,0.36,1), box-shadow 0.34s ease, border-color 0.34s ease;
+}
+.dark #view-stats .stats-bento-card {
+    background:
+        radial-gradient(circle at 12% 0%, rgba(197,160,89,0.10), transparent 34%),
+        linear-gradient(145deg, rgba(35,35,35,0.94), rgba(18,18,18,0.78));
+    box-shadow: 0 18px 50px rgba(0,0,0,0.28);
+}
+#view-stats .stats-bento-card:hover {
+    transform: translateY(-5px) scale(1.005);
+    border-color: var(--accent-red);
+    box-shadow: 0 28px 68px rgba(35,24,18,0.14), 0 10px 18px rgba(185,28,28,0.08);
+    z-index: 5;
+}
+
+/* 数値カード */
+#view-stats .stats-bento-num {
+    grid-column: span 6;
+    padding: 32px 28px;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    justify-content: flex-end;
+    min-height: 160px;
+}
+#view-stats .stats-bento-num::after {
+    content: attr(data-bg-text);
+    position: absolute;
+    bottom: -20px;
+    right: -10px;
+    font-size: 7rem;
+    font-weight: 900;
+    color: currentColor;
+    opacity: 0.07;
+    font-family: 'Zen Old Mincho', serif;
+    pointer-events: none;
+    line-height: 1;
+}
+
+/* 大吉カード：金色アクセント */
+#view-stats .stats-bento-gold {
+    color: #d4af37;
+    border-color: #fcd34d;
+    background:
+        radial-gradient(circle at 12% 0%, rgba(252,211,77,0.18), transparent 40%),
+        linear-gradient(145deg, #fff, #fffbef);
+}
+.dark #view-stats .stats-bento-gold {
+    background:
+        radial-gradient(circle at 12% 0%, rgba(212,175,55,0.20), transparent 40%),
+        linear-gradient(145deg, #1a1a1a, #3f2c00);
+    border-color: #854d0e;
+}
+
+/* インサイト */
+#view-stats .stats-bento-insight {
+    grid-column: span 12;
+    padding: 24px 28px;
+    border-left: 4px solid var(--accent-red);
+}
+
+/* グラフカード */
+#view-stats .stats-bento-graph {
+    grid-column: span 12;
+    padding: 0;
+    padding-top: 40px;
+}
+#view-stats .stats-graph-header {
+    padding: 0 16px 10px;
+    border-bottom: 1px solid rgba(128,128,128,0.12);
+    margin-bottom: 8px;
+}
+
+/* モバイル対応 */
+@media (max-width: 640px) {
+    #view-stats .stats-bento-num { grid-column: span 12; }
+    #view-stats .stats-hero-panel { border-radius: 24px; padding: 20px; }
+    #view-stats .stats-bento-card { border-radius: 24px; }
+}
+
+/* ========================================
+   参拝記録・轍 共通ロックオーバーレイ
+   （12星座モーダルと同一デザイン）
+   ======================================== */
+
+#stats-lock,
+#history-login-overlay {
+    position: fixed;
+    top: 0; left: 0;
+    width: 100%; height: 100dvh;
+    z-index: 3000;
+    background: rgba(0,0,0,0.6);
+    backdrop-filter: blur(5px);
+    -webkit-backdrop-filter: blur(5px);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 20px 10px;
+    box-sizing: border-box;
+    overflow-y: auto;
+}
+#stats-lock.hidden,
+#history-login-overlay.hidden {
+    display: none !important;
+}
+
+.lock-modal-card {
+    width: min(440px, calc(100vw - 28px));
+    max-width: 440px;
+    padding: 30px;
+    border-radius: 30px;
+    text-align: center;
+    background:
+        radial-gradient(circle at 50% 0%, rgba(197,160,89,0.20), transparent 34%),
+        linear-gradient(145deg, rgba(255,255,255,0.98), rgba(255,255,255,0.84));
+    border: 1px solid color-mix(in srgb, var(--card-border) 72%, transparent);
+    box-shadow: 0 30px 86px rgba(0,0,0,0.28);
+    position: relative;
+    overflow: hidden;
+    margin: auto;
+    flex-shrink: 0;
+}
+.dark .lock-modal-card {
+    background:
+        radial-gradient(circle at 50% 0%, rgba(197,160,89,0.14), transparent 34%),
+        linear-gradient(145deg, rgba(35,35,35,0.98), rgba(18,18,18,0.86));
+}
+
+.lock-modal-icon {
+    width: 74px;
+    height: 74px;
+    margin: 4px auto 18px;
+    border-radius: 24px;
+    display: grid;
+    place-items: center;
+    color: var(--accent-gold);
+    background: rgba(197,160,89,0.12);
+    border: 1px solid rgba(197,160,89,0.22);
+    box-shadow: 0 16px 34px rgba(197,160,89,0.16);
+}
+
+.lock-modal-title {
+    font-family: 'Zen Old Mincho', serif;
+    font-size: 1.45rem;
+    font-weight: 900;
+    margin-bottom: 10px;
+    color: var(--text-main);
+}
+
+.lock-modal-copy {
+    color: var(--text-sub);
+    font-size: 0.9rem;
+    line-height: 1.9;
+    margin-bottom: 22px;
+}
+
+.lock-modal-btn {
+    width: 100%;
+    min-height: 54px;
+    border-radius: 18px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 9px;
+    color: #fff;
+    font-weight: 900;
+    font-family: inherit;
+    font-size: 1rem;
+    cursor: pointer;
+    border: none;
+    background:
+        radial-gradient(circle at 85% 20%, rgba(255,255,255,0.22), transparent 28%),
+        linear-gradient(135deg, #d63a2f, #b91c1c 55%, #751414);
+    box-shadow: 0 18px 34px rgba(185,28,28,0.26);
+    transition: transform 0.22s ease, filter 0.22s ease;
+}
+.lock-modal-btn:hover {
+    transform: translateY(-2px);
+    filter: brightness(1.05);
+}
+
     </style>
 <style>
     /* ▼▼▼ 修正: ホバー開閉用のスタイル設定 ▼▼▼ */
@@ -7967,35 +8240,40 @@ body.sidebar-collapsed #sidebar:hover .nav-group-title {
         
 
    <!-- ビュー: 参拝の記録 (統計ダッシュボード) -->
-<section id="view-stats" class="view-section max-w-4xl mx-auto relative pb-20">
-    <div class="text-center mb-8">
-        <h2 class="text-3xl font-black mb-2 tracking-widest" style="font-family: 'Zen Old Mincho'">参拝の記録</h2>
-        <p class="text-xs font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest">PERSONAL STATISTICS</p>
+<section id="view-stats" class="view-section stats-page-shell">
+
+    <!-- ヒーローパネル -->
+    <div class="stats-hero-panel">
+        <div>
+            <p class="stats-kicker"><i class="bi bi-graph-up-arrow"></i> PERSONAL STATISTICS</p>
+            <h2 class="stats-hero-title">参拝の記録</h2>
+            <p class="stats-hero-copy">あなたの参拝の軌跡を数字で可視化。大吉獲得率から運勢分布まで、あなただけの天命パターンが見えてきます。</p>
+        </div>
     </div>
 
-    <!-- コンテンツラッパー -->
-    <div id="stats-content-wrapper">
-        
-        <!-- 1. ヒーローセクション (カード化・ホバー対応) -->
-        <div class="stats-hero-grid">
-            <div class="stats-hero-card hero-total stats-card-interactive" data-bg-text="参">
-                <div class="stats-hero-label">総参拝数</div>
-                <div class="stats-hero-value" id="hero-total-val">-</div>
-            </div>
-            <div class="stats-hero-card hero-daikichi stats-card-interactive" data-bg-text="吉">
-                <div class="stats-hero-label">大吉獲得数</div>
-                <div class="stats-hero-value" id="hero-daikichi-val">-</div>
-            </div>
+    <!-- Bento グリッド -->
+    <div id="stats-content-wrapper" class="stats-bento-grid">
+
+        <!-- 総参拝数 -->
+        <div class="stats-bento-card stats-bento-num" data-bg-text="参">
+            <div class="stats-hero-label">総参拝数</div>
+            <div class="stats-hero-value" id="hero-total-val">-</div>
         </div>
 
-        <!-- 2. インサイト (比較分析) -->
-        <div id="stats-insight-area" class="stats-insight-box stats-card-interactive">
+        <!-- 大吉獲得数 -->
+        <div class="stats-bento-card stats-bento-num stats-bento-gold" data-bg-text="吉">
+            <div class="stats-hero-label">大吉獲得数</div>
+            <div class="stats-hero-value" id="hero-daikichi-val">-</div>
+        </div>
+
+        <!-- インサイト (比較分析) -->
+        <div id="stats-insight-area" class="stats-bento-card stats-bento-insight">
             <p class="text-center text-gray-400 text-sm">集計中...</p>
         </div>
 
-        <!-- 3. 総参拝数の比較グラフ (独立) -->
-        <div class="stats-graph-container stats-card-interactive mb-6">
-            <div class="px-4 pb-2 border-b border-gray-100 dark:border-gray-700 mb-2">
+        <!-- 参拝数比較グラフ -->
+        <div class="stats-bento-card stats-bento-graph">
+            <div class="stats-graph-header">
                 <h3 class="font-bold text-lg"><i class="bi bi-people-fill text-blue-500"></i> 参拝数比較</h3>
             </div>
             <!-- 目盛り線レイヤー -->
@@ -8004,13 +8282,15 @@ body.sidebar-collapsed #sidebar:hover .nav-group-title {
             <div id="graph-total-body" class="px-4 pb-4 relative"></div>
         </div>
 
-        <!-- 4. 運勢スペクトル (詳細グラフ) -->
-        <div class="stats-graph-container stats-card-interactive">
-            <div class="px-4 pb-2 border-b border-gray-100 dark:border-gray-700 mb-2 flex justify-between items-end">
-                <h3 class="font-bold text-lg"><i class="bi bi-bar-chart-steps text-red-500"></i> 運勢分布</h3>
-                <div class="flex gap-3 text-[10px] pb-1">
-                    <span class="flex items-center gap-1"><span class="w-3 h-3 bg-red-600 rounded"></span>あなた</span>
-                    <span class="flex items-center gap-1"><span class="w-3 h-3 bg-gray-300 dark:bg-zinc-600 rounded"></span>平均</span>
+        <!-- 運勢分布グラフ -->
+        <div class="stats-bento-card stats-bento-graph">
+            <div class="stats-graph-header">
+                <div class="flex justify-between items-end">
+                    <h3 class="font-bold text-lg"><i class="bi bi-bar-chart-steps text-red-500"></i> 運勢分布</h3>
+                    <div class="flex gap-3 text-[10px] pb-1">
+                        <span class="flex items-center gap-1"><span class="w-3 h-3 bg-red-600 rounded"></span>あなた</span>
+                        <span class="flex items-center gap-1"><span class="w-3 h-3 bg-gray-300 dark:bg-zinc-600 rounded"></span>平均</span>
+                    </div>
                 </div>
             </div>
             <!-- 目盛り線レイヤー -->
@@ -8021,18 +8301,14 @@ body.sidebar-collapsed #sidebar:hover .nav-group-title {
 
     </div>
 
-    </div>
-
     <!-- 非ログイン時のロック画面 -->
-    <div id="stats-lock" class="lab-lock-overlay hidden flex items-center justify-center">
-        <div class="bg-white/90 dark:bg-black/80 backdrop-blur-xl p-8 rounded-2xl shadow-2xl max-w-sm w-full border border-gray-100 dark:border-gray-800 text-center mx-4">
-            <i class="bi bi-person-lock text-5xl text-gray-400 mb-4 block"></i>
-            <h3 class="text-xl font-bold mb-2">記録は閉じられています</h3>
-            <p class="text-sm text-gray-500 mb-6 leading-relaxed">
-                自分だけの参拝記録を残し、<br>運勢の傾向を分析するにはログインが必要です。
-            </p>
-            <button onclick="showView('auth')" class="btn-primary w-full shadow-lg">
-                <i class="bi bi-person-plus-fill"></i> 記録を始める
+    <div id="stats-lock" class="hidden">
+        <div class="lock-modal-card">
+            <div class="lock-modal-icon"><i class="bi bi-graph-up-arrow text-3xl"></i></div>
+            <h3 class="lock-modal-title">記録は閉じられています</h3>
+            <p class="lock-modal-copy">自分だけの参拝記録を残し、<br>運勢の傾向を分析するにはログインが必要です。</p>
+            <button onclick="showView('auth')" class="lock-modal-btn">
+                <i class="bi bi-box-arrow-in-right"></i> ログイン / 登録へ
             </button>
         </div>
     </div>
@@ -8312,15 +8588,15 @@ body.sidebar-collapsed #sidebar:hover .nav-group-title {
     </div>
 
     <!-- 非ログイン時のオーバーレイ -->
-    <div id="history-login-overlay" class="history-overlay hidden">
-        <i class="bi bi-lock-fill text-5xl text-gray-300 mb-4 block"></i>
-        <h3 class="text-xl font-bold mb-2">轍を見るには会員証が必要です</h3>
-        <p class="text-sm text-gray-500 mb-6 leading-relaxed">
-            ログインすると、あなた自身の過去の運勢と、<br>他の参拝者の記録を閲覧・検索することができます。
-        </p>
-        <button onclick="showView('auth')" class="btn-primary shadow-lg">
-            <i class="bi bi-person-check"></i> ログイン / 登録
-        </button>
+    <div id="history-login-overlay" class="hidden">
+        <div class="lock-modal-card">
+            <div class="lock-modal-icon"><i class="bi bi-clock-history text-3xl"></i></div>
+            <h3 class="lock-modal-title">轍を見るには会員証が必要です</h3>
+            <p class="lock-modal-copy">ログインすると、あなた自身の過去の運勢と、<br>他の参拝者の記録を閲覧・検索することができます。</p>
+            <button onclick="showView('auth')" class="lock-modal-btn">
+                <i class="bi bi-box-arrow-in-right"></i> ログイン / 登録へ
+            </button>
+        </div>
     </div>
 </section>
 
