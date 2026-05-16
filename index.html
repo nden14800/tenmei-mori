@@ -5747,6 +5747,28 @@ body.sidebar-collapsed #sidebar:hover .nav-group-title {
     filter: brightness(1.05);
 }
 
+.lock-modal-close {
+    position: absolute;
+    top: 16px;
+    right: 16px;
+    width: 42px;
+    height: 42px;
+    border-radius: 50%;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--text-sub);
+    background: rgba(128,128,128,0.08);
+    border: none;
+    cursor: pointer;
+    transition: all 0.22s ease;
+}
+.lock-modal-close:hover {
+    color: #fff;
+    background: var(--accent-red);
+    transform: rotate(8deg) scale(1.04);
+}
+
     </style>
 <style>
     /* ▼▼▼ 修正: ホバー開閉用のスタイル設定 ▼▼▼ */
@@ -8302,8 +8324,11 @@ body.sidebar-collapsed #sidebar:hover .nav-group-title {
     </div>
 
     <!-- 非ログイン時のロック画面 -->
-    <div id="stats-lock" class="hidden">
-        <div class="lock-modal-card">
+    <div id="stats-lock" class="hidden" onclick="if(event.target===this)this.classList.add('hidden')">
+        <div class="lock-modal-card" onclick="event.stopPropagation()">
+            <button onclick="document.getElementById('stats-lock').classList.add('hidden')" class="lock-modal-close" aria-label="閉じる">
+                <i class="bi bi-x-lg text-lg"></i>
+            </button>
             <div class="lock-modal-icon"><i class="bi bi-graph-up-arrow text-3xl"></i></div>
             <h3 class="lock-modal-title">記録は閉じられています</h3>
             <p class="lock-modal-copy">自分だけの参拝記録を残し、<br>運勢の傾向を分析するにはログインが必要です。</p>
@@ -8588,8 +8613,11 @@ body.sidebar-collapsed #sidebar:hover .nav-group-title {
     </div>
 
     <!-- 非ログイン時のオーバーレイ -->
-    <div id="history-login-overlay" class="hidden">
-        <div class="lock-modal-card">
+    <div id="history-login-overlay" class="hidden" onclick="if(event.target===this)this.classList.add('hidden')">
+        <div class="lock-modal-card" onclick="event.stopPropagation()">
+            <button onclick="document.getElementById('history-login-overlay').classList.add('hidden')" class="lock-modal-close" aria-label="閉じる">
+                <i class="bi bi-x-lg text-lg"></i>
+            </button>
             <div class="lock-modal-icon"><i class="bi bi-clock-history text-3xl"></i></div>
             <h3 class="lock-modal-title">轍を見るには会員証が必要です</h3>
             <p class="lock-modal-copy">ログインすると、あなた自身の過去の運勢と、<br>他の参拝者の記録を閲覧・検索することができます。</p>
