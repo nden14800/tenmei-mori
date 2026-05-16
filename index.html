@@ -3379,7 +3379,7 @@
 
         #view-home .home-version-card .ver-info-card {
             display: grid;
-            grid-template-columns: repeat(3, minmax(0, 1fr));
+            grid-template-columns: minmax(0, 0.9fr) minmax(128px, 1.15fr) minmax(132px, 0.95fr);
             gap: 10px;
             position: relative;
             z-index: 1;
@@ -3392,11 +3392,18 @@
         #view-home .home-version-card .ver-info-badge,
         #view-home .home-version-card .ver-latest-badge {
             min-height: 66px;
+            min-width: 0;
             border-radius: 20px;
             padding: 12px;
             justify-content: center;
             background: color-mix(in srgb, var(--card-bg) 84%, var(--accent-gold) 8%);
             border: 1px solid color-mix(in srgb, var(--card-border) 70%, transparent);
+        }
+
+        #view-home .home-version-card .ver-info-value {
+            white-space: nowrap;
+            font-size: clamp(0.86rem, 1.4vw, 1.02rem);
+            letter-spacing: 0.04em;
         }
 
         #view-home .home-version-card .ver-latest-badge {
@@ -3474,18 +3481,25 @@
         }
 
         #view-home .home-stats-window {
-            height: 258px;
+            height: 278px;
         }
 
         #view-home .home-stats-fade {
             position: absolute;
             inset: auto 0 0;
-            height: 112px;
+            height: 74px;
             display: flex;
             align-items: flex-end;
             justify-content: center;
-            background: linear-gradient(to top, var(--card-bg) 10%, color-mix(in srgb, var(--card-bg) 92%, transparent) 56%, transparent);
-            padding-bottom: 0;
+            padding: 12px 0 0;
+            background: color-mix(in srgb, var(--card-bg) 94%, transparent);
+            border-top: 1px solid color-mix(in srgb, var(--card-border) 70%, transparent);
+            box-shadow: 0 -16px 28px rgba(255,255,255,0.82);
+            backdrop-filter: blur(10px);
+        }
+
+        .dark #view-home .home-stats-fade {
+            box-shadow: 0 -16px 30px rgba(0,0,0,0.28);
         }
 
         #view-home .home-stats-button {
@@ -6236,6 +6250,48 @@ body.sidebar-collapsed #sidebar:hover .nav-group-title {
             background: color-mix(in srgb, var(--card-bg) 82%, var(--accent-gold) 8%);
             border: 1px solid color-mix(in srgb, var(--card-border) 74%, transparent);
             color: var(--text-sub);
+            position: relative;
+            cursor: help;
+            outline: none;
+        }
+
+        #view-zodiac .zodiac-lucky-pill::after {
+            content: attr(data-label);
+            position: absolute;
+            left: 50%;
+            bottom: calc(100% + 8px);
+            transform: translate(-50%, 4px) scale(0.96);
+            transform-origin: bottom center;
+            min-width: max-content;
+            max-width: 180px;
+            padding: 6px 10px;
+            border-radius: 999px;
+            color: #fff;
+            background: rgba(43, 43, 43, 0.94);
+            box-shadow: 0 10px 24px rgba(0,0,0,0.18);
+            font-size: 0.68rem;
+            letter-spacing: 0.06em;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.18s ease, transform 0.18s ease;
+            z-index: 20;
+            text-align: center;
+            white-space: nowrap;
+        }
+
+        #view-zodiac .zodiac-lucky-pill:hover::after,
+        #view-zodiac .zodiac-lucky-pill:focus::after,
+        #view-zodiac .zodiac-lucky-pill:active::after {
+            opacity: 1;
+            transform: translate(-50%, 0) scale(1);
+        }
+
+        @media (hover: none) {
+            #view-zodiac .zodiac-lucky-pill::after {
+                bottom: auto;
+                top: calc(100% + 8px);
+                transform-origin: top center;
+            }
         }
 
         #view-zodiac .zodiac-score-pill {
@@ -7079,7 +7135,7 @@ body.sidebar-collapsed #sidebar:hover .nav-group-title {
                             <div class="ver-divider"></div>
                             <div class="ver-info-badge">
                                 <span class="ver-info-label">リリース日</span>
-                                <span class="ver-info-value">2026 / 05 / 10</span>
+                                <span class="ver-info-value">2026/05/10</span>
                             </div>
                             <div class="ver-divider"></div>
                             <span class="ver-latest-badge is-latest">
@@ -13879,10 +13935,10 @@ function createPaginationHTML(type, current, total) {
 
     // 1. ホーム画面のリスト (新Bento UI版)
     window.renderHomeLists = function() {
-        // 社務所だより（最新4件）
+        // 社務所だより（最新5件）
         const newsListEl = document.getElementById('home-news-list');
         if (newsListEl) {
-            newsListEl.innerHTML = newsData.slice(0, 4).map(item => `
+            newsListEl.innerHTML = newsData.slice(0, 5).map(item => `
                 <li class="home-feed-item" onclick="openArticle('news', ${item.id})">
                     <div class="home-feed-main">
                         <span class="home-feed-tag ${item.tagColor || 'text-gray-600'}">${item.tag}</span>
@@ -17397,16 +17453,16 @@ function createCardHTML(data) {
                 <div class="zodiac-content-middle">
                     <div class="zodiac-text-area w-full">
                         <div class="zodiac-lucky-row">
-                            <span class="zodiac-lucky-pill zodiac-score-pill">
-                                <i class="bi bi-activity"></i> 総合 ${data.totalScore}点
+                            <span class="zodiac-lucky-pill zodiac-score-pill" tabindex="0" data-label="総合スコア">
+                                <i class="bi bi-activity"></i> ${data.totalScore}点
                             </span>
-                            <span class="zodiac-lucky-pill">
-                                <i class="bi bi-hash"></i> No.${data.luckyNum}
+                            <span class="zodiac-lucky-pill" tabindex="0" data-label="ラッキーナンバー">
+                                <i class="bi bi-hash"></i> ${data.luckyNum}
                             </span>
-                            <span class="zodiac-lucky-pill">
+                            <span class="zodiac-lucky-pill" tabindex="0" data-label="ラッキーアイテム">
                                 <i class="bi bi-stars text-yellow-500"></i> ${data.item}
                             </span>
-                            <span class="zodiac-lucky-pill">
+                            <span class="zodiac-lucky-pill" tabindex="0" data-label="ラッキーカラー">
                                 <i class="bi bi-palette text-pink-500"></i> ${data.color}
                             </span>
                         </div>
