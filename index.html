@@ -5644,6 +5644,478 @@ body.sidebar-collapsed #sidebar:hover .nav-group-title {
         .zodiac-cal-cell-large.is-today {
             border: 2px solid var(--accent-red);
         }
+
+        /* --- 12星座占い：新Bento UI 2026 --- */
+        #view-zodiac .zodiac-page-shell {
+            width: 100%;
+            max-width: 1180px;
+            margin: 0 auto;
+            padding-bottom: 70px;
+        }
+
+        #view-zodiac .zodiac-hero-panel,
+        #view-zodiac .zodiac-check-card,
+        #view-zodiac .zodiac-card-box {
+            border-radius: 30px;
+            border: 1px solid color-mix(in srgb, var(--card-border) 76%, transparent);
+            box-shadow: 0 18px 46px rgba(35, 24, 18, 0.08);
+            overflow: hidden;
+            position: relative;
+        }
+
+        #view-zodiac .zodiac-hero-panel {
+            min-height: 300px;
+            padding: clamp(26px, 4vw, 44px);
+            margin-bottom: 22px;
+            display: grid;
+            grid-template-columns: minmax(0, 1.35fr) minmax(260px, 0.65fr);
+            gap: 28px;
+            align-items: end;
+            color: #fff;
+            background:
+                radial-gradient(circle at 14% 12%, rgba(255,255,255,0.24), transparent 28%),
+                radial-gradient(circle at 86% 10%, rgba(197,160,89,0.34), transparent 32%),
+                linear-gradient(135deg, #2c1111 0%, #7f1d1d 48%, #b91c1c 100%);
+            isolation: isolate;
+        }
+
+        #view-zodiac .zodiac-hero-panel::after {
+            content: '♈︎ ♉︎ ♊︎ ♋︎ ♌︎ ♍︎ ♎︎ ♏︎ ♐︎ ♑︎ ♒︎ ♓︎';
+            position: absolute;
+            right: -20px;
+            top: 28px;
+            width: min(520px, 58vw);
+            font-size: clamp(2.5rem, 7vw, 5.6rem);
+            line-height: 1.45;
+            letter-spacing: 0.1em;
+            color: rgba(255,255,255,0.08);
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        #view-zodiac .zodiac-hero-panel > * {
+            position: relative;
+            z-index: 1;
+        }
+
+        #view-zodiac .zodiac-kicker {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            width: fit-content;
+            padding: 7px 13px;
+            border-radius: 999px;
+            border: 1px solid rgba(255,255,255,0.26);
+            background: rgba(255,255,255,0.12);
+            color: rgba(255,255,255,0.88);
+            font-size: 0.72rem;
+            font-weight: 900;
+            letter-spacing: 0.18em;
+        }
+
+        #view-zodiac .zodiac-hero-title {
+            font-family: 'Zen Old Mincho', serif;
+            font-size: clamp(2.45rem, 5vw, 4.8rem);
+            font-weight: 900;
+            line-height: 1.06;
+            letter-spacing: 0.08em;
+            margin: 18px 0 14px;
+        }
+
+        #view-zodiac .zodiac-hero-copy {
+            max-width: 620px;
+            color: rgba(255,255,255,0.82);
+            line-height: 1.9;
+            font-size: 0.95rem;
+        }
+
+        #view-zodiac .zodiac-hero-meta {
+            display: grid;
+            gap: 12px;
+        }
+
+        #view-zodiac .zodiac-meta-card {
+            border-radius: 24px;
+            padding: 18px;
+            background: rgba(255,255,255,0.13);
+            border: 1px solid rgba(255,255,255,0.18);
+            backdrop-filter: blur(12px);
+        }
+
+        #view-zodiac .zodiac-meta-label {
+            display: block;
+            font-size: 0.68rem;
+            font-weight: 900;
+            letter-spacing: 0.18em;
+            color: rgba(255,255,255,0.64);
+            margin-bottom: 5px;
+        }
+
+        #view-zodiac .zodiac-meta-value {
+            display: block;
+            font-weight: 900;
+            font-size: 1.02rem;
+        }
+
+        #view-zodiac .zodiac-check-card {
+            padding: clamp(20px, 3vw, 30px);
+            margin-bottom: 34px;
+            background:
+                radial-gradient(circle at 0% 0%, rgba(197,160,89,0.16), transparent 30%),
+                linear-gradient(145deg, rgba(255,255,255,0.96), rgba(255,255,255,0.76));
+        }
+
+        .dark #view-zodiac .zodiac-check-card,
+        .dark #view-zodiac .zodiac-card-box {
+            background:
+                radial-gradient(circle at 0% 0%, rgba(197,160,89,0.12), transparent 32%),
+                linear-gradient(145deg, rgba(35,35,35,0.94), rgba(18,18,18,0.78));
+            box-shadow: 0 18px 50px rgba(0,0,0,0.26);
+        }
+
+        #view-zodiac .zodiac-check-head {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 16px;
+            margin-bottom: 18px;
+        }
+
+        #view-zodiac .zodiac-check-title {
+            font-family: 'Zen Old Mincho', serif;
+            font-size: clamp(1.25rem, 2vw, 1.65rem);
+            font-weight: 900;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        #view-zodiac .zodiac-input-grid {
+            margin-bottom: 0;
+            gap: 12px;
+        }
+
+        #view-zodiac .zodiac-field {
+            display: flex;
+            flex-direction: column;
+            gap: 7px;
+        }
+
+        #view-zodiac .zodiac-field-label {
+            font-size: 0.72rem;
+            font-weight: 900;
+            letter-spacing: 0.12em;
+            color: var(--text-sub);
+        }
+
+        #view-zodiac .modern-select {
+            min-height: 58px;
+            border-radius: 18px;
+            font-weight: 800;
+            background-color: color-mix(in srgb, var(--input-bg) 92%, var(--accent-gold) 4%);
+        }
+
+        #view-zodiac .modern-search-btn {
+            min-height: 58px;
+            border-radius: 18px;
+            background:
+                radial-gradient(circle at 85% 20%, rgba(255,255,255,0.22), transparent 28%),
+                linear-gradient(135deg, #d63a2f, #b91c1c 55%, #751414);
+            box-shadow: 0 16px 34px rgba(185,28,28,0.25);
+        }
+
+        #view-zodiac .zodiac-section-bar {
+            display: flex;
+            align-items: end;
+            justify-content: space-between;
+            gap: 18px;
+            margin: 30px 0 18px;
+            padding: 0 4px;
+        }
+
+        #view-zodiac .zodiac-section-title {
+            font-family: 'Zen Old Mincho', serif;
+            font-size: clamp(1.45rem, 2.5vw, 2.05rem);
+            font-weight: 900;
+            letter-spacing: 0.06em;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        #view-zodiac .zodiac-section-note {
+            color: var(--text-sub);
+            font-size: 0.8rem;
+            line-height: 1.7;
+        }
+
+        #view-zodiac .zodiac-card-box {
+            margin-bottom: 18px;
+            border-radius: 28px;
+            background:
+                radial-gradient(circle at 0% 0%, rgba(197,160,89,0.12), transparent 30%),
+                linear-gradient(145deg, rgba(255,255,255,0.98), rgba(255,255,255,0.78));
+            transition: transform 0.28s ease, box-shadow 0.28s ease, border-color 0.28s ease;
+        }
+
+        #view-zodiac .zodiac-card-box:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 24px 58px rgba(35,24,18,0.12);
+            border-color: color-mix(in srgb, var(--accent-gold) 58%, var(--card-border));
+        }
+
+        #view-zodiac .zodiac-card-box.card-rank-1,
+        #view-zodiac .zodiac-card-box.card-rank-2,
+        #view-zodiac .zodiac-card-box.card-rank-3 {
+            border-left-width: 8px;
+        }
+
+        #view-zodiac .zodiac-card-box.card-rank-1 {
+            box-shadow: 0 22px 58px rgba(212,175,55,0.16);
+        }
+
+        #view-zodiac .zodiac-card-body {
+            padding: 22px;
+            display: grid;
+            grid-template-columns: 145px minmax(0, 1fr) minmax(180px, 220px);
+            gap: 18px;
+            align-items: stretch;
+        }
+
+        #view-zodiac .zodiac-identity-panel {
+            border-radius: 22px;
+            padding: 16px;
+            background: color-mix(in srgb, var(--card-bg) 84%, var(--accent-gold) 8%);
+            border: 1px solid color-mix(in srgb, var(--card-border) 70%, transparent);
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            min-height: 170px;
+        }
+
+        #view-zodiac .zodiac-rank-badge {
+            width: 54px;
+            height: 54px;
+            border-radius: 18px;
+            box-shadow: 0 12px 24px rgba(0,0,0,0.12);
+        }
+
+        #view-zodiac .zodiac-sign-icon {
+            font-size: 2.65rem;
+            line-height: 1;
+        }
+
+        #view-zodiac .zodiac-sign-name {
+            display: block;
+            font-family: 'Zen Old Mincho', serif;
+            font-size: 1.18rem;
+            font-weight: 900;
+            margin-top: 8px;
+        }
+
+        #view-zodiac .zodiac-blood-badge {
+            display: inline-flex;
+            align-items: center;
+            width: fit-content;
+            margin-top: 8px;
+            border-radius: 999px;
+            padding: 4px 9px;
+            font-size: 0.72rem;
+            font-weight: 900;
+            color: var(--accent-red);
+            background: rgba(185,28,28,0.08);
+            border: 1px solid rgba(185,28,28,0.18);
+        }
+
+        #view-zodiac .zodiac-lucky-row {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-bottom: 12px;
+        }
+
+        #view-zodiac .zodiac-lucky-pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            border-radius: 999px;
+            padding: 7px 10px;
+            font-size: 0.72rem;
+            font-weight: 900;
+            background: color-mix(in srgb, var(--card-bg) 82%, var(--accent-gold) 8%);
+            border: 1px solid color-mix(in srgb, var(--card-border) 74%, transparent);
+            color: var(--text-sub);
+        }
+
+        #view-zodiac .zodiac-score-pill {
+            color: var(--accent-red);
+            background: rgba(185,28,28,0.08);
+            border-color: rgba(185,28,28,0.18);
+        }
+
+        #view-zodiac .zodiac-oracle-text {
+            font-size: 0.95rem;
+            line-height: 1.95;
+            color: var(--text-main);
+        }
+
+        #view-zodiac .zodiac-status-panel {
+            border-radius: 22px;
+            padding: 16px;
+            background: rgba(128,128,128,0.045);
+            border: 1px solid color-mix(in srgb, var(--card-border) 74%, transparent);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            gap: 13px;
+        }
+
+        #view-zodiac .zodiac-param-row {
+            display: grid;
+            gap: 5px;
+        }
+
+        #view-zodiac .zodiac-param-head {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 10px;
+            font-size: 0.74rem;
+            font-weight: 900;
+        }
+
+        #view-zodiac .zodiac-param-track {
+            height: 7px;
+            border-radius: 999px;
+            overflow: hidden;
+            background: rgba(128,128,128,0.16);
+        }
+
+        #view-zodiac .zodiac-param-fill {
+            height: 100%;
+            border-radius: inherit;
+        }
+
+        #view-zodiac .zodiac-param-desc {
+            color: var(--text-sub);
+            font-size: 0.68rem;
+            text-align: right;
+        }
+
+        #view-zodiac .zodiac-large-calendar {
+            padding: 18px 22px 22px;
+            border-top: 1px solid color-mix(in srgb, var(--card-border) 70%, transparent);
+            background: rgba(128,128,128,0.025);
+        }
+
+        #view-zodiac .zodiac-large-calendar h4 {
+            font-family: 'Zen Old Mincho', serif;
+            font-size: 1rem;
+            font-weight: 900;
+        }
+
+        #view-zodiac .zodiac-cal-cell-large {
+            min-height: 54px;
+            height: auto;
+            border-radius: 14px;
+            background: color-mix(in srgb, var(--card-bg) 90%, var(--bg-color) 10%);
+        }
+
+        #view-zodiac .zodiac-cal-cell-large.has-mark {
+            background: linear-gradient(145deg, rgba(255,251,239,0.98), rgba(255,247,214,0.88));
+            border-color: #f5c84b;
+        }
+
+        .dark #view-zodiac .zodiac-cal-cell-large.has-mark {
+            background: linear-gradient(145deg, rgba(63,44,0,0.96), rgba(42,28,0,0.82));
+            border-color: #a87918;
+        }
+
+        #view-zodiac .zodiac-show-more-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 9px;
+            border-radius: 999px;
+            padding: 13px 28px;
+            font-size: 0.88rem;
+            font-weight: 900;
+            color: var(--text-main);
+            background: color-mix(in srgb, var(--card-bg) 88%, var(--accent-gold) 8%);
+            border: 1px solid color-mix(in srgb, var(--card-border) 72%, transparent);
+            transition: all 0.24s ease;
+        }
+
+        #view-zodiac .zodiac-show-more-btn:hover {
+            color: #fff;
+            background: var(--accent-red);
+            transform: translateY(-2px);
+        }
+
+        @media (max-width: 960px) {
+            #view-zodiac .zodiac-hero-panel,
+            #view-zodiac .zodiac-card-body {
+                grid-template-columns: 1fr;
+            }
+
+            #view-zodiac .zodiac-hero-meta {
+                grid-template-columns: repeat(2, minmax(0, 1fr));
+            }
+
+            #view-zodiac .zodiac-identity-panel {
+                min-height: auto;
+            }
+        }
+
+        @media (max-width: 640px) {
+            #view-zodiac .zodiac-page-shell {
+                padding-bottom: 48px;
+            }
+
+            #view-zodiac .zodiac-hero-panel {
+                border-radius: 24px;
+                min-height: auto;
+            }
+
+            #view-zodiac .zodiac-hero-meta,
+            #view-zodiac .zodiac-section-bar {
+                grid-template-columns: 1fr;
+                flex-direction: column;
+                align-items: stretch;
+            }
+
+            #view-zodiac .zodiac-check-head {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+
+            #view-zodiac .zodiac-input-grid {
+                display: flex;
+                flex-direction: column;
+            }
+
+            #view-zodiac .zodiac-input-grid > div {
+                grid-column: auto !important;
+            }
+
+            #view-zodiac .zodiac-card-body {
+                padding: 16px;
+                gap: 14px;
+            }
+
+            #view-zodiac .zodiac-identity-panel {
+                flex-direction: row;
+                align-items: center;
+            }
+
+            #view-zodiac .zodiac-cal-grid-large {
+                gap: 3px;
+            }
+
+            #view-zodiac .zodiac-cal-cell-large {
+                min-height: 46px;
+                border-radius: 10px;
+            }
+        }
     
     </style>
 
@@ -6421,46 +6893,60 @@ body.sidebar-collapsed #sidebar:hover .nav-group-title {
         </section>
 
         
-<!-- ビュー: 12星座×血液型占い (修正版) -->
+<!-- ビュー: 12星座×血液型占い (新Bento UI) -->
         <section id="view-zodiac" class="view-section">
-            <div class="max-w-5xl mx-auto">
-                
-                <!-- ヘッダー -->
-                <div class="bento-card mb-8 flex flex-col md:flex-row items-center justify-between gap-4 bg-gradient-to-r from-gray-50 to-white dark:from-zinc-900 dark:to-black">
+            <div class="zodiac-page-shell">
+
+                <!-- ヒーロー -->
+                <div class="zodiac-hero-panel">
                     <div>
-                        <h2 class="text-2xl md:text-3xl font-black mb-2 flex items-center gap-3">
-                            <span class="text-yellow-500 text-4xl"><i class="bi bi-stars"></i></span>
-                            <span>最強運勢ランキング</span>
-                        </h2>
-                        <p class="text-sm font-bold text-gray-500 dark:text-gray-400" id="current-date-display">---</p>
+                        <p class="zodiac-kicker"><i class="bi bi-stars"></i> DAILY FORTUNE</p>
+                        <h2 class="zodiac-hero-title">最強運勢<br class="hidden sm:block">ランキング</h2>
+                        <p class="zodiac-hero-copy">12星座と血液型、全48通りの今日の流れを毎日0時に更新。星の巡りとあなたの気質を重ねて、今日の一歩を整えます。</p>
                     </div>
-                    <div class="text-right hidden md:block">
-                        <p class="text-xs text-gray-400 font-bold uppercase tracking-widest">DAILY FORTUNE</p>
-                        <p class="text-xs text-gray-400">12 Signs × 4 Blood Types</p>
+                    <div class="zodiac-hero-meta">
+                        <div class="zodiac-meta-card">
+                            <span class="zodiac-meta-label">TODAY</span>
+                            <span class="zodiac-meta-value" id="current-date-display">---</span>
+                        </div>
+                        <div class="zodiac-meta-card">
+                            <span class="zodiac-meta-label">COMBINATIONS</span>
+                            <span class="zodiac-meta-value">12 Signs × 4 Blood Types</span>
+                        </div>
                     </div>
                 </div>
-        
+
                 <!-- 判定フォーム -->
-                <div class="bento-card mb-10 border-l-4 border-l-red-500">
-                    <h3 class="font-bold text-lg mb-4"><i class="bi bi-search"></i> あなたの順位をチェック</h3>
-                    <div class="zodiac-input-grid">
-                        <div style="grid-column: span 5;">
-                            <select id="user-sign" class="modern-select">
-    <option value="aries">♈ 牡羊座 (3/21-4/19)</option>
-    <option value="taurus">♉ 牡牛座 (4/20-5/20)</option>
-    <option value="gemini">♊ 双子座 (5/21-6/21)</option>
-    <option value="cancer">♋ 蟹座 (6/22-7/22)</option>
-    <option value="leo">♌ 獅子座 (7/23-8/22)</option>
-    <option value="virgo">♍ 乙女座 (8/23-9/22)</option>
-    <option value="libra">♎ 天秤座 (9/23-10/23)</option>
-    <option value="scorpio">♏ 蠍座 (10/24-11/22)</option>
-    <option value="sagittarius">♐ 射手座 (11/23-12/21)</option>
-    <option value="capricorn">♑ 山羊座 (12/22-1/19)</option>
-    <option value="aquarius">♒ 水瓶座 (1/20-2/18)</option>
-    <option value="pisces">♓ 魚座 (2/19-3/20)</option>
-</select>
+                <div class="zodiac-check-card">
+                    <div class="zodiac-check-head">
+                        <div>
+                            <h3 class="zodiac-check-title"><i class="bi bi-search-heart text-[var(--accent-red)]"></i> あなたの順位をチェック</h3>
+                            <p class="text-sm themed-text-sub mt-2">星座と血液型を選ぶと、今日のあなたの順位カードをすぐに表示します。</p>
                         </div>
-                        <div style="grid-column: span 4;">
+                        <span class="hidden md:inline-flex items-center gap-2 text-xs font-black tracking-[0.16em] text-[var(--accent-gold)]">
+                            <i class="bi bi-compass"></i> PERSONAL RANK
+                        </span>
+                    </div>
+                    <div class="zodiac-input-grid">
+                        <div class="zodiac-field" style="grid-column: span 5;">
+                            <label class="zodiac-field-label" for="user-sign">星座</label>
+                            <select id="user-sign" class="modern-select">
+                                <option value="aries">♈ 牡羊座 (3/21-4/19)</option>
+                                <option value="taurus">♉ 牡牛座 (4/20-5/20)</option>
+                                <option value="gemini">♊ 双子座 (5/21-6/21)</option>
+                                <option value="cancer">♋ 蟹座 (6/22-7/22)</option>
+                                <option value="leo">♌ 獅子座 (7/23-8/22)</option>
+                                <option value="virgo">♍ 乙女座 (8/23-9/22)</option>
+                                <option value="libra">♎ 天秤座 (9/23-10/23)</option>
+                                <option value="scorpio">♏ 蠍座 (10/24-11/22)</option>
+                                <option value="sagittarius">♐ 射手座 (11/23-12/21)</option>
+                                <option value="capricorn">♑ 山羊座 (12/22-1/19)</option>
+                                <option value="aquarius">♒ 水瓶座 (1/20-2/18)</option>
+                                <option value="pisces">♓ 魚座 (2/19-3/20)</option>
+                            </select>
+                        </div>
+                        <div class="zodiac-field" style="grid-column: span 4;">
+                            <label class="zodiac-field-label" for="user-blood">血液型</label>
                             <select id="user-blood" class="modern-select">
                                 <option value="A">A型</option>
                                 <option value="B">B型</option>
@@ -6468,35 +6954,41 @@ body.sidebar-collapsed #sidebar:hover .nav-group-title {
                                 <option value="AB">AB型</option>
                             </select>
                         </div>
-                        <div style="grid-column: span 3;">
-                            <button onclick="findMyRank()" class="modern-search-btn w-full h-full py-3 md:py-0">判定する</button>
+                        <div class="zodiac-field" style="grid-column: span 3; justify-content: flex-end;">
+                            <button onclick="findMyRank()" class="modern-search-btn w-full py-3"><i class="bi bi-arrow-right-circle"></i> 判定する</button>
                         </div>
                     </div>
                     <!-- 結果表示エリア -->
-                    <div id="my-rank-result" class="hidden pt-6 border-t border-gray-100 dark:border-gray-800"></div>
+                    <div id="my-rank-result" class="hidden mt-6 pt-6 border-t border-gray-100 dark:border-gray-800"></div>
                 </div>
-        
+
                 <!-- お気に入りセクション -->
-<div id="favorites-section" class="hidden mb-10">
-    <div class="flex items-center justify-between mb-4 px-2">
-        <!-- ★修正: (最大5件) を追加 -->
-        <h3 class="text-lg font-bold text-yellow-500">
-            <i class="bi bi-star-fill"></i> お気に入り <span class="text-xs text-gray-400 font-normal ml-1">(最大5件)</span>
-        </h3>
-        <span id="fav-status-badge" class="text-[10px] bg-gray-100 dark:bg-zinc-800 px-2 py-1 rounded"></span>
-    </div>
-    <div id="favorites-list" class="space-y-4"></div>
-</div>
-        
+                <div id="favorites-section" class="hidden mb-10">
+                    <div class="zodiac-section-bar">
+                        <div>
+                            <h3 class="zodiac-section-title text-yellow-500"><i class="bi bi-star-fill"></i> お気に入り</h3>
+                            <p class="zodiac-section-note">会員限定・最大5件まで保存できます。</p>
+                        </div>
+                        <span id="fav-status-badge" class="text-[10px] bg-gray-100 dark:bg-zinc-800 px-3 py-1.5 rounded-full font-bold"></span>
+                    </div>
+                    <div id="favorites-list" class="space-y-4"></div>
+                </div>
+
                 <!-- 全ランキングリスト -->
-                <h3 class="font-bold text-xl mb-4 px-2">本日の順位（全48通り）</h3>
-                
+                <div class="zodiac-section-bar">
+                    <div>
+                        <h3 class="zodiac-section-title"><i class="bi bi-trophy-fill text-[var(--accent-gold)]"></i> 本日の順位</h3>
+                        <p class="zodiac-section-note">全48通りのうち、まずは上位3件を表示しています。</p>
+                    </div>
+                    <span class="text-xs font-black tracking-[0.16em] text-gray-400">ALL 48 RANKING</span>
+                </div>
+
                 <!-- TOP3表示用 -->
                 <div id="ranking-list" class="space-y-6"></div>
-                
+
                 <!-- 4位以下を見るボタン -->
                 <div class="text-center mt-10 mb-6">
-                    <button onclick="showFullRanking()" class="inline-flex items-center gap-2 text-sm font-bold px-8 py-3 rounded-full bg-gray-200 dark:bg-zinc-700 hover:bg-red-500 hover:text-white transition">
+                    <button onclick="showFullRanking()" class="zodiac-show-more-btn">
                         <span id="show-ranking-text">4位以下を見る</span>
                         <i class="bi bi-chevron-down"></i>
                     </button>
@@ -16424,90 +16916,86 @@ function createCardHTML(data) {
     return `
         <div class="zodiac-card-box ${cardClass}">
             <div class="zodiac-card-body">
-                
+
                 <!-- 1. 左側: ランク・星座アイコン -->
-                <div class="flex flex-row md:flex-col items-center md:items-start gap-3 md:w-28 flex-shrink-0">
-                    <div class="zodiac-rank-badge ${badgeClass}">${data.rank}</div>
+                <div class="zodiac-identity-panel">
+                    <div class="flex items-start justify-between gap-3">
+                        <div class="zodiac-rank-badge ${badgeClass}">${data.rank}</div>
+                        <button class="fav-star-btn ${isFav ? 'active' : ''}"
+                                aria-label="お気に入りに追加"
+                                onclick="toggleFavorite('${data.sign.id}', '${data.blood}')">
+                            <i class="bi bi-star${isFav ? '-fill' : ''}"></i>
+                        </button>
+                    </div>
                     <div>
-                        <div class="flex items-center gap-1 mb-1">
-                            <span class="text-2xl">${data.sign.icon}</span>
-                            <button class="fav-star-btn ${isFav ? 'active' : ''}" 
-                                    onclick="toggleFavorite('${data.sign.id}', '${data.blood}')">
-                                <i class="bi bi-star${isFav ? '-fill' : ''}"></i>
-                            </button>
-                        </div>
-                        <span class="text-lg font-black whitespace-nowrap">${data.sign.name}</span>
-                        <div class="mt-1">
-                            <span class="inline-block bg-gray-100 dark:bg-zinc-800 px-2 py-0.5 rounded text-xs font-bold border border-gray-200 dark:border-gray-700">
-                                ${data.blood}型
-                            </span>
-                        </div>
+                        <div class="zodiac-sign-icon">${data.sign.icon}</div>
+                        <span class="zodiac-sign-name">${data.sign.name}</span>
+                        <span class="zodiac-blood-badge">${data.blood}型</span>
                     </div>
                 </div>
 
-                <!-- 2. 中央エリア: 文章 (カレンダーは下部へ移動したため横幅いっぱいに) -->
+                <!-- 2. 中央エリア: 文章 -->
                 <div class="zodiac-content-middle">
                     <div class="zodiac-text-area w-full">
-                        <div class="flex flex-wrap items-center gap-3 text-xs font-bold text-gray-500 mb-2">
-                            <span class="bg-red-50 dark:bg-red-900/20 text-red-700 dark:text-red-300 px-2 py-1 rounded">
-                                総合: ${data.totalScore}点
+                        <div class="zodiac-lucky-row">
+                            <span class="zodiac-lucky-pill zodiac-score-pill">
+                                <i class="bi bi-activity"></i> 総合 ${data.totalScore}点
                             </span>
-                            <span>ラッキーNo.${data.luckyNum}</span>
-                            
-                            <span class="flex items-center gap-1">
-                                <i class="bi bi-stars text-yellow-500"></i>
-                                <span>ラッキーアイテム：${data.item}</span>
+                            <span class="zodiac-lucky-pill">
+                                <i class="bi bi-hash"></i> No.${data.luckyNum}
                             </span>
-                            <span class="flex items-center gap-1">
-                                <i class="bi bi-palette text-pink-500"></i>
-                                <span>ラッキーカラー：${data.color}</span>
+                            <span class="zodiac-lucky-pill">
+                                <i class="bi bi-stars text-yellow-500"></i> ${data.item}
+                            </span>
+                            <span class="zodiac-lucky-pill">
+                                <i class="bi bi-palette text-pink-500"></i> ${data.color}
                             </span>
                         </div>
-                        <p class="text-sm leading-6 text-justify text-gray-700 dark:text-gray-300 font-medium">
+                        <p class="zodiac-oracle-text font-medium">
                             ${data.longDesc}
                         </p>
                     </div>
                 </div>
 
                 <!-- 3. 右端: パラメータバー -->
-                <div class="w-full md:w-48 flex-shrink-0 space-y-2 pt-3 md:pt-0 border-t md:border-t-0 md:border-l border-gray-100 dark:border-gray-700 md:pl-4">
-                    <div>
-                        <div class="flex justify-between text-[10px] font-bold mb-0.5">
+                <div class="zodiac-status-panel">
+                    <div class="zodiac-param-row">
+                        <div class="zodiac-param-head">
                             <span class="flex items-center gap-1"><i class="bi bi-heart-fill text-pink-500"></i> 恋愛</span>
                             <span>${data.love.score}</span>
                         </div>
-                        <div style="height:4px; background:#eee; border-radius:2px; overflow:hidden;">
-                            <div style="height:100%; width:${data.love.score}%; background:${getBarColor(data.love.score)};"></div>
+                        <div class="zodiac-param-track">
+                            <div class="zodiac-param-fill" style="width:${data.love.score}%; background:${getBarColor(data.love.score)};"></div>
                         </div>
-                        <p class="text-[9px] text-gray-400 mt-0.5 text-right truncate">${data.love.desc}</p>
+                        <p class="zodiac-param-desc truncate">${data.love.desc}</p>
                     </div>
-                    <div>
-                        <div class="flex justify-between text-[10px] font-bold mb-0.5">
+                    <div class="zodiac-param-row">
+                        <div class="zodiac-param-head">
                             <span class="flex items-center gap-1"><i class="bi bi-currency-yen text-yellow-500"></i> 金運</span>
                             <span>${data.money.score}</span>
                         </div>
-                        <div style="height:4px; background:#eee; border-radius:2px; overflow:hidden;">
-                            <div style="height:100%; width:${data.money.score}%; background:${getBarColor(data.money.score)};"></div>
+                        <div class="zodiac-param-track">
+                            <div class="zodiac-param-fill" style="width:${data.money.score}%; background:${getBarColor(data.money.score)};"></div>
                         </div>
-                        <p class="text-[9px] text-gray-400 mt-0.5 text-right truncate">${data.money.desc}</p>
+                        <p class="zodiac-param-desc truncate">${data.money.desc}</p>
                     </div>
-                    <div>
-                        <div class="flex justify-between text-[10px] font-bold mb-0.5">
+                    <div class="zodiac-param-row">
+                        <div class="zodiac-param-head">
                             <span class="flex items-center gap-1"><i class="bi bi-book-fill text-blue-500"></i> 仕事</span>
                             <span>${data.work.score}</span>
                         </div>
-                        <div style="height:4px; background:#eee; border-radius:2px; overflow:hidden;">
-                            <div style="height:100%; width:${data.work.score}%; background:${getBarColor(data.work.score)};"></div>
+                        <div class="zodiac-param-track">
+                            <div class="zodiac-param-fill" style="width:${data.work.score}%; background:${getBarColor(data.work.score)};"></div>
                         </div>
-                        <p class="text-[9px] text-gray-400 mt-0.5 text-right truncate">${data.work.desc}</p>
+                        <p class="zodiac-param-desc truncate">${data.work.desc}</p>
                     </div>
                 </div>
 
             </div>
-            
-            <!-- 4. 新設：下部配置の大型カレンダー -->
+
+            <!-- 4. 下部配置の大型カレンダー -->
             <div class="zodiac-large-calendar">
-                <h4><i class="bi bi-calendar-star text-yellow-500"></i> 30日吉日予報</h4>
+                <h4><span><i class="bi bi-calendar-star text-yellow-500"></i> 30日吉日予報</span><span class="text-xs font-sans text-gray-400">Lucky days</span></h4>
                 <div class="zodiac-cal-grid-large">
                     ${calendarHTML}
                 </div>
