@@ -5661,6 +5661,24 @@ body.sidebar-collapsed #sidebar:hover .nav-group-title {
             box-shadow: 0 18px 46px rgba(35, 24, 18, 0.08);
             overflow: hidden;
             position: relative;
+            transform: translateY(0) scale(1);
+            transition: transform 0.34s cubic-bezier(0.22, 1, 0.36, 1), box-shadow 0.34s ease, border-color 0.34s ease;
+            will-change: transform;
+        }
+
+        #view-zodiac .zodiac-hero-panel:hover,
+        #view-zodiac .zodiac-check-card:hover,
+        #view-zodiac .zodiac-card-box:hover {
+            transform: translateY(-6px) scale(1.01);
+            border-color: var(--accent-red);
+            box-shadow: 0 28px 68px rgba(35, 24, 18, 0.14), 0 10px 18px rgba(185, 28, 28, 0.08);
+            z-index: 5;
+        }
+
+        .dark #view-zodiac .zodiac-hero-panel:hover,
+        .dark #view-zodiac .zodiac-check-card:hover,
+        .dark #view-zodiac .zodiac-card-box:hover {
+            box-shadow: 0 28px 74px rgba(0,0,0,0.36), 0 0 0 1px rgba(185,28,28,0.18);
         }
 
         #view-zodiac .zodiac-hero-panel {
@@ -5740,6 +5758,14 @@ body.sidebar-collapsed #sidebar:hover .nav-group-title {
             background: rgba(255,255,255,0.13);
             border: 1px solid rgba(255,255,255,0.18);
             backdrop-filter: blur(12px);
+            transform: translateY(0);
+            transition: transform 0.28s ease, background 0.28s ease, border-color 0.28s ease;
+        }
+
+        #view-zodiac .zodiac-meta-card:hover {
+            transform: translateY(-4px);
+            background: rgba(255,255,255,0.18);
+            border-color: rgba(255,255,255,0.34);
         }
 
         #view-zodiac .zodiac-meta-label {
@@ -5855,13 +5881,10 @@ body.sidebar-collapsed #sidebar:hover .nav-group-title {
             background:
                 radial-gradient(circle at 0% 0%, rgba(197,160,89,0.12), transparent 30%),
                 linear-gradient(145deg, rgba(255,255,255,0.98), rgba(255,255,255,0.78));
-            transition: transform 0.28s ease, box-shadow 0.28s ease, border-color 0.28s ease;
         }
 
         #view-zodiac .zodiac-card-box:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 24px 58px rgba(35,24,18,0.12);
-            border-color: color-mix(in srgb, var(--accent-gold) 58%, var(--card-border));
+            border-color: color-mix(in srgb, var(--accent-gold) 58%, var(--accent-red));
         }
 
         #view-zodiac .zodiac-card-box.card-rank-1,
@@ -6049,6 +6072,122 @@ body.sidebar-collapsed #sidebar:hover .nav-group-title {
             color: #fff;
             background: var(--accent-red);
             transform: translateY(-2px);
+        }
+
+        #view-zodiac .zodiac-fav-status-badge {
+            min-height: 28px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 999px;
+            padding: 6px 12px;
+            font-size: 0.68rem;
+            font-weight: 900;
+            color: var(--accent-gold);
+            background: color-mix(in srgb, var(--card-bg) 86%, var(--accent-gold) 10%);
+            border: 1px solid color-mix(in srgb, var(--card-border) 68%, transparent);
+        }
+
+        #view-zodiac .zodiac-modal-card {
+            width: min(440px, calc(100vw - 28px)) !important;
+            max-width: 440px !important;
+            padding: 30px !important;
+            border-radius: 30px !important;
+            text-align: center;
+            background:
+                radial-gradient(circle at 50% 0%, rgba(197,160,89,0.2), transparent 34%),
+                linear-gradient(145deg, rgba(255,255,255,0.98), rgba(255,255,255,0.84));
+            border: 1px solid color-mix(in srgb, var(--card-border) 72%, transparent);
+            box-shadow: 0 30px 86px rgba(0,0,0,0.28);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .dark #view-zodiac .zodiac-modal-card {
+            background:
+                radial-gradient(circle at 50% 0%, rgba(197,160,89,0.14), transparent 34%),
+                linear-gradient(145deg, rgba(35,35,35,0.98), rgba(18,18,18,0.86));
+        }
+
+        #view-zodiac .zodiac-modal-card::before {
+            content: '★';
+            position: absolute;
+            top: -34px;
+            right: 18px;
+            font-size: 8.5rem;
+            line-height: 1;
+            color: rgba(197,160,89,0.09);
+            pointer-events: none;
+        }
+
+        #view-zodiac .zodiac-modal-close {
+            position: absolute;
+            top: 16px;
+            right: 16px;
+            width: 42px;
+            height: 42px;
+            border-radius: 50%;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--text-sub);
+            background: rgba(128,128,128,0.08);
+            transition: all 0.22s ease;
+        }
+
+        #view-zodiac .zodiac-modal-close:hover {
+            color: #fff;
+            background: var(--accent-red);
+            transform: rotate(8deg) scale(1.04);
+        }
+
+        #view-zodiac .zodiac-modal-icon {
+            width: 74px;
+            height: 74px;
+            margin: 4px auto 18px;
+            border-radius: 24px;
+            display: grid;
+            place-items: center;
+            color: var(--accent-gold);
+            background: rgba(197,160,89,0.12);
+            border: 1px solid rgba(197,160,89,0.22);
+            box-shadow: 0 16px 34px rgba(197,160,89,0.16);
+        }
+
+        #view-zodiac .zodiac-modal-title {
+            font-family: 'Zen Old Mincho', serif;
+            font-size: 1.45rem;
+            font-weight: 900;
+            margin-bottom: 10px;
+        }
+
+        #view-zodiac .zodiac-modal-copy {
+            color: var(--text-sub);
+            font-size: 0.9rem;
+            line-height: 1.9;
+            margin-bottom: 22px;
+        }
+
+        #view-zodiac .zodiac-modal-login-btn {
+            width: 100%;
+            min-height: 54px;
+            border-radius: 18px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 9px;
+            color: #fff;
+            font-weight: 900;
+            background:
+                radial-gradient(circle at 85% 20%, rgba(255,255,255,0.22), transparent 28%),
+                linear-gradient(135deg, #d63a2f, #b91c1c 55%, #751414);
+            box-shadow: 0 18px 34px rgba(185,28,28,0.26);
+            transition: transform 0.22s ease, filter 0.22s ease;
+        }
+
+        #view-zodiac .zodiac-modal-login-btn:hover {
+            transform: translateY(-2px);
+            filter: brightness(1.05);
         }
 
         @media (max-width: 960px) {
@@ -6969,7 +7108,7 @@ body.sidebar-collapsed #sidebar:hover .nav-group-title {
                             <h3 class="zodiac-section-title text-yellow-500"><i class="bi bi-star-fill"></i> お気に入り</h3>
                             <p class="zodiac-section-note">会員限定・最大5件まで保存できます。</p>
                         </div>
-                        <span id="fav-status-badge" class="text-[10px] bg-gray-100 dark:bg-zinc-800 px-3 py-1.5 rounded-full font-bold"></span>
+                        <span id="fav-status-badge" class="zodiac-fav-status-badge"></span>
                     </div>
                     <div id="favorites-list" class="space-y-4"></div>
                 </div>
@@ -6997,29 +7136,23 @@ body.sidebar-collapsed #sidebar:hover .nav-group-title {
                 <!-- 4位以下リスト (初期は hidden) -->
                 <div id="full-ranking-list" class="hidden space-y-4"></div>
 
-                <!-- ログインモーダル (修正版) -->
-<div id="zodiac-login-modal" 
-     class="fixed top-0 left-0 w-full h-full bg-black/60 z-[3000] hidden items-center justify-center backdrop-blur-sm" 
-     onclick="closeZodiacModal(event)">
-    
-    <!-- カード本体: stopPropagationで親への伝播を止める -->
-    <div class="themed-card p-8 rounded-xl shadow-2xl max-w-sm w-full text-center border border-gray-200 dark:border-gray-700 relative" 
-         onclick="event.stopPropagation()">
-        
-        <!-- 閉じるボタン: nullではなくeventを渡すか、単に関数のみ呼ぶ -->
-        <button onclick="closeZodiacModal(null)" 
-                class="absolute top-4 right-4 text-gray-400 hover:text-red-500 w-10 h-10 flex items-center justify-center rounded-full hover:bg-gray-100 dark:hover:bg-zinc-800 transition">
-            <i class="bi bi-x-lg text-lg"></i>
-        </button>
-        
-        <div class="mb-4 text-yellow-400 text-5xl"><i class="bi bi-star-fill"></i></div>
-        <h3 class="text-xl font-bold mb-2">会員限定機能</h3>
-        <p class="text-sm themed-text-sub mb-6">お気に入りは会員限定です。<br>ログインして天命を記録しましょう。</p>
-        <button onclick="showView('auth'); closeZodiacModal(null);" class="btn-primary w-full justify-center py-3">
-            ログイン / 登録
-        </button>
-    </div>
-</div>
+                <!-- ログインモーダル (新Bento UI) -->
+                <div id="zodiac-login-modal"
+                     class="fixed top-0 left-0 w-full h-full bg-black/60 z-[3000] hidden items-center justify-center backdrop-blur-sm"
+                     onclick="closeZodiacModal(event)">
+                    <div class="zodiac-modal-card" onclick="event.stopPropagation()">
+                        <button onclick="closeZodiacModal(null)" class="zodiac-modal-close" aria-label="閉じる">
+                            <i class="bi bi-x-lg text-lg"></i>
+                        </button>
+
+                        <div class="zodiac-modal-icon"><i class="bi bi-star-fill text-4xl"></i></div>
+                        <h3 class="zodiac-modal-title">会員限定機能</h3>
+                        <p class="zodiac-modal-copy">お気に入り登録は会員限定です。<br>ログインすると、星座と血液型の組み合わせを保存して毎日の運勢をすぐ確認できます。</p>
+                        <button onclick="showView('auth'); closeZodiacModal(null);" class="zodiac-modal-login-btn">
+                            <i class="bi bi-box-arrow-in-right"></i> ログイン / 登録へ
+                        </button>
+                    </div>
+                </div>
             </div>
         </section>
         
