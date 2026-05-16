@@ -1368,6 +1368,115 @@
 
         /* --- 社務所だより：モダン・瓦版UI --- */
 
+/* --- 参拝記録：新Bento UI 2026 --- */
+#view-history.history-page-shell {
+    width: 100%;
+    max-width: 1180px;
+    margin: 0 auto;
+    padding-bottom: 80px;
+}
+#view-history .history-hero-panel,
+#view-history .history-trend-card,
+#view-history .history-control-bar,
+#view-history .history-timeline-panel,
+#view-history .history-stat-card {
+    border-radius: 30px;
+    border: 1px solid color-mix(in srgb, var(--card-border) 76%, transparent);
+    background:
+        radial-gradient(circle at 0% 0%, rgba(197,160,89,0.14), transparent 32%),
+        linear-gradient(145deg, rgba(255,255,255,0.96), rgba(255,255,255,0.76));
+    box-shadow: 0 18px 46px rgba(35,24,18,0.08);
+    position: relative;
+    overflow: hidden;
+}
+.dark #view-history .history-hero-panel,
+.dark #view-history .history-trend-card,
+.dark #view-history .history-control-bar,
+.dark #view-history .history-timeline-panel,
+.dark #view-history .history-stat-card {
+    background:
+        radial-gradient(circle at 0% 0%, rgba(197,160,89,0.11), transparent 32%),
+        linear-gradient(145deg, rgba(35,35,35,0.94), rgba(18,18,18,0.78));
+    box-shadow: 0 18px 50px rgba(0,0,0,0.26);
+}
+#view-history .history-hero-panel {
+    min-height: 260px;
+    padding: clamp(26px, 4vw, 44px);
+    margin-bottom: 22px;
+    display: grid;
+    grid-template-columns: minmax(0, 1.25fr) minmax(260px, 0.75fr);
+    gap: 26px;
+    align-items: end;
+    color: #fff;
+    background:
+        radial-gradient(circle at 16% 10%, rgba(255,255,255,0.24), transparent 28%),
+        radial-gradient(circle at 84% 10%, rgba(197,160,89,0.36), transparent 32%),
+        linear-gradient(135deg, #2c1111 0%, #7f1d1d 48%, #b91c1c 100%);
+    isolation: isolate;
+}
+#view-history .history-hero-panel::after {
+    content: '轍';
+    position: absolute;
+    right: clamp(-20px, 2vw, 18px);
+    bottom: -70px;
+    font-family: 'Zen Old Mincho', serif;
+    font-size: clamp(11rem, 22vw, 17rem);
+    line-height: 1;
+    color: rgba(255,255,255,0.08);
+    pointer-events: none;
+    z-index: 0;
+}
+#view-history .history-hero-panel > * { position: relative; z-index: 1; }
+#view-history .history-kicker { display: inline-flex; align-items: center; gap: 8px; width: fit-content; padding: 7px 13px; border-radius: 999px; border: 1px solid rgba(255,255,255,0.26); background: rgba(255,255,255,0.12); color: rgba(255,255,255,0.88); font-size: 0.72rem; font-weight: 900; letter-spacing: 0.18em; }
+#view-history .history-hero-title { font-family: 'Zen Old Mincho', serif; font-size: clamp(2.35rem, 4.8vw, 4.6rem); font-weight: 900; line-height: 1.08; letter-spacing: 0.1em; margin: 18px 0 14px; }
+#view-history .history-hero-copy { max-width: 640px; color: rgba(255,255,255,0.82); line-height: 1.9; font-size: 0.95rem; }
+#view-history .history-hero-meta { display: grid; gap: 12px; }
+#view-history .history-meta-card { border-radius: 24px; padding: 18px; background: rgba(255,255,255,0.13); border: 1px solid rgba(255,255,255,0.18); backdrop-filter: blur(12px); }
+#view-history .history-meta-label { display: block; margin-bottom: 5px; font-size: 0.68rem; font-weight: 900; letter-spacing: 0.18em; color: rgba(255,255,255,0.64); }
+#view-history .history-meta-value { display: block; font-family: 'Zen Old Mincho', serif; font-size: 1.65rem; font-weight: 900; line-height: 1.15; }
+#view-history .history-stat-card:hover,
+#view-history .history-trend-card:hover,
+#view-history .history-control-bar:hover,
+#view-history .history-timeline-panel:hover { transform: translateY(-5px) scale(1.005); border-color: var(--accent-red); box-shadow: 0 28px 68px rgba(35,24,18,0.14), 0 10px 18px rgba(185,28,28,0.08); z-index: 5; }
+#view-history .history-trend-card { padding: 24px; margin-bottom: 22px; transition: transform 0.34s cubic-bezier(0.22,1,0.36,1), box-shadow 0.34s ease, border-color 0.34s ease; }
+#view-history .history-section-head { display: flex; align-items: center; justify-content: space-between; gap: 14px; margin-bottom: 16px; padding-bottom: 14px; border-bottom: 1px solid color-mix(in srgb, var(--card-border) 70%, transparent); }
+#view-history .history-section-title { display: inline-flex; align-items: center; gap: 9px; font-family: 'Zen Old Mincho', serif; font-size: 1.15rem; font-weight: 900; }
+#view-history .history-trend-list { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; max-height: 330px; overflow: auto; padding-right: 4px; }
+#view-history .history-trend-row { padding: 10px 12px; border-radius: 16px; background: color-mix(in srgb, var(--card-bg) 86%, var(--accent-gold) 5%); border: 1px solid color-mix(in srgb, var(--card-border) 72%, transparent); }
+#view-history .history-trend-head { display: flex; justify-content: space-between; align-items: center; gap: 10px; margin-bottom: 7px; font-size: 0.76rem; font-weight: 900; }
+#view-history .history-trend-name { font-family: 'Zen Old Mincho', serif; }
+#view-history .history-trend-values { display: inline-flex; gap: 8px; color: var(--text-sub); font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace; font-size: 0.72rem; }
+#view-history .history-trend-track { height: 8px; border-radius: 999px; overflow: hidden; background: rgba(128,128,128,0.14); }
+#view-history .history-trend-fill { height: 100%; border-radius: inherit; }
+#view-history .history-control-bar { padding: 22px; margin-bottom: 22px; transition: transform 0.34s cubic-bezier(0.22,1,0.36,1), box-shadow 0.34s ease, border-color 0.34s ease; }
+#view-history .history-control-title { display: inline-flex; align-items: center; gap: 8px; margin-bottom: 12px; font-size: 0.76rem; font-weight: 900; letter-spacing: 0.12em; color: var(--text-sub); }
+#view-history .modern-filter-select, #view-history .modern-filter-input { min-height: 48px; border-radius: 16px; font-weight: 800; background-color: color-mix(in srgb, var(--input-bg) 92%, var(--accent-gold) 4%); }
+#view-history .history-filter-btn, #view-history .history-reset-btn { min-height: 48px; display: inline-flex; align-items: center; justify-content: center; gap: 8px; border-radius: 16px; font-size: 0.86rem; font-weight: 900; transition: transform 0.22s ease, filter 0.22s ease, border-color 0.22s ease; }
+#view-history .history-filter-btn { color: #fff; background: var(--accent-red); box-shadow: 0 14px 28px rgba(185,28,28,0.22); }
+#view-history .history-reset-btn { color: var(--text-sub); background: color-mix(in srgb, var(--card-bg) 88%, var(--accent-gold) 7%); border: 1px solid color-mix(in srgb, var(--card-border) 72%, transparent); }
+#view-history .history-filter-btn:hover, #view-history .history-reset-btn:hover { transform: translateY(-2px); filter: brightness(1.04); }
+#view-history .history-result-chip { display: inline-flex; align-items: center; gap: 6px; min-height: 34px; padding: 5px 12px; border-radius: 999px; font-size: 0.76rem; font-weight: 900; color: var(--text-sub); background: color-mix(in srgb, var(--card-bg) 86%, var(--accent-gold) 8%); border: 1px solid color-mix(in srgb, var(--card-border) 70%, transparent); }
+#view-history .history-timeline-panel { padding: 26px; transition: transform 0.34s cubic-bezier(0.22,1,0.36,1), box-shadow 0.34s ease, border-color 0.34s ease; }
+#view-history .timeline-container { padding-left: 0; display: grid; gap: 14px; }
+#view-history .timeline-container::before, #view-history .timeline-dot { display: none; }
+#view-history .timeline-item { padding-left: 0; margin-bottom: 0; }
+#view-history .history-card { min-height: 92px; border-radius: 24px; padding: 18px; background: color-mix(in srgb, var(--card-bg) 90%, var(--accent-gold) 4%); border: 1px solid color-mix(in srgb, var(--card-border) 72%, transparent); box-shadow: none; display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 16px; transform: translateY(0) scale(1); transition: transform 0.28s ease, box-shadow 0.28s ease, border-color 0.28s ease; }
+#view-history .history-card:hover { transform: translateY(-4px) scale(1.006); border-color: color-mix(in srgb, var(--accent-red) 48%, var(--card-border)); box-shadow: 0 18px 42px rgba(35,24,18,0.1); }
+#view-history .history-card.is-me { background: color-mix(in srgb, var(--card-bg) 84%, var(--accent-red) 7%); border-color: rgba(185,28,28,0.24); }
+#view-history .history-record-main { min-width: 0; display: grid; gap: 8px; }
+#view-history .history-record-date { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; color: var(--text-sub); font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace; font-size: 0.72rem; font-weight: 800; }
+#view-history .history-record-time, #view-history .history-me-badge, #view-history .history-record-no { border-radius: 999px; padding: 3px 8px; background: rgba(128,128,128,0.09); border: 1px solid color-mix(in srgb, var(--card-border) 72%, transparent); font-size: 0.68rem; font-weight: 900; }
+#view-history .history-record-user { min-width: 0; display: flex; align-items: center; gap: 8px; font-size: 1rem; font-weight: 900; }
+#view-history .history-record-user-name { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+#view-history .history-record-result { display: flex; flex-direction: column; align-items: flex-end; justify-content: center; gap: 6px; }
+#view-history #history-pagination { border-top: 1px solid color-mix(in srgb, var(--card-border) 70%, transparent) !important; }
+.history-page-btn, .history-page-jump-btn { min-height: 40px; border-radius: 999px; padding: 8px 14px; color: var(--text-main); background: color-mix(in srgb, var(--card-bg) 86%, var(--accent-gold) 8%); border: 1px solid color-mix(in srgb, var(--card-border) 72%, transparent); font-weight: 900; transition: all 0.22s ease; }
+.history-page-btn:hover:not(:disabled), .history-page-jump-btn:hover { transform: translateY(-2px); border-color: var(--accent-red); }
+.history-page-btn:disabled { opacity: 0.42; cursor: not-allowed; }
+.history-page-current { display: inline-flex; align-items: center; min-height: 40px; padding: 8px 14px; border-radius: 999px; color: #fff; background: var(--accent-red); font-weight: 900; font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace; }
+@media (max-width: 960px) { #view-history .history-hero-panel, #view-history .history-trend-list { grid-template-columns: 1fr; } }
+@media (max-width: 640px) { #view-history.history-page-shell { padding-bottom: 48px; } #view-history .history-hero-panel, #view-history .history-trend-card, #view-history .history-control-bar, #view-history .history-timeline-panel { border-radius: 24px; padding: 20px; } #view-history .control-group-row { flex-direction: column; } #view-history .history-card { grid-template-columns: 1fr; } #view-history .history-record-result { align-items: flex-start; flex-direction: row; justify-content: space-between; } }
+
 /* 1. ニュース検索エリア (履歴のコントロールバーと統一) */
 .news-control-bar {
     background: rgba(255, 255, 255, 0.7);
@@ -6159,6 +6268,7 @@ body.sidebar-collapsed #sidebar:hover .nav-group-title {
         #view-zodiac .zodiac-card-box {
             margin-bottom: 18px;
             border-radius: 28px;
+            overflow: visible;
             background:
                 radial-gradient(circle at 0% 0%, rgba(197,160,89,0.12), transparent 30%),
                 linear-gradient(145deg, rgba(255,255,255,0.98), rgba(255,255,255,0.78));
@@ -6181,7 +6291,7 @@ body.sidebar-collapsed #sidebar:hover .nav-group-title {
         #view-zodiac .zodiac-card-body {
             padding: 22px;
             display: grid;
-            grid-template-columns: 145px minmax(0, 1fr) minmax(180px, 220px);
+            grid-template-columns: 150px minmax(0, 1fr) minmax(230px, 270px);
             gap: 18px;
             align-items: stretch;
         }
@@ -6236,6 +6346,7 @@ body.sidebar-collapsed #sidebar:hover .nav-group-title {
             flex-wrap: wrap;
             gap: 8px;
             margin-bottom: 12px;
+            overflow: visible;
         }
 
         #view-zodiac .zodiac-lucky-pill {
@@ -6261,8 +6372,8 @@ body.sidebar-collapsed #sidebar:hover .nav-group-title {
             bottom: calc(100% + 8px);
             transform: translate(-50%, 4px) scale(0.96);
             transform-origin: bottom center;
-            min-width: max-content;
-            max-width: 180px;
+            width: max-content;
+            max-width: min(190px, 74vw);
             padding: 6px 10px;
             border-radius: 999px;
             color: #fff;
@@ -6273,9 +6384,10 @@ body.sidebar-collapsed #sidebar:hover .nav-group-title {
             opacity: 0;
             pointer-events: none;
             transition: opacity 0.18s ease, transform 0.18s ease;
-            z-index: 20;
+            z-index: 50;
             text-align: center;
-            white-space: nowrap;
+            white-space: normal;
+            overflow-wrap: anywhere;
         }
 
         #view-zodiac .zodiac-lucky-pill:hover::after,
@@ -6307,31 +6419,32 @@ body.sidebar-collapsed #sidebar:hover .nav-group-title {
 
         #view-zodiac .zodiac-status-panel {
             border-radius: 22px;
-            padding: 16px;
+            padding: 18px;
             background: rgba(128,128,128,0.045);
             border: 1px solid color-mix(in srgb, var(--card-border) 74%, transparent);
             display: flex;
             flex-direction: column;
             justify-content: center;
-            gap: 13px;
+            gap: 16px;
+            min-width: 0;
         }
 
         #view-zodiac .zodiac-param-row {
             display: grid;
-            gap: 5px;
+            gap: 6px;
         }
 
         #view-zodiac .zodiac-param-head {
-            display: flex;
+            display: grid;
+            grid-template-columns: minmax(0, 1fr) auto;
             align-items: center;
-            justify-content: space-between;
             gap: 10px;
-            font-size: 0.74rem;
+            font-size: 0.82rem;
             font-weight: 900;
         }
 
         #view-zodiac .zodiac-param-track {
-            height: 7px;
+            height: 8px;
             border-radius: 999px;
             overflow: hidden;
             background: rgba(128,128,128,0.16);
@@ -6344,8 +6457,12 @@ body.sidebar-collapsed #sidebar:hover .nav-group-title {
 
         #view-zodiac .zodiac-param-desc {
             color: var(--text-sub);
-            font-size: 0.68rem;
+            font-size: 0.72rem;
+            line-height: 1.45;
             text-align: right;
+            white-space: normal;
+            overflow: visible;
+            text-overflow: clip;
         }
 
         #view-zodiac .zodiac-large-calendar {
@@ -8058,84 +8175,86 @@ body.sidebar-collapsed #sidebar:hover .nav-group-title {
             <div id="profile-dashboard-content"></div>
         </section>
 
-        <!-- ビュー: おみくじの轍 (履歴) -->
-<section id="view-history" class="view-section max-w-4xl mx-auto relative pb-20">
-    <!-- タイトル -->
-    <div class="text-center mb-8">
-        <h2 class="text-3xl font-black mb-2 tracking-widest" style="font-family: 'Zen Old Mincho'">おみくじの轍</h2>
-        <p class="text-xs font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest">TIMELINE OF DESTINY</p>
+        <!-- ビュー: おみくじの轍 (参拝記録 新Bento UI) -->
+<section id="view-history" class="view-section history-page-shell relative">
+    <!-- ヒーロー -->
+    <div class="history-hero-panel">
+        <div>
+            <p class="history-kicker"><i class="bi bi-clock-history"></i> TIMELINE OF DESTINY</p>
+            <h2 class="history-hero-title">おみくじの轍</h2>
+            <p class="history-hero-copy">あなたと参拝者たちが引いた天命の記録です。運勢の偏り、参拝の積み重ね、過去の一枚をここから振り返れます。</p>
+        </div>
+        <div class="history-hero-meta">
+            <div class="history-meta-card"><span class="history-meta-label">PERSONAL</span><span class="history-meta-value" id="personal-history-count">-</span></div>
+            <div class="history-meta-card"><span class="history-meta-label">GLOBAL</span><span class="history-meta-value" id="global-history-count">-</span></div>
+        </div>
     </div>
 
     <!-- コンテンツコンテナ -->
     <div id="history-container">
-        
-        <!-- 1. 統計ダッシュボード (あなたの参拝数 / みんなの参拝数) -->
-        <div class="history-stats-grid">
-            <div class="history-stat-card stat-card-personal">
-                <!-- ▼▼▼ 修正: bi-person-fill から bi-person (塗りつぶしなし) に変更 ▼▼▼ -->
-                <!-- HTMLタグで指定するように変更 -->
-                <i class="bi bi-person stat-bg-icon"></i>
-                
-                <div class="stat-label">あなたの参拝数</div>
-                <div class="stat-value text-red-600" id="personal-history-count">-</div>
-            </div>
-            <div class="history-stat-card stat-card-global">
-                <!-- ▼▼▼ 修正: bi-people に変更 ▼▼▼ -->
-                <i class="bi bi-people stat-bg-icon"></i>
-                
-                <div class="stat-label">みんなの参拝数</div>
-                <div class="stat-value text-indigo-600 dark:text-indigo-400" id="global-history-count">-</div>
-            </div>
-        </div>
 
-        <!-- 2. 全体の傾向 (詳細) -->
-        <div class="bento-card mb-6">
-            <div class="flex justify-between items-center mb-4 border-b border-gray-200 dark:border-gray-700 pb-2">
-                <!-- ▼ 修正箇所: 「本日の傾向 (詳細)」から「全体の傾向 (詳細)」へ変更 -->
-                <h3 class="font-bold flex items-center gap-2 text-sm">
-                    <i class="bi bi-bar-chart-line-fill text-red-500"></i> 全体の傾向 (詳細)
-                </h3>
+        <!-- 1. 全体の傾向 (詳細) -->
+        <div class="history-trend-card">
+            <div class="history-section-head">
+                <h3 class="history-section-title"><i class="bi bi-bar-chart-line-fill text-red-500"></i> 全体の傾向</h3>
+                <span class="history-result-chip"><i class="bi bi-stars"></i> 12段階</span>
             </div>
-            <div class="overflow-y-auto pr-2 custom-scrollbar" style="max-height: 240px;">
-                <div class="space-y-2 text-xs">
-                     <!-- 12段階 統計表示 (IDは hist- 接頭辞付き) -->
-                     <div class="grid grid-cols-1 gap-1">
-                         <!-- 大吉 -->
-                         <div><div class="flex justify-between mb-1"><span>大吉</span><span><span id="hist-cnt-daikichi" class="mr-2 opacity-70 font-mono">0</span><span id="hist-stat-daikichi">0.00%</span></span></div><div class="w-full bg-gray-100 dark:bg-zinc-700 h-1.5 rounded"><div id="hist-bar-daikichi" class="bg-yellow-400 h-1.5 rounded transition-all duration-1000" style="width: 0%"></div></div></div>
-                         <!-- 中吉 -->
-                         <div><div class="flex justify-between mb-1"><span>中吉</span><span><span id="hist-cnt-chukichi" class="mr-2 opacity-70 font-mono">0</span><span id="hist-stat-chukichi">0.00%</span></span></div><div class="w-full bg-gray-100 dark:bg-zinc-700 h-1.5 rounded"><div id="hist-bar-chukichi" class="bg-orange-400 h-1.5 rounded transition-all duration-1000" style="width: 0%"></div></div></div>
-                         <!-- 小吉 -->
-                         <div><div class="flex justify-between mb-1"><span>小吉</span><span><span id="hist-cnt-shokichi" class="mr-2 opacity-70 font-mono">0</span><span id="hist-stat-shokichi">0.00%</span></span></div><div class="w-full bg-gray-100 dark:bg-zinc-700 h-1.5 rounded"><div id="hist-bar-shokichi" class="bg-green-400 h-1.5 rounded transition-all duration-1000" style="width: 0%"></div></div></div>
-                         <!-- 吉 -->
-                         <div><div class="flex justify-between mb-1"><span>吉</span><span><span id="hist-cnt-kichi" class="mr-2 opacity-70 font-mono">0</span><span id="hist-stat-kichi">0.00%</span></span></div><div class="w-full bg-gray-100 dark:bg-zinc-700 h-1.5 rounded"><div id="hist-bar-kichi" class="bg-red-400 h-1.5 rounded transition-all duration-1000" style="width: 0%"></div></div></div>
-                         <!-- 半吉 -->
-                         <div><div class="flex justify-between mb-1"><span>半吉</span><span><span id="hist-cnt-hankichi" class="mr-2 opacity-70 font-mono">0</span><span id="hist-stat-hankichi">0.00%</span></span></div><div class="w-full bg-gray-100 dark:bg-zinc-700 h-1.5 rounded"><div id="hist-bar-hankichi" class="bg-red-300 h-1.5 rounded transition-all duration-1000" style="width: 0%"></div></div></div>
-                         <!-- 末吉 -->
-                         <div><div class="flex justify-between mb-1"><span>末吉</span><span><span id="hist-cnt-suekichi" class="mr-2 opacity-70 font-mono">0</span><span id="hist-stat-suekichi">0.00%</span></span></div><div class="w-full bg-gray-100 dark:bg-zinc-700 h-1.5 rounded"><div id="hist-bar-suekichi" class="bg-blue-400 h-1.5 rounded transition-all duration-1000" style="width: 0%"></div></div></div>
-                         <!-- 末小吉 -->
-                         <div><div class="flex justify-between mb-1"><span>末小吉</span><span><span id="hist-cnt-sueshokichi" class="mr-2 opacity-70 font-mono">0</span><span id="hist-stat-sueshokichi">0.00%</span></span></div><div class="w-full bg-gray-100 dark:bg-zinc-700 h-1.5 rounded"><div id="hist-bar-sueshokichi" class="bg-blue-300 h-1.5 rounded transition-all duration-1000" style="width: 0%"></div></div></div>
-                         <!-- 凶 -->
-                         <div><div class="flex justify-between mb-1"><span>凶</span><span><span id="hist-cnt-kyo" class="mr-2 opacity-70 font-mono">0</span><span id="hist-stat-kyo">0.00%</span></span></div><div class="w-full bg-gray-100 dark:bg-zinc-700 h-1.5 rounded"><div id="hist-bar-kyo" class="bg-gray-400 h-1.5 rounded transition-all duration-1000" style="width: 0%"></div></div></div>
-                         <!-- 小凶 -->
-                         <div><div class="flex justify-between mb-1"><span>小凶</span><span><span id="hist-cnt-shokyo" class="mr-2 opacity-70 font-mono">0</span><span id="hist-stat-shokyo">0.00%</span></span></div><div class="w-full bg-gray-100 dark:bg-zinc-700 h-1.5 rounded"><div id="hist-bar-shokyo" class="bg-gray-500 h-1.5 rounded transition-all duration-1000" style="width: 0%"></div></div></div>
-                         <!-- 半凶 -->
-                         <div><div class="flex justify-between mb-1"><span>半凶</span><span><span id="hist-cnt-hankyo" class="mr-2 opacity-70 font-mono">0</span><span id="hist-stat-hankyo">0.00%</span></span></div><div class="w-full bg-gray-100 dark:bg-zinc-700 h-1.5 rounded"><div id="hist-bar-hankyo" class="bg-gray-600 dark:bg-gray-400 h-1.5 rounded transition-all duration-1000" style="width: 0%"></div></div></div>
-                         <!-- 末凶 -->
-                         <div><div class="flex justify-between mb-1"><span>末凶</span><span><span id="hist-cnt-suekyo" class="mr-2 opacity-70 font-mono">0</span><span id="hist-stat-suekyo">0.00%</span></span></div><div class="w-full bg-gray-100 dark:bg-zinc-700 h-1.5 rounded"><div id="hist-bar-suekyo" class="bg-gray-700 h-1.5 rounded transition-all duration-1000" style="width: 0%"></div></div></div>
-                         <!-- 大凶 -->
-                         <div><div class="flex justify-between mb-1"><span>大凶</span><span><span id="hist-cnt-daikyo" class="mr-2 opacity-70 font-mono">0</span><span id="hist-stat-daikyo">0.00%</span></span></div><div class="w-full bg-gray-100 dark:bg-zinc-700 h-1.5 rounded"><div id="hist-bar-daikyo" class="bg-black h-1.5 rounded transition-all duration-1000" style="width: 0%"></div></div></div>
-                     </div>
+            <div class="history-trend-list custom-scrollbar">
+                <div class="history-trend-row">
+                    <div class="history-trend-head"><span class="history-trend-name">大吉</span><span class="history-trend-values"><span id="hist-cnt-daikichi">0</span><span id="hist-stat-daikichi">0.00%</span></span></div>
+                    <div class="history-trend-track"><div id="hist-bar-daikichi" class="history-trend-fill bg-yellow-400" style="width: 0%"></div></div>
+                </div>
+                <div class="history-trend-row">
+                    <div class="history-trend-head"><span class="history-trend-name">中吉</span><span class="history-trend-values"><span id="hist-cnt-chukichi">0</span><span id="hist-stat-chukichi">0.00%</span></span></div>
+                    <div class="history-trend-track"><div id="hist-bar-chukichi" class="history-trend-fill bg-orange-400" style="width: 0%"></div></div>
+                </div>
+                <div class="history-trend-row">
+                    <div class="history-trend-head"><span class="history-trend-name">小吉</span><span class="history-trend-values"><span id="hist-cnt-shokichi">0</span><span id="hist-stat-shokichi">0.00%</span></span></div>
+                    <div class="history-trend-track"><div id="hist-bar-shokichi" class="history-trend-fill bg-green-400" style="width: 0%"></div></div>
+                </div>
+                <div class="history-trend-row">
+                    <div class="history-trend-head"><span class="history-trend-name">吉</span><span class="history-trend-values"><span id="hist-cnt-kichi">0</span><span id="hist-stat-kichi">0.00%</span></span></div>
+                    <div class="history-trend-track"><div id="hist-bar-kichi" class="history-trend-fill bg-red-400" style="width: 0%"></div></div>
+                </div>
+                <div class="history-trend-row">
+                    <div class="history-trend-head"><span class="history-trend-name">半吉</span><span class="history-trend-values"><span id="hist-cnt-hankichi">0</span><span id="hist-stat-hankichi">0.00%</span></span></div>
+                    <div class="history-trend-track"><div id="hist-bar-hankichi" class="history-trend-fill bg-red-300" style="width: 0%"></div></div>
+                </div>
+                <div class="history-trend-row">
+                    <div class="history-trend-head"><span class="history-trend-name">末吉</span><span class="history-trend-values"><span id="hist-cnt-suekichi">0</span><span id="hist-stat-suekichi">0.00%</span></span></div>
+                    <div class="history-trend-track"><div id="hist-bar-suekichi" class="history-trend-fill bg-blue-400" style="width: 0%"></div></div>
+                </div>
+                <div class="history-trend-row">
+                    <div class="history-trend-head"><span class="history-trend-name">末小吉</span><span class="history-trend-values"><span id="hist-cnt-sueshokichi">0</span><span id="hist-stat-sueshokichi">0.00%</span></span></div>
+                    <div class="history-trend-track"><div id="hist-bar-sueshokichi" class="history-trend-fill bg-blue-300" style="width: 0%"></div></div>
+                </div>
+                <div class="history-trend-row">
+                    <div class="history-trend-head"><span class="history-trend-name">凶</span><span class="history-trend-values"><span id="hist-cnt-kyo">0</span><span id="hist-stat-kyo">0.00%</span></span></div>
+                    <div class="history-trend-track"><div id="hist-bar-kyo" class="history-trend-fill bg-gray-400" style="width: 0%"></div></div>
+                </div>
+                <div class="history-trend-row">
+                    <div class="history-trend-head"><span class="history-trend-name">小凶</span><span class="history-trend-values"><span id="hist-cnt-shokyo">0</span><span id="hist-stat-shokyo">0.00%</span></span></div>
+                    <div class="history-trend-track"><div id="hist-bar-shokyo" class="history-trend-fill bg-gray-500" style="width: 0%"></div></div>
+                </div>
+                <div class="history-trend-row">
+                    <div class="history-trend-head"><span class="history-trend-name">半凶</span><span class="history-trend-values"><span id="hist-cnt-hankyo">0</span><span id="hist-stat-hankyo">0.00%</span></span></div>
+                    <div class="history-trend-track"><div id="hist-bar-hankyo" class="history-trend-fill bg-gray-600 dark:bg-gray-400" style="width: 0%"></div></div>
+                </div>
+                <div class="history-trend-row">
+                    <div class="history-trend-head"><span class="history-trend-name">末凶</span><span class="history-trend-values"><span id="hist-cnt-suekyo">0</span><span id="hist-stat-suekyo">0.00%</span></span></div>
+                    <div class="history-trend-track"><div id="hist-bar-suekyo" class="history-trend-fill bg-gray-700" style="width: 0%"></div></div>
+                </div>
+                <div class="history-trend-row">
+                    <div class="history-trend-head"><span class="history-trend-name">大凶</span><span class="history-trend-values"><span id="hist-cnt-daikyo">0</span><span id="hist-stat-daikyo">0.00%</span></span></div>
+                    <div class="history-trend-track"><div id="hist-bar-daikyo" class="history-trend-fill bg-black" style="width: 0%"></div></div>
                 </div>
             </div>
         </div>
 
-        <!-- 3. コントロールバー (検索) -->
+        <!-- 2. コントロールバー (検索) -->
         <div class="history-control-bar">
-            <div class="flex items-center gap-2 mb-1">
-                <i class="bi bi-sliders text-gray-400"></i>
-                <span class="text-xs font-bold text-gray-500">条件を絞り込む</span>
-            </div>
-            
+            <div class="history-control-title"><i class="bi bi-sliders"></i> 条件を絞り込む</div>
+
             <div class="control-group-row">
                 <select id="search-type" class="modern-filter-select flex-1" style="min-width: 120px;">
                     <option value="all">全ての運勢</option>
@@ -8154,36 +8273,40 @@ body.sidebar-collapsed #sidebar:hover .nav-group-title {
                 </select>
                 <input type="text" id="search-keyword" placeholder="ユーザー名で検索" class="modern-filter-input flex-[2]">
             </div>
-            
+
             <div class="control-group-row">
                 <input type="date" id="search-date-start" class="modern-filter-input flex-1">
                 <span class="self-center text-gray-400">～</span>
                 <input type="date" id="search-date-end" class="modern-filter-input flex-1">
-                
-                <button onclick="filterHistory()" class="btn-primary py-2 px-6 text-sm flex-shrink-0 shadow-md">
+
+                <button onclick="filterHistory()" class="history-filter-btn py-2 px-6 flex-shrink-0">
                     <i class="bi bi-search"></i> 検索
                 </button>
-                <button onclick="resetSearch()" class="px-4 py-2 rounded-lg border border-gray-300 hover:bg-gray-100 dark:hover:bg-zinc-700 transition text-sm flex-shrink-0">
+                <button onclick="resetSearch()" class="history-reset-btn px-4 py-2 flex-shrink-0" aria-label="検索条件をリセット">
                     <i class="bi bi-arrow-counterclockwise"></i>
                 </button>
             </div>
-            
-            <div class="flex justify-between items-center mt-1 px-1">
-                <div class="text-xs text-gray-400" id="history-view-mode">全期間の記録</div>
-                <div class="text-xs font-bold text-gray-500">
-                    Hit: <span id="search-result-count" class="text-red-600 text-lg mx-1">0</span> 件
+
+            <div class="flex flex-wrap justify-between items-center gap-3 mt-4 px-1">
+                <div class="history-result-chip" id="history-view-mode">全期間の記録</div>
+                <div class="history-result-chip">
+                    <i class="bi bi-list-check"></i> Hit: <span id="search-result-count" class="text-red-600 text-lg mx-1">0</span> 件
                 </div>
             </div>
         </div>
 
-        <!-- 4. タイムラインリスト -->
-        <div class="bg-white dark:bg-zinc-900 rounded-2xl p-6 shadow-sm border border-gray-100 dark:border-gray-800">
+        <!-- 3. タイムラインリスト -->
+        <div class="history-timeline-panel">
+            <div class="history-section-head">
+                <h3 class="history-section-title"><i class="bi bi-signpost-split text-red-500"></i> 参拝記録</h3>
+                <span class="history-result-chip"><i class="bi bi-clock"></i> 最新順</span>
+            </div>
             <div class="timeline-container" id="history-list">
                 <!-- JSでここにアイテムが挿入されます -->
             </div>
-            
+
             <!-- ページネーション -->
-            <div id="history-pagination" class="flex justify-center items-center gap-4 mt-8 pt-6 border-t border-gray-100 dark:border-gray-800"></div>
+            <div id="history-pagination" class="flex flex-wrap justify-center items-center gap-3 mt-8 pt-6"></div>
         </div>
 
     </div>
@@ -13884,28 +14007,28 @@ function createPaginationHTML(type, current, total) {
     
     // 最初へ
     html += `<button onclick="changePage('${type}', 1)" 
-             class="px-4 py-2 rounded border bg-white dark:bg-zinc-800 hover:bg-gray-100 dark:hover:bg-zinc-700 disabled:opacity-50 transition"
+             class="history-page-btn"
              ${current === 1 ? 'disabled' : ''}>
              <i class="bi bi-chevron-double-left"></i> 最初へ</button>`;
 
     // 前へ
     html += `<button onclick="changePage('${type}', ${current - 1})" 
-             class="px-4 py-2 rounded border bg-white dark:bg-zinc-800 hover:bg-gray-100 dark:hover:bg-zinc-700 disabled:opacity-50 transition"
+             class="history-page-btn"
              ${current === 1 ? 'disabled' : ''}>
              <i class="bi bi-chevron-left"></i> 前へ</button>`;
 
     // ページ番号
-    html += `<span class="font-bold font-mono mx-4">Page ${current} / ${total}</span>`;
+    html += `<span class="history-page-current">Page ${current} / ${total}</span>`;
 
     // 次へ
     html += `<button onclick="changePage('${type}', ${current + 1})" 
-             class="px-4 py-2 rounded border bg-white dark:bg-zinc-800 hover:bg-gray-100 dark:hover:bg-zinc-700 disabled:opacity-50 transition"
+             class="history-page-btn"
              ${current === total ? 'disabled' : ''}>
              次へ <i class="bi bi-chevron-right"></i></button>`;
 
     // 最後へ
     html += `<button onclick="changePage('${type}', ${total})" 
-             class="px-4 py-2 rounded border bg-white dark:bg-zinc-800 hover:bg-gray-100 dark:hover:bg-zinc-700 disabled:opacity-50 transition"
+             class="history-page-btn"
              ${current === total ? 'disabled' : ''}>
              最後へ <i class="bi bi-chevron-double-right"></i></button>`;
 
@@ -13915,11 +14038,11 @@ function createPaginationHTML(type, current, total) {
     html += `
         <div class="flex items-center gap-2 text-sm themed-text-sub">
             <input type="number" id="${type}-jump-input" min="1" max="${total}" value="${current}" 
-                   class="w-16 p-1 text-center border rounded themed-input appearance-none" 
+                   class="w-16 p-2 text-center border rounded-full themed-input appearance-none"
                    onkeydown="if(event.key==='Enter') changePage('${type}', parseInt(this.value))">
             <span>/ ${total} ページへ</span>
             <button onclick="changePage('${type}', parseInt(document.getElementById('${type}-jump-input').value))"
-                    class="px-3 py-1 rounded bg-gray-200 dark:bg-gray-700 hover:opacity-80 transition">移動</button>
+                    class="history-page-jump-btn">移動</button>
         </div>
     `;
 
@@ -15992,7 +16115,7 @@ async function loadHistory(page = 1) {
         // ダミー表示
         if(myCountEl) myCountEl.textContent = "-";
         if(globalCountEl) globalCountEl.textContent = "-";
-        if(list) list.innerHTML = Array(5).fill('<div class="bg-gray-50 dark:bg-zinc-800 p-3 rounded mb-2 h-12 border-l-4 border-gray-300"></div>').join('');
+        if(list) list.innerHTML = Array(5).fill('<div class="history-card opacity-40 h-20"></div>').join('');
         return;
     }
 
@@ -16007,7 +16130,7 @@ async function loadHistory(page = 1) {
     if(container) container.classList.remove('history-blurred');
     if(overlay) overlay.classList.add('hidden');
     if(viewMode) viewMode.textContent = "全参拝者の記録 (全期間)";
-    if(list) list.innerHTML = '<div class="text-center py-8"><div class="spinner-border text-red-500" role="status"></div> 読み込み中...</div>';
+    if(list) list.innerHTML = '<div class="text-center py-10 text-gray-400 font-bold"><i class="bi bi-arrow-repeat animate-spin text-2xl block mb-2"></i> 読み込み中...</div>';
     
     // 既存のライブカウントがあれば先に表示しておく
     if (globalCountEl && currentState.liveCount > 0) {
@@ -16125,31 +16248,12 @@ function renderHistoryList(historyData) {
         const html = `
             <div class="timeline-item ${isMe ? 'is-me' : ''}" style="animation-delay: ${delay}s">
                 <div class="timeline-dot"></div>
-                
                 <div class="history-card ${isMe ? 'is-me' : ''}" onclick='showResultDetail(false, ${JSON.stringify(item).replace(/'/g, "&apos;")})'>
-                    <!-- 左側: 日付とユーザー情報 -->
-                    <div>
-                        <div class="flex items-center gap-2 mb-1">
-                            <span class="text-xs font-bold text-gray-400 tracking-wider font-mono">${dateStr}</span>
-                            <span class="text-[10px] bg-gray-100 dark:bg-zinc-700 px-1.5 rounded text-gray-500">${timeStr}</span>
-                        </div>
-                        <div class="flex items-center gap-2">
-                            <span class="font-bold ${isMe ? 'text-[var(--accent-red)]' : 'text-gray-700 dark:text-gray-300'} text-sm truncate max-w-[120px] md:max-w-[200px]">
-                                ${isMe ? '<i class="bi bi-person-fill"></i> ' : ''}${escapeHtml(item.username)}
-                            </span>
-                            ${isMe ? '<span class="text-[10px] border border-red-200 text-red-500 px-1 rounded">あなた</span>' : ''}
-                        </div>
+                    <div class="history-record-main">
+                        <div class="history-record-date"><span><i class="bi bi-calendar3"></i> ${dateStr}</span><span class="history-record-time">${timeStr}</span><span class="history-record-no">No.${Number(item.issue_number || 0).toLocaleString()}</span></div>
+                        <div class="history-record-user"><span class="history-record-user-name ${isMe ? 'text-[var(--accent-red)]' : ''}">${isMe ? '<i class="bi bi-person-fill"></i> ' : '<i class="bi bi-person"></i> '}${escapeHtml(item.username)}</span>${isMe ? '<span class="history-me-badge text-red-500 border-red-200">あなた</span>' : ''}</div>
                     </div>
-
-                    <!-- 右側: 結果バッジと発行番号 -->
-                    <div class="flex flex-col items-end">
-                        <div class="result-badge ${badgeClass}">
-                            ${item.result}
-                        </div>
-                        <div class="text-[10px] text-gray-400 mt-1">
-                            No.${Number(item.issue_number || 0).toLocaleString()}
-                        </div>
-                    </div>
+                    <div class="history-record-result"><div class="result-badge ${badgeClass}">${item.result}</div></div>
                 </div>
             </div>
         `;
@@ -17481,7 +17585,7 @@ function createCardHTML(data) {
                         <div class="zodiac-param-track">
                             <div class="zodiac-param-fill" style="width:${data.love.score}%; background:${getBarColor(data.love.score)};"></div>
                         </div>
-                        <p class="zodiac-param-desc truncate">${data.love.desc}</p>
+                        <p class="zodiac-param-desc">${data.love.desc}</p>
                     </div>
                     <div class="zodiac-param-row">
                         <div class="zodiac-param-head">
@@ -17491,7 +17595,7 @@ function createCardHTML(data) {
                         <div class="zodiac-param-track">
                             <div class="zodiac-param-fill" style="width:${data.money.score}%; background:${getBarColor(data.money.score)};"></div>
                         </div>
-                        <p class="zodiac-param-desc truncate">${data.money.desc}</p>
+                        <p class="zodiac-param-desc">${data.money.desc}</p>
                     </div>
                     <div class="zodiac-param-row">
                         <div class="zodiac-param-head">
@@ -17501,7 +17605,7 @@ function createCardHTML(data) {
                         <div class="zodiac-param-track">
                             <div class="zodiac-param-fill" style="width:${data.work.score}%; background:${getBarColor(data.work.score)};"></div>
                         </div>
-                        <p class="zodiac-param-desc truncate">${data.work.desc}</p>
+                        <p class="zodiac-param-desc">${data.work.desc}</p>
                     </div>
                 </div>
 
@@ -17634,28 +17738,28 @@ function renderServerPagination(currentPage, totalItems, perPage) {
     
     // 最初へボタン
     html += `<button onclick="loadHistory(1)" 
-             class="px-4 py-2 rounded border bg-white dark:bg-zinc-800 hover:bg-gray-100 dark:hover:bg-zinc-700 disabled:opacity-50 transition"
+             class="history-page-btn"
              ${currentPage === 1 ? 'disabled' : ''}>
              <i class="bi bi-chevron-double-left"></i> 最初へ</button>`;
 
     // 前へボタン
     html += `<button onclick="loadHistory(${currentPage - 1})" 
-             class="px-4 py-2 rounded border bg-white dark:bg-zinc-800 hover:bg-gray-100 dark:hover:bg-zinc-700 disabled:opacity-50 transition"
+             class="history-page-btn"
              ${currentPage === 1 ? 'disabled' : ''}>
              <i class="bi bi-chevron-left"></i> 前へ</button>`;
 
     // ページ番号
-    html += `<span class="font-bold font-mono mx-4">Page ${currentPage} / ${totalPages}</span>`;
+    html += `<span class="history-page-current">Page ${currentPage} / ${totalPages}</span>`;
 
     // 次へボタン
     html += `<button onclick="loadHistory(${currentPage + 1})" 
-             class="px-4 py-2 rounded border bg-white dark:bg-zinc-800 hover:bg-gray-100 dark:hover:bg-zinc-700 disabled:opacity-50 transition"
+             class="history-page-btn"
              ${currentPage === totalPages ? 'disabled' : ''}>
              次へ <i class="bi bi-chevron-right"></i></button>`;
 
     // 最後へボタン
     html += `<button onclick="loadHistory(${totalPages})" 
-             class="px-4 py-2 rounded border bg-white dark:bg-zinc-800 hover:bg-gray-100 dark:hover:bg-zinc-700 disabled:opacity-50 transition"
+             class="history-page-btn"
              ${currentPage === totalPages ? 'disabled' : ''}>
              最後へ <i class="bi bi-chevron-double-right"></i></button>`;
 
@@ -17665,11 +17769,11 @@ function renderServerPagination(currentPage, totalItems, perPage) {
     html += `
         <div class="flex items-center gap-2 text-sm themed-text-sub">
             <input type="number" id="history-jump-input" min="1" max="${totalPages}" value="${currentPage}" 
-                   class="w-16 p-1 text-center border rounded themed-input appearance-none" 
+                   class="w-16 p-2 text-center border rounded-full themed-input appearance-none"
                    onkeydown="if(event.key==='Enter') loadHistory(parseInt(this.value))">
             <span>/ ${totalPages} ページへ</span>
             <button onclick="loadHistory(parseInt(document.getElementById('history-jump-input').value))"
-                    class="px-3 py-1 rounded bg-gray-200 dark:bg-gray-700 hover:opacity-80 transition">移動</button>
+                    class="history-page-jump-btn">移動</button>
         </div>
     `;
 
