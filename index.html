@@ -13258,17 +13258,22 @@ window.switchPrefTab = function(tab) {
     const btnMap  = document.getElementById('pref-tab-map');
 
     if (tab === 'text') {
-        textContent.style.display  = '';
+        textContent.style.display  = 'block';
         mapContent.style.display   = 'none';
+        mapContainer.style.display = 'none';
         btnText.classList.add('active');
         btnMap.classList.remove('active');
     } else {
         textContent.style.display  = 'none';
-        mapContent.style.display   = '';
-        mapContainer.style.display = '';
+        mapContent.style.display   = 'block';
+        mapContainer.style.display = 'block';
         btnText.classList.remove('active');
         btnMap.classList.add('active');
-        renderPrefectureMap();
+        // 表示確定後にLeafletを初期化・リサイズ
+        setTimeout(function() {
+            renderPrefectureMap();
+            if (_prefMap) _prefMap.invalidateSize();
+        }, 50);
     }
 };
 
