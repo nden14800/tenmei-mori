@@ -5959,12 +5959,12 @@ body.sidebar-collapsed #sidebar:hover .nav-group-title {
                     <div class="ver-info-card">
                         <div class="ver-info-badge">
                             <span class="ver-info-label">バージョン</span>
-                            <span class="ver-info-value">Ver. 2.2</span>
+                            <span class="ver-info-value">Ver. 2.3</span>
                         </div>
                         <div class="ver-divider"></div>
                         <div class="ver-info-badge">
                             <span class="ver-info-label">リリース日</span>
-                            <span class="ver-info-value">2026 / 05 / 10</span>
+                            <span class="ver-info-value">2026 / 05 / 17</span>
                         </div>
                         <div class="ver-divider"></div>
                         <span class="ver-latest-badge is-latest">
@@ -8274,6 +8274,14 @@ function escapeHtml(str) {
                 <li><strong>ホバーで名前とスコアが表示されます：</strong>マウスを乗せるだけで、素早く都道府県名とスコアを確認できます（PC版）。</li>
             </ul>
             <p>スコアの計算ロジックは、テキスト版と完全に同一です。日付が変われば地図上の配色も入れ替わります。</p>
+
+            <h3>プライバシーポリシーの改訂（第9版）</h3>
+            <p>今回の地図機能の追加に伴い、プライバシーポリシーを本日付けで<strong>第9版</strong>へ改訂いたしました。主な変更点は以下の通りです。</p>
+            <ul class="list-disc ml-5 mb-4">
+                <li>第5条（外部サービスとの連携）に「7. OpenStreetMap (OpenStreetMap Foundation)」の項目を追加。地図タイルの表示にあたってユーザーのIPアドレスがOpenStreetMapのサーバーへ送信される旨を明記いたしました。</li>
+                <li>第5条の全項目にプライバシーポリシーへのリンクを整備しました。これまでリンクが設定されていなかったGoogle Apps Script・Cloudflare・Tursoの3項目に、各社のプライバシーポリシーへのリンクを追加いたしました。</li>
+            </ul>
+            <p>改訂後のプライバシーポリシーは、サイドメニューの「プライバシーポリシー」よりご確認いただけます。</p>
 
             <h3>やっと、「完成」した気がします</h3>
             <p>あの1月の夜、中止と復活の記事を書きながら、心のどこかで「いつか必ず地図にする」と思っていました。4ヶ月かかりましたが、今日それが現実になりました。</p>
@@ -19140,6 +19148,30 @@ window.applyTheme = function() {
 
         // ===== 更新の軌跡パネル =====
     const verDetailData = {
+        v23: {
+            ver: 'Ver. 2.3',
+            name: '土地の運気予報・地図版実装',
+            date: '2026年5月17日',
+            sections: [
+                {
+                    icon: 'bi-map-fill', title: '全国・土地の運気予報 地図版',
+                    changes: [
+                        { type: 'new', text: '「全国・土地の運気予報」にOpenStreetMap＋Leaflet.jsによる地図表示モードを追加。従来のテキスト版ランキングと地図版をタブで切り替え可能。', sourceIds: [75] },
+                        { type: 'new', text: '地図上に全47都道府県のマーカーを表示。スコアに応じて金（S）・赤（A）・青（B）・灰（C）の4色に色分け。', sourceIds: [75] },
+                        { type: 'new', text: 'マーカークリックでポップアップを表示。都道府県名・ランク・スコア・運気テキストを確認可能。', sourceIds: [75] },
+                        { type: 'infra', text: 'Leaflet 1.9.4をcdnjs.cloudflare.comより読み込み。地図タイルはOpenStreetMap（OSMF）を使用。外部ライブラリの安定性を重視しunpkg.comは不採用。', sourceIds: [75] },
+                    ]
+                },
+                {
+                    icon: 'bi-file-earmark-text-fill', title: 'プライバシーポリシー改訂（第9版）',
+                    changes: [
+                        { type: 'change', text: '第5条（外部サービス）に「OpenStreetMap (OpenStreetMap Foundation)」の項目を追加。地図タイル表示の際にIPアドレスが送信される旨を明記。', sourceIds: [75] },
+                        { type: 'change', text: '第5条の全項目にプライバシーポリシーへのリンクを整備。リンク未設定だったGoogle Apps Script・Cloudflare・Tursoの3項目にリンクを追加。', sourceIds: [75] },
+                        { type: 'change', text: 'プライバシーポリシー改定日を2026/05/17（第9版）に更新。', sourceIds: [75] },
+                    ]
+                },
+            ]
+        },
         v22: {
             ver: 'Ver. 2.2',
             name: 'Googleログイン実装',
@@ -19728,12 +19760,31 @@ window.applyTheme = function() {
         <div class="ver-panel-scroll">
             <div class="ver-timeline">
 
+                <!-- Ver 2.3（現在） -->
+                <div class="ver-timeline-item is-current" onclick="openVerDetail('v23')">
+                    <div class="ver-item-card">
+                        <div class="ver-item-top">
+                            <span class="ver-item-ver">Ver. 2.3</span>
+                            <span class="ver-item-badge ver-badge-current"><i class="bi bi-patch-check-fill"></i>最新版</span>
+                        </div>
+                        <div class="ver-item-date">2026年5月17日リリース</div>
+                        <div class="ver-item-name">土地の運気予報・地図版実装</div>
+                        <div class="ver-item-desc">「全国・土地の運気予報」にOpenStreetMap＋Leaflet.jsによる地図表示モードを追加。テキスト版ランキングと地図版をタブで切り替え可能。プライバシーポリシーも第9版へ改訂。</div>
+                        <div class="ver-item-tags">
+                            <span class="ver-item-tag">新機能</span>
+                            <span class="ver-item-tag">地図表示</span>
+                            <span class="ver-item-tag">OpenStreetMap</span>
+                        </div>
+                        <div class="ver-item-more"><i class="bi bi-chevron-right"></i>詳細を見る</div>
+                    </div>
+                </div>
+
                 <!-- Ver 2.2（現在） -->
-                <div class="ver-timeline-item is-current" onclick="openVerDetail('v22')">
+                <div class="ver-timeline-item" onclick="openVerDetail('v22')">
                     <div class="ver-item-card">
                         <div class="ver-item-top">
                             <span class="ver-item-ver">Ver. 2.2</span>
-                            <span class="ver-item-badge ver-badge-current"><i class="bi bi-patch-check-fill"></i>最新版</span>
+                            <span class="ver-item-badge ver-badge-stable"><i class="bi bi-wrench-adjustable-circle-fill"></i>機能追加</span>
                         </div>
                         <div class="ver-item-date">2026年5月10日リリース</div>
                         <div class="ver-item-name">Googleログイン実装</div>
