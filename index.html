@@ -68,6 +68,9 @@
     <link href="https://fonts.googleapis.com/css2?family=Shippori+Mincho:wght@400;500;600;800&family=Zen+Old+Mincho:wght@400;700;900&display=swap" rel="stylesheet">
     <!-- Bootstrap Icons -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <!-- Leaflet.js (OpenStreetMap) -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css" />
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
     
     <style>
         :root {
@@ -1911,6 +1914,114 @@
 .bar-A { background: #ef4444; } /* 赤 */
 .bar-B { background: #3b82f6; } /* 青 */
 .bar-C { background: #6b7280; } /* 灰 */
+
+/* --- 都道府県ランキング：地図/テキスト切り替えタブ --- */
+.pref-tab-switcher {
+    display: flex;
+    gap: 8px;
+    justify-content: center;
+    margin-bottom: 28px;
+}
+.pref-tab-btn {
+    padding: 8px 24px;
+    border-radius: 999px;
+    border: 1.5px solid var(--card-border);
+    background: var(--card-bg);
+    color: var(--text-sub);
+    font-family: 'Zen Old Mincho', serif;
+    font-size: 0.9rem;
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+.pref-tab-btn.active {
+    background: var(--accent-red);
+    border-color: var(--accent-red);
+    color: #fff;
+}
+.pref-tab-btn:not(.active):hover {
+    border-color: var(--accent-red);
+    color: var(--accent-red);
+}
+
+/* --- 地図コンテナ --- */
+#pref-map-container {
+    display: none;
+    border-radius: 16px;
+    overflow: hidden;
+    border: 1px solid var(--card-border);
+    box-shadow: 0 10px 30px rgba(0,0,0,0.08);
+    margin-bottom: 40px;
+}
+#pref-map {
+    height: 520px;
+    width: 100%;
+}
+@media (max-width: 640px) {
+    #pref-map { height: 380px; }
+}
+/* Leaflet ポップアップのフォント調整 */
+.pref-popup-inner {
+    font-family: 'Zen Old Mincho', 'Shippori Mincho', serif;
+    min-width: 180px;
+    max-width: 240px;
+}
+.pref-popup-inner .pp-rank {
+    font-size: 0.75rem;
+    font-weight: bold;
+    color: #888;
+    margin-bottom: 2px;
+}
+.pref-popup-inner .pp-name {
+    font-size: 1.2rem;
+    font-weight: 900;
+    margin-bottom: 2px;
+}
+.pref-popup-inner .pp-score {
+    font-size: 1.8rem;
+    font-weight: 900;
+    font-family: monospace;
+    line-height: 1.1;
+    margin-bottom: 6px;
+}
+.pref-popup-inner .pp-score.rank-S { color: #b8860b; }
+.pref-popup-inner .pp-score.rank-A { color: #b91c1c; }
+.pref-popup-inner .pp-score.rank-B { color: #1d4ed8; }
+.pref-popup-inner .pp-score.rank-C { color: #6b7280; }
+.pref-popup-inner .pp-text {
+    font-size: 0.78rem;
+    color: #555;
+    line-height: 1.6;
+    border-top: 1px solid #e5e7eb;
+    padding-top: 6px;
+    margin-top: 4px;
+}
+/* 地図凡例 */
+.pref-map-legend {
+    display: flex;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin-bottom: 28px;
+    font-size: 0.82rem;
+    font-weight: bold;
+    color: var(--text-sub);
+}
+.pref-map-legend span {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+.legend-dot {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    display: inline-block;
+    border: 1.5px solid rgba(0,0,0,0.15);
+}
 
        /* --- 参拝の記録：ダッシュボードUI (スマホ対応修正版) --- */
 
@@ -6382,17 +6493,46 @@ body.sidebar-collapsed #sidebar:hover .nav-group-title {
         </p>
     </div>
 
-    <!-- 1位〜3位 表示エリア -->
-    <div id="prefecture-top3" class="pref-top3-container">
-        <!-- JSで自動挿入 -->
+    <!-- タブ切り替え -->
+    <div class="pref-tab-switcher">
+        <button class="pref-tab-btn active" id="pref-tab-text" onclick="switchPrefTab('text')">
+            <i class="bi bi-list-ol"></i> ランキング
+        </button>
+        <button class="pref-tab-btn" id="pref-tab-map" onclick="switchPrefTab('map')">
+            <i class="bi bi-map"></i> 地図
+        </button>
     </div>
 
-    <!-- 4位以下 リストエリア -->
-    <div class="border-t border-gray-200 dark:border-gray-700 my-8 pt-2">
-        <p class="text-sm font-bold text-gray-400 mb-4 ml-2">4位以下のランキング</p>
-        <div id="prefecture-list" class="pref-list-grid">
+    <!-- テキスト版コンテンツ -->
+    <div id="pref-text-content">
+        <!-- 1位〜3位 表示エリア -->
+        <div id="prefecture-top3" class="pref-top3-container">
             <!-- JSで自動挿入 -->
         </div>
+
+        <!-- 4位以下 リストエリア -->
+        <div class="border-t border-gray-200 dark:border-gray-700 my-8 pt-2">
+            <p class="text-sm font-bold text-gray-400 mb-4 ml-2">4位以下のランキング</p>
+            <div id="prefecture-list" class="pref-list-grid">
+                <!-- JSで自動挿入 -->
+            </div>
+        </div>
+    </div>
+
+    <!-- 地図版コンテンツ -->
+    <div id="pref-map-content" style="display:none;">
+        <!-- 凡例 -->
+        <div class="pref-map-legend">
+            <span><span class="legend-dot" style="background:#d4af37;"></span>Sランク（90〜）</span>
+            <span><span class="legend-dot" style="background:#ef4444;"></span>Aランク（70〜89）</span>
+            <span><span class="legend-dot" style="background:#3b82f6;"></span>Bランク（60〜69）</span>
+            <span><span class="legend-dot" style="background:#6b7280;"></span>Cランク（〜59）</span>
+        </div>
+        <!-- 地図 -->
+        <div id="pref-map-container">
+            <div id="pref-map"></div>
+        </div>
+        <p class="text-xs text-center text-gray-400 mt-2">© <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener" class="underline">OpenStreetMap</a> contributors</p>
     </div>
 </section>
 
@@ -8094,6 +8234,47 @@ function escapeHtml(str) {
     const newsData = [
 
 
+{
+    id: 75,
+    title: "【地図版・実装】「全国・土地の運気予報」に、ついに地図表示が加わりました",
+    date: "2026/05/17",
+    time: "13:02",
+    tag: "新機能",
+    tagColor: "text-green-600",
+    borderColor: "border-green-500",
+    desc: "かつて開発中止を余儀なくされた「地図機能」を、OpenStreetMapを用いて遂に実装いたしました。テキスト版ランキングはそのまま残し、タブ切り替えで両方をお使いいただけます。",
+    content: `
+        <div class="article-content">
+            <p>いつも「運勢・天命乃杜」をご利用いただき、誠にありがとうございます。個人開発者のnden148です。</p>
+            <p>本日、「全国・土地の運気」に<strong>「地図版」</strong>を追加いたしました。「社務所だより」をご覧いただいている方には、この一文の重さをきっとわかっていただけると思います。</p>
+
+            <h3>この機能の長い「前史」について</h3>
+            <p>2026年1月5日——当時、私はこの欄に二本の記事を立て続けに投稿しました。</p>
+            <p>一本目は<strong>「【重要】「全国・土地の運気予報」の開発中止に関するお知らせ」</strong>。外部の地図ライブラリを導入しようとするたびに、サイト全体が不安定になり、おみくじやLabs等の他機能にまで深刻な影響が及ぶことが確認されました。「このまま強行することは、今稼働しているすべてのものを壊すリスクがある」という判断から、地図機能の開発を完全に断念する旨をお知らせしました。</p>
+            <p>そして同夜——「地図がダメなら、文字で伝えればいい」という結論に辿り着き、二本目の記事<strong>「【復活】「全国・土地の運気予報」をテキスト版として再実装いたしました」</strong>を投稿しました。こうして生まれたのが、現在の「47都道府県ランキング形式」です。</p>
+            <p>あの夜の決断に後悔はありませんでした。しかし、正直に申し上げると——地図への未練は、ずっと消えていませんでした。</p>
+
+            <h3>今回、なぜ実装できたのか</h3>
+            <p>当時に問題を起こした地図ライブラリと、今回採用したものは異なります。今回は<strong>OpenStreetMap</strong>（世界中の有志が作り上げたオープンな地図データ）と、それを扱うための軽量ライブラリ<strong>Leaflet.js</strong>の組み合わせを選びました。</p>
+            <p>「枯れた技術」という言葉があります。長年にわたって広く使われ、問題点がほぼ出尽くして安定している技術のことを指します。Leafletはまさにそれで、余計な機能を持たず、純粋に地図を描くことだけを確実にこなしてくれます。以前のような「サイト全体の不安定化」は今回一切発生しませんでした。</p>
+
+            <h3>新しい「地図版」の機能について</h3>
+            <p>「全国の運気」画面の上部に、<strong>「ランキング」「地図」</strong>のタブが新たに設けられました。</p>
+            <ul class="list-disc ml-5 mb-4">
+                <li><strong>テキスト版（ランキング）はそのまま残っています：</strong>これまでと同様に、TOP3の強調表示と47都道府県の一覧スコアをご覧いただけます。</li>
+                <li><strong>地図版では日本地図上にマーカーが表示されます：</strong>各都道府県の代表地点に丸いマーカーが置かれ、スコアに応じて金（Sランク）・赤（Aランク）・青（Bランク）・灰（Cランク）の4色で色分けされています。スコアが高い都道府県ほど、マーカーが大きく表示されます。</li>
+                <li><strong>マーカーをクリック（タップ）すると詳細が表示されます：</strong>順位・スコア・ランク・その土地の運気テキストを、ポップアップでご確認いただけます。</li>
+                <li><strong>ホバーで名前とスコアが表示されます：</strong>マウスを乗せるだけで、素早く都道府県名とスコアを確認できます（PC版）。</li>
+            </ul>
+            <p>スコアの計算ロジックは、テキスト版と完全に同一です。日付が変われば地図上の配色も入れ替わります。</p>
+
+            <h3>やっと、「完成」した気がします</h3>
+            <p>あの1月の夜、中止と復活の記事を書きながら、心のどこかで「いつか必ず地図にする」と思っていました。4ヶ月かかりましたが、今日それが現実になりました。</p>
+            <p>テキスト版が「妥協の産物」だったかというと、そうは思っていません。ランキング形式には、地図とは別の良さがあります。だからこそ今回、どちらかを廃止するのではなく、<strong>タブで両立させる</strong>という形を選びました。</p>
+            <p>「全国の運気」画面から、ぜひ地図タブをお試しください。</p>
+        </div>
+    `
+},
 {
     id: 74,
     title: "【新機能】Googleアカウントでのログイン・連携機能の実装について",
@@ -13063,6 +13244,165 @@ function createTopCard(item, rank, iconClass, rankClass, colorClass) {
     `;
 }
 
+// ==========================================
+//  タブ切り替え
+// ==========================================
+window._prefCurrentTab = 'text';
+
+window.switchPrefTab = function(tab) {
+    window._prefCurrentTab = tab;
+    const textContent = document.getElementById('pref-text-content');
+    const mapContent  = document.getElementById('pref-map-content');
+    const mapContainer = document.getElementById('pref-map-container');
+    const btnText = document.getElementById('pref-tab-text');
+    const btnMap  = document.getElementById('pref-tab-map');
+
+    if (tab === 'text') {
+        textContent.style.display  = '';
+        mapContent.style.display   = 'none';
+        btnText.classList.add('active');
+        btnMap.classList.remove('active');
+    } else {
+        textContent.style.display  = 'none';
+        mapContent.style.display   = '';
+        mapContainer.style.display = '';
+        btnText.classList.remove('active');
+        btnMap.classList.add('active');
+        renderPrefectureMap();
+    }
+};
+
+// ==========================================
+//  地図版描画 (Leaflet + OpenStreetMap)
+// ==========================================
+let _prefMap = null;
+let _prefMapInitialized = false;
+
+// 47都道府県 代表座標
+const prefectureCoords = {
+    "北海道": [43.064, 141.347], "青森県": [40.824, 140.740], "岩手県": [39.704, 141.153],
+    "宮城県": [38.269, 140.872], "秋田県": [39.719, 140.102], "山形県": [38.241, 140.364],
+    "福島県": [37.750, 140.468], "茨城県": [36.342, 140.447], "栃木県": [36.566, 139.883],
+    "群馬県": [36.391, 139.060], "埼玉県": [35.857, 139.649], "千葉県": [35.605, 140.123],
+    "東京都": [35.689, 139.692], "神奈川県": [35.447, 139.642], "新潟県": [37.902, 139.023],
+    "富山県": [36.695, 137.211], "石川県": [36.594, 136.626], "福井県": [36.065, 136.222],
+    "山梨県": [35.664, 138.568], "長野県": [36.651, 138.181], "岐阜県": [35.391, 136.722],
+    "静岡県": [34.977, 138.383], "愛知県": [35.181, 136.907], "三重県": [34.730, 136.509],
+    "滋賀県": [35.004, 135.869], "京都府": [35.021, 135.756], "大阪府": [34.686, 135.520],
+    "兵庫県": [34.691, 135.183], "奈良県": [34.685, 135.833], "和歌山県": [34.226, 135.168],
+    "鳥取県": [35.504, 134.238], "島根県": [35.472, 133.051], "岡山県": [34.662, 133.935],
+    "広島県": [34.396, 132.459], "山口県": [34.186, 131.471], "徳島県": [34.066, 134.560],
+    "香川県": [34.340, 134.043], "愛媛県": [33.842, 132.766], "高知県": [33.560, 133.531],
+    "福岡県": [33.607, 130.418], "佐賀県": [33.249, 130.299], "長崎県": [32.745, 129.874],
+    "熊本県": [32.790, 130.742], "大分県": [33.238, 131.613], "宮崎県": [31.911, 131.424],
+    "鹿児島県": [31.560, 130.558], "沖縄県": [26.212, 127.681]
+};
+
+function getPrefScoreColor(score) {
+    if (score >= 90) return '#d4af37'; // S: 金
+    if (score >= 70) return '#ef4444'; // A: 赤
+    if (score >= 60) return '#3b82f6'; // B: 青
+    return '#6b7280';                  // C: 灰
+}
+function getPrefRankLabel(score) {
+    if (score >= 90) return 'S';
+    if (score >= 70) return 'A';
+    if (score >= 60) return 'B';
+    return 'C';
+}
+
+window.renderPrefectureMap = function() {
+    // 既に今日の日付で初期化済みなら再描画しない
+    const dateStr = getJSTDateString();
+    if (_prefMapInitialized && _prefMap && _prefMap._tenmeiDate === dateStr) return;
+
+    // ランキングデータを同じロジックで再計算
+    let rawData = prefecturesList.map((pref, index) => {
+        const seed = dateStr + "_" + pref;
+        const rng = new SeededRandom(seed);
+        return { name: pref, raw: rng.next(), index: index };
+    });
+    const maxRaw = Math.max(...rawData.map(d => d.raw));
+    const minRaw = Math.min(...rawData.map(d => d.raw));
+    const limitRng = new SeededRandom(dateStr + "_pref_limits");
+    const targetTop    = Math.floor(limitRng.next() * 6)  + 95;
+    const targetBottom = Math.floor(limitRng.next() * 7)  + 49;
+
+    let rankingData = rawData.map(d => {
+        const normalized = (d.raw - minRaw) / (maxRaw - minRaw);
+        const finalScore = Math.floor(normalized * (targetTop - targetBottom) + targetBottom);
+        const seed = dateStr + "_" + d.name;
+        const textRng = new SeededRandom(seed);
+        return {
+            name: d.name,
+            score: finalScore,
+            text: generatePrefectureText(d.name, finalScore, textRng, d.index)
+        };
+    });
+    rankingData.sort((a, b) => b.score - a.score);
+    rankingData.forEach((d, i) => { d.rank = i + 1; });
+
+    // マップの初期化 or リセット
+    if (_prefMap) {
+        _prefMap.remove();
+        _prefMap = null;
+    }
+
+    const mapEl = document.getElementById('pref-map');
+    if (!mapEl) return;
+
+    _prefMap = L.map('pref-map', {
+        center: [36.5, 137.5],
+        zoom: 5,
+        scrollWheelZoom: false
+    });
+    _prefMap._tenmeiDate = dateStr;
+
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '© OpenStreetMap contributors',
+        maxZoom: 18
+    }).addTo(_prefMap);
+
+    // 各都道府県にサークルマーカーを追加
+    rankingData.forEach(item => {
+        const coords = prefectureCoords[item.name];
+        if (!coords) return;
+
+        const color    = getPrefScoreColor(item.score);
+        const rankLabel = getPrefRankLabel(item.score);
+        const rankScoreClass = `rank-${rankLabel}`;
+
+        // スコアに応じてサイズも変化 (上位ほど大きく)
+        const radius = 8 + Math.round((item.score - 49) / 51 * 10);
+
+        const circle = L.circleMarker(coords, {
+            radius: radius,
+            fillColor: color,
+            color: '#fff',
+            weight: 2,
+            opacity: 1,
+            fillOpacity: 0.88
+        }).addTo(_prefMap);
+
+        // ポップアップ
+        const popupContent = `
+            <div class="pref-popup-inner">
+                <div class="pp-rank">第 ${item.rank} 位</div>
+                <div class="pp-name">${item.name}</div>
+                <div class="pp-score ${rankScoreClass}">${item.score} <small style="font-size:0.55em;font-weight:bold;color:#888;">${rankLabel}ランク</small></div>
+                <div class="pp-text">${item.text}</div>
+            </div>
+        `;
+        circle.bindPopup(popupContent, { maxWidth: 260, className: 'pref-leaflet-popup' });
+
+        // ホバーでも名前+スコアを表示（スマホ以外）
+        circle.bindTooltip(`${item.name}　${item.score}`, { permanent: false, direction: 'top' });
+    });
+
+    _prefMapInitialized = true;
+};
+
+
     // 文章生成ロジック (47種類の長文テンプレートからスコアに応じて選択)
     function generatePrefectureText(prefName, score, rng, index) {
         
@@ -14003,6 +14343,10 @@ function showLoading(show) {
             // ▼ ここが重要：都道府県ランキングの呼び出し
             if(viewId === 'prefecture') {
                 renderPrefectureRanking();
+                // 現在のタブが地図版なら地図も再描画
+                if (window._prefCurrentTab === 'map') {
+                    renderPrefectureMap();
+                }
             }
             // 各ビューごとの初期化ロジック (showView関数内に追加)
         if(viewId === 'omamori') {
