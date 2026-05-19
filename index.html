@@ -7594,7 +7594,7 @@ body.sidebar-collapsed #sidebar:hover .nav-group-title {
                 <div class="mt-6 flex flex-wrap justify-center gap-4 text-xs font-mono text-gray-500 bg-white dark:bg-zinc-800 px-6 py-3 rounded-full border border-gray-200 dark:border-gray-700 shadow-sm">
                     <span>制定: 2026/01/02</span>
                     <span class="text-gray-300 dark:text-gray-600">|</span>
-                    <span>改定: 2026/05/17 (第10版)</span>
+                    <span>改定: 2026/05/19 (第11版)</span>
                     <span class="text-gray-300 dark:text-gray-600">|</span>
                     <span>運営: nden148</span>
                 </div>
@@ -7743,6 +7743,12 @@ body.sidebar-collapsed #sidebar:hover .nav-group-title {
                                     <p class="text-gray-500">送信される情報：地図タイルの取得リクエスト（アクセス元IPアドレスを含む）</p>
                                     <p class="mt-1">特記事項：地図タイルの取得はユーザーのブラウザから直接OpenStreetMapのサーバーへ行われます。送信される情報に氏名・メールアドレス等の個人を特定する情報は含まれません。OpenStreetMapは世界中の有志によるオープンデータプロジェクトであり、商業的なデータ収集・広告目的への利用は行われておりません。詳細は <a href="https://wiki.osmfoundation.org/wiki/Privacy_Policy" target="_blank" rel="noopener noreferrer" class="underline text-blue-500">OpenStreetMap Foundation プライバシーポリシー</a> をご参照ください。</p>
                                     <p class="mt-1">現在地ボタンについて：地図版に設置している「現在地ボタン」を押した場合、ブラウザからお客様の端末の位置情報（緯度・経度）の取得許可を求めます。取得した位置情報は地図の中心座標を移動させる目的のみに使用され、当サイトのサーバーおよびOpenStreetMapのサーバーには送信・保存されません。位置情報の許可はブラウザの設定からいつでも取り消すことができます。</p>
+                                </div>
+                                <div class="bg-white dark:bg-black/20 p-3 rounded border border-gray-200 dark:border-gray-700 text-xs">
+                                    <p class="font-bold text-sm">8. Cloudflare Turnstile (Cloudflare, Inc.)</p>
+                                    <p class="text-gray-500">利用目的：メールアドレスによるログイン・新規登録の際、ボット（自動化されたプログラム）による不正アクセスを防ぐためのセキュリティチェック</p>
+                                    <p class="text-gray-500">送信される情報：ウィジェット操作に伴うブラウザ環境情報（User Agent、画面解像度等）、アクセス元IPアドレス</p>
+                                    <p class="mt-1">特記事項：Cloudflare Turnstileはユーザーの操作パターンをCloudflareのサーバーで解析し、人間による操作かボットによる操作かを自動的に判定します。取得した情報は当サイトのサーバーには保存されず、判定処理はCloudflareの管理下で行われます。「Googleでログイン」を使用される場合は本機能は適用されません。Cloudflareのデータ利用方針については <a href="https://www.cloudflare.com/privacypolicy/" target="_blank" rel="noopener noreferrer" class="underline text-blue-500">Cloudflare プライバシーポリシー</a> をご参照ください。</p>
                                 </div>
                             </div>
                         </div>
@@ -8255,6 +8261,45 @@ function escapeHtml(str) {
     const newsData = [
 
 
+{
+    id: 77,
+    title: "【復活】セキュリティ認証（Turnstile）を再実装いたしました",
+    date: "2026/05/19",
+    time: "14:21",
+    tag: "セキュリティ",
+    tagColor: "text-blue-600",
+    borderColor: "border-blue-500",
+    desc: "2026年1月に不具合により撤去したCloudflare Turnstileを、描画タイミングの修正と、Workerでのサーバーサイド検証の実装により、正式に再導入いたしました。",
+    content: `
+        <div class="article-content">
+            <p>いつも「運勢・天命乃杜」をご利用いただき、誠にありがとうございます。個人開発者のnden148です。</p>
+            <p>本日、<strong>Cloudflare Turnstile</strong>（ボット対策の自動セキュリティチェック機能）を再び実装いたしました。メールアドレスによるログイン・新規登録の際、認証コードを送信する前に表示される確認UIです。</p>
+
+            <h3>撤去の経緯（2026年1月25日）</h3>
+            <p>約4ヶ月前、社務所だより記事「<strong>【撤去】セキュリティ認証（Turnstile）の廃止と、参拝手順の簡略化について</strong>」にてご報告した通り、一度このTurnstileを完全に撤去しております。</p>
+            <p>当時の問題は、<strong>「内部処理の競合」</strong>でした。ページ読み込みの時点でウィジェットを描画しようとしたところ、ログイン・登録フォームを内包するモーダルがまだ非表示（display:none）の状態だったため、描画先のDOM要素を正しく認識できず、エラーが発生しておりました。</p>
+
+            <h3>今回、なぜ再実装できたのか</h3>
+            <p>解決の核心は、<strong>描画のタイミングを変えること</strong>でした。</p>
+            <p>以前の実装では、ページ読み込み完了と同時にウィジェットを描画しようとしていました。今回は「フォームのモーダルを開いた瞬間」に描画を行うよう変更しました。フォームが画面上に実際に表示された状態でウィジェットを描画するため、DOMの競合が発生しません。モーダルを閉じる際にはウィジェットを適切にリセットし、次に開いた時にも正常動作するよう制御しています。</p>
+            <p>また今回は、フロントエンドの修正にとどまらず、<strong>サーバーサイド（Cloudflare Workers）側での検証</strong>も同時に実装しました。Turnstileが発行したトークンをWorkerがCloudflareの検証APIに問い合わせ、本物と確認された場合のみ以降の処理（認証コードの送信）へと進む仕組みです。ウィジェットの表示だけでなく、バックエンドでの検証まで完結させることで、実質的なボット対策として機能する形になっています。</p>
+
+            <h3>Googleでログインされる方について</h3>
+            <p>「Googleでログイン」をご利用の場合、Turnstileは表示されません。これは仕様通りの動作です。Google OAuth 2.0の認証フローはGoogle側のサーバーを経由するため、当サイト独自のボット対策チェックを重ねて適用する必要がなく、意図的に除外しております。</p>
+
+            <h3>プライバシーポリシーの改訂（第11版）</h3>
+            <p>今回のTurnstile再実装に伴い、プライバシーポリシーを本日付けで<strong>第11版</strong>へ改訂いたしました。主な変更点は以下の通りです。</p>
+            <ul class="list-disc ml-5 mb-4">
+                <li>第5条（外部サービスとの連携）に「8. Cloudflare Turnstile (Cloudflare, Inc.)」の項目を追加。ボット判定処理のためにアクセス元情報が送信される旨を明記いたしました。</li>
+            </ul>
+            <p>改訂後のプライバシーポリシーは、サイドメニューの「プライバシーポリシー」よりご確認いただけます。</p>
+
+            <h3>あの1月の撤去への、個人的な後日談</h3>
+            <p>「より強固な守りを目指して設置した門番が、参拝者の行く手を阻んだ」と、撤去記事に書きました。あの一文は今も正確だと思っています。問題は門番の存在そのものではなく、門番を<em>いつ・どこに</em>立たせるかでした。</p>
+            <p>今度こそ、静かに、しかし確かに機能する結界として働いてくれることを願っています。</p>
+        </div>
+    `
+},
 {
     id: 76,
     title: "【開発予告】Ver. 3.0 ——「天命乃杜」、UIを全面刷新します",
