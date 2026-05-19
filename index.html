@@ -5985,94 +5985,32 @@ body.sidebar-collapsed #sidebar:hover .nav-group-title {
                     </button>
                 </div>
 
-                <!-- 7. 統計 (おみくじの轍・抜粋版) -->
-                <div class="bento-card bento-stats relative">
-                    <div class="flex justify-between items-center mb-2 border-b border-gray-200 dark:border-gray-700 pb-2">
-                        <h3 class="font-bold flex items-center gap-2"><i class="bi bi-bar-chart-line-fill text-red-500"></i> 全体の傾向</h3>
-                        <span class="text-[10px] bg-gray-100 dark:bg-gray-700 px-2 py-1 rounded" id="stats-update-time">--:--:--</span>
-                    </div>
-                    
-                    <!-- 表示エリア: 高さを制限し、はみ出した部分は隠す(overflow-hidden) -->
-                    <div class="relative overflow-hidden" style="height: 180px;">
-                        <div id="home-history-stats" class="space-y-2 pb-20">
-                             <!-- 12段階 統計表示 (要素は全て置いておくが、CSSで見えなくなる) -->
-                             <div class="grid grid-cols-1 gap-1">
-                                 <!-- 大吉 -->
-                                 <div class="flex justify-between text-xs"><span>大吉</span><span><span id="cnt-daikichi" class="mr-2 font-mono opacity-70">0</span><span id="stat-daikichi">0.00%</span></span></div>
-                                 <div class="w-full bg-gray-200 dark:bg-zinc-700 h-1.5 rounded mb-1"><div id="bar-daikichi" class="bg-yellow-400 h-1.5 rounded" style="width: 0%"></div></div>
-                                 
-                                 <!-- 中吉 -->
-                                 <div class="flex justify-between text-xs"><span>中吉</span><span><span id="cnt-chukichi" class="mr-2 font-mono opacity-70">0</span><span id="stat-chukichi">0.00%</span></span></div>
-                                 <div class="w-full bg-gray-200 dark:bg-zinc-700 h-1.5 rounded mb-1"><div id="bar-chukichi" class="bg-orange-400 h-1.5 rounded" style="width: 0%"></div></div>
-
-                                 <!-- 小吉 -->
-                                 <div class="flex justify-between text-xs"><span>小吉</span><span><span id="cnt-shokichi" class="mr-2 font-mono opacity-70">0</span><span id="stat-shokichi">0.00%</span></span></div>
-                                 <div class="w-full bg-gray-200 dark:bg-zinc-700 h-1.5 rounded mb-1"><div id="bar-shokichi" class="bg-green-400 h-1.5 rounded" style="width: 0%"></div></div>
-
-                                 <!-- 吉 -->
-                                 <div class="flex justify-between text-xs"><span>吉</span><span><span id="cnt-kichi" class="mr-2 font-mono opacity-70">0</span><span id="stat-kichi">0.00%</span></span></div>
-                                 <div class="w-full bg-gray-200 dark:bg-zinc-700 h-1.5 rounded mb-1"><div id="bar-kichi" class="bg-red-400 h-1.5 rounded" style="width: 0%"></div></div>
-
-                                 <!-- 半吉 -->
-                                 <div class="flex justify-between text-xs"><span>半吉</span><span><span id="cnt-hankichi" class="mr-2 font-mono opacity-70">0</span><span id="stat-hankichi">0.00%</span></span></div>
-                                 <div class="w-full bg-gray-200 dark:bg-zinc-700 h-1.5 rounded mb-1"><div id="bar-hankichi" class="bg-red-300 h-1.5 rounded" style="width: 0%"></div></div>
-
-                                 <!-- 以下、隠れる要素（データ更新のために存在はさせる） -->
-                                 <!-- 末吉 -->
-                                 <div class="flex justify-between text-xs"><span>末吉</span><span><span id="cnt-suekichi" class="mr-2 font-mono opacity-70">0</span><span id="stat-suekichi">0.00%</span></span></div>
-                                 <div class="w-full bg-gray-200 dark:bg-zinc-700 h-1.5 rounded mb-1"><div id="bar-suekichi" class="bg-blue-400 h-1.5 rounded" style="width: 0%"></div></div>
-                                 <!-- 末小吉 -->
-                                 <div class="flex justify-between text-xs"><span>末小吉</span><span><span id="cnt-sueshokichi" class="mr-2 font-mono opacity-70">0</span><span id="stat-sueshokichi">0.00%</span></span></div>
-                                 <div class="w-full bg-gray-200 dark:bg-zinc-700 h-1.5 rounded mb-1"><div id="bar-sueshokichi" class="bg-blue-300 h-1.5 rounded" style="width: 0%"></div></div>
-                                 <!-- 凶 -->
-                                 <div class="flex justify-between text-xs"><span>凶</span><span><span id="cnt-kyo" class="mr-2 font-mono opacity-70">0</span><span id="stat-kyo">0.00%</span></span></div>
-                                 <div class="w-full bg-gray-200 dark:bg-zinc-700 h-1.5 rounded mb-1"><div id="bar-kyo" class="bg-gray-400 h-1.5 rounded" style="width: 0%"></div></div>
-                                 <!-- 小凶 -->
-                                 <div class="flex justify-between text-xs"><span>小凶</span><span><span id="cnt-shokyo" class="mr-2 font-mono opacity-70">0</span><span id="stat-shokyo">0.00%</span></span></div>
-                                 <div class="w-full bg-gray-200 dark:bg-zinc-700 h-1.5 rounded mb-1"><div id="bar-shokyo" class="bg-gray-500 h-1.5 rounded" style="width: 0%"></div></div>
-                                 <!-- 半凶 -->
-                                 <div class="flex justify-between text-xs"><span>半凶</span><span><span id="cnt-hankyo" class="mr-2 font-mono opacity-70">0</span><span id="stat-hankyo">0.00%</span></span></div>
-                                 <div class="w-full bg-gray-200 dark:bg-zinc-700 h-1.5 rounded mb-1"><div id="bar-hankyo" class="bg-gray-600 dark:bg-gray-400 h-1.5 rounded" style="width: 0%"></div></div>
-                                 <!-- 末凶 -->
-                                 <div class="flex justify-between text-xs"><span>末凶</span><span><span id="cnt-suekyo" class="mr-2 font-mono opacity-70">0</span><span id="stat-suekyo">0.00%</span></span></div>
-                                 <div class="w-full bg-gray-200 dark:bg-zinc-700 h-1.5 rounded mb-1"><div id="bar-suekyo" class="bg-gray-700 h-1.5 rounded" style="width: 0%"></div></div>
-                                 <!-- 大凶 -->
-                                 <div class="flex justify-between text-xs"><span>大凶</span><span><span id="cnt-daikyo" class="mr-2 font-mono opacity-70">0</span><span id="stat-daikyo">0.00%</span></span></div>
-                                 <div class="w-full bg-gray-200 dark:bg-zinc-700 h-1.5 rounded mb-1"><div id="bar-daikyo" class="bg-black h-1.5 rounded" style="width: 0%"></div></div>
-                             </div>
-                        </div>
-                        
-                        <!-- グラデーションマスクと誘導ボタン -->
-                        <div class="absolute bottom-0 left-0 w-full h-24 bg-gradient-to-t from-white via-white/95 to-transparent dark:from-[#2c2c2c] dark:via-[#2c2c2c]/95 flex items-end justify-center pb-0">
-                            <button onclick="showView('history')" class="btn-primary py-3 px-6 shadow-lg text-sm font-bold w-full mb-0 flex items-center justify-center gap-2 transform transition hover:scale-105">
-                                <i class="bi bi-bar-chart-line"></i> すべての統計を見る
-                            </button>
-                        </div>
-                    </div>
-                </div>
-
-               <!-- 6. 社務所だより (隙間修正版) -->
+                <!-- 7. クイックアクセス（Ver.3.0方針） -->
                 <div class="bento-card bento-news">
-                    <div class="flex justify-between items-center mb-2 border-b border-gray-200 dark:border-gray-700 pb-2">
-                        <h3 class="font-bold flex items-center gap-2"><i class="bi bi-bell-fill text-blue-500"></i> 社務所だより</h3>
-                        <button onclick="showView('news')" class="text-xs text-blue-500 hover:underline">一覧</button>
+                    <div class="flex justify-between items-center mb-3 border-b border-gray-200 dark:border-gray-700 pb-2">
+                        <h3 class="font-bold flex items-center gap-2"><i class="bi bi-lightning-charge-fill text-amber-500"></i> クイックアクセス</h3>
                     </div>
-                    <!-- space-y-3 を space-y-0 にし、隙間をなくして境界線を追加 -->
-                    <ul class="text-sm space-y-0 divide-y divide-gray-100 dark:divide-gray-800" id="home-news-list">
-                        <!-- JSで自動挿入 -->
-                    </ul>
+                    <div class="grid grid-cols-1 sm:grid-cols-3 gap-2 text-sm">
+                        <button onclick="showView('zodiac')" class="px-3 py-3 rounded-xl border border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-zinc-800 transition font-bold">12星座占い</button>
+                        <button onclick="showView('luck')" class="px-3 py-3 rounded-xl border border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-zinc-800 transition font-bold">全国の運気</button>
+                        <button onclick="showView('history')" class="px-3 py-3 rounded-xl border border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-zinc-800 transition font-bold">おみくじの轍</button>
+                    </div>
                 </div>
 
-                <!-- 7. 神籤草子 (隙間修正版) -->
+               <!-- 8. 社務所だより / 神籤草子（タブ統合） -->
                 <div class="bento-card bento-col">
                     <div class="flex justify-between items-center mb-2 border-b border-gray-200 dark:border-gray-700 pb-2">
-                        <h3 class="font-bold flex items-center gap-2"><i class="bi bi-book-half text-green-500"></i> 神籤草子</h3>
-                        <button onclick="showView('column')" class="text-xs text-green-500 hover:underline">一覧</button>
+                        <h3 class="font-bold flex items-center gap-2"><i class="bi bi-journal-richtext text-blue-500"></i> 杜の読み物</h3>
+                        <div class="flex items-center gap-2 text-xs">
+                            <button id="home-tab-news" onclick="switchHomeFeedTab('news')" class="px-2 py-1 rounded bg-blue-500 text-white">社務所だより</button>
+                            <button id="home-tab-column" onclick="switchHomeFeedTab('column')" class="px-2 py-1 rounded bg-gray-100 dark:bg-zinc-800">神籤草子</button>
+                        </div>
                     </div>
-                    <!-- 同様に隙間を修正 -->
-                    <ul class="text-sm space-y-0 divide-y divide-gray-100 dark:divide-gray-800" id="home-column-list">
-                        <!-- JSで自動挿入 -->
-                    </ul>
+                    <ul class="text-sm space-y-0 divide-y divide-gray-100 dark:divide-gray-800" id="home-news-list"></ul>
+                    <ul class="text-sm space-y-0 divide-y divide-gray-100 dark:divide-gray-800 hidden" id="home-column-list"></ul>
+                    <div class="pt-3 text-right">
+                        <button id="home-feed-more" onclick="showView('news')" class="text-xs text-blue-500 hover:underline">一覧</button>
+                    </div>
                 </div>
 
             </div>
@@ -12834,6 +12772,22 @@ function createPaginationHTML(type, current, total) {
     //  描画ロジック (一覧・ホーム・詳細)
     // ==========================================
 
+    function switchHomeFeedTab(tab) {
+        const newsList = document.getElementById('home-news-list');
+        const colList = document.getElementById('home-column-list');
+        const newsTab = document.getElementById('home-tab-news');
+        const colTab = document.getElementById('home-tab-column');
+        const moreBtn = document.getElementById('home-feed-more');
+        if (!newsList || !colList || !newsTab || !colTab || !moreBtn) return;
+
+        const isNews = tab === 'news';
+        newsList.classList.toggle('hidden', !isNews);
+        colList.classList.toggle('hidden', isNews);
+        newsTab.className = `px-2 py-1 rounded ${isNews ? 'bg-blue-500 text-white' : 'bg-gray-100 dark:bg-zinc-800'}`;
+        colTab.className = `px-2 py-1 rounded ${!isNews ? 'bg-green-500 text-white' : 'bg-gray-100 dark:bg-zinc-800'}`;
+        moreBtn.onclick = () => showView(isNews ? 'news' : 'column');
+    }
+
 
     // 1. ホーム画面のリスト (隙間修正・コンパクト版)
     window.renderHomeLists = function() {
@@ -12864,6 +12818,7 @@ function createPaginationHTML(type, current, total) {
                 </li>
             `).join('');
         }
+        switchHomeFeedTab('news');
     };
 
     // 2. 「社務所だより」描画関数
