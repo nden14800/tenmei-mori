@@ -80,6 +80,8 @@
     <!-- Leaflet Locate Control (現在地ボタン) -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet.locatecontrol/dist/L.Control.Locate.min.css" />
     <script src="https://cdn.jsdelivr.net/npm/leaflet.locatecontrol/dist/L.Control.Locate.min.js" charset="utf-8"></script>
+    <!-- Cloudflare Turnstile -->
+    <script src="https://challenges.cloudflare.com/turnstile/v0/api.js?onload=onloadTurnstileCallback" async defer></script>
     
     <style>
         :root {
@@ -6795,6 +6797,7 @@ body.sidebar-collapsed #sidebar:hover .nav-group-title {
                         <label class="profile-input-label">パスワード</label>
                         <input type="password" id="login-password" class="profile-input-field" placeholder="********">
                     </div>
+                    <div id="turnstile-login" class="flex justify-center mt-2"></div>
                     <button onclick="initiateAuth('login')" class="btn-primary w-full justify-center py-3 mt-2 shadow-lg">
                         <i class="bi bi-send"></i> 認証コードを送信
                     </button>
@@ -6814,6 +6817,7 @@ body.sidebar-collapsed #sidebar:hover .nav-group-title {
                         <label class="profile-input-label">パスワード</label>
                         <input type="password" id="reg-password" class="profile-input-field" placeholder="********">
                     </div>                    
+                    <div id="turnstile-register" class="flex justify-center mt-2"></div>
                     <button onclick="initiateAuth('register')" class="btn-primary w-full justify-center py-3 mt-2 shadow-lg">
                         <i class="bi bi-send"></i> 認証コードを送信
                     </button>
@@ -15695,6 +15699,9 @@ function startAuthFlow(mode) {
         regFields.classList.remove('hidden');
         title.textContent = '新規登録';
     }
+
+    // フォームが表示されてからTurnstileウィジェットを描画・リセット
+    renderTurnstileForMode(mode);
 }
 
 // 2. 選択画面に戻る
@@ -18626,21 +18633,32 @@ function renderGridLines(container, maxVal) {
 let turnstileLoginId = null;
 let turnstileRegisterId = null;
 const SITE_KEY = "0x4AAAAAACP5ArwUHoQ6FdSc"; // ★必ず書き換える
+let turnstileReady = false;
 
 // Turnstile APIが読み込まれたら自動的に実行される関数
+// ※ページ読み込み時にはウィジェットを描画せず、準備完了フラグのみ立てる
 window.onloadTurnstileCallback = function() {
-    // ログイン用のウィジェット生成
-    turnstileLoginId = turnstile.render('#turnstile-login', {
-        sitekey: SITE_KEY,
-        theme: 'auto',
-    });
-
-    // 登録用のウィジェット生成
-    turnstileRegisterId = turnstile.render('#turnstile-register', {
-        sitekey: SITE_KEY,
-        theme: 'auto',
-    });
+    turnstileReady = true;
 };
+
+// モード別にウィジェットを描画またはリセットする関数
+// startAuthFlow() から呼び出すことで、フォームが表示されてから描画する
+function renderTurnstileForMode(mode) {
+    if (!turnstileReady) return;
+    if (mode === 'login') {
+        if (turnstileLoginId !== null) {
+            turnstile.reset(turnstileLoginId);
+        } else {
+            turnstileLoginId = turnstile.render('#turnstile-login', { sitekey: SITE_KEY, theme: 'auto' });
+        }
+    } else {
+        if (turnstileRegisterId !== null) {
+            turnstile.reset(turnstileRegisterId);
+        } else {
+            turnstileRegisterId = turnstile.render('#turnstile-register', { sitekey: SITE_KEY, theme: 'auto' });
+        }
+    }
+}
 
 // --- 認証コード送信 (initiateAuth) ---
     async function initiateAuth(mode) {
@@ -18659,6 +18677,11 @@ window.onloadTurnstileCallback = function() {
         if(!email || !pass) return showToast("メールアドレスとパスワードを入力してください", "warning");
         if(mode === 'register' && !username) return showToast("ユーザー名を入力してください", "warning");
 
+        // Turnstileトークン取得
+        const widgetId = (mode === 'login') ? turnstileLoginId : turnstileRegisterId;
+        const turnstileToken = (turnstileReady && widgetId !== null) ? turnstile.getResponse(widgetId) : null;
+        if (!turnstileToken) return showToast("セキュリティチェックを完了してください", "warning");
+
         showLoading(true);
 
         try {
@@ -18669,7 +18692,8 @@ window.onloadTurnstileCallback = function() {
                     email, 
                     password: pass, 
                     username: mode === 'register' ? username : undefined,
-                    mode: mode 
+                    mode: mode,
+                    cf_turnstile_token: turnstileToken
                 }) 
             });
             
@@ -18692,11 +18716,15 @@ window.onloadTurnstileCallback = function() {
             } else {
                 // ▼ alert置き換え
                 showToast(`送信エラー: ${data.error || data.message || '不明なエラー'}`, "error");
+                // エラー時はウィジェットをリセットして再挑戦できるようにする
+                if (turnstileReady && widgetId !== null) turnstile.reset(widgetId);
             }
         } catch(e) { 
             console.error("Auth Error:", e);
             // ▼ alert置き換え
-            showToast("通信エラーが発生しました。\nインターネット接続を確認してください。", "error"); 
+            showToast("通信エラーが発生しました。\nインターネット接続を確認してください。", "error");
+            // エラー時はウィジェットをリセットして再挑戦できるようにする
+            if (turnstileReady && widgetId !== null) turnstile.reset(widgetId);
         } finally { 
             showLoading(false); 
         }
