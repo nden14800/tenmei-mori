@@ -3137,7 +3137,7 @@
             }
         }
         
-        /* --- v3.0 ホームリデザイン（和モダン） --- */
+        /* --- v3.0 ホームリデザイン（和モダン・超刷新版） --- */
 
         /* Heroカード */
         .bento-hero {
@@ -3145,40 +3145,35 @@
             display: flex;
             flex-direction: column;
             justify-content: space-between;
-            min-height: 230px;
+            min-height: 240px;
             border: none;
-            border-radius: 24px;
-            padding: 32px;
+            border-radius: 28px;
+            padding: 36px;
             position: relative;
             overflow: hidden;
-            background: linear-gradient(135deg, #1a0a0a 0%, #2d1111 60%, #1a0808 100%);
-            box-shadow: 0 8px 32px rgba(185,28,28,0.18), 0 2px 8px rgba(0,0,0,0.12);
+            background: linear-gradient(140deg, #110505 0%, #2a0e0e 45%, #1a0808 100%);
+            box-shadow: 0 8px 40px rgba(185,28,28,0.22), 0 2px 8px rgba(0,0,0,0.18);
+            transition: box-shadow 0.4s, transform 0.4s;
         }
-        /* 金の斜めライン装飾 */
         .bento-hero::before {
             content: '';
             position: absolute;
-            top: 0; left: 0; right: 0; bottom: 0;
-            background: linear-gradient(135deg,
-                rgba(197,160,89,0.10) 0%,
-                transparent 40%,
-                rgba(197,160,89,0.04) 100%
-            );
+            inset: 0;
+            background:
+                radial-gradient(ellipse at 80% 20%, rgba(197,160,89,0.13) 0%, transparent 60%),
+                radial-gradient(ellipse at 10% 80%, rgba(185,28,28,0.18) 0%, transparent 50%);
             pointer-events: none;
         }
-        /* 左端の金ライン */
         .bento-hero::after {
             content: '';
             position: absolute;
-            left: 0; top: 10%; bottom: 10%;
-            width: 3px;
-            background: linear-gradient(to bottom, transparent, var(--accent-gold), transparent);
-            border-radius: 0 2px 2px 0;
+            left: 0; top: 12%; bottom: 12%;
+            width: 2px;
+            background: linear-gradient(to bottom, transparent, rgba(197,160,89,0.8), transparent);
         }
         .bento-hero:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 16px 48px rgba(185,28,28,0.28), 0 4px 16px rgba(0,0,0,0.16);
-            border-color: transparent;
+            transform: translateY(-3px);
+            box-shadow: 0 20px 60px rgba(185,28,28,0.32), 0 4px 16px rgba(0,0,0,0.2);
         }
 
         /* ユーザーカード */
@@ -3189,54 +3184,79 @@
             justify-content: space-between;
             background: var(--card-bg);
             border: 1px solid var(--card-border);
+            border-radius: 28px;
+            padding: 28px;
             position: relative;
             overflow: hidden;
+        }
+        .bento-user::before {
+            content: '';
+            position: absolute;
+            top: -40px; right: -40px;
+            width: 130px; height: 130px;
+            background: radial-gradient(circle, rgba(185,28,28,0.07) 0%, transparent 70%);
+            pointer-events: none;
         }
         .bento-user::after {
             content: '';
             position: absolute;
-            bottom: 0; right: 0;
-            width: 80px; height: 80px;
-            background: radial-gradient(circle at bottom right, rgba(185,28,28,0.07), transparent 70%);
-            pointer-events: none;
+            bottom: 0; left: 0; right: 0;
+            height: 2px;
+            background: linear-gradient(to right, transparent, rgba(197,160,89,0.4), transparent);
         }
 
         /* クイックアクセスカード */
         .bento-quick {
             grid-column: span 4;
             display: flex;
-            flex-direction: column;
-            justify-content: space-between;
-            min-height: 110px;
+            flex-direction: row;
+            align-items: center;
+            gap: 16px;
+            min-height: 90px;
             cursor: pointer;
             background: var(--card-bg);
             border: 1px solid var(--card-border);
-            transition: all 0.3s cubic-bezier(0.25,0.8,0.25,1);
+            border-radius: 20px;
+            padding: 22px 24px;
             position: relative;
             overflow: hidden;
+            transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
         }
-        .bento-quick::before {
+        .bento-quick::after {
             content: '';
             position: absolute;
-            bottom: 0; left: 0; right: 0;
-            height: 2px;
-            background: linear-gradient(to right, var(--accent-red), var(--accent-gold));
-            transform: scaleX(0);
-            transform-origin: left;
-            transition: transform 0.3s ease;
+            inset: 0;
+            background: linear-gradient(135deg, rgba(185,28,28,0.04), transparent);
+            opacity: 0;
+            transition: opacity 0.3s;
         }
-        .bento-quick:hover::before { transform: scaleX(1); }
         .bento-quick:hover {
             transform: translateY(-4px);
-            box-shadow: 0 12px 28px rgba(185,28,28,0.12), 0 4px 8px rgba(0,0,0,0.06);
-            border-color: rgba(185,28,28,0.25);
+            border-color: rgba(185,28,28,0.3);
+            box-shadow: 0 12px 32px rgba(185,28,28,0.12), 0 4px 8px rgba(0,0,0,0.06);
         }
+        .bento-quick:hover::after { opacity: 1; }
         .bento-quick .quick-icon {
-            width: 36px; height: 36px;
-            border-radius: 10px;
+            width: 44px; height: 44px;
+            border-radius: 14px;
             display: flex; align-items: center; justify-content: center;
-            font-size: 1.1rem;
-            margin-bottom: 8px;
+            font-size: 1.2rem;
+            flex-shrink: 0;
+            transition: transform 0.3s;
+        }
+        .bento-quick:hover .quick-icon { transform: scale(1.1) rotate(-5deg); }
+        .bento-quick .quick-text { flex: 1; min-width: 0; }
+        .bento-quick .quick-arrow {
+            font-size: 1.3rem;
+            color: var(--accent-red);
+            opacity: 0;
+            transform: translateX(-6px);
+            transition: all 0.3s;
+            flex-shrink: 0;
+        }
+        .bento-quick:hover .quick-arrow {
+            opacity: 1;
+            transform: translateX(0);
         }
 
         /* おしらせカード */
@@ -3244,176 +3264,168 @@
             grid-column: span 8;
             background: var(--card-bg);
             border: 1px solid var(--card-border);
+            border-radius: 20px;
+            padding: 24px;
         }
 
-        /* カウンターカード */
+        /* カウンターカード（横長・スタイリッシュ） */
         .bento-counter-v3 {
-            grid-column: span 2;
+            grid-column: span 6;
             display: flex;
-            flex-direction: column;
+            flex-direction: row;
             align-items: center;
-            justify-content: center;
-            text-align: center;
-            gap: 6px;
+            gap: 20px;
+            padding: 24px 28px;
             background: var(--card-bg);
             border: 1px solid var(--card-border);
+            border-radius: 20px;
             position: relative;
             overflow: hidden;
+            transition: all 0.3s;
         }
         .bento-counter-v3::before {
             content: '';
             position: absolute;
             top: 0; left: 0; right: 0;
-            height: 2px;
-            background: linear-gradient(to right, var(--accent-red), var(--accent-gold));
+            height: 1px;
+            background: linear-gradient(to right, transparent, rgba(197,160,89,0.5), transparent);
         }
+        .bento-counter-v3::after {
+            content: '';
+            position: absolute;
+            bottom: -30px; right: -30px;
+            width: 90px; height: 90px;
+            border-radius: 50%;
+            background: radial-gradient(circle, rgba(185,28,28,0.05), transparent 70%);
+            pointer-events: none;
+        }
+        .bento-counter-v3:hover {
+            border-color: rgba(197,160,89,0.3);
+            box-shadow: 0 6px 20px rgba(0,0,0,0.06);
+            transform: translateY(-2px);
+        }
+        .counter-icon-wrap {
+            width: 52px; height: 52px;
+            border-radius: 16px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 1.4rem;
+            flex-shrink: 0;
+        }
+        .counter-body { flex: 1; min-width: 0; }
 
-        /* Hero内テキスト */
+        /* Hero内 */
         .home-hero-watermark {
             position: absolute;
-            right: 24px;
-            top: 50%;
+            right: 28px; top: 50%;
             transform: translateY(-50%);
             font-family: 'Zen Old Mincho', serif;
-            font-size: 120px;
-            font-weight: 900;
-            color: var(--accent-gold);
-            opacity: 0.08;
+            font-size: 130px; font-weight: 900;
+            color: rgba(197,160,89,0.1);
             line-height: 1;
-            pointer-events: none;
-            user-select: none;
-            letter-spacing: -0.05em;
+            pointer-events: none; user-select: none;
         }
         .home-desc-toggle {
-            background: none;
-            border: 1px solid rgba(197,160,89,0.3);
-            padding: 5px 14px;
+            background: rgba(197,160,89,0.08);
+            border: 1px solid rgba(197,160,89,0.25);
+            padding: 5px 16px;
             border-radius: 20px;
             cursor: pointer;
             font-size: 0.72rem;
-            color: var(--accent-gold);
-            display: inline-flex;
-            align-items: center;
-            gap: 5px;
-            margin-bottom: 12px;
+            color: rgba(197,160,89,0.9);
+            display: inline-flex; align-items: center; gap: 5px;
+            margin-bottom: 14px;
             font-family: 'Zen Old Mincho', serif;
             letter-spacing: 0.06em;
-            transition: all 0.2s;
+            transition: all 0.25s;
         }
         .home-desc-toggle:hover {
-            background: rgba(197,160,89,0.1);
-            border-color: var(--accent-gold);
+            background: rgba(197,160,89,0.15);
+            border-color: rgba(197,160,89,0.5);
         }
         .home-desc-body {
-            font-size: 0.8rem;
-            line-height: 1.9;
-            color: rgba(255,255,255,0.55);
-            border-top: 1px solid rgba(197,160,89,0.2);
-            padding-top: 12px;
-            margin-bottom: 14px;
+            font-size: 0.79rem;
+            line-height: 1.95;
+            color: rgba(255,255,255,0.5);
+            border-top: 1px solid rgba(197,160,89,0.15);
+            padding-top: 14px;
+            margin-bottom: 16px;
             font-family: 'Zen Old Mincho', serif;
         }
 
         /* CTAボタン */
         .home-cta-btn {
             width: 100%;
-            background: linear-gradient(135deg, #b91c1c 0%, #991111 100%);
+            background: linear-gradient(135deg, #c41f1f 0%, #9a1111 100%);
             color: white;
-            border: 1px solid rgba(197,160,89,0.35);
-            border-radius: 12px;
-            padding: 15px;
-            font-size: 1rem;
+            border: 1px solid rgba(197,160,89,0.3);
+            border-radius: 14px;
+            padding: 16px;
+            font-size: 1.05rem;
             font-weight: 900;
             cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 10px;
+            display: flex; align-items: center; justify-content: center; gap: 10px;
             font-family: 'Zen Old Mincho', serif;
-            letter-spacing: 0.1em;
-            position: relative;
-            overflow: hidden;
+            letter-spacing: 0.12em;
+            position: relative; overflow: hidden;
             transition: all 0.3s;
-            box-shadow: 0 4px 16px rgba(185,28,28,0.4), inset 0 1px 0 rgba(255,255,255,0.1);
-            z-index: 1;
+            box-shadow: 0 4px 20px rgba(185,28,28,0.45), inset 0 1px 0 rgba(255,255,255,0.08);
         }
         .home-cta-btn::before {
             content: '';
-            position: absolute;
-            inset: 0;
-            background: linear-gradient(135deg, rgba(197,160,89,0.15), transparent);
-            opacity: 0;
-            transition: opacity 0.3s;
+            position: absolute; inset: 0;
+            background: linear-gradient(135deg, rgba(197,160,89,0.18) 0%, transparent 60%);
+            opacity: 0; transition: opacity 0.3s;
         }
-        .home-cta-btn:hover { 
+        .home-cta-btn:hover {
             transform: translateY(-1px);
-            box-shadow: 0 8px 28px rgba(185,28,28,0.55), inset 0 1px 0 rgba(255,255,255,0.15);
+            box-shadow: 0 10px 35px rgba(185,28,28,0.6), inset 0 1px 0 rgba(255,255,255,0.12);
         }
         .home-cta-btn:hover::before { opacity: 1; }
-        .home-cta-btn:active { transform: translateY(0); }
+        .home-cta-btn:active { transform: translateY(1px); box-shadow: 0 2px 10px rgba(185,28,28,0.4); }
 
         /* タブ */
-        .home-tab-row {
-            display: flex;
-            gap: 6px;
-            margin-bottom: 12px;
-        }
+        .home-tab-row { display: flex; gap: 6px; margin-bottom: 14px; }
         .home-tab-btn {
             font-size: 0.72rem;
             border-radius: 20px;
-            padding: 4px 14px;
+            padding: 5px 16px;
             border: 1px solid var(--card-border);
             color: var(--text-sub);
-            background: none;
-            cursor: pointer;
+            background: none; cursor: pointer;
             transition: all 0.2s;
             font-family: 'Zen Old Mincho', serif;
             letter-spacing: 0.04em;
         }
         .home-tab-btn:hover { border-color: var(--accent-red); color: var(--accent-red); }
         .home-tab-btn.active {
-            background: var(--accent-red);
-            color: white;
+            background: var(--accent-red); color: white;
             border-color: var(--accent-red);
-            box-shadow: 0 2px 8px rgba(185,28,28,0.3);
+            box-shadow: 0 2px 10px rgba(185,28,28,0.35);
         }
 
         /* フッター */
         .home-v3-footer {
             grid-column: span 12;
-            display: flex;
-            justify-content: flex-end;
-            align-items: center;
-            gap: 16px;
-            font-size: 0.68rem;
-            color: var(--text-sub);
-            padding: 0 4px;
-            margin-top: -6px;
-            font-family: 'Zen Old Mincho', serif;
-            letter-spacing: 0.06em;
+            display: flex; justify-content: flex-end; align-items: center; gap: 16px;
+            font-size: 0.68rem; color: var(--text-sub);
+            padding: 0 4px; margin-top: -4px;
+            font-family: 'Zen Old Mincho', serif; letter-spacing: 0.06em;
         }
         .home-v3-footer-btn {
-            background: none;
-            border: none;
-            cursor: pointer;
-            font-size: 0.68rem;
-            color: var(--accent-red);
-            display: flex;
-            align-items: center;
-            gap: 4px;
-            padding: 0;
-            font-family: 'Zen Old Mincho', serif;
-            transition: opacity 0.2s;
+            background: none; border: none; cursor: pointer;
+            font-size: 0.68rem; color: var(--accent-red);
+            display: flex; align-items: center; gap: 4px; padding: 0;
+            font-family: 'Zen Old Mincho', serif; transition: opacity 0.2s;
         }
         .home-v3-footer-btn:hover { opacity: 0.7; }
 
         @media (max-width: 768px) {
-            .bento-hero { grid-column: span 12; }
+            .bento-hero { grid-column: span 12; border-radius: 20px; padding: 24px; }
             .bento-hero::after { display: none; }
             .bento-user { grid-column: span 12; }
             .bento-quick { grid-column: span 12; }
             .bento-news-combo { grid-column: span 12; }
-            .bento-counter-v3 { grid-column: span 6; }
+            .bento-counter-v3 { grid-column: span 12; }
             .home-v3-footer { grid-column: span 12; }
         }
 
@@ -6208,32 +6220,32 @@ body.sidebar-collapsed #sidebar:hover .nav-group-title {
 
                 <!-- クイックアクセス: 12星座占い -->
                 <div class="bento-card bento-quick" onclick="showView('zodiac')">
-                    <div class="quick-icon" style="background:rgba(234,179,8,0.12);color:#ca8a04;"><i class="bi bi-stars"></i></div>
-                    <div>
-                        <p class="text-xs font-bold mb-1" style="color:var(--text-sub);">12星座占い</p>
-                        <p class="font-black" style="font-family:'Zen Old Mincho',serif;font-size:1rem;">星の神託を聞く</p>
+                    <div class="quick-icon" style="background:rgba(202,138,4,0.10);color:#ca8a04;"><i class="bi bi-stars"></i></div>
+                    <div class="quick-text">
+                        <p style="font-size:0.7rem;color:var(--text-sub);font-family:'Zen Old Mincho',serif;margin-bottom:3px;">12星座占い</p>
+                        <p style="font-size:0.95rem;font-weight:900;font-family:'Zen Old Mincho',serif;">星の神託を聞く</p>
                     </div>
-                    <p class="text-xs flex items-center gap-1" style="color:var(--accent-red);font-weight:700;"><i class="bi bi-arrow-right-short" style="font-size:1rem;"></i>開く</p>
+                    <i class="bi bi-arrow-right quick-arrow"></i>
                 </div>
 
                 <!-- クイックアクセス: 全国の運気 -->
                 <div class="bento-card bento-quick" onclick="showView('prefecture')">
                     <div class="quick-icon" style="background:rgba(59,130,246,0.10);color:#3b82f6;"><i class="bi bi-geo-alt-fill"></i></div>
-                    <div>
-                        <p class="text-xs font-bold mb-1" style="color:var(--text-sub);">全国の運気</p>
-                        <p class="font-black" style="font-family:'Zen Old Mincho',serif;font-size:1rem;">土地の運気を見る</p>
+                    <div class="quick-text">
+                        <p style="font-size:0.7rem;color:var(--text-sub);font-family:'Zen Old Mincho',serif;margin-bottom:3px;">全国の運気</p>
+                        <p style="font-size:0.95rem;font-weight:900;font-family:'Zen Old Mincho',serif;">土地の運気を見る</p>
                     </div>
-                    <p class="text-xs flex items-center gap-1" style="color:var(--accent-red);font-weight:700;"><i class="bi bi-arrow-right-short" style="font-size:1rem;"></i>開く</p>
+                    <i class="bi bi-arrow-right quick-arrow"></i>
                 </div>
 
                 <!-- クイックアクセス: おみくじの轍 -->
                 <div class="bento-card bento-quick" onclick="showView('history')">
                     <div class="quick-icon" style="background:rgba(168,85,247,0.10);color:#a855f7;"><i class="bi bi-clock-history"></i></div>
-                    <div>
-                        <p class="text-xs font-bold mb-1" style="color:var(--text-sub);">おみくじの轍</p>
-                        <p class="font-black" style="font-family:'Zen Old Mincho',serif;font-size:1rem;">過去の運勢を振り返る</p>
+                    <div class="quick-text">
+                        <p style="font-size:0.7rem;color:var(--text-sub);font-family:'Zen Old Mincho',serif;margin-bottom:3px;">おみくじの轍</p>
+                        <p style="font-size:0.95rem;font-weight:900;font-family:'Zen Old Mincho',serif;">過去の運勢を振り返る</p>
                     </div>
-                    <p class="text-xs flex items-center gap-1" style="color:var(--accent-red);font-weight:700;"><i class="bi bi-arrow-right-short" style="font-size:1rem;"></i>開く</p>
+                    <i class="bi bi-arrow-right quick-arrow"></i>
                 </div>
 
                 <!-- おしらせ（社務所だより + 神籤草子 タブ統合） -->
@@ -6254,13 +6266,23 @@ body.sidebar-collapsed #sidebar:hover .nav-group-title {
                 </div>
 
                 <!-- カウンター -->
-                <div class="bento-card bento-counter-v3">
-                    <p class="text-2xl font-black font-mono" id="worshipper-counter">---</p>
-                    <p class="text-xs text-gray-500 font-bold">累計参拝者数</p>
+                <div class="bento-counter-v3">
+                    <div class="counter-icon-wrap" style="background:rgba(185,28,28,0.08);color:var(--accent-red);">
+                        <i class="bi bi-people-fill"></i>
+                    </div>
+                    <div class="counter-body">
+                        <p class="font-black font-mono" style="font-size:1.8rem;line-height:1;letter-spacing:-0.02em;" id="worshipper-counter">---</p>
+                        <p style="font-size:0.72rem;color:var(--text-sub);margin-top:4px;font-family:'Zen Old Mincho',serif;letter-spacing:0.06em;">累計参拝者数</p>
+                    </div>
                 </div>
-                <div class="bento-card bento-counter-v3">
-                    <p class="text-2xl font-black font-mono" id="live-counter">---</p>
-                    <p class="text-xs text-gray-500 font-bold">おみくじ発行総数</p>
+                <div class="bento-counter-v3">
+                    <div class="counter-icon-wrap" style="background:rgba(197,160,89,0.10);color:var(--accent-gold);">
+                        <i class="bi bi-layers-fill"></i>
+                    </div>
+                    <div class="counter-body">
+                        <p class="font-black font-mono" style="font-size:1.8rem;line-height:1;letter-spacing:-0.02em;" id="live-counter">---</p>
+                        <p style="font-size:0.72rem;color:var(--text-sub);margin-top:4px;font-family:'Zen Old Mincho',serif;letter-spacing:0.06em;">おみくじ発行総数</p>
+                    </div>
                 </div>
 
                 <!-- バージョンフッター -->
