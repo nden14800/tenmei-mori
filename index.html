@@ -71,15 +71,6 @@
     <!-- Leaflet.js (OpenStreetMap) -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css" />
     <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
-    <!-- Leaflet Gesture Handling (Ctrl+スクロール警告) -->
-    <link rel="stylesheet" href="https://unpkg.com/leaflet-gesture-handling/dist/leaflet-gesture-handling.min.css" type="text/css">
-    <script src="https://unpkg.com/leaflet-gesture-handling"></script>
-    <!-- Leaflet Fullscreen (全画面ボタン) -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet.fullscreen/4.0.0/Control.FullScreen.min.css" />
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet.fullscreen/4.0.0/Control.FullScreen.min.js"></script>
-    <!-- Leaflet Locate Control (現在地ボタン) -->
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet.locatecontrol/dist/L.Control.Locate.min.css" />
-    <script src="https://cdn.jsdelivr.net/npm/leaflet.locatecontrol/dist/L.Control.Locate.min.js" charset="utf-8"></script>
     
     <style>
         :root {
@@ -3146,6 +3137,286 @@
             }
         }
         
+        /* --- v3.0 ホームリデザイン（和モダン） --- */
+
+        /* Heroカード */
+        .bento-hero {
+            grid-column: span 8;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            min-height: 230px;
+            border: none;
+            border-radius: 24px;
+            padding: 32px;
+            position: relative;
+            overflow: hidden;
+            background: linear-gradient(135deg, #1a0a0a 0%, #2d1111 60%, #1a0808 100%);
+            box-shadow: 0 8px 32px rgba(185,28,28,0.18), 0 2px 8px rgba(0,0,0,0.12);
+        }
+        /* 金の斜めライン装飾 */
+        .bento-hero::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: linear-gradient(135deg,
+                rgba(197,160,89,0.10) 0%,
+                transparent 40%,
+                rgba(197,160,89,0.04) 100%
+            );
+            pointer-events: none;
+        }
+        /* 左端の金ライン */
+        .bento-hero::after {
+            content: '';
+            position: absolute;
+            left: 0; top: 10%; bottom: 10%;
+            width: 3px;
+            background: linear-gradient(to bottom, transparent, var(--accent-gold), transparent);
+            border-radius: 0 2px 2px 0;
+        }
+        .bento-hero:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 16px 48px rgba(185,28,28,0.28), 0 4px 16px rgba(0,0,0,0.16);
+            border-color: transparent;
+        }
+
+        /* ユーザーカード */
+        .bento-user {
+            grid-column: span 4;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            background: var(--card-bg);
+            border: 1px solid var(--card-border);
+            position: relative;
+            overflow: hidden;
+        }
+        .bento-user::after {
+            content: '';
+            position: absolute;
+            bottom: 0; right: 0;
+            width: 80px; height: 80px;
+            background: radial-gradient(circle at bottom right, rgba(185,28,28,0.07), transparent 70%);
+            pointer-events: none;
+        }
+
+        /* クイックアクセスカード */
+        .bento-quick {
+            grid-column: span 4;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            min-height: 110px;
+            cursor: pointer;
+            background: var(--card-bg);
+            border: 1px solid var(--card-border);
+            transition: all 0.3s cubic-bezier(0.25,0.8,0.25,1);
+            position: relative;
+            overflow: hidden;
+        }
+        .bento-quick::before {
+            content: '';
+            position: absolute;
+            bottom: 0; left: 0; right: 0;
+            height: 2px;
+            background: linear-gradient(to right, var(--accent-red), var(--accent-gold));
+            transform: scaleX(0);
+            transform-origin: left;
+            transition: transform 0.3s ease;
+        }
+        .bento-quick:hover::before { transform: scaleX(1); }
+        .bento-quick:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 12px 28px rgba(185,28,28,0.12), 0 4px 8px rgba(0,0,0,0.06);
+            border-color: rgba(185,28,28,0.25);
+        }
+        .bento-quick .quick-icon {
+            width: 36px; height: 36px;
+            border-radius: 10px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 1.1rem;
+            margin-bottom: 8px;
+        }
+
+        /* おしらせカード */
+        .bento-news-combo {
+            grid-column: span 8;
+            background: var(--card-bg);
+            border: 1px solid var(--card-border);
+        }
+
+        /* カウンターカード */
+        .bento-counter-v3 {
+            grid-column: span 2;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            gap: 6px;
+            background: var(--card-bg);
+            border: 1px solid var(--card-border);
+            position: relative;
+            overflow: hidden;
+        }
+        .bento-counter-v3::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0;
+            height: 2px;
+            background: linear-gradient(to right, var(--accent-red), var(--accent-gold));
+        }
+
+        /* Hero内テキスト */
+        .home-hero-watermark {
+            position: absolute;
+            right: 24px;
+            top: 50%;
+            transform: translateY(-50%);
+            font-family: 'Zen Old Mincho', serif;
+            font-size: 120px;
+            font-weight: 900;
+            color: var(--accent-gold);
+            opacity: 0.08;
+            line-height: 1;
+            pointer-events: none;
+            user-select: none;
+            letter-spacing: -0.05em;
+        }
+        .home-desc-toggle {
+            background: none;
+            border: 1px solid rgba(197,160,89,0.3);
+            padding: 5px 14px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 0.72rem;
+            color: var(--accent-gold);
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            margin-bottom: 12px;
+            font-family: 'Zen Old Mincho', serif;
+            letter-spacing: 0.06em;
+            transition: all 0.2s;
+        }
+        .home-desc-toggle:hover {
+            background: rgba(197,160,89,0.1);
+            border-color: var(--accent-gold);
+        }
+        .home-desc-body {
+            font-size: 0.8rem;
+            line-height: 1.9;
+            color: rgba(255,255,255,0.55);
+            border-top: 1px solid rgba(197,160,89,0.2);
+            padding-top: 12px;
+            margin-bottom: 14px;
+            font-family: 'Zen Old Mincho', serif;
+        }
+
+        /* CTAボタン */
+        .home-cta-btn {
+            width: 100%;
+            background: linear-gradient(135deg, #b91c1c 0%, #991111 100%);
+            color: white;
+            border: 1px solid rgba(197,160,89,0.35);
+            border-radius: 12px;
+            padding: 15px;
+            font-size: 1rem;
+            font-weight: 900;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            font-family: 'Zen Old Mincho', serif;
+            letter-spacing: 0.1em;
+            position: relative;
+            overflow: hidden;
+            transition: all 0.3s;
+            box-shadow: 0 4px 16px rgba(185,28,28,0.4), inset 0 1px 0 rgba(255,255,255,0.1);
+            z-index: 1;
+        }
+        .home-cta-btn::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(135deg, rgba(197,160,89,0.15), transparent);
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+        .home-cta-btn:hover { 
+            transform: translateY(-1px);
+            box-shadow: 0 8px 28px rgba(185,28,28,0.55), inset 0 1px 0 rgba(255,255,255,0.15);
+        }
+        .home-cta-btn:hover::before { opacity: 1; }
+        .home-cta-btn:active { transform: translateY(0); }
+
+        /* タブ */
+        .home-tab-row {
+            display: flex;
+            gap: 6px;
+            margin-bottom: 12px;
+        }
+        .home-tab-btn {
+            font-size: 0.72rem;
+            border-radius: 20px;
+            padding: 4px 14px;
+            border: 1px solid var(--card-border);
+            color: var(--text-sub);
+            background: none;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-family: 'Zen Old Mincho', serif;
+            letter-spacing: 0.04em;
+        }
+        .home-tab-btn:hover { border-color: var(--accent-red); color: var(--accent-red); }
+        .home-tab-btn.active {
+            background: var(--accent-red);
+            color: white;
+            border-color: var(--accent-red);
+            box-shadow: 0 2px 8px rgba(185,28,28,0.3);
+        }
+
+        /* フッター */
+        .home-v3-footer {
+            grid-column: span 12;
+            display: flex;
+            justify-content: flex-end;
+            align-items: center;
+            gap: 16px;
+            font-size: 0.68rem;
+            color: var(--text-sub);
+            padding: 0 4px;
+            margin-top: -6px;
+            font-family: 'Zen Old Mincho', serif;
+            letter-spacing: 0.06em;
+        }
+        .home-v3-footer-btn {
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-size: 0.68rem;
+            color: var(--accent-red);
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            padding: 0;
+            font-family: 'Zen Old Mincho', serif;
+            transition: opacity 0.2s;
+        }
+        .home-v3-footer-btn:hover { opacity: 0.7; }
+
+        @media (max-width: 768px) {
+            .bento-hero { grid-column: span 12; }
+            .bento-hero::after { display: none; }
+            .bento-user { grid-column: span 12; }
+            .bento-quick { grid-column: span 12; }
+            .bento-news-combo { grid-column: span 12; }
+            .bento-counter-v3 { grid-column: span 6; }
+            .home-v3-footer { grid-column: span 12; }
+        }
+
         /* --- 12星座占い モダンUI --- */
         
         /* 入力エリアのグリッド */
@@ -5890,189 +6161,133 @@ body.sidebar-collapsed #sidebar:hover .nav-group-title {
     <!-- メインエリア -->
     <main id="main-content">
         
-        <!-- ビュー: ホーム (Bento Grid UI) -->
+        <!-- ビュー: ホーム (v3.0 和モダン UI) -->
         <section id="view-home" class="view-section active">
             
             <div class="bento-grid">
-                
-                <!-- 1. 挨拶エリア (Welcome) -->
-                <div class="bento-card bento-welcome">
-                    <div class="text-left md:text-left text-center w-full">
-                        <p class="text-sm font-bold text-gray-500 dark:text-gray-400 mb-1" id="welcome-date">---</p>
-                        <h2 class="text-2xl md:text-3xl font-black tracking-wide" style="font-family: 'Zen Old Mincho', serif;">
-    <!-- ▼▼▼ 修正: クラスを text-[var(--accent-red)] に変更し、モード問わず「紅」に固定 ▼▼▼ -->
-    <span id="welcome-username" class="text-[var(--accent-red)]">ゲスト</span> さん
-</h2>
-                        <p class="text-lg text-gray-700 dark:text-gray-300 font-medium mt-1">ようこそ、運勢・天命乃杜へ</p>
-                    </div>
-                    <!-- 右側にちょっとした装飾 -->
-                    <div class="hidden md:block opacity-20">
-                        <div style="width:3.75rem;height:3.75rem;background-color:#b91c1c;border-radius:10px;display:flex;align-items:center;justify-content:center;font-family:'Zen Old Mincho',serif;font-size:2.3rem;font-weight:700;color:#c5a059;line-height:1;">天</div>
-                    </div>
-                </div>
 
-                <!-- 2. タイトル＆メインビジュアル -->
-                <div class="bento-card bento-title relative">
-                    <div class="absolute top-0 left-0 w-full h-full opacity-10 pointer-events-none">
-                        <!-- 背景装飾 -->
-                        <div class="home-circle-container" id="home-anim-container" style="transform: scale(0.8); border:none; width:100%; height:100%;"></div>
+                <!-- Hero: タイトル + 説明文折りたたみ + CTA -->
+                <div class="bento-card bento-hero">
+                    <div class="home-hero-watermark">天</div>
+                    <!-- 背景アニメーション（既存流用） -->
+                    <div class="absolute top-0 left-0 w-full h-full opacity-5 pointer-events-none overflow-hidden">
+                        <div class="home-circle-container" id="home-anim-container" style="transform:scale(0.9);border:none;width:100%;height:100%;"></div>
                     </div>
                     <div class="z-10">
-                        <p class="text-xs font-serif tracking-[0.3em] uppercase mb-2">FORTUNE TELLING</p>
-                        <h1 class="text-4xl md:text-5xl font-black mb-4 tracking-widest" style="font-family: 'Zen Old Mincho'">運勢・天命乃杜</h1>
-                        <p class="text-xl font-black tracking-widest mb-3" style="font-family: 'Zen Old Mincho'">今日も、天命は、あなたを待っている。</p>
-                        <p class="text-sm font-serif themed-text-sub leading-loose">
+                        <p class="text-xs font-serif tracking-[0.3em] uppercase mb-2" style="color:rgba(197,160,89,0.7);">FORTUNE TELLING</p>
+                        <h1 class="text-3xl md:text-4xl font-black tracking-widest mb-2" style="font-family:'Zen Old Mincho',serif;color:#fff;">運勢・天命乃杜</h1>
+                        <p class="text-base font-bold tracking-widest mb-4" style="font-family:'Zen Old Mincho',serif;color:rgba(255,255,255,0.75);">今日も、天命は、あなたを待っている。</p>
+                        <button class="home-desc-toggle" onclick="(function(btn){var d=document.getElementById('home-desc-body');var isOpen=d.style.display!=='none';d.style.display=isOpen?'none':'block';btn.querySelector('.home-toggle-icon').className='home-toggle-icon bi bi-chevron-'+(isOpen?'down':'up');btn.querySelector('.home-toggle-text').textContent=isOpen?'天命乃杜について':'閉じる';})(this)">
+                            <i class="home-toggle-icon bi bi-chevron-down"></i>
+                            <span class="home-toggle-text">天命乃杜について</span>
+                        </button>
+                        <div id="home-desc-body" class="home-desc-body" style="display:none;">
                             道に迷うとき、立ち止まりたいとき、<br>あなたの内なる声に耳を傾けてみてください。<br><br>
                             おみくじは、答えを与えるものではありません。<br>今この瞬間の自分と静かに向き合い、歩み出すための、天命からの問いかけ。<br><br>
                             今日も、いつでも、どこにいても、天命乃杜はあなたのそばにあります。
-                        </p>
-                    </div>
-                </div>
-
-                <!-- 3. おみくじを引く (アクションボタン) -->
-                <button onclick="startOmikuji()" class="bento-card bento-action group">
-                    <div class="transform transition group-hover:scale-110 duration-300">
-                        <i class="bi bi-box-seam-fill text-5xl mb-4 block"></i>
-                        <h3>おみくじを引く</h3>
-                        <p class="text-xs opacity-90">心を鎮め、天命を問う</p>
-                    </div>
-                </button>
-
-                <!-- 4. カウンター (ミニカード) -->
-                <div class="bento-card bento-mini" style="grid-column: span 6;">
-                    <div class="w-12 h-12 rounded-full bg-red-100 dark:bg-red-900/30 flex items-center justify-center text-red-600">
-                        <i class="bi bi-people-fill text-2xl"></i>
-                    </div>
-                    <div>
-                        <p class="text-xs text-gray-500 font-bold">累計参拝者数</p>
-                        <p class="text-2xl font-black font-mono" id="worshipper-counter">---</p>
-                    </div>
-                </div>
-
-                <div class="bento-card bento-mini" style="grid-column: span 6;">
-                    <div class="w-12 h-12 rounded-full bg-yellow-100 dark:bg-yellow-900/30 flex items-center justify-center text-yellow-600">
-                        <i class="bi bi-layers-fill text-2xl"></i>
-                    </div>
-                    <div>
-                        <p class="text-xs text-gray-500 font-bold">おみくじ発行総数</p>
-                        <p class="text-2xl font-black font-mono" id="live-counter">---</p>
-                    </div>
-                </div>
-
-                <!-- 5. バージョン情報カード -->
-                <div class="bento-card bento-version">
-                    <div class="ver-card-header">
-                        <i class="bi bi-info-circle-fill"></i>
-                        <span>現在のバージョン</span>
-                    </div>
-                    <div class="ver-info-card">
-                        <div class="ver-info-badge">
-                            <span class="ver-info-label">バージョン</span>
-                            <span class="ver-info-value">Ver. 2.3</span>
                         </div>
-                        <div class="ver-divider"></div>
-                        <div class="ver-info-badge">
-                            <span class="ver-info-label">リリース日</span>
-                            <span class="ver-info-value">2026 / 05 / 17</span>
-                        </div>
-                        <div class="ver-divider"></div>
-                        <span class="ver-latest-badge is-latest">
-                            <i class="bi bi-patch-check-fill"></i>最新バージョン
-                        </span>
                     </div>
-                    <button class="ver-history-btn" onclick="openVerHistory()">
+                    <button onclick="startOmikuji()" class="home-cta-btn z-10">
+                        <i class="bi bi-box-seam-fill"></i>おみくじを引く
+                    </button>
+                </div>
+
+                <!-- ユーザーカード -->
+                <div class="bento-card bento-user">
+                    <div>
+                        <p class="text-sm font-bold text-gray-500 dark:text-gray-400 mb-1" id="welcome-date">---</p>
+                        <h2 class="text-2xl md:text-3xl font-black tracking-wide mb-1" style="font-family:'Zen Old Mincho',serif;">
+                            <span id="welcome-username" class="text-[var(--accent-red)]">ゲスト</span> さん
+                        </h2>
+                        <p class="text-sm text-gray-600 dark:text-gray-300 font-medium">ようこそ、運勢・天命乃杜へ</p>
+                    </div>
+                    <div class="hidden md:block opacity-20 self-end">
+                        <div style="width:3rem;height:3rem;background-color:#b91c1c;border-radius:8px;display:flex;align-items:center;justify-content:center;font-family:'Zen Old Mincho',serif;font-size:1.8rem;font-weight:700;color:#c5a059;line-height:1;">天</div>
+                    </div>
+                </div>
+
+                <!-- クイックアクセス: 12星座占い -->
+                <div class="bento-card bento-quick" onclick="showView('zodiac')">
+                    <div class="quick-icon" style="background:rgba(234,179,8,0.12);color:#ca8a04;"><i class="bi bi-stars"></i></div>
+                    <div>
+                        <p class="text-xs font-bold mb-1" style="color:var(--text-sub);">12星座占い</p>
+                        <p class="font-black" style="font-family:'Zen Old Mincho',serif;font-size:1rem;">星の神託を聞く</p>
+                    </div>
+                    <p class="text-xs flex items-center gap-1" style="color:var(--accent-red);font-weight:700;"><i class="bi bi-arrow-right-short" style="font-size:1rem;"></i>開く</p>
+                </div>
+
+                <!-- クイックアクセス: 全国の運気 -->
+                <div class="bento-card bento-quick" onclick="showView('prefecture')">
+                    <div class="quick-icon" style="background:rgba(59,130,246,0.10);color:#3b82f6;"><i class="bi bi-geo-alt-fill"></i></div>
+                    <div>
+                        <p class="text-xs font-bold mb-1" style="color:var(--text-sub);">全国の運気</p>
+                        <p class="font-black" style="font-family:'Zen Old Mincho',serif;font-size:1rem;">土地の運気を見る</p>
+                    </div>
+                    <p class="text-xs flex items-center gap-1" style="color:var(--accent-red);font-weight:700;"><i class="bi bi-arrow-right-short" style="font-size:1rem;"></i>開く</p>
+                </div>
+
+                <!-- クイックアクセス: おみくじの轍 -->
+                <div class="bento-card bento-quick" onclick="showView('history')">
+                    <div class="quick-icon" style="background:rgba(168,85,247,0.10);color:#a855f7;"><i class="bi bi-clock-history"></i></div>
+                    <div>
+                        <p class="text-xs font-bold mb-1" style="color:var(--text-sub);">おみくじの轍</p>
+                        <p class="font-black" style="font-family:'Zen Old Mincho',serif;font-size:1rem;">過去の運勢を振り返る</p>
+                    </div>
+                    <p class="text-xs flex items-center gap-1" style="color:var(--accent-red);font-weight:700;"><i class="bi bi-arrow-right-short" style="font-size:1rem;"></i>開く</p>
+                </div>
+
+                <!-- おしらせ（社務所だより + 神籤草子 タブ統合） -->
+                <div class="bento-card bento-news-combo">
+                    <div class="flex justify-between items-center mb-2 border-b border-gray-200 dark:border-gray-700 pb-2">
+                        <h3 class="font-bold flex items-center gap-2"><i class="bi bi-bell-fill text-[var(--accent-red)]"></i> おしらせ</h3>
+                    </div>
+                    <div class="home-tab-row">
+                        <button class="home-tab-btn active" onclick="switchHomeTab('news', this)">社務所だより</button>
+                        <button class="home-tab-btn" onclick="switchHomeTab('column', this)">神籤草子</button>
+                    </div>
+                    <div id="home-tab-news">
+                        <ul class="text-sm space-y-0 divide-y divide-gray-100 dark:divide-gray-800" id="home-news-list"></ul>
+                    </div>
+                    <div id="home-tab-column" style="display:none;">
+                        <ul class="text-sm space-y-0 divide-y divide-gray-100 dark:divide-gray-800" id="home-column-list"></ul>
+                    </div>
+                </div>
+
+                <!-- カウンター -->
+                <div class="bento-card bento-counter-v3">
+                    <p class="text-2xl font-black font-mono" id="worshipper-counter">---</p>
+                    <p class="text-xs text-gray-500 font-bold">累計参拝者数</p>
+                </div>
+                <div class="bento-card bento-counter-v3">
+                    <p class="text-2xl font-black font-mono" id="live-counter">---</p>
+                    <p class="text-xs text-gray-500 font-bold">おみくじ発行総数</p>
+                </div>
+
+                <!-- バージョンフッター -->
+                <div class="home-v3-footer">
+                    <span>Ver. 2.3 — 2026/05/17</span>
+                    <button class="home-v3-footer-btn" onclick="openVerHistory()">
                         <i class="bi bi-clock-history"></i> 更新の軌跡
                     </button>
                 </div>
 
-                <!-- 7. 統計 (おみくじの轍・抜粋版) -->
-                <div class="bento-card bento-stats relative">
-                    <div class="flex justify-between items-center mb-2 border-b border-gray-200 dark:border-gray-700 pb-2">
-                        <h3 class="font-bold flex items-center gap-2"><i class="bi bi-bar-chart-line-fill text-red-500"></i> 全体の傾向</h3>
-                        <span class="text-[10px] bg-gray-100 dark:bg-gray-700 px-2 py-1 rounded" id="stats-update-time">--:--:--</span>
+                <!-- 統計要素（JSが参照するためDOMに保持・非表示） -->
+                <div style="display:none;" aria-hidden="true">
+                    <span id="stats-update-time"></span>
+                    <div id="home-history-stats">
+                        <span id="cnt-daikichi"></span><span id="stat-daikichi"></span><div id="bar-daikichi"></div>
+                        <span id="cnt-chukichi"></span><span id="stat-chukichi"></span><div id="bar-chukichi"></div>
+                        <span id="cnt-shokichi"></span><span id="stat-shokichi"></span><div id="bar-shokichi"></div>
+                        <span id="cnt-kichi"></span><span id="stat-kichi"></span><div id="bar-kichi"></div>
+                        <span id="cnt-hankichi"></span><span id="stat-hankichi"></span><div id="bar-hankichi"></div>
+                        <span id="cnt-suekichi"></span><span id="stat-suekichi"></span><div id="bar-suekichi"></div>
+                        <span id="cnt-sueshokichi"></span><span id="stat-sueshokichi"></span><div id="bar-sueshokichi"></div>
+                        <span id="cnt-kyo"></span><span id="stat-kyo"></span><div id="bar-kyo"></div>
+                        <span id="cnt-shokyo"></span><span id="stat-shokyo"></span><div id="bar-shokyo"></div>
+                        <span id="cnt-hankyo"></span><span id="stat-hankyo"></span><div id="bar-hankyo"></div>
+                        <span id="cnt-suekyo"></span><span id="stat-suekyo"></span><div id="bar-suekyo"></div>
+                        <span id="cnt-daikyo"></span><span id="stat-daikyo"></span><div id="bar-daikyo"></div>
                     </div>
-                    
-                    <!-- 表示エリア: 高さを制限し、はみ出した部分は隠す(overflow-hidden) -->
-                    <div class="relative overflow-hidden" style="height: 180px;">
-                        <div id="home-history-stats" class="space-y-2 pb-20">
-                             <!-- 12段階 統計表示 (要素は全て置いておくが、CSSで見えなくなる) -->
-                             <div class="grid grid-cols-1 gap-1">
-                                 <!-- 大吉 -->
-                                 <div class="flex justify-between text-xs"><span>大吉</span><span><span id="cnt-daikichi" class="mr-2 font-mono opacity-70">0</span><span id="stat-daikichi">0.00%</span></span></div>
-                                 <div class="w-full bg-gray-200 dark:bg-zinc-700 h-1.5 rounded mb-1"><div id="bar-daikichi" class="bg-yellow-400 h-1.5 rounded" style="width: 0%"></div></div>
-                                 
-                                 <!-- 中吉 -->
-                                 <div class="flex justify-between text-xs"><span>中吉</span><span><span id="cnt-chukichi" class="mr-2 font-mono opacity-70">0</span><span id="stat-chukichi">0.00%</span></span></div>
-                                 <div class="w-full bg-gray-200 dark:bg-zinc-700 h-1.5 rounded mb-1"><div id="bar-chukichi" class="bg-orange-400 h-1.5 rounded" style="width: 0%"></div></div>
-
-                                 <!-- 小吉 -->
-                                 <div class="flex justify-between text-xs"><span>小吉</span><span><span id="cnt-shokichi" class="mr-2 font-mono opacity-70">0</span><span id="stat-shokichi">0.00%</span></span></div>
-                                 <div class="w-full bg-gray-200 dark:bg-zinc-700 h-1.5 rounded mb-1"><div id="bar-shokichi" class="bg-green-400 h-1.5 rounded" style="width: 0%"></div></div>
-
-                                 <!-- 吉 -->
-                                 <div class="flex justify-between text-xs"><span>吉</span><span><span id="cnt-kichi" class="mr-2 font-mono opacity-70">0</span><span id="stat-kichi">0.00%</span></span></div>
-                                 <div class="w-full bg-gray-200 dark:bg-zinc-700 h-1.5 rounded mb-1"><div id="bar-kichi" class="bg-red-400 h-1.5 rounded" style="width: 0%"></div></div>
-
-                                 <!-- 半吉 -->
-                                 <div class="flex justify-between text-xs"><span>半吉</span><span><span id="cnt-hankichi" class="mr-2 font-mono opacity-70">0</span><span id="stat-hankichi">0.00%</span></span></div>
-                                 <div class="w-full bg-gray-200 dark:bg-zinc-700 h-1.5 rounded mb-1"><div id="bar-hankichi" class="bg-red-300 h-1.5 rounded" style="width: 0%"></div></div>
-
-                                 <!-- 以下、隠れる要素（データ更新のために存在はさせる） -->
-                                 <!-- 末吉 -->
-                                 <div class="flex justify-between text-xs"><span>末吉</span><span><span id="cnt-suekichi" class="mr-2 font-mono opacity-70">0</span><span id="stat-suekichi">0.00%</span></span></div>
-                                 <div class="w-full bg-gray-200 dark:bg-zinc-700 h-1.5 rounded mb-1"><div id="bar-suekichi" class="bg-blue-400 h-1.5 rounded" style="width: 0%"></div></div>
-                                 <!-- 末小吉 -->
-                                 <div class="flex justify-between text-xs"><span>末小吉</span><span><span id="cnt-sueshokichi" class="mr-2 font-mono opacity-70">0</span><span id="stat-sueshokichi">0.00%</span></span></div>
-                                 <div class="w-full bg-gray-200 dark:bg-zinc-700 h-1.5 rounded mb-1"><div id="bar-sueshokichi" class="bg-blue-300 h-1.5 rounded" style="width: 0%"></div></div>
-                                 <!-- 凶 -->
-                                 <div class="flex justify-between text-xs"><span>凶</span><span><span id="cnt-kyo" class="mr-2 font-mono opacity-70">0</span><span id="stat-kyo">0.00%</span></span></div>
-                                 <div class="w-full bg-gray-200 dark:bg-zinc-700 h-1.5 rounded mb-1"><div id="bar-kyo" class="bg-gray-400 h-1.5 rounded" style="width: 0%"></div></div>
-                                 <!-- 小凶 -->
-                                 <div class="flex justify-between text-xs"><span>小凶</span><span><span id="cnt-shokyo" class="mr-2 font-mono opacity-70">0</span><span id="stat-shokyo">0.00%</span></span></div>
-                                 <div class="w-full bg-gray-200 dark:bg-zinc-700 h-1.5 rounded mb-1"><div id="bar-shokyo" class="bg-gray-500 h-1.5 rounded" style="width: 0%"></div></div>
-                                 <!-- 半凶 -->
-                                 <div class="flex justify-between text-xs"><span>半凶</span><span><span id="cnt-hankyo" class="mr-2 font-mono opacity-70">0</span><span id="stat-hankyo">0.00%</span></span></div>
-                                 <div class="w-full bg-gray-200 dark:bg-zinc-700 h-1.5 rounded mb-1"><div id="bar-hankyo" class="bg-gray-600 dark:bg-gray-400 h-1.5 rounded" style="width: 0%"></div></div>
-                                 <!-- 末凶 -->
-                                 <div class="flex justify-between text-xs"><span>末凶</span><span><span id="cnt-suekyo" class="mr-2 font-mono opacity-70">0</span><span id="stat-suekyo">0.00%</span></span></div>
-                                 <div class="w-full bg-gray-200 dark:bg-zinc-700 h-1.5 rounded mb-1"><div id="bar-suekyo" class="bg-gray-700 h-1.5 rounded" style="width: 0%"></div></div>
-                                 <!-- 大凶 -->
-                                 <div class="flex justify-between text-xs"><span>大凶</span><span><span id="cnt-daikyo" class="mr-2 font-mono opacity-70">0</span><span id="stat-daikyo">0.00%</span></span></div>
-                                 <div class="w-full bg-gray-200 dark:bg-zinc-700 h-1.5 rounded mb-1"><div id="bar-daikyo" class="bg-black h-1.5 rounded" style="width: 0%"></div></div>
-                             </div>
-                        </div>
-                        
-                        <!-- グラデーションマスクと誘導ボタン -->
-                        <div class="absolute bottom-0 left-0 w-full h-24 bg-gradient-to-t from-white via-white/95 to-transparent dark:from-[#2c2c2c] dark:via-[#2c2c2c]/95 flex items-end justify-center pb-0">
-                            <button onclick="showView('history')" class="btn-primary py-3 px-6 shadow-lg text-sm font-bold w-full mb-0 flex items-center justify-center gap-2 transform transition hover:scale-105">
-                                <i class="bi bi-bar-chart-line"></i> すべての統計を見る
-                            </button>
-                        </div>
-                    </div>
-                </div>
-
-               <!-- 6. 社務所だより (隙間修正版) -->
-                <div class="bento-card bento-news">
-                    <div class="flex justify-between items-center mb-2 border-b border-gray-200 dark:border-gray-700 pb-2">
-                        <h3 class="font-bold flex items-center gap-2"><i class="bi bi-bell-fill text-blue-500"></i> 社務所だより</h3>
-                        <button onclick="showView('news')" class="text-xs text-blue-500 hover:underline">一覧</button>
-                    </div>
-                    <!-- space-y-3 を space-y-0 にし、隙間をなくして境界線を追加 -->
-                    <ul class="text-sm space-y-0 divide-y divide-gray-100 dark:divide-gray-800" id="home-news-list">
-                        <!-- JSで自動挿入 -->
-                    </ul>
-                </div>
-
-                <!-- 7. 神籤草子 (隙間修正版) -->
-                <div class="bento-card bento-col">
-                    <div class="flex justify-between items-center mb-2 border-b border-gray-200 dark:border-gray-700 pb-2">
-                        <h3 class="font-bold flex items-center gap-2"><i class="bi bi-book-half text-green-500"></i> 神籤草子</h3>
-                        <button onclick="showView('column')" class="text-xs text-green-500 hover:underline">一覧</button>
-                    </div>
-                    <!-- 同様に隙間を修正 -->
-                    <ul class="text-sm space-y-0 divide-y divide-gray-100 dark:divide-gray-800" id="home-column-list">
-                        <!-- JSで自動挿入 -->
-                    </ul>
                 </div>
 
             </div>
@@ -7099,7 +7314,7 @@ body.sidebar-collapsed #sidebar:hover .nav-group-title {
                 <div class="mt-6 flex flex-wrap justify-center gap-4 text-xs font-mono text-gray-500 bg-white dark:bg-zinc-800 px-6 py-3 rounded-full border border-gray-200 dark:border-gray-700 shadow-sm">
                     <span>制定: 2026/01/02</span>
                     <span class="text-gray-300 dark:text-gray-600">|</span>
-                    <span>改定: 2026/05/01 (第8版)</span>
+                    <span>改定: 2026/05/17 (第9版)</span>
                     <span class="text-gray-300 dark:text-gray-600">|</span>
                     <span>運営: nden148</span>
                 </div>
@@ -7590,7 +7805,7 @@ body.sidebar-collapsed #sidebar:hover .nav-group-title {
                 <div class="mt-6 flex flex-wrap justify-center gap-4 text-xs font-mono text-gray-500 bg-white dark:bg-zinc-800 px-6 py-3 rounded-full border border-gray-200 dark:border-gray-700 shadow-sm">
                     <span>制定: 2026/01/02</span>
                     <span class="text-gray-300 dark:text-gray-600">|</span>
-                    <span>改定: 2026/05/17 (第10版)</span>
+                    <span>改定: 2026/05/17 (第9版)</span>
                     <span class="text-gray-300 dark:text-gray-600">|</span>
                     <span>運営: nden148</span>
                 </div>
@@ -7652,7 +7867,7 @@ body.sidebar-collapsed #sidebar:hover .nav-group-title {
                                     <li>アクセス日時および滞在時間</li>
                                     <li>利用端末の種類、OSのバージョン、ブラウザの種類（User Agent）</li>
                                     <li>おみくじの抽選結果、12星座占いの設定情報（星座・血液型）、お気に入り登録状況</li>
-                                    <li>「全国・土地の運気ランキング」の閲覧履歴（※地図版の「現在地ボタン」をご利用の際、ブラウザから位置情報の取得許可を求めますが、取得した位置情報は地図の表示位置の移動のみに使用され、当サイトのサーバーには一切送信・保存いたしません）</li>
+                                    <li>「全国・土地の運気ランキング」の閲覧履歴（※位置情報GPSデータは一切取得・保存いたしません）</li>
                                 </ul>
                             </div>
                         </div>
@@ -7738,7 +7953,6 @@ body.sidebar-collapsed #sidebar:hover .nav-group-title {
                                     <p class="text-gray-500">利用目的：「全国・土地の運気」の地図版において、日本地図のタイル画像を表示するため</p>
                                     <p class="text-gray-500">送信される情報：地図タイルの取得リクエスト（アクセス元IPアドレスを含む）</p>
                                     <p class="mt-1">特記事項：地図タイルの取得はユーザーのブラウザから直接OpenStreetMapのサーバーへ行われます。送信される情報に氏名・メールアドレス等の個人を特定する情報は含まれません。OpenStreetMapは世界中の有志によるオープンデータプロジェクトであり、商業的なデータ収集・広告目的への利用は行われておりません。詳細は <a href="https://wiki.osmfoundation.org/wiki/Privacy_Policy" target="_blank" rel="noopener noreferrer" class="underline text-blue-500">OpenStreetMap Foundation プライバシーポリシー</a> をご参照ください。</p>
-                                    <p class="mt-1">現在地ボタンについて：地図版に設置している「現在地ボタン」を押した場合、ブラウザからお客様の端末の位置情報（緯度・経度）の取得許可を求めます。取得した位置情報は地図の中心座標を移動させる目的のみに使用され、当サイトのサーバーおよびOpenStreetMapのサーバーには送信・保存されません。位置情報の許可はブラウザの設定からいつでも取り消すことができます。</p>
                                 </div>
                             </div>
                         </div>
@@ -8320,18 +8534,14 @@ function escapeHtml(str) {
                 <li><strong>地図版では日本地図上にマーカーが表示されます：</strong>各都道府県の代表地点に丸いマーカーが置かれ、スコアに応じて金（Sランク）・赤（Aランク）・青（Bランク）・灰（Cランク）の4色で色分けされています。スコアが高い都道府県ほど、マーカーが大きく表示されます。</li>
                 <li><strong>マーカーをクリック（タップ）すると詳細が表示されます：</strong>順位・スコア・ランク・その土地の運気テキストを、ポップアップでご確認いただけます。</li>
                 <li><strong>ホバーで名前とスコアが表示されます：</strong>マウスを乗せるだけで、素早く都道府県名とスコアを確認できます（PC版）。</li>
-                <li><strong>全画面ボタン（地図左上）：</strong>地図を画面いっぱいに拡大表示できます。もう一度押すと元のサイズに戻ります。</li>
-                <li><strong>現在地ボタン（地図左上）：</strong>ボタンを押すとブラウザから位置情報の許可を求めます。許可すると、現在地付近に地図が自動で移動します。位置情報は当サイトのサーバーには一切送信・保存されません。</li>
-                <li><strong>スクロールでのズーム操作：</strong>地図上でマウスホイールを使ってズームする際は、<kbd>Ctrl</kbd>キー（Macの場合は <kbd>⌘</kbd>キー）を押しながらスクロールしてください。誤操作防止のための仕様です。</li>
             </ul>
             <p>スコアの計算ロジックは、テキスト版と完全に同一です。日付が変われば地図上の配色も入れ替わります。</p>
 
-            <h3>プライバシーポリシーの改訂（第10版）</h3>
-            <p>今回の地図機能の追加に伴い、プライバシーポリシーを本日付けで<strong>第10版</strong>へ改訂いたしました。主な変更点は以下の通りです。</p>
+            <h3>プライバシーポリシーの改訂（第9版）</h3>
+            <p>今回の地図機能の追加に伴い、プライバシーポリシーを本日付けで<strong>第9版</strong>へ改訂いたしました。主な変更点は以下の通りです。</p>
             <ul class="list-disc ml-5 mb-4">
                 <li>第5条（外部サービスとの連携）に「7. OpenStreetMap (OpenStreetMap Foundation)」の項目を追加。地図タイルの表示にあたってユーザーのIPアドレスがOpenStreetMapのサーバーへ送信される旨を明記いたしました。</li>
                 <li>第5条の全項目にプライバシーポリシーへのリンクを整備しました。これまでリンクが設定されていなかったGoogle Apps Script・Cloudflare・Tursoの3項目に、各社のプライバシーポリシーへのリンクを追加いたしました。</li>
-                <li>地図版に「現在地ボタン」を追加したことに伴い、第2条（収集する情報）の位置情報に関する注記を更新し、第5条（外部サービス）の7. OpenStreetMap の項目に現在地機能に関する特記事項を追加いたしました。位置情報は地図の表示位置の移動のみに使用し、当サイトのサーバーには一切送信・保存いたしません。</li>
             </ul>
             <p>改訂後のプライバシーポリシーは、サイドメニューの「プライバシーポリシー」よりご確認いただけます。</p>
 
@@ -13426,9 +13636,7 @@ window.renderPrefectureMap = function() {
     _prefMap = L.map('pref-map', {
         center: [36.5, 137.5],
         zoom: 5,
-        gestureHandling: true,
-        fullscreenControl: true,
-        fullscreenControlOptions: { position: 'topleft' }
+        scrollWheelZoom: false
     });
     _prefMap._tenmeiDate = dateStr;
 
@@ -13437,13 +13645,7 @@ window.renderPrefectureMap = function() {
         maxZoom: 18
     }).addTo(_prefMap);
 
-    // 現在地ボタン
-    L.control.locate({
-        position: 'topleft',
-        flyTo: true,
-        showPopup: false,
-        strings: { title: '現在地を表示' }
-    }).addTo(_prefMap);
+    // 各都道府県にサークルマーカーを追加
     rankingData.forEach(item => {
         const coords = prefectureCoords[item.name];
         if (!coords) return;
@@ -14434,6 +14636,13 @@ function showLoading(show) {
             document.getElementById('omamori-step-3').classList.add('hidden');
             }
         }
+        function switchHomeTab(tab, btn) {
+            document.getElementById('home-tab-news').style.display = tab === 'news' ? '' : 'none';
+            document.getElementById('home-tab-column').style.display = tab === 'column' ? '' : 'none';
+            document.querySelectorAll('.home-tab-btn').forEach(function(b){ b.classList.remove('active'); });
+            btn.classList.add('active');
+        }
+
         function articleBack() {
             showView('home'); 
         }
@@ -19219,19 +19428,15 @@ window.applyTheme = function() {
                         { type: 'new', text: '「全国・土地の運気予報」にOpenStreetMap＋Leaflet.jsによる地図表示モードを追加。従来のテキスト版ランキングと地図版をタブで切り替え可能。', sourceIds: [75] },
                         { type: 'new', text: '地図上に全47都道府県のマーカーを表示。スコアに応じて金（S）・赤（A）・青（B）・灰（C）の4色に色分け。', sourceIds: [75] },
                         { type: 'new', text: 'マーカークリックでポップアップを表示。都道府県名・ランク・スコア・運気テキストを確認可能。', sourceIds: [75] },
-                        { type: 'new', text: '全画面ボタン（地図左上）を追加。地図を画面いっぱいに拡大表示可能。', sourceIds: [75] },
-                        { type: 'new', text: '現在地ボタン（地図左上）を追加。許可すると現在地付近に地図が自動移動。位置情報はサーバー非送信。', sourceIds: [75] },
-                        { type: 'new', text: 'leaflet-gesture-handlingを導入。Ctrl＋スクロールによるズーム操作を有効化し、誤操作防止オーバーレイを表示。', sourceIds: [75] },
                         { type: 'infra', text: 'Leaflet 1.9.4をcdnjs.cloudflare.comより読み込み。地図タイルはOpenStreetMap（OSMF）を使用。外部ライブラリの安定性を重視しunpkg.comは不採用。', sourceIds: [75] },
                     ]
                 },
                 {
-                    icon: 'bi-file-earmark-text-fill', title: 'プライバシーポリシー改訂（第10版）',
+                    icon: 'bi-file-earmark-text-fill', title: 'プライバシーポリシー改訂（第9版）',
                     changes: [
                         { type: 'change', text: '第5条（外部サービス）に「OpenStreetMap (OpenStreetMap Foundation)」の項目を追加。地図タイル表示の際にIPアドレスが送信される旨を明記。', sourceIds: [75] },
                         { type: 'change', text: '第5条の全項目にプライバシーポリシーへのリンクを整備。リンク未設定だったGoogle Apps Script・Cloudflare・Tursoの3項目にリンクを追加。', sourceIds: [75] },
-                        { type: 'change', text: '地図版「現在地ボタン」の追加に伴い、第2条の位置情報注記を更新。第5条 OpenStreetMap項目に現在地機能の特記事項を追加。', sourceIds: [75] },
-                        { type: 'change', text: 'プライバシーポリシー改定日を2026/05/17（第10版）に更新。', sourceIds: [75] },
+                        { type: 'change', text: 'プライバシーポリシー改定日を2026/05/17（第9版）に更新。', sourceIds: [75] },
                     ]
                 },
             ]
