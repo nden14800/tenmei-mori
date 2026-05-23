@@ -5436,22 +5436,28 @@ body.sidebar-collapsed #sidebar:hover .nav-group-title {
     <!-- ===== 更新の軌跡パネル CSS ===== -->
     <style>
     /* ---- オーバーレイ ---- */
+    /* ======================================
+       更新の軌跡パネル — モダンダーク刷新版
+       ====================================== */
+
     .ver-history-overlay {
         position: fixed; inset: 0;
-        background: rgba(0,0,0,0.45);
+        background: rgba(0,0,0,0.65);
+        backdrop-filter: blur(4px);
+        -webkit-backdrop-filter: blur(4px);
         z-index: 10000;
         opacity: 0; pointer-events: none;
         transition: opacity 0.35s ease;
     }
     .ver-history-overlay.active { opacity: 1; pointer-events: auto; }
 
-    /* ---- 本体パネル（右からスライドイン）---- */
+    /* ---- 本体パネル ---- */
     .ver-history-panel {
         position: fixed; top: 0; right: 0;
-        height: 100%; width: min(480px, 95vw);
-        background: var(--card-bg);
-        border-left: 1px solid var(--card-border);
-        box-shadow: -12px 0 40px rgba(0,0,0,0.18);
+        height: 100%; width: min(500px, 95vw);
+        background: #0d0d0d;
+        border-left: 1px solid #2a2a2a;
+        box-shadow: -20px 0 60px rgba(0,0,0,0.7);
         z-index: 10001;
         display: flex; flex-direction: column;
         transform: translateX(100%);
@@ -5459,136 +5465,158 @@ body.sidebar-collapsed #sidebar:hover .nav-group-title {
         overflow: hidden;
     }
     .ver-history-panel.active { transform: translateX(0); }
-    .dark .ver-history-panel { box-shadow: -12px 0 40px rgba(0,0,0,0.45); }
 
     /* ---- パネルヘッダー ---- */
     .ver-panel-header {
-        padding: 24px 24px 16px;
-        border-bottom: 1px solid var(--card-border);
+        padding: 28px 24px 20px;
+        border-bottom: 1px solid #1e1e1e;
         display: flex; align-items: center; justify-content: space-between;
         flex-shrink: 0;
-        background: linear-gradient(135deg, rgba(197,160,89,0.06) 0%, transparent 70%);
+        background: linear-gradient(135deg, rgba(185,28,28,0.15) 0%, rgba(197,160,89,0.06) 50%, transparent 100%);
+        position: relative;
+    }
+    .ver-panel-header::after {
+        content: '';
+        position: absolute; bottom: 0; left: 0; right: 0;
+        height: 1px;
+        background: linear-gradient(to right, rgba(197,160,89,0.6), transparent);
     }
     .ver-panel-title {
         font-family: 'Zen Old Mincho', serif;
-        font-size: 1rem; font-weight: 900;
-        color: var(--text-main); letter-spacing: 0.12em;
-        display: flex; align-items: center; gap: 8px;
+        font-size: 1.05rem; font-weight: 900;
+        color: #ffffff; letter-spacing: 0.15em;
+        display: flex; align-items: center; gap: 10px;
     }
-    .ver-panel-title i { color: var(--accent-gold); font-size: 1.1rem; }
+    .ver-panel-title i { color: var(--accent-gold); font-size: 1.15rem; }
     .ver-panel-close {
-        width: 36px; height: 36px; border-radius: 50%;
-        border: 1px solid var(--card-border);
-        background: transparent; color: var(--text-sub);
+        width: 36px; height: 36px; border-radius: 10px;
+        border: 1px solid #2a2a2a;
+        background: #1a1a1a; color: #666;
         cursor: pointer; display: flex; align-items: center; justify-content: center;
-        font-size: 1rem; transition: all 0.2s;
+        font-size: 0.95rem; transition: all 0.2s;
     }
-    .ver-panel-close:hover { background: rgba(128,128,128,0.1); color: var(--text-main); }
+    .ver-panel-close:hover { background: #2a2a2a; color: #fff; border-color: #444; }
 
     /* ---- スクロールエリア ---- */
     .ver-panel-scroll {
         flex: 1; overflow-y: auto;
-        padding: 24px 20px 40px;
+        padding: 28px 20px 48px;
         scroll-behavior: smooth;
     }
-    .ver-panel-scroll::-webkit-scrollbar { width: 4px; }
+    .ver-panel-scroll::-webkit-scrollbar { width: 3px; }
     .ver-panel-scroll::-webkit-scrollbar-track { background: transparent; }
-    .ver-panel-scroll::-webkit-scrollbar-thumb { background: var(--card-border); border-radius: 2px; }
+    .ver-panel-scroll::-webkit-scrollbar-thumb { background: #2a2a2a; border-radius: 2px; }
 
     /* ---- タイムライン縦線 ---- */
-    .ver-timeline { position: relative; padding-left: 28px; }
+    .ver-timeline { position: relative; padding-left: 32px; }
     .ver-timeline::before {
         content: '';
-        position: absolute; left: 10px; top: 8px; bottom: 8px;
-        width: 2px;
-        background: linear-gradient(to bottom, var(--accent-gold), rgba(197,160,89,0.1));
+        position: absolute; left: 11px; top: 8px; bottom: 8px;
+        width: 1px;
+        background: linear-gradient(to bottom, rgba(197,160,89,0.8), rgba(197,160,89,0.05));
     }
 
     /* ---- 各バージョンアイテム ---- */
     .ver-timeline-item {
-        position: relative; margin-bottom: 14px; cursor: pointer;
+        position: relative; margin-bottom: 12px; cursor: pointer;
     }
     .ver-timeline-item::before {
         content: '';
-        position: absolute; left: -22px; top: 18px;
-        width: 12px; height: 12px; border-radius: 50%;
-        background: var(--accent-gold);
-        border: 2px solid var(--card-bg);
-        box-shadow: 0 0 0 2px var(--accent-gold);
-        transition: transform 0.2s;
+        position: absolute; left: -25px; top: 20px;
+        width: 10px; height: 10px; border-radius: 50%;
+        background: #333;
+        border: 2px solid rgba(197,160,89,0.5);
+        transition: all 0.2s;
+        z-index: 1;
     }
-    .ver-timeline-item:hover::before { transform: scale(1.3); }
+    .ver-timeline-item:hover::before {
+        background: var(--accent-gold);
+        border-color: var(--accent-gold);
+        box-shadow: 0 0 10px rgba(197,160,89,0.5);
+        transform: scale(1.2);
+    }
     .ver-timeline-item.is-current::before {
         background: #059669;
-        box-shadow: 0 0 0 2px #059669, 0 0 8px rgba(5,150,105,0.4);
+        border-color: #059669;
+        box-shadow: 0 0 12px rgba(5,150,105,0.6);
     }
 
     /* ---- バージョンカード ---- */
     .ver-item-card {
-        background: var(--card-bg);
-        border: 1px solid var(--card-border);
-        border-radius: 14px; padding: 14px 16px;
-        transition: all 0.25s; user-select: none;
+        background: #111111;
+        border: 1px solid #222222;
+        border-radius: 16px;
+        padding: 16px 18px;
+        transition: all 0.25s cubic-bezier(0.25, 0.8, 0.25, 1);
+        user-select: none;
     }
     .ver-item-card:hover {
-        border-color: var(--accent-gold);
-        box-shadow: 0 4px 16px rgba(197,160,89,0.15);
-        transform: translateX(4px);
+        border-color: rgba(197,160,89,0.5);
+        background: #161616;
+        box-shadow: 0 8px 24px rgba(0,0,0,0.4), 0 0 0 1px rgba(197,160,89,0.1);
+        transform: translateX(6px);
     }
     .ver-timeline-item.is-current .ver-item-card {
-        border-color: rgba(5,150,105,0.4);
-        background: linear-gradient(135deg, rgba(5,150,105,0.04) 0%, transparent 60%);
+        border-color: rgba(5,150,105,0.35);
+        background: linear-gradient(135deg, rgba(5,150,105,0.07) 0%, #111111 60%);
     }
+    .ver-timeline-item.is-current .ver-item-card:hover {
+        border-color: rgba(5,150,105,0.6);
+        box-shadow: 0 8px 24px rgba(0,0,0,0.4), 0 0 0 1px rgba(5,150,105,0.15);
+    }
+
     .ver-item-top {
         display: flex; align-items: flex-start;
-        justify-content: space-between; gap: 8px; margin-bottom: 4px;
+        justify-content: space-between; gap: 8px; margin-bottom: 6px;
     }
     .ver-item-ver {
         font-family: 'Zen Old Mincho', serif;
-        font-size: 1.2rem; font-weight: 900;
+        font-size: 1.3rem; font-weight: 900;
         color: var(--accent-gold); letter-spacing: 0.05em; line-height: 1;
     }
-    .ver-timeline-item.is-current .ver-item-ver { color: #059669; }
-    .dark .ver-timeline-item.is-current .ver-item-ver { color: #34d399; }
+    .ver-timeline-item.is-current .ver-item-ver { color: #34d399; }
 
     .ver-item-badge {
         display: inline-flex; align-items: center; gap: 3px;
-        padding: 2px 8px; border-radius: 99px;
-        font-size: 0.62rem; font-weight: 700; letter-spacing: 0.05em; flex-shrink: 0;
+        padding: 3px 9px; border-radius: 99px;
+        font-size: 0.6rem; font-weight: 700; letter-spacing: 0.06em; flex-shrink: 0;
     }
-    .ver-badge-current { background: rgba(5,150,105,0.12); color: #059669; border: 1px solid rgba(5,150,105,0.3); }
-    .dark .ver-badge-current { color: #34d399; }
+    .ver-badge-current { background: rgba(5,150,105,0.15); color: #34d399; border: 1px solid rgba(5,150,105,0.35); }
     .ver-badge-stable { background: rgba(197,160,89,0.12); color: var(--accent-gold); border: 1px solid rgba(197,160,89,0.3); }
-    .ver-badge-infra { background: rgba(185,28,28,0.1); color: var(--accent-red); border: 1px solid rgba(185,28,28,0.25); }
-    .ver-badge-beta { background: rgba(107,114,128,0.12); color: #6b7280; border: 1px solid rgba(107,114,128,0.3); }
+    .ver-badge-infra { background: rgba(185,28,28,0.15); color: #f87171; border: 1px solid rgba(185,28,28,0.3); }
+    .ver-badge-beta { background: rgba(100,100,100,0.15); color: #888; border: 1px solid rgba(100,100,100,0.3); }
 
     .ver-item-name {
         font-family: 'Zen Old Mincho', serif;
-        font-size: 0.88rem; font-weight: 700;
-        color: var(--text-main); margin-bottom: 3px; line-height: 1.3;
+        font-size: 0.9rem; font-weight: 700;
+        color: #e0e0e0; margin-bottom: 4px; line-height: 1.35;
     }
     .ver-item-date {
-        font-size: 0.68rem; color: var(--text-sub);
-        letter-spacing: 0.05em; margin-bottom: 5px; font-family: monospace;
+        font-size: 0.67rem; color: #555;
+        letter-spacing: 0.06em; margin-bottom: 6px; font-family: monospace;
     }
-    .ver-item-desc { font-size: 0.77rem; color: var(--text-sub); line-height: 1.55; }
+    .ver-item-desc { font-size: 0.78rem; color: #888; line-height: 1.6; }
     .ver-item-tags {
-        display: flex; flex-wrap: wrap; gap: 4px; margin-top: 8px;
+        display: flex; flex-wrap: wrap; gap: 5px; margin-top: 10px;
     }
     .ver-item-tag {
-        font-size: 0.6rem; padding: 1px 6px; border-radius: 4px;
-        background: rgba(128,128,128,0.08);
-        color: var(--text-sub); border: 1px solid var(--card-border);
+        font-size: 0.6rem; padding: 2px 8px; border-radius: 6px;
+        background: #1c1c1c;
+        color: #666; border: 1px solid #2a2a2a;
+        letter-spacing: 0.04em;
     }
     .ver-item-more {
-        font-size: 0.67rem; color: var(--accent-gold);
-        margin-top: 7px; display: flex; align-items: center; gap: 3px;
+        font-size: 0.68rem; color: var(--accent-gold);
+        margin-top: 10px; display: flex; align-items: center; gap: 4px;
+        opacity: 0.7;
+        transition: opacity 0.2s;
     }
+    .ver-item-card:hover .ver-item-more { opacity: 1; }
 
-    /* ---- 詳細パネル（第二層、パネル内でさらに右からスライド）---- */
+    /* ---- 詳細パネル（第二層）---- */
     .ver-detail-panel {
         position: absolute; inset: 0;
-        background: var(--card-bg);
+        background: #0d0d0d;
         z-index: 2; display: flex; flex-direction: column;
         transform: translateX(100%);
         transition: transform 0.35s cubic-bezier(0.22, 1, 0.36, 1);
@@ -5597,98 +5625,101 @@ body.sidebar-collapsed #sidebar:hover .nav-group-title {
     .ver-detail-panel.active { transform: translateX(0); }
 
     .ver-detail-header {
-        padding: 20px 20px 14px;
-        border-bottom: 1px solid var(--card-border);
+        padding: 22px 20px 16px;
+        border-bottom: 1px solid #1e1e1e;
         display: flex; align-items: center; gap: 12px; flex-shrink: 0;
+        background: linear-gradient(135deg, rgba(197,160,89,0.06) 0%, transparent 60%);
     }
     .ver-detail-back {
-        width: 32px; height: 32px; border-radius: 8px;
-        border: 1px solid var(--card-border);
-        background: transparent; color: var(--text-sub);
+        width: 34px; height: 34px; border-radius: 10px;
+        border: 1px solid #2a2a2a;
+        background: #1a1a1a; color: #888;
         cursor: pointer; display: flex; align-items: center; justify-content: center;
         font-size: 0.9rem; transition: all 0.2s; flex-shrink: 0;
     }
-    .ver-detail-back:hover { background: rgba(128,128,128,0.1); color: var(--text-main); }
+    .ver-detail-back:hover { background: #2a2a2a; color: #fff; border-color: #444; }
     .ver-detail-title {
         font-family: 'Zen Old Mincho', serif;
         font-size: 0.95rem; font-weight: 900;
-        color: var(--text-main); line-height: 1.2;
+        color: #e0e0e0; line-height: 1.2;
     }
 
     .ver-detail-scroll {
-        flex: 1; overflow-y: auto; padding: 20px;
+        flex: 1; overflow-y: auto; padding: 24px 20px;
     }
-    .ver-detail-scroll::-webkit-scrollbar { width: 4px; }
-    .ver-detail-scroll::-webkit-scrollbar-thumb { background: var(--card-border); border-radius: 2px; }
+    .ver-detail-scroll::-webkit-scrollbar { width: 3px; }
+    .ver-detail-scroll::-webkit-scrollbar-thumb { background: #2a2a2a; border-radius: 2px; }
 
     .ver-detail-ver {
         font-family: 'Zen Old Mincho', serif;
-        font-size: 2.4rem; font-weight: 900;
-        color: var(--accent-gold); line-height: 1; margin-bottom: 4px;
+        font-size: 2.8rem; font-weight: 900;
+        color: var(--accent-gold); line-height: 1; margin-bottom: 6px;
+        text-shadow: 0 0 40px rgba(197,160,89,0.3);
     }
     .ver-detail-dateline {
-        font-size: 0.73rem; color: var(--text-sub);
-        margin-bottom: 20px; font-family: monospace; line-height: 1.5;
+        font-size: 0.72rem; color: #555;
+        margin-bottom: 24px; font-family: monospace; line-height: 1.6;
     }
-    .ver-detail-section { margin-bottom: 22px; }
+    .ver-detail-section { margin-bottom: 24px; }
     .ver-detail-section h4 {
         font-family: 'Zen Old Mincho', serif;
-        font-size: 0.82rem; font-weight: 700;
-        color: var(--text-main); margin-bottom: 8px;
-        padding-bottom: 5px; border-bottom: 1px solid var(--card-border);
+        font-size: 0.8rem; font-weight: 700;
+        color: #ccc; margin-bottom: 10px;
+        padding-bottom: 6px; border-bottom: 1px solid #1e1e1e;
         display: flex; align-items: center; gap: 6px;
     }
     .ver-detail-section h4 i { color: var(--accent-gold); }
 
     .ver-detail-change {
-        display: flex; align-items: flex-start; gap: 8px;
-        padding: 7px 0;
-        border-bottom: 1px solid rgba(128,128,128,0.07);
-        font-size: 0.79rem; line-height: 1.55; color: var(--text-main);
+        display: flex; align-items: flex-start; gap: 10px;
+        padding: 8px 0;
+        border-bottom: 1px solid rgba(255,255,255,0.04);
+        font-size: 0.8rem; line-height: 1.6; color: #bbb;
     }
     .ver-detail-change:last-child { border-bottom: none; }
     .ver-change-dot {
         width: 7px; height: 7px; border-radius: 50%;
-        margin-top: 6px; flex-shrink: 0;
+        margin-top: 7px; flex-shrink: 0;
     }
-    .dot-new { background: #059669; }
-    .dot-fix { background: #2563eb; }
-    .dot-change { background: #d97706; }
-    .dot-remove { background: #dc2626; }
-    .dot-infra { background: #7c3aed; }
+    .dot-new { background: #059669; box-shadow: 0 0 6px rgba(5,150,105,0.5); }
+    .dot-fix { background: #3b82f6; box-shadow: 0 0 6px rgba(59,130,246,0.5); }
+    .dot-change { background: #f59e0b; box-shadow: 0 0 6px rgba(245,158,11,0.5); }
+    .dot-remove { background: #ef4444; box-shadow: 0 0 6px rgba(239,68,68,0.5); }
+    .dot-infra { background: #8b5cf6; box-shadow: 0 0 6px rgba(139,92,246,0.5); }
 
     .ver-legend {
-        margin-top: 20px; padding: 10px 12px;
-        background: rgba(128,128,128,0.05);
-        border-radius: 8px; border: 1px solid var(--card-border);
+        margin-top: 24px; padding: 12px 14px;
+        background: #111;
+        border-radius: 10px; border: 1px solid #1e1e1e;
     }
     .ver-legend-title {
-        font-size: 0.62rem; color: var(--text-sub);
-        margin-bottom: 7px; font-weight: 700; letter-spacing: 0.1em;
+        font-size: 0.6rem; color: #555;
+        margin-bottom: 8px; font-weight: 700; letter-spacing: 0.12em;
+        text-transform: uppercase;
     }
-    .ver-legend-items { display: flex; flex-wrap: wrap; gap: 8px; }
+    .ver-legend-items { display: flex; flex-wrap: wrap; gap: 10px; }
     .ver-legend-item {
-        display: flex; align-items: center; gap: 4px;
-        font-size: 0.63rem; color: var(--text-sub);
+        display: flex; align-items: center; gap: 5px;
+        font-size: 0.62rem; color: #666;
     }
     .ver-legend-dot { width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0; }
 
     /* ---- 履歴表示ボタン ---- */
     .ver-history-btn {
         display: inline-flex; align-items: center; gap: 5px;
-        margin-top: 10px; padding: 5px 12px;
+        margin-top: 10px; padding: 5px 14px;
         border-radius: 99px;
         border: 1px solid rgba(197,160,89,0.4);
-        background: rgba(197,160,89,0.08);
+        background: rgba(197,160,89,0.07);
         color: var(--accent-gold);
         font-size: 0.7rem; font-family: 'Zen Old Mincho', serif;
         font-weight: 700; letter-spacing: 0.1em;
         cursor: pointer; transition: all 0.2s;
     }
     .ver-history-btn:hover {
-        background: rgba(197,160,89,0.18);
+        background: rgba(197,160,89,0.15);
         border-color: var(--accent-gold);
-        box-shadow: 0 2px 8px rgba(197,160,89,0.2);
+        box-shadow: 0 2px 12px rgba(197,160,89,0.25);
     }
 
     /* ---- ソース記事リンクアイコン ---- */
@@ -5720,10 +5751,10 @@ body.sidebar-collapsed #sidebar:hover .nav-group-title {
         position: absolute;
         right: 0; bottom: calc(100% + 8px);
         width: 250px;
-        background: var(--card-bg);
-        border: 1px solid var(--card-border);
-        border-radius: 10px;
-        box-shadow: 0 8px 24px rgba(0,0,0,0.18);
+        background: #111111;
+        border: 1px solid #2a2a2a;
+        border-radius: 12px;
+        box-shadow: 0 12px 32px rgba(0,0,0,0.6);
         padding: 10px;
         z-index: 99999;
         opacity: 0; visibility: hidden; pointer-events: none;
@@ -5739,20 +5770,20 @@ body.sidebar-collapsed #sidebar:hover .nav-group-title {
         transform: translateY(0);
     }
     .dark .ver-source-tooltip {
-        box-shadow: 0 8px 28px rgba(0,0,0,0.5);
+        box-shadow: 0 12px 36px rgba(0,0,0,0.7);
     }
     .ver-source-tooltip-title {
-        font-size: 0.6rem; color: var(--text-sub);
+        font-size: 0.6rem; color: #555;
         font-weight: 700; letter-spacing: 0.1em;
         margin-bottom: 6px;
         padding-bottom: 5px;
-        border-bottom: 1px solid var(--card-border);
+        border-bottom: 1px solid #1e1e1e;
         text-transform: uppercase;
     }
     .ver-source-link-item {
         display: flex; flex-direction: column;
         padding: 5px 6px; gap: 2px;
-        border-radius: 6px;
+        border-radius: 8px;
         text-decoration: none;
         transition: background 0.15s;
         margin-bottom: 2px;
@@ -5761,15 +5792,15 @@ body.sidebar-collapsed #sidebar:hover .nav-group-title {
     }
     .ver-source-link-item:last-child { margin-bottom: 0; }
     .ver-source-link-item:hover {
-        background: rgba(197,160,89,0.09);
-        border-color: rgba(197,160,89,0.25);
+        background: rgba(197,160,89,0.08);
+        border-color: rgba(197,160,89,0.2);
     }
     .ver-source-link-date {
-        font-size: 0.58rem; color: var(--text-sub);
+        font-size: 0.58rem; color: #555;
         font-family: monospace;
     }
     .ver-source-link-title {
-        font-size: 0.7rem; color: var(--text-main);
+        font-size: 0.7rem; color: #ccc;
         line-height: 1.35;
         font-family: 'Zen Old Mincho', serif;
     }
@@ -6011,50 +6042,50 @@ body.sidebar-collapsed #sidebar:hover .nav-group-title {
                 </div>
 
                 <!-- 3. 新設: クイックアクセスカード (span 12) - 個別独立カードデザイン＆ホバー時リッチ浮上 -->
-                <div class="bento-card flex flex-col p-6 bg-white dark:bg-zinc-900 border border-gray-200 dark:border-gray-800" style="grid-column: span 12;">
-                    <div class="flex items-center gap-2 mb-4 border-b border-gray-100 dark:border-gray-800 pb-2">
-                        <i class="bi bi-rocket-takeoff-fill text-indigo-500 text-lg"></i>
-                        <h3 class="font-bold text-sm tracking-wide">クイックアクセス</h3>
+                <div class="bento-card flex flex-col p-6 bg-zinc-950 border border-zinc-800 border-t-2 border-t-red-700" style="grid-column: span 12;">
+                    <div class="flex items-center gap-2 mb-4 border-b border-zinc-800 pb-2">
+                        <i class="bi bi-rocket-takeoff-fill text-lg" style="color: var(--accent-gold);"></i>
+                        <h3 class="font-bold text-sm tracking-wide text-zinc-200">クイックアクセス</h3>
                     </div>
                     <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                        <button onclick="showView('zodiac')" class="stats-card-interactive flex items-center gap-4 p-4 rounded-xl border border-gray-200 dark:border-gray-700 border-l-4 border-l-yellow-500 text-left bg-white dark:bg-zinc-800 transition-all duration-300 transform hover:-translate-y-1 hover:shadow-lg">
+                        <button onclick="showView('zodiac')" class="stats-card-interactive flex items-center gap-4 p-4 rounded-xl border border-zinc-700 border-l-4 border-l-yellow-500 text-left bg-zinc-900 transition-all duration-300 transform hover:-translate-y-1 hover:shadow-lg hover:border-yellow-500">
                             <div class="w-10 h-10 rounded-full bg-yellow-500 text-white flex items-center justify-center text-lg flex-shrink-0 shadow-sm"><i class="bi bi-stars"></i></div>
                             <div>
-                                <span class="font-black text-sm block text-gray-800 dark:text-gray-100" style="font-family: 'Zen Old Mincho', serif;">12星座占い</span>
-                                <span class="text-[10px] text-gray-400 dark:text-gray-500">本日の最強運勢ランキング</span>
+                                <span class="font-black text-sm block text-zinc-100" style="font-family: 'Zen Old Mincho', serif;">12星座占い</span>
+                                <span class="text-[10px] text-zinc-500">本日の最強運勢ランキング</span>
                             </div>
                         </button>
-                        <button onclick="showView('prefecture')" class="stats-card-interactive flex items-center gap-4 p-4 rounded-xl border border-gray-200 dark:border-gray-700 border-l-4 border-l-red-600 text-left bg-white dark:bg-zinc-800 transition-all duration-300 transform hover:-translate-y-1 hover:shadow-lg">
+                        <button onclick="showView('prefecture')" class="stats-card-interactive flex items-center gap-4 p-4 rounded-xl border border-zinc-700 border-l-4 border-l-red-600 text-left bg-zinc-900 transition-all duration-300 transform hover:-translate-y-1 hover:shadow-lg hover:border-red-600">
                             <div class="w-10 h-10 rounded-full bg-red-600 text-white flex items-center justify-center text-lg flex-shrink-0 shadow-sm"><i class="bi bi-map"></i></div>
                             <div>
-                                <span class="font-black text-sm block text-gray-800 dark:text-gray-100" style="font-family: 'Zen Old Mincho', serif;">全国の運気</span>
-                                <span class="text-[10px] text-gray-400 dark:text-gray-500">47都道府県の土地のパワー</span>
+                                <span class="font-black text-sm block text-zinc-100" style="font-family: 'Zen Old Mincho', serif;">全国の運気</span>
+                                <span class="text-[10px] text-zinc-500">47都道府県の土地のパワー</span>
                             </div>
                         </button>
-                        <button onclick="showView('history')" class="stats-card-interactive flex items-center gap-4 p-4 rounded-xl border border-gray-200 dark:border-gray-700 border-l-4 border-l-blue-500 text-left bg-white dark:bg-zinc-800 transition-all duration-300 transform hover:-translate-y-1 hover:shadow-lg">
+                        <button onclick="showView('history')" class="stats-card-interactive flex items-center gap-4 p-4 rounded-xl border border-zinc-700 border-l-4 border-l-blue-500 text-left bg-zinc-900 transition-all duration-300 transform hover:-translate-y-1 hover:shadow-lg hover:border-blue-500">
                             <div class="w-10 h-10 rounded-full bg-blue-600 text-white flex items-center justify-center text-lg flex-shrink-0 shadow-sm"><i class="bi bi-clock-history"></i></div>
                             <div>
-                                <span class="font-black text-sm block text-gray-800 dark:text-gray-100" style="font-family: 'Zen Old Mincho', serif;">おみくじの轍</span>
-                                <span class="text-[10px] text-gray-400 dark:text-gray-500">過去の参拝履歴と全体の傾向</span>
+                                <span class="font-black text-sm block text-zinc-100" style="font-family: 'Zen Old Mincho', serif;">おみくじの轍</span>
+                                <span class="text-[10px] text-zinc-500">過去の参拝履歴と全体の傾向</span>
                             </div>
                         </button>
                     </div>
                 </div>
 
                 <!-- 4. 新統合: お知らせ ＆ コラム タブカード (span 12) -->
-                <div class="bento-card flex flex-col p-6 bg-white dark:bg-zinc-900 border border-gray-200 dark:border-gray-800" style="grid-column: span 12;">
+                <div class="bento-card flex flex-col p-6 bg-zinc-950 border border-zinc-800 border-t-2 border-t-red-700" style="grid-column: span 12;">
                     <!-- タブ切り替えヘッダー -->
-                    <div class="flex items-center justify-between mb-4 border-b border-gray-100 dark:border-gray-800 pb-3 flex-wrap gap-2">
+                    <div class="flex items-center justify-between mb-4 border-b border-zinc-800 pb-3 flex-wrap gap-2">
                         <div class="flex gap-2">
                             <button id="home-tab-news-btn" onclick="switchHomeTab('news')" class="px-4 py-1.5 rounded-full text-xs font-black tracking-wider transition-all duration-200 bg-red-600 text-white shadow-sm border border-red-600">
                                 <i class="bi bi-bell-fill mr-1"></i>社務所だより
                             </button>
-                            <button id="home-tab-column-btn" onclick="switchHomeTab('column')" class="px-4 py-1.5 rounded-full text-xs font-black tracking-wider transition-all duration-200 bg-transparent text-gray-500 hover:text-gray-800 dark:hover:text-gray-200 border border-transparent hover:border-gray-200 dark:hover:border-zinc-700">
+                            <button id="home-tab-column-btn" onclick="switchHomeTab('column')" class="px-4 py-1.5 rounded-full text-xs font-black tracking-wider transition-all duration-200 bg-transparent text-zinc-400 hover:text-white border border-transparent hover:border-zinc-600">
                                 <i class="bi bi-book-half mr-1"></i>神籤草子
                             </button>
                         </div>
                         <div class="flex items-center">
-                            <button id="home-tab-more-btn" onclick="showView('news')" class="text-xs text-blue-500 hover:underline flex items-center gap-1 font-bold bg-transparent border-none cursor-pointer">
+                            <button id="home-tab-more-btn" onclick="showView('news')" class="text-xs hover:text-yellow-300 hover:underline flex items-center gap-1 font-bold bg-transparent border-none cursor-pointer" style="color: var(--accent-gold);">
                                 <span>一覧へ</span><i class="bi bi-chevron-right"></i>
                             </button>
                         </div>
@@ -6062,14 +6093,14 @@ body.sidebar-collapsed #sidebar:hover .nav-group-title {
                     
                     <!-- ニュースコンテンツエリア -->
                     <div id="home-tab-news-content" class="block">
-                        <ul class="text-sm space-y-0 divide-y divide-gray-100 dark:divide-gray-800" id="home-news-list">
+                        <ul class="text-sm space-y-0 divide-y divide-zinc-800" id="home-news-list">
                             <!-- JSで自動挿入 -->
                         </ul>
                     </div>
 
                     <!-- コラムコンテンツエリア -->
                     <div id="home-tab-column-content" class="hidden">
-                        <ul class="text-sm space-y-0 divide-y divide-gray-100 dark:divide-gray-800" id="home-column-list">
+                        <ul class="text-sm space-y-0 divide-y divide-zinc-800" id="home-column-list">
                             <!-- JSで自動挿入 -->
                         </ul>
                     </div>
@@ -6078,8 +6109,8 @@ body.sidebar-collapsed #sidebar:hover .nav-group-title {
             </div>
             
             <!-- Ver. 3.0 システムフッター -->
-            <div class="mt-12 mb-4 text-center border-t border-gray-100 dark:border-gray-800/50 pt-6">
-                <div class="flex flex-col items-center justify-center gap-2 text-xs text-gray-400 dark:text-gray-500 font-mono">
+            <div class="mt-12 mb-4 text-center border-t border-zinc-800 pt-6">
+                <div class="flex flex-col items-center justify-center gap-2 text-xs text-zinc-500 font-mono">
                     <div class="flex items-center gap-2 flex-wrap justify-center">
                         <span>運勢・天命乃杜 Ver. 3.0 (改装版)</span>
                         <span>|</span>
@@ -12933,13 +12964,13 @@ function createPaginationHTML(type, current, total) {
         // 社務所だより（最新4件）
         const newsListEl = document.getElementById('home-news-list');
         if (newsListEl) {
-            newsListEl.innerHTML = newsData.slice(0, 4).map(item => `
-                <li class="flex justify-between items-center cursor-pointer hover:bg-gray-50 dark:hover:bg-zinc-800 py-2 px-1 transition group" onclick="openArticle('news', ${item.id})">
+            newsListEl.innerHTML = newsData.slice(0, 5).map(item => `
+                <li class="flex justify-between items-center cursor-pointer hover:bg-zinc-900 py-2 px-1 transition group" onclick="openArticle('news', ${item.id})">
                     <div class="flex items-center min-w-0 mr-2">
-                        <span class="flex-shrink-0 bg-gray-100 dark:bg-zinc-700 px-1.5 py-0.5 rounded text-[10px] mr-2 ${item.tagColor || 'text-gray-600'} font-bold border border-gray-200 dark:border-gray-600">${item.tag}</span>
-                        <span class="truncate group-hover:text-blue-600 transition-colors text-sm font-medium">${item.title}</span>
+                        <span class="flex-shrink-0 bg-zinc-800 px-1.5 py-0.5 rounded text-[10px] mr-2 ${item.tagColor || 'text-zinc-300'} font-bold border border-zinc-700">${item.tag}</span>
+                        <span class="truncate group-hover:text-[var(--accent-gold)] transition-colors text-sm font-medium">${item.title}</span>
                     </div>
-                    <span class="text-[10px] text-gray-400 flex-shrink-0 font-mono">${item.date}</span>
+                    <span class="text-[10px] text-zinc-500 flex-shrink-0 font-mono">${item.date}</span>
                 </li>
             `).join('');
         }
@@ -12948,12 +12979,12 @@ function createPaginationHTML(type, current, total) {
         const columnListEl = document.getElementById('home-column-list');
         if (columnListEl) {
             columnListEl.innerHTML = columnData.slice(0, 5).map(item => `
-                <li class="flex justify-between items-center cursor-pointer hover:bg-gray-50 dark:hover:bg-zinc-800 py-2 px-1 transition group" onclick="openArticle('column', ${item.id})">
+                <li class="flex justify-between items-center cursor-pointer hover:bg-zinc-900 py-2 px-1 transition group" onclick="openArticle('column', ${item.id})">
                     <div class="flex items-center min-w-0 mr-2">
-                        <span class="flex-shrink-0 bg-gray-100 dark:bg-zinc-700 px-1.5 py-0.5 rounded text-[10px] mr-2 text-gray-600 dark:text-gray-300 font-bold border border-gray-200 dark:border-gray-600">${item.category}</span>
-                        <span class="truncate group-hover:text-green-600 transition-colors text-sm font-medium">${item.title}</span>
+                        <span class="flex-shrink-0 bg-zinc-800 px-1.5 py-0.5 rounded text-[10px] mr-2 text-zinc-300 font-bold border border-zinc-700">${item.category}</span>
+                        <span class="truncate group-hover:text-[var(--accent-gold)] transition-colors text-sm font-medium">${item.title}</span>
                     </div>
-                    <span class="text-[10px] text-gray-400 flex-shrink-0 font-mono">${item.date}</span>
+                    <span class="text-[10px] text-zinc-500 flex-shrink-0 font-mono">${item.date}</span>
                 </li>
             `).join('');
         }
