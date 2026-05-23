@@ -1201,87 +1201,82 @@
             opacity: 0.7;
         }
 
-        /* --- おみくじの轍：モダン・タイムラインUI --- */
+        /* --- おみくじの轍：v3.0 刷新デザイン --- */
 
-/* 1. 統計ダッシュボード (Bentoスタイル) */
+/* 1. 統計ダッシュボード */
 .history-stats-grid {
     display: grid;
     grid-template-columns: repeat(2, 1fr);
-    gap: 15px;
-    margin-bottom: 24px;
+    gap: 16px;
+    margin-bottom: 20px;
 }
 
 .history-stat-card {
-    background-color: var(--card-bg);
+    background: var(--card-bg);
     border: 1px solid var(--card-border);
-    border-radius: 16px;
-    padding: 20px;
+    border-radius: 18px;
+    padding: 24px 20px;
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
     position: relative;
     overflow: hidden;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.03);
-    
-    /* ▼▼▼ 追加：アニメーション設定 ▼▼▼ */
-    transition: all 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
-    cursor: pointer; /* クリックできる感触を出す */
+    box-shadow: 0 4px 20px rgba(0,0,0,0.06);
+    transition: all 0.35s cubic-bezier(0.25, 0.8, 0.25, 1);
+    cursor: pointer;
 }
-
-/* ▼▼▼ 追加：ホバー時の浮き上がりと赤い枠線 ▼▼▼ */
 .history-stat-card:hover {
-    transform: translateY(-4px) scale(1.01);
-    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
-    border-color: var(--accent-red); /* 赤い線 */
+    transform: translateY(-4px);
+    box-shadow: 0 16px 32px rgba(0,0,0,0.12);
+    border-color: var(--accent-gold);
     z-index: 10;
 }
 
-/* --- 修正後（追加する部分） --- */
-/* 背景装飾用アイコンのスタイル */
+.stat-card-personal { border-top: 3px solid var(--accent-red); }
+.stat-card-global   { border-top: 3px solid #6366f1; }
+
 .stat-bg-icon {
     position: absolute;
-    right: -10px;
-    bottom: -10px;
-    font-size: 4rem;
-    opacity: 0.05; /* 薄く表示 */
+    right: -8px;
+    bottom: -8px;
+    font-size: 5rem;
+    opacity: 0.04;
     z-index: 0;
-    pointer-events: none; /* クリックを邪魔しない */
-    color: currentColor; /* 親の文字色に合わせる */
+    pointer-events: none;
+    color: currentColor;
 }
 
 .stat-value {
-    font-size: 1.8rem;
+    font-size: 2rem;
     font-weight: 900;
     font-family: 'Zen Old Mincho', serif;
     position: relative;
     z-index: 1;
+    line-height: 1.1;
 }
 .stat-label {
-    font-size: 0.75rem;
+    font-size: 0.68rem;
     color: var(--text-sub);
-    font-weight: bold;
+    font-weight: 700;
     position: relative;
     z-index: 1;
-    margin-bottom: 5px;
+    margin-bottom: 6px;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
 }
 
-/* 2. コントロールバー (検索フィルタ) */
+/* 2. コントロールバー */
 .history-control-bar {
-    background: rgba(255, 255, 255, 0.7);
-    backdrop-filter: blur(10px);
-    -webkit-backdrop-filter: blur(10px);
+    background: var(--card-bg);
     border: 1px solid var(--card-border);
-    border-radius: 16px;
-    padding: 15px;
-    margin-bottom: 30px;
+    border-radius: 18px;
+    padding: 20px;
+    margin-bottom: 20px;
     display: flex;
     flex-direction: column;
-    gap: 12px;
-    box-shadow: 0 8px 20px rgba(0,0,0,0.05);
-}
-.dark .history-control-bar {
-    background: rgba(30, 30, 30, 0.7);
+    gap: 14px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.06);
 }
 
 .control-group-row {
@@ -1302,113 +1297,110 @@
 }
 .modern-filter-select:focus, .modern-filter-input:focus {
     border-color: var(--accent-red);
-    box-shadow: 0 0 0 2px rgba(185, 28, 28, 0.1);
+    box-shadow: 0 0 0 3px rgba(185, 28, 28, 0.1);
 }
 
-/* 3. タイムラインリスト */
+/* 3. タイムラインコンテナ */
 .timeline-container {
     position: relative;
-    padding-left: 20px; /* 左側のライン用スペース */
+    padding-left: 24px;
 }
-/* 縦のライン */
 .timeline-container::before {
     content: '';
     position: absolute;
-    top: 10px;
+    top: 14px;
     bottom: 20px;
-    left: 6px;
+    left: 8px;
     width: 2px;
-    background: #e5e7eb;
+    background: linear-gradient(to bottom, var(--accent-red), #6366f1);
     border-radius: 2px;
-}
-.dark .timeline-container::before {
-    background: #3f3f46;
+    opacity: 0.25;
 }
 
 /* タイムラインアイテム */
 .timeline-item {
     position: relative;
-    margin-bottom: 24px;
+    margin-bottom: 20px;
     padding-left: 20px;
     opacity: 0;
     animation: slideInRight 0.4s ease-out forwards;
 }
 
 @keyframes slideInRight {
-    from { opacity: 0; transform: translateX(10px); }
-    to { opacity: 1; transform: translateX(0); }
+    from { opacity: 0; transform: translateX(12px); }
+    to   { opacity: 1; transform: translateX(0); }
 }
 
 /* タイムラインの「点」 */
 .timeline-dot {
     position: absolute;
-    left: -19px; /* コンテナのpaddingを考慮して位置調整 */
-    top: 18px;
-    width: 12px;
-    height: 12px;
+    left: -20px;
+    top: 16px;
+    width: 14px;
+    height: 14px;
     border-radius: 50%;
-    background-color: #fff;
-    border: 3px solid #d1d5db;
+    background-color: var(--card-bg);
+    border: 3px solid var(--card-border);
     z-index: 2;
+    transition: all 0.2s;
 }
 .dark .timeline-dot {
-    background-color: #18181b;
+    background-color: var(--card-bg);
     border-color: #52525b;
 }
 
-/* 自分の投稿の場合のドット強調 */
 .timeline-item.is-me .timeline-dot {
     border-color: var(--accent-red);
-    box-shadow: 0 0 0 3px rgba(185, 28, 28, 0.2);
+    background-color: var(--accent-red);
+    box-shadow: 0 0 0 4px rgba(185, 28, 28, 0.15);
 }
 
 /* カード本体 */
 .history-card {
     background-color: var(--card-bg);
     border: 1px solid var(--card-border);
-    border-radius: 12px;
-    padding: 16px;
+    border-radius: 14px;
+    padding: 16px 18px;
     display: flex;
     justify-content: space-between;
     align-items: center;
-    transition: transform 0.2s, box-shadow 0.2s;
+    transition: all 0.25s cubic-bezier(0.25, 0.8, 0.25, 1);
     cursor: pointer;
 }
 .history-card:hover {
     transform: translateY(-2px);
-    box-shadow: 0 8px 16px rgba(0,0,0,0.08);
+    box-shadow: 0 10px 24px rgba(0,0,0,0.1);
+    border-color: var(--accent-gold);
 }
 
-/* 自分のカードは少し色をつける */
 .history-card.is-me {
-    background-color: #fffaf0; /* 薄い黄色/赤 */
-    border-left: 4px solid var(--accent-red);
+    background: linear-gradient(135deg, rgba(185,28,28,0.04) 0%, var(--card-bg) 100%);
+    border-left: 3px solid var(--accent-red);
 }
 .dark .history-card.is-me {
-    background-color: #3f2c2c; /* ダークモード時の薄い赤 */
+    background: linear-gradient(135deg, rgba(185,28,28,0.12) 0%, var(--card-bg) 100%);
 }
 
 /* 結果バッジ */
 .result-badge {
     font-family: 'Zen Old Mincho', serif;
     font-weight: 900;
-    font-size: 1.2rem;
-    padding: 4px 12px;
-    border-radius: 8px;
+    font-size: 1.15rem;
+    padding: 5px 14px;
+    border-radius: 10px;
     letter-spacing: 0.1em;
     white-space: nowrap;
 }
-/* 結果ごとの色 */
-.res-daikichi { color: #b45309; background: #fffbeb; border: 1px solid #fcd34d; } /* 大吉:金 */
-.res-kichi    { color: #b91c1c; background: #fef2f2; border: 1px solid #fca5a5; } /* 吉系:赤 */
-.res-kyo      { color: #374151; background: #f3f4f6; border: 1px solid #d1d5db; } /* 凶系:グレー */
-.res-daikyo   { color: #ffffff; background: #1f2937; border: 1px solid #000000; } /* 大凶:黒 */
 
-/* ダークモード対応 */
-.dark .res-daikichi { color: #fbbf24; background: #422006; border-color: #b45309; }
-.dark .res-kichi    { color: #f87171; background: #450a0a; border-color: #991b1b; }
-.dark .res-kyo      { color: #9ca3af; background: #1f2937; border-color: #374151; }
-.dark .res-daikyo   { color: #e5e7eb; background: #000000; border-color: #4b5563; }
+.res-daikichi { color: #92400e; background: linear-gradient(135deg, #fef3c7, #fde68a); border: 1px solid #f59e0b; }
+.res-kichi    { color: #991b1b; background: linear-gradient(135deg, #fef2f2, #fee2e2); border: 1px solid #fca5a5; }
+.res-kyo      { color: #374151; background: linear-gradient(135deg, #f9fafb, #f3f4f6); border: 1px solid #d1d5db; }
+.res-daikyo   { color: #f9fafb; background: linear-gradient(135deg, #1f2937, #111827); border: 1px solid #374151; }
+
+.dark .res-daikichi { color: #fbbf24; background: linear-gradient(135deg, #422006, #451a03); border-color: #b45309; }
+.dark .res-kichi    { color: #fca5a5; background: linear-gradient(135deg, #450a0a, #3b0808); border-color: #991b1b; }
+.dark .res-kyo      { color: #9ca3af; background: linear-gradient(135deg, #27272a, #1f2937); border-color: #4b5563; }
+.dark .res-daikyo   { color: #e5e7eb; background: linear-gradient(135deg, #000000, #0d0d0d); border-color: #6b7280; }
 
         /* --- 社務所だより：モダン・瓦版UI --- */
 
@@ -6491,7 +6483,7 @@ body.sidebar-collapsed #sidebar:hover .nav-group-title {
                     </div>
                     <div class="flex-shrink-0 text-center hidden md:flex flex-col items-center gap-2">
                         <div class="w-20 h-20 rounded-2xl flex items-center justify-center text-4xl" style="background: linear-gradient(135deg, #4338ca, #6d28d9); box-shadow: 0 0 24px rgba(99,102,241,0.3);">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="36" height="36" fill="white" viewBox="0 0 16 16"><path d="M6.5 0A.5.5 0 0 0 6 .5v5.243L.54 13.192A1 1 0 0 0 1.415 14.5h13.17a1 1 0 0 0 .874-1.308L10 5.743V.5a.5.5 0 0 0-.5-.5h-3zm.5 1h2v5l.55 1.273A4.992 4.992 0 0 0 8 7a4.992 4.992 0 0 0-1.55.273L7 6V1z"/></svg>
+                            <i class="bi bi-flask-fill text-white"></i>
                         </div>
                         <p class="text-xs text-zinc-500 font-bold tracking-widest">天命実験室</p>
                     </div>
@@ -7028,82 +7020,97 @@ body.sidebar-collapsed #sidebar:hover .nav-group-title {
 
         <!-- ビュー: おみくじの轍 (履歴) -->
 <section id="view-history" class="view-section max-w-4xl mx-auto relative pb-20">
-    <!-- タイトル -->
-    <div class="text-center mb-8">
-        <h2 class="text-3xl font-black mb-2 tracking-widest" style="font-family: 'Zen Old Mincho'">おみくじの轍</h2>
-        <p class="text-xs font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest">TIMELINE OF DESTINY</p>
+
+    <!-- ローカルスタイル -->
+    <style>
+        #view-history .bento-card:hover {
+            border-color: var(--accent-gold) !important;
+            box-shadow: 0 12px 32px rgba(197, 160, 89, 0.2) !important;
+        }
+    </style>
+
+    <!-- ヘッダー Hero カード -->
+    <div class="bento-card mb-6 relative overflow-hidden bg-gradient-to-br from-red-950 via-zinc-900 to-black border border-zinc-800 text-white" style="padding: 2rem;">
+        <!-- 装飾グロー -->
+        <div class="absolute top-0 right-0 w-72 h-72 opacity-15 pointer-events-none" style="background: radial-gradient(circle, #b91c1c 0%, transparent 70%);"></div>
+        <div class="absolute bottom-0 left-0 w-48 h-48 opacity-10 pointer-events-none" style="background: radial-gradient(circle, #c5a059 0%, transparent 70%);"></div>
+
+        <div class="relative z-10 flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
+            <div class="flex-1">
+                <p class="text-xs font-bold tracking-[0.3em] uppercase mb-2" style="color: var(--accent-gold);">TIMELINE OF DESTINY</p>
+                <h2 class="text-3xl md:text-4xl font-black mb-3 flex items-center gap-3" style="font-family: 'Zen Old Mincho', serif;">
+                    <span class="text-4xl" style="color: var(--accent-gold);">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" fill="currentColor" viewBox="0 0 16 16"><path d="M8 3.293 1.707 9.586A1 1 0 0 0 2 11.293V14.5a.5.5 0 0 0 .5.5h4a.5.5 0 0 0 .5-.5v-3h2v3a.5.5 0 0 0 .5.5h4a.5.5 0 0 0 .5-.5v-3.207a1 1 0 0 0 .293-.707V9.586z"/><path d="m7.293 1.5-6.647 6.646a.5.5 0 0 0 .708.708L8 2.207l6.646 6.647a.5.5 0 0 0 .708-.708L8.707 1.5A1 1 0 0 0 7.293 1.5"/></svg>
+                    </span>
+                    <span class="text-white">おみくじの轍</span>
+                </h2>
+                <p class="text-sm text-zinc-300 leading-relaxed max-w-xl" style="font-family: 'Shippori Mincho', serif;">
+                    杜に刻まれた参拝の記録。<br>
+                    あなたと、すべての参拝者が歩んだ天命の軌跡を辿ります。
+                </p>
+            </div>
+            <div class="flex-shrink-0 text-center hidden md:flex flex-col items-center gap-2">
+                <div class="w-20 h-20 rounded-2xl flex items-center justify-center" style="background: linear-gradient(135deg, #b91c1c, #7f1d1d); box-shadow: 0 0 24px rgba(185,28,28,0.3);">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="36" height="36" fill="white" viewBox="0 0 16 16"><path d="M8 3.293 1.707 9.586A1 1 0 0 0 2 11.293V14.5a.5.5 0 0 0 .5.5h4a.5.5 0 0 0 .5-.5v-3h2v3a.5.5 0 0 0 .5.5h4a.5.5 0 0 0 .5-.5v-3.207a1 1 0 0 0 .293-.707V9.586z"/><path d="m7.293 1.5-6.647 6.646a.5.5 0 0 0 .708.708L8 2.207l6.646 6.647a.5.5 0 0 0 .708-.708L8.707 1.5A1 1 0 0 0 7.293 1.5"/></svg>
+                </div>
+                <p class="text-xs text-zinc-500 font-bold tracking-widest">DESTINY LOG</p>
+            </div>
+        </div>
     </div>
 
     <!-- コンテンツコンテナ -->
     <div id="history-container">
-        
-        <!-- 1. 統計ダッシュボード (あなたの参拝数 / みんなの参拝数) -->
+
+        <!-- 1. 統計ダッシュボード -->
         <div class="history-stats-grid">
             <div class="history-stat-card stat-card-personal">
-                <!-- ▼▼▼ 修正: bi-person-fill から bi-person (塗りつぶしなし) に変更 ▼▼▼ -->
-                <!-- HTMLタグで指定するように変更 -->
                 <i class="bi bi-person stat-bg-icon"></i>
-                
                 <div class="stat-label">あなたの参拝数</div>
                 <div class="stat-value text-red-600" id="personal-history-count">-</div>
             </div>
             <div class="history-stat-card stat-card-global">
-                <!-- ▼▼▼ 修正: bi-people に変更 ▼▼▼ -->
                 <i class="bi bi-people stat-bg-icon"></i>
-                
                 <div class="stat-label">みんなの参拝数</div>
-                <div class="stat-value text-indigo-600 dark:text-indigo-400" id="global-history-count">-</div>
+                <div class="stat-value text-indigo-500 dark:text-indigo-400" id="global-history-count">-</div>
             </div>
         </div>
 
         <!-- 2. 全体の傾向 (詳細) -->
-        <div class="bento-card mb-6">
-            <div class="flex justify-between items-center mb-4 border-b border-gray-200 dark:border-gray-700 pb-2">
-                <!-- ▼ 修正箇所: 「本日の傾向 (詳細)」から「全体の傾向 (詳細)」へ変更 -->
+        <div class="bento-card mb-5">
+            <div class="flex justify-between items-center mb-4" style="border-bottom: 1px solid var(--card-border); padding-bottom: 14px;">
                 <h3 class="font-bold flex items-center gap-2 text-sm">
-                    <i class="bi bi-bar-chart-line-fill text-red-500"></i> 全体の傾向 (詳細)
+                    <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" fill="#b91c1c" viewBox="0 0 16 16"><path d="M4 11H2v3h2zm5-4H7v7h2zm5-5v12h-2V2zm-2-1a1 1 0 0 0-1 1v12a1 1 0 0 0 1 1h2a1 1 0 0 0 1-1V2a1 1 0 0 0-1-1zM6 7a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v7a1 1 0 0 1-1 1H7a1 1 0 0 1-1-1zm-5 4a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v3a1 1 0 0 1-1 1H2a1 1 0 0 1-1-1z"/></svg>
+                    全体の傾向
+                    <span class="text-xs font-normal" style="color: var(--text-sub);">詳細</span>
                 </h3>
             </div>
-            <div class="overflow-y-auto pr-2 custom-scrollbar" style="max-height: 240px;">
-                <div class="space-y-2 text-xs">
-                     <!-- 12段階 統計表示 (IDは hist- 接頭辞付き) -->
-                     <div class="grid grid-cols-1 gap-1">
-                         <!-- 大吉 -->
-                         <div><div class="flex justify-between mb-1"><span>大吉</span><span><span id="hist-cnt-daikichi" class="mr-2 opacity-70 font-mono">0</span><span id="hist-stat-daikichi">0.00%</span></span></div><div class="w-full bg-gray-100 dark:bg-zinc-700 h-1.5 rounded"><div id="hist-bar-daikichi" class="bg-yellow-400 h-1.5 rounded transition-all duration-1000" style="width: 0%"></div></div></div>
-                         <!-- 中吉 -->
-                         <div><div class="flex justify-between mb-1"><span>中吉</span><span><span id="hist-cnt-chukichi" class="mr-2 opacity-70 font-mono">0</span><span id="hist-stat-chukichi">0.00%</span></span></div><div class="w-full bg-gray-100 dark:bg-zinc-700 h-1.5 rounded"><div id="hist-bar-chukichi" class="bg-orange-400 h-1.5 rounded transition-all duration-1000" style="width: 0%"></div></div></div>
-                         <!-- 小吉 -->
-                         <div><div class="flex justify-between mb-1"><span>小吉</span><span><span id="hist-cnt-shokichi" class="mr-2 opacity-70 font-mono">0</span><span id="hist-stat-shokichi">0.00%</span></span></div><div class="w-full bg-gray-100 dark:bg-zinc-700 h-1.5 rounded"><div id="hist-bar-shokichi" class="bg-green-400 h-1.5 rounded transition-all duration-1000" style="width: 0%"></div></div></div>
-                         <!-- 吉 -->
-                         <div><div class="flex justify-between mb-1"><span>吉</span><span><span id="hist-cnt-kichi" class="mr-2 opacity-70 font-mono">0</span><span id="hist-stat-kichi">0.00%</span></span></div><div class="w-full bg-gray-100 dark:bg-zinc-700 h-1.5 rounded"><div id="hist-bar-kichi" class="bg-red-400 h-1.5 rounded transition-all duration-1000" style="width: 0%"></div></div></div>
-                         <!-- 半吉 -->
-                         <div><div class="flex justify-between mb-1"><span>半吉</span><span><span id="hist-cnt-hankichi" class="mr-2 opacity-70 font-mono">0</span><span id="hist-stat-hankichi">0.00%</span></span></div><div class="w-full bg-gray-100 dark:bg-zinc-700 h-1.5 rounded"><div id="hist-bar-hankichi" class="bg-red-300 h-1.5 rounded transition-all duration-1000" style="width: 0%"></div></div></div>
-                         <!-- 末吉 -->
-                         <div><div class="flex justify-between mb-1"><span>末吉</span><span><span id="hist-cnt-suekichi" class="mr-2 opacity-70 font-mono">0</span><span id="hist-stat-suekichi">0.00%</span></span></div><div class="w-full bg-gray-100 dark:bg-zinc-700 h-1.5 rounded"><div id="hist-bar-suekichi" class="bg-blue-400 h-1.5 rounded transition-all duration-1000" style="width: 0%"></div></div></div>
-                         <!-- 末小吉 -->
-                         <div><div class="flex justify-between mb-1"><span>末小吉</span><span><span id="hist-cnt-sueshokichi" class="mr-2 opacity-70 font-mono">0</span><span id="hist-stat-sueshokichi">0.00%</span></span></div><div class="w-full bg-gray-100 dark:bg-zinc-700 h-1.5 rounded"><div id="hist-bar-sueshokichi" class="bg-blue-300 h-1.5 rounded transition-all duration-1000" style="width: 0%"></div></div></div>
-                         <!-- 凶 -->
-                         <div><div class="flex justify-between mb-1"><span>凶</span><span><span id="hist-cnt-kyo" class="mr-2 opacity-70 font-mono">0</span><span id="hist-stat-kyo">0.00%</span></span></div><div class="w-full bg-gray-100 dark:bg-zinc-700 h-1.5 rounded"><div id="hist-bar-kyo" class="bg-gray-400 h-1.5 rounded transition-all duration-1000" style="width: 0%"></div></div></div>
-                         <!-- 小凶 -->
-                         <div><div class="flex justify-between mb-1"><span>小凶</span><span><span id="hist-cnt-shokyo" class="mr-2 opacity-70 font-mono">0</span><span id="hist-stat-shokyo">0.00%</span></span></div><div class="w-full bg-gray-100 dark:bg-zinc-700 h-1.5 rounded"><div id="hist-bar-shokyo" class="bg-gray-500 h-1.5 rounded transition-all duration-1000" style="width: 0%"></div></div></div>
-                         <!-- 半凶 -->
-                         <div><div class="flex justify-between mb-1"><span>半凶</span><span><span id="hist-cnt-hankyo" class="mr-2 opacity-70 font-mono">0</span><span id="hist-stat-hankyo">0.00%</span></span></div><div class="w-full bg-gray-100 dark:bg-zinc-700 h-1.5 rounded"><div id="hist-bar-hankyo" class="bg-gray-600 dark:bg-gray-400 h-1.5 rounded transition-all duration-1000" style="width: 0%"></div></div></div>
-                         <!-- 末凶 -->
-                         <div><div class="flex justify-between mb-1"><span>末凶</span><span><span id="hist-cnt-suekyo" class="mr-2 opacity-70 font-mono">0</span><span id="hist-stat-suekyo">0.00%</span></span></div><div class="w-full bg-gray-100 dark:bg-zinc-700 h-1.5 rounded"><div id="hist-bar-suekyo" class="bg-gray-700 h-1.5 rounded transition-all duration-1000" style="width: 0%"></div></div></div>
-                         <!-- 大凶 -->
-                         <div><div class="flex justify-between mb-1"><span>大凶</span><span><span id="hist-cnt-daikyo" class="mr-2 opacity-70 font-mono">0</span><span id="hist-stat-daikyo">0.00%</span></span></div><div class="w-full bg-gray-100 dark:bg-zinc-700 h-1.5 rounded"><div id="hist-bar-daikyo" class="bg-black h-1.5 rounded transition-all duration-1000" style="width: 0%"></div></div></div>
-                     </div>
+            <div class="overflow-y-auto pr-1 custom-scrollbar" style="max-height: 240px;">
+                <div class="space-y-2.5 text-xs">
+                    <div class="grid grid-cols-1 gap-1.5">
+                        <div><div class="flex justify-between mb-1"><span class="font-bold" style="color:#b45309;">大吉</span><span><span id="hist-cnt-daikichi" class="mr-2 opacity-70 font-mono">0</span><span id="hist-stat-daikichi" class="font-bold">0.00%</span></span></div><div class="w-full h-1.5 rounded-full" style="background:var(--card-border);"><div id="hist-bar-daikichi" class="h-1.5 rounded-full transition-all duration-1000" style="width:0%;background:linear-gradient(90deg,#f59e0b,#d97706);"></div></div></div>
+                        <div><div class="flex justify-between mb-1"><span class="font-bold" style="color:#c2410c;">中吉</span><span><span id="hist-cnt-chukichi" class="mr-2 opacity-70 font-mono">0</span><span id="hist-stat-chukichi" class="font-bold">0.00%</span></span></div><div class="w-full h-1.5 rounded-full" style="background:var(--card-border);"><div id="hist-bar-chukichi" class="h-1.5 rounded-full transition-all duration-1000" style="width:0%;background:linear-gradient(90deg,#f97316,#ea580c);"></div></div></div>
+                        <div><div class="flex justify-between mb-1"><span class="font-bold" style="color:#15803d;">小吉</span><span><span id="hist-cnt-shokichi" class="mr-2 opacity-70 font-mono">0</span><span id="hist-stat-shokichi" class="font-bold">0.00%</span></span></div><div class="w-full h-1.5 rounded-full" style="background:var(--card-border);"><div id="hist-bar-shokichi" class="h-1.5 rounded-full transition-all duration-1000" style="width:0%;background:linear-gradient(90deg,#22c55e,#16a34a);"></div></div></div>
+                        <div><div class="flex justify-between mb-1"><span class="font-bold" style="color:#b91c1c;">吉</span><span><span id="hist-cnt-kichi" class="mr-2 opacity-70 font-mono">0</span><span id="hist-stat-kichi" class="font-bold">0.00%</span></span></div><div class="w-full h-1.5 rounded-full" style="background:var(--card-border);"><div id="hist-bar-kichi" class="h-1.5 rounded-full transition-all duration-1000" style="width:0%;background:linear-gradient(90deg,#ef4444,#b91c1c);"></div></div></div>
+                        <div><div class="flex justify-between mb-1"><span class="font-bold" style="color:#dc2626;">半吉</span><span><span id="hist-cnt-hankichi" class="mr-2 opacity-70 font-mono">0</span><span id="hist-stat-hankichi" class="font-bold">0.00%</span></span></div><div class="w-full h-1.5 rounded-full" style="background:var(--card-border);"><div id="hist-bar-hankichi" class="h-1.5 rounded-full transition-all duration-1000" style="width:0%;background:linear-gradient(90deg,#f87171,#ef4444);"></div></div></div>
+                        <div><div class="flex justify-between mb-1"><span class="font-bold" style="color:#1d4ed8;">末吉</span><span><span id="hist-cnt-suekichi" class="mr-2 opacity-70 font-mono">0</span><span id="hist-stat-suekichi" class="font-bold">0.00%</span></span></div><div class="w-full h-1.5 rounded-full" style="background:var(--card-border);"><div id="hist-bar-suekichi" class="h-1.5 rounded-full transition-all duration-1000" style="width:0%;background:linear-gradient(90deg,#60a5fa,#3b82f6);"></div></div></div>
+                        <div><div class="flex justify-between mb-1"><span class="font-bold" style="color:#2563eb;">末小吉</span><span><span id="hist-cnt-sueshokichi" class="mr-2 opacity-70 font-mono">0</span><span id="hist-stat-sueshokichi" class="font-bold">0.00%</span></span></div><div class="w-full h-1.5 rounded-full" style="background:var(--card-border);"><div id="hist-bar-sueshokichi" class="h-1.5 rounded-full transition-all duration-1000" style="width:0%;background:linear-gradient(90deg,#93c5fd,#60a5fa);"></div></div></div>
+                        <div><div class="flex justify-between mb-1"><span class="font-bold" style="color:var(--text-sub);">凶</span><span><span id="hist-cnt-kyo" class="mr-2 opacity-70 font-mono">0</span><span id="hist-stat-kyo" class="font-bold">0.00%</span></span></div><div class="w-full h-1.5 rounded-full" style="background:var(--card-border);"><div id="hist-bar-kyo" class="h-1.5 rounded-full transition-all duration-1000" style="width:0%;background:linear-gradient(90deg,#9ca3af,#6b7280);"></div></div></div>
+                        <div><div class="flex justify-between mb-1"><span class="font-bold" style="color:var(--text-sub);">小凶</span><span><span id="hist-cnt-shokyo" class="mr-2 opacity-70 font-mono">0</span><span id="hist-stat-shokyo" class="font-bold">0.00%</span></span></div><div class="w-full h-1.5 rounded-full" style="background:var(--card-border);"><div id="hist-bar-shokyo" class="h-1.5 rounded-full transition-all duration-1000" style="width:0%;background:linear-gradient(90deg,#6b7280,#4b5563);"></div></div></div>
+                        <div><div class="flex justify-between mb-1"><span class="font-bold" style="color:var(--text-sub);">半凶</span><span><span id="hist-cnt-hankyo" class="mr-2 opacity-70 font-mono">0</span><span id="hist-stat-hankyo" class="font-bold">0.00%</span></span></div><div class="w-full h-1.5 rounded-full" style="background:var(--card-border);"><div id="hist-bar-hankyo" class="h-1.5 rounded-full transition-all duration-1000" style="width:0%;background:linear-gradient(90deg,#4b5563,#374151);"></div></div></div>
+                        <div><div class="flex justify-between mb-1"><span class="font-bold" style="color:var(--text-sub);">末凶</span><span><span id="hist-cnt-suekyo" class="mr-2 opacity-70 font-mono">0</span><span id="hist-stat-suekyo" class="font-bold">0.00%</span></span></div><div class="w-full h-1.5 rounded-full" style="background:var(--card-border);"><div id="hist-bar-suekyo" class="h-1.5 rounded-full transition-all duration-1000" style="width:0%;background:linear-gradient(90deg,#374151,#1f2937);"></div></div></div>
+                        <div><div class="flex justify-between mb-1"><span class="font-bold text-black dark:text-zinc-300">大凶</span><span><span id="hist-cnt-daikyo" class="mr-2 opacity-70 font-mono">0</span><span id="hist-stat-daikyo" class="font-bold">0.00%</span></span></div><div class="w-full h-1.5 rounded-full" style="background:var(--card-border);"><div id="hist-bar-daikyo" class="h-1.5 rounded-full transition-all duration-1000" style="width:0%;background:linear-gradient(90deg,#18181b,#000000);"></div></div></div>
+                    </div>
                 </div>
             </div>
         </div>
 
         <!-- 3. コントロールバー (検索) -->
         <div class="history-control-bar">
-            <div class="flex items-center gap-2 mb-1">
-                <i class="bi bi-sliders text-gray-400"></i>
-                <span class="text-xs font-bold text-gray-500">条件を絞り込む</span>
+            <div class="flex items-center gap-2">
+                <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" fill="currentColor" style="color:var(--accent-red);" viewBox="0 0 16 16"><path d="M6 10.5a.5.5 0 0 1 .5-.5h3a.5.5 0 0 1 0 1h-3a.5.5 0 0 1-.5-.5m-2-3a.5.5 0 0 1 .5-.5h7a.5.5 0 0 1 0 1h-7a.5.5 0 0 1-.5-.5m-2-3a.5.5 0 0 1 .5-.5h11a.5.5 0 0 1 0 1h-11a.5.5 0 0 1-.5-.5"/></svg>
+                <span class="text-xs font-bold" style="color:var(--text-sub);">条件を絞り込む</span>
             </div>
-            
+
             <div class="control-group-row">
                 <select id="search-type" class="modern-filter-select flex-1" style="min-width: 120px;">
                     <option value="all">全ての運勢</option>
@@ -7122,49 +7129,51 @@ body.sidebar-collapsed #sidebar:hover .nav-group-title {
                 </select>
                 <input type="text" id="search-keyword" placeholder="ユーザー名で検索" class="modern-filter-input flex-[2]">
             </div>
-            
+
             <div class="control-group-row">
                 <input type="date" id="search-date-start" class="modern-filter-input flex-1">
-                <span class="self-center text-gray-400">～</span>
+                <span class="self-center text-sm" style="color:var(--text-sub);">〜</span>
                 <input type="date" id="search-date-end" class="modern-filter-input flex-1">
-                
-                <button onclick="filterHistory()" class="btn-primary py-2 px-6 text-sm flex-shrink-0 shadow-md">
-                    <i class="bi bi-search"></i> 検索
+                <button onclick="filterHistory()" class="btn-primary py-2 px-6 text-sm flex-shrink-0">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" fill="currentColor" viewBox="0 0 16 16"><path d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001q.044.06.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1 1 0 0 0-.115-.1zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0"/></svg>
+                    検索
                 </button>
-                <button onclick="resetSearch()" class="px-4 py-2 rounded-lg border border-gray-300 hover:bg-gray-100 dark:hover:bg-zinc-700 transition text-sm flex-shrink-0">
-                    <i class="bi bi-arrow-counterclockwise"></i>
+                <button onclick="resetSearch()" class="px-4 py-2 rounded-xl text-sm flex-shrink-0 transition-all hover:border-red-400" style="border:1px solid var(--card-border);color:var(--text-sub);">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" fill="currentColor" viewBox="0 0 16 16"><path fill-rule="evenodd" d="M8 3a5 5 0 1 1-4.546 2.914.5.5 0 0 0-.908-.417A6 6 0 1 0 8 2z"/><path d="M8 4.466V.534a.25.25 0 0 0-.41-.192L5.23 2.308a.25.25 0 0 0 0 .384l2.36 1.966A.25.25 0 0 0 8 4.466"/></svg>
                 </button>
             </div>
-            
-            <div class="flex justify-between items-center mt-1 px-1">
-                <div class="text-xs text-gray-400" id="history-view-mode">全期間の記録</div>
-                <div class="text-xs font-bold text-gray-500">
-                    Hit: <span id="search-result-count" class="text-red-600 text-lg mx-1">0</span> 件
+
+            <div class="flex justify-between items-center px-1" style="border-top:1px solid var(--card-border);padding-top:12px;margin-top:-2px;">
+                <div class="text-xs" style="color:var(--text-sub);" id="history-view-mode">全期間の記録</div>
+                <div class="text-xs font-bold" style="color:var(--text-sub);">
+                    Hit: <span id="search-result-count" class="text-lg mx-1 font-black" style="color:var(--accent-red);">0</span> 件
                 </div>
             </div>
         </div>
 
         <!-- 4. タイムラインリスト -->
-        <div class="bg-white dark:bg-zinc-900 rounded-2xl p-6 shadow-sm border border-gray-100 dark:border-gray-800">
+        <div class="bento-card" style="padding: 24px 20px;">
             <div class="timeline-container" id="history-list">
                 <!-- JSでここにアイテムが挿入されます -->
             </div>
-            
             <!-- ページネーション -->
-            <div id="history-pagination" class="flex justify-center items-center gap-4 mt-8 pt-6 border-t border-gray-100 dark:border-gray-800"></div>
+            <div id="history-pagination" class="flex justify-center items-center gap-4 mt-6 pt-6" style="border-top:1px solid var(--card-border);"></div>
         </div>
 
     </div>
 
     <!-- 非ログイン時のオーバーレイ -->
     <div id="history-login-overlay" class="history-overlay hidden">
-        <i class="bi bi-lock-fill text-5xl text-gray-300 mb-4 block"></i>
-        <h3 class="text-xl font-bold mb-2">轍を見るには会員証が必要です</h3>
-        <p class="text-sm text-gray-500 mb-6 leading-relaxed">
+        <div class="w-16 h-16 rounded-2xl flex items-center justify-center mx-auto mb-6" style="background:linear-gradient(135deg,#1f2937,#374151);">
+            <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" fill="#9ca3af" viewBox="0 0 16 16"><path d="M8 1a2 2 0 0 1 2 2v4H6V3a2 2 0 0 1 2-2m3 6V3a3 3 0 0 0-6 0v4a2 2 0 0 0-2 2v5a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2"/></svg>
+        </div>
+        <h3 class="text-xl font-black mb-2" style="font-family:'Zen Old Mincho',serif;">轍を見るには会員証が必要です</h3>
+        <p class="text-sm mb-6 leading-relaxed" style="color:var(--text-sub);">
             ログインすると、あなた自身の過去の運勢と、<br>他の参拝者の記録を閲覧・検索することができます。
         </p>
         <button onclick="showView('auth')" class="btn-primary shadow-lg">
-            <i class="bi bi-person-check"></i> ログイン / 登録
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16"><path d="M3 14s-1 0-1-1 1-4 6-4 6 3 6 4-1 1-1 1zm5-6a3 3 0 1 0 0-6 3 3 0 0 0 0 6"/></svg>
+            ログイン / 登録
         </button>
     </div>
 </section>
