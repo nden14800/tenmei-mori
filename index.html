@@ -1105,11 +1105,8 @@
             overflow: visible !important;
             z-index: 1;
         }
-        .lucky-icon-btn > .lucky-tooltip {
-            display: block;
-            visibility: hidden;
-            opacity: 0;
-            pointer-events: none;
+        #lucky-global-tip {
+            display: none;
             position: fixed;
             background: #1a1a1a;
             color: #f0f0f0;
@@ -1119,12 +1116,12 @@
             font-size: 0.75rem;
             white-space: nowrap;
             box-shadow: 0 4px 20px rgba(0,0,0,0.5);
-            transition: opacity 0.18s, visibility 0.18s;
-            z-index: 9999;
-            line-height: 1.4;
+            z-index: 99999;
+            pointer-events: none;
             width: max-content;
+            line-height: 1.4;
         }
-        .lucky-icon-btn > .lucky-tooltip::after {
+        #lucky-global-tip::after {
             content: '';
             position: absolute;
             top: 100%;
@@ -15278,30 +15275,26 @@ async function showResultDetail(isNewDraw, dataOverride = null) {
                     <div class="lucky-title accent-text">開運</div>
                     <div class="lucky-icons-row">
                         <span style="display:inline-flex;align-items:center;gap:2px;">
-                            <span class="lucky-icon-btn" ontouchstart="this.classList.add('active')" ontouchend="this.classList.remove('active')">
+                            <span class="lucky-icon-btn" data-tip="物：${data.lucky.item}" onmouseenter="_gTipShow(this)" onmouseleave="_gTipHide()" ontouchstart="_gTipShow(this)" ontouchend="setTimeout(_gTipHide,1200)">
                                 <i class="bi bi-stars accent-text"></i>
-                                <span class="lucky-tooltip" style="display:block;visibility:hidden;opacity:0;position:fixed;top:0;left:0;background:#1a1a1a;color:#f0f0f0;border:1px solid #555;border-radius:8px;padding:5px 11px;font-size:0.75rem;white-space:nowrap;box-shadow:0 4px 20px rgba(0,0,0,0.5);z-index:9999;pointer-events:none;width:max-content;transition:opacity 0.18s,visibility 0.18s;">物：${data.lucky.item}</span>
                             </span>
                             <span class="accent-text" style="font-size:0.78rem;">${data.lucky.item}</span>
                         </span>
                         <span style="display:inline-flex;align-items:center;gap:2px;">
-                            <span class="lucky-icon-btn" ontouchstart="this.classList.add('active')" ontouchend="this.classList.remove('active')">
+                            <span class="lucky-icon-btn" data-tip="所：${data.lucky.spot}" onmouseenter="_gTipShow(this)" onmouseleave="_gTipHide()" ontouchstart="_gTipShow(this)" ontouchend="setTimeout(_gTipHide,1200)">
                                 <i class="bi bi-geo-alt accent-text"></i>
-                                <span class="lucky-tooltip" style="display:block;visibility:hidden;opacity:0;position:fixed;top:0;left:0;background:#1a1a1a;color:#f0f0f0;border:1px solid #555;border-radius:8px;padding:5px 11px;font-size:0.75rem;white-space:nowrap;box-shadow:0 4px 20px rgba(0,0,0,0.5);z-index:9999;pointer-events:none;width:max-content;transition:opacity 0.18s,visibility 0.18s;">所：${data.lucky.spot}</span>
                             </span>
                             <span class="accent-text" style="font-size:0.78rem;">${data.lucky.spot}</span>
                         </span>
                         <span style="display:inline-flex;align-items:center;gap:2px;">
-                            <span class="lucky-icon-btn" ontouchstart="this.classList.add('active')" ontouchend="this.classList.remove('active')">
+                            <span class="lucky-icon-btn" data-tip="色：${data.lucky.color}" onmouseenter="_gTipShow(this)" onmouseleave="_gTipHide()" ontouchstart="_gTipShow(this)" ontouchend="setTimeout(_gTipHide,1200)">
                                 <i class="bi bi-palette accent-text"></i>
-                                <span class="lucky-tooltip" style="display:block;visibility:hidden;opacity:0;position:fixed;top:0;left:0;background:#1a1a1a;color:#f0f0f0;border:1px solid #555;border-radius:8px;padding:5px 11px;font-size:0.75rem;white-space:nowrap;box-shadow:0 4px 20px rgba(0,0,0,0.5);z-index:9999;pointer-events:none;width:max-content;transition:opacity 0.18s,visibility 0.18s;">色：${data.lucky.color}</span>
                             </span>
                             <span class="accent-text" style="font-size:0.78rem;">${data.lucky.color}</span>
                         </span>
                         <span style="display:inline-flex;align-items:center;gap:2px;">
-                            <span class="lucky-icon-btn" ontouchstart="this.classList.add('active')" ontouchend="this.classList.remove('active')">
+                            <span class="lucky-icon-btn" data-tip="人：${data.lucky.person}" onmouseenter="_gTipShow(this)" onmouseleave="_gTipHide()" ontouchstart="_gTipShow(this)" ontouchend="setTimeout(_gTipHide,1200)">
                                 <i class="bi bi-person accent-text"></i>
-                                <span class="lucky-tooltip" style="display:block;visibility:hidden;opacity:0;position:fixed;top:0;left:0;background:#1a1a1a;color:#f0f0f0;border:1px solid #555;border-radius:8px;padding:5px 11px;font-size:0.75rem;white-space:nowrap;box-shadow:0 4px 20px rgba(0,0,0,0.5);z-index:9999;pointer-events:none;width:max-content;transition:opacity 0.18s,visibility 0.18s;">人：${data.lucky.person}</span>
                             </span>
                             <span class="accent-text" style="font-size:0.78rem;">${data.lucky.person}</span>
                         </span>
@@ -15315,23 +15308,20 @@ async function showResultDetail(isNewDraw, dataOverride = null) {
                     <div class="lucky-title accent-text red-text" style="color:inherit">不運・注意</div>
                     <div class="lucky-icons-row">
                         <span style="display:inline-flex;align-items:center;gap:2px;">
-                            <span class="lucky-icon-btn" ontouchstart="this.classList.add('active')" ontouchend="this.classList.remove('active')">
+                            <span class="lucky-icon-btn" data-tip="物：${data.unlucky.item}" onmouseenter="_gTipShow(this)" onmouseleave="_gTipHide()" ontouchstart="_gTipShow(this)" ontouchend="setTimeout(_gTipHide,1200)">
                                 <i class="bi bi-exclamation-triangle accent-text"></i>
-                                <span class="lucky-tooltip" style="display:block;visibility:hidden;opacity:0;position:fixed;top:0;left:0;background:#1a1a1a;color:#f0f0f0;border:1px solid #555;border-radius:8px;padding:5px 11px;font-size:0.75rem;white-space:nowrap;box-shadow:0 4px 20px rgba(0,0,0,0.5);z-index:9999;pointer-events:none;width:max-content;transition:opacity 0.18s,visibility 0.18s;">物：${data.unlucky.item}</span>
                             </span>
                             <span class="accent-text" style="font-size:0.78rem;">${data.unlucky.item}</span>
                         </span>
                         <span style="display:inline-flex;align-items:center;gap:2px;">
-                            <span class="lucky-icon-btn" ontouchstart="this.classList.add('active')" ontouchend="this.classList.remove('active')">
+                            <span class="lucky-icon-btn" data-tip="所：${data.unlucky.spot}" onmouseenter="_gTipShow(this)" onmouseleave="_gTipHide()" ontouchstart="_gTipShow(this)" ontouchend="setTimeout(_gTipHide,1200)">
                                 <i class="bi bi-x-octagon accent-text"></i>
-                                <span class="lucky-tooltip" style="display:block;visibility:hidden;opacity:0;position:fixed;top:0;left:0;background:#1a1a1a;color:#f0f0f0;border:1px solid #555;border-radius:8px;padding:5px 11px;font-size:0.75rem;white-space:nowrap;box-shadow:0 4px 20px rgba(0,0,0,0.5);z-index:9999;pointer-events:none;width:max-content;transition:opacity 0.18s,visibility 0.18s;">所：${data.unlucky.spot}</span>
                             </span>
                             <span class="accent-text" style="font-size:0.78rem;">${data.unlucky.spot}</span>
                         </span>
                         <span style="display:inline-flex;align-items:center;gap:2px;">
-                            <span class="lucky-icon-btn" ontouchstart="this.classList.add('active')" ontouchend="this.classList.remove('active')">
+                            <span class="lucky-icon-btn" data-tip="人：${data.unlucky.person}" onmouseenter="_gTipShow(this)" onmouseleave="_gTipHide()" ontouchstart="_gTipShow(this)" ontouchend="setTimeout(_gTipHide,1200)">
                                 <i class="bi bi-person-x accent-text"></i>
-                                <span class="lucky-tooltip" style="display:block;visibility:hidden;opacity:0;position:fixed;top:0;left:0;background:#1a1a1a;color:#f0f0f0;border:1px solid #555;border-radius:8px;padding:5px 11px;font-size:0.75rem;white-space:nowrap;box-shadow:0 4px 20px rgba(0,0,0,0.5);z-index:9999;pointer-events:none;width:max-content;transition:opacity 0.18s,visibility 0.18s;">人：${data.unlucky.person}</span>
                             </span>
                             <span class="accent-text" style="font-size:0.78rem;">${data.unlucky.person}</span>
                         </span>
@@ -15342,36 +15332,7 @@ async function showResultDetail(isNewDraw, dataOverride = null) {
             luckyArea.appendChild(uBox);
             outer.appendChild(luckyArea);
 
-            // ツールチップ表示制御（hover + touch対応・fixed位置計算）
-            luckyArea.querySelectorAll('.lucky-icon-btn').forEach(btn => {
-                const tip = btn.querySelector('.lucky-tooltip');
-                if (!tip) return;
-                const show = () => {
-                    // オフスクリーンで表示しサイズ測定してから正しい位置に移動
-                    tip.style.visibility = 'hidden';
-                    tip.style.opacity = '0';
-                    tip.style.top = '-9999px';
-                    tip.style.left = '-9999px';
-                    tip.style.transform = 'none';
-                    const r = btn.getBoundingClientRect();
-                    const tipW = tip.offsetWidth;
-                    const tipH = tip.offsetHeight;
-                    let leftPos = r.left + r.width / 2 - tipW / 2;
-                    let topPos = r.top - tipH - 8;
-                    if (leftPos < 4) leftPos = 4;
-                    if (leftPos + tipW > window.innerWidth - 4) leftPos = window.innerWidth - tipW - 4;
-                    if (topPos < 4) topPos = r.bottom + 8;
-                    tip.style.top = topPos + 'px';
-                    tip.style.left = leftPos + 'px';
-                    tip.style.visibility = 'visible';
-                    tip.style.opacity = '1';
-                };
-                const hide = () => { tip.style.visibility = 'hidden'; tip.style.opacity = '0'; };
-                btn.addEventListener('mouseenter', show);
-                btn.addEventListener('mouseleave', hide);
-                btn.addEventListener('touchstart', (e) => { e.preventDefault(); show(); }, { passive: false });
-                btn.addEventListener('touchend', () => { setTimeout(hide, 1200); });
-            });
+
 
            // 8. フッター情報
             if (withFooter) {
@@ -16912,23 +16873,20 @@ function createCardHTML(data) {
                                 総合: ${data.totalScore}点
                             </span>
                             <span style="display:inline-flex;align-items:center;gap:2px;">
-                                <span class="lucky-icon-btn" onmouseenter="_showLuckyTip(this)" onmouseleave="_hideLuckyTip(this)" ontouchstart="_showLuckyTip(this)" ontouchend="setTimeout(()=>_hideLuckyTip(this),1200)">
+                                <span class="lucky-icon-btn" data-tip="ラッキーNo.${data.luckyNum}" onmouseenter="_gTipShow(this)" onmouseleave="_gTipHide()" ontouchstart="_gTipShow(this)" ontouchend="setTimeout(_gTipHide,1200)">
                                     <i class="bi bi-hash" style="color:#aaa;"></i>
-                                    <span class="lucky-tooltip" style="display:block;visibility:hidden;opacity:0;position:fixed;top:0;left:0;background:#1a1a1a;color:#f0f0f0;border:1px solid #555;border-radius:8px;padding:5px 11px;font-size:0.75rem;white-space:nowrap;box-shadow:0 4px 20px rgba(0,0,0,0.5);z-index:9999;pointer-events:none;width:max-content;transition:opacity 0.18s,visibility 0.18s;">ラッキーNo.${data.luckyNum}</span>
                                 </span>
                                 <span style="color:#aaa;font-size:0.8rem;">${data.luckyNum}</span>
                             </span>
                             <span style="display:inline-flex;align-items:center;gap:2px;">
-                                <span class="lucky-icon-btn" onmouseenter="_showLuckyTip(this)" onmouseleave="_hideLuckyTip(this)" ontouchstart="_showLuckyTip(this)" ontouchend="setTimeout(()=>_hideLuckyTip(this),1200)">
+                                <span class="lucky-icon-btn" data-tip="ラッキーアイテム：${data.item}" onmouseenter="_gTipShow(this)" onmouseleave="_gTipHide()" ontouchstart="_gTipShow(this)" ontouchend="setTimeout(_gTipHide,1200)">
                                     <i class="bi bi-stars" style="color:#eab308;"></i>
-                                    <span class="lucky-tooltip" style="display:block;visibility:hidden;opacity:0;position:fixed;top:0;left:0;background:#1a1a1a;color:#f0f0f0;border:1px solid #555;border-radius:8px;padding:5px 11px;font-size:0.75rem;white-space:nowrap;box-shadow:0 4px 20px rgba(0,0,0,0.5);z-index:9999;pointer-events:none;width:max-content;transition:opacity 0.18s,visibility 0.18s;">ラッキーアイテム：${data.item}</span>
                                 </span>
                                 <span style="color:#eab308;font-size:0.8rem;">${data.item}</span>
                             </span>
                             <span style="display:inline-flex;align-items:center;gap:2px;">
-                                <span class="lucky-icon-btn" onmouseenter="_showLuckyTip(this)" onmouseleave="_hideLuckyTip(this)" ontouchstart="_showLuckyTip(this)" ontouchend="setTimeout(()=>_hideLuckyTip(this),1200)">
+                                <span class="lucky-icon-btn" data-tip="ラッキーカラー：${data.color}" onmouseenter="_gTipShow(this)" onmouseleave="_gTipHide()" ontouchstart="_gTipShow(this)" ontouchend="setTimeout(_gTipHide,1200)">
                                     <i class="bi bi-palette" style="color:#ec4899;"></i>
-                                    <span class="lucky-tooltip" style="display:block;visibility:hidden;opacity:0;position:fixed;top:0;left:0;background:#1a1a1a;color:#f0f0f0;border:1px solid #555;border-radius:8px;padding:5px 11px;font-size:0.75rem;white-space:nowrap;box-shadow:0 4px 20px rgba(0,0,0,0.5);z-index:9999;pointer-events:none;width:max-content;transition:opacity 0.18s,visibility 0.18s;">ラッキーカラー：${data.color}</span>
                                 </span>
                                 <span style="color:#ec4899;font-size:0.8rem;">${data.color}</span>
                             </span>
@@ -20480,38 +20438,33 @@ window.applyTheme = function() {
     </div><!-- /ver-history-panel -->
 
 <script>
-// ラッキーツールチップ位置計算ヘルパー（画面端対応・アイコン上表示）
-window._showLuckyTip = function(btn) {
-    var t = btn.querySelector('.lucky-tooltip');
-    if (!t) return;
-    // 一旦オフスクリーンに表示してサイズ測定
-    t.style.visibility = 'hidden';
-    t.style.opacity = '0';
-    t.style.top = '-9999px';
-    t.style.left = '-9999px';
-    t.style.transform = 'none';
-    t.style.display = 'block';
-    var r = btn.getBoundingClientRect();
-    var tipW = t.offsetWidth;
-    var tipH = t.offsetHeight;
-    var leftPos = r.left + r.width / 2 - tipW / 2;
-    var topPos = r.top - tipH - 8;
-    // 画面端クランプ
-    if (leftPos < 4) leftPos = 4;
-    if (leftPos + tipW > window.innerWidth - 4) leftPos = window.innerWidth - tipW - 4;
-    // 上に入らなければ下に表示
-    if (topPos < 4) topPos = r.bottom + 8;
-    t.style.top = topPos + 'px';
-    t.style.left = leftPos + 'px';
-    t.style.visibility = 'visible';
-    t.style.opacity = '1';
-};
-window._hideLuckyTip = function(btn) {
-    var t = btn.querySelector('.lucky-tooltip');
-    if (!t) return;
-    t.style.visibility = 'hidden';
-    t.style.opacity = '0';
-};
+// ── グローバルツールチップ（body直下に1個だけ置き transform干渉ゼロ）──
+(function() {
+    var tip = document.createElement('div');
+    tip.id = 'lucky-global-tip';
+    document.body.appendChild(tip);
+
+    window._gTipShow = function(btn) {
+        var text = btn.getAttribute('data-tip');
+        if (!text) return;
+        tip.textContent = text;
+        tip.style.display = 'block';
+        // body直下なので getBoundingClientRect は常に正確
+        var r   = btn.getBoundingClientRect();
+        var tw  = tip.offsetWidth;
+        var th  = tip.offsetHeight;
+        var left = r.left + r.width / 2 - tw / 2;
+        var top  = r.top - th - 8;
+        if (left < 4) left = 4;
+        if (left + tw > window.innerWidth - 4) left = window.innerWidth - tw - 4;
+        if (top  < 4) top  = r.bottom + 8; // 上に入らなければ下へ
+        tip.style.left = left + 'px';
+        tip.style.top  = top  + 'px';
+    };
+    window._gTipHide = function() {
+        tip.style.display = 'none';
+    };
+})();
 </script>
 </body>
 </html>
