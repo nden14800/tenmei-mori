@@ -1099,44 +1099,30 @@
             display: inline-flex;
             align-items: center;
             justify-content: center;
-            width: 38px;
-            height: 38px;
-            border-radius: 10px;
-            background: rgba(255,255,255,0.07) !important;
-            border: 1px solid rgba(255,255,255,0.15) !important;
             cursor: pointer;
             font-size: 1.1rem;
-            transition: background 0.2s, transform 0.2s;
             -webkit-tap-highlight-color: transparent;
             overflow: visible !important;
             z-index: 1;
         }
-        .lucky-icon-btn:hover, .lucky-icon-btn.active {
-            background: rgba(255,255,255,0.18) !important;
-            transform: translateY(-2px);
-            z-index: 50;
-        }
         .lucky-icon-btn > .lucky-tooltip {
-            display: block !important;
-            visibility: hidden !important;
-            opacity: 0 !important;
+            display: block;
+            visibility: hidden;
+            opacity: 0;
             pointer-events: none;
-            position: absolute !important;
-            bottom: calc(100% + 8px) !important;
-            left: 50% !important;
-            transform: translateX(-50%) !important;
-            background: #1a1a1a !important;
-            color: #f0f0f0 !important;
-            border: 1px solid #555 !important;
-            border-radius: 8px !important;
-            padding: 5px 11px !important;
-            font-size: 0.75rem !important;
-            white-space: nowrap !important;
-            box-shadow: 0 4px 20px rgba(0,0,0,0.5) !important;
-            transition: opacity 0.18s, visibility 0.18s !important;
-            z-index: 9999 !important;
-            line-height: 1.4 !important;
-            width: max-content !important;
+            position: fixed;
+            background: #1a1a1a;
+            color: #f0f0f0;
+            border: 1px solid #555;
+            border-radius: 8px;
+            padding: 5px 11px;
+            font-size: 0.75rem;
+            white-space: nowrap;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.5);
+            transition: opacity 0.18s, visibility 0.18s;
+            z-index: 9999;
+            line-height: 1.4;
+            width: max-content;
         }
         .lucky-icon-btn > .lucky-tooltip::after {
             content: '';
@@ -1146,11 +1132,6 @@
             transform: translateX(-50%);
             border: 5px solid transparent;
             border-top-color: #555;
-        }
-        .lucky-icon-btn:hover > .lucky-tooltip,
-        .lucky-icon-btn.active > .lucky-tooltip {
-            visibility: visible !important;
-            opacity: 1 !important;
         }
 
         .result-footer-info {
@@ -15367,11 +15348,19 @@ async function showResultDetail(isNewDraw, dataOverride = null) {
                 if (!tip) return;
                 const show = () => {
                     const r = btn.getBoundingClientRect();
-                    tip.style.top = (r.top - 8) + 'px';
-                    tip.style.left = (r.left + r.width / 2) + 'px';
-                    tip.style.transform = 'translate(-50%, -100%)';
                     tip.style.visibility = 'visible';
                     tip.style.opacity = '1';
+                    const tipW = tip.offsetWidth || 120;
+                    const tipH = tip.offsetHeight || 32;
+                    let leftPos = r.left + r.width / 2 - tipW / 2;
+                    let topPos = r.top - tipH - 8;
+                    // 画面端チェック
+                    if (leftPos < 4) leftPos = 4;
+                    if (leftPos + tipW > window.innerWidth - 4) leftPos = window.innerWidth - tipW - 4;
+                    if (topPos < 4) topPos = r.bottom + 8; // 上に入らない場合は下に表示
+                    tip.style.top = topPos + 'px';
+                    tip.style.left = leftPos + 'px';
+                    tip.style.transform = 'none';
                 };
                 const hide = () => { tip.style.visibility = 'hidden'; tip.style.opacity = '0'; };
                 btn.addEventListener('mouseenter', show);
@@ -16919,21 +16908,21 @@ function createCardHTML(data) {
                                 総合: ${data.totalScore}点
                             </span>
                             <span style="display:inline-flex;align-items:center;gap:2px;">
-                                <span class="lucky-icon-btn" onmouseenter="var t=this.querySelector('.lucky-tooltip'),r=this.getBoundingClientRect();t.style.top=(r.top-8)+'px';t.style.left=(r.left+r.width/2)+'px';t.style.transform='translate(-50%,-100%)';t.style.visibility='visible';t.style.opacity='1';" onmouseleave="var t=this.querySelector('.lucky-tooltip');t.style.visibility='hidden';t.style.opacity='0';" ontouchstart="var t=this.querySelector('.lucky-tooltip'),r=this.getBoundingClientRect();t.style.top=(r.top-8)+'px';t.style.left=(r.left+r.width/2)+'px';t.style.transform='translate(-50%,-100%)';t.style.visibility='visible';t.style.opacity='1';" ontouchend="setTimeout(()=>{var t=this.querySelector('.lucky-tooltip');t.style.visibility='hidden';t.style.opacity='0';},1200)">
+                                <span class="lucky-icon-btn" onmouseenter="_showLuckyTip(this)" onmouseleave="_hideLuckyTip(this)" ontouchstart="_showLuckyTip(this)" ontouchend="setTimeout(()=>_hideLuckyTip(this),1200)">
                                     <i class="bi bi-hash" style="color:#aaa;"></i>
                                     <span class="lucky-tooltip" style="display:block;visibility:hidden;opacity:0;position:fixed;top:0;left:0;background:#1a1a1a;color:#f0f0f0;border:1px solid #555;border-radius:8px;padding:5px 11px;font-size:0.75rem;white-space:nowrap;box-shadow:0 4px 20px rgba(0,0,0,0.5);z-index:9999;pointer-events:none;width:max-content;transition:opacity 0.18s,visibility 0.18s;">ラッキーNo.${data.luckyNum}</span>
                                 </span>
                                 <span style="color:#aaa;font-size:0.8rem;">${data.luckyNum}</span>
                             </span>
                             <span style="display:inline-flex;align-items:center;gap:2px;">
-                                <span class="lucky-icon-btn" onmouseenter="var t=this.querySelector('.lucky-tooltip'),r=this.getBoundingClientRect();t.style.top=(r.top-8)+'px';t.style.left=(r.left+r.width/2)+'px';t.style.transform='translate(-50%,-100%)';t.style.visibility='visible';t.style.opacity='1';" onmouseleave="var t=this.querySelector('.lucky-tooltip');t.style.visibility='hidden';t.style.opacity='0';" ontouchstart="var t=this.querySelector('.lucky-tooltip'),r=this.getBoundingClientRect();t.style.top=(r.top-8)+'px';t.style.left=(r.left+r.width/2)+'px';t.style.transform='translate(-50%,-100%)';t.style.visibility='visible';t.style.opacity='1';" ontouchend="setTimeout(()=>{var t=this.querySelector('.lucky-tooltip');t.style.visibility='hidden';t.style.opacity='0';},1200)">
+                                <span class="lucky-icon-btn" onmouseenter="_showLuckyTip(this)" onmouseleave="_hideLuckyTip(this)" ontouchstart="_showLuckyTip(this)" ontouchend="setTimeout(()=>_hideLuckyTip(this),1200)">
                                     <i class="bi bi-stars" style="color:#eab308;"></i>
                                     <span class="lucky-tooltip" style="display:block;visibility:hidden;opacity:0;position:fixed;top:0;left:0;background:#1a1a1a;color:#f0f0f0;border:1px solid #555;border-radius:8px;padding:5px 11px;font-size:0.75rem;white-space:nowrap;box-shadow:0 4px 20px rgba(0,0,0,0.5);z-index:9999;pointer-events:none;width:max-content;transition:opacity 0.18s,visibility 0.18s;">ラッキーアイテム：${data.item}</span>
                                 </span>
                                 <span style="color:#eab308;font-size:0.8rem;">${data.item}</span>
                             </span>
                             <span style="display:inline-flex;align-items:center;gap:2px;">
-                                <span class="lucky-icon-btn" onmouseenter="var t=this.querySelector('.lucky-tooltip'),r=this.getBoundingClientRect();t.style.top=(r.top-8)+'px';t.style.left=(r.left+r.width/2)+'px';t.style.transform='translate(-50%,-100%)';t.style.visibility='visible';t.style.opacity='1';" onmouseleave="var t=this.querySelector('.lucky-tooltip');t.style.visibility='hidden';t.style.opacity='0';" ontouchstart="var t=this.querySelector('.lucky-tooltip'),r=this.getBoundingClientRect();t.style.top=(r.top-8)+'px';t.style.left=(r.left+r.width/2)+'px';t.style.transform='translate(-50%,-100%)';t.style.visibility='visible';t.style.opacity='1';" ontouchend="setTimeout(()=>{var t=this.querySelector('.lucky-tooltip');t.style.visibility='hidden';t.style.opacity='0';},1200)">
+                                <span class="lucky-icon-btn" onmouseenter="_showLuckyTip(this)" onmouseleave="_hideLuckyTip(this)" ontouchstart="_showLuckyTip(this)" ontouchend="setTimeout(()=>_hideLuckyTip(this),1200)">
                                     <i class="bi bi-palette" style="color:#ec4899;"></i>
                                     <span class="lucky-tooltip" style="display:block;visibility:hidden;opacity:0;position:fixed;top:0;left:0;background:#1a1a1a;color:#f0f0f0;border:1px solid #555;border-radius:8px;padding:5px 11px;font-size:0.75rem;white-space:nowrap;box-shadow:0 4px 20px rgba(0,0,0,0.5);z-index:9999;pointer-events:none;width:max-content;transition:opacity 0.18s,visibility 0.18s;">ラッキーカラー：${data.color}</span>
                                 </span>
@@ -20488,3 +20477,29 @@ window.applyTheme = function() {
 
 </body>
 </html>
+<!-- Lucky tooltip helper - injected -->
+<script>
+window._showLuckyTip = function(btn) {
+    var t = btn.querySelector('.lucky-tooltip');
+    if (!t) return;
+    t.style.visibility = 'visible';
+    t.style.opacity = '1';
+    var r = btn.getBoundingClientRect();
+    var tipW = t.offsetWidth || 120;
+    var tipH = t.offsetHeight || 32;
+    var leftPos = r.left + r.width / 2 - tipW / 2;
+    var topPos = r.top - tipH - 8;
+    if (leftPos < 4) leftPos = 4;
+    if (leftPos + tipW > window.innerWidth - 4) leftPos = window.innerWidth - tipW - 4;
+    if (topPos < 4) topPos = r.bottom + 8;
+    t.style.top = topPos + 'px';
+    t.style.left = leftPos + 'px';
+    t.style.transform = 'none';
+};
+window._hideLuckyTip = function(btn) {
+    var t = btn.querySelector('.lucky-tooltip');
+    if (!t) return;
+    t.style.visibility = 'hidden';
+    t.style.opacity = '0';
+};
+</script>
