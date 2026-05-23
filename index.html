@@ -15347,20 +15347,24 @@ async function showResultDetail(isNewDraw, dataOverride = null) {
                 const tip = btn.querySelector('.lucky-tooltip');
                 if (!tip) return;
                 const show = () => {
+                    // オフスクリーンで表示しサイズ測定してから正しい位置に移動
+                    tip.style.visibility = 'hidden';
+                    tip.style.opacity = '0';
+                    tip.style.top = '-9999px';
+                    tip.style.left = '-9999px';
+                    tip.style.transform = 'none';
                     const r = btn.getBoundingClientRect();
-                    tip.style.visibility = 'visible';
-                    tip.style.opacity = '1';
-                    const tipW = tip.offsetWidth || 120;
-                    const tipH = tip.offsetHeight || 32;
+                    const tipW = tip.offsetWidth;
+                    const tipH = tip.offsetHeight;
                     let leftPos = r.left + r.width / 2 - tipW / 2;
                     let topPos = r.top - tipH - 8;
-                    // 画面端チェック
                     if (leftPos < 4) leftPos = 4;
                     if (leftPos + tipW > window.innerWidth - 4) leftPos = window.innerWidth - tipW - 4;
-                    if (topPos < 4) topPos = r.bottom + 8; // 上に入らない場合は下に表示
+                    if (topPos < 4) topPos = r.bottom + 8;
                     tip.style.top = topPos + 'px';
                     tip.style.left = leftPos + 'px';
-                    tip.style.transform = 'none';
+                    tip.style.visibility = 'visible';
+                    tip.style.opacity = '1';
                 };
                 const hide = () => { tip.style.visibility = 'hidden'; tip.style.opacity = '0'; };
                 btn.addEventListener('mouseenter', show);
@@ -20475,26 +20479,32 @@ window.applyTheme = function() {
 
     </div><!-- /ver-history-panel -->
 
-</body>
-</html>
-<!-- Lucky tooltip helper - injected -->
 <script>
+// ラッキーツールチップ位置計算ヘルパー（画面端対応・アイコン上表示）
 window._showLuckyTip = function(btn) {
     var t = btn.querySelector('.lucky-tooltip');
     if (!t) return;
-    t.style.visibility = 'visible';
-    t.style.opacity = '1';
+    // 一旦オフスクリーンに表示してサイズ測定
+    t.style.visibility = 'hidden';
+    t.style.opacity = '0';
+    t.style.top = '-9999px';
+    t.style.left = '-9999px';
+    t.style.transform = 'none';
+    t.style.display = 'block';
     var r = btn.getBoundingClientRect();
-    var tipW = t.offsetWidth || 120;
-    var tipH = t.offsetHeight || 32;
+    var tipW = t.offsetWidth;
+    var tipH = t.offsetHeight;
     var leftPos = r.left + r.width / 2 - tipW / 2;
     var topPos = r.top - tipH - 8;
+    // 画面端クランプ
     if (leftPos < 4) leftPos = 4;
     if (leftPos + tipW > window.innerWidth - 4) leftPos = window.innerWidth - tipW - 4;
+    // 上に入らなければ下に表示
     if (topPos < 4) topPos = r.bottom + 8;
     t.style.top = topPos + 'px';
     t.style.left = leftPos + 'px';
-    t.style.transform = 'none';
+    t.style.visibility = 'visible';
+    t.style.opacity = '1';
 };
 window._hideLuckyTip = function(btn) {
     var t = btn.querySelector('.lucky-tooltip');
@@ -20503,3 +20513,5 @@ window._hideLuckyTip = function(btn) {
     t.style.opacity = '0';
 };
 </script>
+</body>
+</html>
