@@ -1672,115 +1672,111 @@
 .dark .column-card::after { opacity: 1; }
 
         
-/* --- 御守授与所：モダンUI --- */
+/* --- 御守授与所：モダンUI（v3） --- */
+.omamori-hero-card {
+    background: linear-gradient(135deg, #0d0d0d 0%, #1a0a0a 45%, #0d0d0d 100%);
+    border: 1px solid #2a1a1a;
+    border-top: 3px solid var(--accent-red);
+    border-radius: 18px;
+    padding: 28px 24px;
+    margin-bottom: 24px;
+    box-shadow: 0 10px 38px rgba(0,0,0,0.45);
+}
 
-/* 1. 願い事グリッド */
 .omamori-grid-container {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
-    gap: 20px;
+    grid-template-columns: repeat(auto-fill, minmax(170px, 1fr));
+    gap: 16px;
     margin-bottom: 40px;
 }
 
-/* 2. 願い事カード (木札・お守り風) */
 .wish-card {
-    background-color: var(--card-bg);
-    border: 1px solid var(--card-border);
-    border-radius: 12px;
-    padding: 20px 10px;
+    background: linear-gradient(145deg, #111111 0%, #151515 100%);
+    border: 1px solid #2f2f2f;
+    border-left: 4px solid transparent;
+    border-radius: 14px;
+    padding: 18px 12px;
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
     text-align: center;
     cursor: pointer;
-    transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+    transition: all 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
     position: relative;
     overflow: hidden;
-    height: 200px;
-    box-shadow: 0 4px 6px rgba(0,0,0,0.02);
+    min-height: 186px;
+    box-shadow: 0 4px 24px rgba(0,0,0,0.2);
 }
 
-/* ホバー時の挙動 */
+.wish-card::before {
+    content: '';
+    position: absolute;
+    top: -40%;
+    left: -60%;
+    width: 40%;
+    height: 180%;
+    background: linear-gradient(to right, transparent, rgba(255,255,255,0.08), transparent);
+    transform: rotate(20deg);
+    opacity: 0;
+    transition: opacity .35s ease, left .5s ease;
+}
+
 .wish-card:hover {
-    transform: translateY(-5px) scale(1.03);
-    box-shadow: 0 15px 25px rgba(0,0,0,0.1);
-    border-color: currentColor; /* アイコンの色を枠線に反映 */
+    transform: translateY(-4px) scale(1.01);
+    border-color: var(--accent-gold);
+    box-shadow: 0 12px 36px rgba(0,0,0,0.42);
     z-index: 10;
 }
+.wish-card:hover::before { left: 120%; opacity: 1; }
 
-/* カード内の要素 */
 .wish-icon-box {
-    width: 60px;
-    height: 60px;
-    border-radius: 50%;
-    background: rgba(128,128,128,0.05);
+    width: 54px;
+    height: 54px;
+    border-radius: 12px;
+    background: linear-gradient(145deg, rgba(255,255,255,0.08), rgba(255,255,255,0.02));
+    border: 1px solid rgba(255,255,255,0.14);
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 2rem;
-    margin-bottom: 15px;
-    transition: transform 0.3s;
+    font-size: 1.6rem;
+    margin-bottom: 14px;
+    transition: transform 0.3s ease;
 }
-.wish-card:hover .wish-icon-box {
-    transform: scale(1.1) rotate(10deg);
-}
+.wish-card:hover .wish-icon-box { transform: scale(1.08); }
 
 .wish-title {
-    font-size: 1.1rem;
+    font-size: 1.02rem;
     font-weight: 900;
     margin-bottom: 5px;
     font-family: 'Zen Old Mincho', serif;
-    letter-spacing: 0.1em;
+    letter-spacing: 0.08em;
+    color: #f4f4f4;
 }
 
 .wish-desc {
-    font-size: 0.65rem;
-    color: var(--text-sub);
-    opacity: 0.8;
+    font-size: 0.7rem;
+    color: #a1a1aa;
+    line-height: 1.5;
 }
 
 /* 願い事ごとのカラーテーマ */
-.wish-safety  { color: #15803d; } /* 緑: 交通安全 */
-.wish-safety:hover { background-color: #f0fdf4; }
-
-.wish-health  { color: #0f766e; } /* 深緑: 健康 */
-.wish-health:hover { background-color: #ccfbf1; }
-
-.wish-love    { color: #be185d; } /* ピンク: 恋愛 */
-.wish-love:hover { background-color: #fce7f3; }
-
-.wish-money   { color: #b45309; } /* 金/黄: 金運 */
-.wish-money:hover { background-color: #fffbeb; }
-
-.wish-study   { color: #1d4ed8; } /* 青: 学業 */
-.wish-study:hover { background-color: #eff6ff; }
-
-.wish-victory { color: #b91c1c; } /* 赤: 必勝 */
-.wish-victory:hover { background-color: #fef2f2; }
-
-.wish-protect { color: #374151; } /* 黒/灰: 厄除 */
-.wish-protect:hover { background-color: #f3f4f6; }
-
-.wish-success { color: #7e22ce; } /* 紫: 大願 */
-.wish-success:hover { background-color: #f3e8ff; }
-
-/* ダークモード時のホバー背景調整 */
-.dark .wish-safety:hover  { background-color: #052e16; }
-.dark .wish-health:hover  { background-color: #042f2e; }
-.dark .wish-love:hover    { background-color: #500724; }
-.dark .wish-money:hover   { background-color: #451a03; }
-.dark .wish-study:hover   { background-color: #172554; }
-.dark .wish-victory:hover { background-color: #450a0a; }
-.dark .wish-protect:hover { background-color: #1f2937; }
-.dark .wish-success:hover { background-color: #3b0764; }
+.wish-safety  { color: #22c55e; border-left-color: #22c55e; }
+.wish-health  { color: #14b8a6; border-left-color: #14b8a6; }
+.wish-love    { color: #ec4899; border-left-color: #ec4899; }
+.wish-money   { color: #eab308; border-left-color: #eab308; }
+.wish-study   { color: #3b82f6; border-left-color: #3b82f6; }
+.wish-victory { color: #ef4444; border-left-color: #ef4444; }
+.wish-protect { color: #94a3b8; border-left-color: #94a3b8; }
+.wish-success { color: #a855f7; border-left-color: #a855f7; }
 
 /* 3. 授与エリア (結果表示) */
 .omamori-stage {
-    background-color: var(--card-bg);
-    border: 8px double var(--card-border); /* 神棚っぽい枠 */
+    background: linear-gradient(145deg, #0f0f0f, #171717);
+    border: 1px solid #2f2f2f;
+    border-top: 2px solid var(--accent-red);
     border-radius: 20px;
-    padding: 40px 20px;
+    padding: 42px 20px;
     position: relative;
     margin-bottom: 30px;
     display: flex;
@@ -1794,8 +1790,8 @@
     position: absolute;
     width: 200px;
     height: 200px;
-    background: radial-gradient(circle, var(--accent-red) 0%, transparent 70%);
-    opacity: 0.05;
+    background: radial-gradient(circle, rgba(212,175,55,0.24) 0%, transparent 72%);
+    opacity: 0.22;
     border-radius: 50%;
     z-index: 0;
 }
@@ -6690,22 +6686,32 @@ body.sidebar-collapsed #sidebar:hover .nav-group-title {
 
         <!-- ビュー: 御守授与所 -->
 <section id="view-omamori" class="view-section max-w-4xl mx-auto relative pb-20">
-    <div class="text-center mb-8">
-        <!-- 変更後 -->
-        <h2 class="text-3xl font-black mb-2 tracking-widest text-[var(--accent-red)]" style="font-family: 'Zen Old Mincho'">デジタル御守授与所</h2>
-        <p class="text-xs font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest">DIGITAL AMULET</p>
-        <p class="text-sm themed-text-sub mt-4 leading-relaxed">
-            あなたの願いに合わせて色と文様を選定し、<br>
-            世界に一つの「デジタル御守」を授与いたします。
-        </p>
+    <div class="omamori-hero-card">
+        <div style="display:flex;justify-content:space-between;align-items:center;gap:16px;flex-wrap:wrap;">
+            <div>
+                <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px;">
+                    <i class="bi bi-shield-shaded" style="color:var(--accent-gold);font-size:1.35rem;"></i>
+                    <h2 class="text-3xl font-black tracking-widest" style="font-family:'Zen Old Mincho';color:#f5f5f5;margin:0;">デジタル御守授与所</h2>
+                </div>
+                <p class="text-xs font-bold uppercase tracking-widest" style="color:#8a8a8a;">DIGITAL AMULET</p>
+                <p class="text-sm mt-4 leading-relaxed" style="color:#b2b2b2;">
+                    あなたの願いに合わせて色と文様を選定し、<br>
+                    世界に一つの「デジタル御守」を授与いたします。
+                </p>
+            </div>
+            <div style="display:flex;flex-direction:column;align-items:flex-end;gap:8px;opacity:.7;">
+                <i class="bi bi-stars" style="font-size:2.1rem;color:var(--accent-gold);"></i>
+                <i class="bi bi-shield-fill-check" style="font-size:1.2rem;color:#b91c1c;"></i>
+            </div>
+        </div>
     </div>
 
     <!-- ステップ1: 願い事選択 -->
     <div id="omamori-step-1">
         <div class="flex items-center justify-center gap-2 mb-6">
-            <div class="h-px w-8 bg-gray-300 dark:bg-gray-700"></div>
-            <span class="text-sm font-bold text-gray-500">願い事をお選びください</span>
-            <div class="h-px w-8 bg-gray-300 dark:bg-gray-700"></div>
+            <div class="h-px w-8" style="background:#3a3a3a;"></div>
+            <span class="text-sm font-bold" style="color:#aaaaaa;">願い事をお選びください</span>
+            <div class="h-px w-8" style="background:#3a3a3a;"></div>
         </div>
 
         <div class="omamori-grid-container">
@@ -6766,13 +6772,13 @@ body.sidebar-collapsed #sidebar:hover .nav-group-title {
             <div class="prayer-light mb-8"></div>
             <div class="absolute top-0 left-0 w-full h-full animate-ping opacity-20 bg-yellow-200 rounded-full"></div>
         </div>
-        <p class="text-2xl font-black animate-pulse tracking-widest mb-2" style="font-family: 'Zen Old Mincho'">祈祷中</p>
-        <p class="text-sm themed-text-sub">願いを込めて織り上げております...</p>
+        <p class="text-2xl font-black animate-pulse tracking-widest mb-2" style="font-family: 'Zen Old Mincho';color:#f2f2f2;">祈祷中</p>
+        <p class="text-sm themed-text-sub" style="color:#a3a3a3;">願いを込めて織り上げております...</p>
     </div>
 
     <!-- ステップ3: 授与（結果） -->
     <div id="omamori-step-3" class="hidden">
-        <p class="mb-6 font-bold text-lg border-b border-red-500 inline-block px-8 pb-1">授与</p>
+        <p class="mb-6 font-bold text-lg border-b inline-block px-8 pb-1" style="border-color:#b91c1c;color:#f0f0f0;">授与</p>
         
         <!-- 授与ステージ（画像化対象） -->
         <div class="omamori-stage" id="omamori-capture-area">
@@ -6780,7 +6786,7 @@ body.sidebar-collapsed #sidebar:hover .nav-group-title {
         </div>
 
         <div class="max-w-md mx-auto space-y-4">
-            <div class="bg-gray-50 dark:bg-zinc-800 p-4 rounded text-sm text-gray-600 dark:text-gray-400 text-left">
+            <div class="p-4 rounded text-sm text-left" style="background:#111111;border:1px solid #2d2d2d;color:#a1a1aa;">
                 <i class="bi bi-info-circle mr-1"></i>
                 この御守は画像として保存できます。スマートフォンの壁紙（待ち受け）に設定し、日々の守り神としてお持ち歩きください。
             </div>
@@ -6788,7 +6794,7 @@ body.sidebar-collapsed #sidebar:hover .nav-group-title {
             <button onclick="OmamoriSystem.saveImage()" class="btn-primary w-full justify-center py-4 text-lg shadow-lg">
                 <i class="bi bi-download"></i> 御守を授かる（保存）
             </button>
-            <button onclick="OmamoriSystem.reset()" class="px-6 py-3 rounded-full border border-gray-300 hover:bg-gray-100 dark:hover:bg-zinc-800 transition w-full">
+            <button onclick="OmamoriSystem.reset()" class="px-6 py-3 rounded-full transition w-full" style="border:1px solid #3b3b3b;background:#111111;color:#e5e5e5;">
                 <i class="bi bi-arrow-counterclockwise"></i> 別の願いを選ぶ
             </button>
         </div>
