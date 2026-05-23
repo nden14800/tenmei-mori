@@ -555,32 +555,24 @@
         }
 
         .omikuji-stick {
-            /* 共通カードスタイル */
             position: relative;
             width: 52px;
             height: 160px;
-            background-color: #fff;
-            
-            /* ▼▼ 修正: 4pxの二重線 (結果カードと統一) ▼▼ */
-            border: 4px double var(--accent-red);
-            
-            box-shadow: 3px 3px 8px rgba(0,0,0,0.15);
+            background: linear-gradient(180deg, #1a0a0a 0%, #0f0f0f 100%);
+            border: 2px solid #5a1a1a;
+            border-top: 3px solid #b91c1c;
+            border-bottom: 3px solid #b91c1c;
+            box-shadow: 2px 2px 12px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.03);
             cursor: pointer;
-            
-            /* 中身の配置 */
             display: flex;
             flex-direction: column;
             align-items: center;
-            
-            /* ▼▼ 修正: 端に寄せず、均等に配置してはみ出し防止 ▼▼ */
-            justify-content: space-evenly; 
-            
-            padding: 8px 0; /* 上下の余白を確保 */
+            justify-content: space-evenly;
+            padding: 8px 0;
             user-select: none;
-            
-            /* ホバー時の挙動設定 */
-            transition: transform 0.2s cubic-bezier(0.25, 0.46, 0.45, 0.94), box-shadow 0.2s, border-color 0.2s;
+            transition: transform 0.25s cubic-bezier(0.25, 0.46, 0.45, 0.94), box-shadow 0.25s, border-color 0.25s;
             transform-origin: center center;
+            border-radius: 4px;
         }
 
         /* アニメーション競合対策: transformを使わず margin-top で出現させる */
@@ -592,17 +584,17 @@
         .omikuji-stick:hover {
             transform: scale(1.15) rotate(0deg) !important;
             z-index: 100;
-            box-shadow: 0 15px 30px rgba(185, 28, 28, 0.25);
-            border-color: #d4af37;
-            background-color: #fffcf5;
+            box-shadow: 0 15px 40px rgba(185, 28, 28, 0.4), 0 0 20px rgba(196,160,57,0.2);
+            border-color: #c5a039;
+            background: linear-gradient(180deg, #2a0f0f 0%, #1a0a0a 100%);
         }
 
         /* 札内のパーツスタイル */
         .stick-icon {
-            font-size: 1.2rem; /* 少し小さくしてバランス調整 */
-            color: var(--accent-red);
+            font-size: 1.2rem;
+            color: #c5a039;
             line-height: 1;
-            flex-shrink: 0; /* 縮まないようにする */
+            flex-shrink: 0;
         }
         
         .stick-text {
@@ -610,24 +602,20 @@
             font-family: 'Zen Old Mincho', serif;
             font-size: 1.1rem;
             font-weight: 900;
-            color: var(--accent-red);
+            color: #e8c870;
             letter-spacing: 0.2em;
-            
-            /* ▼▼ 修正: 絶対に改行させない ▼▼ */
-            white-space: nowrap; 
+            white-space: nowrap;
             line-height: 1;
+            text-shadow: 0 0 8px rgba(196,160,57,0.4);
         }
         
         .stick-footer {
             writing-mode: vertical-rl;
             font-family: 'Zen Old Mincho', serif;
-            font-size: 0.6rem; /* 文字サイズを調整 */
-            color: var(--accent-red);
-            opacity: 0.8;
+            font-size: 0.6rem;
+            color: #7a4a4a;
             font-weight: bold;
             letter-spacing: 0.1em;
-            
-            /* ▼▼ 修正: 絶対に改行させない＆はみ出し防止 ▼▼ */
             white-space: nowrap;
             line-height: 1;
             flex-shrink: 0;
@@ -2577,22 +2565,27 @@
 
 /* 1. 選択画面のヘッダーカード */
 .draw-header-card {
-    background: rgba(255, 255, 255, 0.85);
-    backdrop-filter: blur(12px);
-    -webkit-backdrop-filter: blur(12px);
-    border: 1px solid var(--card-border);
-    border-radius: 24px;
-    padding: 20px;
-    margin: 20px auto;
+    background: linear-gradient(135deg, #1a0505 0%, #111111 60%, #0d0d0d 100%);
+    border: 1px solid #3f1111;
+    border-top: 2px solid #b91c1c;
+    border-radius: 20px;
+    padding: 24px 20px 20px;
+    margin: 16px auto;
     max-width: 600px;
-    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.05);
+    box-shadow: 0 8px 40px rgba(185,28,28,0.18), 0 2px 12px rgba(0,0,0,0.5);
     text-align: center;
     position: relative;
     z-index: 20;
+    overflow: hidden;
 }
-.dark .draw-header-card {
-    background: rgba(30, 30, 30, 0.85);
-    border-color: rgba(255, 255, 255, 0.1);
+.draw-header-card::before {
+    content: '';
+    position: absolute;
+    top: -40px; right: -40px;
+    width: 160px; height: 160px;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(185,28,28,0.12) 0%, transparent 70%);
+    pointer-events: none;
 }
 
 /* 2. 結果画面のアクショングリッド */
@@ -2612,17 +2605,18 @@
     justify-content: center;
     padding: 20px 10px;
     border-radius: 16px;
-    background-color: var(--card-bg);
-    border: 1px solid var(--card-border);
-    color: var(--text-main);
+    background: #111111;
+    border: 1px solid #2a2a2a;
+    color: #e0e0e0;
     font-weight: bold;
     font-size: 0.9rem;
-    transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
-    box-shadow: 0 4px 6px rgba(0,0,0,0.02);
+    transition: all 0.35s cubic-bezier(0.25, 0.8, 0.25, 1);
+    box-shadow: 0 4px 16px rgba(0,0,0,0.3);
 }
 .action-card-btn:hover {
-    transform: translateY(-4px);
-    box-shadow: 0 10px 20px -5px rgba(0, 0, 0, 0.1);
+    transform: translateY(-4px) scale(1.02);
+    border-color: var(--accent-gold);
+    box-shadow: 0 12px 32px rgba(196,160,57,0.18);
     z-index: 10;
 }
 
@@ -2636,16 +2630,19 @@
 
 /* 主要アクション（保存など）の強調 */
 .action-primary {
-    background-color: var(--accent-red);
+    background: linear-gradient(135deg, #b91c1c 0%, #7f1d1d 100%);
     color: white;
-    border-color: var(--accent-red);
+    border-color: #b91c1c;
+    box-shadow: 0 4px 24px rgba(185,28,28,0.35);
 }
 .action-primary:hover {
-    background-color: #a01818; /* 少し濃く */
+    background: linear-gradient(135deg, #dc2626 0%, #991b1b 100%);
+    border-color: #dc2626;
+    box-shadow: 0 8px 32px rgba(185,28,28,0.5);
 }
 
 /* SNSごとの色 */
-.btn-x { color: #000; } .dark .btn-x { color: #fff; }
+.btn-x { color: #e0e0e0; }
 .btn-line { color: #06c755; }
 .btn-fb { color: #1877f2; }
 .btn-bsky { color: #0285ff; }
@@ -4793,20 +4790,21 @@ body.theme-newyear {
 .sns-separator-line {
     flex: 1;
     height: 1px;
-    background-color: var(--card-border);
+    background: linear-gradient(90deg, #2a2a2a, #444);
     margin-left: 10px;
 }
 .sns-separator-text {
     font-size: 0.75rem;
     font-weight: bold;
-    color: var(--text-sub);
+    color: #666;
+    letter-spacing: 0.05em;
 }
 
 /* アクションエリア全体の幅を制限し、タブレットでも間延び・崩れを防ぐ */
 .result-actions-container {
-    max-width: 480px; /* PC/タブレットでも広がりすぎないように制限 */
-    margin: 30px auto 0;
-    padding: 0 16px 60px; /* 下部に余白確保 */
+    max-width: 480px;
+    margin: 24px auto 0;
+    padding: 0 16px 60px;
 }
 
         /* ▼▼▼ スマホ収まり対応用CSS (ここから追記) ▼▼▼ */
@@ -6213,17 +6211,18 @@ body.sidebar-collapsed #sidebar:hover .nav-group-title {
             <!-- 固定ヘッダーカード -->
             <div class="sticky top-0 z-20 px-4 pt-4">
                 <div class="draw-header-card">
-                    <h2 class="text-xl font-black leading-relaxed font-serif mb-2 text-gray-800 dark:text-gray-100">
-                        <i class="bi bi-stars text-yellow-500"></i> 天命の授与所
-                    </h2>
+                    <div style="display:flex;align-items:center;justify-content:center;gap:10px;margin-bottom:10px;">
+                        <div style="width:2.2rem;height:2.2rem;background-color:#b91c1c;border-radius:8px;display:flex;align-items:center;justify-content:center;font-family:'Zen Old Mincho',serif;font-size:1.4rem;font-weight:700;color:#c5a059;line-height:1;flex-shrink:0;">天</div>
+                        <h2 class="text-xl font-black leading-relaxed font-serif" style="color:#f0f0f0;font-family:'Zen Old Mincho',serif;letter-spacing:0.15em;">天命の授与所</h2>
+                    </div>
                     <!-- メイン案内文 -->
-                    <p class="text-sm font-medium text-gray-700 dark:text-gray-200 leading-relaxed">
+                    <p class="text-sm font-medium leading-relaxed" style="color:#c5c5c5;">
                         背筋を伸ばし、深く呼吸を整えて心を静めます。<br>
                         占いたい事柄を胸の内で唱えながら、<br>
                         天命の一枚をお選びください。
                     </p>
                     <!-- 補足文 -->
-                    <p class="text-[11px] text-gray-500 dark:text-gray-400 mt-3 border-t border-gray-100 dark:border-gray-800 pt-2">
+                    <p class="text-[11px] mt-3 pt-2" style="color:#7a6060;border-top:1px solid #2a1010;">
                         ※特に悩みがない場合は、『今の私に必要な導きを』と念じて引いてください。
                     </p>
                 </div>
@@ -6252,6 +6251,10 @@ body.sidebar-collapsed #sidebar:hover .nav-group-title {
                     </div>
                 </div>
 
+                <!-- 生成ステータス・完了カード（結果カード直下・フル幅） -->
+                <div id="gen-img-status" class="text-sm font-bold text-center mt-4 h-6" style="color:#888;"></div>
+                <div id="generated-image-container" class="hidden w-full max-w-[600px] mx-auto mt-2 px-2 md:px-0"></div>
+
                 <!-- 注釈 (修正版: 自然なテキスト配置) -->
                 <div class="mt-6 mb-8 text-center px-4">
                     <p class="text-xs text-gray-500 dark:text-gray-400 leading-loose inline-block text-center">
@@ -6267,12 +6270,6 @@ body.sidebar-collapsed #sidebar:hover .nav-group-title {
 
                 <!-- アクションエリア (統合Bento Grid版) -->
                 <div class="result-actions-container">
-                    
-                    <!-- 生成ステータス表示 -->
-                    <div id="gen-img-status" class="text-sm font-bold text-gray-500 mb-2 h-6"></div>
-                    <div id="generated-image-container" class="hidden mb-6 p-4 bg-gray-100 dark:bg-zinc-800 rounded-xl">
-                        <!-- 生成画像がここに入ります -->
-                    </div>
 
                     <!-- 統合グリッド: 全てのアクションをここで整列 -->
                     <div class="unified-result-grid">
@@ -15667,27 +15664,29 @@ function resetSearch() {
                         
                         // リッチな完了UIの生成
                         container.innerHTML = `
-                            <div class="flex flex-col items-center text-center animate-fade-in">
-                                <!-- 成功メッセージ -->
-                                <div class="text-green-600 dark:text-green-400 font-bold mb-4 flex items-center gap-2 bg-green-50 dark:bg-green-900/20 px-4 py-2 rounded-full border border-green-200 dark:border-green-800">
+                            <div style="background:#0d0d0d;border:1px solid #2a2a2a;border-top:2px solid #16a34a;border-radius:16px;padding:20px;text-align:center;">
+                                <!-- 成功バッジ -->
+                                <div style="display:inline-flex;align-items:center;gap:6px;background:#052e16;color:#4ade80;border:1px solid #166534;border-radius:999px;padding:6px 16px;font-size:0.8rem;font-weight:700;margin-bottom:16px;">
                                     <i class="bi bi-check-circle-fill"></i>
-                                    <span class="text-sm">おみくじ画像を生成しました</span>
-                                </div>
-                                
-                                <!-- プレビュー画像 (影付きで見やすく) -->
-                                <div class="relative w-full max-w-[200px] mx-auto mb-5">
-                                    <img src="${url}" class="w-full rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 transform hover:scale-105 transition duration-300">
+                                    おみくじ画像を生成しました
                                 </div>
 
-                                <!-- 保存アクション -->
-                                <div class="flex flex-col w-full gap-3 max-w-xs">
-                                    <a href="${url}" download="tenmei_omikuji_${Date.now()}.png" class="btn-primary w-full justify-center py-3 shadow-lg no-underline flex items-center gap-2 text-white font-bold text-sm">
-                                        <i class="bi bi-download text-lg"></i> 端末に保存する
-                                    </a>
-                                    <button onclick="document.getElementById('generated-image-container').classList.add('hidden')" class="text-xs text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 py-2 underline decoration-gray-300">
-                                        閉じる
-                                    </button>
+                                <!-- プレビュー画像（フル幅・大きく） -->
+                                <div style="width:100%;margin:0 auto 20px;border-radius:12px;overflow:hidden;box-shadow:0 8px 40px rgba(0,0,0,0.6);border:1px solid #333;">
+                                    <img src="${url}" style="width:100%;display:block;">
                                 </div>
+
+                                <!-- 保存ボタン -->
+                                <a href="${url}" download="tenmei_omikuji_${Date.now()}.png"
+                                   style="display:flex;align-items:center;justify-content:center;gap:10px;width:100%;background:linear-gradient(135deg,#b91c1c,#7f1d1d);color:#fff;font-weight:700;font-size:1rem;padding:16px;border-radius:12px;text-decoration:none;box-sizing:border-box;box-shadow:0 4px 24px rgba(185,28,28,0.4);margin-bottom:10px;">
+                                    <i class="bi bi-download" style="font-size:1.3rem;"></i> 端末に保存する
+                                </a>
+
+                                <!-- 閉じる -->
+                                <button onclick="document.getElementById('generated-image-container').classList.add('hidden')"
+                                        style="background:none;border:none;color:#666;font-size:0.8rem;cursor:pointer;padding:8px;text-decoration:underline;">
+                                    閉じる
+                                </button>
                             </div>
                         `;
                         
