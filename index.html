@@ -3072,6 +3072,28 @@
             z-index: 10;
         }
 
+        /* --- ホーム画面のみ: Ver.3風モダン調整 --- */
+        #view-home.home-modern {
+            background: radial-gradient(circle at 10% 10%, rgba(185, 28, 28, 0.05), transparent 35%),
+                        radial-gradient(circle at 90% 0%, rgba(197, 160, 89, 0.08), transparent 30%);
+        }
+        #view-home.home-modern .bento-grid { gap: 24px; }
+        #view-home.home-modern .bento-card {
+            border-radius: 28px;
+            box-shadow: 0 16px 40px -26px rgba(15, 23, 42, 0.45);
+            border-color: color-mix(in srgb, var(--card-border) 75%, transparent);
+        }
+        #view-home.home-modern .bento-card:hover {
+            transform: translateY(-6px);
+            box-shadow: 0 22px 50px -24px rgba(15, 23, 42, 0.55);
+        }
+        #view-home.home-modern .bento-title {
+            background-image: linear-gradient(160deg, rgba(255,255,255,0.92), rgba(255,255,255,0.72)), var(--bg-pattern);
+        }
+        .dark #view-home.home-modern .bento-title {
+            background-image: linear-gradient(160deg, rgba(39,39,42,0.85), rgba(24,24,27,0.75)), var(--bg-pattern);
+        }
+
         /* 挨拶エリア（ヘッダー） */
         .bento-welcome {
             grid-column: span 12; /* 横幅いっぱい */
@@ -5893,7 +5915,7 @@ body.sidebar-collapsed #sidebar:hover .nav-group-title {
     <main id="main-content">
         
         <!-- ビュー: ホーム (Bento Grid UI) -->
-        <section id="view-home" class="view-section active">
+        <section id="view-home" class="view-section active home-modern">
             
             <div class="bento-grid">
                 
@@ -6058,6 +6080,9 @@ body.sidebar-collapsed #sidebar:hover .nav-group-title {
                     <div class="flex justify-between items-center mb-2 border-b border-gray-200 dark:border-gray-700 pb-2">
                         <h3 class="font-bold flex items-center gap-2"><i class="bi bi-bell-fill text-blue-500"></i> 社務所だより</h3>
                         <button onclick="showView('news')" class="text-xs text-blue-500 hover:underline">一覧</button>
+                    </div>
+                    <div id="home-news-featured" class="mb-2 p-3 rounded-xl border border-blue-100 bg-blue-50/50 dark:bg-blue-950/30 dark:border-blue-900">
+                        <!-- JSで自動挿入 -->
                     </div>
                     <!-- space-y-3 を space-y-0 にし、隙間をなくして境界線を追加 -->
                     <ul class="text-sm space-y-0 divide-y divide-gray-100 dark:divide-gray-800" id="home-news-list">
@@ -12886,6 +12911,17 @@ function createPaginationHTML(type, current, total) {
 
     // 1. ホーム画面のリスト (隙間修正・コンパクト版)
     window.renderHomeLists = function() {
+        const latestNews = newsData && newsData.length ? newsData[0] : null;
+        const featuredEl = document.getElementById('home-news-featured');
+        if (featuredEl && latestNews) {
+            featuredEl.innerHTML = `
+                <p class="text-[11px] font-bold tracking-wider text-blue-700 dark:text-blue-300 mb-1">最新記事</p>
+                <p class="text-xs text-gray-500 dark:text-gray-400 mb-1 font-mono">${latestNews.date} ${latestNews.time || ''}</p>
+                <p class="text-sm font-bold leading-snug mb-1">${latestNews.title}</p>
+                <p class="text-xs leading-relaxed text-gray-600 dark:text-gray-300">${latestNews.desc}</p>
+            `;
+        }
+
         // 社務所だより（最新4件）
         const newsListEl = document.getElementById('home-news-list');
         if (newsListEl) {
