@@ -1674,13 +1674,13 @@
         
 /* --- 御守授与所：モダンUI（v3） --- */
 .omamori-hero-card {
-    background: linear-gradient(135deg, #0d0d0d 0%, #1a0a0a 45%, #0d0d0d 100%);
-    border: 1px solid #2a1a1a;
+    background: var(--card-bg);
+    border: 1px solid var(--card-border);
     border-top: 3px solid var(--accent-red);
     border-radius: 18px;
     padding: 28px 24px;
     margin-bottom: 24px;
-    box-shadow: 0 10px 38px rgba(0,0,0,0.45);
+    box-shadow: 0 4px 24px rgba(0,0,0,0.12);
 }
 
 .omamori-grid-container {
@@ -1691,8 +1691,8 @@
 }
 
 .wish-card {
-    background: linear-gradient(145deg, #111111 0%, #151515 100%);
-    border: 1px solid #2f2f2f;
+    background: var(--card-bg);
+    border: 1px solid var(--card-border);
     border-left: 4px solid transparent;
     border-radius: 14px;
     padding: 18px 12px;
@@ -1706,36 +1706,27 @@
     position: relative;
     overflow: hidden;
     min-height: 186px;
-    box-shadow: 0 4px 24px rgba(0,0,0,0.2);
-}
-
-.wish-card::before {
-    content: '';
-    position: absolute;
-    top: -40%;
-    left: -60%;
-    width: 40%;
-    height: 180%;
-    background: linear-gradient(to right, transparent, rgba(255,255,255,0.08), transparent);
-    transform: rotate(20deg);
-    opacity: 0;
-    transition: opacity .35s ease, left .5s ease;
+    box-shadow: 0 4px 24px rgba(0,0,0,0.08);
 }
 
 .wish-card:hover {
     transform: translateY(-4px) scale(1.01);
     border-color: var(--accent-gold);
-    box-shadow: 0 12px 36px rgba(0,0,0,0.42);
+    box-shadow: 0 12px 32px rgba(197, 160, 89, 0.2);
     z-index: 10;
 }
-.wish-card:hover::before { left: 120%; opacity: 1; }
+
+.wish-card:active {
+    transform: scale(0.97);
+    transition: transform 0.1s ease;
+}
 
 .wish-icon-box {
     width: 54px;
     height: 54px;
     border-radius: 12px;
-    background: linear-gradient(145deg, rgba(255,255,255,0.08), rgba(255,255,255,0.02));
-    border: 1px solid rgba(255,255,255,0.14);
+    background: var(--input-bg);
+    border: 1px solid var(--card-border);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -1751,12 +1742,12 @@
     margin-bottom: 5px;
     font-family: 'Zen Old Mincho', serif;
     letter-spacing: 0.08em;
-    color: #f4f4f4;
+    color: var(--text-main);
 }
 
 .wish-desc {
     font-size: 0.7rem;
-    color: #a1a1aa;
+    color: var(--text-sub);
     line-height: 1.5;
 }
 
@@ -1772,8 +1763,8 @@
 
 /* 3. 授与エリア (結果表示) */
 .omamori-stage {
-    background: linear-gradient(145deg, #0f0f0f, #171717);
-    border: 1px solid #2f2f2f;
+    background: var(--card-bg);
+    border: 1px solid var(--card-border);
     border-top: 2px solid var(--accent-red);
     border-radius: 20px;
     padding: 42px 20px;
@@ -2867,12 +2858,6 @@
         /* カード全体の設定 */
         #view-lab {
             position: relative;
-            border-radius: 30px;
-            min-height: 85vh;
-            overflow: hidden; /* はみ出た背景をカット */
-            box-shadow: 0 20px 50px rgba(0,0,0,0.1);
-            margin-top: 20px;
-            margin-bottom: 40px;
         }
 
         /* 1. 背景のアニメーションレイヤー */
@@ -4930,6 +4915,25 @@ body.sidebar-collapsed #sidebar:hover .nav-group-title {
     transform: none !important;
 }
 
+/* おみくじ棒アイコン: bi-flower1 → 「天」アイコン */
+.bi.bi-flower1 {
+    background-color: #b91c1c;
+    border-radius: 4px;
+    color: #c5a059;
+    width: 1.1em;
+    height: 1.1em;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    line-height: 1;
+    vertical-align: middle;
+}
+.bi.bi-flower1::before {
+    font-family: 'Zen Old Mincho', serif !important;
+    content: '天' !important;
+    font-weight: 700;
+}
+
     </style>
 <style>
     /* ▼▼▼ 修正: ホバー開閉用のスタイル設定 ▼▼▼ */
@@ -6006,6 +6010,16 @@ body.sidebar-collapsed #sidebar:hover .nav-group-title {
                     border-color: rgba(212,175,55,0.5) !important;
                     box-shadow: 0 16px 48px rgba(0,0,0,0.5) !important;
                 }
+
+                #view-omamori .bento-card:hover {
+                    border-color: var(--accent-gold) !important;
+                    box-shadow: 0 12px 32px rgba(197, 160, 89, 0.2) !important;
+                }
+
+                #view-lab .bento-card:hover {
+                    border-color: #6366f1 !important;
+                    box-shadow: 0 12px 32px rgba(99, 102, 241, 0.2) !important;
+                }
                 
                 /* おみくじを引くボタンのシャイン（光沢）アニメーション */
                 @keyframes shine {
@@ -6454,67 +6468,43 @@ body.sidebar-collapsed #sidebar:hover .nav-group-title {
         </div>
     </div>
         
-        <!-- ビュー: TENMEI Labs (動画風モダンUI版) -->
-        <section id="view-lab" class="view-section max-w-4xl mx-auto">
-            
-            <!-- 1. 背景アニメーションレイヤー -->
-            <div class="lab-modern-bg">
-                <div class="lab-blob blob-1"></div>
-                <div class="lab-blob blob-2"></div>
-                <div class="lab-blob blob-3"></div>
-                <div class="lab-blob blob-4"></div>
-                <div class="lab-blob blob-5"></div>
+        <!-- ビュー: TENMEI Labs -->
+        <section id="view-lab" class="view-section max-w-4xl mx-auto relative pb-20">
+
+            <!-- ヘッダー Hero カード -->
+            <div class="bento-card mb-6 relative overflow-hidden bg-gradient-to-br from-indigo-950 via-zinc-900 to-black border border-zinc-800 text-white" style="padding: 2rem;">
+                <!-- 装飾グロー -->
+                <div class="absolute top-0 right-0 w-72 h-72 opacity-15 pointer-events-none" style="background: radial-gradient(circle, #6366f1 0%, transparent 70%);"></div>
+                <div class="absolute bottom-0 left-0 w-48 h-48 opacity-10 pointer-events-none" style="background: radial-gradient(circle, #a855f7 0%, transparent 70%);"></div>
+
+                <div class="relative z-10 flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
+                    <div class="flex-1">
+                        <p class="text-xs font-bold tracking-[0.3em] uppercase mb-2" style="color: var(--accent-gold);">EXPERIMENTAL FEATURES</p>
+                        <h2 class="text-3xl md:text-4xl font-black mb-3 flex items-center gap-3" style="font-family: 'Zen Old Mincho', serif;">
+                            <span class="text-4xl text-indigo-400"><i class="bi bi-flask-fill"></i></span>
+                            <span class="text-white">TENMEI Labs</span>
+                        </h2>
+                        <p class="text-sm text-zinc-300 leading-relaxed max-w-xl" style="font-family: 'Shippori Mincho', serif;">
+                            開発中の実験的な機能を先行体験できる実験室です。<br>
+                            スイッチをONにして、新しい参拝の形を探求しましょう。
+                        </p>
+                    </div>
+                    <div class="flex-shrink-0 text-center hidden md:flex flex-col items-center gap-2">
+                        <div class="w-20 h-20 rounded-2xl flex items-center justify-center text-4xl" style="background: linear-gradient(135deg, #4338ca, #6d28d9); box-shadow: 0 0 24px rgba(99,102,241,0.3);">
+                            <i class="bi bi-flask-fill text-white"></i>
+                        </div>
+                        <p class="text-xs text-zinc-500 font-bold tracking-widest">天命実験室</p>
+                    </div>
+                </div>
             </div>
 
-            <!-- 2. 装飾テキスト (背景の巨大文字) -->
-            <div class="lab-vertical-deco">天命実験室</div>
+            <!-- コンテンツ＋ロック画面ラッパー (position:relative で lab-lock の基準点) -->
+            <div class="relative">
 
-            <!-- 3. コンテンツレイヤー (背景の上に表示) -->
-            <div class="lab-content-relative p-6 md:p-12">
-                
-                <!-- ヒーローエリア (タイトル) -->
-                <div class="lab-hero-area">
-                   <!-- メインフラスコ -->
-                    <div class="title-flask-anim mb-6 transform scale-110">
-                        <svg viewBox="0 0 200 200" overflow="hidden" style="width:100%; height:100%;">
-                            <defs>
-                                <linearGradient id="gradUnified" x1="0%" y1="100%" x2="100%" y2="0%">
-                                    <stop offset="0%" stop-color="#4facfe" />
-                                    <stop offset="100%" stop-color="#8e2de2" />
-                                </linearGradient>
-                                <clipPath id="flaskClipMain">
-                                    <path d="M80 20 L120 20 L120 70 L170 170 C175 180, 165 190, 150 190 L50 190 C35 190, 25 180, 30 170 L80 70 Z" />
-                                </clipPath>
-                            </defs>
-                            <g class="flask-container">
-                                <g clip-path="url(#flaskClipMain)">
-                                    <g class="liquid-container">
-                                        <rect x="-50" y="-50" width="300" height="300" fill="rgba(255,255,255,0.05)" />
-                                        <path class="wave-path wave-front" d="M0 135 Q50 150 100 135 T200 135 T300 135 T400 135 V250 H0 Z" />
-                                        <circle class="bubble" cx="100" cy="180" r="4" style="animation-delay:0s" />
-                                        <circle class="bubble" cx="60" cy="170" r="3" style="animation-delay:1s" />
-                                        <circle class="bubble" cx="140" cy="175" r="5" style="animation-delay:2s" />
-                                    </g>
-                                </g>
-                                <path class="glass-stroke" fill="none" d="M80 20 L120 20 L120 70 L170 170 C175 180, 165 190, 150 190 L50 190 C35 190, 25 180, 30 170 L80 70 Z" />
-                                <path d="M45 170 L75 80" stroke="rgba(255,255,255,0.3)" stroke-width="4" fill="none" />
-                            </g>
-                        </svg>
-                    </div>
-                    <h2 class="text-3xl md:text-5xl font-black mb-4 tracking-tight text-gray-800 dark:text-white" style="font-family: 'Shippori Mincho', serif;">
-                        未来の運勢を<br>試してみる
-                    </h2>
-                    <p class="text-gray-600 dark:text-gray-300 font-bold text-sm md:text-base max-w-lg mx-auto leading-relaxed">
-                        TENMEI Labsへようこそ。<br>ここでは開発中の実験的な機能を先行して体験できます。<br>スイッチをONにして、新しい参拝の形を探求しましょう。
-                    </p>
-                </div>
-
-                <!-- ▼▼▼ 修正箇所：ぼかし対象のラッパー開始 ▼▼▼ -->
-                <div id="lab-content-wrapper" class="max-w-2xl mx-auto space-y-6 pb-20">
-                    
-                    <!-- ラボ・グリッドコンテナ (修正版: 正式機能へ昇格したものを削除済み) -->
+                <!-- ▼▼▼ ぼかし対象ラッパー ▼▼▼ -->
+                <div id="lab-content-wrapper">
                     <div id="lab-container" class="lab-grid-container">
-                        
+
                         <!-- 1. 言霊の増幅 (Beta) -->
                         <div class="lab-glass-card" onclick="TenmeiLab.openModal('bigtext')">
                             <div class="lab-card-header">
@@ -6570,7 +6560,7 @@ body.sidebar-collapsed #sidebar:hover .nav-group-title {
                         </div>
 
                         <!-- 4. メンテナンス訓練 (Dev) -->
-<div class="lab-glass-card" onclick="if(currentState.user) { checkMaintenance(true); } else { showToast('会員限定機能です', 'warning'); }" style="border-color: rgba(239, 68, 68, 0.4);">
+                        <div class="lab-glass-card" onclick="if(currentState.user) { checkMaintenance(true); } else { showToast('会員限定機能です', 'warning'); }" style="border-color: rgba(239, 68, 68, 0.4);">
                             <div class="lab-card-header">
                                 <div class="lab-icon-box bg-black text-yellow-500"><i class="bi bi-cone-striped"></i></div>
                                 <div class="lab-switch-wrapper">
@@ -6587,10 +6577,9 @@ body.sidebar-collapsed #sidebar:hover .nav-group-title {
                         </div>
 
                     </div> <!-- /lab-grid-container -->
-                </div> 
+                </div>
                 <!-- ▲▲▲ ぼかし対象ラッパー（#lab-content-wrapper）はここで閉じる ▲▲▲ -->
 
-                <!-- ▼▼▼ 修正箇所：ロック画面をラッパーの外に出す ▼▼▼ -->
                 <!-- 非ログイン時のロック画面 -->
                 <div id="lab-lock" class="lab-lock-container hidden">
                     <div class="lab-lock-card">
@@ -6608,16 +6597,17 @@ body.sidebar-collapsed #sidebar:hover .nav-group-title {
                     </div>
                 </div>
 
-                <!-- 詳細モーダル (全画面オーバーレイ) -->
-                <div id="lab-modal" class="lab-modal-overlay" onclick="TenmeiLab.closeModal(event)">
-                    <div class="lab-modal-card" onclick="event.stopPropagation()">
-                        <button class="lab-close-btn" onclick="TenmeiLab.closeModal(null)"><i class="bi bi-x-lg"></i></button>
-                        <div id="lab-modal-content">
-                            <!-- JSでコンテンツ挿入 -->
-                        </div>
+            </div> <!-- /relative wrapper -->
+
+            <!-- 詳細モーダル (全画面オーバーレイ) -->
+            <div id="lab-modal" class="lab-modal-overlay" onclick="TenmeiLab.closeModal(event)">
+                <div class="lab-modal-card" onclick="event.stopPropagation()">
+                    <button class="lab-close-btn" onclick="TenmeiLab.closeModal(null)"><i class="bi bi-x-lg"></i></button>
+                    <div id="lab-modal-content">
+                        <!-- JSでコンテンツ挿入 -->
                     </div>
                 </div>
-            </div> <!-- /lab-content-relative -->
+            </div>
         </section>
 
         <!-- ビュー: 都道府県別・運気ランキング -->
@@ -6686,22 +6676,28 @@ body.sidebar-collapsed #sidebar:hover .nav-group-title {
 
         <!-- ビュー: 御守授与所 -->
 <section id="view-omamori" class="view-section max-w-4xl mx-auto relative pb-20">
-    <div class="omamori-hero-card">
-        <div style="display:flex;justify-content:space-between;align-items:center;gap:16px;flex-wrap:wrap;">
-            <div>
-                <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px;">
-                    <i class="bi bi-shield-shaded" style="color:var(--accent-gold);font-size:1.35rem;"></i>
-                    <h2 class="text-3xl font-black tracking-widest" style="font-family:'Zen Old Mincho';color:#f5f5f5;margin:0;">デジタル御守授与所</h2>
-                </div>
-                <p class="text-xs font-bold uppercase tracking-widest" style="color:#8a8a8a;">DIGITAL AMULET</p>
-                <p class="text-sm mt-4 leading-relaxed" style="color:#b2b2b2;">
+    <div class="bento-card mb-6 relative overflow-hidden bg-gradient-to-br from-red-950 via-zinc-900 to-black border border-zinc-800 text-white" style="padding: 2rem;">
+        <!-- 装飾グロー -->
+        <div class="absolute top-0 right-0 w-72 h-72 opacity-15 pointer-events-none" style="background: radial-gradient(circle, #b91c1c 0%, transparent 70%);"></div>
+        <div class="absolute bottom-0 left-0 w-48 h-48 opacity-10 pointer-events-none" style="background: radial-gradient(circle, #c5a059 0%, transparent 70%);"></div>
+
+        <div class="relative z-10 flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
+            <div class="flex-1">
+                <p class="text-xs font-bold tracking-[0.3em] uppercase mb-2" style="color: var(--accent-gold);">DIGITAL AMULET</p>
+                <h2 class="text-3xl md:text-4xl font-black mb-3 flex items-center gap-3" style="font-family: 'Zen Old Mincho', serif;">
+                    <span class="text-4xl" style="color: var(--accent-gold);"><i class="bi bi-shield-shaded"></i></span>
+                    <span class="text-white">デジタル御守授与所</span>
+                </h2>
+                <p class="text-sm text-zinc-300 leading-relaxed max-w-xl" style="font-family: 'Shippori Mincho', serif;">
                     あなたの願いに合わせて色と文様を選定し、<br>
                     世界に一つの「デジタル御守」を授与いたします。
                 </p>
             </div>
-            <div style="display:flex;flex-direction:column;align-items:flex-end;gap:8px;opacity:.7;">
-                <i class="bi bi-stars" style="font-size:2.1rem;color:var(--accent-gold);"></i>
-                <i class="bi bi-shield-fill-check" style="font-size:1.2rem;color:#b91c1c;"></i>
+            <div class="flex-shrink-0 text-center hidden md:flex flex-col items-center gap-2">
+                <div class="w-20 h-20 rounded-2xl flex items-center justify-center text-4xl" style="background: linear-gradient(135deg, #b91c1c, #7f1d1d); box-shadow: 0 0 24px rgba(185,28,28,0.3);">
+                    <i class="bi bi-shield-fill-check text-white"></i>
+                </div>
+                <p class="text-xs text-zinc-500 font-bold tracking-widest">8 WISHES</p>
             </div>
         </div>
     </div>
@@ -6709,9 +6705,9 @@ body.sidebar-collapsed #sidebar:hover .nav-group-title {
     <!-- ステップ1: 願い事選択 -->
     <div id="omamori-step-1">
         <div class="flex items-center justify-center gap-2 mb-6">
-            <div class="h-px w-8" style="background:#3a3a3a;"></div>
-            <span class="text-sm font-bold" style="color:#aaaaaa;">願い事をお選びください</span>
-            <div class="h-px w-8" style="background:#3a3a3a;"></div>
+            <div class="h-px w-8" style="background: var(--card-border);"></div>
+            <span class="text-sm font-bold" style="color: var(--text-sub);">願い事をお選びください</span>
+            <div class="h-px w-8" style="background: var(--card-border);"></div>
         </div>
 
         <div class="omamori-grid-container">
@@ -6772,13 +6768,13 @@ body.sidebar-collapsed #sidebar:hover .nav-group-title {
             <div class="prayer-light mb-8"></div>
             <div class="absolute top-0 left-0 w-full h-full animate-ping opacity-20 bg-yellow-200 rounded-full"></div>
         </div>
-        <p class="text-2xl font-black animate-pulse tracking-widest mb-2" style="font-family: 'Zen Old Mincho';color:#f2f2f2;">祈祷中</p>
-        <p class="text-sm themed-text-sub" style="color:#a3a3a3;">願いを込めて織り上げております...</p>
+        <p class="text-2xl font-black animate-pulse tracking-widest mb-2" style="font-family: 'Zen Old Mincho'; color: var(--text-main);">祈祷中</p>
+        <p class="text-sm themed-text-sub">願いを込めて織り上げております...</p>
     </div>
 
     <!-- ステップ3: 授与（結果） -->
     <div id="omamori-step-3" class="hidden">
-        <p class="mb-6 font-bold text-lg border-b inline-block px-8 pb-1" style="border-color:#b91c1c;color:#f0f0f0;">授与</p>
+        <p class="mb-6 font-bold text-lg border-b inline-block px-8 pb-1" style="border-color: var(--accent-red); color: var(--text-main);">授与</p>
         
         <!-- 授与ステージ（画像化対象） -->
         <div class="omamori-stage" id="omamori-capture-area">
@@ -6786,7 +6782,7 @@ body.sidebar-collapsed #sidebar:hover .nav-group-title {
         </div>
 
         <div class="max-w-md mx-auto space-y-4">
-            <div class="p-4 rounded text-sm text-left" style="background:#111111;border:1px solid #2d2d2d;color:#a1a1aa;">
+            <div class="p-4 rounded text-sm text-left" style="background: var(--input-bg); border: 1px solid var(--card-border); color: var(--text-sub);">
                 <i class="bi bi-info-circle mr-1"></i>
                 この御守は画像として保存できます。スマートフォンの壁紙（待ち受け）に設定し、日々の守り神としてお持ち歩きください。
             </div>
@@ -6794,7 +6790,7 @@ body.sidebar-collapsed #sidebar:hover .nav-group-title {
             <button onclick="OmamoriSystem.saveImage()" class="btn-primary w-full justify-center py-4 text-lg shadow-lg">
                 <i class="bi bi-download"></i> 御守を授かる（保存）
             </button>
-            <button onclick="OmamoriSystem.reset()" class="px-6 py-3 rounded-full transition w-full" style="border:1px solid #3b3b3b;background:#111111;color:#e5e5e5;">
+            <button onclick="OmamoriSystem.reset()" class="btn-outline w-full">
                 <i class="bi bi-arrow-counterclockwise"></i> 別の願いを選ぶ
             </button>
         </div>
