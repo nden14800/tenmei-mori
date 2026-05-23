@@ -13775,6 +13775,59 @@ async function authFetch(url, options = {}) {
     return fetch(url, options);
 }
 
+        // ==========================================
+        //  Ver. 3.0 ホーム画面制御（アコーディオン＆タブ）
+        // ==========================================
+        window.toggleHomeDescription = function() {
+            const descArea = document.getElementById('home-description-area');
+            const arrowIcon = document.getElementById('desc-arrow-icon');
+            if (!descArea || !arrowIcon) return;
+
+            const isHidden = descArea.classList.contains('hidden');
+            if (isHidden) {
+                descArea.classList.remove('hidden');
+                arrowIcon.className = 'bi bi-chevron-up';
+            } else {
+                descArea.classList.add('hidden');
+                arrowIcon.className = 'bi bi-chevron-down';
+            }
+        };
+
+        window.switchHomeTab = function(tab) {
+            const newsBtn = document.getElementById('home-tab-news-btn');
+            const colBtn = document.getElementById('home-tab-column-btn');
+            const newsContent = document.getElementById('home-tab-news-content');
+            const colContent = document.getElementById('home-tab-column-content');
+            const moreBtn = document.getElementById('home-tab-more-btn');
+
+            if (!newsBtn || !colBtn || !newsContent || !colContent || !moreBtn) return;
+
+            if (tab === 'news') {
+                // タブボタンのアクティブクラス付け替え
+                newsBtn.className = "px-4 py-1.5 rounded-full text-xs font-black tracking-wider transition-all duration-200 bg-red-600 text-white shadow-sm border border-red-600";
+                colBtn.className = "px-4 py-1.5 rounded-full text-xs font-black tracking-wider transition-all duration-200 bg-transparent text-gray-500 hover:text-gray-800 dark:hover:text-gray-200 border border-transparent hover:border-gray-200 dark:hover:border-zinc-700";
+                
+                // コンテンツの表示/非表示切り替え
+                newsContent.classList.remove('hidden');
+                newsContent.classList.add('block');
+                colContent.classList.remove('block');
+                colContent.classList.add('hidden');
+
+                // 一覧へ遷移ボタンの振る舞い変更
+                moreBtn.setAttribute('onclick', "showView('news')");
+            } else {
+                colBtn.className = "px-4 py-1.5 rounded-full text-xs font-black tracking-wider transition-all duration-200 bg-red-600 text-white shadow-sm border border-red-600";
+                newsBtn.className = "px-4 py-1.5 rounded-full text-xs font-black tracking-wider transition-all duration-200 bg-transparent text-gray-500 hover:text-gray-800 dark:hover:text-gray-200 border border-transparent hover:border-gray-200 dark:hover:border-zinc-700";
+
+                colContent.classList.remove('hidden');
+                colContent.classList.add('block');
+                newsContent.classList.remove('block');
+                newsContent.classList.add('hidden');
+
+                moreBtn.setAttribute('onclick', "showView('column')");
+            }
+        };
+
         
     
 // ---------------------------------------------------------------
