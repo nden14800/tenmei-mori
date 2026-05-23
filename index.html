@@ -5892,55 +5892,67 @@ body.sidebar-collapsed #sidebar:hover .nav-group-title {
     <!-- メインエリア -->
     <main id="main-content">
         
-        <!-- ビュー: ホーム (Bento Grid UI) -->
+        <!-- ビュー: ホーム (Bento Grid UI Ver. 3.0) -->
         <section id="view-home" class="view-section active">
             
             <div class="bento-grid">
                 
-                <!-- 1. 挨拶エリア (Welcome) -->
-                <div class="bento-card bento-welcome">
-                    <div class="text-left md:text-left text-center w-full">
-                        <p class="text-sm font-bold text-gray-500 dark:text-gray-400 mb-1" id="welcome-date">---</p>
-                        <h2 class="text-2xl md:text-3xl font-black tracking-wide" style="font-family: 'Zen Old Mincho', serif;">
-    <!-- ▼▼▼ 修正: クラスを text-[var(--accent-red)] に変更し、モード問わず「紅」に固定 ▼▼▼ -->
-    <span id="welcome-username" class="text-[var(--accent-red)]">ゲスト</span> さん
-</h2>
-                        <p class="text-lg text-gray-700 dark:text-gray-300 font-medium mt-1">ようこそ、運勢・天命乃杜へ</p>
+                <!-- 1. 新統合Heroカード (span 12) -->
+                <div class="bento-card relative flex flex-col justify-between overflow-hidden p-8 bg-gradient-to-br from-white to-gray-50 dark:from-zinc-900 dark:to-zinc-950 border border-gray-200 dark:border-gray-800" style="grid-column: span 12;">
+                    <!-- 背景の和風サークル装飾 -->
+                    <div class="absolute top-0 right-0 w-80 h-80 opacity-10 pointer-events-none overflow-hidden">
+                        <div class="home-circle-container" id="home-anim-container" style="transform: scale(0.9); border:none; width:100%; height:100%; margin: 0;"></div>
                     </div>
-                    <!-- 右側にちょっとした装飾 -->
-                    <div class="hidden md:block opacity-20">
-                        <div style="width:3.75rem;height:3.75rem;background-color:#b91c1c;border-radius:10px;display:flex;align-items:center;justify-content:center;font-family:'Zen Old Mincho',serif;font-size:2.3rem;font-weight:700;color:#c5a059;line-height:1;">天</div>
+                    
+                    <div class="z-10 w-full">
+                        <!-- 挨拶と日付 -->
+                        <div class="flex justify-between items-start flex-wrap gap-2 mb-4 border-b border-gray-100 dark:border-gray-800 pb-4">
+                            <div>
+                                <p class="text-xs font-bold text-gray-500 dark:text-gray-400 mb-1" id="welcome-date">---</p>
+                                <h2 class="text-2xl md:text-3xl font-black tracking-wide" style="font-family: 'Zen Old Mincho', serif;">
+                                    <span id="welcome-username" class="text-[var(--accent-red)]">ゲスト</span> さん
+                                </h2>
+                                <p class="text-sm text-gray-600 dark:text-gray-400 font-medium mt-1">ようこそ、和モダンに洗練された天命乃杜へ</p>
+                            </div>
+                            <div class="opacity-30">
+                                <div style="width:3rem;height:3rem;background-color:#b91c1c;border-radius:10px;display:flex;align-items:center;justify-content:center;font-family:'Zen Old Mincho',serif;font-size:1.8rem;font-weight:700;color:#c5a059;line-height:1;">天</div>
+                            </div>
+                        </div>
+
+                        <!-- タイトルエリア -->
+                        <div class="my-6 text-center md:text-left">
+                            <p class="text-xs font-serif tracking-[0.3em] uppercase text-gray-400 mb-1">FORTUNE TELLING</p>
+                            <h1 class="text-3xl md:text-4xl font-black tracking-widest text-gray-800 dark:text-gray-100" style="font-family: 'Zen Old Mincho'">運勢・天命乃杜</h1>
+                            <p class="text-lg font-bold tracking-wider text-gray-600 dark:text-gray-300 mt-2" style="font-family: 'Zen Old Mincho'">今日も、天命は、あなたを待っている。</p>
+                        </div>
+
+                        <!-- アコーディオン由緒（折りたたみ説明文） -->
+                        <div class="mb-8 max-w-2xl text-left">
+                            <button onclick="toggleHomeDescription()" class="text-xs font-bold text-gray-500 hover:text-[var(--accent-red)] transition flex items-center gap-1 bg-gray-100 dark:bg-zinc-800 px-3 py-1.5 rounded-full border border-gray-200 dark:border-gray-700">
+                                <i id="desc-arrow-icon" class="bi bi-chevron-down"></i>
+                                <span>天命乃杜の由緒を読む</span>
+                            </button>
+                            <div id="home-description-area" class="hidden mt-3 text-xs md:text-sm font-serif themed-text-sub leading-loose pl-3 border-l-2 border-red-200 dark:border-red-900 transition-all duration-300">
+                                道に迷うとき、立ち止まりたいとき、あなたの内なる声に耳を傾けてみてください。<br><br>
+                                おみくじは、答えを与えるものではありません。今この瞬間の自分と静かに向き合い、歩み出すための、天命からの問いかけ。<br><br>
+                                今日も、いつでも、どこにいても、天命乃杜はあなたのそばにあります。
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- おみくじアクション大ボタン -->
+                    <div class="z-10 w-full flex justify-center py-2">
+                        <button onclick="startOmikuji()" class="group flex items-center justify-center gap-4 bg-[var(--accent-red)] text-white hover:bg-[#a01818] transition-all duration-300 py-5 px-10 rounded-2xl w-full max-w-lg shadow-lg hover:shadow-xl transform hover:-translate-y-1">
+                            <i class="bi bi-box-seam-fill text-3xl group-hover:scale-110 transition-transform duration-300"></i>
+                            <div class="text-left">
+                                <h3 class="font-black text-lg md:text-xl tracking-wider m-0 leading-tight" style="font-family: 'Zen Old Mincho', serif;">おみくじを引く</h3>
+                                <p class="text-[10px] opacity-80 mt-0.5 leading-none">心を静め、天命を問う</p>
+                            </div>
+                        </button>
                     </div>
                 </div>
 
-                <!-- 2. タイトル＆メインビジュアル -->
-                <div class="bento-card bento-title relative">
-                    <div class="absolute top-0 left-0 w-full h-full opacity-10 pointer-events-none">
-                        <!-- 背景装飾 -->
-                        <div class="home-circle-container" id="home-anim-container" style="transform: scale(0.8); border:none; width:100%; height:100%;"></div>
-                    </div>
-                    <div class="z-10">
-                        <p class="text-xs font-serif tracking-[0.3em] uppercase mb-2">FORTUNE TELLING</p>
-                        <h1 class="text-4xl md:text-5xl font-black mb-4 tracking-widest" style="font-family: 'Zen Old Mincho'">運勢・天命乃杜</h1>
-                        <p class="text-xl font-black tracking-widest mb-3" style="font-family: 'Zen Old Mincho'">今日も、天命は、あなたを待っている。</p>
-                        <p class="text-sm font-serif themed-text-sub leading-loose">
-                            道に迷うとき、立ち止まりたいとき、<br>あなたの内なる声に耳を傾けてみてください。<br><br>
-                            おみくじは、答えを与えるものではありません。<br>今この瞬間の自分と静かに向き合い、歩み出すための、天命からの問いかけ。<br><br>
-                            今日も、いつでも、どこにいても、天命乃杜はあなたのそばにあります。
-                        </p>
-                    </div>
-                </div>
-
-                <!-- 3. おみくじを引く (アクションボタン) -->
-                <button onclick="startOmikuji()" class="bento-card bento-action group">
-                    <div class="transform transition group-hover:scale-110 duration-300">
-                        <i class="bi bi-box-seam-fill text-5xl mb-4 block"></i>
-                        <h3>おみくじを引く</h3>
-                        <p class="text-xs opacity-90">心を鎮め、天命を問う</p>
-                    </div>
-                </button>
-
-                <!-- 4. カウンター (ミニカード) -->
+                <!-- 2. カウンター (ミニカード) -->
                 <div class="bento-card bento-mini" style="grid-column: span 6;">
                     <div class="w-12 h-12 rounded-full bg-red-100 dark:bg-red-900/30 flex items-center justify-center text-red-600">
                         <i class="bi bi-people-fill text-2xl"></i>
@@ -5961,123 +5973,89 @@ body.sidebar-collapsed #sidebar:hover .nav-group-title {
                     </div>
                 </div>
 
-                <!-- 5. バージョン情報カード -->
-                <div class="bento-card bento-version">
-                    <div class="ver-card-header">
-                        <i class="bi bi-info-circle-fill"></i>
-                        <span>現在のバージョン</span>
+                <!-- 3. 新設: クイックアクセスカード (span 12) -->
+                <div class="bento-card flex flex-col p-6 bg-white dark:bg-zinc-900 border border-gray-200 dark:border-gray-800" style="grid-column: span 12;">
+                    <div class="flex items-center gap-2 mb-4 border-b border-gray-100 dark:border-gray-800 pb-2">
+                        <i class="bi bi-rocket-takeoff-fill text-indigo-500 text-lg"></i>
+                        <h3 class="font-bold text-sm tracking-wide">クイックアクセス</h3>
                     </div>
-                    <div class="ver-info-card">
-                        <div class="ver-info-badge">
-                            <span class="ver-info-label">バージョン</span>
-                            <span class="ver-info-value">Ver. 2.3</span>
-                        </div>
-                        <div class="ver-divider"></div>
-                        <div class="ver-info-badge">
-                            <span class="ver-info-label">リリース日</span>
-                            <span class="ver-info-value">2026 / 05 / 17</span>
-                        </div>
-                        <div class="ver-divider"></div>
-                        <span class="ver-latest-badge is-latest">
-                            <i class="bi bi-patch-check-fill"></i>最新バージョン
-                        </span>
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <button onclick="showView('zodiac')" class="stats-card-interactive flex items-center gap-4 p-4 rounded-xl border border-gray-100 dark:border-gray-800 hover:border-yellow-400 text-left bg-gray-50/50 dark:bg-zinc-800/30 transition duration-300">
+                            <div class="w-10 h-10 rounded-full bg-yellow-100 dark:bg-yellow-900/30 text-yellow-600 flex items-center justify-center text-lg flex-shrink-0"><i class="bi bi-stars"></i></div>
+                            <div>
+                                <span class="font-black text-sm block" style="font-family: 'Zen Old Mincho', serif;">12星座占い</span>
+                                <span class="text-[10px] text-gray-400">本日の最強運勢ランキング</span>
+                            </div>
+                        </button>
+                        <button onclick="showView('prefecture')" class="stats-card-interactive flex items-center gap-4 p-4 rounded-xl border border-gray-100 dark:border-gray-800 hover:border-red-400 text-left bg-gray-50/50 dark:bg-zinc-800/30 transition duration-300">
+                            <div class="w-10 h-10 rounded-full bg-red-100 dark:bg-red-900/30 text-red-600 flex items-center justify-center text-lg flex-shrink-0"><i class="bi bi-map"></i></div>
+                            <div>
+                                <span class="font-black text-sm block" style="font-family: 'Zen Old Mincho', serif;">全国の運気</span>
+                                <span class="text-[10px] text-gray-400">47都道府県の土地のパワー</span>
+                            </div>
+                        </button>
+                        <button onclick="showView('history')" class="stats-card-interactive flex items-center gap-4 p-4 rounded-xl border border-gray-100 dark:border-gray-800 hover:border-blue-400 text-left bg-gray-50/50 dark:bg-zinc-800/30 transition duration-300">
+                            <div class="w-10 h-10 rounded-full bg-blue-100 dark:bg-blue-900/30 text-blue-600 flex items-center justify-center text-lg flex-shrink-0"><i class="bi bi-clock-history"></i></div>
+                            <div>
+                                <span class="font-black text-sm block" style="font-family: 'Zen Old Mincho', serif;">おみくじの轍</span>
+                                <span class="text-[10px] text-gray-400">過去の参拝履歴と全体の傾向</span>
+                            </div>
+                        </button>
                     </div>
-                    <button class="ver-history-btn" onclick="openVerHistory()">
-                        <i class="bi bi-clock-history"></i> 更新の軌跡
-                    </button>
                 </div>
 
-                <!-- 7. 統計 (おみくじの轍・抜粋版) -->
-                <div class="bento-card bento-stats relative">
-                    <div class="flex justify-between items-center mb-2 border-b border-gray-200 dark:border-gray-700 pb-2">
-                        <h3 class="font-bold flex items-center gap-2"><i class="bi bi-bar-chart-line-fill text-red-500"></i> 全体の傾向</h3>
-                        <span class="text-[10px] bg-gray-100 dark:bg-gray-700 px-2 py-1 rounded" id="stats-update-time">--:--:--</span>
-                    </div>
-                    
-                    <!-- 表示エリア: 高さを制限し、はみ出した部分は隠す(overflow-hidden) -->
-                    <div class="relative overflow-hidden" style="height: 180px;">
-                        <div id="home-history-stats" class="space-y-2 pb-20">
-                             <!-- 12段階 統計表示 (要素は全て置いておくが、CSSで見えなくなる) -->
-                             <div class="grid grid-cols-1 gap-1">
-                                 <!-- 大吉 -->
-                                 <div class="flex justify-between text-xs"><span>大吉</span><span><span id="cnt-daikichi" class="mr-2 font-mono opacity-70">0</span><span id="stat-daikichi">0.00%</span></span></div>
-                                 <div class="w-full bg-gray-200 dark:bg-zinc-700 h-1.5 rounded mb-1"><div id="bar-daikichi" class="bg-yellow-400 h-1.5 rounded" style="width: 0%"></div></div>
-                                 
-                                 <!-- 中吉 -->
-                                 <div class="flex justify-between text-xs"><span>中吉</span><span><span id="cnt-chukichi" class="mr-2 font-mono opacity-70">0</span><span id="stat-chukichi">0.00%</span></span></div>
-                                 <div class="w-full bg-gray-200 dark:bg-zinc-700 h-1.5 rounded mb-1"><div id="bar-chukichi" class="bg-orange-400 h-1.5 rounded" style="width: 0%"></div></div>
-
-                                 <!-- 小吉 -->
-                                 <div class="flex justify-between text-xs"><span>小吉</span><span><span id="cnt-shokichi" class="mr-2 font-mono opacity-70">0</span><span id="stat-shokichi">0.00%</span></span></div>
-                                 <div class="w-full bg-gray-200 dark:bg-zinc-700 h-1.5 rounded mb-1"><div id="bar-shokichi" class="bg-green-400 h-1.5 rounded" style="width: 0%"></div></div>
-
-                                 <!-- 吉 -->
-                                 <div class="flex justify-between text-xs"><span>吉</span><span><span id="cnt-kichi" class="mr-2 font-mono opacity-70">0</span><span id="stat-kichi">0.00%</span></span></div>
-                                 <div class="w-full bg-gray-200 dark:bg-zinc-700 h-1.5 rounded mb-1"><div id="bar-kichi" class="bg-red-400 h-1.5 rounded" style="width: 0%"></div></div>
-
-                                 <!-- 半吉 -->
-                                 <div class="flex justify-between text-xs"><span>半吉</span><span><span id="cnt-hankichi" class="mr-2 font-mono opacity-70">0</span><span id="stat-hankichi">0.00%</span></span></div>
-                                 <div class="w-full bg-gray-200 dark:bg-zinc-700 h-1.5 rounded mb-1"><div id="bar-hankichi" class="bg-red-300 h-1.5 rounded" style="width: 0%"></div></div>
-
-                                 <!-- 以下、隠れる要素（データ更新のために存在はさせる） -->
-                                 <!-- 末吉 -->
-                                 <div class="flex justify-between text-xs"><span>末吉</span><span><span id="cnt-suekichi" class="mr-2 font-mono opacity-70">0</span><span id="stat-suekichi">0.00%</span></span></div>
-                                 <div class="w-full bg-gray-200 dark:bg-zinc-700 h-1.5 rounded mb-1"><div id="bar-suekichi" class="bg-blue-400 h-1.5 rounded" style="width: 0%"></div></div>
-                                 <!-- 末小吉 -->
-                                 <div class="flex justify-between text-xs"><span>末小吉</span><span><span id="cnt-sueshokichi" class="mr-2 font-mono opacity-70">0</span><span id="stat-sueshokichi">0.00%</span></span></div>
-                                 <div class="w-full bg-gray-200 dark:bg-zinc-700 h-1.5 rounded mb-1"><div id="bar-sueshokichi" class="bg-blue-300 h-1.5 rounded" style="width: 0%"></div></div>
-                                 <!-- 凶 -->
-                                 <div class="flex justify-between text-xs"><span>凶</span><span><span id="cnt-kyo" class="mr-2 font-mono opacity-70">0</span><span id="stat-kyo">0.00%</span></span></div>
-                                 <div class="w-full bg-gray-200 dark:bg-zinc-700 h-1.5 rounded mb-1"><div id="bar-kyo" class="bg-gray-400 h-1.5 rounded" style="width: 0%"></div></div>
-                                 <!-- 小凶 -->
-                                 <div class="flex justify-between text-xs"><span>小凶</span><span><span id="cnt-shokyo" class="mr-2 font-mono opacity-70">0</span><span id="stat-shokyo">0.00%</span></span></div>
-                                 <div class="w-full bg-gray-200 dark:bg-zinc-700 h-1.5 rounded mb-1"><div id="bar-shokyo" class="bg-gray-500 h-1.5 rounded" style="width: 0%"></div></div>
-                                 <!-- 半凶 -->
-                                 <div class="flex justify-between text-xs"><span>半凶</span><span><span id="cnt-hankyo" class="mr-2 font-mono opacity-70">0</span><span id="stat-hankyo">0.00%</span></span></div>
-                                 <div class="w-full bg-gray-200 dark:bg-zinc-700 h-1.5 rounded mb-1"><div id="bar-hankyo" class="bg-gray-600 dark:bg-gray-400 h-1.5 rounded" style="width: 0%"></div></div>
-                                 <!-- 末凶 -->
-                                 <div class="flex justify-between text-xs"><span>末凶</span><span><span id="cnt-suekyo" class="mr-2 font-mono opacity-70">0</span><span id="stat-suekyo">0.00%</span></span></div>
-                                 <div class="w-full bg-gray-200 dark:bg-zinc-700 h-1.5 rounded mb-1"><div id="bar-suekyo" class="bg-gray-700 h-1.5 rounded" style="width: 0%"></div></div>
-                                 <!-- 大凶 -->
-                                 <div class="flex justify-between text-xs"><span>大凶</span><span><span id="cnt-daikyo" class="mr-2 font-mono opacity-70">0</span><span id="stat-daikyo">0.00%</span></span></div>
-                                 <div class="w-full bg-gray-200 dark:bg-zinc-700 h-1.5 rounded mb-1"><div id="bar-daikyo" class="bg-black h-1.5 rounded" style="width: 0%"></div></div>
-                             </div>
+                <!-- 4. 新統合: お知らせ ＆ コラム タブカード (span 12) -->
+                <div class="bento-card flex flex-col p-6 bg-white dark:bg-zinc-900 border border-gray-200 dark:border-gray-800" style="grid-column: span 12;">
+                    <!-- タブ切り替えヘッダー -->
+                    <div class="flex items-center justify-between mb-4 border-b border-gray-100 dark:border-gray-800 pb-3 flex-wrap gap-2">
+                        <div class="flex gap-2">
+                            <button id="home-tab-news-btn" onclick="switchHomeTab('news')" class="px-4 py-1.5 rounded-full text-xs font-black tracking-wider transition-all duration-200 bg-red-600 text-white shadow-sm border border-red-600">
+                                <i class="bi bi-bell-fill mr-1"></i>社務所だより
+                            </button>
+                            <button id="home-tab-column-btn" onclick="switchHomeTab('column')" class="px-4 py-1.5 rounded-full text-xs font-black tracking-wider transition-all duration-200 bg-transparent text-gray-500 hover:text-gray-800 dark:hover:text-gray-200 border border-transparent hover:border-gray-200 dark:hover:border-zinc-700">
+                                <i class="bi bi-book-half mr-1"></i>神籤草子
+                            </button>
                         </div>
-                        
-                        <!-- グラデーションマスクと誘導ボタン -->
-                        <div class="absolute bottom-0 left-0 w-full h-24 bg-gradient-to-t from-white via-white/95 to-transparent dark:from-[#2c2c2c] dark:via-[#2c2c2c]/95 flex items-end justify-center pb-0">
-                            <button onclick="showView('history')" class="btn-primary py-3 px-6 shadow-lg text-sm font-bold w-full mb-0 flex items-center justify-center gap-2 transform transition hover:scale-105">
-                                <i class="bi bi-bar-chart-line"></i> すべての統計を見る
+                        <div class="flex items-center">
+                            <button id="home-tab-more-btn" onclick="showView('news')" class="text-xs text-blue-500 hover:underline flex items-center gap-1 font-bold bg-transparent border-none cursor-pointer">
+                                <span>一覧へ</span><i class="bi bi-chevron-right"></i>
                             </button>
                         </div>
                     </div>
-                </div>
-
-               <!-- 6. 社務所だより (隙間修正版) -->
-                <div class="bento-card bento-news">
-                    <div class="flex justify-between items-center mb-2 border-b border-gray-200 dark:border-gray-700 pb-2">
-                        <h3 class="font-bold flex items-center gap-2"><i class="bi bi-bell-fill text-blue-500"></i> 社務所だより</h3>
-                        <button onclick="showView('news')" class="text-xs text-blue-500 hover:underline">一覧</button>
+                    
+                    <!-- ニュースコンテンツエリア -->
+                    <div id="home-tab-news-content" class="block">
+                        <ul class="text-sm space-y-0 divide-y divide-gray-100 dark:divide-gray-800" id="home-news-list">
+                            <!-- JSで自動挿入 -->
+                        </ul>
                     </div>
-                    <!-- space-y-3 を space-y-0 にし、隙間をなくして境界線を追加 -->
-                    <ul class="text-sm space-y-0 divide-y divide-gray-100 dark:divide-gray-800" id="home-news-list">
-                        <!-- JSで自動挿入 -->
-                    </ul>
-                </div>
 
-                <!-- 7. 神籤草子 (隙間修正版) -->
-                <div class="bento-card bento-col">
-                    <div class="flex justify-between items-center mb-2 border-b border-gray-200 dark:border-gray-700 pb-2">
-                        <h3 class="font-bold flex items-center gap-2"><i class="bi bi-book-half text-green-500"></i> 神籤草子</h3>
-                        <button onclick="showView('column')" class="text-xs text-green-500 hover:underline">一覧</button>
+                    <!-- コラムコンテンツエリア -->
+                    <div id="home-tab-column-content" class="hidden">
+                        <ul class="text-sm space-y-0 divide-y divide-gray-100 dark:divide-gray-800" id="home-column-list">
+                            <!-- JSで自動挿入 -->
+                        </ul>
                     </div>
-                    <!-- 同様に隙間を修正 -->
-                    <ul class="text-sm space-y-0 divide-y divide-gray-100 dark:divide-gray-800" id="home-column-list">
-                        <!-- JSで自動挿入 -->
-                    </ul>
                 </div>
 
             </div>
+            
+            <!-- Ver. 3.0 システムフッター (グリッドの外側に薄く配置) -->
+            <div class="mt-12 mb-4 text-center border-t border-gray-100 dark:border-gray-800/50 pt-6">
+                <div class="flex flex-col items-center justify-center gap-2 text-xs text-gray-400 dark:text-gray-500 font-mono">
+                    <div class="flex items-center gap-2 flex-wrap justify-center">
+                        <span>運勢・天命乃杜 Ver. 3.0 (改装版)</span>
+                        <span>|</span>
+                        <span>リリース日: 2026/05/23</span>
+                        <span>|</span>
+                        <span class="inline-flex items-center gap-1 text-[10px] bg-green-100 dark:bg-green-950/30 text-green-700 dark:text-green-400 px-1.5 py-0.5 rounded font-bold"><i class="bi bi-patch-check-fill"></i>最新版</span>
+                    </div>
+                    <button onclick="openVerHistory()" class="ver-history-btn" style="margin-top: 4px;">
+                        <i class="bi bi-clock-history"></i> 更新の軌跡
+                    </button>
+                </div>
+            </div>
+
         </section>
 
         <!-- ビュー: おみくじ選択 (案内文更新版) -->
