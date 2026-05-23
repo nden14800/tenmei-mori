@@ -17679,72 +17679,6 @@ async function renderSettingsDashboard() {
         if(modal) modal.style.display = 'flex';
     }
 
-    // アイコン選択肢描画
-    function renderIconSelector() {
-        const container = document.getElementById('icon-selector');
-        // profileIcons が定義されていない場合は処理しない（エラー回避）
-        if(!container || typeof profileIcons === 'undefined') return;
-        
-        container.innerHTML = profileIcons.map(ic => `
-            <div class="icon-option ${ic === selectedIcon ? 'selected' : ''} flex items-center justify-center text-xl cursor-pointer p-2 rounded border hover:bg-gray-100 dark:hover:bg-zinc-700 ${ic === selectedIcon ? 'border-red-500 bg-red-50 dark:bg-red-900/30' : 'border-gray-200 dark:border-gray-600'}" 
-                 onclick="selectedIcon='${ic}'; renderIconSelector()">
-                <i class="bi ${ic}"></i>
-            </div>
-        `).join('');
-    }
-
-    // 色選択肢描画
-    function renderColorSelector() {
-        const container = document.getElementById('color-selector');
-        // profileColors が定義されていない場合は処理しない
-        if(!container || typeof profileColors === 'undefined') return;
-        
-        const colorMap = { 'gray':'#9ca3af', 'red':'#ef4444', 'blue':'#3b82f6', 'green':'#10b981', 'yellow':'#eab308', 'purple':'#a855f7', 'pink':'#ec4899', 'black':'#1f2937' };
-        
-        container.innerHTML = profileColors.map(c => `
-            <div class="color-option ${c === selectedColor ? 'selected' : ''} w-8 h-8 rounded-full cursor-pointer border-2 ${c === selectedColor ? 'border-gray-900 dark:border-white scale-110' : 'border-transparent'}" 
-                 style="background-color: ${colorMap[c]}" 
-                 onclick="selectedColor='${c}'; renderColorSelector()"></div>
-        `).join('');
-    }
-
-    // 編集内容リセット
-    function resetProfileEdit() {
-        if(!confirm("プロフィールを初期状態に戻しますか？")) return;
-        
-        document.getElementById('edit-bio').value = "";
-        document.getElementById('edit-title').value = "初詣の旅人";
-        
-        if (typeof selectedIcon !== 'undefined') selectedIcon = 'bi-person';
-        if (typeof selectedColor !== 'undefined') selectedColor = 'gray';
-        
-        renderIconSelector();
-        renderColorSelector();
-    }
-
-    // 編集内容保存
-    async function saveProfileChanges() {
-        const bio = document.getElementById('edit-bio').value;
-        const title = document.getElementById('edit-title').value || "初詣の旅人";
-
-        showLoading(true);
-        try {
-            const res = await authFetch(`${API_BASE}/api/user/update_details`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ bio, title, icon: selectedIcon, color: selectedColor })
-            });
-            if (res.ok) {
-                showToast("プロフィールを更新しました", "success");
-                document.getElementById('edit-profile-modal').style.display = 'none';
-                loadUserProfile(currentState.user.username); // 再読み込み
-            } else {
-                alert("更新に失敗しました");
-            }
-        } catch(e) { console.error(e); }
-        finally { showLoading(false); }
-    }
-    
         // --- メニュー表示 ---
         function toggleProfileMenu() {
             const menu = document.getElementById('profile-menu-dropdown');
@@ -17769,37 +17703,6 @@ async function renderSettingsDashboard() {
                 desc = `${username} は、所定の手続きを経て本人確認が完了した、信頼できる公式アカウントであることを証明します。`;
             }
             showToast(`<div class="text-left"><h4 class="font-bold mb-1">${title}</h4><p class="text-xs">${desc}</p></div>`, 'info', '認証情報');
-        }
-
-        // --- 編集モーダルを開く ---
-        function openEditProfileModal(currentBio, currentTitle) {
-            document.getElementById('edit-bio').value = currentBio === "自己紹介はまだありません。" ? "" : currentBio;
-            document.getElementById('edit-title').value = currentTitle;
-            document.getElementById('edit-profile-modal').style.display = 'flex';
-        }
-
-        // --- プロフィール保存 ---
-        async function saveProfileChanges() {
-            const bio = document.getElementById('edit-bio').value;
-            const title = document.getElementById('edit-title').value || "初詣の旅人";
-
-            showLoading(true);
-            try {
-                const res = await authFetch(`${API_BASE}/api/user/update_details`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ bio, title })
-                });
-                if (res.ok) {
-                    showToast("プロフィールを更新しました", "success");
-                    document.getElementById('edit-profile-modal').style.display = 'none';
-                    // リロードして反映
-                    loadUserProfile(currentState.user.username);
-                } else {
-                    alert("更新に失敗しました");
-                }
-            } catch(e) { console.error(e); }
-            finally { showLoading(false); }
         }
 
        // --- フォロー機能 (エラー詳細表示版) ---
