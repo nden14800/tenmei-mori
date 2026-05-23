@@ -1081,10 +1081,77 @@
             border: 1px solid currentColor;
             padding: 15px;
             border-radius: 8px;
+            overflow: visible !important;
         }
         .lucky-title { font-weight: bold; margin-bottom: 10px; border-bottom: 1px dashed currentColor; padding-bottom: 5px; }
         .lucky-row { font-size: 0.9rem; margin-bottom: 4px; display: flex; align-items: flex-start;}
         .lucky-icon { margin-right: 5px; min-width: 20px; text-align: center; }
+
+        /* アイコンのみ表示＋ツールチップ */
+        .lucky-icons-row {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+            margin-top: 4px;
+        }
+        .lucky-icon-btn {
+            position: relative;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 38px;
+            height: 38px;
+            border-radius: 10px;
+            background: rgba(255,255,255,0.07) !important;
+            border: 1px solid rgba(255,255,255,0.15) !important;
+            cursor: pointer;
+            font-size: 1.1rem;
+            transition: background 0.2s, transform 0.2s;
+            -webkit-tap-highlight-color: transparent;
+            overflow: visible !important;
+            z-index: 1;
+        }
+        .lucky-icon-btn:hover, .lucky-icon-btn.active {
+            background: rgba(255,255,255,0.18) !important;
+            transform: translateY(-2px);
+            z-index: 50;
+        }
+        .lucky-icon-btn > .lucky-tooltip {
+            display: block !important;
+            visibility: hidden !important;
+            opacity: 0 !important;
+            pointer-events: none;
+            position: absolute !important;
+            bottom: calc(100% + 8px) !important;
+            left: 50% !important;
+            transform: translateX(-50%) !important;
+            background: #1a1a1a !important;
+            color: #f0f0f0 !important;
+            border: 1px solid #555 !important;
+            border-radius: 8px !important;
+            padding: 5px 11px !important;
+            font-size: 0.75rem !important;
+            white-space: nowrap !important;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.5) !important;
+            transition: opacity 0.18s, visibility 0.18s !important;
+            z-index: 9999 !important;
+            line-height: 1.4 !important;
+            width: max-content !important;
+        }
+        .lucky-icon-btn > .lucky-tooltip::after {
+            content: '';
+            position: absolute;
+            top: 100%;
+            left: 50%;
+            transform: translateX(-50%);
+            border: 5px solid transparent;
+            border-top-color: #555;
+        }
+        .lucky-icon-btn:hover > .lucky-tooltip,
+        .lucky-icon-btn.active > .lucky-tooltip {
+            visibility: visible !important;
+            opacity: 1 !important;
+        }
 
         .result-footer-info {
             width: 100%;
@@ -2034,37 +2101,40 @@
        /* --- 参拝の記録：ダッシュボードUI (スマホ対応修正版) --- */
 
         /* 1. ヒーローセクション (主要スコア) */
+        /* ===== 参拝記録 刷新CSS ===== */
+
+        /* ヒーローグリッド */
         .stats-hero-grid {
             display: grid;
             grid-template-columns: repeat(2, 1fr);
             gap: 16px;
-            margin-bottom: 30px;
+            margin-bottom: 20px;
         }
-        /* スマホ時の調整 */
         @media (max-width: 640px) {
             .stats-hero-grid {
-                gap: 10px; /* 間隔を詰める */
-                margin-bottom: 20px;
+                gap: 10px;
+                margin-bottom: 16px;
             }
         }
 
+        /* ヒーローカード */
         .stats-hero-card {
-            background-color: var(--card-bg);
-            border: 1px solid var(--card-border);
+            background: linear-gradient(135deg, #111111 0%, #1a1a1a 100%);
+            border: 1px solid #2a2a2a;
+            border-top: 3px solid var(--accent-red);
             border-radius: 20px;
-            padding: 24px;
+            padding: 28px 24px;
             display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: center;
             position: relative;
             overflow: hidden;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.03);
+            box-shadow: 0 8px 32px rgba(0,0,0,0.35);
         }
-        /* スマホ時の調整 */
         @media (max-width: 640px) {
             .stats-hero-card {
-                padding: 16px 10px; /* 余白を減らす */
+                padding: 18px 12px;
                 border-radius: 16px;
             }
         }
@@ -2073,128 +2143,145 @@
         .stats-hero-card::after {
             content: attr(data-bg-text);
             position: absolute;
-            bottom: -15px;
-            right: -10px;
-            font-size: 5rem;
+            bottom: -20px;
+            right: -5px;
+            font-size: 6rem;
             font-weight: 900;
-            color: currentColor;
-            opacity: 0.07;
+            color: #ffffff;
+            opacity: 0.04;
             font-family: 'Zen Old Mincho', serif;
             pointer-events: none;
         }
 
         .stats-hero-label {
-            font-size: 0.8rem;
+            font-size: 0.72rem;
             font-weight: bold;
-            color: var(--text-sub);
-            margin-bottom: 5px;
+            color: #888;
+            margin-bottom: 8px;
             z-index: 1;
-            white-space: nowrap; /* 折り返し防止 */
+            white-space: nowrap;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
         }
         @media (max-width: 640px) {
             .stats-hero-label {
-                font-size: 0.7rem; /* 文字サイズ縮小 */
-                margin-bottom: 2px;
+                font-size: 0.65rem;
+                margin-bottom: 4px;
             }
         }
 
         .stats-hero-value {
-            font-size: 2.2rem;
+            font-size: 2.6rem;
             font-weight: 900;
-            font-family: monospace;
+            font-family: 'Zen Old Mincho', serif;
             line-height: 1;
             z-index: 1;
+            color: #f0f0f0;
+            text-shadow: 0 0 20px rgba(212,175,55,0.2);
         }
         @media (max-width: 640px) {
             .stats-hero-value {
-                font-size: 1.6rem; /* 数字がはみ出ないよう縮小 */
+                font-size: 2rem;
             }
         }
 
         /* 色分け */
-        .hero-total { color: var(--text-main); }
-        .hero-daikichi { color: #d4af37; border-color: #fcd34d; background: linear-gradient(to bottom right, #fff, #fffbef); }
-        .dark .hero-daikichi { background: linear-gradient(to bottom right, #1a1a1a, #3f2c00); border-color: #854d0e; }
+        .hero-total { border-top-color: var(--accent-red); }
+        .hero-total .stats-hero-value { color: #f0f0f0; }
+        .hero-daikichi { border-top-color: #d4af37; }
+        .hero-daikichi .stats-hero-value {
+            color: #fbbf24;
+            text-shadow: 0 0 24px rgba(251,191,36,0.4);
+        }
 
-        /* 2. インサイトエリア (比較) */
+        /* 2. インサイトエリア */
         .stats-insight-box {
-            background-color: var(--card-bg);
+            background: linear-gradient(135deg, #111111 0%, #0d0d0d 100%);
+            border: 1px solid #2a2a2a;
             border-left: 4px solid var(--accent-red);
-            border-radius: 8px;
-            padding: 20px;
-            margin-bottom: 30px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            border-radius: 12px;
+            padding: 20px 24px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 24px rgba(0,0,0,0.3);
         }
         @media (max-width: 640px) {
             .stats-insight-box {
-                padding: 15px;
-                margin-bottom: 20px;
+                padding: 14px 16px;
+                margin-bottom: 16px;
             }
         }
 
         .stats-insight-text {
             font-size: 0.9rem;
-            line-height: 1.8;
-            color: var(--text-main);
+            line-height: 1.9;
+            color: #d0d0d0;
         }
         @media (max-width: 640px) {
             .stats-insight-text {
                 font-size: 0.8rem;
-                line-height: 1.6;
+                line-height: 1.7;
             }
         }
 
         .stats-insight-highlight {
             font-weight: 900;
-            font-size: 1.2rem;
-            color: var(--accent-red);
+            font-size: 1.15rem;
+            color: var(--accent-gold, #d4af37);
             margin: 0 4px;
+            text-shadow: 0 0 12px rgba(212,175,55,0.3);
         }
 
-        /* --- 参拝の記録：インタラクティブUI & 独立グラフ (スマホ対応修正版) --- */
+        /* --- 参拝の記録：インタラクティブUI --- */
 
-        /* クリック・ホバーできるカード */
         .stats-card-interactive {
-            transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+            transition: all 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
             cursor: pointer;
-            border: 1px solid var(--card-border);
+            border: 1px solid #222;
             position: relative;
             z-index: 1;
-            background-color: var(--card-bg);
+            background: #111111;
             overflow: hidden;
         }
 
         .stats-card-interactive:hover {
             transform: translateY(-4px) scale(1.01);
-            box-shadow: 0 15px 30px -5px rgba(185, 28, 28, 0.15);
-            border-color: var(--accent-red);
+            box-shadow: 0 16px 48px rgba(0,0,0,0.5), 0 0 0 1px rgba(212,175,55,0.2);
+            border-color: rgba(212,175,55,0.5);
             z-index: 10;
         }
 
         /* グラフコンテナ */
         .stats-graph-container {
-            padding-top: 40px;
-            margin-top: 20px;
+            padding-top: 44px;
+            margin-top: 16px;
             border-radius: 16px;
             position: relative;
+            background: #111111;
+            border: 1px solid #222;
+            border-top: 3px solid var(--accent-red);
+            box-shadow: 0 8px 32px rgba(0,0,0,0.35);
+        }
+
+        /* グラフヘッダー仕切り */
+        .stats-graph-container .px-4.pb-2.border-b {
+            border-color: #2a2a2a !important;
         }
 
         /* 目盛り線（グリッド）レイヤー */
         .graph-grid-overlay {
             position: absolute;
-            top: 45px;
+            top: 50px;
             bottom: 20px;
-            left: 70px; /* PC用ラベル幅 */
+            left: 70px;
             right: 20px;
             pointer-events: none;
             z-index: 0;
         }
-        /* スマホ時のグリッド位置調整 */
         @media (max-width: 640px) {
             .graph-grid-overlay {
-                left: 50px; /* ラベル幅縮小に合わせて左寄せ */
-                right: 10px; /* 右余白も減らす */
-                top: 40px;
+                left: 50px;
+                right: 10px;
+                top: 44px;
             }
         }
 
@@ -2203,7 +2290,7 @@
             top: 0;
             bottom: 0;
             width: 1px;
-            background-color: rgba(128, 128, 128, 0.1);
+            background-color: rgba(255,255,255,0.05);
         }
 
         .grid-label-text {
@@ -2211,14 +2298,13 @@
             top: -20px;
             transform: translateX(-50%);
             font-size: 0.65rem;
-            color: var(--text-sub);
-            opacity: 0.5;
+            color: #555;
             font-family: monospace;
             white-space: nowrap;
         }
         @media (max-width: 640px) {
             .grid-label-text {
-                font-size: 0.55rem; /* 更に小さく */
+                font-size: 0.55rem;
                 top: -16px;
             }
         }
@@ -2227,24 +2313,24 @@
         .stats-row-dual {
             display: flex;
             align-items: center;
-            margin-bottom: 12px;
+            margin-bottom: 14px;
             position: relative;
             z-index: 1;
             padding-right: 20px;
         }
         @media (max-width: 640px) {
             .stats-row-dual {
-                padding-right: 10px; /* 右余白削減 */
+                padding-right: 10px;
                 margin-bottom: 10px;
             }
         }
 
         /* グラフのラベル（左側） */
         .stats-label-modern {
-            width: 70px; /* PC用 */
-            font-size: 0.75rem;
+            width: 70px;
+            font-size: 0.72rem;
             font-weight: bold;
-            color: var(--text-sub);
+            color: #888;
             flex-shrink: 0;
             padding-right: 10px;
             text-align: right;
@@ -2253,12 +2339,11 @@
             justify-content: flex-end;
             height: 100%;
         }
-        /* スマホ時のラベル調整 */
         @media (max-width: 640px) {
             .stats-label-modern {
-                width: 50px; /* 幅を狭くしてバー領域を確保 */
+                width: 50px;
                 padding-right: 6px;
-                font-size: 0.65rem; /* 文字サイズ縮小 */
+                font-size: 0.65rem;
             }
         }
 
@@ -2267,42 +2352,41 @@
             flex: 1;
             display: flex;
             flex-direction: column;
-            gap: 2px;
+            gap: 3px;
             justify-content: center;
         }
 
         /* バーの共通スタイル */
         .stats-bar-base {
             height: 10px;
-            border-radius: 3px;
+            border-radius: 4px;
             width: 0;
             transition: width 1s cubic-bezier(0.22, 1, 0.36, 1);
             position: relative;
         }
         @media (max-width: 640px) {
             .stats-bar-base {
-                height: 8px; /* 少し細く */
+                height: 8px;
             }
         }
 
         /* 色定義 */
-        .bar-gold  { background-color: #d4af37; } 
-        .dark .bar-gold { background-color: #fbbf24; }
+        .bar-gold  { background: linear-gradient(90deg, #b8860b, #fbbf24); }
+        .dark .bar-gold { background: linear-gradient(90deg, #92400e, #fbbf24); }
 
-        .bar-black { background-color: #374151; } 
-        .dark .bar-black { background-color: #9ca3af; }
+        .bar-black { background-color: #555; }
+        .dark .bar-black { background-color: #666; }
 
-        .bar-red   { background-color: var(--accent-red); }
+        .bar-red   { background: linear-gradient(90deg, #7f1d1d, var(--accent-red)); }
 
-        .bar-avg   { background-color: #e5e7eb; }
-        .dark .bar-avg { background-color: #3f3f46; } 
+        .bar-avg   { background-color: #2a2a2a; }
+        .dark .bar-avg { background-color: #333; }
 
-/* 値のラベル（バーの横に出す場合） */
+/* 値のラベル（バーの横） */
 .bar-val-label {
     margin-left: 4px;
     font-size: 0.65rem;
-    color: var(--text-sub);
-    opacity: 0.8;
+    color: #777;
     line-height: 1;
     white-space: nowrap;
     position: absolute;
@@ -5945,6 +6029,11 @@ body.sidebar-collapsed #sidebar:hover .nav-group-title {
                     border-color: var(--accent-gold) !important;
                     box-shadow: 0 12px 32px rgba(197, 160, 89, 0.2) !important;
                 }
+
+                #view-stats .bento-card:hover {
+                    border-color: rgba(212,175,55,0.5) !important;
+                    box-shadow: 0 16px 48px rgba(0,0,0,0.5) !important;
+                }
                 
                 /* おみくじを引くボタンのシャイン（光沢）アニメーション */
                 @keyframes shine {
@@ -6734,15 +6823,28 @@ body.sidebar-collapsed #sidebar:hover .nav-group-title {
 
    <!-- ビュー: 参拝の記録 (統計ダッシュボード) -->
 <section id="view-stats" class="view-section max-w-4xl mx-auto relative pb-20">
-    <div class="text-center mb-8">
-        <h2 class="text-3xl font-black mb-2 tracking-widest" style="font-family: 'Zen Old Mincho'">参拝の記録</h2>
-        <p class="text-xs font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest">PERSONAL STATISTICS</p>
+
+    <!-- ヘッダーカード -->
+    <div class="bento-card mb-6" style="background: linear-gradient(135deg, #0d0d0d 0%, #1a0a00 50%, #0d0d0d 100%); border-top: 3px solid var(--accent-red); border-color: #2a1a0a; box-shadow: 0 8px 40px rgba(0,0,0,0.5);">
+        <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:16px;">
+            <div>
+                <div style="display:flex; align-items:center; gap:10px; margin-bottom:8px;">
+                    <i class="bi bi-journal-bookmark-fill" style="color: var(--accent-gold, #d4af37); font-size:1.3rem;"></i>
+                    <h2 style="font-family:'Zen Old Mincho',serif; font-size:1.8rem; font-weight:900; color:#f0f0f0; letter-spacing:0.1em; margin:0;">参拝の記録</h2>
+                </div>
+                <p style="font-size:0.75rem; color:#888; letter-spacing:0.15em; text-transform:uppercase; margin:0;">PERSONAL STATISTICS</p>
+                <p style="font-size:0.82rem; color:#aaa; margin-top:10px; line-height:1.7;">おみくじを引くたびに蓄積されるあなただけの参拝データ。<br>他の参拝者との比較・運勢の傾向を分析できます。</p>
+            </div>
+            <div style="display:flex; flex-direction:column; align-items:flex-end; gap:8px; opacity:0.6;">
+                <i class="bi bi-graph-up-arrow" style="font-size:3rem; color: var(--accent-gold, #d4af37);"></i>
+            </div>
+        </div>
     </div>
 
     <!-- コンテンツラッパー -->
     <div id="stats-content-wrapper">
         
-        <!-- 1. ヒーローセクション (カード化・ホバー対応) -->
+        <!-- 1. ヒーローセクション -->
         <div class="stats-hero-grid">
             <div class="stats-hero-card hero-total stats-card-interactive" data-bg-text="参">
                 <div class="stats-hero-label">総参拝数</div>
@@ -6756,13 +6858,16 @@ body.sidebar-collapsed #sidebar:hover .nav-group-title {
 
         <!-- 2. インサイト (比較分析) -->
         <div id="stats-insight-area" class="stats-insight-box stats-card-interactive">
-            <p class="text-center text-gray-400 text-sm">集計中...</p>
+            <p class="text-center text-sm" style="color:#666;">集計中...</p>
         </div>
 
-        <!-- 3. 総参拝数の比較グラフ (独立) -->
-        <div class="stats-graph-container stats-card-interactive mb-6">
-            <div class="px-4 pb-2 border-b border-gray-100 dark:border-gray-700 mb-2">
-                <h3 class="font-bold text-lg"><i class="bi bi-people-fill text-blue-500"></i> 参拝数比較</h3>
+        <!-- 3. 総参拝数の比較グラフ -->
+        <div class="stats-graph-container stats-card-interactive mb-5">
+            <div class="px-4 pb-3 mb-2" style="border-bottom: 1px solid #2a2a2a;">
+                <h3 class="font-bold text-base flex items-center gap-2">
+                    <i class="bi bi-people-fill" style="color: var(--accent-gold, #d4af37);"></i>
+                    <span style="color:#e0e0e0;">参拝数比較</span>
+                </h3>
             </div>
             <!-- 目盛り線レイヤー -->
             <div id="grid-total" class="graph-grid-overlay"></div>
@@ -6772,11 +6877,14 @@ body.sidebar-collapsed #sidebar:hover .nav-group-title {
 
         <!-- 4. 運勢スペクトル (詳細グラフ) -->
         <div class="stats-graph-container stats-card-interactive">
-            <div class="px-4 pb-2 border-b border-gray-100 dark:border-gray-700 mb-2 flex justify-between items-end">
-                <h3 class="font-bold text-lg"><i class="bi bi-bar-chart-steps text-red-500"></i> 運勢分布</h3>
+            <div class="px-4 pb-3 mb-2 flex justify-between items-end" style="border-bottom: 1px solid #2a2a2a;">
+                <h3 class="font-bold text-base flex items-center gap-2">
+                    <i class="bi bi-bar-chart-steps" style="color: var(--accent-red);"></i>
+                    <span style="color:#e0e0e0;">運勢分布</span>
+                </h3>
                 <div class="flex gap-3 text-[10px] pb-1">
-                    <span class="flex items-center gap-1"><span class="w-3 h-3 bg-red-600 rounded"></span>あなた</span>
-                    <span class="flex items-center gap-1"><span class="w-3 h-3 bg-gray-300 dark:bg-zinc-600 rounded"></span>平均</span>
+                    <span class="flex items-center gap-1" style="color:#aaa;"><span class="w-3 h-3 rounded" style="background: var(--accent-red); display:inline-block;"></span>あなた</span>
+                    <span class="flex items-center gap-1" style="color:#aaa;"><span class="w-3 h-3 rounded" style="background:#444; display:inline-block;"></span>平均</span>
                 </div>
             </div>
             <!-- 目盛り線レイヤー -->
@@ -6787,14 +6895,12 @@ body.sidebar-collapsed #sidebar:hover .nav-group-title {
 
     </div>
 
-    </div>
-
     <!-- 非ログイン時のロック画面 -->
     <div id="stats-lock" class="lab-lock-overlay hidden flex items-center justify-center">
-        <div class="bg-white/90 dark:bg-black/80 backdrop-blur-xl p-8 rounded-2xl shadow-2xl max-w-sm w-full border border-gray-100 dark:border-gray-800 text-center mx-4">
-            <i class="bi bi-person-lock text-5xl text-gray-400 mb-4 block"></i>
-            <h3 class="text-xl font-bold mb-2">記録は閉じられています</h3>
-            <p class="text-sm text-gray-500 mb-6 leading-relaxed">
+        <div class="backdrop-blur-xl p-8 rounded-2xl shadow-2xl max-w-sm w-full text-center mx-4" style="background: rgba(13,13,13,0.95); border: 1px solid #2a2a2a; border-top: 3px solid var(--accent-red);">
+            <i class="bi bi-person-lock text-5xl mb-4 block" style="color: #555;"></i>
+            <h3 class="text-xl font-bold mb-2" style="color:#e0e0e0; font-family:'Zen Old Mincho',serif;">記録は閉じられています</h3>
+            <p class="text-sm mb-6 leading-relaxed" style="color:#888;">
                 自分だけの参拝記録を残し、<br>運勢の傾向を分析するにはログインが必要です。
             </p>
             <button onclick="showView('auth')" class="btn-primary w-full shadow-lg">
@@ -15189,10 +15295,24 @@ async function showResultDetail(isNewDraw, dataOverride = null) {
             if (data.lucky) {
                 lBox.innerHTML = `
                     <div class="lucky-title accent-text">開運</div>
-                    <div class="lucky-row accent-text"><span class="lucky-icon"><i class="bi bi-stars"></i></span>物：${data.lucky.item}</div>
-                    <div class="lucky-row accent-text"><span class="lucky-icon"><i class="bi bi-geo-alt"></i></span>所：${data.lucky.spot}</div>
-                    <div class="lucky-row accent-text"><span class="lucky-icon"><i class="bi bi-palette"></i></span>色：${data.lucky.color}</div>
-                    <div class="lucky-row accent-text"><span class="lucky-icon"><i class="bi bi-person"></i></span>人：${data.lucky.person}</div>
+                    <div class="lucky-icons-row">
+                        <span class="lucky-icon-btn" ontouchstart="this.classList.add('active')" ontouchend="this.classList.remove('active')">
+                            <i class="bi bi-stars accent-text"></i>
+                            <span class="lucky-tooltip" style="display:block;visibility:hidden;opacity:0;position:absolute;bottom:calc(100% + 8px);left:50%;transform:translateX(-50%);background:#1a1a1a;color:#f0f0f0;border:1px solid #555;border-radius:8px;padding:5px 11px;font-size:0.75rem;white-space:nowrap;box-shadow:0 4px 20px rgba(0,0,0,0.5);z-index:9999;pointer-events:none;width:max-content;transition:opacity 0.18s,visibility 0.18s;">物：${data.lucky.item}</span>
+                        </span>
+                        <span class="lucky-icon-btn" ontouchstart="this.classList.add('active')" ontouchend="this.classList.remove('active')">
+                            <i class="bi bi-geo-alt accent-text"></i>
+                            <span class="lucky-tooltip" style="display:block;visibility:hidden;opacity:0;position:absolute;bottom:calc(100% + 8px);left:50%;transform:translateX(-50%);background:#1a1a1a;color:#f0f0f0;border:1px solid #555;border-radius:8px;padding:5px 11px;font-size:0.75rem;white-space:nowrap;box-shadow:0 4px 20px rgba(0,0,0,0.5);z-index:9999;pointer-events:none;width:max-content;transition:opacity 0.18s,visibility 0.18s;">所：${data.lucky.spot}</span>
+                        </span>
+                        <span class="lucky-icon-btn" ontouchstart="this.classList.add('active')" ontouchend="this.classList.remove('active')">
+                            <i class="bi bi-palette accent-text"></i>
+                            <span class="lucky-tooltip" style="display:block;visibility:hidden;opacity:0;position:absolute;bottom:calc(100% + 8px);left:50%;transform:translateX(-50%);background:#1a1a1a;color:#f0f0f0;border:1px solid #555;border-radius:8px;padding:5px 11px;font-size:0.75rem;white-space:nowrap;box-shadow:0 4px 20px rgba(0,0,0,0.5);z-index:9999;pointer-events:none;width:max-content;transition:opacity 0.18s,visibility 0.18s;">色：${data.lucky.color}</span>
+                        </span>
+                        <span class="lucky-icon-btn" ontouchstart="this.classList.add('active')" ontouchend="this.classList.remove('active')">
+                            <i class="bi bi-person accent-text"></i>
+                            <span class="lucky-tooltip" style="display:block;visibility:hidden;opacity:0;position:absolute;bottom:calc(100% + 8px);left:50%;transform:translateX(-50%);background:#1a1a1a;color:#f0f0f0;border:1px solid #555;border-radius:8px;padding:5px 11px;font-size:0.75rem;white-space:nowrap;box-shadow:0 4px 20px rgba(0,0,0,0.5);z-index:9999;pointer-events:none;width:max-content;transition:opacity 0.18s,visibility 0.18s;">人：${data.lucky.person}</span>
+                        </span>
+                    </div>
                 `;
             }
             const uBox = document.createElement('div');
@@ -15200,14 +15320,37 @@ async function showResultDetail(isNewDraw, dataOverride = null) {
             if (data.unlucky) {
                 uBox.innerHTML = `
                     <div class="lucky-title accent-text red-text" style="color:inherit">不運・注意</div>
-                    <div class="lucky-row accent-text"><span class="lucky-icon"><i class="bi bi-exclamation-triangle"></i></span>物：${data.unlucky.item}</div>
-                    <div class="lucky-row accent-text"><span class="lucky-icon"><i class="bi bi-x-octagon"></i></span>所：${data.unlucky.spot}</div>
-                    <div class="lucky-row accent-text"><span class="lucky-icon"><i class="bi bi-person-x"></i></span>人：${data.unlucky.person}</div>
+                    <div class="lucky-icons-row">
+                        <span class="lucky-icon-btn" ontouchstart="this.classList.add('active')" ontouchend="this.classList.remove('active')">
+                            <i class="bi bi-exclamation-triangle accent-text"></i>
+                            <span class="lucky-tooltip" style="display:block;visibility:hidden;opacity:0;position:absolute;bottom:calc(100% + 8px);left:50%;transform:translateX(-50%);background:#1a1a1a;color:#f0f0f0;border:1px solid #555;border-radius:8px;padding:5px 11px;font-size:0.75rem;white-space:nowrap;box-shadow:0 4px 20px rgba(0,0,0,0.5);z-index:9999;pointer-events:none;width:max-content;transition:opacity 0.18s,visibility 0.18s;">物：${data.unlucky.item}</span>
+                        </span>
+                        <span class="lucky-icon-btn" ontouchstart="this.classList.add('active')" ontouchend="this.classList.remove('active')">
+                            <i class="bi bi-x-octagon accent-text"></i>
+                            <span class="lucky-tooltip" style="display:block;visibility:hidden;opacity:0;position:absolute;bottom:calc(100% + 8px);left:50%;transform:translateX(-50%);background:#1a1a1a;color:#f0f0f0;border:1px solid #555;border-radius:8px;padding:5px 11px;font-size:0.75rem;white-space:nowrap;box-shadow:0 4px 20px rgba(0,0,0,0.5);z-index:9999;pointer-events:none;width:max-content;transition:opacity 0.18s,visibility 0.18s;">所：${data.unlucky.spot}</span>
+                        </span>
+                        <span class="lucky-icon-btn" ontouchstart="this.classList.add('active')" ontouchend="this.classList.remove('active')">
+                            <i class="bi bi-person-x accent-text"></i>
+                            <span class="lucky-tooltip" style="display:block;visibility:hidden;opacity:0;position:absolute;bottom:calc(100% + 8px);left:50%;transform:translateX(-50%);background:#1a1a1a;color:#f0f0f0;border:1px solid #555;border-radius:8px;padding:5px 11px;font-size:0.75rem;white-space:nowrap;box-shadow:0 4px 20px rgba(0,0,0,0.5);z-index:9999;pointer-events:none;width:max-content;transition:opacity 0.18s,visibility 0.18s;">人：${data.unlucky.person}</span>
+                        </span>
+                    </div>
                 `;
             }
             luckyArea.appendChild(lBox);
             luckyArea.appendChild(uBox);
             outer.appendChild(luckyArea);
+
+            // ツールチップ表示制御（hover + touch対応）
+            luckyArea.querySelectorAll('.lucky-icon-btn').forEach(btn => {
+                const tip = btn.querySelector('.lucky-tooltip');
+                if (!tip) return;
+                const show = () => { tip.style.visibility = 'visible'; tip.style.opacity = '1'; };
+                const hide = () => { tip.style.visibility = 'hidden'; tip.style.opacity = '0'; };
+                btn.addEventListener('mouseenter', show);
+                btn.addEventListener('mouseleave', hide);
+                btn.addEventListener('touchstart', (e) => { e.preventDefault(); show(); }, { passive: false });
+                btn.addEventListener('touchend', () => { setTimeout(hide, 1200); });
+            });
 
            // 8. フッター情報
             if (withFooter) {
