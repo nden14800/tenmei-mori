@@ -181,211 +181,236 @@
             border: 1px solid var(--card-border);
         }
 
-        /* --- ▼▼▼ サイドバー修正・最終デザイン調整版 ▼▼▼ --- */
+        /* ============================================
+           モダンサイドバー — 2025 リデザイン
+           ============================================ */
 
-    /* 1. サイドバー本体 (上下ピン留め・スクロール独立) */
+    /* サイドバー本体 */
     #sidebar {
-        /* アドレスバー対策：画面の上下に強制固定 */
         position: fixed;
-        top: 16px !important;
-        bottom: 16px !important;
-        left: 16px !important;
-        width: 80px; /* 閉じた状態 */
+        top: 12px !important;
+        bottom: 12px !important;
+        left: 12px !important;
+        width: 72px;
         height: auto !important;
-        
+
         background: var(--sidebar-bg);
-        backdrop-filter: blur(20px);
-        -webkit-backdrop-filter: blur(20px);
+        backdrop-filter: blur(24px);
+        -webkit-backdrop-filter: blur(24px);
         border: 1px solid var(--glass-border);
-        border-radius: 24px;
-        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+        border-radius: 20px;
+        box-shadow: 0 2px 12px rgba(0,0,0,0.07), 0 1px 3px rgba(0,0,0,0.04);
         z-index: 9999;
-        
+
         display: flex;
         flex-direction: column;
-        
-        /* スクロール設定 */
+
         overflow-y: auto !important;
         overflow-x: hidden !important;
         overscroll-behavior: contain;
         -webkit-overflow-scrolling: touch;
-        
-        padding: 24px 0;
-        
-        /* アニメーション */
-        transition: width 0.3s cubic-bezier(0.2, 0.8, 0.2, 1), 
-                    background-color 0.3s ease, 
-                    box-shadow 0.3s ease;
-    }
 
-    /* スクロールバー非表示 */
+        padding: 14px 0;
+
+        transition: width 0.35s cubic-bezier(0.4, 0, 0.2, 1),
+                    box-shadow 0.3s ease;
+        will-change: width;
+    }
     #sidebar::-webkit-scrollbar { display: none; }
     #sidebar { -ms-overflow-style: none; scrollbar-width: none; }
 
     /* ダークモード */
     .dark #sidebar {
-        background: rgba(30, 30, 30, 0.85);
-        border-color: rgba(255, 255, 255, 0.1);
-        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+        background: rgba(14, 14, 14, 0.93);
+        border-color: rgba(255,255,255,0.07);
+        box-shadow: 0 2px 20px rgba(0,0,0,0.5), 0 1px 3px rgba(0,0,0,0.3);
     }
 
-    /* 2. ナビゲーショングループ */
+    /* ナビゲーショングループ */
     .nav-group {
         display: flex;
         flex-direction: column;
-        width: 100%;
+        padding: 0 8px;
+        gap: 2px;
         flex-shrink: 0;
-        
-        /* ボタン間の隙間 */
-        gap: 6px; 
-        
-        /* 線は削除し、余白だけで区切る */
-        margin-bottom: 24px;
-        border: none !important; /* ★線を削除 */
-        padding-bottom: 0;
+        margin-bottom: 0;
+        border: none !important;
     }
-    
+
+    /* グループ間セパレーター線 */
+    .nav-group + .nav-group {
+        margin-top: 6px;
+    }
+    .nav-group + .nav-group::before {
+        content: '';
+        display: block;
+        height: 1px;
+        background: var(--glass-border);
+        margin: 0 0 8px;
+        flex-shrink: 0;
+    }
+
     /* 下部グループ */
     .nav-group-bottom {
-        margin-top: auto; 
-        margin-bottom: 0;
-        border: none !important; /* ★線を削除 */
-        padding-top: 0;
-        padding-bottom: env(safe-area-inset-bottom); 
+        margin-top: auto;
+        padding-bottom: env(safe-area-inset-bottom);
     }
 
-    /* 3. グループタイトル (普段は消す) */
+    /* グループタイトル — 閉じた時は高さゼロで非表示 */
     .nav-group-title {
-        /* ★重要: 閉じた時は完全に消して、クリックの邪魔をさせない */
-        display: none !important; 
+        display: block !important;
+        height: 0 !important;
+        min-height: 0 !important;
+        max-height: 0 !important;
+        opacity: 0 !important;
+        overflow: hidden !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        pointer-events: none !important;
+
+        font-family: 'Zen Old Mincho', serif;
+        font-size: 0.6rem;
+        font-weight: 700;
+        letter-spacing: 0.25em;
+        text-transform: uppercase;
+        color: var(--text-sub);
+        white-space: nowrap;
+
+        transition: opacity 0.25s ease, height 0.25s ease, margin 0.25s ease;
     }
 
-    /* 4. ボタン本体 */
+    /* ボタン本体 */
     .nav-btn {
-        display: flex;
-        align-items: center;
-        width: calc(100% - 16px); 
-        margin: 0 8px;
-        
-        /* 高さ固定 (ズレ防止) */
-        height: 44px; 
-        min-height: 44px;
-        max-height: 44px;
-        
-        padding: 0;
-        border-radius: 12px;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: flex-start !important;
+        width: 100% !important;
+        height: 40px !important;
+        min-height: 40px !important;
+        max-height: 40px !important;
+        padding: 0 !important;
+        margin: 0 !important;
+
+        border-radius: 10px;
         background: transparent;
         color: var(--text-sub);
-        text-decoration: none;
+        border: none;
         cursor: pointer;
-        transition: background-color 0.2s, color 0.2s;
         position: relative;
         overflow: hidden;
         white-space: nowrap;
         flex-shrink: 0;
-        
         -webkit-tap-highlight-color: transparent;
+
+        transition: background 0.15s ease, color 0.15s ease;
     }
 
-    /* アイコンボックス */
+    /* アイコンボックス — 幅を固定してアイコンを常に同位置に */
     .nav-icon-box {
-        width: 64px; 
-        height: 44px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 1.2rem;
-        flex-shrink: 0;
+        width: 56px !important;
+        height: 40px !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        font-size: 1.1rem;
+        flex-shrink: 0 !important;
+        margin: 0 !important;
+        background: transparent !important;
     }
-    
     .nav-icon-box svg {
-        width: 24px;
-        height: 24px;
+        width: 22px;
+        height: 22px;
         display: block;
         pointer-events: none;
     }
+    .nav-btn i, .nav-btn svg { margin: 0 !important; }
 
-    /* テキストラベル (普段は消す) */
+    /* テキストラベル */
     .nav-text {
+        display: block !important;
         font-family: 'Zen Old Mincho', serif;
         font-weight: 600;
-        font-size: 0.9rem;
-        opacity: 0;
-        white-space: nowrap;
-        pointer-events: none;
-        display: none; /* 閉じた時は非表示 */
+        font-size: 0.875rem;
+        white-space: nowrap !important;
+        overflow: hidden;
+        pointer-events: none !important;
+        padding-left: 2px !important;
+        opacity: 0 !important;
+        transition: opacity 0.2s ease !important;
     }
 
-    /* アクティブ状態 */
+    /* ホバー状態 */
+    .nav-btn:hover {
+        background: rgba(0, 0, 0, 0.05);
+        color: var(--text-main);
+    }
+    .dark .nav-btn:hover {
+        background: rgba(255, 255, 255, 0.07);
+        color: var(--text-main);
+    }
+
+    /* アクティブ状態 — 左インジケーターバー + 薄い赤背景 */
     .nav-btn.active {
-        background-color: var(--accent-red);
-        color: #ffffff;
-        box-shadow: 0 4px 12px rgba(185, 28, 28, 0.3);
+        background: rgba(185, 28, 28, 0.09) !important;
+        color: var(--accent-red) !important;
     }
-    #nav-login-btn.active {
-        background-color: #2563eb;
-        box-shadow: 0 4px 12px rgba(37, 99, 235, 0.4);
+    .nav-btn.active::before {
+        content: '';
+        position: absolute;
+        left: -1px;
+        top: 7px;
+        bottom: 7px;
+        width: 3px;
+        background: var(--accent-red);
+        border-radius: 0 4px 4px 0;
+    }
+    .dark .nav-btn.active {
+        background: rgba(185, 28, 28, 0.15) !important;
+    }
+    .nav-btn.active:hover {
+        background: rgba(185, 28, 28, 0.14) !important;
     }
 
-    /* --- ▼▼▼ PC(マウス)のみ展開する設定 ▼▼▼ --- */
+    /* ログインボタン アクティブ — 青バージョン */
+    #nav-login-btn.active {
+        background: rgba(37, 99, 235, 0.09) !important;
+        color: #3b82f6 !important;
+    }
+    #nav-login-btn.active::before {
+        background: #3b82f6;
+    }
+    .dark #nav-login-btn.active {
+        background: rgba(37, 99, 235, 0.15) !important;
+    }
+
+    /* PC ホバー展開 */
     @media (min-width: 1025px) and (hover: hover) {
         #sidebar:hover {
-            width: 260px;
-            background: rgba(255, 255, 255, 0.98);
-            box-shadow: 10px 0 40px rgba(0, 0, 0, 0.15);
+            width: 240px;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.1), 0 2px 8px rgba(0,0,0,0.05);
         }
         .dark #sidebar:hover {
-            background: rgba(30, 30, 30, 0.98);
+            box-shadow: 0 8px 40px rgba(0,0,0,0.55), 0 2px 8px rgba(0,0,0,0.35);
         }
-        
-        /* 展開時：タイトルを復活 & デザイン修正 */
-        #sidebar:hover .nav-group-title {
-            display: block !important;
-            
-            /* ★修正: 文字デザインを「しょぼくない」ものに戻す */
-            font-family: 'Zen Old Mincho', serif; /* 和風フォント */
-            font-size: 0.75rem; /* 少し大きく */
-            font-weight: 900;   /* 極太 */
-            letter-spacing: 0.15em; /* 文字間隔を広めに */
-            color: var(--text-sub);
-            opacity: 0.6;
-            
-            padding-left: 24px;
-            margin-bottom: 8px;
-            margin-top: 4px;
-            text-transform: uppercase;
-            white-space: nowrap;
-            
-            /* フェードインアニメーション */
-            animation: fadeInSimple 0.3s ease-out forwards;
-        }
-
-        /* 展開時：テキストを復活 */
+        /* テキスト表示 — 少し遅延してふわっと */
         #sidebar:hover .nav-text {
-            display: block;
-            opacity: 1;
-            transform: translateX(0);
-            /* 位置調整 */
-            padding-left: 4px;
-            animation: fadeInSimple 0.3s ease-out forwards;
+            opacity: 1 !important;
+            transition: opacity 0.22s 0.07s ease !important;
         }
-        
-        .nav-btn:hover {
-            background-color: rgba(0, 0, 0, 0.05);
-            color: var(--text-main);
-        }
-        .dark .nav-btn:hover {
-            background-color: rgba(255, 255, 255, 0.08);
-        }
-        .nav-btn.active:hover {
-            background-color: var(--accent-red); 
-            color: #fff;
+        /* グループタイトル表示 */
+        #sidebar:hover .nav-group-title {
+            height: 18px !important;
+            max-height: 18px !important;
+            opacity: 0.45 !important;
+            margin: 8px 4px 4px !important;
+            overflow: visible !important;
+            transition: opacity 0.22s 0.07s ease, height 0.22s ease, margin 0.22s ease !important;
         }
     }
-    
-    @keyframes fadeInSimple {
-        from { opacity: 0; transform: translateX(-5px); }
-        to { opacity: 1; transform: translateX(0); } /* 文字の透明度は親指定に依存 */
+
+    @keyframes fadeInSidebar {
+        from { opacity: 0; transform: translateX(-6px); }
+        to   { opacity: 1; transform: translateX(0); }
     }
 
     /* メインコンテンツ位置 */
@@ -394,18 +419,25 @@
         width: calc(100% - 96px);
         padding: 20px;
         padding-bottom: 100px;
-        transition: margin-left 0.3s;
+        transition: margin-left 0.35s cubic-bezier(0.4, 0, 0.2, 1);
     }
 
     /* タブレット・モバイル調整 */
     @media (max-width: 1024px) {
-        #sidebar { 
-            width: 80px !important;
+        #sidebar {
+            width: 66px !important;
+            top: 8px !important;
+            bottom: 8px !important;
+            left: 8px !important;
         }
-        /* 絶対に展開させない */
-        .nav-text, .nav-group-title { display: none !important; }
-        .nav-btn { justify-content: center; }
-        .nav-icon-box { margin: 0 auto; width: 100%; } 
+        .nav-text { display: none !important; }
+        .nav-group-title { display: none !important; height: 0 !important; }
+        .nav-btn { justify-content: center !important; }
+        .nav-icon-box { width: 100% !important; }
+        #main-content {
+            margin-left: 84px !important;
+            width: calc(100% - 84px) !important;
+        }
     }
 
         /* --- 共通コンポーネント --- */
@@ -2439,12 +2471,12 @@
     .profile-card-status { grid-column: span 4; }
 }
 
-/* 3. 編集フォーム (左下・メイン) */
+/* 3. 編集フォーム (中段・フル幅) */
 .profile-card-edit {
     grid-column: span 12;
 }
 @media (min-width: 768px) {
-    .profile-card-edit { grid-column: span 8; }
+    .profile-card-edit { grid-column: span 12; }
     .profile-card-secondary { grid-column: span 6; }
     .profile-card-danger { grid-column: span 6; }
 }
@@ -4988,454 +5020,19 @@ body.sidebar-collapsed #sidebar:hover .nav-group-title {
 
     </style>
 <style>
-    /* ▼▼▼ 修正: ホバー開閉用のスタイル設定 ▼▼▼ */
-    
-    /* デフォルト（閉じた状態）のスタイル */
-    body.sidebar-collapsed #sidebar { 
-        width: 80px !important; 
-        z-index: 1000; /* メインコンテンツより手前に */
+    /* sidebar-collapsed: メインコンテンツ位置オーバーライド */
+    body.sidebar-collapsed #main-content {
+        margin-left: 100px !important;
+        width: calc(100% - 100px) !important;
     }
-    body.sidebar-collapsed #sidebar .nav-text, 
-    body.sidebar-collapsed #sidebar .nav-group-title { 
-        display: none !important; 
-    }
-    body.sidebar-collapsed #sidebar .nav-btn { 
-        justify-content: center !important; 
-        padding: 12px 0 !important; 
-    }
-    body.sidebar-collapsed #sidebar .nav-btn i, 
-    body.sidebar-collapsed #sidebar .nav-btn svg { 
-        margin-right: 0 !important; 
-    }
-    
-    /* 閉じた状態でのメインコンテンツの位置（固定） */
-    body.sidebar-collapsed #main-content { 
-        margin-left: 110px !important; 
-        width: calc(100% - 110px) !important; 
-    }
-
-    /* --- PCのみ: ホバー時に展開する設定 --- */
-    @media (min-width: 1025px) {
-        /* サイドバーに触れたら幅を広げる */
-        body.sidebar-collapsed #sidebar:hover {
-            width: 260px !important;
-            box-shadow: 10px 0 25px rgba(0,0,0,0.15) !important; /* 浮き上がり強調 */
-            background: rgba(255, 255, 255, 0.95); /* 読みやすく少し不透明に */
-        }
-        .dark body.sidebar-collapsed #sidebar:hover {
-            background: rgba(30, 30, 30, 0.95);
-        }
-
-        /* テキストとタイトルを再表示 */
-        body.sidebar-collapsed #sidebar:hover .nav-text,
-        body.sidebar-collapsed #sidebar:hover .nav-group-title {
-            display: block !important;
-            animation: fadeInText 0.2s ease-out forwards; /* ふわっと表示 */
-        }
-
-        /* ボタンのレイアウトを左寄せに戻す */
-        body.sidebar-collapsed #sidebar:hover .nav-btn {
-            justify-content: flex-start !important;
-            padding: 12px 16px !important;
-        }
-
-        /* アイコンの間隔を戻す */
-        body.sidebar-collapsed #sidebar:hover .nav-btn i,
-        body.sidebar-collapsed #sidebar:hover .nav-btn svg {
-            margin-right: 14px !important;
-        }
-    }
-
-    /* テキスト表示用アニメーション */
-    @keyframes fadeInText {
-        from { opacity: 0; transform: translateX(-10px); }
-        to { opacity: 1; transform: translateX(0); }
-    }
-
-    /* モバイル用のトグルボタン非表示設定（念のため） */
-    @media (max-width: 1024px) { 
-        #sidebar-toggle-btn { display: none !important; } 
-    }
-
-/* ▼▼▼ 追加修正: 滑らかでモダンなホバー開閉アニメーション ▼▼▼ */
-
-    /* PC画面のみ適用 (スマホは下部固定のまま) */
-    @media (min-width: 1025px) {
-        
-        /* 1. サイドバー本体のアニメーション設定 */
-        #sidebar {
-            /* 物理的な幅の変更を滑らかに */
-            transition: width 0.4s cubic-bezier(0.2, 0.8, 0.2, 1), 
-                        background-color 0.3s ease, 
-                        box-shadow 0.3s ease !important;
-            overflow: hidden; /* 縮むときにはみ出た文字を隠す */
-            will-change: width; /* 描画最適化 */
-        }
-
-        /* 2. デフォルト（閉じた状態） */
-        body.sidebar-collapsed #sidebar {
-            width: 80px !important;
-            z-index: 1000;
-        }
-
-        /* 3. ホバー時（開いた状態） */
-        body.sidebar-collapsed #sidebar:hover {
-            width: 260px !important;
-            background: rgba(255, 255, 255, 0.95) !important; /* 読みやすく背景を濃く */
-            box-shadow: 10px 0 30px rgba(0, 0, 0, 0.1) !important; /* 浮き上がり効果 */
-        }
-        /* ダークモード時のホバー背景 */
-        .dark body.sidebar-collapsed #sidebar:hover {
-            background: rgba(30, 30, 30, 0.95) !important;
-            box-shadow: 10px 0 30px rgba(0, 0, 0, 0.3) !important;
-        }
-
-        /* --- 内部要素のアニメーション --- */
-
-        /* テキストとタイトルの共通設定 */
-        .nav-text, .nav-group-title {
-            white-space: nowrap; /* 折り返し防止 */
-            opacity: 1;
-            transform: translateX(0);
-            transition: opacity 0.2s ease, transform 0.2s ease;
-        }
-
-        /* nav-text は absolute で隠す（テキストのみ） */
-body.sidebar-collapsed #sidebar .nav-text {
-    opacity: 0 !important;
-    transform: translateX(10px);
-    pointer-events: none;
-    position: absolute;
-    left: 60px;
-}
-
-/* nav-group-title はスペースを保持したまま透明にする */
-body.sidebar-collapsed #sidebar .nav-group-title {
-    opacity: 0 !important;
-    transform: translateX(5px);
-    pointer-events: none;
-    position: static !important; /* スペースを保持することでボタン位置が開閉で変わらない */
-}
-
-        /* 閉じた状態：ボタン（アイコン）を中央寄せ */
-        body.sidebar-collapsed #sidebar .nav-btn {
-            justify-content: center !important;
-            padding: 12px 0 !important;
-            transition: all 0.3s ease;
-        }
-        body.sidebar-collapsed #sidebar .nav-btn i,
-        body.sidebar-collapsed #sidebar .nav-btn svg {
-            margin-right: 0 !important;
-            transition: margin-right 0.3s ease;
-        }
-
-        /* --- ホバー時（展開時）の復帰アニメーション --- */
-
-        /* テキストをふわっと表示（遅延させることで高級感を出す） */
-        body.sidebar-collapsed #sidebar:hover .nav-text,
-        body.sidebar-collapsed #sidebar:hover .nav-group-title {
-            opacity: 1 !important;
-            transform: translateX(0);
-            position: static; /* 元の配置に戻す */
-            transition: opacity 0.3s 0.1s ease-out, transform 0.3s 0.1s ease-out; /* 0.1秒待ってから表示 */
-        }
-
-        /* ボタンのレイアウトを左寄せに戻す */
-        body.sidebar-collapsed #sidebar:hover .nav-btn {
-            justify-content: flex-start !important;
-            padding: 12px 16px !important;
-        }
-
-        /* アイコンの右余白を戻す */
-        body.sidebar-collapsed #sidebar:hover .nav-btn i,
-        body.sidebar-collapsed #sidebar:hover .nav-btn svg {
-            margin-right: 14px !important;
-        }
-    }
-
-    /* スマホなどでトグルボタンが出ないようにする */
-    #sidebar-toggle-btn { display: none !important; }
-
-    /* ▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼
-       【最終完全修正版】サイドバー挙動・配置固定パッチ
-       ・開閉でアイコン位置を1ミリも動かさない
-       ・畳んでいる時のクリック不可問題を解消
-       ▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼ */
-
-    /* 1. 【重要】透明になった要素がクリックを邪魔しないようにする */
-    /* これで「畳んでいる時に押せない」問題が直ります */
-    .nav-group-title, .nav-text {
-        pointer-events: none !important; 
-    }
-    /* 開いている時だけ文字のクリック判定を戻すなら以下ですが、
-       基本ボタンごと押すので文字自体はnoneのままでOKです */
-
-    /* 2. カテゴリタイトル: 見えなくても「高さ」と「場所」を死守する */
-    .nav-group-title {
-        display: block !important;     /* 絶対に消さない */
-        height: 20px !important;       /* 高さ固定 */
-        margin-bottom: 8px !important; /* 余白固定 */
-        margin-top: 4px !important;    
-        padding-left: 24px !important;
-        
-        font-family: 'Zen Old Mincho', serif;
-        font-size: 0.75rem;
-        font-weight: 900;
-        letter-spacing: 0.15em;
-        color: var(--text-sub);
-        
-        white-space: nowrap;
-        overflow: hidden;
-        
-        /* アニメーション */
-        transition: opacity 0.2s ease !important;
-        opacity: 1;
-    }
-
-    /* 閉じた時は透明にするだけ（場所は残る＝ズレない） */
-    body.sidebar-collapsed #sidebar:not(:hover) .nav-group-title {
-        opacity: 0 !important;
-    }
-
-    /* 3. ボタンの配置: 常に「左寄せ」で統一（中央寄せの挙動を完全に消す） */
-    .nav-btn {
-        display: flex !important;
-        justify-content: flex-start !important; /* 常に左始まり！ */
-        align-items: center !important;
-        
-        width: calc(100% - 16px) !important; 
-        margin: 0 8px !important;
-        height: 44px !important; 
-        padding: 0 !important;   /* パディングで位置調整しない */
-    }
-
-    /* 4. アイコンの箱: 幅を「64px」に完全固定 */
-    /* これにより、サイドバーが伸び縮みしてもアイコンは
-       「左端から常に同じ距離」に固定されます */
-    .nav-icon-box {
-        width: 64px !important;  /* 閉じた時のボタン幅に合わせて固定 */
-        height: 44px !important;
-        
-        display: flex !important;
-        align-items: center !important;
-        justify-content: center !important; /* 箱の中では中央 */
-        
-        flex-shrink: 0 !important; /* 絶対に縮ませない */
-        margin: 0 !important;      /* 余計な余白を消す */
-        background: transparent !important;
-    }
-
-    /* アイコン自体の余白もゼロにする（干渉防止） */
-    .nav-btn i, .nav-btn svg {
-        margin: 0 !important;
-    }
-
-    /* 5. テキスト: 場所は nav-btn の中に確保し、閉じたら透明にする */
-    .nav-text {
-        display: block !important; /* 消さない */
-        white-space: nowrap !important;
-        padding-left: 4px !important;
-        
-        transition: opacity 0.2s ease !important;
-        opacity: 1;
-    }
-    
-    /* 閉じた時は透明にする */
-    body.sidebar-collapsed #sidebar:not(:hover) .nav-text {
-        opacity: 0 !important;
-    }
-
-    /* 6. サイドバー本体のアニメーション */
-    #sidebar {
-        transition: width 0.3s cubic-bezier(0.2, 0.8, 0.2, 1), 
-                    background-color 0.3s ease, 
-                    box-shadow 0.3s ease !important;
-        will-change: width;
-        overflow: hidden; /* はみ出し防止 */
-    }
-
-    /* --- PC設定 (幅の指定) --- */
-    @media (min-width: 1025px) {
-        /* 閉じた時 */
-        body.sidebar-collapsed #sidebar { 
-            width: 80px !important; 
-        }
-        /* 開いた時（ホバー時） */
-        body.sidebar-collapsed #sidebar:hover {
-            width: 260px !important;
-        }
-        
-        /* 開いた時はタイトルを少し薄く表示 */
-        body.sidebar-collapsed #sidebar:hover .nav-group-title {
-            opacity: 0.6 !important;
-        }
-    }
-
-    /* --- スマホ設定 (常に閉じた見た目だが、操作可能にする) --- */
     @media (max-width: 1024px) {
-        /* スマホは開閉しないので、タイトルを完全に消して詰める（ズレ問題とは無関係） */
-        .nav-group-title {
-            display: none !important; 
-        }
-        .nav-text {
-            display: none !important;
-        }
-        
-        /* スマホはアイコン中央揃え */
-        .nav-btn {
-            justify-content: center !important;
-        }
-        .nav-icon-box {
-            width: 100% !important;
+        body.sidebar-collapsed #main-content {
+            margin-left: 84px !important;
+            width: calc(100% - 84px) !important;
         }
     }
 
-    /* ▼▼▼ カテゴリタイトルのデザイン修正 (画像合わせ) ▼▼▼ */
-    .nav-group-title {
-        /* フォントと文字のデザイン */
-        font-family: 'Zen Old Mincho', serif !important; /* 和風明朝体 */
-        font-size: 0.65rem !important;      /* 文字サイズを小さく上品に */
-        font-weight: 700 !important;        /* 細すぎず、くっきりとした太さ */
-        letter-spacing: 0.25em !important;  /* 文字の間隔を広く空ける */
-        text-transform: uppercase !important; /* 英語小文字を強制的に大文字にする */
-        color: #9ca3af !important;          /* 落ち着いた薄いグレー */
-        
-        /* 配置と余白の調整 */
-        display: block !important;          /* 常に存在させる */
-        padding-left: 28px !important;      /* アイコンのラインに合わせる左余白 */
-        margin-top: 18px !important;        /* 前のグループとの間隔 */
-        margin-bottom: 8px !important;      /* 下のボタンとの間隔 */
-        line-height: 1 !important;
-        
-        /* アニメーション設定 */
-        transition: opacity 0.3s ease, transform 0.3s ease !important;
-        white-space: nowrap !important;     /* 折り返し禁止 */
-        pointer-events: none !important;    /* クリックの邪魔をしない設定 */
-    }
-
-    /* ダークモード時の文字色調整 */
-    .dark .nav-group-title {
-        color: #6b7280 !important;
-    }
-
-    /* 【PC】閉じた状態：透明にして隠す（位置ズレ防止のため消さずに透明化） */
-    body.sidebar-collapsed #sidebar:not(:hover) .nav-group-title {
-        opacity: 0 !important;
-        transform: translateX(5px); /* 閉じる時は少し右へフェードアウト */
-    }
-
-    /* 【PC】開いた状態（ホバー時）：ふんわり表示 */
-    body.sidebar-collapsed #sidebar:hover .nav-group-title {
-        opacity: 1 !important;
-        transform: translateX(0);
-    }
-
-    /* 【タブレット・スマホ】強制非表示設定を解除 */
-    @media (max-width: 1024px) {
-        .nav-group-title {
-            display: block !important; /* 画面が狭くても表示を許可 */
-        }
-        /* スマホ等でサイドバーが閉じている時は透明に */
-        body.sidebar-collapsed #sidebar .nav-group-title {
-            opacity: 0 !important;
-        }
-        /* サイドバーが開いている状態なら表示 */
-        body:not(.sidebar-collapsed) #sidebar .nav-group-title {
-            opacity: 1 !important;
-        }
-    }
-
-    /* ====== 決定版バグ修正：透明タイトルの不要スペース完全除去 ====== */
-
-/* タブレット・モバイル：タイトルを完全に消してスペースゼロにする */
-@media (max-width: 1024px) {
-    #sidebar .nav-group-title {
-        display: none !important;
-        height: 0 !important;
-        min-height: 0 !important;
-        margin: 0 !important;
-        padding: 0 !important;
-        overflow: hidden !important;
-    }
-}
-
-/* PC：閉じた状態（ホバー前）もスペースゼロ */
-@media (min-width: 1025px) {
-    body.sidebar-collapsed #sidebar:not(:hover) .nav-group-title {
-        height: 0 !important;
-        min-height: 0 !important;
-        margin: 0 !important;
-        padding: 0 !important;
-        opacity: 0 !important;
-        overflow: hidden !important;
-    }
-    /* ホバー展開時は元のデザインに戻す */
-    body.sidebar-collapsed #sidebar:hover .nav-group-title {
-        display: block !important;
-        height: 20px !important;
-        margin-top: 18px !important;
-        margin-bottom: 8px !important;
-        padding-left: 28px !important;
-        opacity: 1 !important;
-        overflow: visible !important;
-    }
-}
-
-    /* ===== 完全決定版：開閉でスペースを完全一致させる ===== */
-
-#sidebar .nav-group-title,
-body.sidebar-collapsed #sidebar .nav-group-title,
-body.sidebar-collapsed #sidebar:not(:hover) .nav-group-title {
-    display: block !important;
-    height: 20px !important;
-    min-height: 20px !important;
-    max-height: 20px !important;
-    margin-top: 18px !important;
-    margin-bottom: 8px !important;
-    padding-left: 0 !important;        /* 畳んだ時は中央寄せ */
-    padding-top: 0 !important;
-    padding-bottom: 0 !important;
-    position: static !important;
-    overflow: hidden !important;
-    transform: none !important;
-    pointer-events: none !important;
-    
-    /* 小さく表示 */
-    opacity: 0.5 !important;           /* 少し薄め */
-    font-size: 0.45rem !important;     /* 小さく */
-    letter-spacing: 0.2em !important;
-    text-align: center !important;     /* 中央揃え */
-}
-
-/* ホバーで開いた時は通常サイズに戻す */
-body.sidebar-collapsed #sidebar:hover .nav-group-title {
-    opacity: 1 !important;
-    font-size: 0.65rem !important;
-    letter-spacing: 0.25em !important;
-    text-align: left !important;
-    padding-left: 28px !important;
-}
-
-/* スマホも同様 */
-@media (max-width: 1024px) {
-    #sidebar .nav-group-title {
-        display: block !important;
-        height: 20px !important;
-        min-height: 20px !important;
-        max-height: 20px !important;
-        margin-top: 18px !important;
-        margin-bottom: 8px !important;
-        padding-left: 0 !important;
-        opacity: 0.5 !important;
-        font-size: 0.45rem !important;
-        letter-spacing: 0.2em !important;
-        text-align: center !important;
-        overflow: hidden !important;
-        position: static !important;
-    }
-}
-
-    /* --- 12星座占い カレンダー大型化 (本物のカレンダー形式) --- */
+        /* --- 12星座占い カレンダー大型化 (本物のカレンダー形式) --- */
         .zodiac-large-calendar {
             width: 100%;
             background-color: rgba(128, 128, 128, 0.02);
@@ -7027,11 +6624,11 @@ body.sidebar-collapsed #sidebar:hover .nav-group-title {
                 </div>
 
                 <!-- 判定フォームカード -->
-                <div class="bento-card mb-6 bg-zinc-950 border border-zinc-800 border-t-2 border-t-yellow-600">
-                    <div class="flex items-center gap-2 mb-4 border-b border-zinc-800 pb-3">
+                <div class="bento-card mb-6" style="background:var(--card-bg);border:1px solid var(--card-border);border-top:2px solid #ca8a04;">
+                    <div class="flex items-center gap-2 mb-4 pb-3" style="border-bottom:1px solid var(--card-border);">
                         <i class="bi bi-search text-lg" style="color: var(--accent-gold);"></i>
-                        <h3 class="font-bold text-sm tracking-wide text-zinc-200">あなたの順位をチェック</h3>
-                        <span class="ml-auto text-[10px] text-zinc-500 font-bold">星座と血液型を選んで判定</span>
+                        <h3 class="font-bold text-sm tracking-wide" style="color:var(--text-main);">あなたの順位をチェック</h3>
+                        <span class="ml-auto text-[10px] font-bold" style="color:var(--text-sub);">星座と血液型を選んで判定</span>
                     </div>
                     <div class="zodiac-input-grid">
                         <div style="grid-column: span 5;">
@@ -7063,17 +6660,17 @@ body.sidebar-collapsed #sidebar:hover .nav-group-title {
                         </div>
                     </div>
                     <!-- 結果表示エリア -->
-                    <div id="my-rank-result" class="hidden pt-6 border-t border-zinc-800"></div>
+                    <div id="my-rank-result" class="hidden pt-6" style="border-top:1px solid var(--card-border);"></div>
                 </div>
 
                 <!-- お気に入りセクション -->
                 <div id="favorites-section" class="hidden mb-6">
-                    <div class="bento-card bg-zinc-950 border border-zinc-800 border-t-2 border-t-yellow-600">
-                        <div class="flex items-center justify-between mb-4 border-b border-zinc-800 pb-3">
-                            <h3 class="text-sm font-bold text-yellow-400 flex items-center gap-2">
-                                <i class="bi bi-star-fill"></i> お気に入り <span class="text-xs text-zinc-500 font-normal ml-1">(最大5件)</span>
+                    <div class="bento-card" style="background:var(--card-bg);border:1px solid var(--card-border);border-top:2px solid #ca8a04;">
+                        <div class="flex items-center justify-between mb-4 pb-3" style="border-bottom:1px solid var(--card-border);">
+                            <h3 class="text-sm font-bold flex items-center gap-2" style="color:#ca8a04;">
+                                <i class="bi bi-star-fill"></i> お気に入り <span class="text-xs font-normal ml-1" style="color:var(--text-sub);">(最大5件)</span>
                             </h3>
-                            <span id="fav-status-badge" class="text-[10px] bg-zinc-800 border border-zinc-700 text-zinc-400 px-2 py-1 rounded"></span>
+                            <span id="fav-status-badge" class="text-[10px] px-2 py-1 rounded" style="background:var(--card-bg);border:1px solid var(--card-border);color:var(--text-sub);"></span>
                         </div>
                         <div id="favorites-list" class="space-y-4"></div>
                     </div>
@@ -7082,8 +6679,8 @@ body.sidebar-collapsed #sidebar:hover .nav-group-title {
                 <!-- 全ランキングリスト -->
                 <div class="flex items-center gap-3 mb-4 px-1">
                     <i class="bi bi-trophy-fill text-yellow-500 text-xl"></i>
-                    <h3 class="font-bold text-xl text-zinc-100" style="font-family: 'Zen Old Mincho', serif;">本日の順位（全48通り）</h3>
-                    <div class="flex-1 h-px bg-zinc-800"></div>
+                    <h3 class="font-bold text-xl" style="font-family: 'Zen Old Mincho', serif; color:var(--text-main);">本日の順位（全48通り）</h3>
+                    <div class="flex-1 h-px" style="background:var(--card-border);"></div>
                 </div>
 
                 <!-- TOP3表示用 -->
