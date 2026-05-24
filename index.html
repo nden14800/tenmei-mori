@@ -1415,6 +1415,16 @@
     box-shadow: 0 20px 35px rgba(0,0,0,0.15);
 }
 
+.column-hero-card {
+    transition: all 0.35s cubic-bezier(0.25, 0.8, 0.25, 1);
+    cursor: pointer;
+}
+.column-hero-card:hover {
+    transform: translateY(-4px) scale(1.005);
+    border-color: var(--accent-gold);
+    box-shadow: 0 20px 35px rgba(0,0,0,0.15);
+}
+
 /* 1. ニュース検索エリア (履歴のコントロールバーと統一) */
 .news-control-bar {
     background: rgba(255, 255, 255, 0.7);
@@ -6394,14 +6404,16 @@ body.sidebar-collapsed #sidebar:hover .nav-group-title {
                     html:not(.dark) #view-history .bento-card:nth-child(2) .text-white,
                     html:not(.dark) #view-history .bento-card:first-child .text-white,
                     html:not(.dark) #view-prefecture .bento-card:first-child .text-white,
-                    html:not(.dark) #view-news .bento-card:first-child .text-white {
+                    html:not(.dark) #view-news .bento-card:first-child .text-white,
+                    html:not(.dark) #view-column .bento-card:first-child .text-white {
                         color: var(--text-main) !important;
                     }
                     /* アイコンボックス内のアイコンは白を維持（背景色付きの丸ボックス内） */
                     html:not(.dark) #view-zodiac .bento-card:first-child .rounded-2xl i.text-white,
                     html:not(.dark) #view-omamori .bento-card:first-child .rounded-2xl i.text-white,
                     html:not(.dark) #view-prefecture .bento-card:first-child .rounded-2xl i.text-white,
-                    html:not(.dark) #view-news .bento-card:first-child .rounded-2xl i.text-white {
+                    html:not(.dark) #view-news .bento-card:first-child .rounded-2xl i.text-white,
+                    html:not(.dark) #view-column .bento-card:first-child .rounded-2xl i.text-white {
                         color: white !important;
                     }
                     html:not(.dark) #view-zodiac .bento-card:first-child .text-zinc-300,
@@ -6411,7 +6423,8 @@ body.sidebar-collapsed #sidebar:hover .nav-group-title {
                     html:not(.dark) #view-history .bento-card:nth-child(2) .text-zinc-300,
                     html:not(.dark) #view-history .bento-card:first-child .text-zinc-300,
                     html:not(.dark) #view-prefecture .bento-card:first-child .text-zinc-300,
-                    html:not(.dark) #view-news .bento-card:first-child .text-zinc-300 {
+                    html:not(.dark) #view-news .bento-card:first-child .text-zinc-300,
+                    html:not(.dark) #view-column .bento-card:first-child .text-zinc-300 {
                         color: var(--text-sub) !important;
                     }
                     html:not(.dark) #view-zodiac .bento-card:first-child .text-zinc-500,
@@ -6422,6 +6435,7 @@ body.sidebar-collapsed #sidebar:hover .nav-group-title {
                     html:not(.dark) #view-history .bento-card:first-child .text-zinc-500,
                     html:not(.dark) #view-prefecture .bento-card:first-child .text-zinc-500,
                     html:not(.dark) #view-news .bento-card:first-child .text-zinc-500,
+                    html:not(.dark) #view-column .bento-card:first-child .text-zinc-500,
                     html:not(.dark) #view-prefecture .bento-card:first-child .text-zinc-600 {
                         color: var(--text-sub) !important;
                     }
@@ -6432,7 +6446,8 @@ body.sidebar-collapsed #sidebar:hover .nav-group-title {
                     html:not(.dark) #view-stats .bento-card:first-child p {
                         color: var(--text-sub) !important;
                     }
-                    html:not(.dark) #view-news .bento-card:first-child h2 {
+                    html:not(.dark) #view-news .bento-card:first-child h2,
+                    html:not(.dark) #view-column .bento-card:first-child h2 {
                         color: var(--text-main) !important;
                     }
 
@@ -6480,6 +6495,17 @@ body.sidebar-collapsed #sidebar:hover .nav-group-title {
                         border-top-color: rgba(185,28,28,0.15) !important;
                     }
 
+
+                    /* ---- 神籤草子 Heroカード（ライトモード） ---- */
+                    html:not(.dark) .column-hero-card {
+                        background: linear-gradient(135deg, #f5f7ff 0%, #f8fafc 55%, #fffaf0 100%) !important;
+                        border-color: var(--card-border) !important;
+                        box-shadow: 0 8px 30px rgba(0,0,0,0.06) !important;
+                    }
+                    html:not(.dark) .column-hero-card:hover {
+                        border-color: var(--accent-gold) !important;
+                        box-shadow: 0 16px 36px rgba(0,0,0,0.12) !important;
+                    }
 
                     /* ---- 社務所だより Heroカード（ライトモード） ---- */
                     html:not(.dark) .news-hero-card {
@@ -7802,9 +7828,28 @@ body.sidebar-collapsed #sidebar:hover .nav-group-title {
 
         <!-- ビュー: 神籤草子（検索・ページ機能付き） -->
 <section id="view-column" class="view-section max-w-4xl mx-auto relative pb-20">
-    <div class="text-center mb-8">
-        <h2 class="text-3xl font-black mb-2 tracking-widest" style="font-family: 'Zen Old Mincho'">神籤草子</h2>
-        <p class="text-xs font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest">SACRED COLUMNS</p>
+    <div class="bento-card column-hero-card mb-6 relative overflow-hidden bg-gradient-to-br from-indigo-950 via-zinc-900 to-black border border-zinc-800 text-white" style="padding: 2rem;">
+        <div class="absolute top-0 right-0 w-72 h-72 opacity-15 pointer-events-none" style="background: radial-gradient(circle, #6366f1 0%, transparent 70%);"></div>
+        <div class="absolute bottom-0 left-0 w-48 h-48 opacity-10 pointer-events-none" style="background: radial-gradient(circle, #d4af37 0%, transparent 70%);"></div>
+        <div class="relative z-10 flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
+            <div class="flex-1">
+                <p class="text-xs font-bold tracking-[0.3em] uppercase mb-2" style="color: var(--accent-gold);">SACRED COLUMNS</p>
+                <h2 class="text-3xl md:text-4xl font-black mb-3 flex items-center gap-3" style="font-family: 'Zen Old Mincho', serif;">
+                    <span class="text-4xl text-indigo-400"><i class="bi bi-book-half"></i></span>
+                    <span class="text-white">神籤草子</span>
+                </h2>
+                <p class="text-sm text-zinc-300 leading-relaxed max-w-xl" style="font-family: 'Shippori Mincho', serif;">
+                    おみくじ・神社・暦・作法を静かに掘り下げる、
+                    杜の読み物と学びの書架です。
+                </p>
+            </div>
+            <div class="flex-shrink-0 text-center flex flex-col items-center gap-2">
+                <div class="w-20 h-20 rounded-2xl flex items-center justify-center" style="background: linear-gradient(135deg, #3730a3, #4f46e5); box-shadow: 0 0 24px rgba(99,102,241,0.35);">
+                    <i class="bi bi-journal-richtext text-4xl text-white"></i>
+                </div>
+                <p class="text-xs text-zinc-500 font-bold tracking-widest">神籤文庫</p>
+            </div>
+        </div>
     </div>
     
     <!-- 検索コントロールバー (ニュースと共通デザイン) -->
