@@ -51,7 +51,13 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Tailwind Config -->
     <script>
-    function toggleSidebar() { document.body.classList.toggle("sidebar-collapsed"); }
+    function toggleSidebar() {
+        if (document.body.classList.contains('sidebar-button-mode')) {
+            document.body.classList.toggle('sidebar-pinned');
+        } else {
+            document.body.classList.toggle('sidebar-collapsed');
+        }
+    }
       tailwind.config = {
         darkMode: 'class',
       }
@@ -448,7 +454,6 @@
     .nav-toggle-area {
         padding: 0 8px;
         margin-bottom: 6px;
-        border-bottom: 1.5px dashed var(--card-border);
         padding-bottom: 8px;
         flex-shrink: 0;
     }
@@ -492,6 +497,41 @@
     @media (max-width: 1024px) {
         .nav-toggle-area { padding: 0 0 8px; margin-bottom: 4px; }
     }
+
+    /* ===== サイドバー：ボタン切替モード ===== */
+    /* ホバー展開を無効化 */
+    body.sidebar-button-mode #sidebar:hover {
+        width: 72px !important;
+        box-shadow: 0 2px 12px rgba(0,0,0,0.07), 0 1px 3px rgba(0,0,0,0.04) !important;
+    }
+    .dark body.sidebar-button-mode #sidebar:hover {
+        box-shadow: 0 2px 20px rgba(0,0,0,0.5), 0 1px 3px rgba(0,0,0,0.3) !important;
+    }
+    body.sidebar-button-mode #sidebar:hover .nav-text { opacity: 0 !important; transition: none !important; }
+    body.sidebar-button-mode #sidebar:hover .nav-group-title { height: 0 !important; opacity: 0 !important; margin: 0 !important; }
+    body.sidebar-button-mode #sidebar:hover .nav-toggle-end-icon { opacity: 0 !important; }
+    body.sidebar-button-mode #sidebar:hover .nav-toggle-label { opacity: 0 !important; }
+    body.sidebar-button-mode #sidebar:hover .nav-toggle-btn { opacity: 0.6 !important; }
+    body.sidebar-button-mode #sidebar:hover .toggle-icon-closed { display: flex !important; align-items: center; justify-content: center; }
+    body.sidebar-button-mode #sidebar:hover .toggle-icon-open { display: none !important; }
+    /* ボタンモード：ピン留め展開時 */
+    body.sidebar-button-mode.sidebar-pinned #sidebar {
+        width: 240px !important;
+        box-shadow: 0 8px 32px rgba(0,0,0,0.1), 0 2px 8px rgba(0,0,0,0.05) !important;
+    }
+    .dark body.sidebar-button-mode.sidebar-pinned #sidebar {
+        box-shadow: 0 8px 40px rgba(0,0,0,0.55), 0 2px 8px rgba(0,0,0,0.35) !important;
+    }
+    body.sidebar-button-mode.sidebar-pinned #sidebar .nav-text { opacity: 1 !important; transition: opacity 0.22s 0.07s ease !important; }
+    body.sidebar-button-mode.sidebar-pinned #sidebar .nav-group-title {
+        height: 18px !important; max-height: 18px !important; opacity: 0.45 !important;
+        margin: 8px 4px 4px !important; overflow: visible !important;
+    }
+    body.sidebar-button-mode.sidebar-pinned #sidebar .nav-toggle-end-icon { opacity: 1 !important; }
+    body.sidebar-button-mode.sidebar-pinned #sidebar .nav-toggle-label { opacity: 1 !important; }
+    body.sidebar-button-mode.sidebar-pinned #sidebar .nav-toggle-btn { opacity: 1 !important; }
+    body.sidebar-button-mode.sidebar-pinned #sidebar .toggle-icon-closed { display: none !important; }
+    body.sidebar-button-mode.sidebar-pinned #sidebar .toggle-icon-open { display: flex !important; align-items: center; justify-content: center; }
 
     /* メインコンテンツ位置 */
     #main-content {
@@ -2510,7 +2550,7 @@
     padding-bottom: 60px;
 }
 
-/* 1. IDカード (左上) */
+/* 1. IDカード (上段フル幅) */
 .profile-card-identity {
     grid-column: span 12;
     background: linear-gradient(135deg, var(--card-bg) 60%, var(--bg-color) 100%);
@@ -2518,9 +2558,6 @@
     flex-direction: row; /* PCは横並び */
     align-items: center;
     gap: 24px;
-}
-@media (min-width: 768px) {
-    .profile-card-identity { grid-column: span 8; }
 }
 
 /* アイコンリング */
@@ -2538,25 +2575,25 @@
     box-shadow: 0 4px 10px rgba(0,0,0,0.1);
 }
 
-/* 2. ステータスカード (右上) */
+/* 2. 環境設定カード */
 .profile-card-status {
     grid-column: span 12;
     background-color: var(--card-bg);
     display: flex;
     flex-direction: column;
-    justify-content: center;
+    justify-content: flex-start;
     align-items: flex-start;
 }
 @media (min-width: 768px) {
-    .profile-card-status { grid-column: span 4; }
+    .profile-card-status { grid-column: span 6; }
 }
 
-/* 3. 編集フォーム (中段・フル幅) */
+/* 3. 編集フォーム (中段) */
 .profile-card-edit {
     grid-column: span 12;
 }
 @media (min-width: 768px) {
-    .profile-card-edit { grid-column: span 12; }
+    .profile-card-edit { grid-column: span 6; }
     .profile-card-secondary { grid-column: span 6; }
     .profile-card-danger { grid-column: span 6; }
 }
@@ -5739,8 +5776,10 @@ body.sidebar-collapsed #sidebar:hover .nav-group-title {
             <div class="nav-icon-box nav-icon-kanji"><span>天</span></div>
             <span class="nav-text nav-toggle-label">天命乃杜</span>
             <div class="nav-icon-box nav-toggle-end-icon">
-                <i class="bi bi-layout-sidebar-inset-reverse toggle-icon-closed"></i>
-                <i class="bi bi-layout-sidebar-inset toggle-icon-open"></i>
+                <!-- toggle-icon-closed: sidebar-minimalistic -->
+                <svg class="toggle-icon-closed" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" transform="rotate(180)" width="20" height="20" style="display:flex;align-items:center;justify-content:center;pointer-events:none"><path fill-rule="evenodd" clip-rule="evenodd" d="M9.94358 2.25C8.10583 2.24998 6.65019 2.24997 5.51098 2.40314C4.33856 2.56076 3.38961 2.89288 2.64124 3.64124C1.89288 4.38961 1.56076 5.33856 1.40314 6.51098C1.24997 7.65019 1.24998 9.10582 1.25 10.9436V13.0564C1.24998 14.8942 1.24997 16.3498 1.40314 17.489C1.56076 18.6614 1.89288 19.6104 2.64124 20.3588C3.38961 21.1071 4.33856 21.4392 5.51098 21.5969C6.65018 21.75 8.1058 21.75 9.94354 21.75H14.0564C14.3706 21.75 14.6738 21.75 14.966 21.7492C14.9773 21.7497 14.9886 21.75 15 21.75C15.0129 21.75 15.0257 21.7497 15.0384 21.749C16.4224 21.7448 17.5607 21.7217 18.489 21.5969C19.6614 21.4392 20.6104 21.1071 21.3588 20.3588C22.1071 19.6104 22.4392 18.6614 22.5969 17.489C22.75 16.3498 22.75 14.8942 22.75 13.0565V10.9436C22.75 9.10585 22.75 7.65018 22.5969 6.51098C22.4392 5.33856 22.1071 4.38961 21.3588 3.64124C20.6104 2.89288 19.6614 2.56076 18.489 2.40314C17.5607 2.27833 16.4224 2.25523 15.0384 2.25096C15.0257 2.25032 15.0129 2.25 15 2.25C14.9886 2.25 14.9773 2.25025 14.966 2.25076C14.6737 2.25 14.3707 2.25 14.0564 2.25H9.94358ZM14.25 3.75002C14.1677 3.75 14.0844 3.75 14 3.75H10C8.09318 3.75 6.73851 3.75159 5.71085 3.88976C4.70476 4.02503 4.12511 4.27869 3.7019 4.7019C3.27869 5.12511 3.02503 5.70476 2.88976 6.71085C2.75159 7.73851 2.75 9.09318 2.75 11V13C2.75 14.9068 2.75159 16.2615 2.88976 17.2892C3.02503 18.2952 3.27869 18.8749 3.7019 19.2981C4.12511 19.7213 4.70476 19.975 5.71085 20.1102C6.73851 20.2484 8.09318 20.25 10 20.25H14C14.0844 20.25 14.1677 20.25 14.25 20.25L14.25 3.75002ZM15.75 20.2443C16.7836 20.2334 17.6082 20.2018 18.2892 20.1102C19.2952 19.975 19.8749 19.7213 20.2981 19.2981C20.7213 18.8749 20.975 18.2952 21.1102 17.2892C21.2484 16.2615 21.25 14.9068 21.25 13V11C21.25 9.09318 21.2484 7.73851 21.1102 6.71085C20.975 5.70476 20.7213 5.12511 20.2981 4.7019C19.8749 4.27869 19.2952 4.02503 18.2892 3.88976C17.6082 3.79821 16.7836 3.76662 15.75 3.75573L15.75 20.2443Z" fill="currentColor"/></svg>
+                <!-- toggle-icon-open: sidebar-left -->
+                <svg class="toggle-icon-open" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" width="20" height="20" style="display:none;align-items:center;justify-content:center;pointer-events:none"><path d="M21.97 15V9C21.97 4 19.97 2 14.97 2H8.96997C3.96997 2 1.96997 4 1.96997 9V15C1.96997 20 3.96997 22 8.96997 22H14.97C19.97 22 21.97 20 21.97 15Z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M7.96997 2V22" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M14.97 9.43994L12.41 11.9999L14.97 14.5599" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
             </div>
         </button>
     </div>
@@ -8666,7 +8705,13 @@ body.sidebar-collapsed #sidebar:hover .nav-group-title {
 
     <!-- JavaScript ロジック -->
     <script>
-    function toggleSidebar() { document.body.classList.toggle("sidebar-collapsed"); }
+    function toggleSidebar() {
+        if (document.body.classList.contains('sidebar-button-mode')) {
+            document.body.classList.toggle('sidebar-pinned');
+        } else {
+            document.body.classList.toggle('sidebar-collapsed');
+        }
+    }
         // ==========================================
         //  設定: Cloudflare WorkerのURL
         // ==========================================
@@ -17805,7 +17850,7 @@ async function renderSettingsDashboard() {
     container.innerHTML = `
         <div class="profile-bento-grid">
             
-            <!-- 1. Identity Card (身分証) -->
+            <!-- 1. Identity Card (身分証) - フル幅 -->
             <div class="stats-card-interactive profile-card-identity p-6 rounded-2xl">
                 <div class="profile-icon-ring">
                     <i class="bi bi-person-fill"></i>
@@ -17821,14 +17866,14 @@ async function renderSettingsDashboard() {
                 </div>
             </div>
 
-            <!-- ★NEW: 環境設定 (Formal Settings) -->
+            <!-- 2. 環境設定 (左) -->
             <div class="stats-card-interactive profile-card-status p-6 rounded-2xl bg-white dark:bg-zinc-900 border-l-4 border-l-indigo-500">
                 <div class="flex items-center gap-2 mb-4 text-indigo-600 dark:text-indigo-400">
                     <i class="bi bi-sliders text-xl"></i>
                     <h4 class="font-bold text-sm">環境設定</h4>
                 </div>
                 
-                <div class="space-y-4">
+                <div class="space-y-4 w-full">
                     <!-- 1. 宵闇の刻 (ダークモード) -->
                     <div class="flex justify-between items-center">
                         <div class="flex items-center gap-2">
@@ -17879,17 +17924,34 @@ async function renderSettingsDashboard() {
                             <span class="slider"></span>
                         </label>
                     </div>
+
+                    <!-- 4. サイドバーの挙動 -->
+                    <div class="flex justify-between items-center pt-3 border-t border-gray-100 dark:border-zinc-700">
+                        <div class="flex items-center gap-2">
+                            <div class="w-8 h-8 rounded-full bg-slate-100 dark:bg-slate-800/50 flex items-center justify-center text-slate-500 dark:text-slate-400">
+                                <i class="bi bi-layout-sidebar-inset"></i>
+                            </div>
+                            <div class="text-sm font-bold text-gray-700 dark:text-gray-300">
+                                サイドバーの挙動
+                                <span class="block text-[10px] text-gray-400 font-normal">${settings.sidebarButton ? 'ボタンで開閉（現在の設定）' : 'ホバーで展開（現在の設定）'}</span>
+                            </div>
+                        </div>
+                        <label class="toggle-switch scale-90" title="ON: ボタンで開閉 / OFF: ホバーで展開">
+                            <input type="checkbox" ${settings.sidebarButton ? 'checked' : ''} onchange="AppConfig.toggle('sidebarButton', this.checked); this.closest('.flex').querySelector('span.block').textContent = this.checked ? 'ボタンで開閉（現在の設定）' : 'ホバーで展開（現在の設定）'">
+                            <span class="slider"></span>
+                        </label>
+                    </div>
                 </div>
             </div>
 
-            <!-- 4. Edit Form (登録情報変更) -->
+            <!-- 3. 登録情報変更 (右) -->
             <div class="stats-card-interactive profile-card-edit p-6 rounded-2xl bg-white dark:bg-zinc-900">
                 <div class="flex items-center gap-2 mb-6 border-b border-gray-100 dark:border-gray-700 pb-3">
                     <i class="bi bi-pencil-square text-blue-500"></i>
                     <h4 class="font-bold text-lg">登録情報の変更</h4>
                 </div>
                 
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div class="space-y-4">
                     <div class="profile-input-group">
                         <label class="profile-input-label">新しいユーザー名</label>
                         <input type="text" id="setting-new-username" class="profile-input-field" placeholder="${safeName}">
@@ -17901,14 +17963,14 @@ async function renderSettingsDashboard() {
                     </div>
                 </div>
 
-                <div class="mt-2 text-right">
+                <div class="mt-4 text-right">
                     <button onclick="updateAccountSettings()" class="btn-primary py-2 px-6 shadow-md text-sm">
                         <i class="bi bi-save"></i> 変更を保存
                     </button>
                 </div>
             </div>
 
-            <!-- 5. Google連携 -->
+            <!-- 4. Google連携 -->
             ${authMethod !== 'google' ? `
             <div class="stats-card-interactive profile-card-secondary p-6 rounded-2xl bg-white dark:bg-zinc-900 border-l-4 ${authMethod === 'both' ? 'border-l-green-500' : 'border-l-gray-300 dark:border-l-zinc-600'}">
                 <div class="flex items-center justify-between mb-4">
@@ -17944,9 +18006,26 @@ async function renderSettingsDashboard() {
                 </button>
                 `}
             </div>
-            ` : ''}
+            ` : `
+            <!-- Google認証のみのユーザー向け: Google連携済みカード -->
+            <div class="stats-card-interactive profile-card-secondary p-6 rounded-2xl bg-white dark:bg-zinc-900 border-l-4 border-l-green-500">
+                <div class="flex items-center gap-3 mb-4">
+                    <div class="w-9 h-9 rounded-full flex items-center justify-center bg-green-100 dark:bg-green-900/30 flex-shrink-0">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" width="20" height="20"><path fill="#EA4335" d="M24 9.5c3.14 0 5.95 1.08 8.17 2.86l6.09-6.09C34.46 3.09 29.5 1 24 1 14.82 1 7.02 6.48 3.44 14.23l7.1 5.52C12.35 13.72 17.71 9.5 24 9.5z"/><path fill="#4285F4" d="M46.5 24.5c0-1.64-.15-3.22-.42-4.75H24v9h12.71c-.55 2.97-2.22 5.49-4.73 7.19l7.27 5.65C43.32 37.61 46.5 31.49 46.5 24.5z"/><path fill="#FBBC05" d="M10.54 28.25A14.58 14.58 0 0 1 9.5 24c0-1.48.26-2.91.73-4.25l-7.1-5.52A23.86 23.86 0 0 0 0 24c0 3.87.93 7.52 2.58 10.74l7.96-6.49z"/><path fill="#34A853" d="M24 47c5.5 0 10.12-1.82 13.5-4.95l-7.27-5.65c-1.83 1.23-4.17 1.95-6.23 1.95-6.29 0-11.65-4.22-13.46-9.9l-7.96 6.49C7.02 41.52 14.82 47 24 47z"/></svg>
+                    </div>
+                    <div>
+                        <h4 class="font-bold text-sm text-gray-700 dark:text-gray-300">Google連携</h4>
+                        <span class="block text-[10px] text-gray-400 font-normal">Googleアカウントで認証中</span>
+                    </div>
+                    <span class="ml-auto text-[10px] font-bold px-2 py-1 rounded-full bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300 flex items-center gap-1">
+                        <i class="bi bi-check-circle-fill"></i> 連携中
+                    </span>
+                </div>
+                <p class="text-xs text-gray-500 dark:text-gray-400 leading-relaxed">Googleアカウントで参拝証を取得されています。次回以降もGoogleアカウントでログインいただけます。</p>
+            </div>
+            `}
 
-            <!-- 6. Danger Zone (ログアウト・削除) -->
+            <!-- 5. Danger Zone (ログアウト・削除) -->
             <div class="stats-card-interactive profile-card-danger p-6 rounded-2xl bg-red-50 dark:bg-red-900/10 border-red-100 dark:border-red-900">
                 <div class="flex items-center gap-2 mb-4 text-[var(--accent-red)]">
                     <i class="bi bi-shield-exclamation"></i>
@@ -19785,6 +19864,7 @@ const AppConfig = {
         dark: false,    // 宵闇の刻
         speed: false,   // 神速の祈り
         newyear: false, // 雅モード
+        sidebarButton: false, // サイドバーボタン切替モード
         // Labs機能
         bigtext: false,
         mist: false,
@@ -19816,6 +19896,14 @@ const AppConfig = {
         } else if(key === 'newyear') {
             if(isActive) document.body.classList.add('theme-newyear');
             else document.body.classList.remove('theme-newyear');
+        } else if(key === 'sidebarButton') {
+            if(isActive) {
+                document.body.classList.add('sidebar-button-mode');
+                document.body.classList.remove('sidebar-pinned');
+            } else {
+                document.body.classList.remove('sidebar-button-mode');
+                document.body.classList.remove('sidebar-pinned');
+            }
         }
 
         // 保存処理
@@ -19844,6 +19932,10 @@ async function saveLabSettings() {
 
     const swNewYear = document.querySelector('input[onchange*="AppConfig.toggle(\'newyear\'"]');
     if(swNewYear) settings.newyear = swNewYear.checked;
+
+    // sidebarButton はbodyクラスから読み取る（DOMスイッチは設定画面が開いている時のみ存在）
+    const swSidebarBtn = document.querySelector('input[onchange*="AppConfig.toggle(\'sidebarButton\'"]');
+    if(swSidebarBtn) settings.sidebarButton = swSidebarBtn.checked;
 
     // Labs機能のスイッチがあれば上書き (Labsモーダルを開いている場合)
     const swBigText = document.getElementById('switch-bigtext');
@@ -19906,6 +19998,10 @@ async function loadLabSettings() {
     // 3. 雅モード
     if(settings.newyear) document.body.classList.add('theme-newyear');
     else document.body.classList.remove('theme-newyear');
+
+    // 4. サイドバーボタン切替モード
+    if(settings.sidebarButton) document.body.classList.add('sidebar-button-mode');
+    else document.body.classList.remove('sidebar-button-mode');
 
     // 4. Labs機能群
     if(settings.bigtext) document.documentElement.classList.add('lab-big-text');
