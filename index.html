@@ -344,32 +344,49 @@
         justify-content: center;
         line-height: 1;
         box-shadow: inset 0 1px 0 rgba(255,255,255,0.2), 0 3px 10px rgba(185, 28, 28, 0.35);
-        transition: opacity 0.15s ease;
     }
 
-    /* 天アイコン：ホバー前は漢字、ホバー時はhoriz SVG */
-    .kanji-hover-icon {
-        display: none;
-        width: 22px;
-        height: 22px;
-        align-items: center;
-        justify-content: center;
-        pointer-events: none;
-    }
+    /* ====== トグルアイコン 4状態 ====== */
+    /* デフォルト：左=天のみ表示、右端アイコン非表示 */
+    .ti-show-sidebar, .ti-sidebar-mini, .ti-sidebar-left { display: none !important; }
+    .kanji-default { display: inline-flex !important; }
+    .nav-toggle-end-icon { display: none !important; margin-left: auto !important; }
+
+    /* 閉じた状態 + ホバー → 左に Show Sidebar Horiz */
     .nav-toggle-btn:hover .kanji-default { display: none !important; }
-    .nav-toggle-btn:hover .kanji-hover-icon { display: flex !important; }
+    .nav-toggle-btn:hover .ti-show-sidebar { display: flex !important; }
 
-    /* モバイル：天アイコンのズレ修正 */
+    /* 開いた状態(PCホバー展開) → 左=天、右端=Sidebar Minimalistic */
+    @media (min-width: 1025px) and (hover: hover) {
+        #sidebar:hover .nav-toggle-end-icon { display: flex !important; }
+        #sidebar:hover .nav-toggle-end-icon .ti-sidebar-mini { display: flex !important; }
+        /* 開いた状態 + ボタンホバー → 左=天のまま、右端=Sidebar Left */
+        #sidebar:hover .nav-toggle-btn:hover .kanji-default { display: inline-flex !important; }
+        #sidebar:hover .nav-toggle-btn:hover .ti-show-sidebar { display: none !important; }
+        #sidebar:hover .nav-toggle-btn:hover .nav-toggle-end-icon .ti-sidebar-mini { display: none !important; }
+        #sidebar:hover .nav-toggle-btn:hover .nav-toggle-end-icon .ti-sidebar-left { display: flex !important; }
+    }
+
+    /* ピン留め展開時 → 左=天、右端=Sidebar Minimalistic */
+    body.sidebar-button-mode.sidebar-pinned #sidebar .nav-toggle-end-icon { display: flex !important; }
+    body.sidebar-button-mode.sidebar-pinned #sidebar .nav-toggle-end-icon .ti-sidebar-mini { display: flex !important; }
+    /* ピン留め展開時 + ボタンホバー → 左=天のまま、右端=Sidebar Left */
+    body.sidebar-button-mode.sidebar-pinned #sidebar .nav-toggle-btn:hover .kanji-default { display: inline-flex !important; }
+    body.sidebar-button-mode.sidebar-pinned #sidebar .nav-toggle-btn:hover .ti-show-sidebar { display: none !important; }
+    body.sidebar-button-mode.sidebar-pinned #sidebar .nav-toggle-btn:hover .nav-toggle-end-icon .ti-sidebar-mini { display: none !important; }
+    body.sidebar-button-mode.sidebar-pinned #sidebar .nav-toggle-btn:hover .nav-toggle-end-icon .ti-sidebar-left { display: flex !important; }
+
+    /* モバイル：天アイコンのズレ修正 & ピン留め時 */
     @media (max-width: 1024px) {
         body:not(.sidebar-pinned) .nav-toggle-btn .nav-icon-kanji { width: 100% !important; }
         body:not(.sidebar-pinned) .nav-toggle-end-icon { display: none !important; }
-    }
-
-    .nav-toggle-end-icon {
-        margin-left: auto !important;
-        width: 48px !important;
-        opacity: 0;
-        transition: opacity 0.22s ease;
+        /* モバイル ピン留め時 → 左=天、右端=Sidebar Minimalistic */
+        body.sidebar-pinned .nav-toggle-end-icon { display: flex !important; }
+        body.sidebar-pinned .nav-toggle-end-icon .ti-sidebar-mini { display: flex !important; }
+        body.sidebar-pinned .nav-toggle-btn:hover .kanji-default { display: inline-flex !important; }
+        body.sidebar-pinned .nav-toggle-btn:hover .ti-show-sidebar { display: none !important; }
+        body.sidebar-pinned .nav-toggle-btn:hover .nav-toggle-end-icon .ti-sidebar-mini { display: none !important; }
+        body.sidebar-pinned .nav-toggle-btn:hover .nav-toggle-end-icon .ti-sidebar-left { display: flex !important; }
     }
 
     .nav-toggle-btn {
@@ -499,17 +516,9 @@
         box-shadow: none !important;
     }
 
-    /* トグルアイコン切り替え */
-    /* 閉じた状態（ホバー前）: 開くアイコンを表示 */
-    .toggle-icon-closed { display: flex; align-items: center; justify-content: center; }
-    .toggle-icon-open   { display: none; }
-
-    /* 展開時（ホバー）: 閉じるアイコンを表示 */
+    /* PCホバー展開時のトグルボタン表示 */
     @media (min-width: 1025px) and (hover: hover) {
-        #sidebar:hover .toggle-icon-closed { display: none; }
-        #sidebar:hover .toggle-icon-open   { display: flex; align-items: center; justify-content: center; }
         #sidebar:hover .nav-toggle-btn { opacity: 1; }
-        #sidebar:hover .nav-toggle-end-icon { opacity: 1; }
         #sidebar:hover .nav-toggle-label { opacity: 1 !important; transition: opacity 0.22s 0.07s ease !important; }
     }
     /* モバイルはアイコンのみ表示 */
@@ -531,8 +540,7 @@
     body.sidebar-button-mode #sidebar:hover .nav-toggle-end-icon { opacity: 0 !important; }
     body.sidebar-button-mode #sidebar:hover .nav-toggle-label { opacity: 0 !important; }
     body.sidebar-button-mode #sidebar:hover .nav-toggle-btn { opacity: 0.6 !important; }
-    body.sidebar-button-mode #sidebar:hover .toggle-icon-closed { display: flex !important; align-items: center; justify-content: center; }
-    body.sidebar-button-mode #sidebar:hover .toggle-icon-open { display: none !important; }
+    /* sidebar-button-mode: toggle-icon-closed/open は廃止 */
     /* ボタンモード：ピン留め展開時 */
     body.sidebar-button-mode.sidebar-pinned #sidebar {
         width: 240px !important;
@@ -549,8 +557,7 @@
     body.sidebar-button-mode.sidebar-pinned #sidebar .nav-toggle-end-icon { opacity: 1 !important; }
     body.sidebar-button-mode.sidebar-pinned #sidebar .nav-toggle-label { opacity: 1 !important; }
     body.sidebar-button-mode.sidebar-pinned #sidebar .nav-toggle-btn { opacity: 1 !important; }
-    body.sidebar-button-mode.sidebar-pinned #sidebar .toggle-icon-closed { display: none !important; }
-    body.sidebar-button-mode.sidebar-pinned #sidebar .toggle-icon-open { display: flex !important; align-items: center; justify-content: center; }
+    /* sidebar-button-mode pinned: toggle icons 廃止 */
 
     /* メインコンテンツ位置 */
     #main-content {
@@ -5797,10 +5804,12 @@ body.sidebar-collapsed #sidebar:hover .nav-group-title {
     <!-- サイドバートグルボタン -->
     <div class="nav-toggle-area">
         <button class="nav-btn nav-toggle-btn" onclick="toggleSidebar()" title="サイドバーの開閉">
-            <!-- 天アイコン：デフォルトは漢字、ホバー時はShow Sidebar Horiz SVG -->
+            <!-- 左：天アイコン（閉じた2状態） -->
             <div class="nav-icon-box nav-icon-kanji">
+                <!-- 閉じた・ホバーなし → 天漢字 -->
                 <span class="kanji-default">天</span>
-                <svg class="kanji-hover-icon" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" width="22" height="22" style="pointer-events:none;fill:currentColor">
+                <!-- 閉じた・ホバーあり → Show Sidebar Horiz -->
+                <svg class="ti-show-sidebar" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" width="22" height="22" style="pointer-events:none;fill:currentColor" aria-hidden="true">
                     <path d="M20,24H4c-2.2,0-4-1.8-4-4V4c0-2.2,1.8-4,4-4h16c2.2,0,4,1.8,4,4v16C24,22.2,22.2,24,20,24z M4,2C2.9,2,2,2.9,2,4v16c0,1.1,0.9,2,2,2h16c1.1,0,2-0.9,2-2V4c0-1.1-0.9-2-2-2H4z"/>
                     <path d="M8,24c-0.6,0-1-0.4-1-1V1c0-0.6,0.4-1,1-1s1,0.4,1,1v22C9,23.6,8.6,24,8,24z"/>
                     <path d="M17,13c-0.3,0-0.5-0.1-0.7-0.3l-3-3c-0.4-0.4-0.4-1,0-1.4s1-0.4,1.4,0l3,3c0.4,0.4,0.4,1,0,1.4C17.5,12.9,17.3,13,17,13z"/>
@@ -5808,11 +5817,19 @@ body.sidebar-collapsed #sidebar:hover .nav-group-title {
                 </svg>
             </div>
             <span class="nav-text nav-toggle-label">天命乃杜</span>
+            <!-- 右：開いた状態のアイコン -->
             <div class="nav-icon-box nav-toggle-end-icon">
-                <!-- toggle-icon-closed: Sidebar Minimalistic（触れてないとき） -->
-                <svg class="toggle-icon-closed" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" width="20" height="20" style="display:flex;align-items:center;justify-content:center;pointer-events:none"><path d="M2 11C2 7.22876 2 5.34315 3.17157 4.17157C4.34315 3 6.22876 3 10 3H14C17.7712 3 19.6569 3 20.8284 4.17157C22 5.34315 22 7.22876 22 11V13C22 16.7712 22 18.6569 20.8284 19.8284C19.6569 21 17.7712 21 14 21H10C6.22876 21 4.34315 21 3.17157 19.8284C2 18.6569 2 16.7712 2 13V11Z" stroke="currentColor" stroke-width="1.5"/><path d="M9 21L9 3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
-                <!-- toggle-icon-open: Sidebar Left（触れたとき） -->
-                <svg class="toggle-icon-open" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" width="20" height="20" style="display:none;align-items:center;justify-content:center;pointer-events:none"><path d="M21.97 15V9C21.97 4 19.97 2 14.97 2H8.96997C3.96997 2 1.96997 4 1.96997 9V15C1.96997 20 3.96997 22 8.96997 22H14.97C19.97 22 21.97 20 21.97 15Z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M7.96997 2V22" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M14.97 9.43994L12.41 11.9999L14.97 14.5599" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                <!-- 開いた・ホバーなし → Sidebar Minimalistic -->
+                <svg class="ti-sidebar-mini" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" width="22" height="22" style="pointer-events:none" aria-hidden="true">
+                    <path d="M2 11C2 7.22876 2 5.34315 3.17157 4.17157C4.34315 3 6.22876 3 10 3H14C17.7712 3 19.6569 3 20.8284 4.17157C22 5.34315 22 7.22876 22 11V13C22 16.7712 22 18.6569 20.8284 19.8284C19.6569 21 17.7712 21 14 21H10C6.22876 21 4.34315 21 3.17157 19.8284C2 18.6569 2 16.7712 2 13V11Z" stroke="currentColor" stroke-width="1.5"/>
+                    <path d="M9 21L9 3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+                </svg>
+                <!-- 開いた・ホバーあり → Sidebar Left -->
+                <svg class="ti-sidebar-left" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" width="22" height="22" style="pointer-events:none" aria-hidden="true">
+                    <path d="M21.97 15V9C21.97 4 19.97 2 14.97 2H8.96997C3.96997 2 1.96997 4 1.96997 9V15C1.96997 20 3.96997 22 8.96997 22H14.97C19.97 22 21.97 20 21.97 15Z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                    <path d="M7.96997 2V22" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                    <path d="M14.97 9.43994L12.41 11.9999L14.97 14.5599" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
             </div>
         </button>
     </div>
@@ -8965,6 +8982,66 @@ function escapeHtml(str) {
     const newsData = [
 
 
+{
+    id: 78,
+    title: "【Ver. 3.0 リリース】「天命乃杜」、UIを全面刷新しました",
+    date: "2026/05/24",
+    time: "19:42",
+    tag: "メジャーアップデート",
+    tagColor: "text-red-600",
+    borderColor: "border-red-500",
+    desc: "かねてより予告しておりましたVer. 3.0を正式にリリースしました。ホーム画面の大幅再設計、サイドバーの全面リデザイン、カラーテーマの刷新など、サイト全体のUI・UXを「和モダン」の方針で生まれ変わらせました。",
+    content: `
+        <div class="article-content">
+            <p>いつも「運勢・天命乃杜」をご利用いただき、誠にありがとうございます。個人開発者のnden148です。</p>
+            <p>2026年5月17日の社務所だより「<strong>【開発予告】Ver. 3.0 ——「天命乃杜」、UIを全面刷新します</strong>」でお伝えしておりました通り、本日、<strong>Ver. 3.0</strong>を正式にリリースいたしました。「和モダン」をキーワードに、サイト全体のUI・UXを大規模に刷新しています。以下、変更内容をご報告します。</p>
+
+            <h3>ホーム画面の再設計</h3>
+            <p>今回のアップデートの中心は、ホーム画面の構造そのものです。これまでバラバラに配置されていたカードを整理し、情報の優先順位を見直しました。</p>
+            <ul class="list-disc ml-5 mb-4">
+                <li><strong>統合Heroカードへの再設計：</strong>「挨拶カード」と「タイトル・メインビジュアルカード」を1枚に統合しました。「天命乃杜の由緒を読む」は折りたたみ式（アコーディオン）に変更し、読みたい方だけが開ける形にしています。「おみくじを引く」ボタンは大型化・前面化し、ゴールドボーダーとシャイン光沢加工を施しました。</li>
+                <li><strong>クイックアクセスカードを新設：</strong>「12星座占い」「全国の運気」「おみくじの轍」への直接リンクをホームに設けました。これまでサイドバーを開かなければたどり着けなかった機能への導線です。</li>
+                <li><strong>「社務所だより」と「神籤草子」をタブで統合：</strong>それぞれ独立したカードを占有していましたが、1枚の「お知らせ」カードにまとめ、タブで切り替える形にしました。</li>
+                <li><strong>バージョン情報カードをフッターへ：</strong>独立したカードとして場所を取るのをやめ、ホーム画面最下部の1行テキストに縮小しました。「更新の軌跡」ボタンはそのまま残しています。</li>
+                <li><strong>「全体の傾向」統計をホームから移動：</strong>12段階の統計グラフはホームに置くには情報量が重すぎると判断し、「おみくじの轍」ページに移動しました。</li>
+            </ul>
+
+            <h3>サイドバーの全面リデザイン</h3>
+            <p>サイドバーも全面的に作り直しました。デザインのコンセプトは「見えない時は静かに、開いた時だけ存在感を持つ」です。</p>
+            <ul class="list-disc ml-5 mb-4">
+                <li><strong>サイドバー本体のスリム化：</strong>幅・余白・角丸を調整し、よりスリムでシャープな外観に変更しました。背景色はCSS変数（--sidebar-bg）による統一管理に移行しています。</li>
+                <li><strong>グループ間セパレーターを追加：</strong>ナビゲーショングループ間に点線セパレーターを追加し、機能グループの区切りを視覚的に明確にしました。</li>
+                <li><strong>アクティブ状態のデザイン変更：</strong>「全体塗りつぶし」から「左端インジケーターバー＋薄い赤背景」に変更しました。アクティブなページが一目でわかりつつ、主張しすぎないデザインです。</li>
+                <li><strong>モバイル開閉ロジックの改善：</strong>ピン留めモード（sidebar-pinned クラス）を導入し、スマートフォン・タブレットでのサイドバー操作をより直感的にしました。</li>
+                <li><strong>トグルボタンアイコンの整備：</strong>「天」漢字・Show Sidebar・Sidebar Minimalistic・Sidebar Left の4状態アイコンの表示制御を整備し、右端アイコンの配置ずれも修正しました。</li>
+            </ul>
+
+            <h3>カラーテーマの刷新</h3>
+            <p>ライト・ダーク両モードのカラー設計を見直しました。</p>
+            <ul class="list-disc ml-5 mb-4">
+                <li><strong>ライトモード：</strong>背景色を純白（#ffffff）から温もりのあるウォームホワイト（#f5f4f0）へ変更しました。紙のような質感を意識しています。</li>
+                <li><strong>ダークモード：</strong>背景色を#1a1a1aからより深い#0d0d0dへ、ゴールドカラーも落ち着いた#c5a059へ調整しました。</li>
+                <li><strong>ライトモード・ダークモード共通の変数刷新：</strong>新設したHeroカード（後述）がすべてダーク基調のグラジエントで構成されているため、ライトモード向けに`html:not(.dark)`セレクタによる個別の配色を全ページに整備しました。</li>
+            </ul>
+
+            <h3>全ビューHeroカードの新設と各ページの細部刷新</h3>
+            <p>ページ先頭の扱いと、各ビューの細部も整理しました。</p>
+            <ul class="list-disc ml-5 mb-4">
+                <li><strong>全ビューにHeroカードを新設：</strong>Ver. 2.3まで、各ページの先頭はシンプルなテキスト見出し（`&lt;h2&gt;`タグ）でした。Ver. 3.0では社務所だより・神籤草子・12星座・御守・おみくじの轍・土地の運気・参拝の記録・TENMEI Labs・プロフィール・認証・サイトについて・プライバシーポリシーの全12ページ（ホームを含めると全13ページ）に、グラジエント背景・装飾グロー・アイコンボックス付きのbento-card形式Heroカードを新設しました。</li>
+                <li><strong>おみくじ結果バッジのデザイン刷新：</strong>大吉・吉・凶・大凶の結果表示バッジを単色塗りつぶしからグラジエント背景へ変更しました。ダークモードも同様に見直しています。</li>
+                <li><strong>おみくじ棒の「天」アイコン変更：</strong>おみくじ棒の花アイコン（bi-flower1）を「天」漢字（Zen Old Mincho）表示に変更しました。深紅×金のサイトカラーで表示されます。</li>
+                <li><strong>おみくじの轍タイムラインを刷新：</strong>タイムラインカードの角丸・余白・影を調整し、自分の投稿をグラジエント背景で強調表示するよう変更しました。タイムライン縦ラインも赤→インジゴのグラジエントに変わっています。</li>
+                <li><strong>御守授与所のおみくじカード枠を変更：</strong>「神棚」を意識した8px二重線ボーダーを廃止し、1pxソリッドボーダー＋上部アクセントラインに変更しました。全体のデザイントーンに揃えています。</li>
+                <li><strong>記事詳細ナビバーのbento-card化：</strong>社務所だより・神籤草子の記事詳細画面のナビゲーションバーをbento-card形式に刷新し、「ARTICLE DETAIL」ラベルを追加しました。</li>
+            </ul>
+
+            <h3>予告から実装まで</h3>
+            <p>予告記事を書いたのは2026年5月17日でした。「個人開発のため、着手と完成の時期は未定です」と書いておきながら、7日後には形にできました。作り始めると止まらなかった、というのが正直なところです。</p>
+            <p>サイトを訪れるたびに「こうだったらいいのに」と思っていたことを、ようやく全部手をつけることができました。おみくじを引くことへの導線、よく使う機能へのアクセス、情報の整理——これらを整えることで、天命乃杜がより自然に、より静かに、皆様のそばにあれるならば、と思っています。</p>
+            <p>引き続き、よろしくお願いいたします。</p>
+        </div>
+    `
+},
 {
     id: 77,
     title: "【復活】セキュリティ認証（Turnstile）を再実装いたしました",
@@ -20072,6 +20149,53 @@ window.applyTheme = function() {
 
         // ===== 更新の軌跡パネル =====
     const verDetailData = {
+        v30: {
+            ver: 'Ver. 3.0',
+            name: 'UI全面刷新・和モダンへの洗練',
+            date: '2026年5月23日',
+            sections: [
+                {
+                    icon: 'bi-house-fill', title: 'ホーム画面の大幅再設計',
+                    changes: [
+                        { type: 'new', text: '挨拶カードとタイトルカードを1枚の統合Heroカードに統合。おみくじボタンを大型化・前面化（ゴールドボーダーグロー＆シャイン光沢加工）。', sourceIds: [78] },
+                        { type: 'new', text: '「天命乃杜の由緒を読む」をアコーディオン折りたたみ式で追加。デフォルトで畳まれており、ボタンタップで展開する形に変更。', sourceIds: [78] },
+                        { type: 'new', text: 'クイックアクセスカードを新設。「12星座占い」「全国の運気」「おみくじの轍」への直接リンクをホームに配置。サイドバー経由でしか到達できなかった機能への導線を整備。', sourceIds: [78] },
+                        { type: 'new', text: '「社務所だより」と「神籤草子」を1枚の「お知らせ」カードにタブ統合。switchHomeTab()関数でコンテンツを切り替え。', sourceIds: [78] },
+                        { type: 'change', text: 'バージョン情報カードを廃止。ホーム最下部のフッター1行テキスト（バージョン・リリース日・最新版バッジ・更新の軌跡ボタン）に縮小。', sourceIds: [78] },
+                        { type: 'change', text: '「全体の傾向」統計グラフをホームから削除し、「おみくじの轍」ページへ移動。', sourceIds: [78] },
+                    ]
+                },
+                {
+                    icon: 'bi-layout-sidebar', title: 'サイドバーの全面リデザイン',
+                    changes: [
+                        { type: 'change', text: 'サイドバー幅を80pxから72pxへ縮小。padding・角丸・シャドウをより洗練された値に調整。背景色をCSS変数（--sidebar-bg）による統一管理に移行。', sourceIds: [78] },
+                        { type: 'new', text: 'グループ間に点線セパレーター（::before 疑似要素）を追加。ナビゲーション機能グループの区切りを視覚化。', sourceIds: [78] },
+                        { type: 'change', text: 'アクティブ状態のデザインを「全体塗りつぶし」から「左端3px インジケーターバー＋薄い赤背景（rgba 9%）」に変更。', sourceIds: [78] },
+                        { type: 'new', text: 'sidebar-pinned クラスによるピン留めモードを導入。モバイル・タブレットでのサイドバー開閉ロジックを改善。', sourceIds: [78] },
+                        { type: 'fix', text: 'nav-toggle-end-icon に margin-left: auto を追加し、アイコンがボタン右端に正しく配置されるよう修正。', sourceIds: [78] },
+                    ]
+                },
+                {
+                    icon: 'bi-palette-fill', title: 'カラーテーマの刷新',
+                    changes: [
+                        { type: 'change', text: 'ライトモード背景色を#ffffffから#f5f4f0（ウォームホワイト）へ変更。ダークモード背景色を#1a1a1aから#0d0d0dへ深化。text-mainも#2b2b2b→#1a1a1a（ライト）、#e0e0e0→#e4e4e7（ダーク）へ調整。', sourceIds: [78] },
+                        { type: 'change', text: 'ダークモードのゴールドカラーを#e5c07bから#c5a059へ変更。card-bg (#2c2c2c→#111111)、card-border (#444444→#2a2a2a)、glass-border・sidebar-bg・input-bgも全面刷新。', sourceIds: [78] },
+                    ]
+                },
+                {
+                    icon: 'bi-layout-text-window-reverse', title: '全ビューHeroカードの新設・各ページUI刷新',
+                    changes: [
+                        { type: 'new', text: '全12ページ（社務所だより・神籤草子・12星座・御守・轍・土地の運気・参拝の記録・TENMEI Labs・プロフィール・認証・サイトについて・プライバシーポリシー）のテキスト見出しを廃止し、グラジエント背景・装飾グロー・アイコンボックス付きのbento-card形式HeroカードをVer. 3.0より新設。ホームを含め全13画面。', sourceIds: [78] },
+                        { type: 'new', text: '新設Heroカードはすべてダークテーマベースのグラジエントのためライトモード向けに html:not(.dark) セレクタで個別の配色を整備（205箇所）。', sourceIds: [78] },
+                        { type: 'change', text: 'おみくじ結果バッジ（大吉/吉/凶/大凶）を単色塗りつぶしからグラジエント背景へ変更。ダークモードも同様に刷新。', sourceIds: [78] },
+                        { type: 'change', text: 'おみくじ棒アイコンを花（bi-flower1）から「天」漢字（Zen Old Mincho・深紅×金）表示に変更。', sourceIds: [78] },
+                        { type: 'change', text: 'おみくじの轍タイムラインCSS全面刷新。カード角丸・余白・影を調整し、自分の投稿をグラジエント背景で強調。タイムライン縦ラインを単色から赤→インジゴのグラジエントへ変更。', sourceIds: [78] },
+                        { type: 'change', text: '御守授与所のdraw-header-cardの8px二重線ボーダーを廃止し、1px solid + top 2pxアクセントラインに変更。ダークテーマに統一。', sourceIds: [78] },
+                        { type: 'change', text: '社務所だより・神籤草子の記事詳細ナビゲーションバーをbento-card形式に刷新。「ARTICLE DETAIL」ラベルを追加。', sourceIds: [78] },
+                    ]
+                },
+            ]
+        },
         v23: {
             ver: 'Ver. 2.3',
             name: '土地の運気予報・地図版実装',
@@ -20688,16 +20812,37 @@ window.applyTheme = function() {
         <div class="ver-panel-scroll">
             <div class="ver-timeline">
 
-                <!-- Ver 2.3（現在） -->
-                <div class="ver-timeline-item is-current" onclick="openVerDetail('v23')">
+                <!-- Ver 3.0（現在） -->
+                <div class="ver-timeline-item is-current" onclick="openVerDetail('v30')">
+                    <div class="ver-item-card">
+                        <div class="ver-item-top">
+                            <span class="ver-item-ver">Ver. 3.0</span>
+                            <span class="ver-item-badge ver-badge-current"><i class="bi bi-patch-check-fill"></i>最新版</span>
+                        </div>
+                        <div class="ver-item-date">2026年5月23日リリース</div>
+                        <div class="ver-item-name">UI全面刷新・和モダンへの洗練</div>
+                        <div class="ver-item-desc">ホーム画面を大幅再設計。統合Heroカード、クイックアクセスカード新設、社務所だより＆神籤草子タブ統合、バージョン情報フッター縮小、統計をおみくじの轍へ移動。全ビューにHeroカード新設、サイドバー・カラーテーマも全面刷新。</div>
+                        <div class="ver-item-tags">
+                            <span class="ver-item-tag">UI全面刷新</span>
+                            <span class="ver-item-tag">ホーム再設計</span>
+                            <span class="ver-item-tag">和モダン</span>
+                            <span class="ver-item-tag">サイドバー刷新</span>
+                            <span class="ver-item-tag">Heroカード新設</span>
+                        </div>
+                        <div class="ver-item-more"><i class="bi bi-chevron-right"></i>詳細を見る</div>
+                    </div>
+                </div>
+
+                <!-- Ver 2.3 -->
+                <div class="ver-timeline-item" onclick="openVerDetail('v23')">
                     <div class="ver-item-card">
                         <div class="ver-item-top">
                             <span class="ver-item-ver">Ver. 2.3</span>
-                            <span class="ver-item-badge ver-badge-current"><i class="bi bi-patch-check-fill"></i>最新版</span>
+                            <span class="ver-item-badge ver-badge-stable"><i class="bi bi-wrench-adjustable-circle-fill"></i>機能追加</span>
                         </div>
                         <div class="ver-item-date">2026年5月17日リリース</div>
                         <div class="ver-item-name">土地の運気予報・地図版実装</div>
-                        <div class="ver-item-desc">「全国・土地の運気予報」にOpenStreetMap＋Leaflet.jsによる地図表示モードを追加。テキスト版ランキングと地図版をタブで切り替え可能。プライバシーポリシーも第9版へ改訂。</div>
+                        <div class="ver-item-desc">「全国・土地の運気予報」にOpenStreetMap＋Leaflet.jsによる地図表示モードを追加。テキスト版ランキングと地図版をタブで切り替え可能。プライバシーポリシーも第10版へ改訂。</div>
                         <div class="ver-item-tags">
                             <span class="ver-item-tag">新機能</span>
                             <span class="ver-item-tag">地図表示</span>
