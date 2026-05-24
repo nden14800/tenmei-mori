@@ -1432,6 +1432,15 @@
     box-shadow: 0 20px 35px rgba(0,0,0,0.15);
 }
 
+.auth-hero-card {
+    transition: all 0.35s cubic-bezier(0.25, 0.8, 0.25, 1);
+}
+.auth-hero-card:hover {
+    transform: translateY(-4px) scale(1.005);
+    border-color: var(--accent-gold);
+    box-shadow: 0 20px 35px rgba(0,0,0,0.15);
+}
+
 /* 1. ニュース検索エリア (履歴のコントロールバーと統一) */
 .news-control-bar {
     background: rgba(255, 255, 255, 0.7);
@@ -2375,7 +2384,7 @@
     display: grid;
     grid-template-columns: repeat(12, 1fr);
     gap: 20px;
-    max-width: 900px;
+    max-width: 980px;
     margin: 0 auto;
     padding-bottom: 60px;
 }
@@ -2390,7 +2399,7 @@
     gap: 24px;
 }
 @media (min-width: 768px) {
-    .profile-card-identity { grid-column: span 7; }
+    .profile-card-identity { grid-column: span 8; }
 }
 
 /* アイコンリング */
@@ -2418,7 +2427,7 @@
     align-items: flex-start;
 }
 @media (min-width: 768px) {
-    .profile-card-status { grid-column: span 5; }
+    .profile-card-status { grid-column: span 4; }
 }
 
 /* 3. 編集フォーム (左下・メイン) */
@@ -2427,14 +2436,13 @@
 }
 @media (min-width: 768px) {
     .profile-card-edit { grid-column: span 8; }
+    .profile-card-secondary { grid-column: span 6; }
+    .profile-card-danger { grid-column: span 6; }
 }
 
 /* 4. デンジャーゾーン (右下) */
 .profile-card-danger {
     grid-column: span 12;
-}
-@media (min-width: 768px) {
-    .profile-card-danger { grid-column: span 4; }
 }
 
 /* 入力欄のモダン化 */
@@ -6413,7 +6421,8 @@ body.sidebar-collapsed #sidebar:hover .nav-group-title {
                     html:not(.dark) #view-prefecture .bento-card:first-child .text-white,
                     html:not(.dark) #view-news .bento-card:first-child .text-white,
                     html:not(.dark) #view-column .bento-card:first-child .text-white,
-                    html:not(.dark) #view-profile .bento-card:first-child .text-white {
+                    html:not(.dark) #view-profile .bento-card:first-child .text-white,
+                    html:not(.dark) #view-auth .bento-card:first-child .text-white {
                         color: var(--text-main) !important;
                     }
                     /* アイコンボックス内のアイコンは白を維持（背景色付きの丸ボックス内） */
@@ -6422,7 +6431,8 @@ body.sidebar-collapsed #sidebar:hover .nav-group-title {
                     html:not(.dark) #view-prefecture .bento-card:first-child .rounded-2xl i.text-white,
                     html:not(.dark) #view-news .bento-card:first-child .rounded-2xl i.text-white,
                     html:not(.dark) #view-column .bento-card:first-child .rounded-2xl i.text-white,
-                    html:not(.dark) #view-profile .bento-card:first-child .rounded-2xl i.text-white {
+                    html:not(.dark) #view-profile .bento-card:first-child .rounded-2xl i.text-white,
+                    html:not(.dark) #view-auth .bento-card:first-child .rounded-2xl i.text-white {
                         color: white !important;
                     }
                     html:not(.dark) #view-zodiac .bento-card:first-child .text-zinc-300,
@@ -6434,7 +6444,8 @@ body.sidebar-collapsed #sidebar:hover .nav-group-title {
                     html:not(.dark) #view-prefecture .bento-card:first-child .text-zinc-300,
                     html:not(.dark) #view-news .bento-card:first-child .text-zinc-300,
                     html:not(.dark) #view-column .bento-card:first-child .text-zinc-300,
-                    html:not(.dark) #view-profile .bento-card:first-child .text-zinc-300 {
+                    html:not(.dark) #view-profile .bento-card:first-child .text-zinc-300,
+                    html:not(.dark) #view-auth .bento-card:first-child .text-zinc-300 {
                         color: var(--text-sub) !important;
                     }
                     html:not(.dark) #view-zodiac .bento-card:first-child .text-zinc-500,
@@ -6447,6 +6458,7 @@ body.sidebar-collapsed #sidebar:hover .nav-group-title {
                     html:not(.dark) #view-news .bento-card:first-child .text-zinc-500,
                     html:not(.dark) #view-column .bento-card:first-child .text-zinc-500,
                     html:not(.dark) #view-profile .bento-card:first-child .text-zinc-500,
+                    html:not(.dark) #view-auth .bento-card:first-child .text-zinc-500,
                     html:not(.dark) #view-prefecture .bento-card:first-child .text-zinc-600 {
                         color: var(--text-sub) !important;
                     }
@@ -6459,7 +6471,8 @@ body.sidebar-collapsed #sidebar:hover .nav-group-title {
                     }
                     html:not(.dark) #view-news .bento-card:first-child h2,
                     html:not(.dark) #view-column .bento-card:first-child h2,
-                    html:not(.dark) #view-profile .bento-card:first-child h2 {
+                    html:not(.dark) #view-profile .bento-card:first-child h2,
+                    html:not(.dark) #view-auth .bento-card:first-child h2 {
                         color: var(--text-main) !important;
                     }
 
@@ -6507,6 +6520,17 @@ body.sidebar-collapsed #sidebar:hover .nav-group-title {
                         border-top-color: rgba(185,28,28,0.15) !important;
                     }
 
+
+                    /* ---- 参拝証の発行 Heroカード（ライトモード） ---- */
+                    html:not(.dark) .auth-hero-card {
+                        background: linear-gradient(135deg, #fff5f5 0%, #f8fafc 55%, #fff7ed 100%) !important;
+                        border-color: var(--card-border) !important;
+                        box-shadow: 0 8px 30px rgba(0,0,0,0.06) !important;
+                    }
+                    html:not(.dark) .auth-hero-card:hover {
+                        border-color: var(--accent-gold) !important;
+                        box-shadow: 0 16px 36px rgba(0,0,0,0.12) !important;
+                    }
 
                     /* ---- アカウント設定 Heroカード（ライトモード） ---- */
                     html:not(.dark) .profile-hero-card {
@@ -7511,10 +7535,29 @@ body.sidebar-collapsed #sidebar:hover .nav-group-title {
 </section>
 
         <!-- ビュー: ログイン/登録 (Bento UI版) -->
-        <section id="view-auth" class="view-section">
-            <div class="max-w-4xl mx-auto mb-8 text-center">
-                <h2 class="text-3xl font-black tracking-widest" style="font-family: 'Zen Old Mincho'">参拝証の発行</h2>
-                <p class="text-xs font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest">AUTHENTICATION</p>
+        <section id="view-auth" class="view-section max-w-4xl mx-auto relative pb-20">
+            <div class="bento-card auth-hero-card mb-6 relative overflow-hidden bg-gradient-to-br from-red-950 via-zinc-900 to-black border border-zinc-800 text-white" style="padding: 2rem;">
+                <div class="absolute top-0 right-0 w-72 h-72 opacity-15 pointer-events-none" style="background: radial-gradient(circle, #ef4444 0%, transparent 70%);"></div>
+                <div class="absolute bottom-0 left-0 w-48 h-48 opacity-10 pointer-events-none" style="background: radial-gradient(circle, #d4af37 0%, transparent 70%);"></div>
+                <div class="relative z-10 flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
+                    <div class="flex-1">
+                        <p class="text-xs font-bold tracking-[0.3em] uppercase mb-2" style="color: var(--accent-gold);">AUTHENTICATION</p>
+                        <h2 class="text-3xl md:text-4xl font-black mb-3 flex items-center gap-3" style="font-family: 'Zen Old Mincho', serif;">
+                            <span class="text-4xl text-red-400"><i class="bi bi-person-vcard-fill"></i></span>
+                            <span class="text-white">参拝証の発行</span>
+                        </h2>
+                        <p class="text-sm text-zinc-300 leading-relaxed max-w-xl" style="font-family: 'Shippori Mincho', serif;">
+                            ログイン・新規登録・Google連携で、
+                            杜の会員機能をご利用いただけます。
+                        </p>
+                    </div>
+                    <div class="flex-shrink-0 text-center flex flex-col items-center gap-2">
+                        <div class="w-20 h-20 rounded-2xl flex items-center justify-center" style="background: linear-gradient(135deg, #7f1d1d, #b91c1c); box-shadow: 0 0 24px rgba(239,68,68,0.3);">
+                            <i class="bi bi-patch-check-fill text-4xl text-white"></i>
+                        </div>
+                        <p class="text-xs text-zinc-500 font-bold tracking-widest">MEMBER PASS</p>
+                    </div>
+                </div>
             </div>
 
             <!-- 1. 初期選択画面 -->
@@ -18038,7 +18081,7 @@ async function renderSettingsDashboard() {
                             <i class="bi ${rankInfo.icon}"></i> ${rankInfo.name}
                         </span>
                     </div>
-                    <h3 class="text-2xl font-black mb-1" style="font-family: 'Zen Old Mincho'">${safeName}</h3>
+                    <h3 class="text-2xl md:text-3xl font-black mb-1" style="font-family: 'Zen Old Mincho'">${safeName}</h3>
                     <p class="text-sm text-gray-500 font-mono">${safeEmail}</p>
                 </div>
             </div>
@@ -18132,7 +18175,7 @@ async function renderSettingsDashboard() {
 
             <!-- 5. Google連携 -->
             ${authMethod !== 'google' ? `
-            <div class="stats-card-interactive profile-card-status p-6 rounded-2xl bg-white dark:bg-zinc-900 border-l-4 ${authMethod === 'both' ? 'border-l-green-500' : 'border-l-gray-300 dark:border-l-zinc-600'}">
+            <div class="stats-card-interactive profile-card-secondary p-6 rounded-2xl bg-white dark:bg-zinc-900 border-l-4 ${authMethod === 'both' ? 'border-l-green-500' : 'border-l-gray-300 dark:border-l-zinc-600'}">
                 <div class="flex items-center justify-between mb-4">
                     <div class="flex items-center gap-3">
                         <div class="w-9 h-9 rounded-full flex items-center justify-center bg-gray-100 dark:bg-zinc-800 flex-shrink-0">
