@@ -1404,6 +1404,17 @@
 
         /* --- 社務所だより：モダン・瓦版UI --- */
 
+
+.news-hero-card {
+    transition: all 0.35s cubic-bezier(0.25, 0.8, 0.25, 1);
+    cursor: pointer;
+}
+.news-hero-card:hover {
+    transform: translateY(-4px) scale(1.005);
+    border-color: var(--accent-gold);
+    box-shadow: 0 20px 35px rgba(0,0,0,0.15);
+}
+
 /* 1. ニュース検索エリア (履歴のコントロールバーと統一) */
 .news-control-bar {
     background: rgba(255, 255, 255, 0.7);
@@ -6462,6 +6473,28 @@ body.sidebar-collapsed #sidebar:hover .nav-group-title {
                         border-top-color: rgba(185,28,28,0.15) !important;
                     }
 
+
+                    /* ---- 社務所だより Heroカード（ライトモード） ---- */
+                    html:not(.dark) .news-hero-card {
+                        background: linear-gradient(135deg, #fff5f5 0%, #f8fafc 55%, #fff7ed 100%) !important;
+                        border-color: var(--card-border) !important;
+                        box-shadow: 0 8px 30px rgba(0,0,0,0.06) !important;
+                    }
+                    html:not(.dark) .news-hero-card:hover {
+                        border-color: var(--accent-gold) !important;
+                        box-shadow: 0 16px 36px rgba(0,0,0,0.12) !important;
+                    }
+                    html:not(.dark) .news-hero-card h2 span.text-white,
+                    html:not(.dark) .news-hero-card .text-white {
+                        color: var(--text-main) !important;
+                    }
+                    html:not(.dark) .news-hero-card p.text-zinc-300 {
+                        color: var(--text-sub) !important;
+                    }
+                    html:not(.dark) .news-hero-card p.text-zinc-500 {
+                        color: var(--text-sub) !important;
+                    }
+
                     /* ---- おみくじ結果画面ボタン（ホームへ・もう一度引く・SNS等） ---- */
                     html:not(.dark) .action-card-btn:not(.action-primary) {
                         background: var(--card-bg) !important;
@@ -7719,7 +7752,7 @@ body.sidebar-collapsed #sidebar:hover .nav-group-title {
 
         <!-- ビュー: 社務所だより（検索・ページ機能付き） -->
 <section id="view-news" class="view-section max-w-4xl mx-auto relative pb-20">
-    <div class="bento-card mb-6 relative overflow-hidden bg-gradient-to-br from-red-950 via-zinc-900 to-black border border-zinc-800 text-white" style="padding: 2rem;">
+    <div class="bento-card news-hero-card mb-6 relative overflow-hidden bg-gradient-to-br from-red-950 via-zinc-900 to-black border border-zinc-800 text-white" style="padding: 2rem;">
         <div class="absolute top-0 right-0 w-72 h-72 opacity-15 pointer-events-none" style="background: radial-gradient(circle, #ef4444 0%, transparent 70%);"></div>
         <div class="absolute bottom-0 left-0 w-48 h-48 opacity-10 pointer-events-none" style="background: radial-gradient(circle, #d4af37 0%, transparent 70%);"></div>
         <div class="relative z-10 flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
