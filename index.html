@@ -267,12 +267,12 @@
         padding: 0 !important;
         pointer-events: none !important;
 
-        font-family: 'Zen Old Mincho', serif;
-        font-size: 0.6rem;
+        font-family: "Inter", "Noto Sans JP", sans-serif;
+        font-size: 0.62rem;
         font-weight: 700;
-        letter-spacing: 0.25em;
+        letter-spacing: 0.18em;
         text-transform: uppercase;
-        color: var(--text-sub);
+        color: color-mix(in srgb, var(--text-sub) 72%, #5b8cff 28%);
         white-space: nowrap;
 
         transition: opacity 0.25s ease, height 0.25s ease, margin 0.25s ease;
@@ -284,9 +284,9 @@
         align-items: center !important;
         justify-content: flex-start !important;
         width: 100% !important;
-        height: 40px !important;
-        min-height: 40px !important;
-        max-height: 40px !important;
+        height: 42px !important;
+        min-height: 42px !important;
+        max-height: 42px !important;
         padding: 0 !important;
         margin: 0 !important;
 
@@ -307,7 +307,7 @@
     /* アイコンボックス — 幅を固定してアイコンを常に同位置に */
     .nav-icon-box {
         width: 56px !important;
-        height: 40px !important;
+        height: 42px !important;
         display: flex !important;
         align-items: center !important;
         justify-content: center !important;
@@ -323,6 +323,38 @@
         pointer-events: none;
     }
     .nav-btn i, .nav-btn svg { margin: 0 !important; }
+
+    .nav-icon-kanji span {
+        width: 28px;
+        height: 28px;
+        border-radius: 9px;
+        background: linear-gradient(145deg, #b91c1c, #991b1b);
+        color: #d6b06a;
+        font-size: 1rem;
+        font-weight: 800;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        line-height: 1;
+        box-shadow: inset 0 1px 0 rgba(255,255,255,0.2), 0 3px 10px rgba(185, 28, 28, 0.35);
+    }
+
+    .nav-toggle-end-icon {
+        margin-left: auto !important;
+        width: 48px !important;
+        opacity: 0;
+        transition: opacity 0.22s ease;
+    }
+
+    .nav-toggle-btn {
+        border-radius: 14px;
+        background: color-mix(in srgb, var(--card-bg) 78%, transparent 22%) !important;
+        backdrop-filter: blur(12px);
+        -webkit-backdrop-filter: blur(12px);
+        border: 1px solid color-mix(in srgb, var(--glass-border) 75%, transparent 25%);
+        box-shadow: 0 8px 24px rgba(11, 20, 41, 0.07);
+        gap: 0;
+    }
 
     /* テキストラベル */
     .nav-text {
@@ -453,6 +485,7 @@
         #sidebar:hover .toggle-icon-closed { display: none; }
         #sidebar:hover .toggle-icon-open   { display: flex; align-items: center; justify-content: center; }
         #sidebar:hover .nav-toggle-btn { opacity: 1; }
+        #sidebar:hover .nav-toggle-end-icon { opacity: 1; }
         #sidebar:hover .nav-toggle-label { opacity: 1 !important; transition: opacity 0.22s 0.07s ease !important; }
     }
     /* モバイルはアイコンのみ表示 */
@@ -5703,17 +5736,18 @@ body.sidebar-collapsed #sidebar:hover .nav-group-title {
     <!-- サイドバートグルボタン -->
     <div class="nav-toggle-area">
         <button class="nav-btn nav-toggle-btn" onclick="toggleSidebar()" title="サイドバーの開閉">
-            <div class="nav-icon-box">
+            <div class="nav-icon-box nav-icon-kanji"><span>天</span></div>
+            <span class="nav-text nav-toggle-label">天命乃杜</span>
+            <div class="nav-icon-box nav-toggle-end-icon">
                 <i class="bi bi-layout-sidebar-inset-reverse toggle-icon-closed"></i>
                 <i class="bi bi-layout-sidebar-inset toggle-icon-open"></i>
             </div>
-            <span class="nav-text nav-toggle-label">天命乃杜</span>
         </button>
     </div>
 
     <!-- 1. メイン機能グループ -->
     <div class="nav-group">
-        <div class="nav-group-title">Main Menu</div>
+        <div class="nav-group-title">MAIN MENU</div>
         
         <button class="nav-btn active" onclick="showView('home')" id="nav-home">
             <div class="nav-icon-box"><i class="bi bi-house-door-fill"></i></div>
@@ -5760,7 +5794,7 @@ body.sidebar-collapsed #sidebar:hover .nav-group-title {
 
     <!-- 2. コンテンツグループ -->
     <div class="nav-group desktop-only">
-        <div class="nav-group-title">Contents</div>
+        <div class="nav-group-title">CONTENTS</div>
         
         <button class="nav-btn" onclick="showView('history')" id="nav-history">
             <div class="nav-icon-box"><i class="bi bi-clock-history"></i></div>
@@ -5785,7 +5819,7 @@ body.sidebar-collapsed #sidebar:hover .nav-group-title {
 
     <!-- 3. システムグループ (クラス nav-group-bottom を追加) -->
     <div class="nav-group nav-group-bottom desktop-only">
-        <div class="nav-group-title">System</div>
+        <div class="nav-group-title">SYSTEM</div>
         
         <button class="nav-btn special-auth" onclick="handleProfileClick()" id="nav-login-btn">
             <div class="nav-icon-box"><i class="bi bi-person-circle"></i></div>
