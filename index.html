@@ -1404,6 +1404,25 @@
 
         /* --- 社務所だより：モダン・瓦版UI --- */
 
+
+.news-hero-card {
+    transition: all 0.35s cubic-bezier(0.25, 0.8, 0.25, 1);
+}
+.news-hero-card:hover {
+    transform: translateY(-4px) scale(1.005);
+    border-color: var(--accent-gold);
+    box-shadow: 0 20px 35px rgba(0,0,0,0.15);
+}
+
+.column-hero-card {
+    transition: all 0.35s cubic-bezier(0.25, 0.8, 0.25, 1);
+}
+.column-hero-card:hover {
+    transform: translateY(-4px) scale(1.005);
+    border-color: var(--accent-gold);
+    box-shadow: 0 20px 35px rgba(0,0,0,0.15);
+}
+
 /* 1. ニュース検索エリア (履歴のコントロールバーと統一) */
 .news-control-bar {
     background: rgba(255, 255, 255, 0.7);
@@ -1448,7 +1467,7 @@
 .news-card:hover {
     transform: translateY(-4px) scale(1.01);
     box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
-    border-color: var(--accent-red);
+    border-color: var(--accent-gold);
     z-index: 10;
 }
 
@@ -4918,8 +4937,8 @@ body.sidebar-collapsed #sidebar:hover .nav-group-title {
     transform: none !important;
 }
 
-/* おみくじ棒アイコン: bi-flower1 → 「天」アイコン */
-.bi.bi-flower1 {
+/* おみくじ棒アイコンのみ: bi-flower1 → 「天」アイコン */
+.stick-icon .bi.bi-flower1 {
     background-color: #b91c1c;
     border-radius: 4px;
     color: #c5a059;
@@ -4931,7 +4950,7 @@ body.sidebar-collapsed #sidebar:hover .nav-group-title {
     line-height: 1;
     vertical-align: middle;
 }
-.bi.bi-flower1::before {
+.stick-icon .bi.bi-flower1::before {
     font-family: 'Zen Old Mincho', serif !important;
     content: '天' !important;
     font-weight: 700;
@@ -6382,13 +6401,17 @@ body.sidebar-collapsed #sidebar:hover .nav-group-title {
                     html:not(.dark) #view-omamori .bento-card:first-child .text-white,
                     html:not(.dark) #view-history .bento-card:nth-child(2) .text-white,
                     html:not(.dark) #view-history .bento-card:first-child .text-white,
-                    html:not(.dark) #view-prefecture .bento-card:first-child .text-white {
+                    html:not(.dark) #view-prefecture .bento-card:first-child .text-white,
+                    html:not(.dark) #view-news .bento-card:first-child .text-white,
+                    html:not(.dark) #view-column .bento-card:first-child .text-white {
                         color: var(--text-main) !important;
                     }
                     /* アイコンボックス内のアイコンは白を維持（背景色付きの丸ボックス内） */
                     html:not(.dark) #view-zodiac .bento-card:first-child .rounded-2xl i.text-white,
                     html:not(.dark) #view-omamori .bento-card:first-child .rounded-2xl i.text-white,
-                    html:not(.dark) #view-prefecture .bento-card:first-child .rounded-2xl i.text-white {
+                    html:not(.dark) #view-prefecture .bento-card:first-child .rounded-2xl i.text-white,
+                    html:not(.dark) #view-news .bento-card:first-child .rounded-2xl i.text-white,
+                    html:not(.dark) #view-column .bento-card:first-child .rounded-2xl i.text-white {
                         color: white !important;
                     }
                     html:not(.dark) #view-zodiac .bento-card:first-child .text-zinc-300,
@@ -6397,7 +6420,9 @@ body.sidebar-collapsed #sidebar:hover .nav-group-title {
                     html:not(.dark) #view-omamori .bento-card:first-child .text-zinc-300,
                     html:not(.dark) #view-history .bento-card:nth-child(2) .text-zinc-300,
                     html:not(.dark) #view-history .bento-card:first-child .text-zinc-300,
-                    html:not(.dark) #view-prefecture .bento-card:first-child .text-zinc-300 {
+                    html:not(.dark) #view-prefecture .bento-card:first-child .text-zinc-300,
+                    html:not(.dark) #view-news .bento-card:first-child .text-zinc-300,
+                    html:not(.dark) #view-column .bento-card:first-child .text-zinc-300 {
                         color: var(--text-sub) !important;
                     }
                     html:not(.dark) #view-zodiac .bento-card:first-child .text-zinc-500,
@@ -6407,6 +6432,8 @@ body.sidebar-collapsed #sidebar:hover .nav-group-title {
                     html:not(.dark) #view-history .bento-card:nth-child(2) .text-zinc-500,
                     html:not(.dark) #view-history .bento-card:first-child .text-zinc-500,
                     html:not(.dark) #view-prefecture .bento-card:first-child .text-zinc-500,
+                    html:not(.dark) #view-news .bento-card:first-child .text-zinc-500,
+                    html:not(.dark) #view-column .bento-card:first-child .text-zinc-500,
                     html:not(.dark) #view-prefecture .bento-card:first-child .text-zinc-600 {
                         color: var(--text-sub) !important;
                     }
@@ -6416,6 +6443,10 @@ body.sidebar-collapsed #sidebar:hover .nav-group-title {
                     }
                     html:not(.dark) #view-stats .bento-card:first-child p {
                         color: var(--text-sub) !important;
+                    }
+                    html:not(.dark) #view-news .bento-card:first-child h2,
+                    html:not(.dark) #view-column .bento-card:first-child h2 {
+                        color: var(--text-main) !important;
                     }
 
                 /* おみくじを引くボタンのシャイン（光沢）アニメーション */
@@ -6462,13 +6493,46 @@ body.sidebar-collapsed #sidebar:hover .nav-group-title {
                         border-top-color: rgba(185,28,28,0.15) !important;
                     }
 
+
+                    /* ---- 神籤草子 Heroカード（ライトモード） ---- */
+                    html:not(.dark) .column-hero-card {
+                        background: linear-gradient(135deg, #f5f7ff 0%, #f8fafc 55%, #fffaf0 100%) !important;
+                        border-color: var(--card-border) !important;
+                        box-shadow: 0 8px 30px rgba(0,0,0,0.06) !important;
+                    }
+                    html:not(.dark) .column-hero-card:hover {
+                        border-color: var(--accent-gold) !important;
+                        box-shadow: 0 16px 36px rgba(0,0,0,0.12) !important;
+                    }
+
+                    /* ---- 社務所だより Heroカード（ライトモード） ---- */
+                    html:not(.dark) .news-hero-card {
+                        background: linear-gradient(135deg, #fff5f5 0%, #f8fafc 55%, #fff7ed 100%) !important;
+                        border-color: var(--card-border) !important;
+                        box-shadow: 0 8px 30px rgba(0,0,0,0.06) !important;
+                    }
+                    html:not(.dark) .news-hero-card:hover {
+                        border-color: var(--accent-gold) !important;
+                        box-shadow: 0 16px 36px rgba(0,0,0,0.12) !important;
+                    }
+                    html:not(.dark) .news-hero-card h2 span.text-white,
+                    html:not(.dark) .news-hero-card .text-white {
+                        color: var(--text-main) !important;
+                    }
+                    html:not(.dark) .news-hero-card p.text-zinc-300 {
+                        color: var(--text-sub) !important;
+                    }
+                    html:not(.dark) .news-hero-card p.text-zinc-500 {
+                        color: var(--text-sub) !important;
+                    }
+
                     /* ---- おみくじ結果画面ボタン（ホームへ・もう一度引く・SNS等） ---- */
-                    html:not(.dark) .action-card-btn {
+                    html:not(.dark) .action-card-btn:not(.action-primary) {
                         background: var(--card-bg) !important;
                         border-color: var(--card-border) !important;
                         color: var(--text-main) !important;
                     }
-                    html:not(.dark) .action-card-btn:hover {
+                    html:not(.dark) .action-card-btn:not(.action-primary):hover {
                         background: var(--input-bg) !important;
                     }
                     /* SNSブランドカラー維持 */
@@ -6476,6 +6540,45 @@ body.sidebar-collapsed #sidebar:hover .nav-group-title {
                     html:not(.dark) .action-card-btn.btn-fb    { color: #1877f2 !important; }
                     html:not(.dark) .action-card-btn.btn-bsky  { color: #0285ff !important; }
                     html:not(.dark) .action-card-btn.btn-misskey { color: #86b300 !important; }
+
+                    /* ---- 天命の授与所 おみくじ棒（ライトモード） ---- */
+                    html:not(.dark) .omikuji-stick {
+                        background: linear-gradient(180deg, #fff7f7 0%, #fff1f1 100%) !important;
+                        border: 2px solid rgba(185,28,28,0.28) !important;
+                        border-top: 3px solid #b91c1c !important;
+                        border-bottom: 3px solid #b91c1c !important;
+                        box-shadow: 2px 4px 14px rgba(185,28,28,0.12), inset 0 1px 0 rgba(255,255,255,0.8) !important;
+                    }
+                    html:not(.dark) .omikuji-stick:hover {
+                        background: linear-gradient(180deg, #fff1f1 0%, #ffeaea 100%) !important;
+                        border-color: #c5a039 !important;
+                        box-shadow: 0 15px 40px rgba(185, 28, 28, 0.2), 0 0 20px rgba(196,160,57,0.2) !important;
+                    }
+                    html:not(.dark) .stick-icon { color: #b45309 !important; }
+                    html:not(.dark) .stick-text {
+                        color: #b91c1c !important;
+                        text-shadow: 0 0 8px rgba(185,28,28,0.2) !important;
+                    }
+                    html:not(.dark) .stick-footer { color: #7f1d1d !important; }
+
+                    /* ---- TENMEI Labs 会員限定モーダル（ライトモード統一） ---- */
+                    html:not(.dark) .lab-modal-overlay {
+                        background: rgba(255,255,255,0.85) !important;
+                        backdrop-filter: blur(6px) !important;
+                    }
+                    html:not(.dark) .lab-modal-card {
+                        background: var(--card-bg) !important;
+                        border-color: var(--card-border) !important;
+                        color: var(--text-main) !important;
+                    }
+                    html:not(.dark) .lab-close-btn {
+                        background: var(--input-bg) !important;
+                        color: var(--text-sub) !important;
+                    }
+                    html:not(.dark) .lab-close-btn:hover {
+                        background: #e5e7eb !important;
+                        color: var(--text-main) !important;
+                    }
 
                     /* ---- 12星座 会員限定モーダル ---- */
                     html:not(.dark) #zodiac-login-modal > div {
@@ -7680,12 +7783,30 @@ body.sidebar-collapsed #sidebar:hover .nav-group-title {
 
         <!-- ビュー: 社務所だより（検索・ページ機能付き） -->
 <section id="view-news" class="view-section max-w-4xl mx-auto relative pb-20">
-    <div class="text-center mb-8">
-        <h2 class="text-3xl font-black mb-2 tracking-widest" style="font-family: 'Zen Old Mincho'">社務所だより</h2>
-        <p class="text-xs font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest">OFFICIAL NEWS</p>
+    <div class="bento-card news-hero-card mb-6 relative overflow-hidden bg-gradient-to-br from-red-950 via-zinc-900 to-black border border-zinc-800 text-white" style="padding: 2rem;">
+        <div class="absolute top-0 right-0 w-72 h-72 opacity-15 pointer-events-none" style="background: radial-gradient(circle, #ef4444 0%, transparent 70%);"></div>
+        <div class="absolute bottom-0 left-0 w-48 h-48 opacity-10 pointer-events-none" style="background: radial-gradient(circle, #d4af37 0%, transparent 70%);"></div>
+        <div class="relative z-10 flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
+            <div class="flex-1">
+                <p class="text-xs font-bold tracking-[0.3em] uppercase mb-2" style="color: var(--accent-gold);">OFFICIAL NEWS</p>
+                <h2 class="text-3xl md:text-4xl font-black mb-3 flex items-center gap-3" style="font-family: 'Zen Old Mincho', serif;">
+                    <span class="text-4xl text-red-400"><i class="bi bi-megaphone-fill"></i></span>
+                    <span class="text-white">社務所だより</span>
+                </h2>
+                <p class="text-sm text-zinc-300 leading-relaxed max-w-xl" style="font-family: 'Shippori Mincho', serif;">
+                    杜の更新情報・重要なお知らせ・技術的なご報告を、
+                    時系列で静かに記録した公式案内板です。
+                </p>
+            </div>
+            <div class="flex-shrink-0 text-center flex flex-col items-center gap-2">
+                <div class="w-20 h-20 rounded-2xl flex items-center justify-center" style="background: linear-gradient(135deg, #7f1d1d, #b91c1c); box-shadow: 0 0 24px rgba(239,68,68,0.3);">
+                    <i class="bi bi-newspaper text-4xl text-white"></i>
+                </div>
+                <p class="text-xs text-zinc-500 font-bold tracking-widest">社務所記録</p>
+            </div>
+        </div>
     </div>
-    
-    <!-- 検索コントロールバー -->
+
     <div class="news-control-bar">
         <div class="flex items-center gap-2 mb-2">
             <i class="bi bi-search text-gray-400"></i>
@@ -7696,22 +7817,37 @@ body.sidebar-collapsed #sidebar:hover .nav-group-title {
                oninput="handleSearch('news', this.value)">
     </div>
 
-    <!-- 記事グリッドリスト -->
     <div id="view-news-list" class="news-grid-container">
-        <!-- JSでカードが自動挿入されます -->
     </div>
 
-    <!-- ページネーション -->
     <div id="news-pagination" class="flex justify-center items-center gap-4 mt-8">
-        <!-- JSで自動挿入 -->
     </div>
 </section>
 
         <!-- ビュー: 神籤草子（検索・ページ機能付き） -->
 <section id="view-column" class="view-section max-w-4xl mx-auto relative pb-20">
-    <div class="text-center mb-8">
-        <h2 class="text-3xl font-black mb-2 tracking-widest" style="font-family: 'Zen Old Mincho'">神籤草子</h2>
-        <p class="text-xs font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest">SACRED COLUMNS</p>
+    <div class="bento-card column-hero-card mb-6 relative overflow-hidden bg-gradient-to-br from-indigo-950 via-zinc-900 to-black border border-zinc-800 text-white" style="padding: 2rem;">
+        <div class="absolute top-0 right-0 w-72 h-72 opacity-15 pointer-events-none" style="background: radial-gradient(circle, #6366f1 0%, transparent 70%);"></div>
+        <div class="absolute bottom-0 left-0 w-48 h-48 opacity-10 pointer-events-none" style="background: radial-gradient(circle, #d4af37 0%, transparent 70%);"></div>
+        <div class="relative z-10 flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
+            <div class="flex-1">
+                <p class="text-xs font-bold tracking-[0.3em] uppercase mb-2" style="color: var(--accent-gold);">SACRED COLUMNS</p>
+                <h2 class="text-3xl md:text-4xl font-black mb-3 flex items-center gap-3" style="font-family: 'Zen Old Mincho', serif;">
+                    <span class="text-4xl text-indigo-400"><i class="bi bi-book-half"></i></span>
+                    <span class="text-white">神籤草子</span>
+                </h2>
+                <p class="text-sm text-zinc-300 leading-relaxed max-w-xl" style="font-family: 'Shippori Mincho', serif;">
+                    おみくじ・神社・暦・作法を静かに掘り下げる、
+                    杜の読み物と学びの書架です。
+                </p>
+            </div>
+            <div class="flex-shrink-0 text-center flex flex-col items-center gap-2">
+                <div class="w-20 h-20 rounded-2xl flex items-center justify-center" style="background: linear-gradient(135deg, #3730a3, #4f46e5); box-shadow: 0 0 24px rgba(99,102,241,0.35);">
+                    <i class="bi bi-journal-richtext text-4xl text-white"></i>
+                </div>
+                <p class="text-xs text-zinc-500 font-bold tracking-widest">神籤文庫</p>
+            </div>
+        </div>
     </div>
     
     <!-- 検索コントロールバー (ニュースと共通デザイン) -->
@@ -7739,19 +7875,17 @@ body.sidebar-collapsed #sidebar:hover .nav-group-title {
         <!-- ビュー: 記事詳細 (モダン・リーダーUI) -->
         <section id="view-article-detail" class="view-section">
             <div class="max-w-4xl mx-auto pb-20">
-                <!-- ナビゲーションヘッダー -->
-                <div class="flex items-center justify-between mb-6 px-2">
+                <div class="bento-card mb-5 px-4 py-3 flex items-center justify-between">
                     <button onclick="articleBack()" class="group flex items-center gap-2 text-sm font-bold text-gray-500 hover:text-gray-900 dark:hover:text-gray-100 transition">
                         <div class="w-8 h-8 rounded-full bg-white dark:bg-zinc-800 flex items-center justify-center border border-gray-200 dark:border-gray-700 shadow-sm group-hover:shadow-md transition">
                             <i class="bi bi-arrow-left"></i>
                         </div>
                         <span>一覧に戻る</span>
                     </button>
+                    <span class="text-[11px] tracking-widest font-bold text-gray-400 dark:text-zinc-500">ARTICLE DETAIL</span>
                 </div>
 
-                <!-- 記事カード本体 -->
                 <div class="bento-card p-0 overflow-hidden relative">
-                    <!-- JSでコンテンツがここに描画されます -->
                     <div id="article-detail-content"></div>
                 </div>
             </div>
@@ -13475,7 +13609,7 @@ let historyPageState = {
     
     // 状態管理 (ページ番号と検索ワード)
     const listState = {
-        news: { page: 1, query: '', perPage: 5 },   // ニュースは1ページ5件
+        news: { page: 1, query: '', perPage: 6 },   // ニュースは1ページ6件
         column: { page: 1, query: '', perPage: 6 }  // コラムは1ページ6件
     };
 
