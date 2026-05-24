@@ -237,16 +237,15 @@
         border: none !important;
     }
 
-    /* グループ間セパレーター線 */
+    /* グループ間セパレーター線 — 点線 */
     .nav-group + .nav-group {
         margin-top: 6px;
     }
     .nav-group + .nav-group::before {
         content: '';
         display: block;
-        height: 1px;
-        background: var(--glass-border);
-        margin: 0 0 8px;
+        border-top: 1.5px dashed var(--card-border);
+        margin: 0 8px 8px;
         flex-shrink: 0;
     }
 
@@ -411,6 +410,54 @@
     @keyframes fadeInSidebar {
         from { opacity: 0; transform: translateX(-6px); }
         to   { opacity: 1; transform: translateX(0); }
+    }
+
+    /* ============ トグルボタンエリア ============ */
+    .nav-toggle-area {
+        padding: 0 8px;
+        margin-bottom: 6px;
+        border-bottom: 1.5px dashed var(--card-border);
+        padding-bottom: 8px;
+        flex-shrink: 0;
+    }
+
+    /* トグルボタン — 通常の nav-btn より少し薄め */
+    .nav-toggle-btn {
+        color: var(--text-sub) !important;
+        opacity: 0.6;
+        transition: opacity 0.15s ease, background 0.15s ease !important;
+    }
+    .nav-toggle-btn:hover {
+        opacity: 1;
+        background: rgba(0,0,0,0.04) !important;
+        color: var(--text-main) !important;
+    }
+    .dark .nav-toggle-btn:hover {
+        background: rgba(255,255,255,0.06) !important;
+    }
+    /* アクティブ上書き防止 */
+    .nav-toggle-btn.active,
+    .nav-toggle-btn::before {
+        display: none !important;
+        background: transparent !important;
+        box-shadow: none !important;
+    }
+
+    /* トグルアイコン切り替え */
+    /* 閉じた状態（ホバー前）: 開くアイコンを表示 */
+    .toggle-icon-closed { display: flex; align-items: center; justify-content: center; }
+    .toggle-icon-open   { display: none; }
+
+    /* 展開時（ホバー）: 閉じるアイコンを表示 */
+    @media (min-width: 1025px) and (hover: hover) {
+        #sidebar:hover .toggle-icon-closed { display: none; }
+        #sidebar:hover .toggle-icon-open   { display: flex; align-items: center; justify-content: center; }
+        #sidebar:hover .nav-toggle-btn { opacity: 1; }
+        #sidebar:hover .nav-toggle-label { opacity: 1 !important; transition: opacity 0.22s 0.07s ease !important; }
+    }
+    /* モバイルはアイコンのみ表示 */
+    @media (max-width: 1024px) {
+        .nav-toggle-area { padding: 0 0 8px; margin-bottom: 4px; }
     }
 
     /* メインコンテンツ位置 */
@@ -5653,6 +5700,17 @@ body.sidebar-collapsed #sidebar:hover .nav-group-title {
     </div>
 
     <nav id="sidebar">
+    <!-- サイドバートグルボタン -->
+    <div class="nav-toggle-area">
+        <button class="nav-btn nav-toggle-btn" onclick="toggleSidebar()" title="サイドバーの開閉">
+            <div class="nav-icon-box">
+                <i class="bi bi-layout-sidebar-inset-reverse toggle-icon-closed"></i>
+                <i class="bi bi-layout-sidebar-inset toggle-icon-open"></i>
+            </div>
+            <span class="nav-text nav-toggle-label">天命乃杜</span>
+        </button>
+    </div>
+
     <!-- 1. メイン機能グループ -->
     <div class="nav-group">
         <div class="nav-group-title">Main Menu</div>
