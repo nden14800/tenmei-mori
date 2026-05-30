@@ -51,6 +51,16 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Tailwind Config -->
     <script>
+    const DISCORD_INVITE_URL = "https://discord.gg/Ys6hpbNdcV";
+
+    function openDiscordInvite() {
+        if (!DISCORD_INVITE_URL || DISCORD_INVITE_URL.includes('REPLACE_WITH_INVITE_CODE')) {
+            showToast('公式Discord参拝所の招待URLは準備中です。', 'info', '公式Discord');
+            return;
+        }
+        window.open(DISCORD_INVITE_URL, '_blank', 'noopener,noreferrer');
+    }
+
     function toggleSidebar() {
         const isMobile = window.innerWidth <= 1024;
         if (isMobile || document.body.classList.contains('sidebar-button-mode')) {
@@ -6525,13 +6535,21 @@ body.sidebar-collapsed #sidebar:hover .nav-group-title {
                         </div>
                     </div>
 
-                    <!-- おみくじアクション大ボタン (シャイン光沢加工 ＆ ゴールドボーダーグロー) -->
-                    <div class="z-10 w-full flex justify-center py-2">
+                    <!-- おみくじ・公式Discord アクションエリア -->
+                    <div class="z-10 w-full flex flex-col items-center gap-3 py-2">
                         <button onclick="startOmikuji()" class="group btn-shine-effect flex items-center justify-center gap-4 bg-[var(--accent-red)] text-white hover:bg-[#a01818] transition-all duration-300 py-5 px-10 rounded-2xl w-full max-w-lg transform hover:-translate-y-1" style="border: 2px solid var(--accent-gold); box-shadow: 0 0 15px rgba(197, 160, 89, 0.45);">
                             <i class="bi bi-box-seam-fill text-3xl group-hover:scale-110 transition-transform duration-300"></i>
                             <div class="text-left">
                                 <h3 class="font-black text-lg md:text-xl tracking-wider m-0 leading-tight" style="font-family: 'Zen Old Mincho', serif;">おみくじを引く</h3>
                                 <p class="text-[10px] opacity-80 mt-0.5 leading-none">心を静め、天命を問う</p>
+                            </div>
+                        </button>
+
+                        <button onclick="openDiscordInvite()" class="group flex items-center justify-center gap-3 text-white transition-all duration-300 py-4 px-8 rounded-2xl w-full max-w-lg transform hover:-translate-y-1" style="background: linear-gradient(135deg, #5865F2, #3b45b8); border: 1px solid rgba(255,255,255,0.25); box-shadow: 0 0 18px rgba(88,101,242,0.35);">
+                            <i class="bi bi-discord text-2xl group-hover:scale-110 transition-transform duration-300"></i>
+                            <div class="text-left">
+                                <h3 class="font-black text-base md:text-lg tracking-wider m-0 leading-tight" style="font-family: 'Zen Old Mincho', serif;">公式Discord参拝所へ</h3>
+                                <p class="text-[10px] opacity-85 mt-0.5 leading-none">毎朝の天命・おみくじ・御守を受け取る</p>
                             </div>
                         </button>
                     </div>
@@ -8269,7 +8287,7 @@ body.sidebar-collapsed #sidebar:hover .nav-group-title {
                     <div class="p-6 border-b border-red-100 dark:border-red-900 bg-red-50 dark:bg-red-900/20">
                         <h3 class="text-xl font-black flex items-center gap-3 text-red-800 dark:text-red-200">
                             <span class="flex items-center justify-center w-8 h-8 rounded bg-red-600 text-white text-sm">05</span>
-                            免責事項およびサポートの非提供
+                            免責事項および連絡窓口について
                         </h3>
                     </div>
                     <div class="p-6 md:p-8 text-sm leading-8 text-gray-700 dark:text-gray-300">
@@ -8280,8 +8298,9 @@ body.sidebar-collapsed #sidebar:hover .nav-group-title {
                             1. 当運営は、本サービスの提供の中断、停止、終了、利用不能、またはデータの消失（ユーザーによる退会処理や、不可抗力によるサーバー障害を含む）によってユーザーに生じた損害について、一切の責任を負いません。<br>
                             2. 「おみくじの轍（履歴）」機能は、ユーザーの利便性のために提供されるものですが、永続的なデータ保存を法的に保証するものではありません。重要な結果については、画像保存機能を用いてユーザー自身の端末に物理的に保存することを強く推奨します。<br>
                             3. 本サービスからリンクされている外部サイト（SNSシェア先等）の内容やプライバシー保護については、当運営は責任を負いません。<br>
-                            4. <strong>本サービスは個人開発による実験的プロジェクトであり、専任のサポート窓口やお問い合わせフォームは一切設置しておりません。また、運営者のSNSアカウント等を通じた個別の連絡、不具合報告、機能要望への対応も、アカウント凍結等の事情により一切行うことができません。</strong><br>
-                            5. 万が一、本サービスの利用により何らかの問題が生じた場合、または個人情報の取扱いに関して懸念が生じた場合は、直ちに本サービスの利用を中止し、「アカウント削除」機能を用いてご自身のデータを完全に消去する措置をとってください。これ以外の個別対応は致しかねますことを、あらかじめご了承ください。
+                            4. <strong>本サービスは個人開発による実験的プロジェクトであり、専任のサポート窓口やお問い合わせフォーム、サポート用メールアドレスは設置しておりません。</strong>一方で、公式Discord参拝所を開設したことに伴い、サイトに関する一般的なご感想、不具合と思われる現象の共有、機能改善のご提案については、Discord上の公開チャンネル等でお寄せいただけます。<br>
+                            5. ただし、公式Discord参拝所は常設のカスタマーサポート窓口ではなく、個別返信、調査、修正、データ復旧、開示請求等への対応を保証するものではありません。緊急性の高い内容、個人情報を含む内容、第三者に見られて困る内容は投稿しないでください。<br>
+                            6. 万が一、本サービスの利用により何らかの問題が生じた場合、または個人情報の取扱いに関して懸念が生じた場合は、直ちに本サービスの利用を中止し、「アカウント削除」機能を用いてご自身のデータを完全に消去する措置をとってください。Discord上でご連絡いただいた場合であっても、個別対応をお約束するものではありません。
                         </p>
                     </div>
                 </div>
@@ -8303,7 +8322,7 @@ body.sidebar-collapsed #sidebar:hover .nav-group-title {
                             <span class="text-4xl text-red-400"><i class="bi bi-shield-lock-fill"></i></span>
                             <span class="text-white">プライバシーポリシー</span>
                         </h2>
-                        <p class="text-sm text-zinc-300 leading-relaxed max-w-xl" style="font-family: 'Shippori Mincho', serif;">制定: 2026/01/02 ・ 改定: 2026/05/19 (第11版) ・ 運営: nden148</p>
+                        <p class="text-sm text-zinc-300 leading-relaxed max-w-xl" style="font-family: 'Shippori Mincho', serif;">制定: 2026/01/02 ・ 改定: 2026/05/30 (第12版) ・ 運営: nden148</p>
                     </div>
                     <div class="flex-shrink-0 text-center flex flex-col items-center gap-2">
                         <div class="w-20 h-20 rounded-2xl flex items-center justify-center" style="background: linear-gradient(135deg, #7f1d1d, #b91c1c); box-shadow: 0 0 24px rgba(239,68,68,0.3);">
@@ -8382,7 +8401,7 @@ body.sidebar-collapsed #sidebar:hover .nav-group-title {
                             <p class="mb-4">当サイトが個人情報を収集・利用する目的は、以下のとおりです。</p>
                             <ul class="list-disc pl-5 space-y-1">
                                 <li>本サービスの提供・運営のため（認証システムによるログイン状態の維持、履歴データの呼び出し等）</li>
-                                <li>ユーザーからのお問い合わせに対応するため（本人確認を行うことを含む）</li>
+                                <li>ユーザーからの公式Discord参拝所等を通じたご連絡・ご報告に対応するため（必要に応じて本人確認を行うことを含む。ただし、個別対応を保証するものではありません）</li>
                                 <li>本サービスの利用規約に違反したユーザーや、不正・不当な目的でサービスを利用しようとするユーザーを特定し、ご利用をお断りするため</li>
                                 <li>ユーザーにご自身の登録情報の閲覧や変更、削除、ご利用状況の閲覧を行っていただくため</li>
                                 <li>メンテナンス、重要なお知らせなど必要に応じたご連絡のため</li>
@@ -8464,6 +8483,12 @@ body.sidebar-collapsed #sidebar:hover .nav-group-title {
                                     <p class="text-gray-500">送信される情報：ウィジェット操作に伴うブラウザ環境情報（User Agent、画面解像度等）、アクセス元IPアドレス</p>
                                     <p class="mt-1">特記事項：Cloudflare Turnstileはユーザーの操作パターンをCloudflareのサーバーで解析し、人間による操作かボットによる操作かを自動的に判定します。取得した情報は当サイトのサーバーには保存されず、判定処理はCloudflareの管理下で行われます。「Googleでログイン」を使用される場合は本機能は適用されません。Cloudflareのデータ利用方針については <a href="https://www.cloudflare.com/privacypolicy/" target="_blank" rel="noopener noreferrer" class="underline text-blue-500">Cloudflare プライバシーポリシー</a> をご参照ください。</p>
                                 </div>
+                                <div class="bg-white dark:bg-black/20 p-3 rounded border border-gray-200 dark:border-gray-700 text-xs">
+                                    <p class="font-bold text-sm">9. Discord (Discord Inc.)</p>
+                                    <p class="text-gray-500">利用目的：公式Discord参拝所への参加、サイト更新情報の共有、スラッシュコマンドによるおみくじ・御守・星座占い等の提供、および公開チャンネル上でのご意見・不具合報告の受付</p>
+                                    <p class="text-gray-500">送信される情報：Discord上のユーザー名・ユーザーID、サーバー内での投稿内容、スラッシュコマンドの入力内容、Discordが取得する通信情報等</p>
+                                    <p class="mt-1">特記事項：公式Discord参拝所はDiscord Inc.が提供する外部サービス上で運用されます。参加・投稿・コマンド実行に伴う情報はDiscordの管理下でも処理されます。公開チャンネルには個人情報や機微な内容を投稿しないでください。Discordのデータ利用方針については <a href="https://discord.com/privacy" target="_blank" rel="noopener noreferrer" class="underline text-blue-500">Discord プライバシーポリシー</a> をご参照ください。</p>
+                                </div>
                             </div>
                         </div>
 
@@ -8531,16 +8556,19 @@ body.sidebar-collapsed #sidebar:hover .nav-group-title {
 
                         <div class="pl-4 border-l-4 border-red-500">
                             <h4 class="font-bold text-lg mb-4 text-red-600 dark:text-red-400 flex items-center gap-2">
-                                <span class="text-red-200 text-xs font-normal">11</span> 第11条（お問い合わせ窓口の不存在と対処方法）
+                                <span class="text-red-200 text-xs font-normal">11</span> 第11条（連絡方法と個別対応の制限）
                             </h4>
                             <div class="bg-red-50 dark:bg-red-900/20 p-6 rounded-xl border border-red-100 dark:border-red-900/50">
                                 <p class="mb-2 font-bold text-red-700 dark:text-red-300 flex items-center gap-2"><i class="bi bi-exclamation-circle-fill"></i> 重要：連絡先について</p>
                                 <p class="mb-4">
-                                    本サービスは個人開発による非営利・実験的なプロジェクトとして運営されております。現在、<strong>お問い合わせフォーム、サポート用メールアドレス、SNSアカウント等の連絡窓口は一切設置しておりません。</strong>そのため、個別の開示請求、苦情のお申し出、機能改善のご要望等をいただきましても、対応やご返信を行うことができません。
+                                    本サービスは個人開発による非営利・実験的なプロジェクトとして運営されております。現在、<strong>お問い合わせフォームおよびサポート用メールアドレスは設置しておりません。</strong>ただし、公式Discord参拝所の開設に伴い、サイトに関する一般的なご連絡、不具合と思われる現象の共有、機能改善のご提案については、Discord上の公開チャンネル等で受け付ける場合があります。
+                                </p>
+                                <p class="mb-4">
+                                    公式Discord参拝所は、ユーザー同士の交流および運営からのお知らせを目的とする外部コミュニティであり、法令上の正式な開示請求窓口、苦情処理窓口、個別サポート窓口ではありません。投稿内容は他の参加者から閲覧される可能性があるため、メールアドレス、認証情報、住所、電話番号、その他個人を特定できる情報は投稿しないでください。
                                 </p>
                                 <p class="mb-2 font-bold text-gray-800 dark:text-gray-200">【対処方法】</p>
                                 <p>
-                                    本サービスにおける個人情報の取扱い等に懸念が生じた場合、またはサービスの利用継続が困難であると判断された場合は、以下の手順によりご自身で対応をお願いいたします。
+                                    本サービスにおける個人情報の取扱い等に懸念が生じた場合、またはサービスの利用継続が困難であると判断された場合は、以下の手順によりご自身で対応をお願いいたします。Discord上でご連絡いただいた場合であっても、個別対応や返信を保証するものではありません。
                                 </p>
                                 <ol class="list-decimal pl-5 mt-2 space-y-1">
                                     <li>本サービスの利用を直ちに中止してください。</li>
@@ -8982,6 +9010,61 @@ function escapeHtml(str) {
     const newsData = [
 
 
+{
+    id: 79,
+    title: "【新設】公式Discord参拝所の開設と、サイト導線の追加について",
+    date: "2026/05/30",
+    time: "06:52",
+    tag: "新機能",
+    tagColor: "text-indigo-600",
+    borderColor: "border-indigo-500",
+    desc: "天命乃杜の公式Discord参拝所を開設し、ホーム画面から直接参加できる導線を追加いたしました。あわせて、当サイトについて・プライバシーポリシーの連絡窓口に関する記載を更新しました。",
+    content: `
+        <div class="article-content">
+            <p>いつも「運勢・天命乃杜」をご利用いただき、誠にありがとうございます。運営者のnden148です。</p>
+            <p>本日、天命乃杜の新たな交流拠点として、<strong>公式Discord参拝所</strong>を開設し、ホーム画面から直接参加できる導線を追加いたしました。</p>
+            <p>これまで天命乃杜は、Webサイト上でおみくじ、12星座×血液型占い、デジタル御守、全国の運気などを提供してまいりました。今回の更新では、それらの体験を一度きりの閲覧で終わらせず、日々の習慣として受け取れる場所を整えることを目的としています。</p>
+
+            <h3>1. 公式Discord参拝所について</h3>
+            <p>公式Discord参拝所は、天命乃杜の案内・通知・占い体験を受け取るための公式コミュニティです。現在は試験運用を兼ねた小規模な開設となりますが、以下のような用途を想定しています。</p>
+            <ul class="list-disc ml-5 mb-4">
+                <li><strong>毎朝の天命：</strong>その日の導きや一歩を、指定チャンネルへ自動でお届けします。</li>
+                <li><strong>おみくじ：</strong>Discord上で <code>/おみくじ</code> を実行し、天命乃杜のおみくじを受け取れます。</li>
+                <li><strong>今日の暦：</strong><code>/今日の暦</code> により、その日の過ごし方の指針を確認できます。</li>
+                <li><strong>デジタル御守：</strong><code>/御守</code> から、願意に合わせた御守の言葉を授かれます。</li>
+                <li><strong>12星座×血液型占い：</strong><code>/星座占い</code> により、星座と血液型ごとの本日の順位・運勢を確認できます。</li>
+            </ul>
+
+            <h3>2. ホーム画面への導線追加</h3>
+            <p>ホーム画面の大きな「おみくじを引く」ボタンの下に、新たに<strong>「公式Discord参拝所へ」</strong>ボタンを追加しました。</p>
+            <p>これにより、初めて天命乃杜へ訪れた方でも、サイトでおみくじを引いた流れのまま公式Discordへ移動しやすくなっています。ボタンはDiscordのブランドカラーを基調としつつ、天命乃杜の和モダンなHeroカード内でも浮きすぎないよう、角丸・影・余白を既存ボタンと揃えています。</p>
+
+            <h3>3. なぜDiscordなのか</h3>
+            <p>当初は外部SNSへの自動投稿も検討しておりましたが、API仕様や料金体系の変化が激しいサービスでは、長期的な安定運用が難しくなる可能性があります。</p>
+            <p>一方でDiscordは、スラッシュコマンドとの相性が良く、参拝者の皆様が自分のタイミングで <code>/おみくじ</code> や <code>/御守</code> を実行できるため、天命乃杜の「必要な時に、静かに天命を受け取る」という体験に合っていると判断しました。</p>
+
+            <h3>4. 現在利用できる主なコマンド</h3>
+            <p>公式Discord参拝所では、現時点で以下のコマンドを利用できます。</p>
+            <ul class="list-disc ml-5 mb-4">
+                <li><code>/おみくじ</code>：サイト本体のおみくじロジックに近い形で、御神籤を授与します。</li>
+                <li><code>/今日の暦</code>：本日の暦と、過ごし方の導きを表示します。</li>
+                <li><code>/御守</code>：交通安全、健康長寿、良縁成就、金運上昇、学業成就、必勝祈願、厄除け、大願成就の中から願意を選び、御守の言葉を受け取れます。</li>
+                <li><code>/星座占い</code>：12星座×4血液型、全48通りの本日の運勢を表示します。</li>
+            </ul>
+
+            <h3>5. 当サイトについて・プライバシーポリシーの記載更新</h3>
+            <p>公式Discord参拝所の開設に伴い、「当サイトについて」および「プライバシーポリシー」に記載していた連絡窓口に関する表現も更新しました。</p>
+            <p>従来どおり、専任のサポート窓口、お問い合わせフォーム、サポート用メールアドレスは設置しておりません。一方で、サイトに関する一般的なご感想、不具合と思われる現象の共有、機能改善のご提案については、公式Discord参拝所の公開チャンネル等で受け付ける場合があります。</p>
+            <p>ただし、Discordは法令上の正式な開示請求窓口、苦情処理窓口、個別サポート窓口ではありません。投稿内容は他の参加者から閲覧される可能性があるため、メールアドレス、認証情報、住所、電話番号、その他個人を特定できる情報は投稿しないでください。</p>
+
+            <h3>6. 今後について</h3>
+            <p>今後は、サイト側の更新情報や季節ごとの特別な導き、月初めの運勢まとめなども、必要に応じて公式Discord参拝所へ展開していく予定です。</p>
+            <p>ただし、Discordはあくまで天命乃杜を補助する「社務所」兼「参拝所」として運用します。中心となるのは引き続き本サイトであり、詳しい占いや記録、御守画像の保存などはWeb版でご利用いただく形となります。</p>
+
+            <p>天命乃杜は、これからも一人で静かに参拝できる場所でありながら、必要な方には日々の導きが届く場所でありたいと考えています。公式Discord参拝所も、そのための新しい結び目として、少しずつ整えてまいります。</p>
+        </div>
+    `
+},
 {
     id: 78,
     title: "【Ver. 3.0 リリース】「天命乃杜」、UIを全面刷新しました",
