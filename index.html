@@ -51,6 +51,16 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Tailwind Config -->
     <script>
+    const DISCORD_INVITE_URL = "https://discord.gg/SujUT4NR";
+
+    function openDiscordInvite() {
+        if (!DISCORD_INVITE_URL || DISCORD_INVITE_URL.includes('REPLACE_WITH_INVITE_CODE')) {
+            showToast('公式Discord参拝所の招待URLは準備中です。', 'info', '公式Discord');
+            return;
+        }
+        window.open(DISCORD_INVITE_URL, '_blank', 'noopener,noreferrer');
+    }
+
     function toggleSidebar() {
         const isMobile = window.innerWidth <= 1024;
         if (isMobile || document.body.classList.contains('sidebar-button-mode')) {
@@ -6525,13 +6535,21 @@ body.sidebar-collapsed #sidebar:hover .nav-group-title {
                         </div>
                     </div>
 
-                    <!-- おみくじアクション大ボタン (シャイン光沢加工 ＆ ゴールドボーダーグロー) -->
-                    <div class="z-10 w-full flex justify-center py-2">
+                    <!-- おみくじ・公式Discord アクションエリア -->
+                    <div class="z-10 w-full flex flex-col items-center gap-3 py-2">
                         <button onclick="startOmikuji()" class="group btn-shine-effect flex items-center justify-center gap-4 bg-[var(--accent-red)] text-white hover:bg-[#a01818] transition-all duration-300 py-5 px-10 rounded-2xl w-full max-w-lg transform hover:-translate-y-1" style="border: 2px solid var(--accent-gold); box-shadow: 0 0 15px rgba(197, 160, 89, 0.45);">
                             <i class="bi bi-box-seam-fill text-3xl group-hover:scale-110 transition-transform duration-300"></i>
                             <div class="text-left">
                                 <h3 class="font-black text-lg md:text-xl tracking-wider m-0 leading-tight" style="font-family: 'Zen Old Mincho', serif;">おみくじを引く</h3>
                                 <p class="text-[10px] opacity-80 mt-0.5 leading-none">心を静め、天命を問う</p>
+                            </div>
+                        </button>
+
+                        <button onclick="openDiscordInvite()" class="group flex items-center justify-center gap-3 text-white transition-all duration-300 py-4 px-8 rounded-2xl w-full max-w-lg transform hover:-translate-y-1" style="background: linear-gradient(135deg, #5865F2, #3b45b8); border: 1px solid rgba(255,255,255,0.25); box-shadow: 0 0 18px rgba(88,101,242,0.35);">
+                            <i class="bi bi-discord text-2xl group-hover:scale-110 transition-transform duration-300"></i>
+                            <div class="text-left">
+                                <h3 class="font-black text-base md:text-lg tracking-wider m-0 leading-tight" style="font-family: 'Zen Old Mincho', serif;">公式Discord参拝所へ</h3>
+                                <p class="text-[10px] opacity-85 mt-0.5 leading-none">毎朝の天命・おみくじ・御守を受け取る</p>
                             </div>
                         </button>
                     </div>
