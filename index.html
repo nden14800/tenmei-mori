@@ -17349,6 +17349,63 @@ async function logout() {
 
         scoredData.sort((a, b) => b.totalScore - a.totalScore);
 
+        // --- Fisher-Yatesシャッフルで全エントリーに重複なく割り振る ---
+        // luckyNum：1〜99からエントリー数分をシャッフルして割り当て（完全重複なし）
+        const _numPool = Array.from({ length: 99 }, (_, k) => k + 1);
+        const _numRng = new SeededRandom(dateStr + "_luckynum_shuffle");
+        for (let k = _numPool.length - 1; k > 0; k--) {
+            const j = Math.floor(_numRng.next() * (k + 1));
+            [_numPool[k], _numPool[j]] = [_numPool[j], _numPool[k]];
+        }
+        const shuffledLuckyNums = _numPool.slice(0, scoredData.length);
+
+        // item：zodiacItemsListをシャッフルして順番に割り当て（完全重複なし）
+        const _itemPool = zodiacItemsList.slice();
+        const _itemRng = new SeededRandom(dateStr + "_item_shuffle");
+        for (let k = _itemPool.length - 1; k > 0; k--) {
+            const j = Math.floor(_itemRng.next() * (k + 1));
+            [_itemPool[k], _itemPool[j]] = [_itemPool[j], _itemPool[k]];
+        }
+
+        // color：zodiacColorsListをシャッフルして順番に割り当て（完全重複なし）
+        const _colorPool = zodiacColorsList.slice();
+        const _colorRng = new SeededRandom(dateStr + "_color_shuffle");
+        for (let k = _colorPool.length - 1; k > 0; k--) {
+            const j = Math.floor(_colorRng.next() * (k + 1));
+            [_colorPool[k], _colorPool[j]] = [_colorPool[j], _colorPool[k]];
+        }
+
+        // desc（短い説明文）：カテゴリ×ランク単位でFisher-Yatesシャッフルして割り当て
+        // 同ランク内の最初の5エントリーは全パターン異なることを保証
+        // 6エントリー以上のランクは5個ごとに再シャッフルして繰り返す
+        const _descAssign = { love: {}, money: {}, work: {} };
+        ['love', 'money', 'work'].forEach(cat => {
+            ['S', 'A', 'B', 'C'].forEach(rank => {
+                const groupIdx = scoredData.reduce((acc, d, idx) => {
+                    if (getRank(d[cat].score) === rank) acc.push(idx);
+                    return acc;
+                }, []);
+                if (groupIdx.length === 0) return;
+                const _dRng = new SeededRandom(dateStr + '_desc_' + cat + '_' + rank);
+                const _pPool = [0, 1, 2, 3, 4];
+                for (let k = _pPool.length - 1; k > 0; k--) {
+                    const j = Math.floor(_dRng.next() * (k + 1));
+                    [_pPool[k], _pPool[j]] = [_pPool[j], _pPool[k]];
+                }
+                const seq = [];
+                while (seq.length < groupIdx.length) {
+                    seq.push(..._pPool.slice(0, Math.min(_pPool.length, groupIdx.length - seq.length)));
+                    if (seq.length < groupIdx.length) {
+                        for (let k = _pPool.length - 1; k > 0; k--) {
+                            const j = Math.floor(_dRng.next() * (k + 1));
+                            [_pPool[k], _pPool[j]] = [_pPool[j], _pPool[k]];
+                        }
+                    }
+                }
+                groupIdx.forEach((dataIdx, pos) => { _descAssign[cat][dataIdx] = seq[pos]; });
+            });
+        });
+
         scoredData.forEach((d, i) => { 
             d.rank = i + 1;
             const totalRank = getRank(d.totalScore);
@@ -17362,19 +17419,16 @@ async function logout() {
             const mR = getRank(d.money.score);
             const wR = getRank(d.work.score);
 
-            // エントリーごとに固有のシード（日付＋星座ID＋血液型）でRNGを生成
-            // これにより同日・同ランクでも異なる文章・数値が選ばれ、被りを最小化する
-            const entryRng = new SeededRandom(dateStr + "_" + d.sign.id + "_" + d.blood);
-
-            // 短い説明文の抽出（エントリー固有RNGで選択）
+            // 短い説明文：シャッフル済み割り当てから取得（同ランク内5エントリーは完全に異なる）
             const lArr = luckComments.loveShorts[lR];
-            d.love.desc = lArr[Math.floor(entryRng.next() * lArr.length)];
-
+            d.love.desc = lArr[_descAssign.love[i]];
             const mArr = luckComments.moneyShorts[mR];
-            d.money.desc = mArr[Math.floor(entryRng.next() * mArr.length)];
-
+            d.money.desc = mArr[_descAssign.money[i]];
             const wArr = luckComments.workShorts[wR];
-            d.work.desc = wArr[Math.floor(entryRng.next() * wArr.length)];
+            d.work.desc = wArr[_descAssign.work[i]];
+
+            // 長文用RNG（intro/detail/conclusionはパターン数15以上のため確率的に十分）
+            const entryRng = new SeededRandom(dateStr + "_" + d.sign.id + "_" + d.blood);
 
             // --- 超長文の生成ロジック ---
             const introArr = luckComments.mainIntro[totalRank];
@@ -17398,11 +17452,10 @@ async function logout() {
             // 全てを繋げて超長文にする
             d.longDesc = `${intro}<br><br>${lovePara}<br><br>${moneyPara}<br><br>${workPara}<br><br>${conclusion}`;
 
-            // ラッキーナンバー：1〜99の範囲でエントリー固有RNGにより算出（被り大幅減少）
-            d.luckyNum = Math.floor(entryRng.next() * 99) + 1;
-            // ラッキーアイテム・カラー：エントリー固有RNGで選択
-            d.item = zodiacItemsList[Math.floor(entryRng.next() * zodiacItemsList.length)];
-            d.color = zodiacColorsList[Math.floor(entryRng.next() * zodiacColorsList.length)];
+            // シャッフル済み配列から順番に割り当て（完全重複なし）
+            d.luckyNum = shuffledLuckyNums[i];
+            d.item = _itemPool[i % _itemPool.length];
+            d.color = _colorPool[i % _colorPool.length];
             
             d.calendar = calculateFutureLuck(d.sign.id, d.blood, dateStr);
         });
