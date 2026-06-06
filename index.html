@@ -5815,6 +5815,263 @@ body.sidebar-collapsed #sidebar:hover .nav-group-title {
     }
     </style>
 
+
+    <!-- チュートリアル ウォークスルー CSS -->
+    <style>
+    /* ── ウォークスルー オーバーレイ ── */
+    #tutorial-overlay {
+        position: fixed; inset: 0; z-index: 99999;
+        background: rgba(0,0,0,0.88);
+        display: flex; align-items: center; justify-content: center;
+        padding: 1rem;
+        backdrop-filter: blur(6px);
+        -webkit-backdrop-filter: blur(6px);
+        opacity: 0;
+        pointer-events: none;
+        transition: opacity 0.4s;
+    }
+    #tutorial-overlay.active {
+        opacity: 1;
+        pointer-events: all;
+    }
+    .tutorial-card {
+        background: linear-gradient(145deg, #111 0%, #1a1208 100%);
+        border: 1px solid rgba(212,175,55,0.25);
+        border-top: 2px solid var(--accent-gold);
+        border-radius: 20px;
+        padding: 2.5rem 2rem 2rem;
+        max-width: 460px;
+        width: 100%;
+        position: relative;
+        text-align: center;
+        box-shadow: 0 0 60px rgba(212,175,55,0.1), 0 32px 64px rgba(0,0,0,0.8);
+    }
+    .tutorial-slide { display: none; }
+    .tutorial-slide.active { display: block; }
+    .tutorial-icon {
+        font-size: 3rem;
+        margin-bottom: 1rem;
+        display: block;
+    }
+    .tutorial-title {
+        font-family: 'Zen Old Mincho', serif;
+        font-size: 1.4rem;
+        font-weight: 900;
+        margin-bottom: 0.75rem;
+        color: #fff;
+    }
+    .tutorial-desc {
+        font-size: 0.9rem;
+        line-height: 1.7;
+        color: rgba(255,255,255,0.7);
+        margin-bottom: 1.5rem;
+    }
+    .tutorial-dots {
+        display: flex; justify-content: center; gap: 6px;
+        margin-bottom: 1.5rem;
+    }
+    .tutorial-dot {
+        width: 8px; height: 8px; border-radius: 50%;
+        background: rgba(255,255,255,0.2);
+        transition: all 0.3s;
+        cursor: pointer;
+    }
+    .tutorial-dot.active {
+        width: 24px; border-radius: 4px;
+        background: var(--accent-gold);
+    }
+    .tutorial-btn-row {
+        display: flex; gap: 10px; justify-content: center;
+    }
+    .tutorial-btn-skip {
+        background: none; border: none;
+        color: rgba(255,255,255,0.4);
+        font-size: 0.8rem; cursor: pointer;
+        padding: 10px 16px;
+        transition: color 0.2s;
+    }
+    .tutorial-btn-skip:hover { color: rgba(255,255,255,0.7); }
+    .tutorial-btn-next {
+        background: linear-gradient(135deg, #b91c1c, #7f1d1d);
+        border: 1px solid rgba(212,175,55,0.3);
+        color: #fff;
+        font-weight: 900;
+        font-size: 0.9rem;
+        padding: 12px 32px;
+        border-radius: 12px;
+        cursor: pointer;
+        transition: all 0.2s;
+        box-shadow: 0 4px 16px rgba(185,28,28,0.3);
+    }
+    .tutorial-btn-next:hover { transform: translateY(-1px); filter: brightness(1.1); }
+    .tutorial-gold-label {
+        display: inline-block;
+        color: var(--accent-gold);
+        font-size: 0.7rem;
+        font-weight: 700;
+        letter-spacing: 0.2em;
+        text-transform: uppercase;
+        margin-bottom: 0.5rem;
+    }
+    </style>
+
+
+    <!-- サイトフッター CSS -->
+    <style>
+    /* ── グローバルフッター ── */
+    #site-footer {
+        width: 100%;
+        margin-top: 0;
+        background: #0a0a0a;
+        border-top: 1px solid rgba(212,175,55,0.15);
+        color: rgba(255,255,255,0.75);
+        font-size: 0.82rem;
+    }
+    .dark #site-footer {
+        background: #080808;
+    }
+    html:not(.dark) #site-footer {
+        background: #f5f0eb;
+        border-top: 1px solid rgba(185,28,28,0.15);
+        color: rgba(50,30,20,0.75);
+    }
+    .footer-wave {
+        width: 100%;
+        height: 18px;
+        background-image: repeating-linear-gradient(
+            90deg,
+            transparent 0px, transparent 6px,
+            rgba(212,175,55,0.5) 6px, rgba(212,175,55,0.5) 8px
+        );
+        -webkit-mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='40' height='18'%3E%3Cpath d='M0 12 Q5 4 10 12 Q15 20 20 12 Q25 4 30 12 Q35 20 40 12' fill='none' stroke='black' stroke-width='2.5'/%3E%3C/svg%3E");
+        -webkit-mask-repeat: repeat-x;
+        mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='40' height='18'%3E%3Cpath d='M0 12 Q5 4 10 12 Q15 20 20 12 Q25 4 30 12 Q35 20 40 12' fill='none' stroke='black' stroke-width='2.5'/%3E%3C/svg%3E");
+        mask-repeat: repeat-x;
+        background-color: rgba(212,175,55,0.55);
+        -webkit-mask-size: 40px 18px;
+        mask-size: 40px 18px;
+    }
+    html:not(.dark) .footer-wave {
+        background-color: rgba(185,28,28,0.45);
+    }
+    .footer-inner {
+        max-width: 860px;
+        margin: 0 auto;
+        padding: 2rem 1.5rem 1.5rem;
+    }
+    .footer-logo-area {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        margin-bottom: 1.8rem;
+    }
+    .footer-logo-kanji {
+        width: 52px; height: 52px;
+        border-radius: 14px;
+        display: flex; align-items: center; justify-content: center;
+        font-family: 'Zen Old Mincho', serif;
+        font-size: 1.6rem; font-weight: 900;
+        background: linear-gradient(135deg, #b91c1c, #7f1d1d);
+        color: #d4af37;
+        border: 1.5px solid rgba(212,175,55,0.3);
+        box-shadow: 0 0 16px rgba(185,28,28,0.25);
+        margin-bottom: 0.6rem;
+    }
+    .footer-site-name {
+        font-family: 'Zen Old Mincho', serif;
+        font-size: 1.15rem;
+        font-weight: 900;
+        letter-spacing: 0.25em;
+        color: inherit;
+    }
+    .footer-nav-grid {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 0.3rem 1rem;
+        margin-bottom: 1.8rem;
+        text-align: center;
+    }
+    @media (max-width: 480px) {
+        .footer-nav-grid { grid-template-columns: repeat(2, 1fr); }
+    }
+    .footer-nav-link {
+        background: none; border: none; cursor: pointer;
+        color: inherit; opacity: 0.7;
+        padding: 4px 0;
+        transition: opacity 0.2s;
+        font-size: 0.8rem;
+        text-decoration: none;
+        display: block;
+    }
+    .footer-nav-link:hover { opacity: 1; }
+    .footer-divider {
+        border: none;
+        border-top: 1px solid rgba(212,175,55,0.15);
+        margin: 1.2rem 0;
+    }
+    html:not(.dark) .footer-divider {
+        border-top: 1px solid rgba(185,28,28,0.12);
+    }
+    .footer-sns-label {
+        text-align: center;
+        font-size: 0.72rem;
+        letter-spacing: 0.2em;
+        font-weight: 700;
+        color: rgba(212,175,55,0.8);
+        margin-bottom: 0.8rem;
+    }
+    html:not(.dark) .footer-sns-label { color: rgba(185,28,28,0.8); }
+    .footer-sns-row {
+        display: flex; justify-content: center; gap: 12px;
+        margin-bottom: 1.5rem;
+    }
+    .footer-sns-btn {
+        width: 40px; height: 40px; border-radius: 50%;
+        display: flex; align-items: center; justify-content: center;
+        font-size: 1rem; cursor: pointer; border: none;
+        transition: transform 0.2s, filter 0.2s;
+        text-decoration: none;
+    }
+    .footer-sns-btn:hover { transform: translateY(-2px); filter: brightness(1.15); }
+    .footer-sns-discord {
+        background: #5865F2; color: #fff;
+    }
+    .footer-sns-github {
+        background: #333; color: #fff;
+    }
+    .footer-sns-yt {
+        background: #ff0000; color: #fff;
+    }
+    .footer-copy {
+        text-align: center;
+        font-size: 0.72rem;
+        opacity: 0.45;
+        letter-spacing: 0.08em;
+        padding-bottom: 0.5rem;
+    }
+    /* サイドバーがある分のオフセット対応 */
+    #site-footer {
+        margin-left: 96px;
+        width: calc(100% - 96px);
+        transition: margin-left 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    @media (max-width: 1366px) {
+        #site-footer {
+            margin-left: 84px !important;
+            width: calc(100% - 84px) !important;
+        }
+        body.sidebar-pinned #site-footer {
+            margin-left: 220px !important;
+            width: calc(100% - 220px) !important;
+        }
+    }
+    @media (max-width: 768px) {
+        #site-footer {
+            margin-left: 0 !important;
+            width: 100% !important;
+        }
+    }
+    </style>
 </head>
 <body>
 
@@ -5934,6 +6191,11 @@ body.sidebar-collapsed #sidebar:hover .nav-group-title {
             <span class="nav-text">ログイン</span>
         </button>
 
+        <button class="nav-btn" onclick="showView('developer')" id="nav-developer">
+            <div class="nav-icon-box"><i class="bi bi-code-slash"></i></div>
+            <span class="nav-text">開発者について</span>
+        </button>
+
         <button class="nav-btn" onclick="showView('about')" id="nav-about">
             <div class="nav-icon-box"><i class="bi bi-info-circle"></i></div>
             <span class="nav-text">当サイトについて</span>
@@ -5942,6 +6204,11 @@ body.sidebar-collapsed #sidebar:hover .nav-group-title {
         <button class="nav-btn" onclick="showView('privacy')" id="nav-privacy">
             <div class="nav-icon-box"><i class="bi bi-shield-lock"></i></div>
             <span class="nav-text">プライバシー</span>
+        </button>
+
+        <button class="nav-btn" onclick="openTutorial()" id="nav-tutorial">
+            <div class="nav-icon-box"><i class="bi bi-question-circle"></i></div>
+            <span class="nav-text">使い方</span>
         </button>
     </div>
 </nav>
@@ -6320,6 +6587,46 @@ body.sidebar-collapsed #sidebar:hover .nav-group-title {
                     animation: shine 0.85s ease-out;
                 }
 
+                /* キラキラ（スパークル）エフェクト */
+                @keyframes kira-float {
+                    0%   { transform: translateY(0) scale(1);   opacity: 1; }
+                    100% { transform: translateY(-38px) scale(0); opacity: 0; }
+                }
+                @keyframes kira-pulse-border {
+                    0%, 100% { box-shadow: 0 0 8px 2px rgba(197,160,89,0.5), 0 0 18px 4px rgba(197,160,89,0.25); }
+                    50%      { box-shadow: 0 0 18px 6px rgba(197,160,89,0.85), 0 0 36px 10px rgba(197,160,89,0.4); }
+                }
+                @keyframes kira-pulse-discord {
+                    0%, 100% { box-shadow: 0 0 8px 2px rgba(88,101,242,0.5), 0 0 18px 4px rgba(88,101,242,0.25); }
+                    50%      { box-shadow: 0 0 18px 6px rgba(88,101,242,0.85), 0 0 36px 10px rgba(88,101,242,0.4); }
+                }
+                .kira-wrap {
+                    position: relative;
+                    display: block;
+                    width: 100%;
+                    display: flex;
+                    justify-content: center;
+                }
+                .kira-wrap.omikuji-wrap > button {
+                    animation: kira-pulse-border 2.4s ease-in-out infinite;
+                }
+                .kira-wrap.discord-wrap > button {
+                    animation: kira-pulse-discord 2.8s ease-in-out infinite;
+                }
+                .kira-wrap.omikuji-wrap > button:hover,
+                .kira-wrap.discord-wrap > button:hover {
+                    animation: none;
+                }
+                .kira-particle {
+                    position: absolute;
+                    pointer-events: none;
+                    font-size: 14px;
+                    line-height: 1;
+                    animation: kira-float 0.9s ease-out forwards;
+                    z-index: 20;
+                    user-select: none;
+                }
+
                     /* ---- ホーム: 累計参拝者数・おみくじ発行総数 カラーアイコン（丸背景）は白を維持 ---- */
                     html:not(.dark) #view-home .bento-mini .rounded-full {
                         color: white !important;
@@ -6547,21 +6854,25 @@ body.sidebar-collapsed #sidebar:hover .nav-group-title {
 
                     <!-- おみくじ・公式Discord アクションエリア -->
                     <div class="z-10 w-full flex flex-col items-center gap-3 py-2">
-                        <button onclick="startOmikuji()" class="group btn-shine-effect flex items-center justify-center gap-4 bg-[var(--accent-red)] text-white hover:bg-[#a01818] transition-all duration-300 py-5 px-10 rounded-2xl w-full max-w-lg transform hover:-translate-y-1" style="border: 2px solid var(--accent-gold); box-shadow: 0 0 15px rgba(197, 160, 89, 0.45);">
+                        <div class="kira-wrap omikuji-wrap w-full max-w-lg">
+                        <button onclick="startOmikuji()" class="group btn-shine-effect flex items-center justify-center gap-4 bg-[var(--accent-red)] text-white hover:bg-[#a01818] transition-all duration-300 py-5 px-10 rounded-2xl w-full transform hover:-translate-y-1" style="border: 2px solid var(--accent-gold); box-shadow: 0 0 15px rgba(197, 160, 89, 0.45);">
                             <i class="bi bi-box-seam-fill text-3xl group-hover:scale-110 transition-transform duration-300"></i>
                             <div class="text-left">
                                 <h3 class="font-black text-lg md:text-xl tracking-wider m-0 leading-tight" style="font-family: 'Zen Old Mincho', serif;">おみくじを引く</h3>
                                 <p class="text-[10px] opacity-80 mt-0.5 leading-none">心を静め、天命を問う</p>
                             </div>
                         </button>
+                        </div>
 
-                        <button onclick="openDiscordInvite()" class="group flex items-center justify-center gap-3 text-white transition-all duration-300 py-4 px-8 rounded-2xl w-full max-w-lg transform hover:-translate-y-1" style="background: linear-gradient(135deg, #5865F2, #3b45b8); border: 1px solid rgba(255,255,255,0.25); box-shadow: 0 0 18px rgba(88,101,242,0.35); color: #ffffff !important;">
+                        <div class="kira-wrap discord-wrap w-full max-w-lg">
+                        <button onclick="openDiscordInvite()" class="group flex items-center justify-center gap-3 text-white transition-all duration-300 py-4 px-8 rounded-2xl w-full transform hover:-translate-y-1" style="background: linear-gradient(135deg, #5865F2, #3b45b8); border: 1px solid rgba(255,255,255,0.25); box-shadow: 0 0 18px rgba(88,101,242,0.35); color: #ffffff !important;">
                             <i class="bi bi-discord text-2xl group-hover:scale-110 transition-transform duration-300" style="color: #ffffff !important;"></i>
                             <div class="text-left" style="color: #ffffff !important;">
                                 <h3 class="font-black text-base md:text-lg tracking-wider m-0 leading-tight" style="font-family: 'Zen Old Mincho', serif; color: #ffffff !important;">公式Discord参拝所へ</h3>
                                 <p class="text-[10px] opacity-85 mt-0.5 leading-none" style="color: #ffffff !important;">毎朝の天命・おみくじ・御守を受け取る</p>
                             </div>
                         </button>
+                        </div>
                     </div>
                 </div>
 
@@ -8324,6 +8635,142 @@ body.sidebar-collapsed #sidebar:hover .nav-group-title {
             </div>
         </section>
 
+
+        <!-- ビュー: 開発者について -->
+        <section id="view-developer" class="view-section max-w-4xl mx-auto pb-20">
+
+            <!-- ヘッダーカード -->
+            <div class="bento-card mb-6 relative overflow-hidden" style="background: linear-gradient(135deg, #0d0d0d 0%, #1a1a2e 50%, #0d0d0d 100%); border: 1px solid #2a2a2a; border-top: 2px solid var(--accent-gold); padding: 2rem;">
+                <div class="absolute top-0 right-0 w-64 h-64 opacity-10 pointer-events-none" style="background: radial-gradient(circle, #d4af37 0%, transparent 70%);"></div>
+                <div class="absolute bottom-0 left-0 w-48 h-48 opacity-8 pointer-events-none" style="background: radial-gradient(circle, #5865F2 0%, transparent 70%);"></div>
+                <div class="relative z-10 flex flex-col md:flex-row items-start md:items-center gap-6">
+                    <div class="flex-shrink-0">
+                        <div class="w-20 h-20 rounded-2xl flex items-center justify-center text-3xl font-black" style="background: linear-gradient(135deg, #b91c1c, #7f1d1d); color: #d4af37; font-family: 'Zen Old Mincho', serif; border: 2px solid rgba(212,175,55,0.3); box-shadow: 0 0 24px rgba(185,28,28,0.3);">天</div>
+                    </div>
+                    <div class="flex-1">
+                        <p class="text-xs font-bold tracking-[0.3em] uppercase mb-1" style="color: var(--accent-gold);">DEVELOPER</p>
+                        <h1 class="text-3xl font-black mb-1" style="font-family: 'Zen Old Mincho', serif;">nden148</h1>
+                        <p class="text-sm opacity-60">Web Developer (sometimes)</p>
+                        <div class="flex gap-3 mt-4 flex-wrap">
+                            <a href="https://www.youtube.com/@nden148-x2g" target="_blank" rel="noopener noreferrer"
+                               class="flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-bold transition-all duration-200 hover:-translate-y-0.5"
+                               style="background: rgba(255,0,0,0.15); border: 1px solid rgba(255,0,0,0.3); color: #ff4444;">
+                                <i class="bi bi-youtube"></i> YouTube
+                            </a>
+                            <a href="https://github.com/nden14800" target="_blank" rel="noopener noreferrer"
+                               class="flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-bold transition-all duration-200 hover:-translate-y-0.5"
+                               style="background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.15); color: #e0e0e0;">
+                                <i class="bi bi-github"></i> GitHub
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 自己紹介 -->
+            <div class="bento-card mb-4" style="padding: 1.5rem;">
+                <h2 class="text-base font-black mb-3 flex items-center gap-2" style="color: var(--accent-gold);">
+                    <i class="bi bi-person-fill"></i> 自己紹介
+                </h2>
+                <div class="text-sm leading-relaxed opacity-80 space-y-3">
+                    <p>こんにちは、nden148です。性別は男です。この名前は特に深い意味はなく、ぱっと思いついたものです。個人で活動しており、開発は主な作業ではありませんが、時々ソフトウェアやウェブサイトを作っています。</p>
+                    <p>新しい技術を学ぶこと、自分のアイデアを形にすること、そしてプログラミングそのものが好きです。また、下手ながら英語の読み書きをしたり、Minecraft（統合版）のコマンドを触ったりすることもありますが、どちらもまだ勉強中です。</p>
+                    <p>開発の合間や普段の息抜きには、お笑い番組を見たり、YouTubeの動画を鑑賞したり、ゲームをプレイしたりしてリフレッシュするのが好きです。一方で、他人とのコミュニケーションや大勢の前で何かを発表することは少し苦手で、人見知りな面もあります。オンラインでの活動を通じて、少しずつ自分を表現していければと考えています。</p>
+                </div>
+            </div>
+
+            <!-- プロフィール表 -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                <div class="bento-card" style="padding: 1.5rem;">
+                    <h2 class="text-base font-black mb-3 flex items-center gap-2" style="color: var(--accent-gold);">
+                        <i class="bi bi-check2-circle"></i> できること
+                    </h2>
+                    <ul class="space-y-2 text-sm opacity-80">
+                        <li class="flex items-center gap-2"><i class="bi bi-dot" style="color: var(--accent-gold);"></i>英語（読み書き・まだ修行中）</li>
+                        <li class="flex items-center gap-2"><i class="bi bi-dot" style="color: var(--accent-gold);"></i>Minecraftコマンド（統合版のみ）</li>
+                        <li class="flex items-center gap-2"><i class="bi bi-dot" style="color: var(--accent-gold);"></i>AIにコードを生成させること</li>
+                    </ul>
+                </div>
+                <div class="bento-card" style="padding: 1.5rem;">
+                    <h2 class="text-base font-black mb-3 flex items-center gap-2" style="color: var(--accent-gold);">
+                        <i class="bi bi-heart-fill"></i> 好きなこと
+                    </h2>
+                    <ul class="space-y-2 text-sm opacity-80">
+                        <li class="flex items-center gap-2"><i class="bi bi-dot" style="color: var(--accent-gold);"></i>プログラミング</li>
+                        <li class="flex items-center gap-2"><i class="bi bi-dot" style="color: var(--accent-gold);"></i>ゲーム</li>
+                        <li class="flex items-center gap-2"><i class="bi bi-dot" style="color: var(--accent-gold);"></i>お笑い番組・YouTube鑑賞</li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- 開発スタイルと経緯 -->
+            <div class="bento-card mb-4" style="padding: 1.5rem;">
+                <h2 class="text-base font-black mb-3 flex items-center gap-2" style="color: var(--accent-gold);">
+                    <i class="bi bi-laptop-fill"></i> 開発スタイルと経緯
+                </h2>
+                <div class="text-sm leading-relaxed opacity-80 space-y-3">
+                    <p>以前はFirebase Studioを愛用していましたが、ワークスペースの制限や読み込みの遅さを感じるようになりました。より柔軟な開発環境を求め、現在はGitHubをメインのプラットフォームとして活動しています。</p>
+                    <p>私自身はコードを直接記述することが得意ではないため、AIのサポートを受けながら開発を進めています。アイデアを伝え、それをコードにしてもらうスタイルです。</p>
+                </div>
+                <div class="mt-4 grid grid-cols-2 md:grid-cols-4 gap-3">
+                    <div class="text-center p-3 rounded-xl text-xs" style="background: rgba(212,175,55,0.08); border: 1px solid rgba(212,175,55,0.2);">
+                        <div class="text-lg mb-1">🧑</div>
+                        <div class="font-bold opacity-60">性別</div>
+                        <div class="font-black">男</div>
+                    </div>
+                    <div class="text-center p-3 rounded-xl text-xs" style="background: rgba(212,175,55,0.08); border: 1px solid rgba(212,175,55,0.2);">
+                        <div class="text-lg mb-1">🛠️</div>
+                        <div class="font-bold opacity-60">開発環境</div>
+                        <div class="font-black">GitHub</div>
+                    </div>
+                    <div class="text-center p-3 rounded-xl text-xs" style="background: rgba(212,175,55,0.08); border: 1px solid rgba(212,175,55,0.2);">
+                        <div class="text-lg mb-1">🎮</div>
+                        <div class="font-bold opacity-60">普段</div>
+                        <div class="font-black">ゲーム・動画</div>
+                    </div>
+                    <div class="text-center p-3 rounded-xl text-xs" style="background: rgba(212,175,55,0.08); border: 1px solid rgba(212,175,55,0.2);">
+                        <div class="text-lg mb-1">🌐</div>
+                        <div class="font-bold opacity-60">たまに</div>
+                        <div class="font-black">Web開発</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- リポジトリ -->
+            <div class="bento-card" style="padding: 1.5rem;">
+                <h2 class="text-base font-black mb-3 flex items-center gap-2" style="color: var(--accent-gold);">
+                    <i class="bi bi-box-seam-fill"></i> 公開リポジトリ
+                </h2>
+                <div class="space-y-3">
+                    <a href="https://github.com/nden14800/tenmei-mori" target="_blank" rel="noopener noreferrer"
+                       class="flex items-center justify-between p-4 rounded-xl transition-all duration-200 hover:-translate-y-0.5 group"
+                       style="background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.1);">
+                        <div>
+                            <div class="font-bold text-sm flex items-center gap-2">
+                                <i class="bi bi-github opacity-60"></i>
+                                tenmei-mori
+                            </div>
+                            <div class="text-xs opacity-50 mt-0.5">天命乃杜 本体（index.html・worker.js）</div>
+                        </div>
+                        <i class="bi bi-arrow-up-right-square opacity-40 group-hover:opacity-80 transition-opacity"></i>
+                    </a>
+                    <a href="https://github.com/nden14800/tenmei-mori-article-analysis-dashboard" target="_blank" rel="noopener noreferrer"
+                       class="flex items-center justify-between p-4 rounded-xl transition-all duration-200 hover:-translate-y-0.5 group"
+                       style="background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.1);">
+                        <div>
+                            <div class="font-bold text-sm flex items-center gap-2">
+                                <i class="bi bi-github opacity-60"></i>
+                                tenmei-mori-article-analysis-dashboard
+                            </div>
+                            <div class="text-xs opacity-50 mt-0.5">記事分析ダッシュボード（社務所だより）</div>
+                        </div>
+                        <i class="bi bi-arrow-up-right-square opacity-40 group-hover:opacity-80 transition-opacity"></i>
+                    </a>
+                </div>
+            </div>
+
+        </section>
+
         <!-- ビュー: プライバシーポリシー (モダンUI刷新版) -->
         <section id="view-privacy" class="view-section max-w-5xl mx-auto pb-20">
             
@@ -8603,6 +9050,59 @@ body.sidebar-collapsed #sidebar:hover .nav-group-title {
             </div>
         </section>
     </main>
+
+    <!-- グローバルフッター -->
+    <footer id="site-footer">
+        <div class="footer-wave"></div>
+        <div class="footer-inner">
+
+            <!-- ロゴ -->
+            <div class="footer-logo-area">
+                <div class="footer-logo-kanji">天</div>
+                <span class="footer-site-name">運 勢 ・ 天 命 乃 杜</span>
+            </div>
+
+            <!-- ナビゲーション -->
+            <nav class="footer-nav-grid">
+                <button class="footer-nav-link" onclick="showView('home')">ホーム</button>
+                <button class="footer-nav-link" onclick="showView('zodiac')">12星座占い</button>
+                <button class="footer-nav-link" onclick="showView('stats')">参拝記録</button>
+                <button class="footer-nav-link" onclick="showView('omamori')">御守</button>
+                <button class="footer-nav-link" onclick="showView('prefecture')">全国の運気</button>
+                <button class="footer-nav-link" onclick="showView('history')">おみくじの轍</button>
+                <button class="footer-nav-link" onclick="showView('news')">社務所だより</button>
+                <button class="footer-nav-link" onclick="showView('column')">神籤草子</button>
+                <button class="footer-nav-link" onclick="showView('lab')">Labs</button>
+                <button class="footer-nav-link" onclick="showView('about')">当サイトについて</button>
+                <button class="footer-nav-link" onclick="showView('privacy')">プライバシーポリシー</button>
+                <button class="footer-nav-link" onclick="showView('developer')">開発者について</button>
+            </nav>
+
+            <hr class="footer-divider">
+
+            <!-- SNS -->
+            <p class="footer-sns-label">OFFICIAL LINKS</p>
+            <div class="footer-sns-row">
+                <a href="https://discord.gg/Ys6hpbNdcV" target="_blank" rel="noopener noreferrer"
+                   class="footer-sns-btn footer-sns-discord" title="公式Discord参拝所">
+                    <i class="bi bi-discord"></i>
+                </a>
+                <a href="https://github.com/nden14800" target="_blank" rel="noopener noreferrer"
+                   class="footer-sns-btn footer-sns-github" title="GitHub">
+                    <i class="bi bi-github"></i>
+                </a>
+                <a href="https://www.youtube.com/@nden148-x2g" target="_blank" rel="noopener noreferrer"
+                   class="footer-sns-btn footer-sns-yt" title="YouTube">
+                    <i class="bi bi-youtube"></i>
+                </a>
+            </div>
+
+            <!-- コピーライト -->
+            <p class="footer-copy">© 2026 天命乃杜 / nden148</p>
+
+        </div>
+        <div class="footer-wave" style="transform: scaleY(-1);"></div>
+    </footer>
 
     <!-- カウントダウンオーバーレイ -->
     <div id="countdown-overlay">
@@ -16316,60 +16816,115 @@ function resetSearch() {
             const status = document.getElementById('gen-img-status');
             status.textContent = "画像を生成中...";
             
-            // ★変更点1: 親枠ではなく、カード本体を直接ターゲットにする
             const target = document.getElementById('result-card-outer');
             
             const container = document.getElementById('generated-image-container');
             container.innerHTML = '';
             container.classList.add('hidden');
             
-            // ★変更点2: 強制的にページトップへ (ズレ防止の基本)
             const originalScrollPos = window.scrollY;
             window.scrollTo(0, 0);
-            
+
+            // カードのベース背景色を取得（大吉=黄金、大凶=白、その他=白）
+            let bgColor = '#ffffff';
+            if (target.classList.contains('style-daikichi')) bgColor = '#ffb700';
+
+            // QRコードの描画完了を待ってからキャプチャ
+            const doCapture = () => {
             document.fonts.ready.then(() => {
-                html2canvas(target, { 
-                    scale: 3, // 高画質設定
-                    useCORS: true, 
+                html2canvas(target, {
+                    scale: 3,
+                    useCORS: true,
                     allowTaint: true,
-                    backgroundColor: null, // 背景透過（カードの背景色は維持されます）
-                    
-                    // ★変更点3: ウィンドウ幅をPCサイズに固定してシミュレート
-                    // これによりスマホでもPCと同じレイアウトで描画されます
+                    backgroundColor: bgColor,
                     windowWidth: 1280,
-                    
-                    // スクロール補正をリセット
                     scrollX: 0,
                     scrollY: 0,
-                    
-                    // クローン生成時のスタイル強制修正
+                    logging: false,
+                    imageTimeout: 15000,
                     onclone: (clonedDoc) => {
+                        // !important付きCSSを注入してレスポンシブ上書きを強制解除
+                        const overrideStyle = clonedDoc.createElement('style');
+                        overrideStyle.textContent = `
+                            #result-card-outer {
+                                width: 600px !important;
+                                min-width: 600px !important;
+                                max-width: 600px !important;
+                                min-height: 1200px !important;
+                                height: auto !important;
+                                padding: 30px 40px !important;
+                                margin: 0 !important;
+                                transform: none !important;
+                                box-shadow: none !important;
+                                position: relative !important;
+                                display: flex !important;
+                                flex-direction: column !important;
+                                align-items: center !important;
+                                box-sizing: border-box !important;
+                                font-family: 'Zen Old Mincho', serif !important;
+                            }
+                            #result-capture-container {
+                                width: 600px !important;
+                                max-width: 600px !important;
+                                min-width: 600px !important;
+                            }
+                            .result-poem-vertical {
+                                height: 350px !important;
+                                font-size: 2rem !important;
+                            }
+                            .result-advice-box {
+                                height: 350px !important;
+                                font-size: 1rem !important;
+                            }
+                            .detail-column {
+                                height: 250px !important;
+                                font-size: 1.1rem !important;
+                            }
+                            .result-kamon { font-size: 3rem !important; }
+                            .result-title-text { font-size: 1.5rem !important; }
+                            .result-circle-box {
+                                width: 160px !important;
+                                height: 160px !important;
+                            }
+                        `;
+                        clonedDoc.head.appendChild(overrideStyle);
+
                         const clonedOuter = clonedDoc.getElementById('result-card-outer');
                         if (clonedOuter) {
-                            // 幅を600pxに固定し、余白や変形を解除
-                            clonedOuter.style.width = '600px';
-                            clonedOuter.style.height = 'auto';
-                            clonedOuter.style.minHeight = '1200px'; // 高さが縮むのを防ぐ
-                            clonedOuter.style.margin = '0';
-                            clonedOuter.style.transform = 'none';
-                            clonedOuter.style.boxShadow = 'none'; // 余計な影を消す
+                            // 大吉の背景ノイズSVGを除去し背景色を保持
+                            if (clonedOuter.classList.contains('style-daikichi')) {
+                                clonedOuter.style.backgroundColor = '#ffb700';
+                                clonedOuter.style.backgroundImage = 'none';
+                            }
 
-                            // 大吉の背景テクスチャ(SVGノイズ)のみ削除し、色は維持
-                            // ※これをしないと一部環境でクラッシュするため
-                            clonedOuter.style.backgroundImage = 'none';
+                            // Bootstrap Icons のフォント指定を明示（アイコン化け対策）
+                            const icons = clonedOuter.querySelectorAll('.bi');
+                            icons.forEach(el => {
+                                el.style.fontFamily = 'bootstrap-icons';
+                                el.style.fontStyle = 'normal';
+                            });
 
-                            // 縦書きレイアウトの崩れ防止（フォントと行間を再指定）
+                            // 縦書きレイアウトの崩れ防止
                             const verticals = clonedOuter.querySelectorAll('.result-poem-vertical, .result-advice-box, .detail-column');
                             verticals.forEach(el => {
-                                el.style.letterSpacing = '0.1em'; 
+                                el.style.letterSpacing = '0.1em';
                                 el.style.lineHeight = '1.6';
-                                el.style.fontFamily = "'Zen Old Mincho', serif"; 
+                                el.style.fontFamily = "'Zen Old Mincho', serif";
+                            });
+
+                            // QRコード canvas を img に変換（toBlob内で objectURL が無効になる対策）
+                            const qrCanvases = clonedOuter.querySelectorAll('canvas');
+                            qrCanvases.forEach(qc => {
+                                const img = clonedDoc.createElement('img');
+                                img.src = qc.toDataURL('image/png');
+                                img.style.width = qc.style.width || '60px';
+                                img.style.height = qc.style.height || '60px';
+                                qc.parentNode.replaceChild(img, qc);
                             });
                         }
                     }
                 }).then(canvas => {
                     status.textContent = "";
-                    // スクロール位置を元に戻す
                     window.scrollTo(0, originalScrollPos);
 
                     container.innerHTML = '<p class="text-green-600 font-bold mb-2 text-sm"><i class="bi bi-check-circle-fill"></i> 画像の生成完了</p>';
@@ -16424,12 +16979,19 @@ function resetSearch() {
                 status.textContent = "画像の生成に失敗しました。";
                 status.className = "text-sm font-bold text-red-500 mb-2 h-6";
                 window.scrollTo(0, originalScrollPos);
-                
-                // alertの代わり
                 showToast("画像の生成に失敗しました。\nもう一度お試しください。", "error");
             });
-        });
-    }
+            }); // document.fonts.ready
+            }; // doCapture end
+
+            // QRコード描画完了を待ってからキャプチャ（最大500ms）
+            const qrCanvas = target.querySelector('canvas');
+            if (qrCanvas) {
+                setTimeout(doCapture, 500);
+            } else {
+                setTimeout(doCapture, 100);
+            }
+        }
 
         // サイトルートURLを返す（生成URL廃止）
         function getShareUrl() {
@@ -16673,7 +17235,61 @@ ${getShareUrl()}`;
             }
         }
 
-        
+        // ---- キラキラ（スパークル）エフェクト ----
+        (function initKiraEffect() {
+            const SYMBOLS = ['✦','✧','⋆','★','☆','✶','✸','✺','❋','❊'];
+            function spawnParticle(wrap) {
+                const rect = wrap.getBoundingClientRect();
+                const p = document.createElement('span');
+                p.className = 'kira-particle';
+                p.textContent = SYMBOLS[Math.floor(Math.random() * SYMBOLS.length)];
+                const x = Math.random() * rect.width;
+                p.style.left = x + 'px';
+                p.style.bottom = (Math.random() * 16) + 'px';
+                p.style.fontSize = (10 + Math.random() * 10) + 'px';
+                const isOmikuji = wrap.classList.contains('omikuji-wrap');
+                p.style.color = isOmikuji
+                    ? `hsl(${42 + Math.random()*20}, 90%, ${65 + Math.random()*20}%)`
+                    : `hsl(${228 + Math.random()*20}, 80%, ${72 + Math.random()*20}%)`;
+                p.style.opacity = '0';
+                wrap.appendChild(p);
+                requestAnimationFrame(() => { p.style.opacity = '1'; });
+                p.addEventListener('animationend', () => p.remove());
+            }
+            function startLoop(wrap, interval) {
+                let timer = setInterval(() => spawnParticle(wrap), interval);
+                wrap._kiraTimer = timer;
+            }
+            function attachWrap(wrap) {
+                const btn = wrap.querySelector('button');
+                if (!btn) return;
+                const interval = wrap.classList.contains('omikuji-wrap') ? 320 : 400;
+                startLoop(wrap, interval);
+                btn.addEventListener('mouseenter', () => {
+                    clearInterval(wrap._kiraTimer);
+                    for (let i = 0; i < 6; i++) {
+                        setTimeout(() => spawnParticle(wrap), i * 60);
+                    }
+                });
+                btn.addEventListener('mouseleave', () => {
+                    startLoop(wrap, interval);
+                });
+            }
+            function tryInit() {
+                const wraps = document.querySelectorAll('.kira-wrap');
+                if (wraps.length > 0) {
+                    wraps.forEach(attachWrap);
+                } else {
+                    setTimeout(tryInit, 500);
+                }
+            }
+            if (document.readyState === 'loading') {
+                document.addEventListener('DOMContentLoaded', tryInit);
+            } else {
+                tryInit();
+            }
+        })();
+
     async function loadUserProfile(username) {
         showLoading(true);
         try {
@@ -21193,5 +21809,146 @@ window.applyTheme = function() {
     };
 })();
 </script>
+
+<!-- ── チュートリアル ウォークスルー ── -->
+<div id="tutorial-overlay">
+    <div class="tutorial-card">
+
+        <!-- スライド 1: ようこそ -->
+        <div class="tutorial-slide active">
+            <span class="tutorial-icon">⛩️</span>
+            <span class="tutorial-gold-label">Welcome</span>
+            <h2 class="tutorial-title">天命乃杜へようこそ</h2>
+            <p class="tutorial-desc">
+                天命乃杜は、毎日おみくじを引いて<br>今日の天命を授かる占いサイトです。<br>
+                サイドバーからさまざまな機能へアクセスできます。
+            </p>
+        </div>
+
+        <!-- スライド 2: おみくじ -->
+        <div class="tutorial-slide">
+            <span class="tutorial-icon">🎴</span>
+            <span class="tutorial-gold-label">Fortune</span>
+            <h2 class="tutorial-title">おみくじを引く</h2>
+            <p class="tutorial-desc">
+                ホーム画面の「おみくじを引く」ボタンで<br>今日の運勢を占えます。<br>
+                大吉・吉・凶など12段階の結果と<br>神託の言葉が授かれます。
+            </p>
+        </div>
+
+        <!-- スライド 3: 12星座 -->
+        <div class="tutorial-slide">
+            <span class="tutorial-icon">✨</span>
+            <span class="tutorial-gold-label">Zodiac</span>
+            <h2 class="tutorial-title">12星座占い</h2>
+            <p class="tutorial-desc">
+                毎日更新される星座占いでは<br>恋愛・仕事・金運など<br>各分野の運勢とラッキーアイテムが<br>日替わりで確認できます。
+            </p>
+        </div>
+
+        <!-- スライド 4: コミュニティ -->
+        <div class="tutorial-slide">
+            <span class="tutorial-icon">🏯</span>
+            <span class="tutorial-gold-label">Community</span>
+            <h2 class="tutorial-title">公式Discordサーバー</h2>
+            <p class="tutorial-desc">
+                おみくじ結果の共有や参拝者同士の交流は<br>公式Discordサーバーへ。<br>
+                ホーム画面のボタンから参拝所に入れます。
+            </p>
+        </div>
+
+        <!-- スライド 5: その他機能 -->
+        <div class="tutorial-slide">
+            <span class="tutorial-icon">🗺️</span>
+            <span class="tutorial-gold-label">Features</span>
+            <h2 class="tutorial-title">その他の機能</h2>
+            <p class="tutorial-desc">
+                全国の運気ランキング・御守生成・<br>社務所だより・神籤草子（コラム）など<br>たくさんの機能が揃っています。<br>
+                サイドバーを探索してみてください。
+            </p>
+        </div>
+
+        <!-- ドット -->
+        <div class="tutorial-dots" id="tutorial-dots">
+            <div class="tutorial-dot active" onclick="goTutorialSlide(0)"></div>
+            <div class="tutorial-dot" onclick="goTutorialSlide(1)"></div>
+            <div class="tutorial-dot" onclick="goTutorialSlide(2)"></div>
+            <div class="tutorial-dot" onclick="goTutorialSlide(3)"></div>
+            <div class="tutorial-dot" onclick="goTutorialSlide(4)"></div>
+        </div>
+
+        <!-- ボタン -->
+        <div class="tutorial-btn-row">
+            <button class="tutorial-btn-skip" onclick="closeTutorial()">スキップ</button>
+            <button class="tutorial-btn-next" id="tutorial-next-btn" onclick="nextTutorialSlide()">次へ &rarr;</button>
+        </div>
+
+    </div>
+</div>
+
+<script>
+(function() {
+    var TOTAL = 5;
+    var current = 0;
+
+    function showTutorial() {
+        var overlay = document.getElementById('tutorial-overlay');
+        if (overlay) overlay.classList.add('active');
+    }
+    window.openTutorial = function() {
+        try { localStorage.removeItem('tenmei_tutorial_shown'); } catch(e) {}
+        showTutorial();
+    };
+
+    window.closeTutorial = function() {
+        var overlay = document.getElementById('tutorial-overlay');
+        if (overlay) {
+            overlay.style.opacity = '0';
+            overlay.style.pointerEvents = 'none';
+            setTimeout(function() { overlay.classList.remove('active'); }, 400);
+        }
+        try { localStorage.setItem('tenmei_tutorial_shown', '1'); } catch(e) {}
+    };
+
+    window.goTutorialSlide = function(idx) {
+        current = idx;
+        updateTutorialUI();
+    };
+
+    window.nextTutorialSlide = function() {
+        if (current < TOTAL - 1) {
+            current++;
+            updateTutorialUI();
+        } else {
+            closeTutorial();
+        }
+    };
+
+    function updateTutorialUI() {
+        var slides = document.querySelectorAll('.tutorial-slide');
+        var dots = document.querySelectorAll('.tutorial-dot');
+        var btn = document.getElementById('tutorial-next-btn');
+        slides.forEach(function(s, i) {
+            s.classList.toggle('active', i === current);
+        });
+        dots.forEach(function(d, i) {
+            d.classList.toggle('active', i === current);
+        });
+        if (btn) {
+            btn.innerHTML = current === TOTAL - 1 ? '始める &nbsp;⛩️' : '次へ &rarr;';
+        }
+    }
+
+    // 初回訪問時のみ表示
+    try {
+        if (!localStorage.getItem('tenmei_tutorial_shown')) {
+            setTimeout(showTutorial, 800);
+        }
+    } catch(e) {
+        setTimeout(showTutorial, 800);
+    }
+})();
+</script>
+
 </body>
 </html>
