@@ -2869,6 +2869,7 @@
 .btn-fb { color: #1877f2; }
 .btn-bsky { color: #0285ff; }
 .btn-misskey { color: #86b300; }
+.btn-discord { color: #5865F2; }
 
         /* --- TENMEI Labs: グラス・コントロールパネルUI --- */
 
@@ -6414,6 +6415,7 @@ body.sidebar-collapsed #sidebar:hover .nav-group-title {
                     html:not(.dark) .action-card-btn.btn-fb    { color: #1877f2 !important; }
                     html:not(.dark) .action-card-btn.btn-bsky  { color: #0285ff !important; }
                     html:not(.dark) .action-card-btn.btn-misskey { color: #86b300 !important; }
+                    html:not(.dark) .action-card-btn.btn-discord { color: #5865F2 !important; }
 
                     /* ---- 天命の授与所 おみくじ棒（ライトモード） ---- */
                     html:not(.dark) .omikuji-stick {
@@ -6783,6 +6785,12 @@ body.sidebar-collapsed #sidebar:hover .nav-group-title {
                         <button onclick="shareToMisskey()" class="action-card-btn btn-misskey grid-span-full">
                             <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" viewBox="0 0 16 16" style="width:28px; height:28px; margin-bottom:8px;"><path d="M8 0a8 8 0 1 0 0 16A8 8 0 0 0 8 0zm3.669 4.382c.074.225.137.458.19.697a4.67 4.67 0 0 1 .066.727c0 .193-.01.383-.028.57a3.86 3.86 0 0 1-.09.53 4.2 4.2 0 0 1-.72 1.621 3.96 3.96 0 0 1-.397.47c-.126.13-.263.25-.408.36-.146.113-.301.214-.465.304-.326.179-.675.316-1.038.406-.364.09-.74.136-1.119.136a4.7 4.7 0 0 1-1.12-.136 4.3 4.3 0 0 1-1.037-.406 4.1 4.1 0 0 1-.465-.304 3.9 3.9 0 0 1-.409-.36 4 4 0 0 1-.396-.47 4.2 4.2 0 0 1-.72-1.62 3.86 3.86 0 0 1-.09-.531 4.7 4.7 0 0 1-.028-.57c0-.246.022-.49.065-.727.054-.24.117-.472.19-.697A8 8 0 0 0 8 4.382z"/></svg>
                             <span>Misskey.io</span>
+                        </button>
+
+                        <!-- Discordシェアは横長でバランスを取る -->
+                        <button onclick="shareToDiscord()" id="discord-share-btn" class="action-card-btn btn-discord grid-span-full">
+                            <i class="bi bi-discord" style="font-size:28px; margin-bottom:8px;"></i>
+                            <span>参拝記録チャンネルへ</span>
                         </button>
                         
                 </div>
@@ -16609,8 +16617,56 @@ ${getShareUrl()}`;
             window.open(intent, '_blank');
         }
 
+        // --- Discord参拝記録チャンネルへシェア（Worker経由） ---
+        async function shareToDiscord() {
+            if (!currentState.lastResult) return;
+            const res = currentState.lastResult;
+
+            const btn = document.getElementById('discord-share-btn');
+            if (btn) {
+                btn.disabled = true;
+                btn.innerHTML = '<i class="bi bi-hourglass-split" style="font-size:28px; margin-bottom:8px;"></i><span>送信中...</span>';
+            }
+
+            try {
+                const payload = {
+                    type:     res.type     || '不明',
+                    poem:     res.poem     || '',
+                    username: (currentState.user && currentState.user.username) ? currentState.user.username : '参拝者',
+                    item:     (res.lucky && res.lucky.item)  ? res.lucky.item  : '',
+                    color:    (res.lucky && res.lucky.color) ? res.lucky.color : '',
+                };
+
+                const response = await fetch(`${API_BASE}/api/share-omikuji`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload),
+                });
+
+                if (response.ok) {
+                    showToast('参拝記録チャンネルへ送信しました ⛩️', 'success');
+                    if (btn) {
+                        btn.innerHTML = '<i class="bi bi-check-circle-fill" style="font-size:28px; margin-bottom:8px;"></i><span>送信済み</span>';
+                        // 3秒後に元に戻す
+                        setTimeout(() => {
+                            btn.disabled = false;
+                            btn.innerHTML = '<i class="bi bi-discord" style="font-size:28px; margin-bottom:8px;"></i><span>参拝記録チャンネルへ</span>';
+                        }, 3000);
+                    }
+                } else {
+                    throw new Error('Server error');
+                }
+            } catch (e) {
+                console.error('Discord share error:', e);
+                showToast('送信に失敗しました。しばらくしてお試しください。', 'error');
+                if (btn) {
+                    btn.disabled = false;
+                    btn.innerHTML = '<i class="bi bi-discord" style="font-size:28px; margin-bottom:8px;"></i><span>参拝記録チャンネルへ</span>';
+                }
+            }
+        }
+
         
-    // ユーザープロフィールの読み込み
     async function loadUserProfile(username) {
         showLoading(true);
         try {
