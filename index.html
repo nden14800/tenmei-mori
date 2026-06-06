@@ -6546,11 +6546,11 @@ body.sidebar-collapsed #sidebar:hover .nav-group-title {
                             </div>
                         </button>
 
-                        <button onclick="openDiscordInvite()" class="group flex items-center justify-center gap-3 text-white transition-all duration-300 py-4 px-8 rounded-2xl w-full max-w-lg transform hover:-translate-y-1" style="background: linear-gradient(135deg, #5865F2, #3b45b8); border: 1px solid rgba(255,255,255,0.25); box-shadow: 0 0 18px rgba(88,101,242,0.35);">
-                            <i class="bi bi-discord text-2xl group-hover:scale-110 transition-transform duration-300"></i>
-                            <div class="text-left">
-                                <h3 class="font-black text-base md:text-lg tracking-wider m-0 leading-tight" style="font-family: 'Zen Old Mincho', serif;">公式Discord参拝所へ</h3>
-                                <p class="text-[10px] opacity-85 mt-0.5 leading-none">毎朝の天命・おみくじ・御守を受け取る</p>
+                        <button onclick="openDiscordInvite()" class="group flex items-center justify-center gap-3 text-white transition-all duration-300 py-4 px-8 rounded-2xl w-full max-w-lg transform hover:-translate-y-1" style="background: linear-gradient(135deg, #5865F2, #3b45b8); border: 1px solid rgba(255,255,255,0.25); box-shadow: 0 0 18px rgba(88,101,242,0.35); color: #ffffff !important;">
+                            <i class="bi bi-discord text-2xl group-hover:scale-110 transition-transform duration-300" style="color: #ffffff !important;"></i>
+                            <div class="text-left" style="color: #ffffff !important;">
+                                <h3 class="font-black text-base md:text-lg tracking-wider m-0 leading-tight" style="font-family: 'Zen Old Mincho', serif; color: #ffffff !important;">公式Discord参拝所へ</h3>
+                                <p class="text-[10px] opacity-85 mt-0.5 leading-none" style="color: #ffffff !important;">毎朝の天命・おみくじ・御守を受け取る</p>
                             </div>
                         </button>
                     </div>
@@ -16365,17 +16365,23 @@ function resetSearch() {
                         currentState.lastImageBlob = blob;
                         const url = URL.createObjectURL(blob);
                         
-                        // リッチな完了UIの生成
+                        // リッチな完了UIの生成（ライトモード・ダークモード動的対応）
+                        const isDark = document.documentElement.classList.contains('dark');
+                        const bgStyle = isDark ? "background:#0d0d0d;border:1px solid #2a2a2a;" : "background:#ffffff;border:1px solid #e4e4e7;";
+                        const badgeStyle = isDark ? "background:#052e16;color:#4ade80;border:1px solid #166534;" : "background:#dcfce7;color:#16a34a;border:1px solid #bbf7d0;";
+                        const imgBoxStyle = isDark ? "box-shadow:0 8px 40px rgba(0,0,0,0.6);border:1px solid #333;" : "box-shadow:0 8px 40px rgba(0,0,0,0.15);border:1px solid #e4e4e7;";
+                        const closeBtnColor = isDark ? "#666" : "#888";
+
                         container.innerHTML = `
-                            <div style="background:#0d0d0d;border:1px solid #2a2a2a;border-top:2px solid #16a34a;border-radius:16px;padding:20px;text-align:center;">
+                            <div style="${bgStyle}border-top:2px solid #16a34a;border-radius:16px;padding:20px;text-align:center;">
                                 <!-- 成功バッジ -->
-                                <div style="display:inline-flex;align-items:center;gap:6px;background:#052e16;color:#4ade80;border:1px solid #166534;border-radius:999px;padding:6px 16px;font-size:0.8rem;font-weight:700;margin-bottom:16px;">
+                                <div style="display:inline-flex;align-items:center;gap:6px;${badgeStyle}border-radius:999px;padding:6px 16px;font-size:0.8rem;font-weight:700;margin-bottom:16px;">
                                     <i class="bi bi-check-circle-fill"></i>
                                     おみくじ画像を生成しました
                                 </div>
 
                                 <!-- プレビュー画像（フル幅・大きく） -->
-                                <div style="width:100%;margin:0 auto 20px;border-radius:12px;overflow:hidden;box-shadow:0 8px 40px rgba(0,0,0,0.6);border:1px solid #333;">
+                                <div style="width:100%;margin:0 auto 20px;border-radius:12px;overflow:hidden;${imgBoxStyle}">
                                     <img src="${url}" style="width:100%;display:block;">
                                 </div>
 
@@ -16387,7 +16393,7 @@ function resetSearch() {
 
                                 <!-- 閉じる -->
                                 <button onclick="document.getElementById('generated-image-container').style.display='none'"
-                                        style="background:none;border:none;color:#666;font-size:0.8rem;cursor:pointer;padding:8px;text-decoration:underline;">
+                                        style="background:none;border:none;color:${closeBtnColor};font-size:0.8rem;cursor:pointer;padding:8px;text-decoration:underline;">
                                     閉じる
                                 </button>
                             </div>
@@ -17343,9 +17349,6 @@ async function logout() {
 
         scoredData.sort((a, b) => b.totalScore - a.totalScore);
 
-        // --- バラつきを持たせるためのオフセット値を生成 ---
-        const shuffleBase = Math.floor(decoRng.next() * 100);
-
         scoredData.forEach((d, i) => { 
             d.rank = i + 1;
             const totalRank = getRank(d.totalScore);
@@ -17359,31 +17362,30 @@ async function logout() {
             const mR = getRank(d.money.score);
             const wR = getRank(d.work.score);
 
-            // 短い説明文の抽出（インデックスを利用して循環させ、被りを防ぐ）
-            // i (順位) + shuffleBase (日替わり乱数) を配列長で割った余りを使う
+            // エントリーごとに固有のシード（日付＋星座ID＋血液型）でRNGを生成
+            // これにより同日・同ランクでも異なる文章・数値が選ばれ、被りを最小化する
+            const entryRng = new SeededRandom(dateStr + "_" + d.sign.id + "_" + d.blood);
+
+            // 短い説明文の抽出（エントリー固有RNGで選択）
             const lArr = luckComments.loveShorts[lR];
-            d.love.desc = lArr[(i + shuffleBase) % lArr.length];
+            d.love.desc = lArr[Math.floor(entryRng.next() * lArr.length)];
 
             const mArr = luckComments.moneyShorts[mR];
-            // +1 することで恋愛運とは違うパターンを選びやすくする
-            d.money.desc = mArr[(i + shuffleBase + 1) % mArr.length]; 
+            d.money.desc = mArr[Math.floor(entryRng.next() * mArr.length)];
 
             const wArr = luckComments.workShorts[wR];
-            // +2 することでさらにズラす
-            d.work.desc = wArr[(i + shuffleBase + 2) % wArr.length];
+            d.work.desc = wArr[Math.floor(entryRng.next() * wArr.length)];
 
             // --- 超長文の生成ロジック ---
             const introArr = luckComments.mainIntro[totalRank];
-            const intro = introArr[(i + shuffleBase) % introArr.length];
+            const intro = introArr[Math.floor(entryRng.next() * introArr.length)];
             
             const getDetailText = (rank, type) => {
                 let arr;
                 if (rank <= 10) arr = luckComments[`${type}Detail`].high;
                 else if (rank <= 38) arr = luckComments[`${type}Detail`].mid;
                 else arr = luckComments[`${type}Detail`].low;
-                
-                // 配列からインデックスで選択 (typeごとにオフセットを変える)
-                return arr[(i + shuffleBase + (type === 'love' ? 0 : type === 'money' ? 1 : 2)) % arr.length];
+                return arr[Math.floor(entryRng.next() * arr.length)];
             };
 
             const lovePara = `【恋愛運：第${d.love.rank}位】${getDetailText(d.love.rank, 'love')}`;
@@ -17391,15 +17393,16 @@ async function logout() {
             const workPara = `【仕事・勉強運：第${d.work.rank}位】${getDetailText(d.work.rank, 'work')}`;
             
             const conclArr = luckComments.mainConclusion[totalRank];
-            const conclusion = conclArr[(i + shuffleBase + 3) % conclArr.length];
+            const conclusion = conclArr[Math.floor(entryRng.next() * conclArr.length)];
 
             // 全てを繋げて超長文にする
             d.longDesc = `${intro}<br><br>${lovePara}<br><br>${moneyPara}<br><br>${workPara}<br><br>${conclusion}`;
 
-            // ラッキーアイテム・カラーもインデックスで循環させて被りを減らす
-            d.luckyNum = ((i + shuffleBase) % 9) + 1;
-            d.item = zodiacItemsList[(i + shuffleBase) % zodiacItemsList.length];
-            d.color = zodiacColorsList[(i + shuffleBase) % zodiacColorsList.length];
+            // ラッキーナンバー：1〜99の範囲でエントリー固有RNGにより算出（被り大幅減少）
+            d.luckyNum = Math.floor(entryRng.next() * 99) + 1;
+            // ラッキーアイテム・カラー：エントリー固有RNGで選択
+            d.item = zodiacItemsList[Math.floor(entryRng.next() * zodiacItemsList.length)];
+            d.color = zodiacColorsList[Math.floor(entryRng.next() * zodiacColorsList.length)];
             
             d.calendar = calculateFutureLuck(d.sign.id, d.blood, dateStr);
         });
