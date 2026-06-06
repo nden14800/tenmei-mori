@@ -4886,8 +4886,7 @@ body.theme-newyear {
         #edit-profile-modal,
         #follow-list-modal,
         #verified-modal,
-        #verification-apply-modal,
-        #admin-verify-modal,
+
         #history-detail-modal,
         #zodiac-login-modal,
         .lab-modal-overlay {
@@ -4920,8 +4919,7 @@ body.theme-newyear {
         #edit-profile-modal[style*="display: flex"],
         #follow-list-modal[style*="display: flex"],
         #verified-modal[style*="display: flex"],
-        #verification-apply-modal[style*="display: flex"],
-        #admin-verify-modal[style*="display: flex"],
+
         #history-detail-modal[style*="display: flex"],
         #zodiac-login-modal[style*="display: flex"],
         .lab-modal-overlay.active {
@@ -4932,8 +4930,7 @@ body.theme-newyear {
         #edit-profile-modal > div,
         #follow-list-modal > div,
         #verified-modal > div,
-        #verification-apply-modal > div,
-        #admin-verify-modal > div,
+
         #zodiac-login-modal > div,
         .lab-modal-card {
             /* 画面中央に配置しつつ、スクロール時は自然に流れるように */
@@ -8700,43 +8697,7 @@ body.sidebar-collapsed #sidebar:hover .nav-group-title {
         </div>
     </div>
 
-    <!-- 認証申請モーダル -->
-    <div id="verification-apply-modal" onclick="if(event.target === this) this.style.display='none'" 
-         style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); z-index: 5000; display: none; align-items: center; justify-content: center; backdrop-filter: blur(5px);">
-        <div class="bg-white dark:bg-zinc-900 p-6 rounded-2xl w-full max-w-md mx-4 shadow-2xl border border-gray-200 dark:border-gray-700 relative" onclick="event.stopPropagation()">
-            <button onclick="document.getElementById('verification-apply-modal').style.display='none'" class="absolute top-4 right-4 text-gray-400 hover:text-red-500"><i class="bi bi-x-lg"></i></button>
-            
-            <h3 class="text-xl font-black mb-4 flex items-center gap-2">
-                <i class="bi bi-patch-check-fill text-blue-500"></i> 認証バッジの申請
-            </h3>
-            
-            <p class="text-sm text-gray-600 dark:text-gray-300 mb-4 leading-relaxed">
-                天命乃杜の公式認証バッジ（ブルー）を申請します。<br>
-                申請は運営事務局（黄金認証ユーザー）により厳正に審査されます。
-            </p>
 
-            <label class="block text-sm font-bold mb-2">申請の理由 / 自己アピール</label>
-            <textarea id="verify-reason" class="w-full p-3 border rounded-lg mb-4 h-32 themed-input text-sm" placeholder="例：毎日欠かさず参拝しており、SNSでも積極的に広めています。公式ユーザーとして認められたいです。"></textarea>
-            
-            <button onclick="submitVerification()" class="w-full py-3 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-lg shadow transition">
-                審査に申し込む
-            </button>
-        </div>
-    </div>
-
-    <!-- 管理者用審査モーダル -->
-    <div id="admin-verify-modal" onclick="if(event.target === this) this.style.display='none'" 
-         style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 6000; display: none; align-items: center; justify-content: center;">
-        <div class="bg-white dark:bg-zinc-900 p-6 rounded-2xl w-full max-w-lg mx-4 shadow-2xl border-2 border-yellow-500 max-h-[80vh] flex flex-col" onclick="event.stopPropagation()">
-            <div class="flex justify-between items-center mb-4 border-b border-gray-200 dark:border-gray-700 pb-2">
-                <h3 class="text-xl font-black text-yellow-600"><i class="bi bi-shield-lock-fill"></i> 認証審査（管理者用）</h3>
-                <button onclick="document.getElementById('admin-verify-modal').style.display='none'" class="text-gray-500"><i class="bi bi-x-lg"></i></button>
-            </div>
-            <div id="admin-verify-list" class="overflow-y-auto flex-1 space-y-3">
-                <!-- ここに申請リストが表示される -->
-            </div>
-        </div>
-    </div>
 
     <!-- カスタム確認モーダル (Minecraft風UI) -->
     <div id="custom-confirm-modal" class="fixed top-0 left-0 w-full h-full bg-black/80 z-[9999] hidden items-center justify-center p-4 backdrop-blur-sm animate-fade-in">
@@ -18468,18 +18429,7 @@ async function renderSettingsDashboard() {
             });
         }
 
-        // --- 認証モーダル表示 ---
-        function showVerifiedModal(type, username) {
-            let title = "", desc = "";
-            if (type === 'gold') {
-                title = "黄金の認証ユーザー";
-                desc = `${username} は、この「運勢・天命乃杜」の運営者、または開発に深く関わる特別なアカウントであることを証明します。<br><br>※このバッジは運営者のみに付与されます。`;
-            } else {
-                title = "認証済みユーザー";
-                desc = `${username} は、所定の手続きを経て本人確認が完了した、信頼できる公式アカウントであることを証明します。`;
-            }
-            showToast(`<div class="text-left"><h4 class="font-bold mb-1">${title}</h4><p class="text-xs">${desc}</p></div>`, 'info', '認証情報');
-        }
+
 
        // --- フォロー機能 (エラー詳細表示版) ---
         async function toggleFollow(username, action) {
@@ -18737,7 +18687,6 @@ async function renderSettingsDashboard() {
                         この黄金のバッジは、運勢・天命乃杜の運営者、またはシステムの開発・管理に深く携わる特別なアカウントであることを証明します。
                         <br><br>
                         <span class="text-xs text-gray-500">※金属光沢を持つこのバッジは、最高位の権限者のみに表示されます。</span>
-                        ${isMe ? '<br><br><button onclick="openAdminVerifyPanel()" class="w-full py-2 bg-yellow-600 text-white font-bold rounded shadow text-sm hover:bg-yellow-700 transition">管理者：認証審査パネルを開く</button>' : ''}
                     </div>
                 `;
         
@@ -18755,22 +18704,8 @@ async function renderSettingsDashboard() {
             } else {
                 // バッジなし（自分が見た時だけ申請ボタンを出す）
                 if (isMe) {
-                    iconArea.innerHTML = '<i class="bi bi-person-circle text-gray-400"></i>';
-                    titleEl.textContent = "未認証アカウント";
-                    titleEl.className = "text-xl font-black mb-4 text-gray-500";
-                    descEl.innerHTML = `
-                        <div class="text-left text-sm leading-relaxed">
-                            <strong class="block text-base mb-2 text-gray-800 dark:text-gray-200">認証バッジを取得しませんか？</strong>
-                            認証バッジを持つアカウントは、信頼できる公式アカウントであることを証明します。<br>
-                            <br>
-                            <button onclick="document.getElementById('verification-apply-modal').style.display='flex'; document.getElementById('verified-modal').style.display='none';" 
-                                class="w-full py-3 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-lg shadow transition">
-                                認証を開始する
-                            </button>
-                        </div>
-                    `;
                 } else {
-                    return; // 他人の未認証は何も出さない
+                    return; // 未認証は何も出さない
                 }
             }
             
@@ -19095,10 +19030,8 @@ async function renderSettingsDashboard() {
                 const iconColorMap = { 'gray':'#9ca3af', 'red':'#ef4444', 'blue':'#3b82f6', 'green':'#10b981', 'yellow':'#eab308', 'purple':'#a855f7', 'pink':'#ec4899', 'black':'#1f2937' };
                 const iconColor = iconColorMap[post.user_color] || '#9ca3af';
 
-                // 認証バッジ
+                // 認証バッジ（機能廃止のため空文字のまま）
                 let verifiedBadge = '';
-                if(post.user_verified === 'gold') verifiedBadge = '<i class="bi bi-patch-check-fill text-yellow-500 ml-1" title="運営"></i>';
-                else if(post.user_verified === 'blue') verifiedBadge = '<i class="bi bi-patch-check-fill text-blue-500 ml-1" title="公式"></i>';
 
                 // リアクションボタンの状態
                 const heartClass = post.my_reaction ? 'bi-heart-fill text-red-500' : 'bi-heart text-gray-400';
@@ -19208,95 +19141,7 @@ async function renderSettingsDashboard() {
     // 初期化実行 (window.onload内などで呼ぶ)
     // BoardSystem.init();
 
-        // 申請送信
-        async function submitVerification() {
-            const reason = document.getElementById('verify-reason').value;
-            if(!reason) return alert("申請理由を入力してください");
 
-            showLoading(true);
-            try {
-                const res = await authFetch(`${API_BASE}/api/verification/apply`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ reason })
-                });
-                const data = await res.json();
-                if(res.ok) {
-                    showToast("申請を受け付けました。審査をお待ちください。", "success");
-                    document.getElementById('verification-apply-modal').style.display='none';
-                } else {
-                    alert("申請エラー: " + data.error);
-                }
-            } catch(e) { console.error(e); alert("通信エラー"); }
-            finally { showLoading(false); }
-        }
-
-        // 管理者パネルを開く
-        async function openAdminVerifyPanel() {
-            const modal = document.getElementById('admin-verify-modal');
-            const list = document.getElementById('admin-verify-list');
-            modal.style.display = 'flex';
-            list.innerHTML = '<div class="text-center"><div class="spinner-border text-yellow-500"></div></div>';
-
-            try {
-                const res = await authFetch(`${API_BASE}/api/admin/verifications`, { method: 'GET' });
-                if(res.ok) {
-                    const data = await res.json();
-                    renderAdminRequests(data.requests);
-                } else {
-                    list.innerHTML = '<p class="text-red-500 text-center">権限がありません</p>';
-                }
-            } catch(e) { list.innerHTML = '<p class="text-red-500 text-center">エラー発生</p>'; }
-        }
-
-        // 申請リスト描画
-        function renderAdminRequests(requests) {
-            const list = document.getElementById('admin-verify-list');
-            if(requests.length === 0) {
-                list.innerHTML = '<p class="text-gray-500 text-center py-4">現在、保留中の申請はありません。</p>';
-                return;
-            }
-
-            list.innerHTML = requests.map(req => `
-                <div class="bg-gray-50 dark:bg-zinc-800 p-4 rounded-lg border border-gray-200 dark:border-gray-700">
-                    <div class="flex justify-between items-start mb-2">
-                        <div>
-                            <span class="font-bold text-lg">${escapeHtml(req.username)}</span>
-                            <div class="text-xs text-gray-400">${req.user_email}</div>
-                        </div>
-                        <span class="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded">申請中</span>
-                    </div>
-                    <div class="bg-white dark:bg-black p-3 rounded text-sm text-gray-700 dark:text-gray-300 mb-3 border">
-                        ${escapeHtml(req.reason)}
-                    </div>
-                    <div class="flex gap-2 justify-end">
-                        <button onclick="decideVerification(${req.id}, 'reject')" class="px-3 py-1 bg-gray-200 text-gray-700 rounded hover:bg-gray-300 text-sm">却下</button>
-                        <button onclick="decideVerification(${req.id}, 'approve')" class="px-4 py-1 bg-blue-600 text-white font-bold rounded hover:bg-blue-700 text-sm">承認 (バッジ付与)</button>
-                    </div>
-                </div>
-            `).join('');
-        }
-
-        // 審査実行
-        async function decideVerification(id, decision) {
-            if(!confirm(decision === 'approve' ? "このユーザーに公式バッジを付与しますか？" : "申請を却下しますか？")) return;
-
-            showLoading(true);
-            try {
-                const res = await authFetch(`${API_BASE}/api/admin/decide_verification`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ request_id: id, decision })
-                });
-                if(res.ok) {
-                    showToast(decision === 'approve' ? "承認しました" : "却下しました", "success");
-                    openAdminVerifyPanel(); // リスト更新
-                } else {
-                    alert("処理失敗");
-                }
-            } catch(e) { console.error(e); }
-            finally { showLoading(false); }
-        }
 
         // --- アカウント情報更新 (updateAccountSettings) ---
     async function updateAccountSettings() {
