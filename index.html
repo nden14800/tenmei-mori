@@ -66,8 +66,8 @@
     }
 
     function toggleSidebar() {
-        const isMobile = window.innerWidth <= 1024;
-        if (isMobile || document.body.classList.contains('sidebar-button-mode')) {
+        const isTabletOrMobile = window.innerWidth <= 1366 || (('ontouchstart' in window || navigator.maxTouchPoints > 0) && window.innerWidth <= 1400);
+        if (isTabletOrMobile || document.body.classList.contains('sidebar-button-mode')) {
             document.body.classList.toggle('sidebar-pinned');
         } else {
             document.body.classList.toggle('sidebar-collapsed');
@@ -584,6 +584,29 @@
 
     /* タブレット・モバイル調整 */
     @media (max-width: 1024px) {
+        #sidebar {
+            width: 66px !important;
+            top: 8px !important;
+            bottom: 8px !important;
+            left: 8px !important;
+        }
+        body:not(.sidebar-pinned) .nav-text { display: none !important; }
+        body:not(.sidebar-pinned) .nav-group-title { display: none !important; height: 0 !important; }
+        body:not(.sidebar-pinned) .nav-btn { justify-content: center !important; }
+        body:not(.sidebar-pinned) .nav-icon-box { width: 100% !important; }
+        body.sidebar-pinned #sidebar { width: 220px !important; }
+        body.sidebar-pinned .nav-text { display: block !important; opacity: 1 !important; }
+        body.sidebar-pinned .nav-group-title { display: block !important; height: auto !important; opacity: 0.45 !important; }
+        body.sidebar-pinned .nav-btn { justify-content: flex-start !important; }
+        body.sidebar-pinned .nav-icon-box { width: 34px !important; }
+        #main-content {
+            margin-left: 84px !important;
+            width: calc(100% - 84px) !important;
+        }
+    }
+
+    /* iPad横向き対応（1025px〜1366px）*/
+    @media (min-width: 1025px) and (max-width: 1366px) {
         #sidebar {
             width: 66px !important;
             top: 8px !important;
@@ -5872,23 +5895,7 @@ body.sidebar-collapsed #sidebar:hover .nav-group-title {
 
         <!-- Labs -->
         <button class="nav-btn" onclick="showView('lab')" id="nav-lab">
-            <div class="nav-icon-box">
-                <svg viewBox="0 0 200 200" overflow="hidden">
-                    <defs>
-                        <clipPath id="flaskClipNav">
-                             <path d="M80 20 L120 20 L120 70 L170 170 C175 180, 165 190, 150 190 L50 190 C35 190, 25 180, 30 170 L80 70 Z" />
-                        </clipPath>
-                    </defs>
-                    <g class="flask-container">
-                        <g clip-path="url(#flaskClipNav)">
-                            <g class="liquid-container">
-                                <path class="wave-path wave-front" d="M0 120 Q50 140 100 120 T200 120 T300 120 T400 120 V250 H0 Z" fill="currentColor"/>
-                            </g>
-                        </g>
-                        <path class="glass-stroke" fill="none" stroke="currentColor" stroke-width="12" d="M80 20 L120 20 L120 70 L170 170 C175 180, 165 190, 150 190 L50 190 C35 190, 25 180, 30 170 L80 70 Z" />
-                    </g>
-                </svg>
-            </div>
+            <div class="nav-icon-box"><i class="bi bi-flask-fill"></i></div>
             <span class="nav-text">Labs</span>
         </button>
     </div>
@@ -7834,7 +7841,7 @@ body.sidebar-collapsed #sidebar:hover .nav-group-title {
                             <span class="text-4xl text-red-400"><i class="bi bi-info-circle-fill"></i></span>
                             <span class="text-white">当サイトについて</span>
                         </h2>
-                        <p class="text-sm text-zinc-300 leading-relaxed max-w-xl" style="font-family: 'Shippori Mincho', serif;">制定: 2026/01/02 ・ 改定: 2026/05/01 (第8版) ・ 運営: nden148</p>
+                        <p class="text-sm text-zinc-300 leading-relaxed max-w-xl" style="font-family: 'Shippori Mincho', serif;">制定: 2026/01/02 ・ 改定: 2026/06/06 (第9版) ・ 運営: nden148</p>
                     </div>
                     <div class="flex-shrink-0 text-center flex flex-col items-center gap-2">
                         <div class="w-20 h-20 rounded-2xl flex items-center justify-center" style="background: linear-gradient(135deg, #7f1d1d, #b91c1c); box-shadow: 0 0 24px rgba(239,68,68,0.3);">
@@ -8758,8 +8765,8 @@ body.sidebar-collapsed #sidebar:hover .nav-group-title {
     <!-- JavaScript ロジック -->
     <script>
     function toggleSidebar() {
-        const isMobile = window.innerWidth <= 1024;
-        if (isMobile || document.body.classList.contains('sidebar-button-mode')) {
+        const isTabletOrMobile = window.innerWidth <= 1366 || (('ontouchstart' in window || navigator.maxTouchPoints > 0) && window.innerWidth <= 1400);
+        if (isTabletOrMobile || document.body.classList.contains('sidebar-button-mode')) {
             document.body.classList.toggle('sidebar-pinned');
         } else {
             document.body.classList.toggle('sidebar-collapsed');
