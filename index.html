@@ -605,8 +605,8 @@
         }
     }
 
-    /* iPad横向き対応（1025px〜1366px）*/
-    @media (min-width: 1025px) and (max-width: 1366px) {
+    /* iPad横向き対応（1025px〜1366px、ホバー非対応のタッチ専用デバイスのみ）*/
+    @media (min-width: 1025px) and (max-width: 1366px) and (hover: none) {
         #sidebar {
             width: 66px !important;
             top: 8px !important;
@@ -5178,21 +5178,8 @@ body.sidebar-collapsed #sidebar .nav-group-title {
 
 /* ホバー（展開）時は表示 */
 body.sidebar-collapsed #sidebar:hover .nav-group-title {
-    height: 18px !important;
-    max-height: 18px !important;
     opacity: 0.6 !important;
-    margin: 8px 4px 4px !important;
-    overflow: visible !important;
     transform: none !important;
-}
-
-/* sidebar-pinned + sidebar-collapsed 同時適用時の競合解消（タブレット等） */
-body.sidebar-collapsed.sidebar-pinned .nav-group-title {
-    height: auto !important;
-    max-height: 18px !important;
-    opacity: 0.45 !important;
-    margin: 8px 4px 4px !important;
-    overflow: visible !important;
 }
 
 /* おみくじ棒アイコンのみ: bi-flower1 → 「天」アイコン */
@@ -9408,8 +9395,7 @@ function escapeHtml(str) {
             <h3>11. サイドバー・アイコン・改定日の修正</h3>
             <ul class="list-disc ml-5 mb-4">
                 <li><strong>当サイトについて 改定日：</strong>2026/05/01（第8版）→ 2026/06/06（第9版）に更新しました。</li>
-                <li><strong>LabsサイドバーアイコンのSVG廃止：</strong>社務所だより v3.0 で「動くフラスコ廃止」と告知していたにもかかわらず、サイドバーの該当アイコンはアニメーションSVGのままになっていました。今回 <code>bi-flask-fill</code>（Bootstrap Iconsの静止アイコン）に統一し、Labs画面内の表示と一致させました。</li>
-                <li><strong>iPad横向きでサイドバーが開けない問題：</strong>iPad（A16 Bionic）を横向きにした際にサイドバーが開けない問題を修正しました。原因はサイドバーの表示判定閾値が1024pxであったのに対し、iPad横向き時の幅（1366px前後）が閾値を超えていたためです。判定閾値を1366px以下に拡張し、<code>ontouchstart</code> / <code>maxTouchPoints</code>によるタッチデバイス検出を追加、合わせて1025〜1366px向けのサイドバーCSSも追加しました。</li>
+                <li><strong>LabsサイドバーアイコンのSVG廃止：</strong>社務所だより v3.0 で「動くフラスコ廃止」と告知していたにもかかわらず、サイドバーの該当アイコンは正しく表示されていませんでした。Labs画面のヘッダーで使用しているフラスコの静止アイコン（SVG）と同一のものに統一し、表示を一致させました。</li>
             </ul>
 
             <h3>12. コラム記事「試して選んだ！おすすめウェブみくじ5選【2026年版】」の追加</h3>
@@ -20855,7 +20841,7 @@ window.applyTheme = function() {
     const verDetailData = {
         v31: {
             ver: 'Ver. 3.1',
-            name: 'Discord連携・各種バリエーション対策・サイドバー改善',
+            name: 'Discord連携・各種バリエーション対策・各種修正',
             date: '2026年6月6日',
             sections: [
                 {
@@ -20881,9 +20867,8 @@ window.applyTheme = function() {
                     ]
                 },
                 {
-                    icon: 'bi-layout-sidebar', title: 'サイドバー・表示の修正',
+                    icon: 'bi-tools', title: '表示の修正',
                     changes: [
-                        { type: 'fix', text: 'サイドバーの開閉時にセクション見出し（MAIN MENU・CONTENTS・SYSTEM）が正しく表示されない不具合を修正。', sourceIds: [80] },
                         { type: 'fix', text: 'Labsアイコンが表示されない問題を修正し、Labs画面と同じフラスコアイコンに統一。', sourceIds: [80] },
                         { type: 'fix', text: '公式Discord参拝所ボタンのライトモード文字色、おみくじ画像生成完了画面のライトモード表示を修正。', sourceIds: [80] },
                         { type: 'fix', text: '認証申請・審査機能の関連コードを完全に削除。', sourceIds: [80] }
@@ -21562,14 +21547,14 @@ window.applyTheme = function() {
                             <span class="ver-item-badge ver-badge-current"><i class="bi bi-patch-check-fill"></i>最新版</span>
                         </div>
                         <div class="ver-item-date">2026年6月6日リリース</div>
-                        <div class="ver-item-name">Discord連携・各種バリエーション対策・サイドバー改善</div>
-                        <div class="ver-item-desc">おみくじ結果のDiscordシェア機能、12星座占いのバリエーション重複対策（Fisher-Yates導入）、認証申請機能の削除、ライトモード対応の追加修正、開発者情報・チュートリアル画面の新設、サイドバーの表示崩れとLabsアイコンの修正など多数の改善を実施。</div>
+                        <div class="ver-item-name">Discord連携・各種バリエーション対策・各種修正</div>
+                        <div class="ver-item-desc">おみくじ結果のDiscordシェア機能、12星座占いのバリエーション重複対策（Fisher-Yates導入）、認証申請機能の削除、ライトモード対応の追加修正、開発者情報・チュートリアル画面の新設、Labsアイコンの修正など多数の改善を実施。</div>
                         <div class="ver-item-tags">
                             <span class="ver-item-tag">Discordシェア</span>
                             <span class="ver-item-tag">重複対策</span>
                             <span class="ver-item-tag">開発者情報</span>
                             <span class="ver-item-tag">チュートリアル</span>
-                            <span class="ver-item-tag">サイドバー修正</span>
+                            <span class="ver-item-tag">Labs修正</span>
                         </div>
                         <div class="ver-item-more"><i class="bi bi-chevron-right"></i>詳細を見る</div>
                     </div>
