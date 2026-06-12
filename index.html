@@ -80,9 +80,8 @@
    <!-- QRCode.js -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
     
-    <!-- jsPDF & html2canvas -->
-    <!-- 修正: jspdfを削除し、html2canvasのみ残す -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <!-- html-to-image（html2canvas代替・SVGベースでborder-radius/QR正常描画） -->
+    <script src="https://cdn.jsdelivr.net/npm/html-to-image@1.11.13/dist/html-to-image.min.js"></script>
     
     <!-- フォント -->
     <link href="https://fonts.googleapis.com/css2?family=Shippori+Mincho:wght@400;500;600;800&family=Zen+Old+Mincho:wght@400;700;900&display=swap" rel="stylesheet">
@@ -8325,7 +8324,7 @@ body.sidebar-collapsed #sidebar:hover .nav-group-title {
                                     </tr>
                                     <tr class="hover:bg-gray-50 dark:hover:bg-zinc-800/50">
                                         <td class="p-3 font-bold text-gray-600 dark:text-gray-400">シェア画像</td>
-                                        <td class="p-3 bg-red-50/50 dark:bg-red-900/10 border-l-4 border-l-red-500">html2canvas生成</td>
+                                        <td class="p-3 bg-green-50/50 dark:bg-green-900/10 border-l-4 border-l-green-500">html-to-image生成</td>
                                         <td class="p-3">なし</td>
                                         <td class="p-3">なし</td>
                                         <td class="p-3">なし</td>
@@ -15113,27 +15112,23 @@ window.renderPrefectureMap = function() {
             btn.innerHTML = '<i class="bi bi-hourglass-split"></i> 生成中...';
             btn.disabled = true;
             
-            html2canvas(target, {
-                scale: 4, 
-                backgroundColor: null, 
-                useCORS: true,
-                logging: false,
-                onclone: (clonedDoc) => {
-                    const clonedBody = clonedDoc.querySelector('.omamori-body');
-                    clonedBody.style.boxShadow = 'none';
-                    const style = clonedDoc.createElement('style');
-                    style.innerHTML = '.omamori-body::before, .omamori-body::after { display: none !important; }';
-                    clonedDoc.body.appendChild(style);
+            htmlToImage.toPng(target, {
+                pixelRatio: 4,
+                cacheBust: true,
+                filter: (node) => {
+                    // ::before / ::after 擬似要素に相当する装飾ノードを除外
+                    if (node.classList && node.classList.contains('omamori-deco')) return false;
+                    return true;
                 }
-            }).then(canvas => {
+            }).then(dataUrl => {
                 const link = document.createElement('a');
                 link.download = `omamori_${Date.now()}.png`;
-                link.href = canvas.toDataURL('image/png');
+                link.href = dataUrl;
                 link.click();
-                
+
                 btn.innerHTML = originalText;
                 btn.disabled = false;
-                
+
                 // 成功時は控えめに通知
                 showToast("御守を端末に保存しました", "success");
             }).catch(e => {
@@ -16806,126 +16801,157 @@ function resetSearch() {
         function generateResultImage() {
             const status = document.getElementById('gen-img-status');
             status.textContent = "画像を生成中...";
-            
+
             const target = document.getElementById('result-card-outer');
-            
+
             const container = document.getElementById('generated-image-container');
             container.innerHTML = '';
             container.classList.add('hidden');
-            
+
             const originalScrollPos = window.scrollY;
             window.scrollTo(0, 0);
 
-            // カードのベース背景色を取得（大吉=黄金、大凶=白、その他=白）
+            // カードのベース背景色を取得（大吉=黄金、その他=白）
             let bgColor = '#ffffff';
             if (target.classList.contains('style-daikichi')) bgColor = '#ffb700';
 
-            // QRコードの描画完了を待ってからキャプチャ
+            // DOMを直接クローンして600px幅を強制し、html-to-imageでキャプチャ
             const doCapture = () => {
-            document.fonts.ready.then(() => {
-                html2canvas(target, {
-                    scale: 3,
-                    useCORS: true,
-                    allowTaint: true,
-                    backgroundColor: bgColor,
-                    windowWidth: 1280,
-                    scrollX: 0,
-                    scrollY: 0,
-                    logging: false,
-                    imageTimeout: 15000,
-                    onclone: (clonedDoc) => {
-                        // !important付きCSSを注入してレスポンシブ上書きを強制解除
-                        const overrideStyle = clonedDoc.createElement('style');
-                        overrideStyle.textContent = `
-                            #result-card-outer {
-                                width: 600px !important;
-                                min-width: 600px !important;
-                                max-width: 600px !important;
-                                min-height: 1200px !important;
-                                height: auto !important;
-                                padding: 30px 40px !important;
-                                margin: 0 !important;
-                                transform: none !important;
-                                box-shadow: none !important;
-                                position: relative !important;
-                                display: flex !important;
-                                flex-direction: column !important;
-                                align-items: center !important;
-                                box-sizing: border-box !important;
-                                font-family: 'Zen Old Mincho', serif !important;
-                            }
-                            #result-capture-container {
-                                width: 600px !important;
-                                max-width: 600px !important;
-                                min-width: 600px !important;
-                            }
-                            .result-poem-vertical {
-                                height: 350px !important;
-                                font-size: 2rem !important;
-                            }
-                            .result-advice-box {
-                                height: 350px !important;
-                                font-size: 1rem !important;
-                            }
-                            .detail-column {
-                                height: 250px !important;
-                                font-size: 1.1rem !important;
-                            }
-                            .result-kamon { font-size: 3rem !important; }
-                            .result-title-text { font-size: 1.5rem !important; }
-                            .result-circle-box {
-                                width: 160px !important;
-                                height: 160px !important;
-                            }
-                        `;
-                        clonedDoc.head.appendChild(overrideStyle);
+                document.fonts.ready.then(() => {
 
-                        const clonedOuter = clonedDoc.getElementById('result-card-outer');
-                        if (clonedOuter) {
-                            // 大吉の背景ノイズSVGを除去し背景色を保持
-                            if (clonedOuter.classList.contains('style-daikichi')) {
-                                clonedOuter.style.backgroundColor = '#ffb700';
-                                clonedOuter.style.backgroundImage = 'none';
-                            }
+                    // ── クローン生成 ──────────────────────────────────────────
+                    const clone = target.cloneNode(true);
+                    clone.id = 'result-card-outer-clone';
 
-                            // Bootstrap Icons のフォント指定を明示（アイコン化け対策）
-                            const icons = clonedOuter.querySelectorAll('.bi');
-                            icons.forEach(el => {
-                                el.style.fontFamily = 'bootstrap-icons';
-                                el.style.fontStyle = 'normal';
-                            });
+                    // オフスクリーンに配置（画面には見えない）
+                    clone.style.position = 'fixed';
+                    clone.style.top = '-9999px';
+                    clone.style.left = '-9999px';
+                    clone.style.zIndex = '-9999';
 
-                            // 縦書きレイアウトの崩れ防止
-                            const verticals = clonedOuter.querySelectorAll('.result-poem-vertical, .result-advice-box, .detail-column');
-                            verticals.forEach(el => {
-                                el.style.letterSpacing = '0.1em';
-                                el.style.lineHeight = '1.6';
-                                el.style.fontFamily = "'Zen Old Mincho', serif";
-                            });
+                    // QRコードのcanvasをimgに変換（html-to-imageでcanvasも読めるが念のため）
+                    const qrCanvases = clone.querySelectorAll('canvas');
+                    qrCanvases.forEach(qc => {
+                        const img = document.createElement('img');
+                        img.src = qc.toDataURL('image/png');
+                        img.style.width = (qc.offsetWidth || 60) + 'px';
+                        img.style.height = (qc.offsetHeight || 60) + 'px';
+                        qc.parentNode.replaceChild(img, qc);
+                    });
 
-                            // QRコード canvas を img に変換（toBlob内で objectURL が無効になる対策）
-                            const qrCanvases = clonedOuter.querySelectorAll('canvas');
-                            qrCanvases.forEach(qc => {
-                                const img = clonedDoc.createElement('img');
-                                img.src = qc.toDataURL('image/png');
-                                img.style.width = qc.style.width || '60px';
-                                img.style.height = qc.style.height || '60px';
-                                qc.parentNode.replaceChild(img, qc);
-                            });
-                        }
+                    // 大吉ノイズSVG背景を除去（大吉のみ）
+                    if (clone.classList.contains('style-daikichi')) {
+                        clone.style.setProperty('background-image', 'none', 'important');
+                        clone.style.setProperty('background-color', '#ffb700', 'important');
                     }
-                }).then(canvas => {
-                    status.textContent = "";
-                    window.scrollTo(0, originalScrollPos);
 
-                    container.innerHTML = '<p class="text-green-600 font-bold mb-2 text-sm"><i class="bi bi-check-circle-fill"></i> 画像の生成完了</p>';
-                    
-                    // ▼▼▼ canvas.toBlob の中身をここから下と差し替え ▼▼▼
-                    canvas.toBlob(blob => {
-                        if (!blob) return;
+                    // 600px固定スタイルをstyle要素で注入（!importantでCSSを上書き）
+                    const overrideStyle = document.createElement('style');
+                    overrideStyle.textContent = `
+                        #result-card-outer-clone {
+                            width: 600px !important;
+                            min-width: 600px !important;
+                            max-width: 600px !important;
+                            min-height: 1200px !important;
+                            height: auto !important;
+                            padding: 30px 40px !important;
+                            margin: 0 !important;
+                            transform: none !important;
+                            box-shadow: none !important;
+                            position: fixed !important;
+                            top: -9999px !important;
+                            left: -9999px !important;
+                            display: flex !important;
+                            flex-direction: column !important;
+                            align-items: center !important;
+                            box-sizing: border-box !important;
+                            font-family: 'Zen Old Mincho', serif !important;
+                        }
+                        #result-card-outer-clone .result-main-message-area {
+                            display: flex !important;
+                            justify-content: center !important;
+                            gap: 30px !important;
+                            margin-bottom: 40px !important;
+                            width: 100% !important;
+                            padding: 0 20px !important;
+                        }
+                        #result-card-outer-clone .result-poem-vertical {
+                            writing-mode: vertical-rl !important;
+                            font-size: 2rem !important;
+                            font-weight: bold !important;
+                            letter-spacing: 0.2em !important;
+                            line-height: 1.8 !important;
+                            height: 350px !important;
+                            min-height: unset !important;
+                            flex-shrink: 0 !important;
+                        }
+                        #result-card-outer-clone .result-advice-box {
+                            writing-mode: vertical-rl !important;
+                            font-size: 1rem !important;
+                            line-height: 1.8 !important;
+                            height: 350px !important;
+                            min-height: unset !important;
+                            padding: 15px 10px !important;
+                            flex-shrink: 0 !important;
+                        }
+                        #result-card-outer-clone .result-details-grid {
+                            display: flex !important;
+                            flex-direction: row-reverse !important;
+                            justify-content: center !important;
+                            gap: 15px !important;
+                            width: 100% !important;
+                            margin-bottom: 40px !important;
+                            padding: 20px 0 !important;
+                        }
+                        #result-card-outer-clone .detail-column {
+                            writing-mode: vertical-rl !important;
+                            height: 250px !important;
+                            font-size: 1.1rem !important;
+                            line-height: 1.5 !important;
+                        }
+                        #result-card-outer-clone .result-kamon { font-size: 3rem !important; }
+                        #result-card-outer-clone .result-title-text { font-size: 1.5rem !important; }
+                        #result-card-outer-clone .result-circle-box {
+                            width: 160px !important;
+                            height: 160px !important;
+                            border-radius: 50% !important;
+                            overflow: hidden !important;
+                            flex-shrink: 0 !important;
+                            margin: 0 auto 15px !important;
+                        }
+                        #result-card-outer-clone .lucky-area {
+                            display: grid !important;
+                            grid-template-columns: 1fr 1fr !important;
+                            gap: 15px !important;
+                            width: 100% !important;
+                        }
+                    `;
+
+                    document.head.appendChild(overrideStyle);
+                    document.body.appendChild(clone);
+
+                    // ── html-to-image でキャプチャ ─────────────────────────────
+                    htmlToImage.toBlob(clone, {
+                        pixelRatio: 3,
+                        backgroundColor: bgColor,
+                        cacheBust: true,
+                        width: 600
+                    }).then(blob => {
+                        // クリーンアップ
+                        document.body.removeChild(clone);
+                        document.head.removeChild(overrideStyle);
+                        window.scrollTo(0, originalScrollPos);
+                        status.textContent = "";
+
+                        if (!blob) {
+                            status.textContent = "画像の生成に失敗しました。";
+                            showToast("画像の生成に失敗しました。\nもう一度お試しください。", "error");
+                            return;
+                        }
+
                         currentState.lastImageBlob = blob;
                         const url = URL.createObjectURL(blob);
-                        
+
                         // リッチな完了UIの生成（ライトモード・ダークモード動的対応）
                         const isDark = document.documentElement.classList.contains('dark');
                         const bgStyle = isDark ? "background:#0d0d0d;border:1px solid #2a2a2a;" : "background:#ffffff;border:1px solid #e4e4e7;";
@@ -16959,20 +16985,21 @@ function resetSearch() {
                                 </button>
                             </div>
                         `;
-                        
-                        container.classList.remove('hidden');
-                        
-                    }, 'image/png');
-                    // ▲▲▲ 差し替えここまで ▲▲▲
 
-                }).catch(err => {
-                console.error("Image Gen Error:", err);
-                status.textContent = "画像の生成に失敗しました。";
-                status.className = "text-sm font-bold text-red-500 mb-2 h-6";
-                window.scrollTo(0, originalScrollPos);
-                showToast("画像の生成に失敗しました。\nもう一度お試しください。", "error");
-            });
-            }); // document.fonts.ready
+                        container.classList.remove('hidden');
+
+                    }).catch(err => {
+                        // クリーンアップ
+                        if (clone.parentNode) document.body.removeChild(clone);
+                        if (overrideStyle.parentNode) document.head.removeChild(overrideStyle);
+                        window.scrollTo(0, originalScrollPos);
+                        console.error("Image Gen Error:", err);
+                        status.textContent = "画像の生成に失敗しました。";
+                        status.className = "text-sm font-bold text-red-500 mb-2 h-6";
+                        showToast("画像の生成に失敗しました。\nもう一度お試しください。", "error");
+                    });
+
+                }); // document.fonts.ready
             }; // doCapture end
 
             // QRコード描画完了を待ってからキャプチャ（最大500ms）
