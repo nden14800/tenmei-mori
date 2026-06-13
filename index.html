@@ -1294,6 +1294,64 @@
         .lucky-row { font-size: 0.9rem; margin-bottom: 4px; display: flex; align-items: flex-start;}
         .lucky-icon { margin-right: 5px; min-width: 20px; text-align: center; }
 
+        /* 縦書き列レイアウト（おみくじ堂スタイル） */
+        .omikuji-lucky-columns {
+            width: 100%;
+            border: 1px solid currentColor;
+            border-radius: 8px;
+            overflow: hidden;
+            margin-bottom: 0;
+        }
+        .omikuji-lucky-inner {
+            display: flex;
+            flex-direction: row-reverse;
+            justify-content: space-evenly;
+            align-items: flex-start;
+            padding: 16px 12px;
+            gap: 0;
+            min-height: 180px;
+        }
+        .omikuji-lucky-divider {
+            width: 1px;
+            align-self: stretch;
+            background: currentColor;
+            opacity: 0.25;
+            margin: 0 4px;
+            flex-shrink: 0;
+        }
+        .omikuji-lucky-col {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 8px;
+            padding: 0 6px;
+            flex: 1;
+            min-width: 0;
+        }
+        .omikuji-lucky-label {
+            writing-mode: vertical-rl;
+            text-orientation: mixed;
+            font-size: 0.68rem;
+            font-weight: bold;
+            letter-spacing: 0.06em;
+            opacity: 0.65;
+            white-space: nowrap;
+        }
+        .omikuji-lucky-val {
+            writing-mode: vertical-rl;
+            text-orientation: mixed;
+            font-size: 0.85rem;
+            letter-spacing: 0.1em;
+            line-height: 1.6;
+        }
+        .omikuji-color-swatch {
+            width: 20px;
+            height: 36px;
+            border-radius: 3px;
+            border: 1px solid rgba(0,0,0,0.15);
+            flex-shrink: 0;
+        }
+
         /* アイコンのみ表示＋ツールチップ */
         .lucky-icons-row {
             display: flex;
@@ -6837,6 +6895,7 @@ body.sidebar-collapsed #sidebar:hover .nav-group-title {
                         <span>|</span>
                         <span class="inline-flex items-center gap-1 text-[10px] bg-green-950/50 text-green-400 border border-green-800 px-1.5 py-0.5 rounded font-bold"><i class="bi bi-patch-check-fill"></i>最新版</span>
                     </div>
+                    <div class="text-[10px] text-zinc-600">© 2026 天命乃杜 / nden148</div>
                     <button onclick="openVerHistory()" class="ver-history-btn" style="margin-top: 4px;">
                         <i class="bi bi-clock-history"></i> 更新の軌跡
                     </button>
@@ -8919,6 +8978,85 @@ body.sidebar-collapsed #sidebar:hover .nav-group-title {
 
             </div>
         </section>
+
+        <!-- サイトフッター -->
+        <footer id="site-footer" style="
+            width: 100%;
+            margin-top: 60px;
+            border-top: 1px solid var(--card-border);
+            background: var(--card-bg);
+            overflow: hidden;
+        ">
+            <!-- 波線装飾 -->
+            <div style="position:relative; height: 48px; overflow: hidden; line-height: 0;">
+                <svg viewBox="0 0 1200 48" preserveAspectRatio="none" style="width:100%;height:100%;display:block;" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M0 24 C40 8, 80 8, 120 24 C160 40, 200 40, 240 24 C280 8, 320 8, 360 24 C400 40, 440 40, 480 24 C520 8, 560 8, 600 24 C640 40, 680 40, 720 24 C760 8, 800 8, 840 24 C880 40, 920 40, 960 24 C1000 8, 1040 8, 1080 24 C1120 40, 1160 40, 1200 24 L1200 48 L0 48 Z" fill="var(--card-bg)" stroke="none"/>
+                    <path d="M0 24 C40 8, 80 8, 120 24 C160 40, 200 40, 240 24 C280 8, 320 8, 360 24 C400 40, 440 40, 480 24 C520 8, 560 8, 600 24 C640 40, 680 40, 720 24 C760 8, 800 8, 840 24 C880 40, 920 40, 960 24 C1000 8, 1040 8, 1080 24 C1120 40, 1160 40, 1200 24" fill="none" stroke="var(--accent-red)" stroke-width="2" opacity="0.7"/>
+                </svg>
+                <!-- ロゴ円 -->
+                <div style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:52px;height:52px;border-radius:50%;background:var(--accent-red);display:flex;align-items:center;justify-content:center;box-shadow:0 2px 12px rgba(0,0,0,0.18);z-index:1;">
+                    <span style="color:#fff;font-size:1.5rem;font-weight:900;font-family:'Zen Old Mincho',serif;line-height:1;">天</span>
+                </div>
+            </div>
+
+            <!-- サイト名 -->
+            <div style="text-align:center;padding:28px 20px 20px;border-bottom:1px solid var(--card-border);">
+                <div style="font-size:1.4rem;font-weight:900;letter-spacing:0.35em;color:var(--accent-red);font-family:'Zen Old Mincho',serif;">運 勢 ・ 天 命 乃 杜</div>
+                <div style="font-size:0.72rem;letter-spacing:0.2em;color:var(--text-sub);margin-top:6px;">UNSEI · TENMEI NO MORI</div>
+            </div>
+
+            <!-- ナビゲーション -->
+            <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:0;border-bottom:1px solid var(--card-border);">
+                <div style="padding:20px 24px;border-right:1px solid var(--card-border);">
+                    <div style="font-size:0.7rem;letter-spacing:0.15em;color:var(--text-sub);margin-bottom:12px;font-weight:bold;">メインコンテンツ</div>
+                    <div style="display:flex;flex-direction:column;gap:8px;">
+                        <a onclick="showView('home')" style="font-size:0.85rem;color:var(--accent-red);text-decoration:none;cursor:pointer;letter-spacing:0.05em;">ホーム</a>
+                        <a onclick="showView('draw')" style="font-size:0.85rem;color:var(--accent-red);text-decoration:none;cursor:pointer;letter-spacing:0.05em;">おみくじ</a>
+                        <a onclick="showView('zodiac')" style="font-size:0.85rem;color:var(--accent-red);text-decoration:none;cursor:pointer;letter-spacing:0.05em;">12星座占い</a>
+                        <a onclick="showView('omamori')" style="font-size:0.85rem;color:var(--accent-red);text-decoration:none;cursor:pointer;letter-spacing:0.05em;">御守</a>
+                    </div>
+                </div>
+                <div style="padding:20px 24px;border-right:1px solid var(--card-border);">
+                    <div style="font-size:0.7rem;letter-spacing:0.15em;color:var(--text-sub);margin-bottom:12px;font-weight:bold;">コミュニティ</div>
+                    <div style="display:flex;flex-direction:column;gap:8px;">
+                        <a onclick="showView('prefecture')" style="font-size:0.85rem;color:var(--accent-red);text-decoration:none;cursor:pointer;letter-spacing:0.05em;">全国の運気</a>
+                        <a onclick="showView('history')" style="font-size:0.85rem;color:var(--accent-red);text-decoration:none;cursor:pointer;letter-spacing:0.05em;">おみくじの轍</a>
+                        <a onclick="showView('news')" style="font-size:0.85rem;color:var(--accent-red);text-decoration:none;cursor:pointer;letter-spacing:0.05em;">社務所だより</a>
+                        <a onclick="showView('column')" style="font-size:0.85rem;color:var(--accent-red);text-decoration:none;cursor:pointer;letter-spacing:0.05em;">神籤草子</a>
+                    </div>
+                </div>
+                <div style="padding:20px 24px;">
+                    <div style="font-size:0.7rem;letter-spacing:0.15em;color:var(--text-sub);margin-bottom:12px;font-weight:bold;">サービス情報</div>
+                    <div style="display:flex;flex-direction:column;gap:8px;">
+                        <a onclick="showView('about')" style="font-size:0.85rem;color:var(--accent-red);text-decoration:none;cursor:pointer;letter-spacing:0.05em;">当サイトについて</a>
+                        <a onclick="showView('privacy')" style="font-size:0.85rem;color:var(--accent-red);text-decoration:none;cursor:pointer;letter-spacing:0.05em;">プライバシーポリシー</a>
+                        <a onclick="showView('developer')" style="font-size:0.85rem;color:var(--accent-red);text-decoration:none;cursor:pointer;letter-spacing:0.05em;">開発者について</a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 公式リンク -->
+            <div style="padding:24px 20px;text-align:center;border-bottom:1px solid var(--card-border);">
+                <div style="font-size:0.78rem;letter-spacing:0.2em;color:var(--text-sub);margin-bottom:16px;font-weight:bold;">天命乃杜 公式リンク</div>
+                <div style="display:flex;justify-content:center;gap:16px;">
+                    <a href="https://discord.gg/YOUR_INVITE" target="_blank" rel="noopener" style="width:44px;height:44px;border-radius:50%;background:#5865F2;display:flex;align-items:center;justify-content:center;text-decoration:none;transition:opacity 0.2s;" onmouseenter="this.style.opacity='0.8'" onmouseleave="this.style.opacity='1'">
+                        <i class="bi bi-discord" style="color:#fff;font-size:1.2rem;"></i>
+                    </a>
+                    <a href="https://github.com/nden14800" target="_blank" rel="noopener" style="width:44px;height:44px;border-radius:50%;background:var(--accent-red);display:flex;align-items:center;justify-content:center;text-decoration:none;transition:opacity 0.2s;" onmouseenter="this.style.opacity='0.8'" onmouseleave="this.style.opacity='1'">
+                        <i class="bi bi-github" style="color:#fff;font-size:1.2rem;"></i>
+                    </a>
+                    <a href="https://www.youtube.com/@nden148-x2g" target="_blank" rel="noopener" style="width:44px;height:44px;border-radius:50%;background:#FF0000;display:flex;align-items:center;justify-content:center;text-decoration:none;transition:opacity 0.2s;" onmouseenter="this.style.opacity='0.8'" onmouseleave="this.style.opacity='1'">
+                        <i class="bi bi-youtube" style="color:#fff;font-size:1.2rem;"></i>
+                    </a>
+                </div>
+            </div>
+
+            <!-- コピーライト -->
+            <div style="padding:16px 20px;text-align:center;">
+                <div style="font-size:0.72rem;letter-spacing:0.15em;color:var(--text-sub);">© 2026 天命乃杜 / nden148</div>
+            </div>
+        </footer>
+
     </main>
 
     <!-- グローバルフッター -->
@@ -9308,6 +9446,71 @@ function escapeHtml(str) {
 // ■ 社務所だより（ニュース）データ
     const newsData = [
 
+{
+    id: 81,
+    title: "【2026/06/13】バージョン3.1リリース：画像生成改善・サイドバー修正・フッター新設など",
+    date: "2026/06/13",
+    time: "12:00",
+    tag: "大規模アップデート",
+    tagColor: "text-red-600",
+    borderColor: "border-red-500",
+    desc: "バージョン3.1をリリースしました。画像生成ライブラリの移行によるQRコード・ハンコ崩れの根本解決、サイドバーの各種バグ修正、おみくじ結果カードのラッキーエリア刷新、サイト下部フッターの新設、©著作権表記の追加など9項目に及ぶ改善を実施しています。",
+    content: `
+        <div class="article-content">
+            <p>いつも「運勢・天命乃杜」をご利用いただき、誠にありがとうございます。運営者のnden148です。</p>
+            <p>本日2026年6月13日、天命乃杜をバージョン3.1に更新しました。以下、9項目の変更内容をご報告いたします。</p>
+
+            <h3>1. バージョン3.1への更新</h3>
+            <p>本日の更新をもって、バージョン表記をVer. 3.0からVer. 3.1に引き上げました。ホーム画面下部のバージョン表示・リリース日を更新するとともに、「更新の軌跡」にVer. 3.1の変更内容を新規追加しています。</p>
+
+            <h3>2. Labsサイドバーアイコンの修正</h3>
+            <p>サイドバーのLabsボタンに設定していたアイコン（<code>bi-flask-fill</code>）が表示されない問題を修正しました。原因は、このアイコン名が天命乃杜で読み込んでいるBootstrap Icons 1.11.3には収録されていない名前だったためです。Labs画面のヘッダーで使用している独自フラスコSVGアイコンと完全に統一し、表示崩れを解消しました。</p>
+
+            <h3>3. サイドバーのセクション見出し表示バグの修正</h3>
+            <p>サイドバーを折りたたんだ状態でマウスをホバーすると展開する際、「MAIN MENU」「CONTENTS」「SYSTEM」などのセクション見出しが表示されない問題を修正しました。原因はホバー時のCSSに<code>height</code>の指定が抜けており、<code>opacity</code>のみ変更していたためセクション見出しが高さ0のまま潰れていたことです。</p>
+
+            <h3>4. タブレットPC・iPad横向きのサイドバー挙動修正</h3>
+            <p>iPad横向き（1025〜1366px幅）向けのCSSが、マウスやトラックパッドを持つタブレットPCにも誤って適用される問題を修正しました。このCSSはiPad（タッチのみ・ホバー不可のデバイス）向けのもので、本来ホバー操作が可能なタブレットPCに適用されると「触れたら開く」挙動が壊れ、クリックしないと開かない状態になっていました。メディアクエリに<code>(hover: none)</code>条件を追加し、本物のiPadにのみ適用されるよう限定しています。</p>
+
+            <h3>5. 画像生成ライブラリの移行（html2canvas → html-to-image）</h3>
+            <p>おみくじ結果の画像生成・御守画像の保存に使用していたライブラリを<code>html2canvas v1.4.1</code>から<code>html-to-image v1.11.13</code>に移行しました。</p>
+            <p>html2canvasはDOMをCanvasに再描画する方式のため、以下の既知の問題が解消できない状況が続いていました。</p>
+            <ul class="list-disc ml-5 mb-4">
+                <li>運勢ハンコ（大吉・凶等）の円形が崩れて文字がはみ出す（<code>border-radius + overflow:hidden</code>のクリッピングバグ）</li>
+                <li>おみくじ画像内のQRコードが空白になる（<code>canvas</code>要素が正常描画されない）</li>
+                <li>スマホ等でレスポンシブCSSとの競合によりレイアウトが崩れる</li>
+            </ul>
+            <p>html-to-imageはブラウザのネイティブSVGレンダリングエンジンを利用する方式のため、<code>border-radius</code>や<code>overflow:hidden</code>が正確に描画されます。2024年時点で月間160万ダウンロードを誇る、html2canvasの後継として最も活発にメンテナンスされているライブラリです。</p>
+
+            <h3>6. おみくじ結果カードのラッキーエリアを刷新</h3>
+            <p>おみくじ結果画面の「開運・不運」エリアのデザインを全面的に刷新しました。従来はアイコン＋テキストのボタン形式でしたが、今回の改修で縦書き列レイアウトに変更しています。</p>
+            <ul class="list-disc ml-5 mb-4">
+                <li><strong>開運物・開運場所・開運人物：</strong>縦方向に項目名と値を並べた列形式で表示</li>
+                <li><strong>開運色：</strong>カラーコードに対応した色見本（スウォッチ）を列内に表示</li>
+                <li><strong>不運物・不運場所・不運人物：</strong>同様の縦書き列形式で表示</li>
+            </ul>
+            <p>全7列を均等幅で横並びに配置し、視認性とバランスを改善しています。</p>
+
+            <h3>7. ©著作権表記の追加</h3>
+            <p>ホーム画面のバージョン表示エリアに「© 2026 天命乃杜 / nden148」の著作権表記を追加しました。著作権はコンテンツを制作した時点で自動的に発生するため（無方式主義）、この表記は「このサイトのコンテンツの著作権は制作者にあります」と周囲に示すためのものです。Cloudflare Pagesを利用しているサイトでも、コンテンツを作成したのはnden148であるため著作権は100%制作者に帰属します。</p>
+
+            <h3>8. サイト下部フッターの新設・全面刷新</h3>
+            <p>サイト最下部に常設フッターを新設しました。以下の要素で構成しています。</p>
+            <ul class="list-disc ml-5 mb-4">
+                <li><strong>二重波線の装飾：</strong>フッター上部に赤い波線を上下2本配置し、その中心にロゴを配置しています。</li>
+                <li><strong>ロゴの統一：</strong>深紅の地に金の「天」の文字を刻む意匠で、faviconと完全に一致するデザインです。二重リングが重なりロゴが浮き上がって見える効果を加えました。</li>
+                <li><strong>ナビゲーションリンク：</strong>各カテゴリの見出しを赤・金の太字（Zen Old Minchoフォント）で表示し、リンクの先頭には◆マーカーを添えています。ホバー時に赤へと変化するインタラクションも追加しています。</li>
+                <li><strong>SNSリンクボタン：</strong>Discord・GitHub・YouTubeへのリンクを52pxのボタンで配置。ホバー時に上方向へ浮き上がりながら影が強まるエフェクトを追加しました。</li>
+                <li><strong>©著作権表記：</strong>「© 2026 天命乃杜 / nden148」をフッター最下部に表示しています。</li>
+            </ul>
+
+            <h3>9. 開発者情報画面のライトモード対応</h3>
+            <p>サイドバーの「開発者について」から開く開発者情報画面において、ライトモード時に固定のダーク配色になっていた箇所を修正しました。ヘッダーカードの背景色をCSS変数（<code>var(--card-bg)</code>等）に置き換え、リポジトリカードの背景・枠色も同様に変数化することで、ライト・ダーク両モードで適切な配色が適用されるようになりました。</p>
+
+            <p>以上、本日の変更内容のご報告でした。引き続き「運勢・天命乃杜」をよろしくお願いいたします。</p>
+        </div>
+    `
+},
 
 {
     id: 80,
@@ -15112,15 +15315,15 @@ window.renderPrefectureMap = function() {
             btn.innerHTML = '<i class="bi bi-hourglass-split"></i> 生成中...';
             btn.disabled = true;
             
+            // ボックスシャドウを一時除去してキャプチャ
+            const origBoxShadow = target.style.boxShadow;
+            target.style.setProperty('box-shadow', 'none', 'important');
+
             htmlToImage.toPng(target, {
                 pixelRatio: 4,
-                cacheBust: true,
-                filter: (node) => {
-                    // ::before / ::after 擬似要素に相当する装飾ノードを除外
-                    if (node.classList && node.classList.contains('omamori-deco')) return false;
-                    return true;
-                }
+                cacheBust: true
             }).then(dataUrl => {
+                target.style.boxShadow = origBoxShadow;
                 const link = document.createElement('a');
                 link.download = `omamori_${Date.now()}.png`;
                 link.href = dataUrl;
@@ -15129,11 +15332,10 @@ window.renderPrefectureMap = function() {
                 btn.innerHTML = originalText;
                 btn.disabled = false;
 
-                // 成功時は控えめに通知
                 showToast("御守を端末に保存しました", "success");
             }).catch(e => {
+                target.style.boxShadow = origBoxShadow;
                 console.error(e);
-                // エラー通知
                 showToast("保存に失敗しました。", "error");
                 btn.innerHTML = originalText;
                 btn.disabled = false;
@@ -16466,71 +16668,68 @@ async function showResultDetail(isNewDraw, dataOverride = null) {
             }
             outer.appendChild(detailGrid);
 
-            // 7. 開運・不運エリア
+            // 7. 開運・不運エリア（縦書き列レイアウト）
+            const _colorMap = {
+                "赤":"#e53935","青":"#1e88e5","白":"#f5f5f5","金":"#d4a017","紫":"#8e24aa",
+                "緑":"#43a047","黄":"#fdd835","橙":"#fb8c00","桃":"#f48fb1","黒":"#212121",
+                "銀":"#9e9e9e","紺":"#1a237e","茶":"#6d4c41","灰":"#757575","水色":"#81d4fa",
+                "黄緑":"#aed581","深紅":"#b71c1c","群青":"#283593","琥珀":"#ffb300",
+                "翡翠":"#00897b","瑠璃":"#303f9f","真紅":"#c62828","漆黒":"#0d0d0d",
+                "純白":"#ffffff","桜色":"#f8bbd0","藤色":"#b39ddb","山吹色":"#f9a825",
+                "若草色":"#c5e1a5","空色":"#b3e5fc","茜色":"#c62828","黄金":"#ffc107",
+                "白銀":"#e0e0e0","銅":"#bf8040","パール":"#f0ece8","ベージュ":"#f5e6ca",
+                "クリーム":"#fff8e1","ワインレッド":"#7b1fa2","オリーブ":"#827717",
+                "ミント":"#b2dfdb","ラベンダー":"#ce93d8","サーモン":"#ff8a65",
+                "コーラル":"#ff7043","ターコイズ":"#00bcd4","インディゴ":"#3949ab",
+                "マゼンタ":"#d81b60","シアン":"#00bcd4","ライム":"#cddc39","レモン":"#fff176"
+            };
+            const _swatchColor = (name) => _colorMap[name] || "#cccccc";
             const luckyArea = document.createElement('div');
             luckyArea.className = 'lucky-area';
-            const lBox = document.createElement('div');
-            lBox.className = 'lucky-box accent-border';
-            if (data.lucky) {
-                lBox.innerHTML = `
-                    <div class="lucky-title accent-text">開運</div>
-                    <div class="lucky-icons-row">
-                        <span style="display:inline-flex;align-items:center;gap:2px;">
-                            <span class="lucky-icon-btn" data-tip="物：${data.lucky.item}" onmouseenter="_gTipShow(this)" onmouseleave="_gTipHide()" ontouchstart="_gTipShow(this)" ontouchend="setTimeout(_gTipHide,1200)">
-                                <i class="bi bi-stars accent-text"></i>
-                            </span>
-                            <span class="accent-text" style="font-size:0.78rem;">${data.lucky.item}</span>
-                        </span>
-                        <span style="display:inline-flex;align-items:center;gap:2px;">
-                            <span class="lucky-icon-btn" data-tip="所：${data.lucky.spot}" onmouseenter="_gTipShow(this)" onmouseleave="_gTipHide()" ontouchstart="_gTipShow(this)" ontouchend="setTimeout(_gTipHide,1200)">
-                                <i class="bi bi-geo-alt accent-text"></i>
-                            </span>
-                            <span class="accent-text" style="font-size:0.78rem;">${data.lucky.spot}</span>
-                        </span>
-                        <span style="display:inline-flex;align-items:center;gap:2px;">
-                            <span class="lucky-icon-btn" data-tip="色：${data.lucky.color}" onmouseenter="_gTipShow(this)" onmouseleave="_gTipHide()" ontouchstart="_gTipShow(this)" ontouchend="setTimeout(_gTipHide,1200)">
-                                <i class="bi bi-palette accent-text"></i>
-                            </span>
-                            <span class="accent-text" style="font-size:0.78rem;">${data.lucky.color}</span>
-                        </span>
-                        <span style="display:inline-flex;align-items:center;gap:2px;">
-                            <span class="lucky-icon-btn" data-tip="人：${data.lucky.person}" onmouseenter="_gTipShow(this)" onmouseleave="_gTipHide()" ontouchstart="_gTipShow(this)" ontouchend="setTimeout(_gTipHide,1200)">
-                                <i class="bi bi-person accent-text"></i>
-                            </span>
-                            <span class="accent-text" style="font-size:0.78rem;">${data.lucky.person}</span>
-                        </span>
-                    </div>
-                `;
-            }
-            const uBox = document.createElement('div');
-            uBox.className = 'unlucky-box accent-border';
+            const luckyColumns = document.createElement('div');
+            luckyColumns.className = 'omikuji-lucky-columns accent-border';
+            const innerRow = document.createElement('div');
+            innerRow.className = 'omikuji-lucky-inner';
+            // 不運列（右→左なので先に追加）
             if (data.unlucky) {
-                uBox.innerHTML = `
-                    <div class="lucky-title accent-text red-text" style="color:inherit">不運・注意</div>
-                    <div class="lucky-icons-row">
-                        <span style="display:inline-flex;align-items:center;gap:2px;">
-                            <span class="lucky-icon-btn" data-tip="物：${data.unlucky.item}" onmouseenter="_gTipShow(this)" onmouseleave="_gTipHide()" ontouchstart="_gTipShow(this)" ontouchend="setTimeout(_gTipHide,1200)">
-                                <i class="bi bi-exclamation-triangle accent-text"></i>
-                            </span>
-                            <span class="accent-text" style="font-size:0.78rem;">${data.unlucky.item}</span>
-                        </span>
-                        <span style="display:inline-flex;align-items:center;gap:2px;">
-                            <span class="lucky-icon-btn" data-tip="所：${data.unlucky.spot}" onmouseenter="_gTipShow(this)" onmouseleave="_gTipHide()" ontouchstart="_gTipShow(this)" ontouchend="setTimeout(_gTipHide,1200)">
-                                <i class="bi bi-x-octagon accent-text"></i>
-                            </span>
-                            <span class="accent-text" style="font-size:0.78rem;">${data.unlucky.spot}</span>
-                        </span>
-                        <span style="display:inline-flex;align-items:center;gap:2px;">
-                            <span class="lucky-icon-btn" data-tip="人：${data.unlucky.person}" onmouseenter="_gTipShow(this)" onmouseleave="_gTipHide()" ontouchstart="_gTipShow(this)" ontouchend="setTimeout(_gTipHide,1200)">
-                                <i class="bi bi-person-x accent-text"></i>
-                            </span>
-                            <span class="accent-text" style="font-size:0.78rem;">${data.unlucky.person}</span>
-                        </span>
-                    </div>
-                `;
+                const upCol = document.createElement('div');
+                upCol.className = 'omikuji-lucky-col';
+                upCol.innerHTML = `<div class="omikuji-lucky-label accent-text" style="color:var(--accent-muted,inherit);opacity:0.6;">不運人物</div><div class="omikuji-lucky-val accent-text">${escapeHtml(data.unlucky.person)}</div>`;
+                const usCol = document.createElement('div');
+                usCol.className = 'omikuji-lucky-col';
+                usCol.innerHTML = `<div class="omikuji-lucky-label accent-text" style="color:var(--accent-muted,inherit);opacity:0.6;">不運場所</div><div class="omikuji-lucky-val accent-text">${escapeHtml(data.unlucky.spot)}</div>`;
+                const uiCol = document.createElement('div');
+                uiCol.className = 'omikuji-lucky-col';
+                uiCol.innerHTML = `<div class="omikuji-lucky-label accent-text" style="color:var(--accent-muted,inherit);opacity:0.6;">不運物</div><div class="omikuji-lucky-val accent-text">${escapeHtml(data.unlucky.item)}</div>`;
+                innerRow.appendChild(upCol);
+                innerRow.appendChild(usCol);
+                innerRow.appendChild(uiCol);
             }
-            luckyArea.appendChild(lBox);
-            luckyArea.appendChild(uBox);
+            // 仕切り
+            const divider = document.createElement('div');
+            divider.className = 'omikuji-lucky-divider';
+            innerRow.appendChild(divider);
+            // 開運列
+            if (data.lucky) {
+                const lcCol = document.createElement('div');
+                lcCol.className = 'omikuji-lucky-col';
+                lcCol.innerHTML = `<div class="omikuji-lucky-label accent-text">開運色</div><div class="omikuji-lucky-val accent-text">${escapeHtml(data.lucky.color)}</div><div class="omikuji-color-swatch" style="background:${_swatchColor(data.lucky.color)};"></div>`;
+                const lpCol = document.createElement('div');
+                lpCol.className = 'omikuji-lucky-col';
+                lpCol.innerHTML = `<div class="omikuji-lucky-label accent-text">開運人物</div><div class="omikuji-lucky-val accent-text">${escapeHtml(data.lucky.person)}</div>`;
+                const lsCol = document.createElement('div');
+                lsCol.className = 'omikuji-lucky-col';
+                lsCol.innerHTML = `<div class="omikuji-lucky-label accent-text">開運場所</div><div class="omikuji-lucky-val accent-text">${escapeHtml(data.lucky.spot)}</div>`;
+                const liCol = document.createElement('div');
+                liCol.className = 'omikuji-lucky-col';
+                liCol.innerHTML = `<div class="omikuji-lucky-label accent-text">開運物</div><div class="omikuji-lucky-val accent-text">${escapeHtml(data.lucky.item)}</div>`;
+                innerRow.appendChild(lcCol);
+                innerRow.appendChild(lpCol);
+                innerRow.appendChild(lsCol);
+                innerRow.appendChild(liCol);
+            }
+            luckyColumns.appendChild(innerRow);
+            luckyArea.appendChild(luckyColumns);
             outer.appendChild(luckyArea);
 
 
@@ -16803,7 +17002,6 @@ function resetSearch() {
             status.textContent = "画像を生成中...";
 
             const target = document.getElementById('result-card-outer');
-
             const container = document.getElementById('generated-image-container');
             container.innerHTML = '';
             container.classList.add('hidden');
@@ -16811,135 +17009,49 @@ function resetSearch() {
             const originalScrollPos = window.scrollY;
             window.scrollTo(0, 0);
 
-            // カードのベース背景色を取得（大吉=黄金、その他=白）
+            // カードのベース背景色を取得
             let bgColor = '#ffffff';
             if (target.classList.contains('style-daikichi')) bgColor = '#ffb700';
 
-            // DOMを直接クローンして600px幅を強制し、html-to-imageでキャプチャ
             const doCapture = () => {
                 document.fonts.ready.then(() => {
 
-                    // ── クローン生成 ──────────────────────────────────────────
-                    const clone = target.cloneNode(true);
-                    clone.id = 'result-card-outer-clone';
+                    // ── 実要素にインライン!importantを一時適用（クローン方式不要） ──
+                    // inline !important はスタイルシートの !important より必ず優先される
+                    const origStyleAttr = target.getAttribute('style') || '';
+                    const force = (prop, val) => target.style.setProperty(prop, val, 'important');
 
-                    // オフスクリーンに配置（画面には見えない）
-                    clone.style.position = 'fixed';
-                    clone.style.top = '-9999px';
-                    clone.style.left = '-9999px';
-                    clone.style.zIndex = '-9999';
+                    force('width',            '600px');
+                    force('min-width',        '600px');
+                    force('max-width',        '600px');
+                    force('box-shadow',       'none');
+                    force('transform',        'none');
+                    force('position',         'relative');
+                    force('margin',           '0');
+                    force('padding',          '30px 40px');
+                    force('display',          'flex');
+                    force('flex-direction',   'column');
+                    force('align-items',      'center');
+                    force('box-sizing',       'border-box');
 
-                    // QRコードのcanvasをimgに変換（html-to-imageでcanvasも読めるが念のため）
-                    const qrCanvases = clone.querySelectorAll('canvas');
-                    qrCanvases.forEach(qc => {
-                        const img = document.createElement('img');
-                        img.src = qc.toDataURL('image/png');
-                        img.style.width = (qc.offsetWidth || 60) + 'px';
-                        img.style.height = (qc.offsetHeight || 60) + 'px';
-                        qc.parentNode.replaceChild(img, qc);
-                    });
-
-                    // 大吉ノイズSVG背景を除去（大吉のみ）
-                    if (clone.classList.contains('style-daikichi')) {
-                        clone.style.setProperty('background-image', 'none', 'important');
-                        clone.style.setProperty('background-color', '#ffb700', 'important');
+                    // 大吉のノイズSVG背景を除去
+                    if (target.classList.contains('style-daikichi')) {
+                        force('background-image', 'none');
+                        force('background-color', '#ffb700');
                     }
 
-                    // 600px固定スタイルをstyle要素で注入（!importantでCSSを上書き）
-                    const overrideStyle = document.createElement('style');
-                    overrideStyle.textContent = `
-                        #result-card-outer-clone {
-                            width: 600px !important;
-                            min-width: 600px !important;
-                            max-width: 600px !important;
-                            min-height: 1200px !important;
-                            height: auto !important;
-                            padding: 30px 40px !important;
-                            margin: 0 !important;
-                            transform: none !important;
-                            box-shadow: none !important;
-                            position: fixed !important;
-                            top: -9999px !important;
-                            left: -9999px !important;
-                            display: flex !important;
-                            flex-direction: column !important;
-                            align-items: center !important;
-                            box-sizing: border-box !important;
-                            font-family: 'Zen Old Mincho', serif !important;
-                        }
-                        #result-card-outer-clone .result-main-message-area {
-                            display: flex !important;
-                            justify-content: center !important;
-                            gap: 30px !important;
-                            margin-bottom: 40px !important;
-                            width: 100% !important;
-                            padding: 0 20px !important;
-                        }
-                        #result-card-outer-clone .result-poem-vertical {
-                            writing-mode: vertical-rl !important;
-                            font-size: 2rem !important;
-                            font-weight: bold !important;
-                            letter-spacing: 0.2em !important;
-                            line-height: 1.8 !important;
-                            height: 350px !important;
-                            min-height: unset !important;
-                            flex-shrink: 0 !important;
-                        }
-                        #result-card-outer-clone .result-advice-box {
-                            writing-mode: vertical-rl !important;
-                            font-size: 1rem !important;
-                            line-height: 1.8 !important;
-                            height: 350px !important;
-                            min-height: unset !important;
-                            padding: 15px 10px !important;
-                            flex-shrink: 0 !important;
-                        }
-                        #result-card-outer-clone .result-details-grid {
-                            display: flex !important;
-                            flex-direction: row-reverse !important;
-                            justify-content: center !important;
-                            gap: 15px !important;
-                            width: 100% !important;
-                            margin-bottom: 40px !important;
-                            padding: 20px 0 !important;
-                        }
-                        #result-card-outer-clone .detail-column {
-                            writing-mode: vertical-rl !important;
-                            height: 250px !important;
-                            font-size: 1.1rem !important;
-                            line-height: 1.5 !important;
-                        }
-                        #result-card-outer-clone .result-kamon { font-size: 3rem !important; }
-                        #result-card-outer-clone .result-title-text { font-size: 1.5rem !important; }
-                        #result-card-outer-clone .result-circle-box {
-                            width: 160px !important;
-                            height: 160px !important;
-                            border-radius: 50% !important;
-                            overflow: hidden !important;
-                            flex-shrink: 0 !important;
-                            margin: 0 auto 15px !important;
-                        }
-                        #result-card-outer-clone .lucky-area {
-                            display: grid !important;
-                            grid-template-columns: 1fr 1fr !important;
-                            gap: 15px !important;
-                            width: 100% !important;
-                        }
-                    `;
-
-                    document.head.appendChild(overrideStyle);
-                    document.body.appendChild(clone);
-
-                    // ── html-to-image でキャプチャ ─────────────────────────────
-                    htmlToImage.toBlob(clone, {
+                    // ── html-to-image でキャプチャ ──
+                    htmlToImage.toBlob(target, {
                         pixelRatio: 3,
                         backgroundColor: bgColor,
-                        cacheBust: true,
-                        width: 600
+                        cacheBust: true
                     }).then(blob => {
-                        // クリーンアップ
-                        document.body.removeChild(clone);
-                        document.head.removeChild(overrideStyle);
+                        // スタイルを元に戻す
+                        if (origStyleAttr) {
+                            target.setAttribute('style', origStyleAttr);
+                        } else {
+                            target.removeAttribute('style');
+                        }
                         window.scrollTo(0, originalScrollPos);
                         status.textContent = "";
 
@@ -16952,46 +17064,40 @@ function resetSearch() {
                         currentState.lastImageBlob = blob;
                         const url = URL.createObjectURL(blob);
 
-                        // リッチな完了UIの生成（ライトモード・ダークモード動的対応）
                         const isDark = document.documentElement.classList.contains('dark');
-                        const bgStyle = isDark ? "background:#0d0d0d;border:1px solid #2a2a2a;" : "background:#ffffff;border:1px solid #e4e4e7;";
-                        const badgeStyle = isDark ? "background:#052e16;color:#4ade80;border:1px solid #166534;" : "background:#dcfce7;color:#16a34a;border:1px solid #bbf7d0;";
+                        const bgStyle     = isDark ? "background:#0d0d0d;border:1px solid #2a2a2a;" : "background:#ffffff;border:1px solid #e4e4e7;";
+                        const badgeStyle  = isDark ? "background:#052e16;color:#4ade80;border:1px solid #166534;" : "background:#dcfce7;color:#16a34a;border:1px solid #bbf7d0;";
                         const imgBoxStyle = isDark ? "box-shadow:0 8px 40px rgba(0,0,0,0.6);border:1px solid #333;" : "box-shadow:0 8px 40px rgba(0,0,0,0.15);border:1px solid #e4e4e7;";
                         const closeBtnColor = isDark ? "#666" : "#888";
 
                         container.innerHTML = `
                             <div style="${bgStyle}border-top:2px solid #16a34a;border-radius:16px;padding:20px;text-align:center;">
-                                <!-- 成功バッジ -->
                                 <div style="display:inline-flex;align-items:center;gap:6px;${badgeStyle}border-radius:999px;padding:6px 16px;font-size:0.8rem;font-weight:700;margin-bottom:16px;">
                                     <i class="bi bi-check-circle-fill"></i>
                                     おみくじ画像を生成しました
                                 </div>
-
-                                <!-- プレビュー画像（フル幅・大きく） -->
                                 <div style="width:100%;margin:0 auto 20px;border-radius:12px;overflow:hidden;${imgBoxStyle}">
                                     <img src="${url}" style="width:100%;display:block;">
                                 </div>
-
-                                <!-- 保存ボタン -->
                                 <a href="${url}" download="tenmei_omikuji_${Date.now()}.png"
                                    style="display:flex;align-items:center;justify-content:center;gap:10px;width:100%;background:linear-gradient(135deg,#b91c1c,#7f1d1d);color:#fff;font-weight:700;font-size:1rem;padding:16px;border-radius:12px;text-decoration:none;box-sizing:border-box;box-shadow:0 4px 24px rgba(185,28,28,0.4);margin-bottom:10px;">
                                     <i class="bi bi-download" style="font-size:1.3rem;"></i> 端末に保存する
                                 </a>
-
-                                <!-- 閉じる -->
                                 <button onclick="document.getElementById('generated-image-container').style.display='none'"
                                         style="background:none;border:none;color:${closeBtnColor};font-size:0.8rem;cursor:pointer;padding:8px;text-decoration:underline;">
                                     閉じる
                                 </button>
                             </div>
                         `;
-
                         container.classList.remove('hidden');
 
                     }).catch(err => {
-                        // クリーンアップ
-                        if (clone.parentNode) document.body.removeChild(clone);
-                        if (overrideStyle.parentNode) document.head.removeChild(overrideStyle);
+                        // スタイルを元に戻す
+                        if (origStyleAttr) {
+                            target.setAttribute('style', origStyleAttr);
+                        } else {
+                            target.removeAttribute('style');
+                        }
                         window.scrollTo(0, originalScrollPos);
                         console.error("Image Gen Error:", err);
                         status.textContent = "画像の生成に失敗しました。";
@@ -17002,7 +17108,7 @@ function resetSearch() {
                 }); // document.fonts.ready
             }; // doCapture end
 
-            // QRコード描画完了を待ってからキャプチャ（最大500ms）
+            // QRコード描画完了を待ってからキャプチャ
             const qrCanvas = target.querySelector('canvas');
             if (qrCanvas) {
                 setTimeout(doCapture, 500);
