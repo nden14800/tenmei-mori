@@ -12269,38 +12269,6 @@ function escapeHtml(str) {
 
 
         {
-            id: 55,
-            title: "【干支・暦】明日は夏至——「太陽の頂点」と神社の知られざる関係",
-            date: "2026/06/20",
-            category: "干支・暦",
-            icon: "bi-sun-fill",
-            colorClass: "yellow",
-            content: `
-                <div class="article-content">
-                    <p>明日2026年6月21日は<strong>夏至（げし）</strong>です。一年で最も昼が長く、太陽の力が頂点に達するこの日——実は日本各地の神社と、夏至は切っても切れない深い縁があります。</p>
-
-                    <h3>夏至とは何か——二十四節気の「太陽の頂点」</h3>
-                    <p>夏至は<strong>二十四節気</strong>のひとつです。太陽が黄道上で最も北に位置し、北半球では一年で最も昼の時間が長くなります。2026年は明日6月21日（日）がその日にあたります。夏至と冬至で太陽が出ている時間を比べると、その差は実に約4時間50分にもなります。</p>
-                    <p>縄文・弥生時代から、農耕を中心とした生活は太陽の恵みへの信仰を増大させ、夏至・冬至・春分・秋分などの歳時に合わせて神への豊穣の祈りが捧げられてきました。夏至は暦のはるか起源の時代から、特別な祈りの日だったのです。</p> 
-
-                    <h3>夏至の朝日が殿内に差し込む神社——吉備津彦神社</h3>
-                    <p>岡山県にある<strong>吉備津彦神社</strong>は「朝日の宮」という別名を持ちます。古来、夏至の日に朝日が正面鳥居の上から昇ると同時にほぼ正面から殿内に差し込むよう、御社殿が設計されていると伝わります。太陽が最も力を持つ瞬間に、その光が神様の御座所へ真っ直ぐ届く——先人が天文を読み込んで神社を設計していた証です。当日は夜明け前から「夏至日の出祭」が斎行され、日の神への感謝の祈りが捧げられます。</p> 
-
-                    <h3>夫婦岩と夏至の朝日——二見興玉神社</h3>
-                    <p>三重県の<strong>二見興玉神社</strong>では、夏至の日の出前に「夏至祭」が行われます。早暁、夫婦岩より霊峰富士の神威を仰ぎ、その背に昇る太陽の光を拝するとき、天照大神の神々しさを感じられると伝えられています。夫婦岩の大注連縄の向こう、水平線から昇る夏至の朝日は、伊勢神宮の御神体・天照大御神の姿そのものとして信仰されてきました。</p> 
-
-                    <h3>神社をつなぐ「夏至のレイライン」</h3>
-                    <p>さらに神秘的なのが<strong>レイライン</strong>の存在です。鹿島神宮の「東の一の鳥居」から昇る夏至の朝日の延長線上に、富士山・伊勢神宮・高千穂峰が直線状に並んでいることが知られています。日本を代表する聖地が夏至の太陽によって一本の線で結ばれる——古代の人々が太陽の軌道を神の道として読み解き、聖地を選んでいた可能性を示しています。</p> 
-
-                    <h3>アマテラスは太陽の神</h3>
-                    <p>言うまでもなく、伊勢神宮の御祭神・<strong>天照大御神（アマテラス）</strong>は太陽を司る最高神です。天の岩戸に隠れて世界が闇に包まれたという神話は、太陽が姿を消す＝世界が終わる、という古代人の感覚を如実に示しています。夏至はその太陽が一年で最も輝く日。神社と太陽が深く結びつく理由が、ここにあります。</p>
-
-                    <h3>明日の夏至、空を見上げてみてください</h3>
-                    <p>梅雨の曇り空で太陽が見えなくても、今日・明日は確かに一年で最も昼が長い特別な時間です。近くの神社に立ち寄って手を合わせるとき、その社殿がどの方角を向いているか、ちょっと確かめてみてください。はるか昔から人々が太陽に向けて祈ってきた、その延長線上に自分が立っていることを感じられるかもしれません。</p>
-                </div>
-            `
-        },
-        {
             id: 54,
             title: "【豆知識】神社の「狛犬」、向かって右が口を開けている——阿吽の秘密と、実は「獅子と狛犬の異種コンビ」だった話",
             date: "2026/06/13",
@@ -15422,6 +15390,63 @@ async function authFetch(url, options = {}) {
     return fetch(url, options);
 }
 
+// ==========================================================
+// TENMEI LABS セキュリティガード（LabAuth）
+// ──────────────────────────────────────────────
+// currentState.user はコンソールから誰でも書き換えられるグローバル変数のため、
+// Lab機能の解錠判定の根拠には絶対に使わない。
+// ここではサーバー（/api/auth/check）への問い合わせ結果のみを
+// 「解錠の唯一の根拠」とし、その結果をクロージャ内に閉じ込めて管理する。
+// 公開するのは読み取り専用の判定関数だけで、値そのものは外部から触れない。
+// ==========================================================
+const LabAuth = (function() {
+    let verified = false;      // サーバーが最後に確認した「本当にログイン済みか」
+    let lastChecked = 0;       // 最終確認時刻（ms）
+    let inFlight = null;       // 同時に複数の確認が走らないようにする
+    const TTL = 10000;         // キャッシュの有効期間（10秒）
+
+    async function refresh() {
+        if (inFlight) return inFlight;
+        inFlight = (async () => {
+            try {
+                const res = await authFetch(`${API_BASE}/api/auth/check`, { method: 'GET' });
+                if (res.ok) {
+                    const data = await res.json();
+                    verified = !!data.loggedIn;
+                } else {
+                    verified = false;
+                }
+            } catch (e) {
+                verified = false;
+            }
+            lastChecked = Date.now();
+            inFlight = null;
+            return verified;
+        })();
+        return inFlight;
+    }
+
+    function isVerified() {
+        // キャッシュが古くなっていたら裏側で再確認を走らせつつ、
+        // 今この瞬間の判定には最後に確認できた値を使う（同期的に呼べるようにするため）
+        if (Date.now() - lastChecked > TTL) {
+            refresh();
+        }
+        return verified;
+    }
+
+    function invalidate() {
+        verified = false;
+        lastChecked = 0;
+    }
+
+    return {
+        refresh,        // 強制的にサーバーへ再確認する（async）
+        isVerified,     // 直近のサーバー確認結果を返す（sync・キャッシュ自動更新付き）
+        invalidate,     // ログアウト時などに即時ロック状態へ戻す
+    };
+})();
+
         // ==========================================
         //  Ver. 3.0 ホーム画面制御（アコーディオン＆タブ）
         // ==========================================
@@ -15562,6 +15587,8 @@ window.onload = async function() {
     
     // ▼▼▼ ここに追加：防壁の起動 ▼▼▼
     setupStrictLoginBlocks();
+    setupLabDomWatchdog();   // コンソールからのclassList直接操作（方法2）を即座に検知・無効化
+    LabAuth.refresh();       // ページ読み込み時にサーバーへ一度確認しておく
     // ▲▲▲ 追加ここまで ▲▲▲
 };
         
@@ -15588,15 +15615,18 @@ async function checkSession() {
                 loadLabSettings();
                 loadMyStats(); // ★追加: ログイン確認直後に統計を読み込む
                 console.log("Session restored");
+                LabAuth.refresh(); // Lab解錠判定もサーバー基準で同時に確定させる
             } else {
                 currentState.user = null;
                 updateAuthUI();
                 loadLabSettings(); 
+                LabAuth.invalidate();
             }
         }
     } catch (e) {
         currentState.user = null;
         updateAuthUI();
+        LabAuth.invalidate();
     }
 }
 
@@ -15721,7 +15751,9 @@ const TenmeiLab = {
 
         // ▼▼▼ 追加：共通のログインブロック関数 ▼▼▼
     checkLoginAndBlock: (el) => {
-        if (!currentState.user) {
+        // ★セキュリティ修正：currentState.userはコンソールから直接書き換え可能なため、
+        // 判定にはサーバー検証済みのLabAuth.isVerified()のみを使う
+        if (!LabAuth.isVerified()) {
             // 警告を出す
             showToast("会員限定の機能です。ログインして入室してください。", "warning");
             
@@ -16143,7 +16175,9 @@ function showLoading(show) {
                 const lock = document.getElementById('lab-lock');
                 const wrapper = document.getElementById('lab-content-wrapper');
                 
-                if(!currentState.user) {
+                // ★セキュリティ修正：currentState.userはコンソールから直接書き換え可能なため、
+                // 判定にはサーバー検証済みのLabAuth.isVerified()のみを使う
+                if(!LabAuth.isVerified()) {
                     lock.classList.remove('hidden');
                     wrapper.classList.add('lab-blurred');
                 } else {
@@ -17690,6 +17724,7 @@ async function logout() {
     // 既存のユーザー情報削除
     localStorage.removeItem('omikuji_user');
     currentState.user = null;
+    LabAuth.invalidate();
     
     loadLabSettings().then(() => {
         location.reload();
@@ -18829,7 +18864,9 @@ function changeHistoryPage(newPage) {
             const lock = document.getElementById('lab-lock');
             const wrapper = document.getElementById('lab-content-wrapper');
             
-            if(!currentState.user) {
+            // ★セキュリティ修正：currentState.userはコンソールから直接書き換え可能なため、
+            // 判定にはサーバー検証済みのLabAuth.isVerified()のみを使う
+            if(!LabAuth.isVerified()) {
                 if(lock) lock.classList.remove('hidden');
                 if(wrapper) wrapper.classList.add('lab-blurred');
             } else {
@@ -21670,8 +21707,9 @@ window.applyTheme = function() {
         // ==========================================
         function setupStrictLoginBlocks() {
             const checkAndBlock = (e, viewName) => {
-                // 未ログイン状態なら絶対発動
-                if (!currentState.user) {
+                // ★セキュリティ修正：currentState.userはコンソールから直接書き換え可能なため、
+                // 判定にはサーバー検証済みのLabAuth.isVerified()のみを使う
+                if (!LabAuth.isVerified()) {
                     // ★相手のあらゆる操作（クリック、入力、選択、フォーカス）を完全に殺す
                     e.preventDefault();
                     e.stopPropagation(); 
@@ -21712,6 +21750,36 @@ window.applyTheme = function() {
                     });
                 }
             });
+        }
+
+        // ==========================================
+        //  DOM直接操作（コンソールからのclassList操作）対策
+        //  setupStrictLoginBlocksはクリック等の「操作イベント」しか検知できないため、
+        //  document.getElementById('lab-lock').classList.add('hidden') のような
+        //  イベントを介さない直接操作には別途これが必要。
+        // ==========================================
+        function setupLabDomWatchdog() {
+            const lock = document.getElementById('lab-lock');
+            const wrapper = document.getElementById('lab-content-wrapper');
+            if (!lock || !wrapper) return;
+
+            const reassertLock = () => {
+                // サーバー検証済みでなければ、何があろうと常にロック状態へ戻す
+                if (!LabAuth.isVerified()) {
+                    if (lock.classList.contains('hidden')) lock.classList.remove('hidden');
+                    if (!wrapper.classList.contains('lab-blurred')) wrapper.classList.add('lab-blurred');
+                }
+            };
+
+            // class属性が変化した瞬間（コンソール操作含む）を検知して即座に巻き戻す
+            const observer = new MutationObserver(reassertLock);
+            observer.observe(lock, { attributes: true, attributeFilter: ['class'] });
+            observer.observe(wrapper, { attributes: true, attributeFilter: ['class'] });
+
+            // 念のため、定期的にも再確認・再ロックする（保険のレイヤー）
+            // ※ LabAuth.isVerified() は内部で10秒キャッシュを持つため、
+            //   ここで毎回 refresh() を強制呼び出しはせず、キャッシュ機構に任せる
+            setInterval(reassertLock, 1500);
         }
             
     </script>    <!-- ===== 更新の軌跡パネル HTML ===== -->
@@ -22190,6 +22258,61 @@ window.applyTheme = function() {
     } catch(e) {
         setTimeout(showTutorial, 800);
     }
+})();
+</script>
+
+<script>
+// ==========================================================
+// TENMEI LABS セキュリティガード（最終固定処理）
+// ──────────────────────────────────────────────
+// ここまでの全スクリプトの実行が終わった「最後」のこのタイミングで、
+// 重要な関数・オブジェクトを書き換え不可（writable:false, configurable:false）にする。
+// これにより、コンソールから
+//   window.showView = function(viewId){ ... ロック判定を素通りさせる ... }
+// のような上書き（方法3のバイパス）が一切できなくなる。
+// ※ これより前の場所で固定すると、まだ後ろにある正規の再定義（window.showView = ...）が
+//    弾かれてしまい機能が壊れるため、必ずファイルの最後でだけ行う。
+// ==========================================================
+(function lockDownLabSecurity() {
+    function freezeWindowProp(key) {
+        if (typeof window[key] === 'undefined') return;
+        try {
+            Object.defineProperty(window, key, {
+                value: window[key],
+                writable: false,
+                configurable: false,
+                enumerable: true
+            });
+        } catch (e) {
+            // すでに非configurableな場合は何もしない
+        }
+    }
+
+    // 画面切り替えの中核（Labロック判定の入口）を固定
+    // ※ showView は function宣言のため window.showView として存在する
+    freezeWindowProp('showView');
+
+    // TenmeiLab / LabAuth は const 宣言のため window.* には乗らない（再代入自体は元から不可）。
+    // ただし「オブジェクト自体は const でも、そのプロパティ（メソッド）は書き換え可能」という
+    // JSの仕様があるため、TenmeiLab.checkLoginAndBlock = function(){return true} のような
+    // メソッド差し替え攻撃を防ぐには、プロパティ単位でのfreezeが別途必要。
+    try {
+        if (typeof TenmeiLab !== 'undefined' && TenmeiLab.checkLoginAndBlock) {
+            Object.defineProperty(TenmeiLab, 'checkLoginAndBlock', {
+                value: TenmeiLab.checkLoginAndBlock,
+                writable: false,
+                configurable: false,
+                enumerable: true
+            });
+        }
+    } catch (e) {}
+
+    // LabAuth（解錠判定の唯一の根拠）はメソッド以外の公開プロパティを持たないため全体をfreeze
+    try {
+        if (typeof LabAuth !== 'undefined') {
+            Object.freeze(LabAuth);
+        }
+    } catch (e) {}
 })();
 </script>
 
