@@ -7304,7 +7304,25 @@ body.sidebar-collapsed.sidebar-pinned #sidebar .nav-group-title {
                             <div class="lab-card-footer">詳細設定 <i class="bi bi-chevron-right"></i></div>
                         </div>
 
-                        <!-- 4. メンテナンス訓練 (Dev) -->
+                        <!-- 4. 迎春・雅モード (Exp) -->
+                        <div class="lab-glass-card" onclick="TenmeiLab.openModal('newyear')">
+                            <div class="lab-card-header">
+                                <div class="lab-icon-box icon-bg-red"><i class="bi bi-flower1"></i></div>
+                                <div class="lab-switch-wrapper" onclick="event.stopPropagation()">
+                                    <label class="toggle-switch">
+                                        <input type="checkbox" onchange="TenmeiLab.toggleNewyear(this)" id="switch-newyear">
+                                        <span class="slider"></span>
+                                    </label>
+                                </div>
+                            </div>
+                            <div class="lab-card-body">
+                                <h3>迎春・雅モード <span class="lab-badge badge-exp">Exp</span></h3>
+                                <p class="lab-card-desc">サイト全体を紅白・金を基調にした、お祝いの装いに変更します。</p>
+                            </div>
+                            <div class="lab-card-footer">詳細設定 <i class="bi bi-chevron-right"></i></div>
+                        </div>
+
+                        <!-- 5. メンテナンス訓練 (Dev) -->
                         <div class="lab-glass-card" onclick="if(LabAuth.isVerified()) { checkMaintenance(true); } else { showToast('会員限定機能です', 'warning'); }" style="border-color: rgba(239, 68, 68, 0.4);">
                             <div class="lab-card-header">
                                 <div class="lab-icon-box bg-black text-yellow-500"><i class="bi bi-cone-striped"></i></div>
@@ -15759,6 +15777,16 @@ const TenmeiLab = {
             configs: [
                 { id: 'active', type: 'switch', label: '機能を有効にする', sub: '黄金テーマを適用' }
             ]
+        },
+        newyear: {
+            title: "迎春・雅（みやび）モード",
+            icon: '<i class="bi bi-flower1 text-red-600"></i>',
+            desc: "サイト全体を紅白・金を基調にしたお祝いの装いに変更します。",
+            reason: "通常時のデザインと配色が大きく異なる場合があります。",
+            bgClass: "bg-red-50",
+            configs: [
+                { id: 'active', type: 'switch', label: '機能を有効にする', sub: '迎春・雅テーマを適用' }
+            ]
         }
     },
 
@@ -15812,6 +15840,7 @@ const TenmeiLab = {
         if(key === 'bigtext') this.toggleBigText({checked: isActive});
         if(key === 'mist') this.toggleMist({checked: isActive});
         if(key === 'gold') this.toggleGold({checked: isActive});
+        if(key === 'newyear') this.toggleNewyear({checked: isActive});
         
         this.setVal(key, 'active', isActive);
         // 設定全体の保存と同期（AppConfig側と合わせて保存）
@@ -15866,6 +15895,14 @@ const TenmeiLab = {
         
         if(el.checked) document.body.classList.add('theme-gold');
         else document.body.classList.remove('theme-gold');
+    },
+
+    toggleNewyear: (el) => {
+        // ここでチェック
+        if (!TenmeiLab.checkLoginAndBlock(el)) return;
+
+        if(el.checked) document.body.classList.add('theme-newyear');
+        else document.body.classList.remove('theme-newyear');
     },
 
     // モーダル表示ロジック（前回の修正もこれに統一するとスッキリします）
@@ -19127,24 +19164,7 @@ async function renderSettingsDashboard() {
                         </label>
                     </div>
 
-                    <!-- 3. 雅モード (テーマ) -->
-                    <div class="flex justify-between items-center">
-                        <div class="flex items-center gap-2">
-                            <div class="w-8 h-8 rounded-full bg-red-100 dark:bg-red-900/30 flex items-center justify-center text-red-600">
-                                <i class="bi bi-flower1"></i>
-                            </div>
-                            <div class="text-sm font-bold text-gray-700 dark:text-gray-300">
-                                迎春・雅モード
-                                <span class="block text-[10px] text-gray-400 font-normal">紅白の祝いテーマを適用</span>
-                            </div>
-                        </div>
-                        <label class="toggle-switch scale-90">
-                            <input type="checkbox" ${settings.newyear ? 'checked' : ''} onchange="AppConfig.toggle('newyear', this.checked)">
-                            <span class="slider"></span>
-                        </label>
-                    </div>
-
-                    <!-- 4. サイドバーの挙動 -->
+                    <!-- 3. サイドバーの挙動 -->
                     <div class="flex justify-between items-center pt-3 border-t border-gray-100 dark:border-zinc-700">
                         <div class="flex items-center gap-2">
                             <div class="w-8 h-8 rounded-full bg-slate-100 dark:bg-slate-800/50 flex items-center justify-center text-slate-500 dark:text-slate-400">
@@ -20966,12 +20986,12 @@ const AppConfig = {
     defaults: {
         dark: false,    // 宵闇の刻
         speed: false,   // 神速の祈り
-        newyear: false, // 雅モード
         sidebarButton: false, // サイドバーボタン切替モード
         // Labs機能
         bigtext: false,
         mist: false,
-        gold: false
+        gold: false,
+        newyear: false // 迎春・雅モード
     },
 
     // 現在の設定を取得 (LocalStorage優先)
@@ -20996,9 +21016,6 @@ const AppConfig = {
             applyThemeByConfig(isActive); // ※後述のapplyTheme修正版を利用
         } else if(key === 'speed') {
             window.labSpeedMode = isActive;
-        } else if(key === 'newyear') {
-            if(isActive) document.body.classList.add('theme-newyear');
-            else document.body.classList.remove('theme-newyear');
         } else if(key === 'sidebarButton') {
             if(isActive) {
                 document.body.classList.add('sidebar-button-mode');
@@ -21033,9 +21050,6 @@ async function saveLabSettings() {
     const swSpeed = document.querySelector('input[onchange*="AppConfig.toggle(\'speed\'"]');
     if(swSpeed) settings.speed = swSpeed.checked;
 
-    const swNewYear = document.querySelector('input[onchange*="AppConfig.toggle(\'newyear\'"]');
-    if(swNewYear) settings.newyear = swNewYear.checked;
-
     // sidebarButton はbodyクラスから読み取る（DOMスイッチは設定画面が開いている時のみ存在）
     const swSidebarBtn = document.querySelector('input[onchange*="AppConfig.toggle(\'sidebarButton\'"]');
     if(swSidebarBtn) settings.sidebarButton = swSidebarBtn.checked;
@@ -21049,6 +21063,9 @@ async function saveLabSettings() {
 
     const swGold = document.getElementById('switch-gold');
     if(swGold) settings.gold = swGold.checked;
+
+    const swNewYear = document.getElementById('switch-newyear');
+    if(swNewYear) settings.newyear = swNewYear.checked;
 
     // 保存処理 (LocalStorage + Cloud)
     if (currentState.user) {
