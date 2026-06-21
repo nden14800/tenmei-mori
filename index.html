@@ -627,6 +627,25 @@
         }
     }
 
+    /* タブレットPC（1025px〜1366px、ホバー対応デバイス）でtoggleSidebar()がsidebar-pinnedを
+       トグルした場合に、上記(hover:none)ルールの対象外になり MAIN MENU 等が表示されない問題への対策。
+       JS側のisTabletOrMobile判定(1366px)とCSS側の境界を一致させ、ホバー対応でも
+       pinned時は確実に展開表示されるようにする。 */
+    @media (min-width: 1025px) and (max-width: 1366px) and (hover: hover) {
+        body.sidebar-pinned #sidebar { width: 220px !important; }
+        body.sidebar-pinned .nav-text { display: block !important; opacity: 1 !important; }
+        body.sidebar-pinned .nav-group-title {
+            display: block !important; height: auto !important; max-height: none !important;
+            opacity: 0.45 !important; margin: 8px 4px 4px !important; overflow: visible !important;
+        }
+        body.sidebar-pinned .nav-btn { justify-content: flex-start !important; }
+        body.sidebar-pinned .nav-icon-box { width: 34px !important; }
+        body.sidebar-pinned #main-content {
+            margin-left: 220px !important;
+            width: calc(100% - 220px) !important;
+        }
+    }
+
         /* --- 共通コンポーネント --- */
         .btn-primary {
             background-color: var(--accent-red);
@@ -5226,7 +5245,7 @@ body.theme-newyear {
 /* nav-group-titleが畳んだ時にposition:absoluteになり
    スペースが消えてボタンが上ズレするバグを修正。
    透明にするだけで、スペースは常に保持する。 */
-body.sidebar-collapsed #sidebar .nav-group-title {
+body.sidebar-collapsed:not(.sidebar-pinned) #sidebar .nav-group-title {
     position: static !important;
     opacity: 0 !important;
     pointer-events: none !important;
@@ -5234,8 +5253,17 @@ body.sidebar-collapsed #sidebar .nav-group-title {
 }
 
 /* ホバー（展開）時は表示 */
-body.sidebar-collapsed #sidebar:hover .nav-group-title {
+body.sidebar-collapsed:not(.sidebar-pinned) #sidebar:hover .nav-group-title {
     opacity: 0.6 !important;
+    transform: none !important;
+}
+
+/* sidebar-pinned（スマホ・タブレットのタップ展開）時は、sidebar-collapsedの
+   透明化を確実に解除し、確保済みの585行目台のルール(opacity:0.45)を有効にする */
+body.sidebar-collapsed.sidebar-pinned #sidebar .nav-group-title {
+    position: static !important;
+    opacity: 0.45 !important;
+    pointer-events: auto !important;
     transform: none !important;
 }
 
