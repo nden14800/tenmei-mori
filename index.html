@@ -6928,7 +6928,7 @@ body.sidebar-collapsed.sidebar-pinned #sidebar .nav-group-title {
                     <div class="flex items-center gap-2 flex-wrap justify-center">
                         <span>運勢・天命乃杜 Ver. 3.1</span>
                         <span>|</span>
-                        <span>リリース日: 2026/06/06</span>
+                        <span>リリース日: 2026/06/13</span>
                         <span>|</span>
                         <span class="inline-flex items-center gap-1 text-[10px] bg-green-950/50 text-green-400 border border-green-800 px-1.5 py-0.5 rounded font-bold"><i class="bi bi-patch-check-fill"></i>最新版</span>
                     </div>
@@ -21169,8 +21169,8 @@ window.applyTheme = function() {
     const verDetailData = {
         v31: {
             ver: 'Ver. 3.1',
-            name: 'Discord連携・各種バリエーション対策・各種修正',
-            date: '2026年6月6日',
+            name: 'Discord連携・バリエーション対策・画像生成基盤の刷新',
+            date: '2026年6月6日 〜 6月13日',
             sections: [
                 {
                     icon: 'bi-discord', title: 'Discord関連の機能強化',
@@ -21182,8 +21182,15 @@ window.applyTheme = function() {
                 {
                     icon: 'bi-stars', title: '占い・おみくじのバリエーション重複対策',
                     changes: [
-                        { type: 'fix', text: '12星座占いのラッキーナンバー・アイテム・カラー・短文をFisher-Yatesシャッフルにより重複なく割り当てるよう改善。', sourceIds: [80] },
-                        { type: 'fix', text: 'おみくじ画像生成時の描画崩れを修正。', sourceIds: [80] }
+                        { type: 'fix', text: '12星座占いのラッキーナンバー・アイテム・カラー・短文をFisher-Yatesシャッフルにより重複なく割り当てるよう改善。', sourceIds: [80] }
+                    ]
+                },
+                {
+                    icon: 'bi-image', title: '画像生成機能の刷新',
+                    changes: [
+                        { type: 'fix', text: 'おみくじ画像生成時の描画崩れ（onclone内のスタイル注入によるレイアウト崩れ）を修正。', sourceIds: [80] },
+                        { type: 'change', text: '画像生成ライブラリをhtml2canvasからhtml-to-imageへ移行。運勢ハンコの円形クリッピング崩れ・QRコードの空白描画・レスポンシブCSSとの競合といった既知の問題を根本的に解決。', sourceIds: [81] },
+                        { type: 'change', text: 'おみくじ結果カードの「開運・不運」エリアを、アイコン＋ボタン形式から縦書き列レイアウトへ刷新。ラッキーカラーには色見本（スウォッチ）を追加。', sourceIds: [81] }
                     ]
                 },
                 {
@@ -21191,15 +21198,19 @@ window.applyTheme = function() {
                     changes: [
                         { type: 'new', text: '開発者情報画面・チュートリアル（初回ガイド）画面を新設。', sourceIds: [80] },
                         { type: 'new', text: 'おみくじを引くボタン・公式Discord参拝所ボタンにキラキラエフェクトを追加。', sourceIds: [80] },
-                        { type: 'new', text: 'コラム記事を追加し、サービス比較情報を最新化。', sourceIds: [80] }
+                        { type: 'new', text: 'コラム記事「試して選んだ！おすすめウェブみくじ5選【2026年版】」を追加し、サービス比較情報を実サイト閲覧に基づき最新化。', sourceIds: [80] },
+                        { type: 'new', text: 'サイト最下部に常設フッターを新設（ロゴ・ナビゲーション・SNSリンク・©著作権表記）。', sourceIds: [81] }
                     ]
                 },
                 {
-                    icon: 'bi-tools', title: '表示の修正',
+                    icon: 'bi-tools', title: '表示・サイドバーの修正',
                     changes: [
-                        { type: 'fix', text: 'Labsアイコンが表示されない問題を修正し、Labs画面と同じフラスコアイコンに統一。', sourceIds: [80] },
+                        { type: 'fix', text: 'Labsサイドバーアイコンが表示されない問題を修正し、Labs画面と同じフラスコアイコンに統一。', sourceIds: [80, 81] },
+                        { type: 'fix', text: 'サイドバーを展開した際に「MAIN MENU」等のセクション見出しが表示されないバグを修正。', sourceIds: [81] },
+                        { type: 'fix', text: 'タブレットPC・iPad横向きでサイドバーの開閉挙動が崩れる問題を修正（iPad専用CSSの適用条件にhover:none判定を追加）。', sourceIds: [81] },
                         { type: 'fix', text: '公式Discord参拝所ボタンのライトモード文字色、おみくじ画像生成完了画面のライトモード表示を修正。', sourceIds: [80] },
-                        { type: 'fix', text: '認証申請・審査機能の関連コードを完全に削除。', sourceIds: [80] }
+                        { type: 'fix', text: '開発者情報画面のライトモード対応（固定ダーク配色をCSS変数化）。', sourceIds: [81] },
+                        { type: 'change', text: '認証申請・審査機能の関連コードを完全に削除。', sourceIds: [80] }
                     ]
                 }
             ]
@@ -21918,15 +21929,16 @@ window.applyTheme = function() {
                             <span class="ver-item-ver">Ver. 3.1</span>
                             <span class="ver-item-badge ver-badge-current"><i class="bi bi-patch-check-fill"></i>最新版</span>
                         </div>
-                        <div class="ver-item-date">2026年6月6日リリース</div>
-                        <div class="ver-item-name">Discord連携・各種バリエーション対策・各種修正</div>
-                        <div class="ver-item-desc">おみくじ結果のDiscordシェア機能、12星座占いのバリエーション重複対策（Fisher-Yates導入）、認証申請機能の削除、ライトモード対応の追加修正、開発者情報・チュートリアル画面の新設、Labsアイコンの修正など多数の改善を実施。</div>
+                        <div class="ver-item-date">2026年6月6日〜6月13日リリース</div>
+                        <div class="ver-item-name">Discord連携・バリエーション対策・画像生成基盤の刷新</div>
+                        <div class="ver-item-desc">おみくじ結果のDiscordシェア機能、12星座占いのバリエーション重複対策（Fisher-Yates導入）、認証申請機能の削除、開発者情報・チュートリアル画面の新設に加え、画像生成ライブラリの移行（html2canvas→html-to-image）、サイドバー各種バグ修正、サイト下部フッターの新設など多数の改善を実施。</div>
                         <div class="ver-item-tags">
                             <span class="ver-item-tag">Discordシェア</span>
                             <span class="ver-item-tag">重複対策</span>
                             <span class="ver-item-tag">開発者情報</span>
-                            <span class="ver-item-tag">チュートリアル</span>
-                            <span class="ver-item-tag">Labs修正</span>
+                            <span class="ver-item-tag">画像生成刷新</span>
+                            <span class="ver-item-tag">サイドバー修正</span>
+                            <span class="ver-item-tag">フッター新設</span>
                         </div>
                         <div class="ver-item-more"><i class="bi bi-chevron-right"></i>詳細を見る</div>
                     </div>
