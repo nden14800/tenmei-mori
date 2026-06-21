@@ -1764,6 +1764,15 @@
     box-shadow: 0 20px 35px rgba(0,0,0,0.15);
 }
 
+.developer-header-hero-card {
+    transition: all 0.35s cubic-bezier(0.25, 0.8, 0.25, 1);
+}
+.developer-header-hero-card:hover {
+    transform: translateY(-4px) scale(1.005);
+    border-color: var(--accent-gold);
+    box-shadow: 0 20px 35px rgba(0,0,0,0.15);
+}
+
 /* 1. ニュース検索エリア (履歴のコントロールバーと統一) */
 .news-control-bar {
     background: rgba(255, 255, 255, 0.7);
@@ -6643,6 +6652,23 @@ body.sidebar-collapsed.sidebar-pinned #sidebar .nav-group-title {
                         color: var(--text-sub) !important;
                     }
 
+                    /* ---- 開発者について Heroカード（ライトモード） ---- */
+                    html:not(.dark) .developer-header-hero-card {
+                        background: linear-gradient(135deg, #fff5f5 0%, #f8fafc 55%, #fff7ed 100%) !important;
+                        border-color: var(--card-border) !important;
+                        box-shadow: 0 8px 30px rgba(0,0,0,0.06) !important;
+                    }
+                    html:not(.dark) .developer-header-hero-card:hover {
+                        border-color: var(--accent-gold) !important;
+                        box-shadow: 0 16px 36px rgba(0,0,0,0.12) !important;
+                    }
+                    html:not(.dark) .developer-header-hero-card .text-white {
+                        color: var(--text-main) !important;
+                    }
+                    html:not(.dark) .developer-header-hero-card p.text-zinc-300 {
+                        color: var(--text-sub) !important;
+                    }
+
                     /* ---- 参拝証の発行 Heroカード（ライトモード） ---- */
                     html:not(.dark) .auth-hero-card {
                         background: linear-gradient(135deg, #fff5f5 0%, #f8fafc 55%, #fff7ed 100%) !important;
@@ -8648,7 +8674,7 @@ body.sidebar-collapsed.sidebar-pinned #sidebar .nav-group-title {
         <section id="view-developer" class="view-section max-w-4xl mx-auto pb-20">
 
             <!-- ヘッダーカード -->
-            <div class="bento-card mb-6 relative overflow-hidden" style="background: linear-gradient(135deg, #0d0d0d 0%, #1a1a2e 50%, #0d0d0d 100%); border: 1px solid #2a2a2a; border-top: 2px solid var(--accent-gold); padding: 2rem;">
+            <div class="bento-card developer-header-hero-card mb-6 relative overflow-hidden" style="background: linear-gradient(135deg, #0d0d0d 0%, #1a1a2e 50%, #0d0d0d 100%); border: 1px solid #2a2a2a; border-top: 2px solid var(--accent-gold); padding: 2rem;">
                 <div class="absolute top-0 right-0 w-64 h-64 opacity-10 pointer-events-none" style="background: radial-gradient(circle, #d4af37 0%, transparent 70%);"></div>
                 <div class="absolute bottom-0 left-0 w-48 h-48 opacity-8 pointer-events-none" style="background: radial-gradient(circle, #5865F2 0%, transparent 70%);"></div>
                 <div class="relative z-10 flex flex-col md:flex-row items-start md:items-center gap-6">
@@ -8657,8 +8683,8 @@ body.sidebar-collapsed.sidebar-pinned #sidebar .nav-group-title {
                     </div>
                     <div class="flex-1">
                         <p class="text-xs font-bold tracking-[0.3em] uppercase mb-1" style="color: var(--accent-gold);">DEVELOPER</p>
-                        <h1 class="text-3xl font-black mb-1" style="font-family: 'Zen Old Mincho', serif;">nden148</h1>
-                        <p class="text-sm opacity-60">Web Developer (sometimes)</p>
+                        <h1 class="text-3xl font-black mb-1 text-white" style="font-family: 'Zen Old Mincho', serif;">nden148</h1>
+                        <p class="text-sm opacity-60 text-zinc-300">Web Developer (sometimes)</p>
                     </div>
                 </div>
             </div>
@@ -20372,7 +20398,9 @@ async function loadMyStats() {
             
             if (graphTotalBody && gridTotal) {
                 // 最大値を決定 (1.2倍くらいのマージン)
-                const maxTotalVal = Math.max(s.totalDraws, avgTotal, 10) * 1.2;
+                // ※目盛り(0/25/50/75/100%)が必ず均等な整数になるよう、4の倍数に切り上げる
+                const maxTotalValRaw = Math.max(s.totalDraws, avgTotal, 10) * 1.2;
+                const maxTotalVal = Math.max(4, Math.ceil(maxTotalValRaw / 4) * 4);
                 
                 renderGridLines(gridTotal, maxTotalVal);
                 
@@ -20392,7 +20420,9 @@ async function loadMyStats() {
                 
                 // 全項目の中での最大値
                 const allVals = [...Object.values(s.userFortunes), ...Object.values(s.averageFortunes)];
-                const maxSpecVal = Math.max(...allVals, 5) * 1.2; 
+                // ※目盛り(0/25/50/75/100%)が必ず均等な整数になるよう、4の倍数に切り上げる
+                const maxSpecValRaw = Math.max(...allVals, 5) * 1.2;
+                const maxSpecVal = Math.max(4, Math.ceil(maxSpecValRaw / 4) * 4);
 
                 renderGridLines(gridSpectrum, maxSpecVal);
 
