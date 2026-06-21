@@ -787,7 +787,7 @@
 
         /* --- おみくじ選択画面 (修正・統一版) --- */
         #further-explore-btn {
-            transition: opacity 0.25s ease;
+            margin-top: 10px;
         }
         .omikuji-pool {
             display: flex;
@@ -6966,9 +6966,9 @@ body.sidebar-collapsed.sidebar-pinned #sidebar .nav-group-title {
             <!-- おみくじプール -->
             <div id="omikuji-pool" class="omikuji-pool p-4 md:p-8"></div>
             
-            <!-- 追加ボタン -->
-            <div id="further-explore-btn" class="fixed bottom-10 left-0 w-full text-center z-50 pointer-events-none">
-                <button onclick="addOmikuji()" class="btn-primary pointer-events-auto shadow-2xl transform hover:scale-105 transition py-4 px-8 rounded-full border-2 border-white/20 backdrop-blur-md">
+            <!-- 追加ボタン (カード一覧の直後・フッターの直前に固定表示) -->
+            <div id="further-explore-btn" class="w-full text-center pb-10">
+                <button onclick="addOmikuji()" class="btn-primary shadow-2xl transform hover:scale-105 transition py-4 px-8 rounded-full border-2 border-white/20 backdrop-blur-md">
                     <i class="bi bi-plus-lg"></i> さらに探す
                 </button>
             </div>
@@ -16106,21 +16106,6 @@ TenmeiLab.init();
 
         applyTheme();
     }
-
-    // 「さらに探す」ボタンがフッターと重ならないよう IntersectionObserver で制御
-    (function() {
-        const footer = document.getElementById('site-footer');
-        const btn    = document.getElementById('further-explore-btn');
-        if (!footer || !btn) return;
-        const observer = new IntersectionObserver(function(entries) {
-            entries.forEach(function(entry) {
-                // フッターがビューポートに入ったらボタンをフェードアウト
-                btn.style.opacity       = entry.isIntersecting ? '0' : '';
-                btn.style.pointerEvents = entry.isIntersecting ? 'none' : '';
-            });
-        }, { threshold: 0 });
-        observer.observe(footer);
-    })();
         
         // ==========================================
         //  クイズ機能用ロジック (3問対応版)
