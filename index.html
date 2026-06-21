@@ -21055,17 +21055,19 @@ async function saveLabSettings() {
     if(swSidebarBtn) settings.sidebarButton = swSidebarBtn.checked;
 
     // Labs機能のスイッチがあれば上書き (Labsモーダルを開いている場合)
+    // Labs機能：スイッチがあればその値、なければbody/htmlのクラス状態を正とする
     const swBigText = document.getElementById('switch-bigtext');
-    if(swBigText) settings.bigtext = swBigText.checked;
+    settings.bigtext = swBigText ? swBigText.checked : document.documentElement.classList.contains('lab-big-text');
 
     const swMist = document.getElementById('switch-mist');
-    if(swMist) settings.mist = swMist.checked;
+    const mistSaveContainer = document.getElementById('mist-container');
+    settings.mist = swMist ? swMist.checked : (mistSaveContainer ? mistSaveContainer.classList.contains('active') : false);
 
     const swGold = document.getElementById('switch-gold');
-    if(swGold) settings.gold = swGold.checked;
+    settings.gold = swGold ? swGold.checked : document.body.classList.contains('theme-gold');
 
     const swNewYear = document.getElementById('switch-newyear');
-    if(swNewYear) settings.newyear = swNewYear.checked;
+    settings.newyear = swNewYear ? swNewYear.checked : document.body.classList.contains('theme-newyear');
 
     // 保存処理 (LocalStorage + Cloud)
     if (currentState.user) {
