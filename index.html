@@ -2996,8 +2996,8 @@
 .btn-x { color: #e0e0e0; }
 .btn-line { color: #06c755; }
 .btn-fb { color: #1877f2; }
-.btn-bsky { color: #0285ff; }
-.btn-misskey { color: #86b300; }
+.btn-threads { color: #000000; }
+
 .btn-discord { color: #5865F2; }
 
         /* --- TENMEI Labs: グラス・コントロールパネルUI --- */
@@ -6758,8 +6758,7 @@ body.sidebar-collapsed.sidebar-pinned #sidebar .nav-group-title {
                     /* SNSブランドカラー維持 */
                     html:not(.dark) .action-card-btn.btn-line  { color: #06c755 !important; }
                     html:not(.dark) .action-card-btn.btn-fb    { color: #1877f2 !important; }
-                    html:not(.dark) .action-card-btn.btn-bsky  { color: #0285ff !important; }
-                    html:not(.dark) .action-card-btn.btn-misskey { color: #86b300 !important; }
+                    html:not(.dark) .action-card-btn.btn-threads { color: #000000 !important; }
                     html:not(.dark) .action-card-btn.btn-discord { color: #5865F2 !important; }
 
                     /* ---- 天命の授与所 おみくじ棒（ライトモード） ---- */
@@ -7125,15 +7124,9 @@ body.sidebar-collapsed.sidebar-pinned #sidebar .nav-group-title {
                             <i class="bi bi-line"></i>
                             <span>LINE</span>
                         </button>
-                        <button onclick="shareToBluesky()" class="action-card-btn btn-bsky">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" viewBox="0 0 600 530" style="width:28px; height:28px; margin-bottom:8px;"><path d="M135.72 44.03c66.496 49.921 138.02 151.14 164.28 205.46 26.262-54.316 97.782-155.54 164.28-205.46 47.98-36.021 125.72-63.892 125.72 24.317 0 59.31-21.66 205.49-51.942 258.85-39.826 70.198-111.2 30.083-161.01-12.506 39.998 52.346 42.422 133.55-23.731 133.55-58.261 0-77.921-27.995-77.31-79.626 2.593-219.06-189.28-169.87-192.31-169.87-2.917 0-3.666-51.059-3.666-87.876 0-87.653 76.789-58.86 125.69-22.349z"/></svg>
-                            <span>Bluesky</span>
-                        </button>
-                        
-                        <!-- Misskeyは横長にしてバランスを取る -->
-                        <button onclick="shareToMisskey()" class="action-card-btn btn-misskey grid-span-full">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" viewBox="0 0 16 16" style="width:28px; height:28px; margin-bottom:8px;"><path d="M8 0a8 8 0 1 0 0 16A8 8 0 0 0 8 0zm3.669 4.382c.074.225.137.458.19.697a4.67 4.67 0 0 1 .066.727c0 .193-.01.383-.028.57a3.86 3.86 0 0 1-.09.53 4.2 4.2 0 0 1-.72 1.621 3.96 3.96 0 0 1-.397.47c-.126.13-.263.25-.408.36-.146.113-.301.214-.465.304-.326.179-.675.316-1.038.406-.364.09-.74.136-1.119.136a4.7 4.7 0 0 1-1.12-.136 4.3 4.3 0 0 1-1.037-.406 4.1 4.1 0 0 1-.465-.304 3.9 3.9 0 0 1-.409-.36 4 4 0 0 1-.396-.47 4.2 4.2 0 0 1-.72-1.62 3.86 3.86 0 0 1-.09-.531 4.7 4.7 0 0 1-.028-.57c0-.246.022-.49.065-.727.054-.24.117-.472.19-.697A8 8 0 0 0 8 4.382z"/></svg>
-                            <span>Misskey.io</span>
+                        <button onclick="shareToThreads()" class="action-card-btn btn-threads">
+                            <i class="bi bi-threads" style="font-size:28px; margin-bottom:8px;"></i>
+                            <span>Threads</span>
                         </button>
 
                         <!-- Discordシェアは横長でバランスを取る -->
@@ -17641,27 +17634,12 @@ ${getShareUrl()}`;
             window.open(intent, '_blank');
         }
 
-        async function shareToBluesky() {
+        async function shareToThreads() {
             if(!currentState.lastResult) return;
             const fullText = generateUnifiedShareText(currentState.lastResult);
 
-            // 1. Web Share API (アプリ連携) トライ
-            if (navigator.share && currentState.lastImageBlob) {
-                try {
-                    const file = new File([currentState.lastImageBlob], "tenmei_omikuji.png", { type: "image/png" });
-                    if (navigator.canShare && navigator.canShare({ files: [file] })) {
-                        await navigator.share({
-                            text: fullText,
-                            files: [file]
-                        });
-                        return;
-                    }
-                } catch (e) {
-                    console.log("Web Share API failed for Bluesky", e);
-                }
-            }
-
-            // 2. PC/フォールバック: 画像ダウンロード + 投稿画面
+            // PC/モバイル共通: 画像ダウンロード + Threads投稿画面
+            // ※Threads Web Intentは画像添付非対応のため、画像は先にDLしてもらう
             if (currentState.lastImageBlob) {
                 const url = URL.createObjectURL(currentState.lastImageBlob);
                 const a = document.createElement('a');
@@ -17673,45 +17651,8 @@ ${getShareUrl()}`;
                 URL.revokeObjectURL(url);
             }
 
-            // Blueskyの投稿画面を開く
-            const intent = `https://bsky.app/intent/compose?text=${encodeURIComponent(fullText)}`;
-            window.open(intent, '_blank');
-        }
-
-        async function shareToMisskey() {
-            if(!currentState.lastResult) return;
-            const fullText = generateUnifiedShareText(currentState.lastResult);
-
-            // 1. Web Share API (アプリ連携) トライ
-            if (navigator.share && currentState.lastImageBlob) {
-                try {
-                    const file = new File([currentState.lastImageBlob], "tenmei_omikuji.png", { type: "image/png" });
-                    if (navigator.canShare && navigator.canShare({ files: [file] })) {
-                        await navigator.share({
-                            text: fullText,
-                            files: [file]
-                        });
-                        return;
-                    }
-                } catch (e) {
-                    console.log("Web Share API failed for Misskey", e);
-                }
-            }
-
-            // 2. PC/フォールバック: 画像ダウンロード + 投稿画面
-            if (currentState.lastImageBlob) {
-                const url = URL.createObjectURL(currentState.lastImageBlob);
-                const a = document.createElement('a');
-                a.href = url;
-                a.download = `tenmei_omikuji_${Date.now()}.png`;
-                document.body.appendChild(a);
-                a.click();
-                document.body.removeChild(a);
-                URL.revokeObjectURL(url);
-            }
-
-            // Misskey.ioの投稿画面を開く
-            const intent = `https://misskey.io/share?text=${encodeURIComponent(fullText)}`;
+            // Threadsの投稿画面を開く (threads.net/intent/post?text=...)
+            const intent = `https://www.threads.net/intent/post?text=${encodeURIComponent(fullText)}`;
             window.open(intent, '_blank');
         }
 
