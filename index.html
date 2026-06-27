@@ -805,21 +805,22 @@
             position: relative;
             width: 52px;
             height: 160px;
-            background: linear-gradient(180deg, #1a0a0a 0%, #0f0f0f 100%);
-            border: 2px solid #5a1a1a;
-            border-top: 3px solid #b91c1c;
-            border-bottom: 3px solid #b91c1c;
-            box-shadow: 2px 2px 12px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.03);
+            background: linear-gradient(180deg, #fffef8 0%, #fdf7ea 100%);
+            border: 1px solid rgba(255,255,255,0.5);
+            border-top: 1px solid rgba(255,255,255,0.5);
+            border-bottom: 1px solid rgba(255,255,255,0.5);
+            box-shadow: 0 4px 18px rgba(0,0,0,0.45), 0 0 0 1px rgba(0,0,0,0.05), inset 0 1px 1px rgba(255,255,255,0.6);
             cursor: pointer;
             display: flex;
             flex-direction: column;
             align-items: center;
-            justify-content: space-evenly;
+            justify-content: center;
+            gap: 12px;
             padding: 8px 0;
             user-select: none;
             transition: transform 0.25s cubic-bezier(0.25, 0.46, 0.45, 0.94), box-shadow 0.25s, border-color 0.25s;
             transform-origin: center center;
-            border-radius: 4px;
+            border-radius: 0;
         }
 
         /* アニメーション競合対策: transformを使わず margin-top で出現させる */
@@ -831,15 +832,15 @@
         .omikuji-stick:hover {
             transform: scale(1.15) rotate(0deg) !important;
             z-index: 100;
-            box-shadow: 0 15px 40px rgba(185, 28, 28, 0.4), 0 0 20px rgba(196,160,57,0.2);
+            box-shadow: 0 15px 40px rgba(0,0,0,0.35), 0 0 20px rgba(196,160,57,0.35);
             border-color: #c5a039;
-            background: linear-gradient(180deg, #2a0f0f 0%, #1a0a0a 100%);
+            background: linear-gradient(180deg, #fffefb 0%, #fff9ec 100%);
         }
 
-        /* 札内のパーツスタイル */
+        /* 札内のパーツスタイル（白い紙のおみくじ札なので、文字・印は朱色/金で表現） */
         .stick-icon {
             font-size: 1.2rem;
-            color: #c5a039;
+            color: #b45309;
             line-height: 1;
             flex-shrink: 0;
         }
@@ -849,23 +850,10 @@
             font-family: 'Zen Old Mincho', serif;
             font-size: 1.1rem;
             font-weight: 900;
-            color: #e8c870;
+            color: #b91c1c;
             letter-spacing: 0.2em;
             white-space: nowrap;
             line-height: 1;
-            text-shadow: 0 0 8px rgba(196,160,57,0.4);
-        }
-        
-        .stick-footer {
-            writing-mode: vertical-rl;
-            font-family: 'Zen Old Mincho', serif;
-            font-size: 0.6rem;
-            color: #7a4a4a;
-            font-weight: bold;
-            letter-spacing: 0.1em;
-            white-space: nowrap;
-            line-height: 1;
-            flex-shrink: 0;
         }
 
         /* --- カウントダウン --- */
@@ -6763,23 +6751,17 @@ body.sidebar-collapsed.sidebar-pinned #sidebar .nav-group-title {
 
                     /* ---- 天命の授与所 おみくじ棒（ライトモード） ---- */
                     html:not(.dark) .omikuji-stick {
-                        background: linear-gradient(180deg, #fff7f7 0%, #fff1f1 100%) !important;
-                        border: 2px solid rgba(185,28,28,0.28) !important;
-                        border-top: 3px solid #b91c1c !important;
-                        border-bottom: 3px solid #b91c1c !important;
-                        box-shadow: 2px 4px 14px rgba(185,28,28,0.12), inset 0 1px 0 rgba(255,255,255,0.8) !important;
+                        background: linear-gradient(180deg, #ffffff 0%, #fdfaf2 100%) !important;
+                        border: 1px solid rgba(0,0,0,0.08) !important;
+                        border-top: 1px solid rgba(0,0,0,0.08) !important;
+                        border-bottom: 1px solid rgba(0,0,0,0.08) !important;
+                        box-shadow: 0 3px 14px rgba(120,90,30,0.15), inset 0 1px 0 rgba(255,255,255,0.9) !important;
                     }
                     html:not(.dark) .omikuji-stick:hover {
-                        background: linear-gradient(180deg, #fff1f1 0%, #ffeaea 100%) !important;
+                        background: linear-gradient(180deg, #fffefb 0%, #fff7e6 100%) !important;
                         border-color: #c5a039 !important;
-                        box-shadow: 0 15px 40px rgba(185, 28, 28, 0.2), 0 0 20px rgba(196,160,57,0.2) !important;
+                        box-shadow: 0 15px 40px rgba(0,0,0,0.18), 0 0 20px rgba(196,160,57,0.25) !important;
                     }
-                    html:not(.dark) .stick-icon { color: #b45309 !important; }
-                    html:not(.dark) .stick-text {
-                        color: #b91c1c !important;
-                        text-shadow: 0 0 8px rgba(185,28,28,0.2) !important;
-                    }
-                    html:not(.dark) .stick-footer { color: #7f1d1d !important; }
 
                     /* ---- TENMEI Labs 会員限定モーダル（ライトモード統一） ---- */
                     html:not(.dark) .lab-modal-overlay {
@@ -16565,14 +16547,19 @@ async function fetchHistoryStats() {
                 stick.innerHTML = `
                     <div class="stick-icon"><i class="bi bi-flower1"></i></div>
                     <div class="stick-text">おみくじ</div>
-                    <div class="stick-footer">天命乃杜</div>
                 `;
                 
                 // ランダムな傾き (±6度程度で自然に)
                 const rot = Math.random() * 12 - 6; 
                 
-                // 回転を適用
+                // 回転を「瞬時に」適用（transition:none → 適用 → reflow → 元に戻す）
+                // これをしないと .omikuji-stick の transition:transform により
+                // 0度→指定角度への回転トランジションが走ってしまい、
+                // fadeInStickMargin（フェード＋せり上がり）と二重に動いて見える不具合になる
+                stick.style.transition = 'none';
                 stick.style.transform = `rotate(${rot}deg)`;
+                void stick.offsetWidth; // 強制リフローでtransition無効を確定させる
+                stick.style.transition = ''; // CSS側のtransition定義（ホバー用）を復帰
                 
                 // アニメーション適用 (margin-topを操作するものに変更したため、transform: rotate が消えない)
                 stick.style.animation = `fadeInStickMargin 0.6s ease-out forwards ${i * 0.03}s`;
