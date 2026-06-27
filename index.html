@@ -5761,8 +5761,10 @@ body.sidebar-collapsed.sidebar-pinned #sidebar .nav-group-title {
         box-shadow: 0 0 0 2px rgba(197,160,89,0.15);
     }
     .ver-source-tooltip {
-        position: absolute;
-        right: 0; bottom: calc(100% + 8px);
+        /* body直下に1個だけ生成し position:fixed で配置する（パネルのoverflow:hidden/
+           scrollに巻き込まれて記事が途切れる不具合の修正。位置はJSでgetBoundingClientRect
+           から算出してleft/topに直接設定する） */
+        position: fixed;
         width: 250px;
         background: #111111;
         border: 1px solid #2a2a2a;
@@ -5775,10 +5777,6 @@ body.sidebar-collapsed.sidebar-pinned #sidebar .nav-group-title {
         transition: opacity 0.18s, visibility 0.18s, transform 0.18s;
     }
     .ver-source-tooltip.visible {
-        opacity: 1; visibility: visible; pointer-events: auto;
-        transform: translateY(0);
-    }
-    .ver-source-wrapper:hover .ver-source-tooltip {
         opacity: 1; visibility: visible; pointer-events: auto;
         transform: translateY(0);
     }
@@ -21832,6 +21830,9 @@ window.applyTheme = function() {
 
         const dotMap = { new: 'dot-new', fix: 'dot-fix', change: 'dot-change', remove: 'dot-remove', infra: 'dot-infra' };
 
+        // ツールチップの内容はbody直下のグローバル要素に表示するため、ここでマップに保存する
+        window._verTooltipMap = {};
+
         let html = `
             <div class="ver-detail-ver">${data.ver}</div>
             <div class="ver-detail-dateline">${data.date}<br>${data.name}</div>
@@ -21854,6 +21855,9 @@ window.applyTheme = function() {
                                         <span class="ver-source-link-title">${a.title}</span>
                                     </a>
                                 `).join('');
+                                // 内容はマップに保存し、HTML側にはツールチップ本体を埋め込まない
+                                // （body直下のグローバルツールチップが、クリック時にこの内容を読みに来る）
+                                window._verTooltipMap[tooltipId] = articlesHtml;
                                 linkHtml = `
                                     <div class="ver-source-wrapper">
                                         <button class="ver-source-btn" id="${tooltipId}_btn"
@@ -21864,10 +21868,6 @@ window.applyTheme = function() {
                                                 <path d="M6.586 4.672A3 3 0 0 0 7.414 9.5l.775-.776a2 2 0 0 1-.896-3.346L9.12 3.55a2 2 0 1 1 2.83 2.83l-.793.792c.112.42.155.855.128 1.287l1.372-1.372a3 3 0 1 0-4.243-4.243z"/>
                                             </svg>
                                         </button>
-                                        <div class="ver-source-tooltip" id="${tooltipId}">
-                                            <div class="ver-source-tooltip-title">参照：社務所だより</div>
-                                            ${articlesHtml}
-                                        </div>
                                     </div>
                                 `;
                             }
@@ -21906,10 +21906,10 @@ window.applyTheme = function() {
 
     // ソース記事へのナビゲーション（パネルを閉じてから記事を開く）
     function verGoToArticle(newsId) {
-        // 全ツールチップを閉じる
-        document.querySelectorAll('.ver-source-tooltip.visible').forEach(t => {
-            t.classList.remove('visible');
-        });
+        // ツールチップを閉じる
+        const tip = document.getElementById('ver-source-global-tooltip');
+        if (tip) tip.classList.remove('visible');
+        document.querySelectorAll('.ver-source-btn.active').forEach(function(b) { b.classList.remove('active'); });
         // パネルを閉じる
         closeVerHistory();
         // 少し待ってから記事を開く（トランジション後）
@@ -21921,21 +21921,45 @@ window.applyTheme = function() {
     }
 
     // ツールチップの表示/非表示トグル（モバイル対応）
+    // body直下に1個だけ生成し position:fixed で配置することで、パネルの
+    // overflow:hidden/scrollに巻き込まれて記事が途切れて見える不具合を解消している。
     function verToggleTooltip(tooltipId) {
-        const tooltip = document.getElementById(tooltipId);
-        if (!tooltip) return;
-        const isVisible = tooltip.classList.contains('visible');
-        // 他のツールチップを全部閉じる
-        document.querySelectorAll('.ver-source-tooltip.visible').forEach(t => {
-            t.classList.remove('visible');
-            const btn = document.getElementById(t.id + '_btn');
-            if (btn) btn.classList.remove('active');
-        });
-        if (!isVisible) {
-            tooltip.classList.add('visible');
-            const btn = document.getElementById(tooltipId + '_btn');
-            if (btn) btn.classList.add('active');
+        let tooltip = document.getElementById('ver-source-global-tooltip');
+        if (!tooltip) {
+            tooltip = document.createElement('div');
+            tooltip.id = 'ver-source-global-tooltip';
+            tooltip.className = 'ver-source-tooltip';
+            document.body.appendChild(tooltip);
         }
+        const btn = document.getElementById(tooltipId + '_btn');
+        if (!btn) return;
+
+        const isVisible = tooltip.classList.contains('visible') && tooltip.dataset.activeId === tooltipId;
+        // 他のボタンのactive状態とツールチップを一旦閉じる
+        document.querySelectorAll('.ver-source-btn.active').forEach(function(b) { b.classList.remove('active'); });
+        tooltip.classList.remove('visible');
+        if (isVisible) return; // 同じボタンの再クリック→閉じるだけ
+
+        const articlesHtml = (window._verTooltipMap && window._verTooltipMap[tooltipId]) || '';
+        if (!articlesHtml) return;
+        tooltip.innerHTML = '<div class="ver-source-tooltip-title">参照：社務所だより</div>' + articlesHtml;
+        tooltip.dataset.activeId = tooltipId;
+
+        // body直下なので getBoundingClientRect は常に正確（スクロール・パネルのtransformの影響を受けない）
+        const r = btn.getBoundingClientRect();
+        const tw = tooltip.offsetWidth;
+        const th = tooltip.offsetHeight;
+        let left = r.right - tw;
+        let top = r.top - th - 8;
+        if (left < 4) left = 4;
+        if (left + tw > window.innerWidth - 4) left = window.innerWidth - tw - 4;
+        if (top < 4) top = r.bottom + 8; // 上に入らなければ下に表示
+        if (top + th > window.innerHeight - 4) top = Math.max(4, window.innerHeight - th - 4);
+        tooltip.style.left = left + 'px';
+        tooltip.style.top = top + 'px';
+
+        tooltip.classList.add('visible');
+        btn.classList.add('active');
     }
 
         // ===== サイドバー クリック位置修正 =====
@@ -21943,12 +21967,10 @@ window.applyTheme = function() {
 (function() {
     // バージョン履歴パネル外クリックでツールチップを閉じる
     document.addEventListener('click', function(e) {
-        if (!e.target.closest('.ver-source-wrapper')) {
-            document.querySelectorAll('.ver-source-tooltip.visible').forEach(function(t) {
-                t.classList.remove('visible');
-                var btn = document.getElementById(t.id + '_btn');
-                if (btn) btn.classList.remove('active');
-            });
+        if (!e.target.closest('.ver-source-wrapper') && !e.target.closest('#ver-source-global-tooltip')) {
+            const tip = document.getElementById('ver-source-global-tooltip');
+            if (tip) tip.classList.remove('visible');
+            document.querySelectorAll('.ver-source-btn.active').forEach(function(b) { b.classList.remove('active'); });
         }
     });
     function initSidebarClickFix() {
