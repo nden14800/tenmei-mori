@@ -7400,7 +7400,7 @@ body.sidebar-collapsed.sidebar-pinned #sidebar .nav-group-title {
                             <div class="lab-card-footer">詳細設定 <i class="bi bi-chevron-right"></i></div>
                         </div>
 
-                        <!-- 5. メンテナンス訓練 (Dev) -->
+                        <!-- 5. 合言葉入力 -->\n                        <div class=\"lab-glass-card\" onclick=\"void 0\" style=\"border-color: rgba(168, 85, 247, 0.35);\">\n                            <div class=\"lab-card-header\">\n                                <div class=\"lab-icon-box icon-bg-purple\"><i class=\"bi bi-key-fill\"></i></div>\n                                <div class=\"lab-switch-wrapper\">\n                                    <div class=\"text-xs opacity-50\">隠しコマンド</div>\n                                </div>\n                            </div>\n                            <div class=\"lab-card-body\">\n                                <h3>合言葉入力 <span class=\"lab-badge badge-exp\">Secret</span></h3>\n                                <p class=\"lab-card-desc\">隠しコマンドの合言葉を直接入力して試せます。</p>\n                                <div style=\"margin-top:10px; display:flex; gap:6px;\">\n                                    <input id=\"lab-secret-input\" type=\"text\" placeholder=\"合言葉を入力…\"\n                                        style=\"flex:1; padding:6px 10px; border-radius:8px; border:1px solid rgba(168,85,247,0.4);\n                                               background:rgba(168,85,247,0.08); color:inherit; font-size:0.85rem; outline:none;\"\n                                        onkeydown=\"if(event.key==='Enter'){ event.stopPropagation(); window._trySecretWord && window._trySecretWord(this.value); this.value=''; }\"\n                                        onclick=\"event.stopPropagation()\"\n                                    />\n                                    <button onclick=\"event.stopPropagation(); var inp=document.getElementById('lab-secret-input'); if(inp){ window._trySecretWord && window._trySecretWord(inp.value); inp.value=''; }\"\n                                        style=\"padding:6px 14px; border-radius:8px; background:rgba(168,85,247,0.25);\n                                               border:1px solid rgba(168,85,247,0.4); color:inherit; font-size:0.85rem; cursor:pointer;\">\n                                        試す\n                                    </button>\n                                </div>\n                            </div>\n                            <div class=\"lab-card-footer\" style=\"color:rgba(168,85,247,0.7);\">ヒント：サイト各所に手がかりあり</div>\n                        </div>\n\n                        <!-- 6. メンテナンス訓練 (Dev) -->
                         <div class="lab-glass-card" onclick="if(LabAuth.isVerified()) { checkMaintenance(true); } else { showToast('会員限定機能です', 'warning'); }" style="border-color: rgba(239, 68, 68, 0.4);">
                             <div class="lab-card-header">
                                 <div class="lab-icon-box bg-black text-yellow-500"><i class="bi bi-cone-striped"></i></div>
@@ -22558,6 +22558,12 @@ window.applyTheme = function() {
     </div>
 </div>
 
+<!-- ── 隠しコマンド演出用オーバーレイ（コナミコマンド） ── -->
+<div id="secret-overlay">
+    <div class="secret-text"></div>
+    <p style="font-size:0.75rem;opacity:0.5;margin-top:10px;">（画面をタップ、または Esc キーで閉じる）</p>
+</div>
+
 <script>
 (function() {
     var TOTAL = 5;
@@ -22623,6 +22629,322 @@ window.applyTheme = function() {
     } catch(e) {
         setTimeout(showTutorial, 800);
     }
+})();
+</script>
+
+<script>
+// ==========================================================
+// 隠しコマンド（イースターエッグ）集
+// ──────────────────────────────────────────────
+// 過去にこの種の遊び心の実装が、クリックイベントの監視処理で
+// サイト全体の描画と競合し、長時間の障害を起こした反省を踏まえ、
+// 以下の方針で実装している。
+//   ・本ブロック全体を1つのIIFE + try/catchで完全に隔離する
+//   ・既存のonclick/showView等のナビゲーション処理には一切触れない
+//   ・preventDefault/stopPropagation・capture:trueは使わない
+//   ・既存のクリック対象要素（ロゴ・サイドバーアイコン等）の
+//     クリック回数を監視するような実装は行わない
+//   ・window.onload は上書きせず、addEventListener('load', ...) のみ使う
+//     （既存のwindow.onload = async function(){...}を破壊しないため）
+//   ・生成するDOM要素は新規追加分のみで、既存要素のclass/styleを
+//     書き換えない
+//   ・各機能を個別のtry/catchで包み、1つが失敗しても他に影響しない
+// ==========================================================
+(function() {
+try {
+
+    // ---------- ① コンソールメッセージ ----------
+    try {
+        console.log('%c⛩️ 運勢・天命乃杜', 'color:#c5a059;font-size:20px;font-weight:bold;');
+        console.log('%cようこそ、開発者の方。気になるコードがあれば、サイドバーの「開発者について」からGitHubのソースをご覧いただけます。', 'color:#888;font-size:12px;');
+        console.log('%cヒント：このページにはいくつかの隠しコマンドが眠っています…', 'color:#b91c1c;font-size:12px;');
+    } catch(e) {}
+
+    // ---------- ② コナミコマンド（↑↑↓↓←→←→BA） ----------
+    try {
+        var KONAMI = ['ArrowUp','ArrowUp','ArrowDown','ArrowDown','ArrowLeft','ArrowRight','ArrowLeft','ArrowRight','b','a'];
+        var konamiPos = 0;
+        var secretMessages = [
+            "ようこそ、隠し部屋へ。\n\nここまでコードを覗き込んでくださり、\nありがとうございます。\n\nこのサイトは、ひとりの開発者が\nAIと対話しながら、こつこつと\n作り上げているものです。\n\n見つけてくれて、嬉しいです。",
+            "おみくじの結果は、あなたの行動までは\n決められません。\n\nここまで隠しコマンドを探してくれた\nその探究心こそが、きっと吉兆です。"
+        ];
+        function revealSecretOverlay() {
+            try {
+                var overlay = document.getElementById('secret-overlay');
+                if (!overlay) return;
+                var msg = secretMessages[Math.floor(Math.random() * secretMessages.length)];
+                var textEl = overlay.querySelector('.secret-text');
+                if (textEl) {
+                    textEl.textContent = msg;
+                    textEl.classList.add('secret-cursor');
+                }
+                overlay.classList.add('active');
+                var closeFn = function() {
+                    overlay.classList.remove('active');
+                    overlay.removeEventListener('click', closeFn);
+                    document.removeEventListener('keydown', escFn);
+                };
+                var escFn = function(ev) {
+                    if (ev.key === 'Escape') closeFn();
+                };
+                overlay.addEventListener('click', closeFn);
+                document.addEventListener('keydown', escFn);
+                setTimeout(closeFn, 8000);
+            } catch(e2) {}
+        }
+        function handleKonamiKey(e) {
+            try {
+                var tag = (e.target && e.target.tagName) || '';
+                if (tag === 'INPUT' || tag === 'TEXTAREA') return;
+                var key = e.key;
+                if (key === KONAMI[konamiPos]) {
+                    konamiPos++;
+                    if (konamiPos === KONAMI.length) {
+                        konamiPos = 0;
+                        revealSecretOverlay();
+                    }
+                } else {
+                    konamiPos = (key === KONAMI[0]) ? 1 : 0;
+                }
+            } catch(e3) {}
+        }
+        document.addEventListener('keydown', handleKonamiKey, false);
+    } catch(e) {}
+
+    // ---------- ③ 合言葉「tenmei」で桜吹雪 ----------
+    try {
+        var typedBuffer = '';
+        var SAKURA_WORD = 'tenmei';
+        function spawnSakura() {
+            try {
+                var count = 24;
+                for (var i = 0; i < count; i++) {
+                    var petal = document.createElement('div');
+                    petal.textContent = '🌸';
+                    petal.style.position = 'fixed';
+                    petal.style.top = '-30px';
+                    petal.style.left = (Math.random() * 100) + 'vw';
+                    petal.style.fontSize = (14 + Math.random() * 12) + 'px';
+                    petal.style.opacity = '0.9';
+                    petal.style.pointerEvents = 'none';
+                    petal.style.zIndex = '99998';
+                    petal.style.transition = 'transform 3.5s linear, opacity 3.5s linear';
+                    document.body.appendChild(petal);
+                    (function(p) {
+                        requestAnimationFrame(function() {
+                            p.style.transform = 'translateY(' + (window.innerHeight + 60) + 'px) translateX(' + (Math.random() * 80 - 40) + 'px) rotate(' + (Math.random()*360) + 'deg)';
+                            p.style.opacity = '0';
+                        });
+                        setTimeout(function() {
+                            if (p && p.parentNode) p.parentNode.removeChild(p);
+                        }, 4000);
+                    })(petal);
+                }
+            } catch(e4) {}
+        }
+        function handleTypedWord(e) {
+            try {
+                var tag = (e.target && e.target.tagName) || '';
+                if (tag === 'INPUT' || tag === 'TEXTAREA') return;
+                if (!e.key || e.key.length !== 1) return;
+                typedBuffer += e.key.toLowerCase();
+                if (typedBuffer.length > SAKURA_WORD.length) {
+                    typedBuffer = typedBuffer.slice(-SAKURA_WORD.length);
+                }
+                if (typedBuffer === SAKURA_WORD) {
+                    typedBuffer = '';
+                    spawnSakura();
+                    try {
+                        if (typeof window.showToast === 'function') {
+                            window.showToast('花びらが舞いました。今日も良き天命を。', 'success', '🌸');
+                        }
+                    } catch(e5) {}
+                }
+            } catch(e6) {}
+        }
+        document.addEventListener('keydown', handleTypedWord, false);
+    } catch(e) {}
+
+    // ---------- ④ 季節の日のささやかな挨拶（1日1回まで） ----------
+    try {
+        var todayKey = new Date().toISOString().slice(0,10);
+        var seasonalShownKey = 'tenmei_seasonal_egg_' + todayKey;
+        if (!localStorage.getItem(seasonalShownKey)) {
+            var now = new Date();
+            var md = (now.getMonth()+1) + '/' + now.getDate();
+            var seasonalMsg = null;
+            if (md === '1/1') seasonalMsg = '新年あけましておめでとうございます。今年も天命乃杜をよろしくお願いいたします。';
+            else if (md === '2/3') seasonalMsg = '今日は節分です。心の中の鬼を払い、良き運を招き入れましょう。';
+            else if (md === '3/20') seasonalMsg = '昼と夜が等しくなる春分の日。心と身体のバランスを整える日です。';
+            else if (md === '4/8') seasonalMsg = '花まつりの日です。身近な誰かへの感謝を、改めて思い出してみませんか。';
+            else if (md === '5/5') seasonalMsg = '端午の節句です。自分らしく、たくましく在ることを思う日です。';
+            else if (md === '6/21') seasonalMsg = '一年で最も昼が長い夏至の日。新たな挑戦の種をまく好機です。';
+            else if (md === '7/7') seasonalMsg = '七夕の夜です。願いを一文だけ、心の中で書いてみましょう。';
+            else if (md === '8/15') seasonalMsg = 'お盆の時期です。縁あって今ここにいることへの感謝を忘れずに。';
+            else if (md === '9/23') seasonalMsg = '昼と夜が等しくなる秋分の日。今年ここまでの歩みを振り返ってみては。';
+            else if (md === '12/22') seasonalMsg = '一年で最も夜が長い冬至の日です。この日を境に、光は戻ってきます。';
+            else if (md === '12/31') seasonalMsg = '今年も一年、ありがとうございました。良いお年をお迎えください。';
+            if (seasonalMsg) {
+                window.addEventListener('load', function() {
+                    try {
+                        setTimeout(function() {
+                            if (typeof window.showToast === 'function') {
+                                window.showToast(seasonalMsg, 'info', '🎍');
+                            }
+                        }, 1500);
+                        localStorage.setItem(seasonalShownKey, '1');
+                    } catch(e7) {}
+                });
+            }
+        }
+    } catch(e) {}
+
+    // ---------- ⑤ 訪問回数の節目 ----------
+    try {
+        window.addEventListener('load', function() {
+            try {
+                var VISIT_KEY = 'tenmei_visit_count';
+                var count = parseInt(localStorage.getItem(VISIT_KEY) || '0', 10) + 1;
+                localStorage.setItem(VISIT_KEY, String(count));
+                var milestones = {
+                    7: 'これで7回目の参拝です。続けることも、立派なご縁です。',
+                    30: '30回目の参拝、おめでとうございます。日々の積み重ねに天命も応えていることでしょう。',
+                    100: '100回目の参拝です。長くお付き合いいただき、ありがとうございます。'
+                };
+                if (milestones[count]) {
+                    setTimeout(function() {
+                        if (typeof window.showToast === 'function') {
+                            window.showToast(milestones[count], 'success', '⛩️');
+                        }
+                    }, 2200);
+                }
+            } catch(e8) {}
+        });
+    } catch(e) {}
+
+    // ---------- ⑥ タブを離れている間のタイトル演出 ----------
+    try {
+        var originalTitle = document.title;
+        var titleMessages = [
+            'おかえりをお待ちしております…',
+            '今日のおみくじ、まだですか？',
+            '天命乃杜が、ここにあります'
+        ];
+        document.addEventListener('visibilitychange', function() {
+            try {
+                if (document.hidden) {
+                    document.title = titleMessages[Math.floor(Math.random() * titleMessages.length)];
+                } else {
+                    document.title = originalTitle;
+                }
+            } catch(e9) {}
+        }, false);
+    } catch(e) {}
+
+    // ---------- ⑦ 13日の金曜日 ----------
+    try {
+        var fridayKey = 'tenmei_friday13_' + new Date().toISOString().slice(0,10);
+        if (!localStorage.getItem(fridayKey)) {
+            var nowF = new Date();
+            if (nowF.getDate() === 13 && nowF.getDay() === 5) {
+                window.addEventListener('load', function() {
+                    try {
+                        setTimeout(function() {
+                            if (typeof window.showToast === 'function') {
+                                window.showToast('今日は13日の金曜日。普段より少しだけ、足元にお気をつけて。', 'info', '🔮');
+                            }
+                        }, 1500);
+                        localStorage.setItem(fridayKey, '1');
+                    } catch(e10) {}
+                });
+            }
+        }
+    } catch(e) {}
+
+    // ---------- ⑧ 合言葉「ありがとう」 ----------
+    try {
+        var thanksBuffer = '';
+        // キーボード入力はIME変換前のローマ字で検知（日本語は入力不可のため）
+        var THANKS_WORD = 'arigatou';
+        function handleThanksWord(e) {
+            try {
+                var tag = (e.target && e.target.tagName) || '';
+                if (tag === 'INPUT' || tag === 'TEXTAREA') return;
+                if (!e.key || e.key.length !== 1) return;
+                thanksBuffer += e.key.toLowerCase();
+                if (thanksBuffer.length > THANKS_WORD.length) {
+                    thanksBuffer = thanksBuffer.slice(-THANKS_WORD.length);
+                }
+                if (thanksBuffer === THANKS_WORD) {
+                    thanksBuffer = '';
+                    if (typeof window.showToast === 'function') {
+                        window.showToast('こちらこそ、参拝いただきありがとうございます。', 'success', '🙏');
+                    }
+                }
+            } catch(e11) {}
+        }
+        document.addEventListener('keydown', handleThanksWord, false);
+    } catch(e) {}
+
+    // ---------- ⑨ 放置時のささやき（1セッションに1回まで） ----------
+    try {
+        var idleShown = false;
+        var idleTimer = null;
+        var IDLE_MS = 4 * 60 * 1000;
+        var idleMessages = [
+            '迷っているなら、まずはおみくじを一枚。',
+            'ゆっくりでも構いません。天命は、待ってくれています。',
+            '少し休憩がてら、今日の運勢を覗いてみませんか。'
+        ];
+        function resetIdleTimer() {
+            try {
+                if (idleTimer) clearTimeout(idleTimer);
+                if (idleShown) return;
+                idleTimer = setTimeout(function() {
+                    try {
+                        if (!idleShown && typeof window.showToast === 'function' && !document.hidden) {
+                            idleShown = true;
+                            window.showToast(idleMessages[Math.floor(Math.random() * idleMessages.length)], 'info', '🕯️');
+                        }
+                    } catch(e12) {}
+                }, IDLE_MS);
+            } catch(e13) {}
+        }
+        ['mousemove', 'keydown', 'touchstart', 'scroll'].forEach(function(evt) {
+            document.addEventListener(evt, resetIdleTimer, { passive: true });
+        });
+        resetIdleTimer();
+    } catch(e) {}
+
+
+    // ---------- 合言葉入力UIからの呼び出し口 ----------
+    // LabsカードのInputから window._trySecretWord('tenmei') のように呼べる
+    try {
+        window._trySecretWord = function(word) {
+            try {
+                if (!word) return;
+                var w = word.trim();
+                if (w === SAKURA_WORD) {
+                    spawnSakura();
+                    if (typeof window.showToast === 'function') {
+                        window.showToast('花びらが舞いました。今日も良き天命を。', 'success', '🌸');
+                    }
+                } else if (w === THANKS_WORD || w === 'ありがとう' || w === 'arigatou') {
+                    if (typeof window.showToast === 'function') {
+                        window.showToast('こちらこそ、参拝いただきありがとうございます。', 'success', '🙏');
+                    }
+                } else {
+                    if (typeof window.showToast === 'function') {
+                        window.showToast('その合言葉には反応がありません。サイト各所に手がかりが…', 'info', '🔍');
+                    }
+                }
+            } catch(ew) {}
+        };
+    } catch(e) {}
+
+} catch(eOuter) {
+    // 全体が失敗しても、サイトの他機能には一切影響しない
+}
 })();
 </script>
 
