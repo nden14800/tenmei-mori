@@ -2879,27 +2879,101 @@
     border-radius: 24px;
 }
 
-/* 認証コード入力欄 (特別仕様) */
-.auth-code-input-modern {
-    width: 100%;
-    height: 70px;
-    font-size: 2.5rem;
-    letter-spacing: 0.5em; /* 文字間隔を広く */
+/* 認証コード入力欄 (分割ボックス方式 / OTP UI) */
+.auth-code-otp-group {
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+}
+.auth-code-otp-box {
+    width: 46px;
+    height: 58px;
+    font-size: 1.6rem;
     text-align: center;
     border: 2px solid var(--card-border);
     border-radius: 12px;
     background-color: var(--input-bg);
     color: var(--text-main);
-    font-family: monospace; /* 等幅フォント */
+    font-family: monospace;
     font-weight: bold;
     outline: none;
-    transition: all 0.3s;
+    transition: border-color 0.2s, box-shadow 0.2s, transform 0.15s;
     box-shadow: inset 0 2px 5px rgba(0,0,0,0.05);
+    -webkit-appearance: none;
 }
-.auth-code-input-modern:focus {
+@media (max-width: 420px) {
+    .auth-code-otp-group { gap: 7px; }
+    .auth-code-otp-box { width: 38px; height: 50px; font-size: 1.3rem; }
+}
+.auth-code-otp-box:focus {
     border-color: var(--accent-red);
-    box-shadow: 0 0 0 4px rgba(185, 28, 28, 0.1);
-    transform: scale(1.02);
+    box-shadow: 0 0 0 4px rgba(185, 28, 28, 0.12);
+    transform: translateY(-2px);
+}
+.auth-code-otp-box.filled {
+    border-color: var(--accent-gold);
+}
+.auth-code-otp-box.otp-error {
+    border-color: #dc2626 !important;
+    box-shadow: 0 0 0 4px rgba(220, 38, 38, 0.15) !important;
+    animation: otpShake 0.4s;
+}
+@keyframes otpShake {
+    0%, 100% { transform: translateX(0); }
+    20% { transform: translateX(-6px); }
+    40% { transform: translateX(6px); }
+    60% { transform: translateX(-4px); }
+    80% { transform: translateX(4px); }
+}
+
+/* 認証コード再送・有効期限カウントダウン */
+.auth-code-timer {
+    font-size: 0.75rem;
+    color: var(--text-sub);
+    margin-top: 14px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+}
+.auth-code-timer .timer-num {
+    font-weight: bold;
+    color: var(--accent-red);
+    font-family: monospace;
+    min-width: 2.6em;
+    display: inline-block;
+    text-align: left;
+}
+.auth-code-resend-btn {
+    font-size: 0.75rem;
+    color: var(--accent-gold);
+    text-decoration: underline;
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 0;
+    transition: opacity 0.2s;
+}
+.auth-code-resend-btn:disabled {
+    color: var(--text-sub);
+    opacity: 0.5;
+    cursor: not-allowed;
+    text-decoration: none;
+}
+
+/* フォーム入力欄のエラー状態（リアルタイムバリデーション） */
+.profile-input-field.input-error {
+    border-color: #dc2626 !important;
+    box-shadow: 0 0 0 3px rgba(220, 38, 38, 0.12) !important;
+}
+.input-error-msg {
+    font-size: 0.7rem;
+    color: #dc2626;
+    margin-top: 4px;
+    display: none;
+}
+.input-error-msg.show {
+    display: block;
 }
 
         /* --- おみくじ選択・結果画面：Bento UI拡張 --- */
@@ -7861,11 +7935,12 @@ body.sidebar-collapsed.sidebar-pinned #sidebar .nav-group-title {
                 <div id="form-login-fields" class="hidden space-y-4">
                     <div>
                         <label class="profile-input-label">メールアドレス</label>
-                        <input type="email" id="login-email" class="profile-input-field" placeholder="example@email.com">
+                        <input type="email" id="login-email" class="profile-input-field" placeholder="example@email.com" autocomplete="email" oninput="validateAuthField(this)" onblur="validateAuthField(this, true)">
+                        <p class="input-error-msg" id="login-email-err">メールアドレスの形式が正しくありません</p>
                     </div>
                     <div>
                         <label class="profile-input-label">パスワード</label>
-                        <input type="password" id="login-password" class="profile-input-field" placeholder="********">
+                        <input type="password" id="login-password" class="profile-input-field" placeholder="********" autocomplete="current-password">
                     </div>
                     <div id="turnstile-login" class="flex justify-center mt-2"></div>
                     <button onclick="initiateAuth('login')" class="btn-primary w-full justify-center py-3 mt-2 shadow-lg">
@@ -7877,15 +7952,17 @@ body.sidebar-collapsed.sidebar-pinned #sidebar .nav-group-title {
                 <div id="form-register-fields" class="hidden space-y-4">
                     <div>
                         <label class="profile-input-label">参拝者名 (ユーザー名)</label>
-                        <input type="text" id="reg-username" class="profile-input-field" placeholder="天命 太郎">
+                        <input type="text" id="reg-username" class="profile-input-field" placeholder="天命 太郎" autocomplete="nickname">
                     </div>
                     <div>
                         <label class="profile-input-label">メールアドレス</label>
-                        <input type="email" id="reg-email" class="profile-input-field" placeholder="example@email.com">
+                        <input type="email" id="reg-email" class="profile-input-field" placeholder="example@email.com" autocomplete="email" oninput="validateAuthField(this)" onblur="validateAuthField(this, true)">
+                        <p class="input-error-msg" id="reg-email-err">メールアドレスの形式が正しくありません</p>
                     </div>
                     <div>
                         <label class="profile-input-label">パスワード</label>
-                        <input type="password" id="reg-password" class="profile-input-field" placeholder="********">
+                        <input type="password" id="reg-password" class="profile-input-field" placeholder="8文字以上" autocomplete="new-password" oninput="validateAuthField(this)" onblur="validateAuthField(this, true)">
+                        <p class="input-error-msg" id="reg-password-err">パスワードは8文字以上で入力してください</p>
                     </div>                    
                     <div id="turnstile-register" class="flex justify-center mt-2"></div>
                     <button onclick="initiateAuth('register')" class="btn-primary w-full justify-center py-3 mt-2 shadow-lg">
@@ -7894,26 +7971,37 @@ body.sidebar-collapsed.sidebar-pinned #sidebar .nav-group-title {
                 </div>
             </div>
 
-            <!-- 3. 認証コード入力 (モダンUI) -->
+            <!-- 3. 認証コード入力 (モダンUI / 分割ボックス方式) -->
             <div id="auth-step-2" class="hidden auth-form-container stats-card-interactive text-center">
                 <div class="mb-6">
                     <i class="bi bi-envelope-check text-5xl text-red-500 animate-pulse"></i>
                 </div>
                 <h3 class="font-bold text-lg mb-2">認証コードを入力</h3>
-                <p class="text-xs text-gray-500 mb-6 leading-relaxed">
+                <p class="text-xs text-gray-500 mb-6 leading-relaxed" id="auth-code-desc">
                     送信されたメールに記載されている<br>6桁の数字を入力してください。
                 </p>
                 
-                <div class="mb-6 relative">
-                    <!-- プレースホルダー削除: placeholder="" -->
-                    <input type="text" id="auth-code-input" maxlength="6" 
-                           class="auth-code-input-modern" 
-                           placeholder="" 
-                           autocomplete="one-time-code"
-                           inputmode="numeric"
-                           oninput="this.value = this.value.replace(/[^0-9]/g, '');">
-                    <p class="text-[10px] text-gray-400 mt-2">半角数字のみ入力可能</p>
+                <div class="mb-2">
+                    <!-- 隠しinput: finalizeAuth()が値を読み取る既存の仕組みをそのまま利用 -->
+                    <input type="hidden" id="auth-code-input">
+                    <div class="auth-code-otp-group" id="auth-code-otp-group" onpaste="handleOtpPaste(event)">
+                        <input type="text" inputmode="numeric" maxlength="1" class="auth-code-otp-box" data-otp-index="0" oninput="handleOtpInput(this, 0)" onkeydown="handleOtpKeydown(event, 0)">
+                        <input type="text" inputmode="numeric" maxlength="1" class="auth-code-otp-box" data-otp-index="1" oninput="handleOtpInput(this, 1)" onkeydown="handleOtpKeydown(event, 1)">
+                        <input type="text" inputmode="numeric" maxlength="1" class="auth-code-otp-box" data-otp-index="2" oninput="handleOtpInput(this, 2)" onkeydown="handleOtpKeydown(event, 2)">
+                        <input type="text" inputmode="numeric" maxlength="1" class="auth-code-otp-box" data-otp-index="3" oninput="handleOtpInput(this, 3)" onkeydown="handleOtpKeydown(event, 3)">
+                        <input type="text" inputmode="numeric" maxlength="1" class="auth-code-otp-box" data-otp-index="4" oninput="handleOtpInput(this, 4)" onkeydown="handleOtpKeydown(event, 4)">
+                        <input type="text" inputmode="numeric" maxlength="1" class="auth-code-otp-box" data-otp-index="5" oninput="handleOtpInput(this, 5)" onkeydown="handleOtpKeydown(event, 5)">
+                    </div>
+                    <p class="text-[10px] text-gray-400 mt-2">半角数字のみ・貼り付けにも対応しています</p>
                 </div>
+
+                <div class="auth-code-timer" id="auth-code-timer-wrap">
+                    <i class="bi bi-clock-history"></i>
+                    <span>有効期限まで <span class="timer-num" id="auth-code-timer-num">5:00</span></span>
+                </div>
+                <button class="auth-code-resend-btn mt-2 mb-4" id="auth-code-resend-btn" onclick="resendAuthCode()" disabled>
+                    コードを再送する
+                </button>
 
                 <button onclick="finalizeAuth()" class="btn-primary w-full justify-center py-3 shadow-lg mb-4">
                     <i class="bi bi-check-lg"></i> 認証を完了する
@@ -17982,13 +18070,155 @@ function backToAuthSelection() {
 function backToAuthStep1() {
     document.getElementById('auth-step-2').classList.add('hidden');
     document.getElementById('auth-step-1').classList.remove('hidden');
+    stopAuthCodeTimer();
+}
+
+// --- 認証コード：分割ボックス(OTP)入力の制御 ---
+function getOtpBoxes() {
+    return Array.from(document.querySelectorAll('#auth-code-otp-group .auth-code-otp-box'));
+}
+function syncOtpHiddenValue() {
+    const boxes = getOtpBoxes();
+    const value = boxes.map(b => b.value).join('');
+    const hidden = document.getElementById('auth-code-input');
+    if (hidden) hidden.value = value;
+    return value;
+}
+function clearOtpError() {
+    getOtpBoxes().forEach(b => b.classList.remove('otp-error'));
+}
+function shakeOtpError() {
+    const boxes = getOtpBoxes();
+    boxes.forEach(b => b.classList.add('otp-error'));
+    setTimeout(() => boxes.forEach(b => b.classList.remove('otp-error')), 450);
+}
+function handleOtpInput(el, index) {
+    // 数字以外を除去
+    el.value = el.value.replace(/[^0-9]/g, '').slice(0, 1);
+    clearOtpError();
+    if (el.value) {
+        el.classList.add('filled');
+        const boxes = getOtpBoxes();
+        if (index < boxes.length - 1) {
+            boxes[index + 1].focus();
+        } else {
+            el.blur(); // 最後の桁を入れたらキーボードを閉じる(モバイル)
+        }
+    } else {
+        el.classList.remove('filled');
+    }
+    syncOtpHiddenValue();
+}
+function handleOtpKeydown(e, index) {
+    const boxes = getOtpBoxes();
+    if (e.key === 'Backspace' && !e.target.value && index > 0) {
+        boxes[index - 1].focus();
+        boxes[index - 1].value = '';
+        boxes[index - 1].classList.remove('filled');
+        syncOtpHiddenValue();
+    } else if (e.key === 'ArrowLeft' && index > 0) {
+        boxes[index - 1].focus();
+    } else if (e.key === 'ArrowRight' && index < boxes.length - 1) {
+        boxes[index + 1].focus();
+    }
+}
+function handleOtpPaste(e) {
+    e.preventDefault();
+    const text = (e.clipboardData || window.clipboardData).getData('text').replace(/[^0-9]/g, '');
+    if (!text) return;
+    const boxes = getOtpBoxes();
+    boxes.forEach((box, i) => {
+        box.value = text[i] || '';
+        box.classList.toggle('filled', !!text[i]);
+    });
+    syncOtpHiddenValue();
+    const lastFilled = Math.min(text.length, boxes.length) - 1;
+    if (lastFilled >= 0) boxes[lastFilled].focus();
+}
+function resetOtpBoxes() {
+    getOtpBoxes().forEach(b => { b.value = ''; b.classList.remove('filled', 'otp-error'); });
+    syncOtpHiddenValue();
+}
+
+// --- 認証コード：有効期限カウントダウン (5分) ---
+let _authCodeTimerInterval = null;
+function startAuthCodeTimer() {
+    stopAuthCodeTimer();
+    let remaining = 5 * 60; // 5分
+    const numEl = document.getElementById('auth-code-timer-num');
+    const timerWrap = document.getElementById('auth-code-timer-wrap');
+    const resendBtn = document.getElementById('auth-code-resend-btn');
+    if (resendBtn) resendBtn.disabled = true;
+    if (timerWrap) timerWrap.style.display = 'flex';
+
+    function render() {
+        const m = Math.floor(remaining / 60);
+        const s = remaining % 60;
+        if (numEl) numEl.textContent = `${m}:${String(s).padStart(2, '0')}`;
+    }
+    render();
+    _authCodeTimerInterval = setInterval(() => {
+        remaining--;
+        if (remaining <= 0) {
+            stopAuthCodeTimer();
+            if (numEl) numEl.textContent = '期限切れ';
+            if (resendBtn) resendBtn.disabled = false;
+            return;
+        }
+        render();
+        // 残り1分を切ったら再送ボタンを有効化（コード自体はまだ有効）
+        if (remaining <= 60 && resendBtn) resendBtn.disabled = false;
+    }, 1000);
+}
+function stopAuthCodeTimer() {
+    if (_authCodeTimerInterval) {
+        clearInterval(_authCodeTimerInterval);
+        _authCodeTimerInterval = null;
+    }
+}
+async function resendAuthCode() {
+    const resendBtn = document.getElementById('auth-code-resend-btn');
+    if (resendBtn && resendBtn.disabled) return;
+    resetOtpBoxes();
+    const boxes = getOtpBoxes();
+    if (boxes[0]) boxes[0].focus();
+    await initiateAuth(currentState.authMode);
+}
+
+// --- フォーム：リアルタイムバリデーション ---
+function validateAuthField(el, onBlurOnly) {
+    const id = el.id;
+    const errEl = document.getElementById(id + '-err');
+    let isValid = true;
+    if (id === 'login-email' || id === 'reg-email') {
+        if (el.value.length === 0) {
+            isValid = true; // 未入力時はエラー表示しない（送信時に別途チェック）
+        } else {
+            isValid = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(el.value);
+        }
+    } else if (id === 'reg-password') {
+        isValid = el.value.length === 0 || el.value.length >= 8;
+    }
+    if (onBlurOnly && el.value.length === 0) isValid = true;
+
+    if (!isValid) {
+        el.classList.add('input-error');
+        if (errEl) errEl.classList.add('show');
+    } else {
+        el.classList.remove('input-error');
+        if (errEl) errEl.classList.remove('show');
+    }
+    return isValid;
 }
 
         // --- 認証完了 (finalizeAuth) ---
     async function finalizeAuth() {
-        const code = document.getElementById('auth-code-input').value;
+        const code = syncOtpHiddenValue();
         // ▼ alert置き換え
-        if(!code || code.length !== 6) return showToast("6桁の認証コードを入力してください", "warning");
+        if(!code || code.length !== 6) {
+            shakeOtpError();
+            return showToast("6桁の認証コードを入力してください", "warning");
+        }
 
         const mode = currentState.authMode;
         const email = document.getElementById(mode === 'login' ? 'login-email' : 'reg-email').value.trim().toLowerCase();
@@ -18010,12 +18240,14 @@ function backToAuthStep1() {
             const data = await res.json();
             
             if(res.ok && data.success) {
+                stopAuthCodeTimer();
                 if (data.token) {
                     localStorage.setItem('auth_token', data.token);
                 }
                 loginSuccess({ email, username: data.username });
             } else {
                 // ▼ alert置き換え
+                shakeOtpError();
                 showToast(`${mode === 'login' ? 'ログイン' : '登録'}失敗: ${data.message || data.error}`, "error");
             }
         } catch(e) { 
@@ -20854,11 +21086,10 @@ function renderTurnstileForMode(mode) {
             if(res.ok && data.success) {
                 document.getElementById('auth-step-1').classList.add('hidden');
                 document.getElementById('auth-step-2').classList.remove('hidden');
-                const codeInput = document.getElementById('auth-code-input');
-                if(codeInput) {
-                    codeInput.value = '';
-                    codeInput.focus();
-                }
+                resetOtpBoxes();
+                const boxes = getOtpBoxes();
+                if (boxes[0]) boxes[0].focus();
+                startAuthCodeTimer();
                 showToast("認証コードを送信しました", "success");
             } else {
                 // ▼ alert置き換え
