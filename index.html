@@ -6660,6 +6660,16 @@ body.sidebar-collapsed.sidebar-pinned #sidebar .nav-group-title {
                         color: var(--text-sub) !important;
                     }
 
+                    /* ---- 開発者OFFICIAL LINKSのGitHubボタン（ライトモード） ---- */
+                    html:not(.dark) .official-link-github {
+                        background: rgba(0,0,0,0.05) !important;
+                        border-color: rgba(0,0,0,0.18) !important;
+                        color: var(--text-main) !important;
+                    }
+                    html:not(.dark) .official-link-github:hover {
+                        background: rgba(0,0,0,0.09) !important;
+                    }
+
                     /* ---- 使い方カード（チュートリアル・ライトモード） ---- */
                     html:not(.dark) .tutorial-card {
                         background: linear-gradient(145deg, #ffffff 0%, #fffbf0 100%) !important;
@@ -7054,7 +7064,7 @@ body.sidebar-collapsed.sidebar-pinned #sidebar .nav-group-title {
                     <p class="text-xs text-gray-500 dark:text-gray-400 leading-loose inline-block text-center">
                         結果は必ずしもその通りになるとは限りません。<br class="hidden sm:inline">
                         詳細は
-                        <button onclick="showView('about'); window.scrollTo(0,0);" 
+                        <button onclick="showView('about'); setTimeout(function(){ var el = document.getElementById('about-terms-section'); if(el){ el.scrollIntoView({behavior:'smooth', block:'start'}); } else { window.scrollTo(0,0); } }, 50);" 
                                 class="inline-block text-[var(--accent-red)] hover:underline font-bold bg-transparent border-none p-0 cursor-pointer align-baseline">
                             利用規約
                         </button>
@@ -7519,8 +7529,8 @@ body.sidebar-collapsed.sidebar-pinned #sidebar .nav-group-title {
                     <span class="text-white">デジタル御守授与所</span>
                 </h2>
                 <p class="text-sm text-zinc-300 leading-relaxed max-w-xl" style="font-family: 'Shippori Mincho', serif;">
-                    あなたの願いに合わせて色と文様を選定し、<br>
-                    世界に一つの「デジタル御守」を授与いたします。
+                    あなたの願い事を選んで、名前を刻んだ<br>
+                    「デジタル御守」を授与いたします。
                 </p>
             </div>
             <div class="flex-shrink-0 text-center hidden md:flex flex-col items-center gap-2">
@@ -8601,7 +8611,7 @@ body.sidebar-collapsed.sidebar-pinned #sidebar .nav-group-title {
                 </div>
 
                 <!-- 第3章 -->
-                <div class="bento-card p-0 overflow-hidden">
+                <div class="bento-card p-0 overflow-hidden" id="about-terms-section">
                     <div class="p-6 border-b border-gray-100 dark:border-gray-800 bg-gray-50 dark:bg-zinc-900/50">
                         <h3 class="text-xl font-black flex items-center gap-3">
                             <span class="flex items-center justify-center w-8 h-8 rounded bg-gray-700 text-white text-sm">03</span>
@@ -8777,7 +8787,7 @@ body.sidebar-collapsed.sidebar-pinned #sidebar .nav-group-title {
                         <i class="bi bi-discord"></i> 公式Discord参拝所
                     </a>
                     <a href="https://github.com/nden14800" target="_blank" rel="noopener noreferrer"
-                       class="flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-bold transition-all duration-200 hover:-translate-y-0.5"
+                       class="flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-bold transition-all duration-200 hover:-translate-y-0.5 official-link-github"
                        style="background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.15); color: #e0e0e0;">
                         <i class="bi bi-github"></i> GitHub
                     </a>
@@ -8803,7 +8813,7 @@ body.sidebar-collapsed.sidebar-pinned #sidebar .nav-group-title {
                                 <i class="bi bi-github opacity-60"></i>
                                 tenmei-mori
                             </div>
-                            <div class="text-xs opacity-50 mt-0.5">天命乃杜 本体（index.html・worker.js）</div>
+                            <div class="text-xs opacity-50 mt-0.5">天命乃杜 本体（index.html・認証バックエンド・Discordボット）</div>
                         </div>
                         <i class="bi bi-arrow-up-right-square opacity-40 group-hover:opacity-80 transition-opacity"></i>
                     </a>
@@ -8815,7 +8825,7 @@ body.sidebar-collapsed.sidebar-pinned #sidebar .nav-group-title {
                                 <i class="bi bi-github opacity-60"></i>
                                 tenmei-mori-article-analysis-dashboard
                             </div>
-                            <div class="text-xs opacity-50 mt-0.5">記事分析ダッシュボード（社務所だより）</div>
+                            <div class="text-xs opacity-50 mt-0.5">社務所だより記事をAIで分析・可視化する外部ダッシュボード</div>
                         </div>
                         <i class="bi bi-arrow-up-right-square opacity-40 group-hover:opacity-80 transition-opacity"></i>
                     </a>
@@ -11921,7 +11931,7 @@ function escapeHtml(str) {
                     <p>本日、サイドメニューに新たな機能<strong>「御守授与所」</strong>を開設いたしました。</p>
                     
                     <h3>デジタル御守授与所とは</h3>
-                    <p>「交通安全」「良縁成就」「金運上昇」など、あなたの現在の願い事を選択していただくことで、その願いに最適な色と文様、そしてお名前（またはサイト名）が刻まれた<strong>世界に一つのデジタル御守</strong>を授与いたします。</p>
+                    <p>「交通安全」「良縁成就」「金運上昇」など、あなたの現在の願い事を選択していただくことで、その願いに対応したデザインの御守に、お名前（またはサイト名）が刻まれた<strong>デジタル御守</strong>を授与いたします。</p>
                     <p>生成された御守は画像として保存可能です。スマートフォンの壁紙（待ち受け画面）に設定するなどして、日々の守り神としてお持ち歩きください。</p>
 
                     <h3>利用規約の改定（画像利用について）</h3>
@@ -15441,15 +15451,17 @@ window.renderPrefectureMap = function() {
         },
 
         // リセット（別の願いを選ぶ）
-        reset: function() {
+        reset: function(skipScroll) {
             document.getElementById('omamori-step-1').classList.remove('hidden');
             document.getElementById('omamori-step-2').classList.add('hidden');
             document.getElementById('omamori-step-3').classList.add('hidden');
             document.getElementById('omamori-display').innerHTML = '';
             
-            // 上部へスクロール
-            const section = document.getElementById('view-omamori');
-            if(section) section.scrollIntoView({behavior: 'smooth'});
+            // showView から呼ばれる時はスクロールをスキップ（showView側が window.scrollTo を既に行っている）
+            if(!skipScroll) {
+                const section = document.getElementById('view-omamori');
+                if(section) section.scrollIntoView({behavior: 'smooth'});
+            }
         },
 
         // 御守の描画
@@ -19181,7 +19193,7 @@ function changeHistoryPage(newPage) {
         if(viewId === 'history') loadHistory();
         if(viewId === 'prefecture') renderPrefectureRanking();
         if(viewId === 'about' || viewId === 'privacy') initTOC(viewId);
-        if(viewId === 'omamori' && typeof OmamoriSystem !== 'undefined') OmamoriSystem.reset();
+        if(viewId === 'omamori' && typeof OmamoriSystem !== 'undefined') OmamoriSystem.reset(true);
 
         if(viewId === 'stats') {
             const lock = document.getElementById('stats-lock');
@@ -22546,9 +22558,13 @@ window.applyTheme = function() {
     window.closeTutorial = function() {
         var overlay = document.getElementById('tutorial-overlay');
         if (overlay) {
-            overlay.style.opacity = '0';
-            overlay.style.pointerEvents = 'none';
-            setTimeout(function() { overlay.classList.remove('active'); }, 400);
+            // class を外すだけにする（base CSSの opacity:0/pointer-events:none と
+            // transition で自動的にフェードアウトする）。
+            // ここで inline style に直接 opacity/pointer-events を書き込むと、
+            // 次回 openTutorial() で .active クラスを付け直しても
+            // inline style がクラスのスタイルを上書きしたまま残ってしまい、
+            // 2回目以降オーバーレイが表示されない不具合の原因になっていた。
+            overlay.classList.remove('active');
         }
         try { localStorage.setItem('tenmei_tutorial_shown', '1'); } catch(e) {}
     };
