@@ -21056,6 +21056,21 @@ function renderTurnstileForMode(mode) {
         if(!email || !pass) return showToast("メールアドレスとパスワードを入力してください", "warning");
         if(mode === 'register' && !username) return showToast("ユーザー名を入力してください", "warning");
 
+        // ▼ 入力形式のチェック（UIに赤枠が出ているのに送信できてしまう不具合の修正）
+        // validateAuthField は表示の更新と同時に true/false を返すため、ここで結果を必ず確認する
+        const emailValid = validateAuthField(emailEl, false);
+        if (!emailValid) {
+            emailEl.focus();
+            return showToast("メールアドレスの形式が正しくありません", "warning");
+        }
+        if (mode === 'register') {
+            const passValid = validateAuthField(passEl, false);
+            if (!passValid) {
+                passEl.focus();
+                return showToast("パスワードは8文字以上で入力してください", "warning");
+            }
+        }
+
         // Turnstileトークン取得
         const widgetId = (mode === 'login') ? turnstileLoginId : turnstileRegisterId;
         const turnstileToken = (turnstileReady && widgetId !== null) ? turnstile.getResponse(widgetId) : null;
