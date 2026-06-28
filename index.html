@@ -16537,8 +16537,29 @@ async function fetchHistoryStats() {
 
         function addOmikujiBatch(count, isInitial) {
             const pool = document.getElementById('omikuji-pool');
-            
-            for(let i=0; i<count; i++) {
+
+            // .omikuji-pool は flex-wrap のため、現在の画面幅で1行に何枚並ぶか（列数）を実測する。
+            // これに基づいて「最後の行が必ず満タンになる枚数」まで切り上げて追加することで、
+            // 初期表示・「さらに探す」のどちらでも最後の行の枚数が中途半端にならないようにする。
+            const calcColsPerRow = () => {
+                const cs = getComputedStyle(pool);
+                const padL = parseFloat(cs.paddingLeft) || 0;
+                const padR = parseFloat(cs.paddingRight) || 0;
+                const contentWidth = pool.clientWidth - padL - padR;
+                const itemWidth = 52; // .omikuji-stick の width
+                const gap = 15;       // .omikuji-pool の gap
+                const cols = Math.floor((contentWidth + gap) / (itemWidth + gap));
+                return Math.max(1, cols);
+            };
+
+            const cols = calcColsPerRow();
+            const currentTotal = pool.children.length;
+            const desiredTotal = currentTotal + count;
+            // 列数の倍数に切り上げ（最低でも count 枚は追加されることが保証される）
+            const targetTotal = Math.ceil(desiredTotal / cols) * cols;
+            const actualAddCount = targetTotal - currentTotal;
+
+            for(let i=0; i<actualAddCount; i++) {
                 const stick = document.createElement('div');
                 stick.className = 'omikuji-stick';
                 
@@ -16549,19 +16570,11 @@ async function fetchHistoryStats() {
                     <div class="stick-text">おみくじ</div>
                 `;
                 
-                // ランダムな傾き (±6度程度で自然に)
-                const rot = Math.random() * 12 - 6; 
+                // ※ 以前はランダムな傾きを付けていたが、角ばった札のデザインに合わせて
+                // 角度は0°（傾けない）に統一した。これによりtransform由来の
+                // 二重アニメーション対策コードも不要になったため削除している。
                 
-                // 回転を「瞬時に」適用（transition:none → 適用 → reflow → 元に戻す）
-                // これをしないと .omikuji-stick の transition:transform により
-                // 0度→指定角度への回転トランジションが走ってしまい、
-                // fadeInStickMargin（フェード＋せり上がり）と二重に動いて見える不具合になる
-                stick.style.transition = 'none';
-                stick.style.transform = `rotate(${rot}deg)`;
-                void stick.offsetWidth; // 強制リフローでtransition無効を確定させる
-                stick.style.transition = ''; // CSS側のtransition定義（ホバー用）を復帰
-                
-                // アニメーション適用 (margin-topを操作するものに変更したため、transform: rotate が消えない)
+                // アニメーション適用
                 stick.style.animation = `fadeInStickMargin 0.6s ease-out forwards ${i * 0.03}s`;
                 
                 stick.onclick = function() {
@@ -18146,7 +18159,9 @@ async function logout() {
         "ワイヤレスイヤホン", "モバイルバッテリー", "スマホケース", "タンブラー", "充電ケーブル", "ステッカー",
         "ヘアゴム", "リップクリーム", "ハンドクリーム", "ノート", "付箋", "シャープペン",
         "キーホルダー", "バッジ", "ぬいぐるみ", "ヘッドホン", "スニーカー", "リュック",
-        "折りたたみ傘", "エコバッグ", "推し活グッズ", "サブスクの新作", "アロマスプレー", "マスク", "目薬"
+        "折りたたみ傘", "エコバッグ", "推し活グッズ", "スマートウォッチ", "アロマスプレー", "マスク", "目薬",
+        "マッサージガン", "ハンディファン", "防水スピーカー", "御朱印帳", "ヘアアイロン", "腕時計",
+        "ガーデニンググッズ", "ペット用品", "会員カード", "スクラッチカード", "トラベルノート", "泥パック洗顔"
     ];
 
     const zodiacColorsList = [
