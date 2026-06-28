@@ -3595,13 +3595,44 @@
         .bento-news  { grid-column: span 4; grid-row: span 2; }
         .bento-col   { grid-column: span 4; grid-row: span 2; }
 
-        /* カウンター小窓 */
+        /* カウンター小窓 (モダン刷新: 上段アイコン行＋下段メタ情報フッターの縦積み構成) */
         .bento-mini {
             grid-column: span 6;
+            display: flex;
+            flex-direction: column;
+            gap: 14px;
+        }
+        .counter-mini-top {
             display: flex;
             flex-direction: row;
             align-items: center;
             gap: 15px;
+        }
+        .counter-live-dot {
+            display: inline-block;
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            background: #4ade80;
+            box-shadow: 0 0 6px #4ade80;
+            margin-right: 5px;
+            animation: pulseLight 1.6s ease-in-out infinite;
+        }
+        .counter-meta-footer {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-between;
+            align-items: center;
+            gap: 6px 14px;
+            font-size: 0.65rem;
+            letter-spacing: 0.02em;
+            color: rgba(255,255,255,0.42);
+            border-top: 1px solid rgba(255,255,255,0.08);
+            padding-top: 10px;
+        }
+        .counter-meta-footer i {
+            margin-right: 3px;
+            opacity: 0.85;
         }
 
         /* --- モバイル対応（1カラムにする） --- */
@@ -6361,6 +6392,10 @@ body.sidebar-collapsed.sidebar-pinned #sidebar .nav-group-title {
                     html:not(.dark) #view-home .bento-mini .text-white {
                         color: var(--text-main) !important;
                     }
+                    html:not(.dark) #view-home .counter-meta-footer {
+                        color: var(--text-sub) !important;
+                        border-top-color: var(--card-border) !important;
+                    }
 
                     /* ---- ホーム: クイックアクセス・お知らせ (bg-zinc-950) ---- */
                     html:not(.dark) #view-home .bento-card.bg-zinc-950 {
@@ -6995,24 +7030,36 @@ body.sidebar-collapsed.sidebar-pinned #sidebar .nav-group-title {
                     </div>
                 </div>
 
-                <!-- 2. カウンター (ミニカード) - ダークテーマかつアクセントライン＆立体カラーアイコン仕様 -->
+                <!-- 2. カウンター (ミニカード) - モダン刷新版：ライブ更新時刻・最終リセット日表示付き -->
                 <div class="bento-card bento-mini bg-gradient-to-br from-zinc-950 to-black text-white border-l-4 border-red-600 border-t-0 border-r-0 border-b-0" style="grid-column: span 6;">
-                    <div class="w-12 h-12 rounded-full bg-gradient-to-br from-red-600 to-red-800 flex items-center justify-center text-white shadow-md shadow-red-950/50">
-                        <i class="bi bi-people-fill text-2xl"></i>
+                    <div class="counter-mini-top">
+                        <div class="w-12 h-12 rounded-full bg-gradient-to-br from-red-600 to-red-800 flex items-center justify-center text-white shadow-md shadow-red-950/50 flex-shrink-0">
+                            <i class="bi bi-people-fill text-2xl"></i>
+                        </div>
+                        <div>
+                            <p class="text-xs text-zinc-400 font-bold">累計参拝者数</p>
+                            <p class="text-2xl font-black text-white" id="worshipper-counter">---</p>
+                        </div>
                     </div>
-                    <div>
-                        <p class="text-xs text-zinc-400 font-bold">累計参拝者数</p>
-                        <p class="text-2xl font-black text-white" id="worshipper-counter">---</p>
+                    <div class="counter-meta-footer">
+                        <span><span class="counter-live-dot"></span>更新：<span class="counter-update-time">--:--:--</span></span>
+                        <span><i class="bi bi-arrow-counterclockwise"></i>最終リセット：2026/1/25</span>
                     </div>
                 </div>
 
                 <div class="bento-card bento-mini bg-gradient-to-br from-zinc-950 to-black text-white border-l-4 border-yellow-600 border-t-0 border-r-0 border-b-0" style="grid-column: span 6;">
-                    <div class="w-12 h-12 rounded-full bg-gradient-to-br from-yellow-500 to-amber-600 flex items-center justify-center text-white shadow-md shadow-amber-950/50">
-                        <i class="bi bi-layers-fill text-2xl"></i>
+                    <div class="counter-mini-top">
+                        <div class="w-12 h-12 rounded-full bg-gradient-to-br from-yellow-500 to-amber-600 flex items-center justify-center text-white shadow-md shadow-amber-950/50 flex-shrink-0">
+                            <i class="bi bi-layers-fill text-2xl"></i>
+                        </div>
+                        <div>
+                            <p class="text-xs text-zinc-400 font-bold">おみくじ発行総数</p>
+                            <p class="text-2xl font-black text-white" id="live-counter">---</p>
+                        </div>
                     </div>
-                    <div>
-                        <p class="text-xs text-zinc-400 font-bold">おみくじ発行総数</p>
-                        <p class="text-2xl font-black text-white" id="live-counter">---</p>
+                    <div class="counter-meta-footer">
+                        <span><span class="counter-live-dot"></span>更新：<span class="counter-update-time">--:--:--</span></span>
+                        <span><i class="bi bi-arrow-counterclockwise"></i>最終リセット：2026/1/25</span>
                     </div>
                 </div>
 
@@ -8169,12 +8216,16 @@ body.sidebar-collapsed.sidebar-pinned #sidebar .nav-group-title {
 
         <!-- 2. 全体の傾向 (詳細) -->
         <div class="bento-card mb-5">
-            <div class="flex justify-between items-center mb-4" style="border-bottom: 1px solid var(--card-border); padding-bottom: 14px;">
+            <div class="flex justify-between items-center mb-4 flex-wrap gap-2" style="border-bottom: 1px solid var(--card-border); padding-bottom: 14px;">
                 <h3 class="font-bold flex items-center gap-2 text-sm">
                     <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" fill="#b91c1c" viewBox="0 0 16 16"><path d="M4 11H2v3h2zm5-4H7v7h2zm5-5v12h-2V2zm-2-1a1 1 0 0 0-1 1v12a1 1 0 0 0 1 1h2a1 1 0 0 0 1-1V2a1 1 0 0 0-1-1zM6 7a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v7a1 1 0 0 1-1 1H7a1 1 0 0 1-1-1zm-5 4a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v3a1 1 0 0 1-1 1H2a1 1 0 0 1-1-1z"/></svg>
                     全体の傾向
                     <span class="text-xs font-normal" style="color: var(--text-sub);">詳細</span>
                 </h3>
+                <div class="flex items-center gap-3 flex-wrap" style="font-size: 0.65rem; color: var(--text-sub);">
+                    <span><span class="counter-live-dot"></span>更新：<span id="stats-update-time">--:--:--</span></span>
+                    <span><i class="bi bi-arrow-counterclockwise" style="margin-right:3px;opacity:0.85;"></i>最終リセット：2026/1/25</span>
+                </div>
             </div>
             <div class="overflow-y-auto pr-1 custom-scrollbar" style="max-height: 240px;">
                 <div class="space-y-2.5 text-xs">
@@ -20808,6 +20859,10 @@ async function renderSettingsDashboard() {
                 if(el) el.textContent = countVal.toLocaleString() + "本";
                 if(uEl) uEl.textContent = userVal.toLocaleString() + "名";
                 if(historyGlobalEl) historyGlobalEl.textContent = countVal.toLocaleString() + "本";
+
+                // ★追加: 「最終更新」表示を取得成功時刻で更新
+                const nowStr = new Date().toLocaleTimeString('ja-JP', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+                document.querySelectorAll('.counter-update-time').forEach(t => t.textContent = nowStr);
 
                 // ★追加: チャートの更新
                 LiveChart.update(countVal, userVal);
