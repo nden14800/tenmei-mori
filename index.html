@@ -2879,6 +2879,14 @@
     border-radius: 24px;
 }
 
+/* 機能比較表カード（未ログイン / ログイン会員） */
+.auth-compare-card {
+    background-color: var(--card-bg);
+    border: 1px solid var(--card-border);
+    border-radius: 20px;
+    transition: all 0.3s;
+}
+
 /* 認証コード入力欄 (分割ボックス方式 / OTP UI) */
 .auth-code-otp-group {
     display: flex;
@@ -7919,6 +7927,68 @@ body.sidebar-collapsed.sidebar-pinned #sidebar .nav-group-title {
                             アカウントを作成すると、「おみくじの轍（履歴）」の永続保存や、「TENMEI Labs」の実験機能が利用可能になります。
                         </p>
                     </div>
+                </div>
+            </div>
+
+            <!-- 機能比較表（未ログイン / ログイン会員） -->
+            <div id="auth-feature-compare" class="auth-compare-card mt-6" style="padding: 1.5rem;">
+                <h3 class="font-bold text-base mb-1 flex items-center gap-2">
+                    <i class="bi bi-list-check" style="color: var(--accent-red);"></i>
+                    ログインすると、できることが増えます
+                </h3>
+                <p class="text-xs text-gray-500 mb-4">おみくじ・占いは、どなたでもすぐにお楽しみいただけます。</p>
+                <div class="overflow-x-auto rounded-xl border border-gray-200 dark:border-zinc-700">
+                    <table class="comparison-table w-full text-left border-collapse" style="margin: 0; font-size: 0.85rem;">
+                        <thead>
+                            <tr>
+                                <th style="text-align: left; min-width: 140px;">機能</th>
+                                <th>未ログイン</th>
+                                <th class="highlight">参拝証あり</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td style="text-align: left;">おみくじを引く</td>
+                                <td><i class="bi bi-check-circle-fill" style="color:#16a34a;"></i></td>
+                                <td class="highlight"><i class="bi bi-check-circle-fill" style="color:#16a34a;"></i></td>
+                            </tr>
+                            <tr>
+                                <td style="text-align: left;">12星座占い・全国の運気</td>
+                                <td><i class="bi bi-check-circle-fill" style="color:#16a34a;"></i></td>
+                                <td class="highlight"><i class="bi bi-check-circle-fill" style="color:#16a34a;"></i></td>
+                            </tr>
+                            <tr>
+                                <td style="text-align: left;">デジタル御守の授与</td>
+                                <td><i class="bi bi-check-circle-fill" style="color:#16a34a;"></i></td>
+                                <td class="highlight"><i class="bi bi-check-circle-fill" style="color:#16a34a;"></i></td>
+                            </tr>
+                            <tr>
+                                <td style="text-align: left;">社務所だより・神籤草子の閲覧</td>
+                                <td><i class="bi bi-check-circle-fill" style="color:#16a34a;"></i></td>
+                                <td class="highlight"><i class="bi bi-check-circle-fill" style="color:#16a34a;"></i></td>
+                            </tr>
+                            <tr>
+                                <td style="text-align: left;">おみくじの轍（参拝履歴の保存・検索）</td>
+                                <td><i class="bi bi-dash-circle" style="color:#999;"></i></td>
+                                <td class="highlight"><i class="bi bi-check-circle-fill" style="color:#16a34a;"></i></td>
+                            </tr>
+                            <tr>
+                                <td style="text-align: left;">参拝の記録（個人統計・運勢グラフ）</td>
+                                <td><i class="bi bi-dash-circle" style="color:#999;"></i></td>
+                                <td class="highlight"><i class="bi bi-check-circle-fill" style="color:#16a34a;"></i></td>
+                            </tr>
+                            <tr>
+                                <td style="text-align: left;">お気に入り登録（5件まで）</td>
+                                <td><i class="bi bi-dash-circle" style="color:#999;"></i></td>
+                                <td class="highlight"><i class="bi bi-check-circle-fill" style="color:#16a34a;"></i></td>
+                            </tr>
+                            <tr>
+                                <td style="text-align: left;">TENMEI Labs（実験機能）</td>
+                                <td><i class="bi bi-dash-circle" style="color:#999;"></i></td>
+                                <td class="highlight"><i class="bi bi-check-circle-fill" style="color:#16a34a;"></i></td>
+                            </tr>
+                        </tbody>
+                    </table>
                 </div>
             </div>
 
@@ -18038,6 +18108,8 @@ async function disconnectGoogleAccount() {
 // 1. 最初の選択 (ログイン or 登録)
 function startAuthFlow(mode) {
     document.getElementById('auth-selection').classList.add('hidden');
+    const compareEl = document.getElementById('auth-feature-compare');
+    if (compareEl) compareEl.classList.add('hidden');
     document.getElementById('auth-step-1').classList.remove('hidden');
     
     currentState.authMode = mode;
@@ -18064,6 +18136,8 @@ function startAuthFlow(mode) {
 function backToAuthSelection() {
     document.getElementById('auth-step-1').classList.add('hidden');
     document.getElementById('auth-selection').classList.remove('hidden');
+    const compareEl = document.getElementById('auth-feature-compare');
+    if (compareEl) compareEl.classList.remove('hidden');
 }
 
 // 3. 入力画面に戻る (コード入力から戻る時)
