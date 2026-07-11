@@ -4005,6 +4005,121 @@
             font-size: 0.9rem;
         }
 
+        /* モダンページネーション */
+        .modern-pagination {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 14px;
+            width: 100%;
+        }
+        .modern-pagination-controls {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-wrap: wrap;
+            gap: 6px;
+        }
+        .modern-pagination-btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 40px;
+            height: 40px;
+            border-radius: 999px;
+            border: 1px solid var(--card-border);
+            background: var(--card-bg);
+            color: var(--text-main);
+            font-size: 1rem;
+            cursor: pointer;
+            transition: background 0.2s ease, border-color 0.2s ease, transform 0.15s ease, box-shadow 0.2s ease;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.08);
+        }
+        .modern-pagination-btn:hover:not(:disabled) {
+            border-color: var(--accent-gold);
+            color: var(--accent-gold);
+            transform: translateY(-1px);
+            box-shadow: 0 3px 8px rgba(0,0,0,0.12);
+        }
+        .modern-pagination-btn:active:not(:disabled) {
+            transform: translateY(0);
+        }
+        .modern-pagination-btn:disabled {
+            opacity: 0.32;
+            cursor: not-allowed;
+            box-shadow: none;
+        }
+        .modern-pagination-current {
+            display: inline-flex;
+            align-items: baseline;
+            gap: 4px;
+            margin: 0 10px;
+            padding: 8px 18px;
+            border-radius: 999px;
+            background: var(--input-bg);
+            border: 1px solid var(--card-border);
+            font-family: monospace;
+            white-space: nowrap;
+        }
+        .modern-pagination-current-num {
+            font-size: 1.15rem;
+            font-weight: 800;
+            color: var(--accent-gold);
+        }
+        .modern-pagination-total {
+            font-size: 0.85rem;
+            color: var(--text-sub);
+        }
+        .modern-pagination-jump {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 0.82rem;
+            color: var(--text-sub);
+            background: var(--card-bg);
+            border: 1px solid var(--card-border);
+            border-radius: 999px;
+            padding: 6px 8px 6px 16px;
+        }
+        .modern-pagination-jump input[type="number"] {
+            width: 52px;
+            text-align: center;
+            padding: 5px 2px;
+            border-radius: 999px;
+            border: 1px solid var(--card-border);
+            background: var(--input-bg);
+            color: var(--text-main);
+            font-size: 0.85rem;
+            -moz-appearance: textfield;
+        }
+        .modern-pagination-jump input[type="number"]::-webkit-outer-spin-button,
+        .modern-pagination-jump input[type="number"]::-webkit-inner-spin-button {
+            -webkit-appearance: none;
+            margin: 0;
+        }
+        .modern-pagination-jump-btn {
+            padding: 6px 14px;
+            border-radius: 999px;
+            border: none;
+            background: var(--accent-gold);
+            color: #1a1408;
+            font-weight: 700;
+            font-size: 0.82rem;
+            cursor: pointer;
+            transition: filter 0.2s ease, transform 0.15s ease;
+        }
+        .modern-pagination-jump-btn:hover {
+            filter: brightness(1.08);
+            transform: translateY(-1px);
+        }
+        /* シンプル版（前へ・次へのみ：参拝者の間、フォロー一覧など） */
+        .modern-pagination-simple {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+
         /* 比較表のスタイル */
         .comparison-table {
             width: 100%;
@@ -14894,57 +15009,69 @@ let historyPageState = {
         return { data: slicedData, totalPages, currentPage: state.page, totalItems };
     }
 
-    // 共通: ページネーションボタンのHTML生成 (最初・最後・ジャンプ機能付き)
-function createPaginationHTML(type, current, total) {
-    if (total <= 1) return ''; 
+    // 共通: ページネーションボタンのHTML生成 (最初・最後・ジャンプ機能付き / モダンデザイン)
+    // idPrefix: id衝突を避けるための識別子（jump-input要素のid等に使用）
+    // gotoTemplate: ページ遷移コードのテンプレート文字列。"{P}" の部分が実際のページ番号（またはJS式）に置換される
+    //   例: "changePage('news', {P})" / "loadHistory({P})"
+    function createPaginationHTML(idPrefix, current, total, gotoTemplate) {
+        if (total <= 1) return '';
+        const goto = (p) => gotoTemplate.replace('{P}', p);
+        const jumpId = `${idPrefix}-jump-input`;
 
-    let html = '<div class="flex flex-col items-center gap-4 w-full">';
-    html += '<div class="flex items-center justify-center flex-wrap gap-2">';
-    
-    // 最初へ
-    html += `<button onclick="changePage('${type}', 1)" 
-             class="px-4 py-2 rounded border bg-white dark:bg-zinc-800 hover:bg-gray-100 dark:hover:bg-zinc-700 disabled:opacity-50 transition"
-             ${current === 1 ? 'disabled' : ''}>
-             <i class="bi bi-chevron-double-left"></i> 最初へ</button>`;
+        let html = '<div class="modern-pagination">';
+        html += '<div class="modern-pagination-controls">';
 
-    // 前へ
-    html += `<button onclick="changePage('${type}', ${current - 1})" 
-             class="px-4 py-2 rounded border bg-white dark:bg-zinc-800 hover:bg-gray-100 dark:hover:bg-zinc-700 disabled:opacity-50 transition"
-             ${current === 1 ? 'disabled' : ''}>
-             <i class="bi bi-chevron-left"></i> 前へ</button>`;
+        html += `<button onclick="${goto(1)}" class="modern-pagination-btn" title="最初へ"
+                 ${current === 1 ? 'disabled' : ''}><i class="bi bi-chevron-bar-left"></i></button>`;
 
-    // ページ番号
-    html += `<span class="font-bold font-mono mx-4">Page ${current} / ${total}</span>`;
+        html += `<button onclick="${goto(current - 1)}" class="modern-pagination-btn" title="前へ"
+                 ${current === 1 ? 'disabled' : ''}><i class="bi bi-chevron-left"></i></button>`;
 
-    // 次へ
-    html += `<button onclick="changePage('${type}', ${current + 1})" 
-             class="px-4 py-2 rounded border bg-white dark:bg-zinc-800 hover:bg-gray-100 dark:hover:bg-zinc-700 disabled:opacity-50 transition"
-             ${current === total ? 'disabled' : ''}>
-             次へ <i class="bi bi-chevron-right"></i></button>`;
+        html += `<span class="modern-pagination-current">
+                    <span class="modern-pagination-current-num">${current}</span>
+                    <span class="modern-pagination-total">/ ${total}</span>
+                 </span>`;
 
-    // 最後へ
-    html += `<button onclick="changePage('${type}', ${total})" 
-             class="px-4 py-2 rounded border bg-white dark:bg-zinc-800 hover:bg-gray-100 dark:hover:bg-zinc-700 disabled:opacity-50 transition"
-             ${current === total ? 'disabled' : ''}>
-             最後へ <i class="bi bi-chevron-double-right"></i></button>`;
+        html += `<button onclick="${goto(current + 1)}" class="modern-pagination-btn" title="次へ"
+                 ${current === total ? 'disabled' : ''}><i class="bi bi-chevron-right"></i></button>`;
 
-    html += '</div>';
+        html += `<button onclick="${goto(total)}" class="modern-pagination-btn" title="最後へ"
+                 ${current === total ? 'disabled' : ''}><i class="bi bi-chevron-bar-right"></i></button>`;
 
-    // ページジャンプ入力欄
-    html += `
-        <div class="flex items-center gap-2 text-sm themed-text-sub">
-            <input type="number" id="${type}-jump-input" min="1" max="${total}" value="${current}" 
-                   class="w-16 p-1 text-center border rounded themed-input appearance-none" 
-                   onkeydown="if(event.key==='Enter') changePage('${type}', parseInt(this.value))">
-            <span>/ ${total} ページへ</span>
-            <button onclick="changePage('${type}', parseInt(document.getElementById('${type}-jump-input').value))"
-                    class="px-3 py-1 rounded bg-gray-200 dark:bg-gray-700 hover:opacity-80 transition">移動</button>
-        </div>
-    `;
+        html += '</div>';
 
-    html += '</div>';
-    return html;
-}
+        // ページジャンプ入力欄
+        html += `
+            <div class="modern-pagination-jump">
+                <span>ページ指定</span>
+                <input type="number" id="${jumpId}" min="1" max="${total}" value="${current}"
+                       onkeydown="if(event.key==='Enter'){ ${goto('parseInt(this.value)')} }">
+                <button onclick="${goto(`parseInt(document.getElementById('${jumpId}').value)`)}"
+                        class="modern-pagination-jump-btn">移動</button>
+            </div>
+        `;
+
+        html += '</div>';
+        return html;
+    }
+
+    // シンプル版（前へ・次へのみ：参拝者の間・フォロワー一覧など）
+    function createSimplePaginationHTML(current, total, gotoTemplate) {
+        if (total <= 1) return '';
+        const goto = (p) => gotoTemplate.replace('{P}', p);
+        return `
+            <div class="modern-pagination-simple">
+                <button onclick="${goto(current - 1)}" class="modern-pagination-btn" title="前へ"
+                        ${current === 1 ? 'disabled' : ''}><i class="bi bi-chevron-left"></i></button>
+                <span class="modern-pagination-current">
+                    <span class="modern-pagination-current-num">${current}</span>
+                    <span class="modern-pagination-total">/ ${total}</span>
+                </span>
+                <button onclick="${goto(current + 1)}" class="modern-pagination-btn" title="次へ"
+                        ${current === total ? 'disabled' : ''}><i class="bi bi-chevron-right"></i></button>
+            </div>
+        `;
+    }
 
     // ==========================================
     //  描画ロジック (一覧・ホーム・詳細)
@@ -15070,7 +15197,7 @@ function createPaginationHTML(type, current, total) {
             `;
         }).join('');
 
-        pagination.innerHTML = createPaginationHTML('news', currentPage, totalPages);
+        pagination.innerHTML = createPaginationHTML('news', currentPage, totalPages, "changePage('news', {P})");
     };
 
         
@@ -15126,7 +15253,7 @@ window.renderFullColumnView = function() {
         `;
     }).join('');
 
-    pagination.innerHTML = createPaginationHTML('column', currentPage, totalPages);
+    pagination.innerHTML = createPaginationHTML('column', currentPage, totalPages, "changePage('column', {P})");
 };
 
 
@@ -19442,7 +19569,7 @@ if(viewId === 'lab') {
         if (myData) { resultDiv.innerHTML = createCardHTML(myData); resultDiv.classList.remove('hidden'); }
     } 
 
-  // サーバーサイドページネーション用のボタン描画
+  // サーバーサイドページネーション用のボタン描画（共通のモダンUI関数に委譲）
 function renderServerPagination(currentPage, totalItems, perPage) {
     const paginationEl = document.getElementById('history-pagination');
     const totalPages = Math.ceil(totalItems / perPage) || 1;
@@ -19452,52 +19579,7 @@ function renderServerPagination(currentPage, totalItems, perPage) {
         return;
     }
 
-    let html = '<div class="flex flex-col items-center gap-4">';
-    html += '<div class="flex items-center justify-center flex-wrap gap-2">';
-    
-    // 最初へボタン
-    html += `<button onclick="loadHistory(1)" 
-             class="px-4 py-2 rounded border bg-white dark:bg-zinc-800 hover:bg-gray-100 dark:hover:bg-zinc-700 disabled:opacity-50 transition"
-             ${currentPage === 1 ? 'disabled' : ''}>
-             <i class="bi bi-chevron-double-left"></i> 最初へ</button>`;
-
-    // 前へボタン
-    html += `<button onclick="loadHistory(${currentPage - 1})" 
-             class="px-4 py-2 rounded border bg-white dark:bg-zinc-800 hover:bg-gray-100 dark:hover:bg-zinc-700 disabled:opacity-50 transition"
-             ${currentPage === 1 ? 'disabled' : ''}>
-             <i class="bi bi-chevron-left"></i> 前へ</button>`;
-
-    // ページ番号
-    html += `<span class="font-bold font-mono mx-4">Page ${currentPage} / ${totalPages}</span>`;
-
-    // 次へボタン
-    html += `<button onclick="loadHistory(${currentPage + 1})" 
-             class="px-4 py-2 rounded border bg-white dark:bg-zinc-800 hover:bg-gray-100 dark:hover:bg-zinc-700 disabled:opacity-50 transition"
-             ${currentPage === totalPages ? 'disabled' : ''}>
-             次へ <i class="bi bi-chevron-right"></i></button>`;
-
-    // 最後へボタン
-    html += `<button onclick="loadHistory(${totalPages})" 
-             class="px-4 py-2 rounded border bg-white dark:bg-zinc-800 hover:bg-gray-100 dark:hover:bg-zinc-700 disabled:opacity-50 transition"
-             ${currentPage === totalPages ? 'disabled' : ''}>
-             最後へ <i class="bi bi-chevron-double-right"></i></button>`;
-
-    html += '</div>';
-
-    // ページジャンプ入力欄
-    html += `
-        <div class="flex items-center gap-2 text-sm themed-text-sub">
-            <input type="number" id="history-jump-input" min="1" max="${totalPages}" value="${currentPage}" 
-                   class="w-16 p-1 text-center border rounded themed-input appearance-none" 
-                   onkeydown="if(event.key==='Enter') loadHistory(parseInt(this.value))">
-            <span>/ ${totalPages} ページへ</span>
-            <button onclick="loadHistory(parseInt(document.getElementById('history-jump-input').value))"
-                    class="px-3 py-1 rounded bg-gray-200 dark:bg-gray-700 hover:opacity-80 transition">移動</button>
-        </div>
-    `;
-
-    html += '</div>';
-    paginationEl.innerHTML = html;
+    paginationEl.innerHTML = createPaginationHTML('history', currentPage, totalPages, 'loadHistory({P})');
 }
 
 // ページ切り替えハンドラ
@@ -20227,16 +20309,10 @@ async function renderSettingsDashboard() {
                 </div>
             `).join('');
             
-            // ページネーション（既存の共通関数を使用するために、カスタムボタンを生成）
+            // ページネーション（共通のモダンUI・シンプル版を使用）
             if (data.total > data.perPage) {
                 const totalPages = Math.ceil(data.total / data.perPage);
-                pagingEl.innerHTML = `
-                    <div class="flex justify-center gap-2 items-center">
-                        <button onclick="changeFollowListPage(${data.page - 1})" class="px-3 py-1 rounded border disabled:opacity-50" ${data.page === 1 ? 'disabled' : ''}>前へ</button>
-                        <span class="text-sm font-bold">${data.page} / ${totalPages}</span>
-                        <button onclick="changeFollowListPage(${data.page + 1})" class="px-3 py-1 rounded border disabled:opacity-50" ${data.page === totalPages ? 'disabled' : ''}>次へ</button>
-                    </div>
-                `;
+                pagingEl.innerHTML = createSimplePaginationHTML(data.page, totalPages, 'changeFollowListPage({P})');
             } else {
                 pagingEl.innerHTML = '';
             }
@@ -20766,14 +20842,10 @@ async function renderSettingsDashboard() {
                 `;
             }).join('');
 
-            // ページネーション（既存の共通関数 createPaginationHTML を流用可能ならするが、ここでは専用のを簡易実装）
+            // ページネーション（共通のモダンUI・シンプル版を使用）
             if(data.total > data.perPage) {
                 const totalPages = Math.ceil(data.total / data.perPage);
-                pagination.innerHTML = `
-                    <button onclick="BoardSystem.load(${data.page - 1})" class="px-3 py-1 border rounded disabled:opacity-50" ${data.page === 1 ? 'disabled' : ''}>前へ</button>
-                    <span class="mx-2 font-bold">${data.page} / ${totalPages}</span>
-                    <button onclick="BoardSystem.load(${data.page + 1})" class="px-3 py-1 border rounded disabled:opacity-50" ${data.page === totalPages ? 'disabled' : ''}>次へ</button>
-                `;
+                pagination.innerHTML = createSimplePaginationHTML(data.page, totalPages, 'BoardSystem.load({P})');
             } else {
                 pagination.innerHTML = "";
             }
