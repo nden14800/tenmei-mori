@@ -15955,12 +15955,19 @@ window.onload = async function() {
     const googleLogin = _initParams.get('google_login');
     const googleConnect = _initParams.get('google_connect');
     const googleError = _initParams.get('google_error');
+    // メール内のワンクリックログインリンク（マジックリンク）から戻ってきた場合の処理
+    const magicLogin = _initParams.get('magic_login');
+    const magicReason = _initParams.get('reason');
     try {
         if (googleLogin === 'success') {
             const _t = _initParams.get('token');
             if (_t) localStorage.setItem('auth_token', _t);
         }
-        if (googleLogin || googleConnect || googleError) {
+        if (magicLogin === 'success') {
+            const _t = _initParams.get('token');
+            if (_t) localStorage.setItem('auth_token', _t);
+        }
+        if (googleLogin || googleConnect || googleError || magicLogin) {
             window.history.replaceState({}, '', window.location.pathname);
         }
     } catch(e) { console.warn('Google token init error:', e); }
@@ -16009,6 +16016,20 @@ window.onload = async function() {
         }
     }
     // ▲▲▲ Googleログイン コールバック処理ここまで ▲▲▲
+
+    // ▼▼▼ メールのワンクリックログイン（マジックリンク）コールバック処理 ▼▼▼
+    if (magicLogin === 'success') {
+        showToast('メールのリンクからログインしました', 'success');
+    } else if (magicLogin === 'error') {
+        if (magicReason === 'expired') {
+            showToast('リンクの有効期限が切れています。もう一度ログインをお試しください', 'error');
+        } else if (magicReason === 'user_not_found') {
+            showToast('該当するユーザーが見つかりませんでした', 'error');
+        } else {
+            showToast('このリンクは無効です（使用済みか、期限切れの可能性があります）', 'error');
+        }
+    }
+    // ▲▲▲ マジックリンク コールバック処理ここまで ▲▲▲
 
     startLiveCounter();
     fetchHistoryStats();
@@ -21255,6 +21276,14 @@ function renderTurnstileForMode(mode) {
                 const boxes = getOtpBoxes();
                 if (boxes[0]) boxes[0].focus();
                 startAuthCodeTimer();
+                // ログイン時のみメールにワンクリックログイン用のリンクも同封されるため案内文を切り替える
+                // （新規登録時はパスワードが未確定のため、リンクは発行されず通常の案内のまま）
+                const descEl = document.getElementById('auth-code-desc');
+                if (descEl) {
+                    descEl.innerHTML = (mode === 'login')
+                        ? '送信されたメールに記載されている<br>6桁の数字を入力するか、メール内の<b>「ワンクリックでログイン」</b>ボタンからもログインできます。'
+                        : '送信されたメールに記載されている<br>6桁の数字を入力してください。';
+                }
                 showToast("認証コードを送信しました", "success");
             } else {
                 // ▼ alert置き換え
