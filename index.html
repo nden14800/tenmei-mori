@@ -8446,7 +8446,7 @@ body.sidebar-collapsed.sidebar-pinned #sidebar .nav-group-title {
                             <span class="text-4xl text-red-400"><i class="bi bi-info-circle-fill"></i></span>
                             <span class="text-white">当サイトについて</span>
                         </h2>
-                        <p class="text-sm text-zinc-300 leading-relaxed max-w-xl" style="font-family: 'Shippori Mincho', serif;">制定: 2026/01/02 ・ 改定: 2026/06/20 (第10版) ・ 運営: nden148</p>
+                        <p class="text-sm text-zinc-300 leading-relaxed max-w-xl" style="font-family: 'Shippori Mincho', serif;">制定: 2026/01/02 ・ 改定: 2026/07/11 (第11版) ・ 運営: nden148</p>
                     </div>
                     <div class="flex-shrink-0 text-center flex flex-col items-center gap-2">
                         <div class="w-20 h-20 rounded-2xl flex items-center justify-center" style="background: linear-gradient(135deg, #7f1d1d, #b91c1c); box-shadow: 0 0 24px rgba(239,68,68,0.3);">
@@ -8752,7 +8752,7 @@ body.sidebar-collapsed.sidebar-pinned #sidebar .nav-group-title {
                                     </tr>
                                     <tr class="hover:bg-gray-50 dark:hover:bg-zinc-800/50">
                                         <td class="p-3 font-bold text-gray-600 dark:text-gray-400">パスワード</td>
-                                        <td class="p-3 bg-red-50/50 dark:bg-red-900/10 border-l-4 border-l-red-500">SHA-256ハッシュ</td>
+                                        <td class="p-3 bg-red-50/50 dark:bg-red-900/10 border-l-4 border-l-red-500">PBKDF2 (ストレッチング済)</td>
                                         <td class="p-3">-</td>
                                         <td class="p-3">-</td>
                                         <td class="p-3">暗号化</td>
@@ -8881,7 +8881,7 @@ body.sidebar-collapsed.sidebar-pinned #sidebar .nav-group-title {
 
                             <div class="pl-4 border-l-2 border-gray-200 dark:border-gray-700">
                                 <h4 class="font-bold text-base mb-2 text-gray-900 dark:text-white">第2条（アカウント管理）</h4>
-                                <p>1. アカウントのパスワードはSHA-256でハッシュ化され、運営者も閲覧不可能な状態で保存されます。パスワードの紛失時はアカウントの復旧ができません。<br>
+                                <p>1. アカウントのパスワードはPBKDF2（ストレッチング処理付きのハッシュ関数）により不可逆的に変換され、運営者も閲覧不可能な状態で保存されます。パスワードの紛失時はアカウントの復旧ができません。<br>
                                 2. 認証メールの送信にはGoogle Apps Scriptを使用しています。認証コードの有効期限は5分間です。</p>
                             </div>
 
@@ -9100,7 +9100,7 @@ body.sidebar-collapsed.sidebar-pinned #sidebar .nav-group-title {
                             <span class="text-4xl text-red-400"><i class="bi bi-shield-lock-fill"></i></span>
                             <span class="text-white">プライバシーポリシー</span>
                         </h2>
-                        <p class="text-sm text-zinc-300 leading-relaxed max-w-xl" style="font-family: 'Shippori Mincho', serif;">制定: 2026/01/02 ・ 改定: 2026/05/30 (第12版) ・ 運営: nden148</p>
+                        <p class="text-sm text-zinc-300 leading-relaxed max-w-xl" style="font-family: 'Shippori Mincho', serif;">制定: 2026/01/02 ・ 改定: 2026/07/11 (第13版) ・ 運営: nden148</p>
                     </div>
                     <div class="flex-shrink-0 text-center flex flex-col items-center gap-2">
                         <div class="w-20 h-20 rounded-2xl flex items-center justify-center" style="background: linear-gradient(135deg, #7f1d1d, #b91c1c); box-shadow: 0 0 24px rgba(239,68,68,0.3);">
@@ -9196,7 +9196,7 @@ body.sidebar-collapsed.sidebar-pinned #sidebar .nav-group-title {
                             <p class="mb-4">当サイトは、取り扱う個人情報の漏洩、滅失またはき損の防止、その他の個人情報の安全管理のために、必要かつ適切な措置を講じています。</p>
                             <p class="mb-4">
                                 <strong>1. 技術的保護措置：</strong><br>
-                                当サイトは、通信経路における第三者の盗聴を防止するため、全ての通信に対してSSL/TLS（Transport Layer Security）暗号化技術を使用しています。また、ユーザーのパスワードについては、サーバー上で平文（そのままの状態）で保存することは一切なく、<strong>SHA-256アルゴリズムを用いて不可逆的なハッシュ値に変換</strong>した上でデータベースに格納しております。これにより、万が一データベースへの不正アクセスが発生した場合でも、運営者を含め第三者が元のパスワードを知ることは不可能な仕組みとなっております。
+                                当サイトは、通信経路における第三者の盗聴を防止するため、全ての通信に対してSSL/TLS（Transport Layer Security）暗号化技術を使用しています。また、ユーザーのパスワードについては、サーバー上で平文（そのままの状態）で保存することは一切なく、<strong>PBKDF2（Password-Based Key Derivation Function 2）による反復ストレッチング処理を施した上で不可逆的なハッシュ値に変換</strong>した上でデータベースに格納しております。単純な1回限りのハッシュ化と異なり、意図的に計算コストを高めることで、万が一データベースへの不正アクセスが発生した場合でも、総当たり攻撃による解読を困難にしています。これにより、運営者を含め第三者が元のパスワードを知ることは不可能な仕組みとなっております。
                             </p>
                             <p>
                                 <strong>2. インフラストラクチャの安全性：</strong><br>
