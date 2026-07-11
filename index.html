@@ -7301,6 +7301,75 @@ body.sidebar-collapsed.sidebar-pinned #sidebar .nav-group-title {
         </section>
 
         <!-- ビュー: おみくじ選択 (案内文更新版) -->
+        <!-- ビュー: おみくじを引く前の心構え -->
+        <section id="view-omikuji-mindset" class="view-section max-w-3xl mx-auto pb-20 px-4">
+
+            <!-- ヘッダーカード -->
+            <div class="bento-card howto-hero-card mb-6 relative overflow-hidden bg-gradient-to-br from-red-950 via-zinc-900 to-black border border-zinc-800 text-white" style="padding: 2rem;">
+                <div class="absolute top-0 right-0 w-72 h-72 opacity-15 pointer-events-none" style="background: radial-gradient(circle, #ef4444 0%, transparent 70%);"></div>
+                <div class="absolute bottom-0 left-0 w-48 h-48 opacity-10 pointer-events-none" style="background: radial-gradient(circle, #d4af37 0%, transparent 70%);"></div>
+                <div class="relative z-10 text-center">
+                    <p class="text-xs font-bold tracking-[0.3em] uppercase mb-2" style="color: var(--accent-gold);">BEFORE YOU DRAW</p>
+                    <h2 class="text-2xl md:text-3xl font-black mb-3" style="font-family: 'Zen Old Mincho', serif;">
+                        <span class="text-white">おみくじを引く前の心構え</span>
+                    </h2>
+                    <p class="text-sm text-zinc-300 leading-relaxed" style="font-family: 'Shippori Mincho', serif;">結果は、心の準備が整ってこそ意味を持ちます。<br>少しだけ、お時間をください。</p>
+                </div>
+            </div>
+
+            <!-- 4ステップ -->
+            <div class="space-y-4 mb-6">
+                <div class="bento-card p-0 overflow-hidden">
+                    <div class="p-5 flex items-center gap-4">
+                        <span class="flex items-center justify-center w-10 h-10 rounded-full bg-red-600 text-white text-sm font-black flex-shrink-0">01</span>
+                        <div>
+                            <h3 class="font-black text-base mb-1">心を鎮める</h3>
+                            <p class="text-sm text-gray-600 dark:text-gray-400 leading-relaxed">一呼吸おいて、心を静かに整えましょう。ゆっくりと息を吸い、ゆっくりと吐き出してください。</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="bento-card p-0 overflow-hidden">
+                    <div class="p-5 flex items-center gap-4">
+                        <span class="flex items-center justify-center w-10 h-10 rounded-full bg-red-600 text-white text-sm font-black flex-shrink-0">02</span>
+                        <div>
+                            <h3 class="font-black text-base mb-1">姿勢を正す</h3>
+                            <p class="text-sm text-gray-600 dark:text-gray-400 leading-relaxed">背筋を伸ばし、神域へ向き合う心持ちで臨みましょう。</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="bento-card p-0 overflow-hidden">
+                    <div class="p-5 flex items-center gap-4">
+                        <span class="flex items-center justify-center w-10 h-10 rounded-full bg-red-600 text-white text-sm font-black flex-shrink-0">03</span>
+                        <div>
+                            <h3 class="font-black text-base mb-1">願いを胸に</h3>
+                            <p class="text-sm text-gray-600 dark:text-gray-400 leading-relaxed">占いたいことを心の中で思い浮かべてください。特に浮かばない方は「今日の私への導きをください」と念じてみましょう。</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="bento-card p-0 overflow-hidden">
+                    <div class="p-5 flex items-center gap-4">
+                        <span class="flex items-center justify-center w-10 h-10 rounded-full bg-red-600 text-white text-sm font-black flex-shrink-0">04</span>
+                        <div>
+                            <h3 class="font-black text-base mb-1">参拝の準備</h3>
+                            <p class="text-sm text-gray-600 dark:text-gray-400 leading-relaxed">心の準備が整いました。それでは、天命の一枚をお選びください。</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- CTA -->
+            <div class="bento-card p-6 text-center">
+                <button onclick="proceedToDraw()" class="btn-shine-effect flex items-center justify-center gap-3 bg-[var(--accent-red)] text-white hover:bg-[#a01818] transition-all duration-300 py-4 px-8 rounded-2xl w-full max-w-md mx-auto transform hover:-translate-y-1 mb-4" style="border: 2px solid var(--accent-gold); box-shadow: 0 0 15px rgba(197, 160, 89, 0.45);">
+                    <i class="bi bi-box-seam-fill text-xl"></i>
+                    <span class="font-black tracking-wider" style="font-family: 'Zen Old Mincho', serif;">心を込めて、おみくじへ進む</span>
+                </button>
+                <label class="flex items-center justify-center gap-2 text-xs text-gray-500 dark:text-gray-400 cursor-pointer select-none">
+                    <input type="checkbox" id="mindset-skip-checkbox" class="rounded">
+                    次回から、この画面を表示しない
+                </label>
+            </div>
+        </section>
+
         <section id="view-draw" class="view-section relative min-h-screen w-full" style="overflow-y: auto !important;">
             
             <!-- 固定ヘッダーカード -->
@@ -16169,8 +16238,6 @@ window.onload = async function() {
         window.history.replaceState({}, '', url);
     }
 
-    BoardSystem.init();
-
     renderHomeLists();      
     renderFullNewsView();   
     renderFullColumnView();
@@ -16953,6 +17020,22 @@ async function fetchHistoryStats() {
         
         // --- おみくじロジック (画像風・敷き詰めレイアウト版) ---
         function startOmikuji() {
+            try {
+                if (localStorage.getItem('tenmei_mindset_skip') === '1') {
+                    showView('draw');
+                    return;
+                }
+            } catch(e) {}
+            showView('omikuji-mindset');
+        }
+
+        function proceedToDraw() {
+            try {
+                const cb = document.getElementById('mindset-skip-checkbox');
+                if (cb && cb.checked) {
+                    localStorage.setItem('tenmei_mindset_skip', '1');
+                }
+            } catch(e) {}
             showView('draw');
         }
 
@@ -20519,382 +20602,6 @@ async function renderSettingsDashboard() {
                 listEl.innerHTML = '<p class="text-center text-red-500">読み込みに失敗しました</p>';
             }
         }
-
-        // 掲示板データの読み込み
-        async function loadBoard(page = 1) {
-            const list = document.getElementById('board-list');
-            try {
-                const res = await fetch(`${API_BASE}/api/board/list?page=${page}`);
-                if(res.ok) {
-                    const data = await res.json();
-                    renderBoardList(data);
-                }
-            } catch(e) { console.error(e); }
-        }
-
-        function renderBoardList(data) {
-            const container = document.getElementById('board-list');
-            container.innerHTML = data.posts.map(p => {
-                const date = new Date(p.created_at).toLocaleString();
-                // おみくじ引用がある場合
-                const omikuji = p.omikuji_result ? JSON.parse(p.omikuji_result) : null;
-                const omikujiHtml = omikuji ? `<div class="bg-red-50 dark:bg-red-900/10 p-2 rounded border-l-4 border-red-500 text-sm mb-2">引用運勢: <strong>${omikuji.type}</strong></div>` : '';
-
-                return `
-                    <div class="themed-card p-4 rounded-xl shadow-sm border border-gray-100">
-                        <div class="flex justify-between items-center mb-2">
-                            <span class="font-bold text-indigo-600" onclick="loadUserProfile('${p.username}')" style="cursor:pointer">@${escapeHtml(p.username)}</span>
-                            <span class="text-[10px] text-gray-400">${date}</span>
-                        </div>
-                        ${omikujiHtml}
-                        <p class="text-sm mb-4" style="white-space: pre-wrap;">${escapeHtml(p.content)}</p>
-                        <div class="flex gap-4 border-t pt-3">
-                            <button onclick="reactPost(${p.id}, 'like')" class="text-xs themed-text-sub hover:text-red-500">
-                                <i class="bi bi-heart"></i> ${p.reaction_count || 0}
-                            </button>
-                            <button onclick="openCommentModal(${p.id})" class="text-xs themed-text-sub hover:text-blue-500">
-                                <i class="bi bi-chat"></i> ${p.comment_count || 0}
-                            </button>
-                        </div>
-                    </div>
-                `;
-            }).join('');
-            
-            // ページネーション描画
-            renderServerPaginationForBoard(data.page, data.total, 10);
-        }
-
-        async function submitBoardPost() {
-            const content = document.getElementById('board-post-input').value;
-            if(!content) return;
-            
-            // 直近のおみくじ結果を引用するかどうか（任意）
-            let omikuji_result = null;
-            if (currentState.lastResult) {
-                omikuji_result = JSON.stringify({ type: currentState.lastResult.type });
-            }
-
-            try {
-                const res = await authFetch(`${API_BASE}/api/board/post`, {
-                    method: 'POST',
-                    headers: {'Content-Type': 'application/json'},
-                    body: JSON.stringify({ content, omikuji_result })
-                });
-                if(res.ok) {
-                    showToast("掲示板に奉納しました", "success");
-                    document.getElementById('board-post-input').value = "";
-                    loadBoard(1);
-                } else {
-                    const data = await res.json();
-                    showToast(data.message, "warning");
-                }
-            } catch(e) { console.error(e); }
-        }
-
-        
-// ==========================================
-    //  参拝掲示板システム (定型文・リアクション対応版)
-    // ==========================================
-    
-    // 定型文データ（スパム防止のためこれのみ許可）
-    const BOARD_PHRASES = {
-        "挨拶": ["本日の参拝に参りました。", "おはようございます。", "今週も良い一週間になりますように。", "心を静めて、祈ります。", "皆様に幸多からんことを。"],
-        "祈願": ["家内安全を祈ります。", "良縁に恵まれますように。", "試験合格！全力を尽くします。", "健康第一。平穏無事を願います。", "大願成就。夢が叶いますように。", "世界が平和でありますように。"],
-        "感謝": ["神恩感謝。いつもありがとうございます。", "無事に一日を終えられました。", "良いことがありました。感謝。", "ピンチを乗り越えました。お守りください。", "すべての巡り合わせに感謝します。"],
-        "おみくじ": ["大吉でした！精進します。", "凶でした...気を引き締めます。", "神託を胸に刻みます。", "待ち人、早く来て。", "意外な結果に驚いています。", "厳しいお言葉、真摯に受け止めます。"],
-        "決意": ["明日から本気出します。", "迷いを断ち切りました。", "新しい一歩を踏み出します。", "自分を信じて進みます。", "過去は振り返りません。"]
-    };
-
-    const BoardSystem = {
-        selectedCategory: "挨拶",
-        selectedContent: null,
-        attachedOmikuji: null,
-
-        // 初期化（カテゴリボタン生成など）
-        init: function() {
-            const catContainer = document.getElementById('phrase-categories');
-            if(!catContainer) return; // 存在しないページでのエラー防止
-
-            catContainer.innerHTML = Object.keys(BOARD_PHRASES).map((cat, i) => `
-                <button onclick="BoardSystem.selectCategory('${cat}')" 
-                    class="px-4 py-1 rounded-full text-sm font-bold whitespace-nowrap transition border ${i===0 ? 'bg-red-600 text-white border-red-600' : 'bg-white dark:bg-zinc-800 text-gray-600 border-gray-300'}">
-                    ${cat}
-                </button>
-            `).join('');
-            
-            this.selectCategory("挨拶");
-        },
-
-        // カテゴリ切り替え
-        selectCategory: function(cat) {
-            this.selectedCategory = cat;
-            
-            // タブの見た目更新
-            const btns = document.getElementById('phrase-categories').querySelectorAll('button');
-            btns.forEach(b => {
-                if(b.innerText === cat) {
-                    b.className = "px-4 py-1 rounded-full text-sm font-bold whitespace-nowrap transition border bg-red-600 text-white border-red-600 shadow";
-                } else {
-                    b.className = "px-4 py-1 rounded-full text-sm font-bold whitespace-nowrap transition border bg-white dark:bg-zinc-800 text-gray-600 border-gray-300 hover:bg-gray-100";
-                }
-            });
-
-            // グリッド更新
-            const grid = document.getElementById('phrase-grid');
-            grid.innerHTML = BOARD_PHRASES[cat].map(text => `
-                <button onclick="BoardSystem.selectPhrase('${text}')" 
-                    class="text-left text-sm p-3 rounded border bg-white dark:bg-zinc-800 hover:bg-red-50 dark:hover:bg-red-900/30 transition border-gray-200 dark:border-gray-700">
-                    ${text}
-                </button>
-            `).join('');
-        },
-
-        // 文言選択
-        selectPhrase: function(text) {
-            this.selectedContent = text;
-            const display = document.getElementById('selected-phrase-display');
-            display.textContent = text;
-            display.classList.remove('text-gray-400');
-            display.classList.add('text-gray-800', 'dark:text-white', 'font-bold');
-            
-            // 送信ボタン有効化
-            const btn = document.getElementById('board-submit-btn');
-            btn.disabled = false;
-            btn.classList.remove('opacity-50', 'cursor-not-allowed');
-        },
-
-        // おみくじ結果からシェアする（画面遷移付き）
-        shareResultToBoard: function() {
-            if(!currentState.lastResult) return alert("結果がありません");
-            
-            // データをセット
-            this.attachedOmikuji = {
-                type: currentState.lastResult.type,
-                poem: currentState.lastResult.poem
-            };
-
-            // 掲示板ビューへ移動
-            showView('board');
-            
-            // プレビュー表示
-            const preview = document.getElementById('post-omikuji-preview');
-            const content = document.getElementById('post-omikuji-content');
-            content.innerHTML = `【${this.attachedOmikuji.type}】 ${this.attachedOmikuji.poem}`;
-            preview.classList.remove('hidden');
-            
-            // 「おみくじ」カテゴリを自動選択
-            this.selectCategory("おみくじ");
-            
-            // ページ上部へ
-            window.scrollTo(0, 0);
-        },
-
-        clearOmikuji: function() {
-            this.attachedOmikuji = null;
-            document.getElementById('post-omikuji-preview').classList.add('hidden');
-        },
-
-        // 投稿送信
-        submit: async function() {
-            if(!currentState.user) return showView('auth');
-            if(!this.selectedContent) return;
-
-            const btn = document.getElementById('board-submit-btn');
-            btn.disabled = true;
-            btn.innerHTML = '<span class="spinner-border spinner-border-sm"></span> 奉納中...';
-
-            try {
-                // authFetch は既存の認証付きfetch関数を使用
-                const res = await authFetch(`${API_BASE}/api/board/post`, {
-                    method: 'POST',
-                    headers: {'Content-Type': 'application/json'},
-                    body: JSON.stringify({ 
-                        category: this.selectedCategory,
-                        content: this.selectedContent,
-                        omikuji_data: this.attachedOmikuji 
-                    })
-                });
-
-                if(res.ok) {
-                    showToast("掲示板に奉納しました", "success");
-                    this.resetForm();
-                    this.load(1);
-                } else {
-                    const data = await res.json();
-                    showToast(data.message || "奉納に失敗しました", "warning");
-                }
-            } catch(e) {
-                console.error(e);
-                alert("通信エラーが発生しました");
-            } finally {
-                btn.disabled = false;
-                btn.innerHTML = '<i class="bi bi-send-fill"></i> 奉納する';
-            }
-        },
-
-        resetForm: function() {
-            this.selectedContent = null;
-            this.attachedOmikuji = null;
-            document.getElementById('selected-phrase-display').textContent = "（上のリストから選んでください）";
-            document.getElementById('selected-phrase-display').classList.add('text-gray-400');
-            document.getElementById('board-submit-btn').classList.add('opacity-50', 'cursor-not-allowed');
-            document.getElementById('post-omikuji-preview').classList.add('hidden');
-        },
-
-        // タイムライン読み込み
-        load: async function(page = 1) {
-            const list = document.getElementById('board-list');
-            if(page === 1) list.innerHTML = '<div class="text-center py-8"><div class="spinner-border text-red-500" role="status"></div> 読み込み中...</div>';
-
-            try {
-                // ハイブリッド認証用にヘッダーをつける（自分のリアクション判定のため）
-                const res = await authFetch(`${API_BASE}/api/board/list?page=${page}`, { method: 'GET' });
-                
-                if(res.ok) {
-                    const data = await res.json();
-                    this.renderList(data);
-                }
-            } catch(e) { console.error(e); }
-        },
-
-        // 描画
-        renderList: function(data) {
-            const list = document.getElementById('board-list');
-            const pagination = document.getElementById('board-pagination');
-            
-            if(data.posts.length === 0) {
-                list.innerHTML = '<div class="text-center text-gray-500 py-10">まだ奉納はありません。<br>最初の一言を奉納しましょう。</div>';
-                pagination.innerHTML = '';
-                return;
-            }
-
-            list.innerHTML = data.posts.map(post => {
-                const date = new Date(post.created_at);
-                const dateStr = `${date.getMonth()+1}/${date.getDate()} ${date.getHours()}:${String(date.getMinutes()).padStart(2,'0')}`;
-                
-                // おみくじ引用
-                let omikujiHtml = '';
-                if(post.omikuji_data) {
-                    const omi = JSON.parse(post.omikuji_data);
-                    omikujiHtml = `
-                        <div class="mt-2 p-2 bg-white dark:bg-black/20 border border-red-200 dark:border-red-900 rounded text-sm flex items-center gap-3">
-                            <span class="font-black text-red-600 border border-red-600 px-1 rounded bg-white text-xs">運勢</span>
-                            <span class="font-bold text-gray-800 dark:text-gray-200">【${omi.type}】 ${omi.poem || ''}</span>
-                        </div>
-                    `;
-                }
-
-                // アイコン色
-                const iconColorMap = { 'gray':'#9ca3af', 'red':'#ef4444', 'blue':'#3b82f6', 'green':'#10b981', 'yellow':'#eab308', 'purple':'#a855f7', 'pink':'#ec4899', 'black':'#1f2937' };
-                const iconColor = iconColorMap[post.user_color] || '#9ca3af';
-
-                // 認証バッジ（機能廃止のため空文字のまま）
-                let verifiedBadge = '';
-
-                // リアクションボタンの状態
-                const heartClass = post.my_reaction ? 'bi-heart-fill text-red-500' : 'bi-heart text-gray-400';
-                const countClass = post.my_reaction ? 'text-red-500' : 'text-gray-500';
-
-                return `
-                    <div class="bg-white dark:bg-zinc-800 p-4 rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm hover:shadow-md transition">
-                        <div class="flex items-start gap-3">
-                            <!-- アイコン -->
-                            <div class="w-10 h-10 rounded-full flex items-center justify-center text-xl flex-shrink-0 bg-gray-50 border" style="color:${iconColor}; border-color:${iconColor}">
-                                <i class="bi ${post.user_icon || 'bi-person'}"></i>
-                            </div>
-                            
-                            <div class="flex-1 min-w-0">
-                                <!-- ヘッダー -->
-                                <div class="flex justify-between items-center mb-1">
-                                    <div class="flex items-center gap-1 overflow-hidden">
-                                        <span class="font-bold text-sm truncate cursor-pointer hover:underline" onclick="loadUserProfile('${post.username}')">
-                                            ${escapeHtml(post.username)}
-                                        </span>
-                                        ${verifiedBadge}
-                                        <span class="text-xs text-gray-400 ml-2 whitespace-nowrap">${dateStr}</span>
-                                    </div>
-                                    <span class="text-[10px] bg-gray-100 dark:bg-gray-700 px-2 py-0.5 rounded text-gray-500">${post.category}</span>
-                                </div>
-
-                                <!-- 本文 -->
-                                <p class="text-base text-gray-800 dark:text-gray-200 leading-relaxed font-medium">
-                                    ${escapeHtml(post.content)}
-                                </p>
-
-                                <!-- おみくじ引用 -->
-                                ${omikujiHtml}
-
-                                <!-- アクションバー -->
-                                <div class="flex items-center gap-6 mt-3 pt-2 border-t border-gray-100 dark:border-gray-700">
-                                    <button onclick="BoardSystem.react(${post.id}, this)" class="flex items-center gap-1.5 text-sm group transition ${countClass}">
-                                        <div class="p-1.5 rounded-full group-hover:bg-red-50 dark:group-hover:bg-red-900/30 transition">
-                                            <i class="bi ${heartClass} transition-transform group-active:scale-125"></i>
-                                        </div>
-                                        <span class="count">${post.reaction_count}</span>
-                                        <span class="text-xs">拍手</span>
-                                    </button>
-                                    
-                                    <!-- コメント機能は定型文方針のため「返信」ではなく「同じ話題で投稿」などに誘導も可。今回はシンプルに -->
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                `;
-            }).join('');
-
-            // ページネーション（共通のモダンUI・シンプル版を使用）
-            if(data.total > data.perPage) {
-                const totalPages = Math.ceil(data.total / data.perPage);
-                pagination.innerHTML = createSimplePaginationHTML(data.page, totalPages, 'BoardSystem.load({P})');
-            } else {
-                pagination.innerHTML = "";
-            }
-        },
-
-        // リアクション実行（楽観的UI更新）
-        react: async function(postId, btn) {
-            if(!currentState.user) return showView('auth');
-
-            const icon = btn.querySelector('i');
-            const countSpan = btn.querySelector('.count');
-            let currentCount = parseInt(countSpan.innerText);
-            
-            // 楽観的更新
-            const isLiked = icon.classList.contains('bi-heart-fill');
-            if(isLiked) {
-                icon.className = 'bi bi-heart text-gray-400';
-                btn.classList.remove('text-red-500');
-                btn.classList.add('text-gray-500');
-                countSpan.innerText = Math.max(0, currentCount - 1);
-            } else {
-                icon.className = 'bi bi-heart-fill text-red-500';
-                btn.classList.remove('text-gray-500');
-                btn.classList.add('text-red-500');
-                // アニメーション
-                icon.animate([{transform:'scale(1)'}, {transform:'scale(1.4)'}, {transform:'scale(1)'}], {duration: 200});
-                countSpan.innerText = currentCount + 1;
-            }
-
-            try {
-                const res = await authFetch(`${API_BASE}/api/board/react`, {
-                    method: 'POST',
-                    headers: {'Content-Type': 'application/json'},
-                    body: JSON.stringify({ post_id: postId })
-                });
-                // サーバーから正しいカウントが返れば補正
-                if(res.ok) {
-                    const data = await res.json();
-                    countSpan.innerText = data.count;
-                }
-            } catch(e) {
-                console.error(e);
-            }
-        }
-    };
-
-    // 初期化実行 (window.onload内などで呼ぶ)
-    // BoardSystem.init();
-
 
 
         // --- アカウント情報更新 (updateAccountSettings) ---
