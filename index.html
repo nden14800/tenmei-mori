@@ -1763,6 +1763,15 @@
     box-shadow: 0 20px 35px rgba(0,0,0,0.15);
 }
 
+.howto-hero-card {
+    transition: all 0.35s cubic-bezier(0.25, 0.8, 0.25, 1);
+}
+.howto-hero-card:hover {
+    transform: translateY(-4px) scale(1.005);
+    border-color: var(--accent-gold);
+    box-shadow: 0 20px 35px rgba(0,0,0,0.15);
+}
+
 /* 1. ニュース検索エリア (履歴のコントロールバーと統一) */
 .news-control-bar {
     background: rgba(255, 255, 255, 0.7);
@@ -6281,7 +6290,7 @@ body.sidebar-collapsed.sidebar-pinned #sidebar .nav-group-title {
             <span class="nav-text">プライバシー</span>
         </button>
 
-        <button class="nav-btn" onclick="openTutorial()" id="nav-tutorial">
+        <button class="nav-btn" onclick="showView('howto')" id="nav-howto">
             <div class="nav-icon-box"><i class="bi bi-question-circle"></i></div>
             <span class="nav-text">使い方</span>
         </button>
@@ -6592,7 +6601,9 @@ body.sidebar-collapsed.sidebar-pinned #sidebar .nav-group-title {
                     html:not(.dark) #view-profile .bento-card:first-child .rounded-2xl i.text-white,
                     html:not(.dark) #view-auth .bento-card:first-child .rounded-2xl i.text-white,
                     html:not(.dark) #view-about .bento-card:first-child .rounded-2xl i.text-white,
-                    html:not(.dark) #view-privacy .bento-card:first-child .rounded-2xl i.text-white {
+                    html:not(.dark) #view-privacy .bento-card:first-child .rounded-2xl i.text-white,
+                    html:not(.dark) #view-stats .bento-card:first-child .rounded-2xl i.text-white,
+                    html:not(.dark) #view-howto .bento-card:first-child .rounded-2xl i.text-white {
                         color: white !important;
                     }
                     html:not(.dark) #view-zodiac .bento-card:first-child .text-zinc-300,
@@ -6757,6 +6768,26 @@ body.sidebar-collapsed.sidebar-pinned #sidebar .nav-group-title {
                         color: var(--text-sub) !important;
                     }
                     html:not(.dark) .stats-header-hero-card p.text-zinc-500 {
+                        color: var(--text-sub) !important;
+                    }
+
+                    /* ---- 使い方 Heroカード（ライトモード） ---- */
+                    html:not(.dark) .howto-hero-card {
+                        background: linear-gradient(135deg, #fff5f5 0%, #f8fafc 55%, #fff7ed 100%) !important;
+                        border-color: var(--card-border) !important;
+                        box-shadow: 0 8px 30px rgba(0,0,0,0.06) !important;
+                    }
+                    html:not(.dark) .howto-hero-card:hover {
+                        border-color: var(--accent-gold) !important;
+                        box-shadow: 0 16px 36px rgba(0,0,0,0.12) !important;
+                    }
+                    html:not(.dark) .howto-hero-card .text-white {
+                        color: var(--text-main) !important;
+                    }
+                    html:not(.dark) .howto-hero-card p.text-zinc-300 {
+                        color: var(--text-sub) !important;
+                    }
+                    html:not(.dark) .howto-hero-card p.text-zinc-500 {
                         color: var(--text-sub) !important;
                     }
 
@@ -8433,6 +8464,200 @@ body.sidebar-collapsed.sidebar-pinned #sidebar .nav-group-title {
 
         
     <!-- ビュー: 当サイトについて・利用規約・詳細解説 (モダンUI刷新版) -->
+        <section id="view-howto" class="view-section max-w-5xl mx-auto pb-20">
+
+            <!-- ヘッダーカード -->
+            <div class="bento-card howto-hero-card mb-6 relative overflow-hidden bg-gradient-to-br from-red-950 via-zinc-900 to-black border border-zinc-800 text-white" style="padding: 2rem;">
+                <div class="absolute top-0 right-0 w-72 h-72 opacity-15 pointer-events-none" style="background: radial-gradient(circle, #ef4444 0%, transparent 70%);"></div>
+                <div class="absolute bottom-0 left-0 w-48 h-48 opacity-10 pointer-events-none" style="background: radial-gradient(circle, #d4af37 0%, transparent 70%);"></div>
+                <div class="relative z-10 flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
+                    <div class="flex-1">
+                        <p class="text-xs font-bold tracking-[0.3em] uppercase mb-2" style="color: var(--accent-gold);">HELP CENTER</p>
+                        <h2 class="text-3xl md:text-4xl font-black mb-3 flex items-center gap-3" style="font-family: 'Zen Old Mincho', serif;">
+                            <span class="text-4xl text-red-400"><i class="bi bi-question-circle-fill"></i></span>
+                            <span class="text-white">天命乃杜の使い方</span>
+                        </h2>
+                        <p class="text-sm text-zinc-300 leading-relaxed max-w-xl" style="font-family: 'Shippori Mincho', serif;">各機能の使い方を、項目ごとにまとめました。気になるところだけお読みいただいて構いません。</p>
+                    </div>
+                    <div class="flex-shrink-0 text-center flex flex-col items-center gap-2">
+                        <div class="w-20 h-20 rounded-2xl flex items-center justify-center" style="background: linear-gradient(135deg, #7f1d1d, #b91c1c); box-shadow: 0 0 24px rgba(239,68,68,0.3);">
+                            <i class="bi bi-compass text-4xl text-white"></i>
+                        </div>
+                        <p class="text-xs text-zinc-500 font-bold tracking-widest">HOW TO USE</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 目次 (TOC) -->
+            <div id="howto-toc-container" class="hidden mb-6">
+                <div class="bg-white/80 dark:bg-zinc-900/80 backdrop-blur p-6 rounded-2xl border border-gray-200 dark:border-gray-700">
+                    <h3 class="font-bold text-sm text-gray-500 mb-3 uppercase tracking-wider"><i class="bi bi-list-ul mr-2"></i>目次</h3>
+                    <ul class="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-2 text-sm font-medium" id="howto-toc-list"></ul>
+                </div>
+            </div>
+
+            <!-- 本文エリア -->
+            <div id="howto-content-area" class="space-y-8">
+
+                <!-- 導入 -->
+                <div class="bento-card p-8 text-center font-serif text-lg leading-loose text-gray-700 dark:text-gray-300">
+                    <i class="bi bi-quote text-4xl text-gray-200 dark:text-gray-700 block mb-2"></i>
+                    はじめての方も、そうでない方も。<br>ここでは天命乃杜の各機能を、ひとつずつご案内します。
+                </div>
+
+                <!-- 01 おみくじを引く -->
+                <div class="bento-card p-0 overflow-hidden">
+                    <div class="p-6 border-b border-gray-100 dark:border-gray-800 bg-gray-50 dark:bg-zinc-900/50">
+                        <h3 class="text-xl font-black flex items-center gap-3">
+                            <span class="flex items-center justify-center w-8 h-8 rounded bg-red-600 text-white text-sm">01</span>
+                            おみくじを引く（天命の授与所）
+                        </h3>
+                    </div>
+                    <div class="p-6 md:p-8 space-y-3 text-sm text-gray-600 dark:text-gray-400 leading-relaxed">
+                        <p>ホーム画面の「おみくじを引く」ボタンから天命の授与所へ進み、並んでいる札の中から気になる1枚を選んでタップしてください。</p>
+                        <p>結果には大吉から大凶までの12段階の運勢に加え、和歌・解説文、願事・恋愛・待人など七項目の詳細、そしてラッキーアイテム・ラッキー場所・ラッキーカラー・ラッキー人物が表示されます。</p>
+                        <p>結果画面の下部からは、おみくじの結果を画像として端末に保存したり、公式Discordサーバーの参拝記録チャンネルへ結果を共有することもできます。</p>
+                        <p>何度でも引き直すことができますが、その日の結果は「今の自分に必要な言葉」として、じっくり読んでいただくのがおすすめです。</p>
+                    </div>
+                </div>
+
+                <!-- 02 12星座占い -->
+                <div class="bento-card p-0 overflow-hidden">
+                    <div class="p-6 border-b border-gray-100 dark:border-gray-800 bg-gray-50 dark:bg-zinc-900/50">
+                        <h3 class="text-xl font-black flex items-center gap-3">
+                            <span class="flex items-center justify-center w-8 h-8 rounded bg-red-600 text-white text-sm">02</span>
+                            12星座占い
+                        </h3>
+                    </div>
+                    <div class="p-6 md:p-8 space-y-3 text-sm text-gray-600 dark:text-gray-400 leading-relaxed">
+                        <p>サイドバーの「12星座占い」から、自分の星座と血液型を選ぶと、その日の運勢を確認できます。</p>
+                        <p>恋愛・お金・仕事など分野ごとの運勢に加え、ラッキーナンバー・ラッキーアイテム・ラッキーカラーも毎日更新されます。同じ星座・血液型の組み合わせでも、日付が変わればまた違う結果が表示されます。</p>
+                    </div>
+                </div>
+
+                <!-- 03 デジタル御守授与所 -->
+                <div class="bento-card p-0 overflow-hidden">
+                    <div class="p-6 border-b border-gray-100 dark:border-gray-800 bg-gray-50 dark:bg-zinc-900/50">
+                        <h3 class="text-xl font-black flex items-center gap-3">
+                            <span class="flex items-center justify-center w-8 h-8 rounded bg-red-600 text-white text-sm">03</span>
+                            デジタル御守授与所
+                        </h3>
+                    </div>
+                    <div class="p-6 md:p-8 space-y-3 text-sm text-gray-600 dark:text-gray-400 leading-relaxed">
+                        <p>サイドバーの「御守」から、健康・恋愛・金運・学業などいくつかの願い事の中から選び、名前を入力すると、あなただけのデジタル御守が授与されます。</p>
+                        <p>完成した御守は画像として端末に保存できます。</p>
+                    </div>
+                </div>
+
+                <!-- 04 参拝の記録 -->
+                <div class="bento-card p-0 overflow-hidden">
+                    <div class="p-6 border-b border-gray-100 dark:border-gray-800 bg-gray-50 dark:bg-zinc-900/50">
+                        <h3 class="text-xl font-black flex items-center gap-3">
+                            <span class="flex items-center justify-center w-8 h-8 rounded bg-red-600 text-white text-sm">04</span>
+                            参拝の記録
+                        </h3>
+                    </div>
+                    <div class="p-6 md:p-8 space-y-3 text-sm text-gray-600 dark:text-gray-400 leading-relaxed">
+                        <p>ログインすると、これまでに引いたおみくじの回数や運勢の分布、大吉を引いた回数などの個人統計をグラフで確認できます。</p>
+                        <p>参拝の記録は参拝証（会員登録）をお持ちの方のみ閲覧できる機能です。未登録の場合は本項下部の「08. 参拝証の発行」をご覧ください。</p>
+                    </div>
+                </div>
+
+                <!-- 05 おみくじの轍 -->
+                <div class="bento-card p-0 overflow-hidden">
+                    <div class="p-6 border-b border-gray-100 dark:border-gray-800 bg-gray-50 dark:bg-zinc-900/50">
+                        <h3 class="text-xl font-black flex items-center gap-3">
+                            <span class="flex items-center justify-center w-8 h-8 rounded bg-red-600 text-white text-sm">05</span>
+                            おみくじの轍
+                        </h3>
+                    </div>
+                    <div class="p-6 md:p-8 space-y-3 text-sm text-gray-600 dark:text-gray-400 leading-relaxed">
+                        <p>ログインすると、これまでに引いたおみくじの履歴を一覧で振り返ることができます。条件を絞り込んでの検索や、全体の傾向の確認も可能です。</p>
+                        <p>こちらも参拝証をお持ちの方限定の機能です。</p>
+                    </div>
+                </div>
+
+                <!-- 06 全国・土地の運気 -->
+                <div class="bento-card p-0 overflow-hidden">
+                    <div class="p-6 border-b border-gray-100 dark:border-gray-800 bg-gray-50 dark:bg-zinc-900/50">
+                        <h3 class="text-xl font-black flex items-center gap-3">
+                            <span class="flex items-center justify-center w-8 h-8 rounded bg-red-600 text-white text-sm">06</span>
+                            全国・土地の運気
+                        </h3>
+                    </div>
+                    <div class="p-6 md:p-8 space-y-3 text-sm text-gray-600 dark:text-gray-400 leading-relaxed">
+                        <p>サイドバーの「全国の運気」では、都道府県ごとの運気ランキングを毎日更新でご覧いただけます。自分の住んでいる地域や気になる土地の運気をチェックしてみてください。</p>
+                    </div>
+                </div>
+
+                <!-- 07 社務所だより・神籤草子 -->
+                <div class="bento-card p-0 overflow-hidden">
+                    <div class="p-6 border-b border-gray-100 dark:border-gray-800 bg-gray-50 dark:bg-zinc-900/50">
+                        <h3 class="text-xl font-black flex items-center gap-3">
+                            <span class="flex items-center justify-center w-8 h-8 rounded bg-red-600 text-white text-sm">07</span>
+                            社務所だより・神籤草子
+                        </h3>
+                    </div>
+                    <div class="p-6 md:p-8 space-y-3 text-sm text-gray-600 dark:text-gray-400 leading-relaxed">
+                        <p>「社務所だより」は、天命乃杜のアップデート情報や不具合修正のお知らせをまとめた運営からのお知らせ欄です。</p>
+                        <p>「神籤草子」は、おみくじや運勢にまつわるコラム記事を集めた読みものコーナーです。おみくじの歴史や豆知識など、参拝の合間に読んでいただける内容を掲載しています。</p>
+                    </div>
+                </div>
+
+                <!-- 08 参拝証の発行 -->
+                <div class="bento-card p-0 overflow-hidden">
+                    <div class="p-6 border-b border-gray-100 dark:border-gray-800 bg-gray-50 dark:bg-zinc-900/50">
+                        <h3 class="text-xl font-black flex items-center gap-3">
+                            <span class="flex items-center justify-center w-8 h-8 rounded bg-red-600 text-white text-sm">08</span>
+                            参拝証の発行（会員登録・ログイン）
+                        </h3>
+                    </div>
+                    <div class="p-6 md:p-8 space-y-3 text-sm text-gray-600 dark:text-gray-400 leading-relaxed">
+                        <p>おみくじや占いは登録なしでもお楽しみいただけますが、参拝証を発行（会員登録）すると、参拝の記録・おみくじの轍・お気に入り登録・TENMEI LABSといった追加機能が使えるようになります。</p>
+                        <p>メールアドレスとパスワードを入力し、メールに届く認証コードを入力するだけで発行できます。</p>
+                    </div>
+                </div>
+
+                <!-- 09 Discord連携 -->
+                <div class="bento-card p-0 overflow-hidden">
+                    <div class="p-6 border-b border-gray-100 dark:border-gray-800 bg-gray-50 dark:bg-zinc-900/50">
+                        <h3 class="text-xl font-black flex items-center gap-3">
+                            <span class="flex items-center justify-center w-8 h-8 rounded bg-red-600 text-white text-sm">09</span>
+                            公式Discordサーバー
+                        </h3>
+                    </div>
+                    <div class="p-6 md:p-8 space-y-3 text-sm text-gray-600 dark:text-gray-400 leading-relaxed">
+                        <p>ホーム画面の「公式Discord参拝所へ」ボタンから、天命乃杜の公式Discordサーバーに参加できます。</p>
+                        <p>サーバー内では /おみくじ や /星座占い などのコマンドでその場で占いを楽しめるほか、サイトで引いたおみくじの結果を参拝記録チャンネルへ共有し、参拝者同士で分かち合うこともできます。</p>
+                    </div>
+                </div>
+
+                <!-- 10 TENMEI LABS -->
+                <div class="bento-card p-0 overflow-hidden">
+                    <div class="p-6 border-b border-gray-100 dark:border-gray-800 bg-gray-50 dark:bg-zinc-900/50">
+                        <h3 class="text-xl font-black flex items-center gap-3">
+                            <span class="flex items-center justify-center w-8 h-8 rounded bg-red-600 text-white text-sm">10</span>
+                            TENMEI LABS
+                        </h3>
+                    </div>
+                    <div class="p-6 md:p-8 space-y-3 text-sm text-gray-600 dark:text-gray-400 leading-relaxed">
+                        <p>参拝証をお持ちの方限定で、テーマの切り替えや表示速度の変更など、実験的な機能を試せる場所です。サイドバーの「Labs」からアクセスできます。</p>
+                        <p>ここに用意されている機能は開発中・お試し段階のものも含まれるため、随時内容が変わることがあります。</p>
+                    </div>
+                </div>
+
+                <!-- ウォークスルーへの導線 -->
+                <div class="bento-card p-6 flex flex-col md:flex-row items-center justify-between gap-4">
+                    <div>
+                        <h3 class="font-bold flex items-center gap-2"><i class="bi bi-stars text-yellow-500"></i>もう一度、簡単な案内を見る</h3>
+                        <p class="text-xs text-gray-500 mt-1">初回訪問時に表示された5枚のスライド形式の簡単な案内を、もう一度見ることができます。</p>
+                    </div>
+                    <button onclick="openTutorial()" class="btn-primary px-6 py-2 flex-shrink-0 whitespace-nowrap">ウォークスルーを見る</button>
+                </div>
+
+            </div>
+        </section>
+
         <section id="view-about" class="view-section max-w-5xl mx-auto pb-20">
             
             <!-- ヘッダーカード -->
@@ -19505,7 +19730,7 @@ function changeHistoryPage(newPage) {
 
     // 1. 目次生成関数
     function initTOC(viewId) {
-        const contentAreaId = viewId === 'about' ? 'about-content-area' : 'privacy-content-area';
+        const contentAreaId = viewId === 'about' ? 'about-content-area' : (viewId === 'howto' ? 'howto-content-area' : 'privacy-content-area');
         const tocContainer = document.getElementById(`${viewId}-toc-container`);
         const tocList = document.getElementById(`${viewId}-toc-list`);
         
@@ -19628,7 +19853,7 @@ function changeHistoryPage(newPage) {
         if(viewId === 'draw') resetOmikujiPool();
         if(viewId === 'history') loadHistory();
         if(viewId === 'prefecture') renderPrefectureRanking();
-        if(viewId === 'about' || viewId === 'privacy') initTOC(viewId);
+        if(viewId === 'about' || viewId === 'privacy' || viewId === 'howto') initTOC(viewId);
         if(viewId === 'omamori' && typeof OmamoriSystem !== 'undefined') OmamoriSystem.reset(true);
 
         if(viewId === 'stats') {
