@@ -2718,6 +2718,7 @@
     max-width: 980px;
     margin: 0 auto;
     padding-bottom: 60px;
+    align-items: start;
 }
 
 /* 1. IDカード (上段フル幅) */
@@ -9337,13 +9338,28 @@ body.sidebar-collapsed.sidebar-pinned #sidebar .nav-group-title {
         </section>
 
         <!-- サイトフッター -->
+        <style>
+            /* フッター：スマホ幅でのレイアウト崩れ対策
+               (日本語の見出し語がスペースなしで詰まっているため、
+                列幅が狭すぎると1文字ずつ強制改行されてしまう) */
+            @media (max-width: 640px) {
+                #footer-main-grid {
+                    grid-template-columns: 1fr !important;
+                    gap: 32px !important;
+                }
+                #footer-nav-grid {
+                    grid-template-columns: repeat(2, 1fr) !important;
+                    gap: 20px 16px !important;
+                }
+            }
+        </style>
         <footer id="site-footer" style="width:100%;margin-top:80px;background:var(--card-bg);border-top:1px solid var(--card-border);overflow:hidden;">
 
             <!-- 上部グラデーションライン -->
             <div style="height:2px;background:linear-gradient(90deg,transparent,var(--accent-red) 30%,#c8a000 50%,var(--accent-red) 70%,transparent);opacity:0.7;"></div>
 
             <!-- メインコンテンツエリア -->
-            <div style="max-width:960px;margin:0 auto;padding:48px 32px 32px;display:grid;grid-template-columns:1fr 2fr;gap:48px;align-items:start;">
+            <div id="footer-main-grid" style="max-width:960px;margin:0 auto;padding:48px 32px 32px;display:grid;grid-template-columns:1fr 2fr;gap:48px;align-items:start;">
 
                 <!-- 左：ロゴ＋説明 -->
                 <div style="display:flex;flex-direction:column;gap:16px;">
@@ -9378,7 +9394,7 @@ body.sidebar-collapsed.sidebar-pinned #sidebar .nav-group-title {
                 </div>
 
                 <!-- 右：ナビ3列 -->
-                <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:24px;">
+                <div id="footer-nav-grid" style="display:grid;grid-template-columns:repeat(3,1fr);gap:24px;">
                     <div>
                         <div style="font-size:0.65rem;font-weight:700;letter-spacing:0.15em;color:var(--text-sub);text-transform:uppercase;margin-bottom:12px;padding-bottom:8px;border-bottom:1px solid var(--card-border);">コンテンツ</div>
                         <div style="display:flex;flex-direction:column;gap:9px;">
