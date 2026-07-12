@@ -4508,13 +4508,24 @@
         }
 
         /* 生地・肩・質感・飾り枠・文字札の色部分はこの内側クリップ領域にまとめる（房のスペースは含まない） */
+        /* 注意: 上部の紐飾り(.omamori-knot: y=45〜135px)と下部の名前刻印(bottom:20px)を避けて
+           文字札(.omamori-label: 高さ200px)を中央寄せするため、padding-top/bottomで領域を確保してから
+           flexで中央寄せする。position:absoluteの.omamori-innerはbody側の余白の影響を受けないため、
+           必ずこの要素自身にpadding + box-sizing:border-boxを指定する必要がある。 */
         .omamori-inner {
             position: absolute;
             top: 0; left: 0; right: 0;
             height: 400px;
+            box-sizing: border-box;
+            padding-top: 148px;    /* 紐飾り(下端135px)をよけた位置から開始 */
+            padding-bottom: 52px;  /* 名前刻印(bottom:20px + テキスト高さ)との余白を確保 */
             border-radius: 20px 20px 8px 8px;
             overflow: hidden;
             box-shadow: 0 10px 25px rgba(0,0,0,0.35), inset 0 0 0 2px rgba(212,175,55,0.55);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
         }
 
         /* 御守の「肩」の部分を表現する三角形 */
@@ -4544,8 +4555,8 @@
             position: absolute;
             top: 0; left: 0; width: 100%; height: 100%;
             background-image:
-                repeating-linear-gradient(45deg, rgba(255,255,255,0.10) 0px, rgba(255,255,255,0.10) 1px, transparent 1px, transparent 5px),
-                repeating-linear-gradient(-45deg, rgba(212,175,55,0.10) 0px, rgba(212,175,55,0.10) 1px, transparent 1px, transparent 9px);
+                repeating-linear-gradient(45deg, rgba(255,255,255,0.20) 0px, rgba(255,255,255,0.20) 1px, transparent 1px, transparent 5px),
+                repeating-linear-gradient(-45deg, rgba(0,0,0,0.14) 0px, rgba(0,0,0,0.14) 1px, transparent 1px, transparent 9px);
             z-index: 0;
             pointer-events: none;
         }
@@ -4599,6 +4610,7 @@
             position: absolute;
             top: 10px; left: 10px; right: 10px; bottom: 10px;
             border: 1.5px solid rgba(212,175,55,0.85);
+            box-shadow: 0 0 0 1px rgba(0,0,0,0.35), inset 0 0 0 1px rgba(255,255,255,0.55);
             border-radius: 13px;
             z-index: 1;
         }
@@ -4607,6 +4619,7 @@
             position: absolute;
             inset: 4px;
             border: 1px solid rgba(255,255,255,0.35);
+            box-shadow: inset 0 0 0 1px rgba(0,0,0,0.25);
             border-radius: 10px;
         }
 
@@ -4614,6 +4627,9 @@
         .omamori-name {
             position: absolute; 
             bottom: 20px; 
+            left: 0;
+            right: 0;
+            text-align: center;
             font-size: 0.8rem; 
             color: rgba(255,255,255,0.95); 
             writing-mode: horizontal-tb;
