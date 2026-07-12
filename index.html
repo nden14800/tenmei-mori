@@ -3689,6 +3689,23 @@
             margin-right: 3px;
             opacity: 0.85;
         }
+        .today-anniv-pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            padding: 5px 12px;
+            border-radius: 999px;
+            font-size: 0.72rem;
+            font-weight: 700;
+            background: rgba(255,255,255,0.06);
+            border: 1px solid rgba(255,255,255,0.12);
+            color: #f0d488;
+            transition: transform 0.2s ease, background 0.2s ease;
+        }
+        .today-anniv-pill:hover {
+            transform: translateY(-2px);
+            background: rgba(197,160,89,0.15);
+        }
 
         /* --- モバイル対応（1カラムにする） --- */
         @media (max-width: 768px) {
@@ -4404,10 +4421,11 @@
             }
             
             /* カードの枠などを消して文書らしくする */
-            .themed-card {
+            .bento-card {
                 border: none !important;
                 box-shadow: none !important;
                 padding: 0 !important;
+                margin-bottom: 1.5em !important;
                 background: transparent !important;
                 color: #000 !important;
             }
@@ -4456,28 +4474,47 @@
             p, li {
                 color: #000 !important;
             }
+            /* Tailwindの文字色クラス（見出し内のspan等）を強制的に黒に統一 */
+            .text-white, .text-zinc-300, .text-zinc-400, .text-zinc-500,
+            .text-gray-300, .text-gray-400, .text-gray-500, .text-gray-700,
+            .text-red-400, [style*="var(--accent-gold)"] {
+                color: #000 !important;
+            }
+            /* ヘッダーカードの装飾円・アイコンバッジは印刷時不要 */
+            .about-hero-card .absolute, .privacy-hero-card .absolute,
+            .about-hero-card .rounded-2xl, .privacy-hero-card .rounded-2xl {
+                display: none !important;
+            }
         }
 
-        /* --- 御守授与所スタイル (修正版) --- */
-        
-        /* 御守本体 */
+        /* --- 御守授与所スタイル (New!8: 本格意匠版) --- */
+        /* 実物の御守の意匠要素（錦の生地・金襴の縁取り・叶結びの紐・房）を踏まえて再構成 */
+
+        /* 御守本体（房がはみ出すのでoverflowはvisibleにする） */
         .omamori-body {
             width: 220px;
-            height: 400px; /* 高さを少し増やしてバランス調整 */
+            height: 434px; /* 400pxの本体 + 房のための34pxを確保 */
             position: relative;
             margin: 0 auto;
-            /* clip-pathをやめて、border-radiusで形を作る（画像保存対策） */
-            border-radius: 20px 20px 8px 8px; 
             display: flex;
             flex-direction: column;
             align-items: center;
-            justify-content: flex-start; /* 上寄せに変更 */
-            padding-top: 150px; /* 紐のスペースを確保（ここ重要） */
-            box-shadow: 0 10px 25px rgba(0,0,0,0.3);
+            justify-content: flex-start;
+            padding-top: 150px;
             font-family: 'Zen Old Mincho', serif;
-            overflow: hidden;
+            overflow: visible;
             z-index: 10;
             box-sizing: border-box;
+        }
+
+        /* 生地・肩・質感・飾り枠・文字札の色部分はこの内側クリップ領域にまとめる（房のスペースは含まない） */
+        .omamori-inner {
+            position: absolute;
+            top: 0; left: 0; right: 0;
+            height: 400px;
+            border-radius: 20px 20px 8px 8px;
+            overflow: hidden;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.35), inset 0 0 0 2px rgba(212,175,55,0.55);
         }
 
         /* 御守の「肩」の部分を表現する三角形 */
@@ -4501,55 +4538,76 @@
             border-color: transparent var(--bg-color) transparent transparent;
             z-index: 20;
         }
-        /* ※背景色がダークモードなどで変わる場合の対策はJSで行います */
 
-        /* 生地の質感 */
+        /* 生地の質感：金襴（きんらん）の織り模様を意識した二重パターン */
         .omamori-texture {
             position: absolute;
             top: 0; left: 0; width: 100%; height: 100%;
-            background-image: repeating-linear-gradient(45deg, rgba(255,255,255,0.08) 0px, rgba(255,255,255,0.08) 1px, transparent 1px, transparent 4px);
+            background-image:
+                repeating-linear-gradient(45deg, rgba(255,255,255,0.10) 0px, rgba(255,255,255,0.10) 1px, transparent 1px, transparent 5px),
+                repeating-linear-gradient(-45deg, rgba(212,175,55,0.10) 0px, rgba(212,175,55,0.10) 1px, transparent 1px, transparent 9px);
             z-index: 0;
             pointer-events: none;
         }
 
-        /* 中央の文字札 */
+        /* 中央の文字札：金の縁取り（金襴の額）を追加した「刺繍札」風 */
         .omamori-label {
-            background: #fff;
-            color: #333;
+            background: linear-gradient(180deg, #fffdf7, #fff);
+            color: #2b2b2b;
             writing-mode: vertical-rl;
-            padding: 15px 12px;
+            padding: 16px 13px;
             font-size: 2rem;
             font-weight: 900;
             letter-spacing: 0.3em;
-            border-radius: 4px;
-            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+            border-radius: 3px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.25), inset 0 0 0 2px #d4af37, inset 0 0 0 4px #fff;
             z-index: 2;
-            height: 200px; /* 固定高さ */
+            height: 200px;
             display: flex;
             align-items: center;
             justify-content: center;
-            border: 1px solid rgba(0,0,0,0.1);
+            border: 1px solid rgba(0,0,0,0.15);
         }
 
         /* 紐（叶結び） */
         .omamori-knot {
             position: absolute;
-            top: 45px; /* 位置調整 */
+            top: 45px;
             left: 50%;
             transform: translateX(-50%);
             width: 120px;
             height: 90px;
-            z-index: 30; /* 文字より上に */
-            filter: drop-shadow(0 4px 4px rgba(0,0,0,0.4));
+            z-index: 30;
+            filter: drop-shadow(0 4px 4px rgba(0,0,0,0.45));
         }
 
-        /* 飾り枠 */
+        /* 房を吊るす金具（叶結びの下端） */
+        .omamori-knot-cap {
+            position: absolute;
+            top: 128px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 10px; height: 10px;
+            border-radius: 50%;
+            background: radial-gradient(circle at 35% 30%, #f5e2a4, #b8860b 75%);
+            box-shadow: 0 1px 3px rgba(0,0,0,0.4);
+            z-index: 31;
+        }
+
+        /* 飾り枠：金糸の二重ライン */
         .omamori-border {
             position: absolute;
-            top: 12px; left: 12px; right: 12px; bottom: 12px;
-            border: 2px solid rgba(255,255,255,0.4);
-            border-radius: 12px;
+            top: 10px; left: 10px; right: 10px; bottom: 10px;
+            border: 1.5px solid rgba(212,175,55,0.85);
+            border-radius: 13px;
             z-index: 1;
+        }
+        .omamori-border::after {
+            content: '';
+            position: absolute;
+            inset: 4px;
+            border: 1px solid rgba(255,255,255,0.35);
+            border-radius: 10px;
         }
 
         /* 名前刻印 */
@@ -4557,12 +4615,49 @@
             position: absolute; 
             bottom: 20px; 
             font-size: 0.8rem; 
-            color: rgba(255,255,255,0.9); 
+            color: rgba(255,255,255,0.95); 
             writing-mode: horizontal-tb;
             letter-spacing: 0.1em; 
             font-weight: bold;
-            text-shadow: 0 1px 2px rgba(0,0,0,0.5);
+            text-shadow: 0 1px 2px rgba(0,0,0,0.6);
             z-index: 5;
+        }
+
+        /* 房（タッセル）：本体下端から吊り下がる金の飾り房 */
+        .omamori-tassel {
+            position: absolute;
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 26px;
+            z-index: 5;
+            filter: drop-shadow(0 3px 4px rgba(0,0,0,0.3));
+        }
+        .omamori-tassel-cord {
+            width: 2px;
+            height: 14px;
+            margin: 0 auto;
+            background: linear-gradient(180deg, #d4af37, #b8860b);
+        }
+        .omamori-tassel-head {
+            width: 14px;
+            height: 10px;
+            margin: 0 auto;
+            border-radius: 3px 3px 6px 6px;
+            background: linear-gradient(180deg, #e6c458, #b8860b);
+            box-shadow: inset 0 -2px 3px rgba(0,0,0,0.25);
+        }
+        .omamori-tassel-strands {
+            display: flex;
+            justify-content: center;
+            gap: 1.5px;
+        }
+        .omamori-tassel-strands span {
+            display: block;
+            width: 1.4px;
+            height: 20px;
+            background: linear-gradient(180deg, #d4af37, #9c7a1e);
+            border-radius: 0 0 2px 2px;
         }
         
         /* 選択ボタンのグリッド */
@@ -6593,6 +6688,19 @@ body.sidebar-collapsed.sidebar-pinned #sidebar .nav-group-title {
                         border-color: var(--card-border) !important;
                     }
 
+                    /* ---- ホーム: 今日は何の日カード ---- */
+                    html:not(.dark) #today-anniv-card {
+                        border-top-color: var(--accent-gold) !important;
+                    }
+                    html:not(.dark) .today-anniv-pill {
+                        background: rgba(197,160,89,0.10) !important;
+                        border-color: rgba(197,160,89,0.3) !important;
+                        color: #8a6d1f !important;
+                    }
+                    html:not(.dark) .today-anniv-pill:hover {
+                        background: rgba(197,160,89,0.2) !important;
+                    }
+
                     /* ---- ホーム: お知らせ/神籤草子リストのhoverとタグバッジ ---- */
                     html:not(.dark) #view-home #home-news-list li:hover,
                     html:not(.dark) #view-home #home-column-list li:hover {
@@ -6905,11 +7013,30 @@ body.sidebar-collapsed.sidebar-pinned #sidebar .nav-group-title {
                         background: linear-gradient(135deg, #fff5f5 0%, #f8fafc 55%, #fff7ed 100%) !important;
                         border-color: var(--card-border) !important;
                         box-shadow: 0 8px 30px rgba(0,0,0,0.06) !important;
+                        color: var(--text-main) !important;
                     }
                     html:not(.dark) .about-hero-card:hover,
                     html:not(.dark) .privacy-hero-card:hover {
                         border-color: var(--accent-gold) !important;
                         box-shadow: 0 16px 36px rgba(0,0,0,0.12) !important;
+                    }
+                    html:not(.dark) .about-hero-card .text-white,
+                    html:not(.dark) .privacy-hero-card .text-white {
+                        color: var(--text-main) !important;
+                    }
+                    html:not(.dark) .about-hero-card p.text-zinc-300,
+                    html:not(.dark) .privacy-hero-card p.text-zinc-300 {
+                        color: var(--text-sub) !important;
+                    }
+                    html:not(.dark) .about-hero-card #about-pdf-btn,
+                    html:not(.dark) .privacy-hero-card #privacy-pdf-btn {
+                        background: rgba(0,0,0,0.05) !important;
+                        border: 1px solid rgba(0,0,0,0.15) !important;
+                        color: var(--text-main) !important;
+                    }
+                    html:not(.dark) .about-hero-card #about-pdf-btn:hover,
+                    html:not(.dark) .privacy-hero-card #privacy-pdf-btn:hover {
+                        background: rgba(0,0,0,0.08) !important;
                     }
 
                     /* ---- 参拝の記録 Heroカード（ライトモード） ---- */
@@ -7243,6 +7370,21 @@ body.sidebar-collapsed.sidebar-pinned #sidebar .nav-group-title {
                         <span><span class="counter-live-dot"></span>更新：<span class="counter-update-time">--:--:--</span></span>
                         <span><i class="bi bi-arrow-counterclockwise"></i>最終リセット：2026/1/25</span>
                     </div>
+                </div>
+
+                <!-- 2.5 新設: 今日は何の日カード (span 12) -->
+                <div class="bento-card p-5 bg-zinc-950 border border-zinc-800 border-t-2" style="grid-column: span 12; border-top-color: var(--accent-gold);" id="today-anniv-card">
+                    <div class="flex items-center gap-2 mb-2">
+                        <i class="bi bi-calendar-heart-fill" style="color: var(--accent-gold);"></i>
+                        <h3 class="font-bold text-sm text-zinc-200">今日は何の日</h3>
+                        <span id="today-anniv-date" class="text-xs text-zinc-500 ml-auto"></span>
+                    </div>
+                    <div id="today-anniv-body" class="flex flex-wrap gap-2">
+                        <span class="text-xs text-zinc-500">読み込み中...</span>
+                    </div>
+                    <p class="text-[10px] text-zinc-600 mt-2 text-right">
+                        <a href="https://whatistoday.cyou/" target="_blank" rel="noopener" class="hover:underline">powered by 今日は何の日API</a>
+                    </p>
                 </div>
 
                 <!-- 3. 新設: クイックアクセスカード (span 12) - 個別独立カードデザイン＆ホバー時リッチ浮上 -->
@@ -8045,6 +8187,8 @@ body.sidebar-collapsed.sidebar-pinned #sidebar .nav-group-title {
         </div>
 
         <div class="max-w-md mx-auto space-y-4">
+            <div id="omamori-message-panel" class="p-5 rounded-xl text-sm text-left" style="background: var(--card-bg); border: 1px solid var(--card-border);"></div>
+
             <div class="p-4 rounded text-sm text-left" style="background: var(--input-bg); border: 1px solid var(--card-border); color: var(--text-sub);">
                 <i class="bi bi-info-circle mr-1"></i>
                 この御守は画像として保存できます。スマートフォンの壁紙（待ち受け）に設定し、日々の守り神としてお持ち歩きください。
@@ -8898,6 +9042,9 @@ body.sidebar-collapsed.sidebar-pinned #sidebar .nav-group-title {
                             <span class="text-white">当サイトについて</span>
                         </h2>
                         <p class="text-sm text-zinc-300 leading-relaxed max-w-xl" style="font-family: 'Shippori Mincho', serif;">制定: 2026/01/02 ・ 改定: 2026/07/11 (第13版) ・ 運営: nden148</p>
+                        <button onclick="downloadAsPDF('about')" id="about-pdf-btn" class="mt-3 text-xs font-bold flex items-center gap-2 px-4 py-2 rounded-full transition-all hover:-translate-y-0.5" style="background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.25); color: #fff;">
+                            <i class="bi bi-file-earmark-pdf"></i> PDFをダウンロード
+                        </button>
                     </div>
                     <div class="flex-shrink-0 text-center flex flex-col items-center gap-2">
                         <div class="w-20 h-20 rounded-2xl flex items-center justify-center" style="background: linear-gradient(135deg, #7f1d1d, #b91c1c); box-shadow: 0 0 24px rgba(239,68,68,0.3);">
@@ -9298,6 +9445,9 @@ body.sidebar-collapsed.sidebar-pinned #sidebar .nav-group-title {
                             <span class="text-white">プライバシーポリシー</span>
                         </h2>
                         <p class="text-sm text-zinc-300 leading-relaxed max-w-xl" style="font-family: 'Shippori Mincho', serif;">制定: 2026/01/02 ・ 改定: 2026/07/11 (第14版) ・ 運営: nden148</p>
+                        <button onclick="downloadAsPDF('privacy')" id="privacy-pdf-btn" class="mt-3 text-xs font-bold flex items-center gap-2 px-4 py-2 rounded-full transition-all hover:-translate-y-0.5" style="background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.25); color: #fff;">
+                            <i class="bi bi-file-earmark-pdf"></i> PDFをダウンロード
+                        </button>
                     </div>
                     <div class="flex-shrink-0 text-center flex flex-col items-center gap-2">
                         <div class="w-20 h-20 rounded-2xl flex items-center justify-center" style="background: linear-gradient(135deg, #7f1d1d, #b91c1c); box-shadow: 0 0 24px rgba(239,68,68,0.3);">
@@ -16074,14 +16224,14 @@ window.renderPrefectureMap = function() {
     const OmamoriSystem = {
         // 願い事データ定義
         types: {
-            safety:  { label: "交通安全", color: "#2e7d32", text: "#fff" }, // 緑
-            health:  { label: "健康長寿", color: "#00695c", text: "#fff" },   // 深緑
-            love:    { label: "良縁成就", color: "#f48fb1", text: "#fff" },   // ピンク
-            money:   { label: "金運上昇", color: "#fbc02d", text: "#3e2723" }, // 金
-            study:   { label: "学業成就", color: "#1565c0", text: "#fff" }, // 青
-            victory: { label: "必勝祈願", color: "#d32f2f", text: "#fff" },    // 赤
-            protect: { label: "厄除け",   color: "#212121", text: "#fff" },   // 黒
-            success: { label: "大願成就", color: "#7b1fa2", text: "#fff" }  // 紫
+            safety:  { label: "交通安全", color: "#2e7d32", textColor: "#fff", message: "道中の無事は、急がぬ心に宿ります。焦らず、周囲をよく見て、一歩一歩を丁寧に進みましょう。", action: "出発前に持ち物と道順を一度確認しましょう。" },
+            health:  { label: "健康長寿", color: "#00695c", textColor: "#fff", message: "健やかさは日々の小さな選択から育ちます。無理を重ねず、休むべき時に休むこともまた修行です。", action: "今日は水分、睡眠、深呼吸のどれか一つを整えましょう。" },
+            love:    { label: "良縁成就", color: "#f48fb1", textColor: "#fff", message: "良き縁は、飾らぬ言葉と素直な心に結ばれます。追いすぎず、閉ざしすぎず、自然な温度で向き合いましょう。", action: "大切な人へ短くても温かい言葉を届けましょう。" },
+            money:   { label: "金運上昇", color: "#fbc02d", textColor: "#3e2723", message: "豊かさは、巡らせることで大きく育ちます。小さな感謝と整った財布が、今日の金運を招きます。", action: "財布や支払い履歴を整え、不要な出費を一つ見直しましょう。" },
+            study:   { label: "学業成就", color: "#1565c0", textColor: "#fff", message: "知は一日にして成らず。小さな理解を積み重ねる者に、やがて大きな道が開かれます。", action: "今日学ぶことを一つに絞り、短時間でも集中しましょう。" },
+            victory: { label: "必勝祈願", color: "#d32f2f", textColor: "#fff", message: "勝機は、勢いだけでなく備えに宿ります。己を整え、ここぞという時に迷わず進みましょう。", action: "勝負前に、やるべき準備を一つ書き出しましょう。" },
+            protect: { label: "厄除け",   color: "#212121", textColor: "#fff", message: "災いを遠ざける第一の守りは、違和感に気づく心です。無理な誘い、乱れた場、荒い言葉から距離を置きましょう。", action: "今日は無理な約束を避け、身の回りを清めましょう。" },
+            success: { label: "大願成就", color: "#7b1fa2", textColor: "#fff", message: "大きな願いは、日々の小さな行いに宿ります。遠い夢ほど、今日の一歩を軽んじてはなりません。", action: "願いを一文で書き、今日できる最小の一歩を決めましょう。" }
         },
 
         // 祈祷開始
@@ -16131,18 +16281,39 @@ window.renderPrefectureMap = function() {
             
             // ★修正: userName を escapeHtml で無害化
         display.innerHTML = `
-            <div class="omamori-body" style="background-color: ${data.color};">
-                <div class="omamori-texture"></div>
-                <div class="omamori-border"></div>
-                <div class="omamori-knot">${knotSVG}</div>
-                <div class="omamori-label" style="color: #333; font-family: 'Zen Old Mincho', serif;">
-                    ${data.label}
+            <div class="omamori-body">
+                <div class="omamori-inner" style="background-color: ${data.color};">
+                    <div class="omamori-texture"></div>
+                    <div class="omamori-border"></div>
+                    <div class="omamori-label" style="color: #333; font-family: 'Zen Old Mincho', serif;">
+                        ${data.label}
+                    </div>
+                    <div class="omamori-name">
+                        ${escapeHtml(userName)} 拝受
+                    </div>
                 </div>
-                <div class="omamori-name">
-                    ${escapeHtml(userName)} 拝受
+                <div class="omamori-knot">${knotSVG}</div>
+                <div class="omamori-knot-cap"></div>
+                <div class="omamori-tassel">
+                    <div class="omamori-tassel-cord"></div>
+                    <div class="omamori-tassel-head"></div>
+                    <div class="omamori-tassel-strands">
+                        <span></span><span></span><span></span><span></span><span></span>
+                    </div>
                 </div>
             </div>
         `;
+
+        // New!10: 御言葉・本日の一歩をパネルに表示（従来Discord側にのみ存在していた文章）
+        const panel = document.getElementById('omamori-message-panel');
+        if (panel) {
+            panel.innerHTML = `
+                <p style="font-weight:900;font-size:0.95rem;margin-bottom:0.5rem;color:var(--text-main);"><i class="bi bi-quote" style="color:${data.color};"></i> 御言葉</p>
+                <p style="line-height:1.9;color:var(--text-sub);margin-bottom:1rem;">${escapeHtml(data.message)}</p>
+                <p style="font-weight:900;font-size:0.85rem;margin-bottom:0.3rem;color:var(--text-main);"><i class="bi bi-check2-circle" style="color:${data.color};"></i> 本日の一歩</p>
+                <p style="line-height:1.7;color:var(--text-sub);">${escapeHtml(data.action)}</p>
+            `;
+        }
 
         document.getElementById('omamori-step-2').classList.add('hidden');
         document.getElementById('omamori-step-3').classList.remove('hidden');
@@ -19887,6 +20058,30 @@ function changeHistoryPage(newPage) {
         }
     }
 
+    // 3. PDFダウンロード（New!27: window.print()方式で再実装）
+    // 過去の実装（jsPDF/html2pdf.js等）は、日本語フォントが標準搭載されていないための
+    // 文字化け・空白ページや、外部CSSが反映されずスタイルが崩れる等の問題があり失敗していた。
+    // ブラウザ標準のwindow.print()（「PDFとして保存」）はブラウザ自身のレンダリングエンジンで
+    // 出力するため、日本語フォント・CSS・レイアウトが確実に反映され、追加ライブラリも不要。
+    // 既存の @media print 用CSS（.view-section.printing のみ表示）をそのまま活用する。
+    function downloadAsPDF(viewId) {
+        const section = document.getElementById(`view-${viewId}`);
+        if(!section) return;
+
+        section.classList.add('printing');
+
+        const cleanup = () => {
+            section.classList.remove('printing');
+            window.removeEventListener('afterprint', cleanup);
+        };
+        window.addEventListener('afterprint', cleanup);
+
+        // 一部ブラウザ（Safari等）でafterprintが発火しない場合の保険
+        setTimeout(cleanup, 5000);
+
+        window.print();
+    }
+
 
     // 既存の showView 関数を少し修正して、画面表示時に目次を生成するようにする
     const originalShowView = window.showView; // 既存の関数を退避（または直接書き換え）
@@ -20873,6 +21068,30 @@ async function renderSettingsDashboard() {
     fetchCount();
     setInterval(fetchCount, 60000);
 }
+
+// ★New!24: 今日は何の日
+async function fetchTodayAnniv() {
+    const dateEl = document.getElementById('today-anniv-date');
+    const bodyEl = document.getElementById('today-anniv-body');
+    if (!bodyEl) return;
+    try {
+        const res = await fetch(`${API_BASE}/api/today-anniv`);
+        if (!res.ok) throw new Error('failed');
+        const data = await res.json();
+        if (dateEl) dateEl.textContent = data.dateLabel || '';
+        if (Array.isArray(data.items) && data.items.length > 0) {
+            bodyEl.innerHTML = data.items.map(t =>
+                `<span class="today-anniv-pill"><i class="bi bi-stars"></i>${escapeHtml(t)}</span>`
+            ).join('');
+        } else {
+            bodyEl.innerHTML = '<span class="text-xs text-zinc-500">本日の記念日情報を取得できませんでした</span>';
+        }
+    } catch (e) {
+        console.error(e);
+        if (bodyEl) bodyEl.innerHTML = '<span class="text-xs text-zinc-500">現在、情報を取得できません</span>';
+    }
+}
+fetchTodayAnniv();
 
 // 統計描画（修正版：独立グラフ・指定デザイン・指定文章）
 async function loadMyStats() {
