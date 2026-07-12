@@ -805,11 +805,16 @@
             position: relative;
             width: 52px;
             height: 160px;
-            background: linear-gradient(180deg, #fffef8 0%, #fdf7ea 100%);
-            border: 1px solid rgba(255,255,255,0.5);
-            border-top: 1px solid rgba(255,255,255,0.5);
-            border-bottom: 1px solid rgba(255,255,255,0.5);
-            box-shadow: 0 4px 18px rgba(0,0,0,0.45), 0 0 0 1px rgba(0,0,0,0.05), inset 0 1px 1px rgba(255,255,255,0.6);
+            background-color: #fffef9;
+            background-image:
+                url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='6' viewBox='0 0 16 6'%3E%3Cpath d='M0 3 C 2 0,6 0,8 3 C 10 6,14 6,16 3' fill='none' stroke='%23b91c1c' stroke-width='1'/%3E%3C/svg%3E"),
+                url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='6' viewBox='0 0 16 6'%3E%3Cpath d='M0 3 C 2 0,6 0,8 3 C 10 6,14 6,16 3' fill='none' stroke='%23b91c1c' stroke-width='1'/%3E%3C/svg%3E"),
+                url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='6' height='16' viewBox='0 0 6 16'%3E%3Cpath d='M3 0 C 0 2,0 6,3 8 C 6 10,6 14,3 16' fill='none' stroke='%23b91c1c' stroke-width='1'/%3E%3C/svg%3E"),
+                url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='6' height='16' viewBox='0 0 6 16'%3E%3Cpath d='M3 0 C 0 2,0 6,3 8 C 6 10,6 14,3 16' fill='none' stroke='%23b91c1c' stroke-width='1'/%3E%3C/svg%3E");
+            background-repeat: repeat-x, repeat-x, repeat-y, repeat-y;
+            background-position: top left, bottom left, top left, top right;
+            background-size: 16px 6px, 16px 6px, 6px 16px, 6px 16px;
+            box-shadow: inset 0 0 0 6px #fffef9, inset 0 0 0 7px rgba(185,28,28,0.6), 0 4px 18px rgba(0,0,0,0.35), 0 0 0 1px rgba(0,0,0,0.05);
             cursor: pointer;
             display: flex;
             flex-direction: column;
@@ -818,7 +823,7 @@
             gap: 12px;
             padding: 8px 0;
             user-select: none;
-            transition: transform 0.25s cubic-bezier(0.25, 0.46, 0.45, 0.94), box-shadow 0.25s, border-color 0.25s;
+            transition: transform 0.25s cubic-bezier(0.25, 0.46, 0.45, 0.94), box-shadow 0.25s;
             transform-origin: center center;
             border-radius: 0;
         }
@@ -832,15 +837,22 @@
         .omikuji-stick:hover {
             transform: scale(1.15) rotate(0deg) !important;
             z-index: 100;
-            box-shadow: 0 15px 40px rgba(0,0,0,0.35), 0 0 20px rgba(196,160,57,0.35);
-            border-color: #c5a039;
-            background: linear-gradient(180deg, #fffefb 0%, #fff9ec 100%);
+            box-shadow: inset 0 0 0 6px #fffef9, inset 0 0 0 7px #c5a039, 0 15px 40px rgba(0,0,0,0.35), 0 0 20px rgba(196,160,57,0.35);
         }
 
-        /* 札内のパーツスタイル（白い紙のおみくじ札なので、文字・印は朱色/金で表現） */
+        /* 札内のパーツスタイル（おみくじ堂風：朱色の丸印＋縦書きの朱文字） */
         .stick-icon {
-            font-size: 1.2rem;
-            color: #b45309;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: #b91c1c;
+            color: #fefce8;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.65rem;
+            font-weight: 900;
+            font-family: 'Zen Old Mincho', serif;
             line-height: 1;
             flex-shrink: 0;
         }
@@ -856,11 +868,11 @@
             line-height: 1;
         }
 
-        /* --- カウントダウン --- */
+        /* --- カウントダウン（おみくじ堂風・簡素なデザインに刷新） --- */
         #countdown-overlay {
             position: fixed;
             top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(10, 5, 5, 0.92);
+            background: #f7f5ef;
             z-index: 999;
             display: none;
             align-items: center;
@@ -869,123 +881,89 @@
             font-family: 'Zen Old Mincho', serif;
         }
 
-        /* 背景の神社シルエット */
-        #countdown-overlay::before {
-            content: '';
-            position: absolute;
-            inset: 0;
-            background: radial-gradient(ellipse at center, rgba(180,28,28,0.12) 0%, transparent 70%);
-            pointer-events: none;
-        }
-
         #countdown-inner {
             position: relative;
             display: flex;
             align-items: center;
             justify-content: center;
             flex-direction: column;
-            gap: 16px;
+            width: 100%;
+            max-width: 620px;
+            padding: 0 32px;
         }
 
-        /* 外側の回転リング */
-        #countdown-ring-wrap {
-            position: relative;
-            width: 220px;
-            height: 220px;
+        /* 中央の朱印マーク（天命乃杜の紋） */
+        .cd-mark {
+            width: 78px;
+            height: 78px;
+            border-radius: 50%;
+            background: #b91c1c;
+            color: #fefce8;
             display: flex;
             align-items: center;
             justify-content: center;
-        }
-
-        #countdown-svg {
-            position: absolute;
-            inset: 0;
-            width: 100%;
-            height: 100%;
-            transform: rotate(-90deg);
-        }
-
-        #countdown-ring-bg {
-            fill: none;
-            stroke: rgba(255,255,255,0.07);
-            stroke-width: 3;
-        }
-
-        #countdown-ring-progress {
-            fill: none;
-            stroke: #b91c1c;
-            stroke-width: 3;
-            stroke-linecap: round;
-            stroke-dasharray: 628;
-            stroke-dashoffset: 0;
-            filter: drop-shadow(0 0 6px rgba(185,28,28,0.8));
-        }
-
-        /* 内側のパルスリング */
-        #countdown-pulse-ring {
-            position: absolute;
-            width: 170px; height: 170px;
-            border-radius: 50%;
-            border: 1px solid rgba(197,160,89,0.25);
-            animation: cd-pulse 1s ease-out infinite;
-        }
-
-        @keyframes cd-pulse {
-            0%   { transform: scale(0.92); opacity: 0.6; }
-            50%  { transform: scale(1.04); opacity: 0.2; }
-            100% { transform: scale(0.92); opacity: 0.6; }
-        }
-
-        /* 数字 */
-        #countdown-number {
-            position: relative;
-            z-index: 2;
-            font-size: 7rem;
+            font-size: 2.1rem;
             font-weight: 900;
-            color: #fff;
-            line-height: 1;
-            text-shadow: 0 0 30px rgba(185,28,28,0.7), 0 0 60px rgba(185,28,28,0.3);
-            animation: cd-num-pop 0.35s cubic-bezier(0.22,1,0.36,1) both;
             font-family: 'Zen Old Mincho', serif;
+            box-shadow: 0 0 0 3px rgba(185,28,28,0.15);
+            margin-bottom: 28px;
+        }
+
+        /* 波線の二重ライン */
+        .cd-wave-line {
+            width: 100%;
+            height: 12px;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='40' height='12' viewBox='0 0 40 12'%3E%3Cpath d='M0 6 C 5 0, 15 0, 20 6 C 25 12, 35 12, 40 6' fill='none' stroke='%23b91c1c' stroke-width='1.6'/%3E%3C/svg%3E");
+            background-repeat: repeat-x;
+            background-size: 40px 12px;
+            margin: 22px 0;
+        }
+
+        /* メインタイトル「結果が出るまで」 */
+        .cd-title {
+            font-size: 1.9rem;
+            font-weight: 900;
+            color: #b91c1c;
+            letter-spacing: 0.35em;
+            text-align: center;
+            white-space: nowrap;
+        }
+
+        /* サブ説明文 */
+        .cd-sub {
+            font-size: 0.95rem;
+            color: #5c5c5c;
+            letter-spacing: 0.1em;
+            margin-top: 32px;
+            text-align: center;
+        }
+
+        /* 数字＋秒 */
+        .cd-number-row {
+            display: flex;
+            align-items: baseline;
+            gap: 6px;
+            margin-top: 10px;
+        }
+
+        #countdown-number {
+            font-size: 4.2rem;
+            font-weight: 700;
+            color: #2b2b2b;
+            line-height: 1;
+            font-family: 'Zen Old Mincho', serif;
+            animation: cd-num-pop 0.3s ease-out both;
+        }
+
+        .cd-unit {
+            font-size: 1.1rem;
+            color: #2b2b2b;
+            font-weight: 500;
         }
 
         @keyframes cd-num-pop {
-            0%   { transform: scale(1.5); opacity: 0; }
-            100% { transform: scale(1);   opacity: 1; }
-        }
-
-        /* 漢数字サブテキスト */
-        #countdown-kanji {
-            position: absolute;
-            top: 8px; right: -28px;
-            font-size: 0.85rem;
-            color: rgba(197,160,89,0.6);
-            letter-spacing: 0.15em;
-            writing-mode: vertical-rl;
-        }
-
-        /* 上下の飾り文字 */
-        #countdown-label-top {
-            font-size: 0.7rem;
-            letter-spacing: 0.5em;
-            color: rgba(255,255,255,0.35);
-            text-transform: uppercase;
-            margin-bottom: -8px;
-        }
-        #countdown-label-bottom {
-            font-size: 0.65rem;
-            letter-spacing: 0.35em;
-            color: rgba(197,160,89,0.5);
-            margin-top: 4px;
-        }
-
-        /* 角の菱形装飾 */
-        .cd-diamond {
-            width: 6px; height: 6px;
-            background: rgba(197,160,89,0.4);
-            transform: rotate(45deg);
-            display: inline-block;
-            margin: 0 12px;
+            0%   { opacity: 0.2; transform: translateY(4px); }
+            100% { opacity: 1;   transform: translateY(0); }
         }
 
         /* --- バージョン表記 (おみくじ堂スタイル) --- */
@@ -7038,19 +7016,9 @@ body.sidebar-collapsed.sidebar-pinned #sidebar .nav-group-title {
                     html:not(.dark) .action-card-btn.btn-threads { color: #000000 !important; }
                     html:not(.dark) .action-card-btn.btn-discord { color: #5865F2 !important; }
 
-                    /* ---- 天命の授与所 おみくじ棒（ライトモード） ---- */
-                    html:not(.dark) .omikuji-stick {
-                        background: linear-gradient(180deg, #ffffff 0%, #fdfaf2 100%) !important;
-                        border: 1px solid rgba(0,0,0,0.08) !important;
-                        border-top: 1px solid rgba(0,0,0,0.08) !important;
-                        border-bottom: 1px solid rgba(0,0,0,0.08) !important;
-                        box-shadow: 0 3px 14px rgba(120,90,30,0.15), inset 0 1px 0 rgba(255,255,255,0.9) !important;
-                    }
-                    html:not(.dark) .omikuji-stick:hover {
-                        background: linear-gradient(180deg, #fffefb 0%, #fff7e6 100%) !important;
-                        border-color: #c5a039 !important;
-                        box-shadow: 0 15px 40px rgba(0,0,0,0.18), 0 0 20px rgba(196,160,57,0.25) !important;
-                    }
+                    /* 天命の授与所 おみくじ棒：白い紙＋朱色の波線枠デザインは
+                       ダーク/ライト共通（実物のおみくじ札を模しているため
+                       テーマに依存させない）。個別の上書きは不要。 */
 
                     /* ---- TENMEI Labs 会員限定モーダル（ライトモード統一） ---- */
                     html:not(.dark) .lab-modal-overlay {
@@ -9620,21 +9588,15 @@ body.sidebar-collapsed.sidebar-pinned #sidebar .nav-group-title {
     <!-- カウントダウンオーバーレイ -->
     <div id="countdown-overlay">
         <div id="countdown-inner">
-            <div id="countdown-label-top">
-                <span class="cd-diamond"></span>心を鎮め、天命を問う<span class="cd-diamond"></span>
+            <div class="cd-mark">天</div>
+            <div class="cd-wave-line"></div>
+            <div class="cd-title">結果が出るまで</div>
+            <div class="cd-wave-line"></div>
+            <div class="cd-sub">おみくじの結果が出るまで</div>
+            <div class="cd-number-row">
+                <span id="countdown-number">5</span>
+                <span class="cd-unit">秒</span>
             </div>
-            <div id="countdown-ring-wrap">
-                <svg id="countdown-svg" viewBox="0 0 220 220" xmlns="http://www.w3.org/2000/svg">
-                    <circle id="countdown-ring-bg" cx="110" cy="110" r="100"/>
-                    <circle id="countdown-ring-progress" cx="110" cy="110" r="100"/>
-                </svg>
-                <div id="countdown-pulse-ring"></div>
-                <div style="position:relative;">
-                    <div id="countdown-number">3</div>
-                    <div id="countdown-kanji">三</div>
-                </div>
-            </div>
-            <div id="countdown-label-bottom">TENMEI&nbsp;&nbsp;MORI&nbsp;&nbsp;ORACLE</div>
         </div>
     </div>
 
@@ -17109,10 +17071,9 @@ async function fetchHistoryStats() {
                 const stick = document.createElement('div');
                 stick.className = 'omikuji-stick';
                 
-                // デザイン構成: アイコン、メイン文字、サイト名
-                // アイコンは結果画面と同じ bi-flower1 を使用
+                // デザイン構成: 朱色の丸印（天命乃杜の紋）、メイン文字
                 stick.innerHTML = `
-                    <div class="stick-icon"><i class="bi bi-flower1"></i></div>
+                    <div class="stick-icon">天</div>
                     <div class="stick-text">おみくじ</div>
                 `;
                 
@@ -17330,10 +17291,8 @@ async function fetchHistoryStats() {
         function drawResult(element) {
             const overlay = document.getElementById('countdown-overlay');
             const numEl = document.getElementById('countdown-number');
-            const kanjiEl = document.getElementById('countdown-kanji');
-            const ring = document.getElementById('countdown-ring-progress');
             overlay.style.display = 'flex';
-            
+
             // Lab: 神速の祈りモードならカウントダウン省略
             if(window.labSpeedMode) {
                 overlay.style.display = 'none';
@@ -17341,39 +17300,23 @@ async function fetchHistoryStats() {
                 return;
             }
 
-            const kanjiMap = { 5: '五', 4: '四', 3: '三', 2: '二', 1: '一' };
-            const circumference = 628;
-
-            // リングをリセット（transitionなし）してから5秒連続アニメ開始
-            ring.style.transition = 'none';
-            ring.style.strokeDashoffset = '0';
-            ring.offsetHeight; // reflow
-            ring.style.transition = 'stroke-dashoffset 5s linear';
-            requestAnimationFrame(() => {
-                ring.style.strokeDashoffset = String(circumference);
-            });
-
             let count = 5;
             numEl.textContent = count;
-            if(kanjiEl) kanjiEl.textContent = kanjiMap[count] || '';
             numEl.style.animation = 'none';
             numEl.offsetHeight;
-            numEl.style.animation = 'cd-num-pop 0.35s cubic-bezier(0.22,1,0.36,1) both';
-            
+            numEl.style.animation = 'cd-num-pop 0.3s ease-out both';
+
             const timer = setInterval(() => {
                 count--;
                 if(count > 0) {
                     numEl.textContent = count;
-                    if(kanjiEl) kanjiEl.textContent = kanjiMap[count] || '';
                     numEl.style.animation = 'none';
                     numEl.offsetHeight;
-                    numEl.style.animation = 'cd-num-pop 0.35s cubic-bezier(0.22,1,0.36,1) both';
+                    numEl.style.animation = 'cd-num-pop 0.3s ease-out both';
                 } else {
                     clearInterval(timer);
                     overlay.style.display = 'none';
-                    ring.style.transition = 'none';
-                    ring.style.strokeDashoffset = '0';
-                    showResultDetail(true); 
+                    showResultDetail(true);
                 }
             }, 1000);
         }
