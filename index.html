@@ -3594,10 +3594,11 @@
             box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
         }
 
+        /* 緊急追加!5: 全画面で共通のホバー挙動に統一（以前は画面ごとにバラバラだった） */
         .bento-card:hover {
             transform: translateY(-4px) scale(1.01);
-            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
-            border-color: var(--accent-red); /* ホバー時に紅色の枠 */
+            box-shadow: 0 12px 32px rgba(197, 160, 89, 0.2);
+            border-color: var(--accent-gold);
             z-index: 10;
         }
 
@@ -6581,40 +6582,9 @@ body.sidebar-collapsed.sidebar-pinned #sidebar .nav-group-title {
                     box-shadow: 0 4px 24px rgba(0, 0, 0, 0.12) !important;
                     transition: all 0.4s cubic-bezier(0.25, 0.8, 0.25, 1) !important;
                 }
-                #view-home .bento-card:hover {
-                    border-color: var(--accent-gold) !important;
-                    box-shadow: 0 12px 32px rgba(197, 160, 89, 0.2) !important;
-                }
-
-                #view-zodiac .bento-card:hover {
-                    border-color: var(--accent-gold) !important;
-                    box-shadow: 0 12px 32px rgba(197, 160, 89, 0.2) !important;
-                }
-
-                #view-stats .bento-card:hover {
-                    border-color: rgba(212,175,55,0.5) !important;
-                    box-shadow: 0 16px 48px rgba(0,0,0,0.5) !important;
-                }
-
-                #view-omamori .bento-card:hover {
-                    border-color: var(--accent-gold) !important;
-                    box-shadow: 0 12px 32px rgba(197, 160, 89, 0.2) !important;
-                }
-
-                #view-lab .bento-card:hover {
-                    border-color: #6366f1 !important;
-                    box-shadow: 0 12px 32px rgba(99, 102, 241, 0.2) !important;
-                }
-
-                #view-prefecture .bento-card:hover {
-                    border-color: var(--accent-gold) !important;
-                    box-shadow: 0 12px 32px rgba(197, 160, 89, 0.2) !important;
-                }
-
-                #view-history .bento-card:hover {
-                    border-color: var(--accent-gold) !important;
-                    box-shadow: 0 12px 32px rgba(197, 160, 89, 0.2) !important;
-                }
+                /* 緊急追加!5: 各画面ごとに違っていたホバー時の色・挙動（gold/indigo/濃い影など）を廃止し、
+                   共通の .bento-card:hover（gold枠＋一定のリフト＋影）に統一。基本（非ホバー時）の
+                   box-shadow等はそのまま各画面の個性として残している。 */
 
                 /* ========== ライトモード: Hero card 対応 ==========
                    .darkクラスはdocument.documentElement(html要素)に付与されるため
@@ -7041,7 +7011,9 @@ body.sidebar-collapsed.sidebar-pinned #sidebar .nav-group-title {
                         color: var(--text-main) !important;
                     }
                     html:not(.dark) .about-hero-card p.text-zinc-300,
-                    html:not(.dark) .privacy-hero-card p.text-zinc-300 {
+                    html:not(.dark) .privacy-hero-card p.text-zinc-300,
+                    html:not(.dark) .about-hero-card p.text-zinc-400,
+                    html:not(.dark) .privacy-hero-card p.text-zinc-400 {
                         color: var(--text-sub) !important;
                     }
                     html:not(.dark) .about-hero-card #about-pdf-btn,
@@ -7399,7 +7371,7 @@ body.sidebar-collapsed.sidebar-pinned #sidebar .nav-group-title {
                         <span class="text-xs text-zinc-500">読み込み中...</span>
                     </div>
                     <p class="text-[10px] text-zinc-600 mt-2 text-right">
-                        <a href="https://whatistoday.cyou/" target="_blank" rel="noopener" class="hover:underline">powered by 今日は何の日API</a>
+                        <a href="https://www.whatistoday.cyou/" target="_blank" rel="noopener" class="hover:underline">powered by 今日は何の日API</a>
                     </p>
                 </div>
 
@@ -8900,8 +8872,9 @@ body.sidebar-collapsed.sidebar-pinned #sidebar .nav-group-title {
                         </h3>
                     </div>
                     <div class="p-6 md:p-8 space-y-3 text-sm text-gray-600 dark:text-gray-400 leading-relaxed">
-                        <p>サイドバーの「12星座占い」から、自分の星座と血液型を選ぶと、その日の運勢を確認できます。</p>
+                        <p>サイドバーの「12星座占い」から、自分の星座と血液型を選ぶと、その日の運勢を確認できます。12星座×4血液型、全48通りの運勢を毎日0時に更新してランキング形式で公開しているのが特徴です。</p>
                         <p>恋愛・お金・仕事など分野ごとの運勢に加え、ラッキーナンバー・ラッキーアイテム・ラッキーカラーも毎日更新されます。同じ星座・血液型の組み合わせでも、日付が変わればまた違う結果が表示されます。</p>
+                        <p>結果画面の星アイコンをタップすると、その星座×血液型の組み合わせをお気に入りとして登録できます（最大5件まで）。よく確認する組み合わせを登録しておけば、いつでもすぐに見返せます。参拝証をお持ちの方限定の機能です。</p>
                     </div>
                 </div>
 
@@ -8984,7 +8957,7 @@ body.sidebar-collapsed.sidebar-pinned #sidebar .nav-group-title {
                     </div>
                     <div class="p-6 md:p-8 space-y-3 text-sm text-gray-600 dark:text-gray-400 leading-relaxed">
                         <p>おみくじや占いは登録なしでもお楽しみいただけますが、参拝証を発行（会員登録）すると、参拝の記録・おみくじの轍・お気に入り登録・TENMEI LABSといった追加機能が使えるようになります。</p>
-                        <p>メールアドレスとパスワードを入力し、メールに届く認証コードを入力するだけで発行できます。</p>
+                        <p>メールアドレスとパスワードを入力し、メールに届く認証コードを入力するだけで発行できます。2回目以降のログインでは、メール内のボタンをワンクリックするだけで完了する方式も選べます（認証コードを直接入力する方式ももちろん利用できます）。Googleアカウントでのログインにも対応しています。</p>
                     </div>
                 </div>
 
@@ -9061,6 +9034,7 @@ body.sidebar-collapsed.sidebar-pinned #sidebar .nav-group-title {
                         <button onclick="downloadAsPDF('about')" id="about-pdf-btn" class="mt-3 text-xs font-bold flex items-center gap-2 px-4 py-2 rounded-full transition-all hover:-translate-y-0.5" style="background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.25); color: #fff;">
                             <i class="bi bi-file-earmark-pdf"></i> PDFをダウンロード
                         </button>
+                        <p class="text-[11px] text-zinc-400 mt-1">※iPhone・iPadでは印刷画面が直接開きます（プレビューは印刷オプション選択後に表示されます）</p>
                     </div>
                     <div class="flex-shrink-0 text-center flex flex-col items-center gap-2">
                         <div class="w-20 h-20 rounded-2xl flex items-center justify-center" style="background: linear-gradient(135deg, #7f1d1d, #b91c1c); box-shadow: 0 0 24px rgba(239,68,68,0.3);">
@@ -9290,7 +9264,8 @@ body.sidebar-collapsed.sidebar-pinned #sidebar .nav-group-title {
                             3. 本サービスからリンクされている外部サイト（SNSシェア先等）の内容やプライバシー保護については、当運営は責任を負いません。<br>
                             4. <strong>本サービスは個人開発による実験的プロジェクトであり、専任のサポート窓口やお問い合わせフォーム、サポート用メールアドレスは設置しておりません。</strong>一方で、公式Discord参拝所を開設したことに伴い、サイトに関する一般的なご感想、不具合と思われる現象の共有、機能改善のご提案については、Discord上の公開チャンネル等でお寄せいただけます。<br>
                             5. ただし、公式Discord参拝所は常設のカスタマーサポート窓口ではなく、個別返信、調査、修正、データ復旧、開示請求等への対応を保証するものではありません。緊急性の高い内容、個人情報を含む内容、第三者に見られて困る内容は投稿しないでください。<br>
-                            6. 万が一、本サービスの利用により何らかの問題が生じた場合、または個人情報の取扱いに関して懸念が生じた場合は、直ちに本サービスの利用を中止し、「アカウント削除」機能を用いてご自身のデータを完全に消去する措置をとってください。Discord上でご連絡いただいた場合であっても、個別対応をお約束するものではありません。
+                            6. 万が一、本サービスの利用により何らかの問題が生じた場合、または個人情報の取扱いに関して懸念が生じた場合は、直ちに本サービスの利用を中止し、「アカウント削除」機能を用いてご自身のデータを完全に消去する措置をとってください。Discord上でご連絡いただいた場合であっても、個別対応をお約束するものではありません。<br>
+                            7. 当サイトは、コード・文章・画像等の制作過程においてAI（人工知能）を活用して開発されています。また「記事分析ダッシュボード」等、AIによる自動分析・生成結果を表示する機能を含みます。AIによる出力は高い性能を持つ場合であっても、その正確性・完全性・最新性を保証するものではなく、誤った情報や解釈のずれを含む可能性があります。AIが出力した内容を利用者ご自身の重要な判断材料とすることは避け、参考情報としてご活用ください。
                         </p>
                     </div>
                 </div>
@@ -9324,9 +9299,9 @@ body.sidebar-collapsed.sidebar-pinned #sidebar .nav-group-title {
                     <i class="bi bi-person-fill"></i> 自己紹介
                 </h2>
                 <div class="text-sm leading-relaxed opacity-80 space-y-3">
-                    <p>こんにちは、nden148です。性別は男です。この名前は特に深い意味はなく、ぱっと思いついたものです。個人で活動しており、開発は主な作業ではありませんが、時々ソフトウェアやウェブサイトを作っています。</p>
-                    <p>新しい技術を学ぶこと、自分のアイデアを形にすること、そしてプログラミングそのものが好きです。また、下手ながら英語の読み書きをしたり、Minecraft（統合版）のコマンドを触ったりすることもありますが、どちらもまだ勉強中です。</p>
-                    <p>開発の合間や普段の息抜きには、お笑い番組を見たり、YouTubeの動画を鑑賞したり、ゲームをプレイしたりしてリフレッシュするのが好きです。一方で、他人とのコミュニケーションや大勢の前で何かを発表することは少し苦手で、人見知りな面もあります。オンラインでの活動を通じて、少しずつ自分を表現していければと考えています。</p>
+                    <p>こんにちは、nden148です。性別は男です。この名前は特に深い意味はなく、ぱっと思いついたものです。個人で活動しており、時々ウェブサイトを作っています。</p>
+                    <p>新しい技術を学ぶこと、自分のアイデアを形にすることが好きです。また、下手ながら英語の読み書きをしたり、Minecraft（統合版）のコマンドを触ったりすることもありますが、どちらもまだ勉強中です。</p>
+                    <p>普段の息抜きには、YouTubeの動画を鑑賞したり、ゲームをプレイしたりしてリフレッシュするのが好きです。一方で、他人とのコミュニケーションや大勢の前で何かを発表することは少し苦手で、人見知りな面もあります。オンラインでの活動を通じて、少しずつ自分を表現していければと考えています。</p>
                 </div>
             </div>
 
@@ -9347,9 +9322,8 @@ body.sidebar-collapsed.sidebar-pinned #sidebar .nav-group-title {
                         <i class="bi bi-heart-fill"></i> 好きなこと
                     </h2>
                     <ul class="space-y-2 text-sm opacity-80">
-                        <li class="flex items-center gap-2"><i class="bi bi-dot" style="color: var(--accent-gold);"></i>プログラミング</li>
                         <li class="flex items-center gap-2"><i class="bi bi-dot" style="color: var(--accent-gold);"></i>ゲーム</li>
-                        <li class="flex items-center gap-2"><i class="bi bi-dot" style="color: var(--accent-gold);"></i>お笑い番組・YouTube鑑賞</li>
+                        <li class="flex items-center gap-2"><i class="bi bi-dot" style="color: var(--accent-gold);"></i>YouTube鑑賞</li>
                     </ul>
                 </div>
             </div>
@@ -9361,7 +9335,7 @@ body.sidebar-collapsed.sidebar-pinned #sidebar .nav-group-title {
                 </h2>
                 <div class="text-sm leading-relaxed opacity-80 space-y-3">
                     <p>以前はFirebase Studioを愛用していましたが、ワークスペースの制限や読み込みの遅さを感じるようになりました。より柔軟な開発環境を求め、現在はGitHubをメインのプラットフォームとして活動しています。</p>
-                    <p>私自身はコードを直接記述することが得意ではないため、AIのサポートを受けながら開発を進めています。アイデアを伝え、それをコードにしてもらうスタイルです。</p>
+                    <p>私自身はプログラミングの知識が全く無いため、開発は基本的にAIに全て任せています。ぱっと思いついたアイデアを文章にしてAIへの指示として送るのが自分の役割で、あとはできあがったコードをGitHubやCloudflare Workersへコピペするだけです。コードに関わらない作業についても、AIにウェブ検索してもらいながら手順をわかりやすく教えてもらい、その指示通りに進めています。</p>
                 </div>
                 <div class="mt-4 grid grid-cols-2 md:grid-cols-4 gap-3">
                     <div class="text-center p-3 rounded-xl text-xs" style="background: rgba(212,175,55,0.08); border: 1px solid rgba(212,175,55,0.2);">
@@ -9464,6 +9438,7 @@ body.sidebar-collapsed.sidebar-pinned #sidebar .nav-group-title {
                         <button onclick="downloadAsPDF('privacy')" id="privacy-pdf-btn" class="mt-3 text-xs font-bold flex items-center gap-2 px-4 py-2 rounded-full transition-all hover:-translate-y-0.5" style="background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.25); color: #fff;">
                             <i class="bi bi-file-earmark-pdf"></i> PDFをダウンロード
                         </button>
+                        <p class="text-[11px] text-zinc-400 mt-1">※iPhone・iPadでは印刷画面が直接開きます（プレビューは印刷オプション選択後に表示されます）</p>
                     </div>
                     <div class="flex-shrink-0 text-center flex flex-col items-center gap-2">
                         <div class="w-20 h-20 rounded-2xl flex items-center justify-center" style="background: linear-gradient(135deg, #7f1d1d, #b91c1c); box-shadow: 0 0 24px rgba(239,68,68,0.3);">
@@ -9630,6 +9605,12 @@ body.sidebar-collapsed.sidebar-pinned #sidebar .nav-group-title {
                                     <p class="text-gray-500">送信される情報：Discord上のユーザー名・ユーザーID、サーバー内での投稿内容、スラッシュコマンドの入力内容（/天命コマンド使用時のカテゴリ・キーワード選択を含む）、Discordが取得する通信情報等</p>
                                     <p class="text-gray-500">/天命コマンドへの入力内容（カテゴリ・キーワード）はCloudflare Worker上でレスポンス生成のみに使用され、サーバーへの保存・記録は行いません。ただし、Discordのチャンネル上に表示された選択内容は他の参加者から閲覧される可能性があります。機微な個人情報はコマンド入力欄にも記載しないでください。</p>
                                     <p class="mt-1">特記事項：公式Discord参拝所はDiscord Inc.が提供する外部サービス上で運用されます。参加・投稿・コマンド実行に伴う情報はDiscordの管理下でも処理されます。公開チャンネルには個人情報や機微な内容を投稿しないでください。Discordのデータ利用方針については <a href="https://discord.com/privacy" target="_blank" rel="noopener noreferrer" class="underline text-blue-500">Discord プライバシーポリシー</a> をご参照ください。</p>
+                                </div>
+                                <div class="bg-white dark:bg-black/20 p-3 rounded border border-gray-200 dark:border-gray-700 text-xs">
+                                    <p class="font-bold text-sm">10. CDN配信の静的ライブラリ（jsDelivr／cdnjs／Google Fonts 等）</p>
+                                    <p class="text-gray-500">利用目的：フォント・アイコン・地図表示・画像生成（おみくじ結果や御守の保存画像作成）等に用いるJavaScriptライブラリおよびフォントファイルの配信</p>
+                                    <p class="text-gray-500">送信される情報：ファイル取得リクエストに伴うアクセス元IPアドレス、ブラウザ情報（各CDN事業者へ）</p>
+                                    <p class="mt-1">特記事項：当サイトはBootstrap Icons・Leaflet・QRコード生成・画像保存機能（html-to-image）等の一部を、jsDelivr・cdnjs・Google Fontsといった外部CDN経由で配信しています。これらはいずれも静的なファイル配信のみを行うサービスであり、氏名・メールアドレス等の個人情報を収集するものではありませんが、ファイル取得の際にIPアドレスが各事業者へ送信される点にご留意ください。各社のデータ利用方針は <a href="https://www.jsdelivr.com/privacy-policy" target="_blank" rel="noopener noreferrer" class="underline text-blue-500">jsDelivr</a>／<a href="https://www.cloudflare.com/privacypolicy/" target="_blank" rel="noopener noreferrer" class="underline text-blue-500">cdnjs (Cloudflare)</a>／<a href="https://policies.google.com/privacy" target="_blank" rel="noopener noreferrer" class="underline text-blue-500">Google Fonts</a> をご参照ください。</p>
                                 </div>
                             </div>
                         </div>
@@ -9810,6 +9791,7 @@ body.sidebar-collapsed.sidebar-pinned #sidebar .nav-group-title {
                             <a onclick="showView('about')" style="font-size:0.8rem;color:var(--text-main);text-decoration:none;cursor:pointer;transition:color 0.15s;" onmouseenter="this.style.color='var(--accent-red)'" onmouseleave="this.style.color='var(--text-main)'">当サイトについて</a>
                             <a onclick="showView('privacy')" style="font-size:0.8rem;color:var(--text-main);text-decoration:none;cursor:pointer;transition:color 0.15s;" onmouseenter="this.style.color='var(--accent-red)'" onmouseleave="this.style.color='var(--text-main)'">プライバシーポリシー</a>
                             <a onclick="showView('developer')" style="font-size:0.8rem;color:var(--text-main);text-decoration:none;cursor:pointer;transition:color 0.15s;" onmouseenter="this.style.color='var(--accent-red)'" onmouseleave="this.style.color='var(--text-main)'">開発者について</a>
+                            <a onclick="showView('howto')" style="font-size:0.8rem;color:var(--text-main);text-decoration:none;cursor:pointer;transition:color 0.15s;" onmouseenter="this.style.color='var(--accent-red)'" onmouseleave="this.style.color='var(--text-main)'">使い方</a>
                         </div>
                     </div>
                 </div>
