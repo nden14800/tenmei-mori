@@ -162,6 +162,26 @@
             --omi-paper: #fffcf2 !important; 
         }
 
+        /* 手動切り替え (.lightクラス付与時): OSがダーク設定でも
+           @media (prefers-color-scheme: dark) によるCSS変数の上書きを
+           確実にブロックするため、.darkと対になる形で用意 */
+        .light {
+            --accent-red: #b91c1c !important;
+            --bg-pattern: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23d4d4d4' fill-opacity='0.15'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E") !important;
+            --bg-color: #f5f4f0 !important;
+            --text-main: #1a1a1a !important;
+            --text-sub: #555555 !important;
+            --card-bg: #ffffff !important;
+            --card-border: #e2e2e2 !important;
+            --footer-bg: #eeece3 !important;
+            --accent-gold: #c5a059 !important;
+            --glass-bg: rgba(255, 255, 255, 0.88) !important;
+            --glass-border: rgba(0, 0, 0, 0.08) !important;
+            --sidebar-bg: rgba(255, 255, 255, 0.88) !important;
+            --input-bg: #f9f9f9 !important;
+            --omi-paper: #fffcf2 !important;
+        }
+
         /* Lab: 迎春・雅モード */
         body.theme-newyear {
             --bg-color: #fffbf0;
@@ -9427,7 +9447,7 @@ body.sidebar-collapsed.sidebar-pinned #sidebar .nav-group-title {
 
             <!-- プロフィール表 -->
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-                <div class="bento-card" style="padding: 1.5rem;">
+                <div class="bento-card" style="padding: 1.5rem; justify-content: flex-start;">
                     <h2 class="text-base font-black mb-3 flex items-center gap-2" style="color: var(--accent-gold);">
                         <i class="bi bi-check2-circle"></i> できること
                     </h2>
@@ -9437,7 +9457,7 @@ body.sidebar-collapsed.sidebar-pinned #sidebar .nav-group-title {
                         <li class="flex items-center gap-2"><i class="bi bi-dot" style="color: var(--accent-gold);"></i>AIにコードを生成させること</li>
                     </ul>
                 </div>
-                <div class="bento-card" style="padding: 1.5rem;">
+                <div class="bento-card" style="padding: 1.5rem; justify-content: flex-start;">
                     <h2 class="text-base font-black mb-3 flex items-center gap-2" style="color: var(--accent-gold);">
                         <i class="bi bi-heart-fill"></i> 好きなこと
                     </h2>
@@ -22266,9 +22286,21 @@ function applyThemeByConfig(theme) {
     }
 
     if (shouldBeDark) {
+        // ダーク: .dark(!important)で確定させ、.lightは念のため外す
         document.documentElement.classList.add('dark');
+        document.documentElement.classList.remove('light');
     } else {
         document.documentElement.classList.remove('dark');
+        if (theme === 'light') {
+            // 明示的にライトを選んだ場合のみ .light(!important) を付与し、
+            // OSがダーク設定でも @media(prefers-color-scheme:dark) を確実に打ち消す
+            document.documentElement.classList.add('light');
+        } else {
+            // system判定でOSがライトだった場合は、@media自体が発火しないため
+            // .lightは不要（付けたままだと後でOSがダークに変わった際の
+            // 自動追従を阻害しかねないので、確実に外しておく）
+            document.documentElement.classList.remove('light');
+        }
     }
 }
 
