@@ -1140,163 +1140,200 @@
             margin: 0 auto;
             position: relative;
         }
+        :root {
+            --omikuji-accent: #d9491f;
+        }
+
+        /* 波線二重枠（おみくじ堂スタンプ風／サイト既存のomikuji-stickと同じ技法で統一） */
+        .omikuji-scallop-border {
+            position: relative;
+            background-image:
+                url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='22' height='8' viewBox='0 0 22 8'%3E%3Cpath d='M0 4 C 2.75 0,8.25 0,11 4 C 13.75 8,19.25 8,22 4' fill='none' stroke='%23d9491f' stroke-width='1.2'/%3E%3C/svg%3E"),
+                url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='22' height='8' viewBox='0 0 22 8'%3E%3Cpath d='M0 4 C 2.75 0,8.25 0,11 4 C 13.75 8,19.25 8,22 4' fill='none' stroke='%23d9491f' stroke-width='1.2'/%3E%3C/svg%3E"),
+                url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='8' height='22' viewBox='0 0 8 22'%3E%3Cpath d='M4 0 C 0 2.75,0 8.25,4 11 C 8 13.75,8 19.25,4 22' fill='none' stroke='%23d9491f' stroke-width='1.2'/%3E%3C/svg%3E"),
+                url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='8' height='22' viewBox='0 0 8 22'%3E%3Cpath d='M4 0 C 0 2.75,0 8.25,4 11 C 8 13.75,8 19.25,4 22' fill='none' stroke='%23d9491f' stroke-width='1.2'/%3E%3C/svg%3E");
+            background-repeat: repeat-x, repeat-x, repeat-y, repeat-y;
+            background-position: top left, bottom left, top left, top right;
+            background-size: 22px 8px, 22px 8px, 8px 22px, 8px 22px;
+            box-shadow:
+                inset 0 0 0 8px var(--card-bg, #fdfbf5);
+        }
+        .style-normal.omikuji-scallop-border { --card-bg: #fdfbf5; }
+        .style-daikichi.omikuji-scallop-border { --card-bg: #e8b923; }
+        .style-daikyo.omikuji-scallop-border { --card-bg: #2b2926; }
+        .result-stamp-header.omikuji-scallop-border {
+            /* --card-bg は指定せず、外側のカード（style-normal/daikichi/daikyo）から継承させる。
+               固定のオフホワイトのままだと、大凶(暗色カード)の時だけ浮いて見づらくなっていたため。 */
+            background-size: 16px 6px, 16px 6px, 6px 16px, 6px 16px;
+            box-shadow:
+                inset 0 0 0 6px var(--card-bg, #fdfbf5);
+        }
+        /* 大吉の和紙のザラつき（波線パターンとは別レイヤーで重ねる） */
+        .style-daikichi.omikuji-scallop-border::after {
+            content: '';
+            position: absolute;
+            inset: 12px;
+            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 400 400' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='washi'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.5' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23washi)' opacity='0.35'/%3E%3C/svg%3E");
+            mix-blend-mode: overlay;
+            pointer-events: none;
+        }
+
         .result-card-outer {
             width: 600px;
-            min-height: 1200px;
-            padding: 30px;
+            min-height: 900px;
+            padding: 46px 40px;
             box-sizing: border-box;
             display: flex;
             flex-direction: column;
             align-items: center;
             position: relative;
             font-family: 'Zen Old Mincho', serif;
+            color: var(--omikuji-accent);
         }
 
-        .result-logo-area {
-            text-align: center;
-            margin-bottom: 10px;
+        /* 上部の印章ボックス（4文字縦書きブランド名 + 丸ロゴ） */
+        .result-stamp-header {
+            width: 100%;
+            max-width: 320px;
+            box-sizing: border-box;
+            padding: 22px 16px;
+            margin-bottom: 26px;
+            display: flex;
+            flex-direction: row-reverse;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            color: var(--omikuji-accent);
         }
-        .result-kamon {
-            font-size: 3rem;
-            margin-bottom: 5px;
-        }
-        .result-title-text {
-            font-size: 1.5rem;
+        .result-stamp-brand {
+            writing-mode: vertical-rl;
+            text-orientation: upright;
+            font-size: 1.7rem;
             font-weight: 900;
-            letter-spacing: 0.3em;
+            letter-spacing: 0.15em;
+            line-height: 1.2;
         }
-        .result-issue-num {
-            font-size: 0.9rem;
-            margin-bottom: 20px;
-            font-family: monospace;
-            opacity: 0.8;
-        }
-        
-        /* --- 運勢ハンコ（最新デザイン） --- */
-        .result-circle-box {
-            width: 160px;
-            height: 160px;
+        .result-stamp-mark {
+            width: 40px;
+            height: 40px;
             border-radius: 50%;
+            border: 2px solid var(--omikuji-accent);
             display: flex;
             align-items: center;
             justify-content: center;
-            margin: 0 auto 15px;
-            overflow: hidden;
-            padding: 10px;
-            box-sizing: border-box;
-            border: 3px solid transparent; /* デフォルト */
+            flex-shrink: 0;
         }
 
-        .result-kanji-main {
-            writing-mode: vertical-rl;
-            text-orientation: upright;
+        .result-issue-num {
+            font-size: 0.85rem;
+            margin-bottom: 22px;
+            font-family: monospace;
+            opacity: 0.75;
+        }
+
+        /* --- 運勢 [山]大吉/凶 の帯 --- */
+        .result-rank-row {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 14px;
+            width: 100%;
+            margin-bottom: 26px;
+            padding-top: 22px;
+            border-top: 1px solid currentColor;
+        }
+        .result-rank-label {
+            font-size: 1.15rem;
             font-weight: 900;
-            line-height: 1;
-            letter-spacing: -0.05em;
-            display: block;
+            letter-spacing: 0.5em;
+            padding-left: 0.5em; /* letter-spacingの右余白ズレ調整 */
+        }
+        .result-rank-mountain {
+            width: 26px;
+            height: 26px;
+            flex-shrink: 0;
+        }
+        .result-kanji-main {
+            font-size: 1.7rem;
+            font-weight: 900;
+            letter-spacing: 0.3em;
+            padding-left: 0.3em;
         }
 
-       /* --- スタイル別定義 --- */
+       /* --- スタイル別背景（枠と文字色は共通、背景のみランクで変化） --- */
 
-        /* 1. 標準（中吉・小吉・吉など）: 二重線カード、赤塗りハンコ、赤文字 */
+        /* 1. 標準（中吉・小吉・凶・小凶など）: 生成り白の和紙背景 */
         .style-normal {
-            background-color: #ffffff;
-            border: 8px double #b91c1c; /* カード外枠：赤二重線 */
-            color: #b91c1c; /* ▼修正: ここを #333 から #b91c1c (赤) に変更 */
-        }
-        .style-normal .result-circle-box {
-            background-color: #b91c1c; /* ハンコ塗りつぶし：赤 */
-            color: #ffffff !important; /* ハンコ内の文字：白 */
+            background-color: #fdfbf5;
         }
 
-        /* 2. 大吉: 画像のような鮮やかな黄金色と、和紙の強いザラザラ感を再現 */
+        /* 2. 大吉: 金色の和紙背景 */
         .style-daikichi {
-            /* 画像から抽出した、赤みの入った濃厚な山吹色 */
-            background-color: #ffb700;
-            
-            /* ザラザラ感（和紙の繊維）を表現するノイズ画像 */
-            /* 粒子を少し粗く(0.5)し、不透明度を高く(0.4)して、質感をくっきりと出しています */
-            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 400 400' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='washi'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.5' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23washi)' opacity='0.4'/%3E%3C/svg%3E");
-            
-            /* 背景色とノイズを合成して、深みのある質感にする */
-            background-blend-mode: overlay;
-            
-            border: 8px double #fff; /* 外枠はそのまま */
-            color: #b91c1c; /* 文字色は赤 */
-        }
-        
-        .style-daikichi .result-circle-box {
-            background-color: transparent;
-            border: 2px solid #b91c1c; /* ハンコの線（2px） */
-            color: #b91c1c !important;
+            background-color: #e8b923;
         }
 
-        /* 3. 大凶: 白カード、黒二重線、黒ハンコ（縁のみ）、黒文字 */
+        /* 3. 大凶: 濃いグレーの背景（文字色はそのまま朱色） */
         .style-daikyo {
-            background-color: #ffffff; /* 背景：白 */
-            border: 8px double #000000; /* カード外枠：黒二重線 */
-            color: #000000; /* 文字：黒（ここはそのまま） */
+            background-color: #2b2926;
         }
-        .style-daikyo .result-circle-box {
-            background-color: transparent;
-            border: 4px solid #000000; /* ハンコ：黒縁 */
-            color: #000000 !important; /* 文字：黒 */
-        }
-        
-        /* パーツごとの色強制（大凶の時は黒、それ以外は親要素のcolor＝赤を継承） */
-        .style-daikyo .accent-border { border-color: #000 !important; }
-        .style-daikyo .accent-text { color: #000 !important; }
-        .style-daikyo .red-text { color: #000 !important; }
-        
-        /* 標準と大吉の時は、親要素の赤色(#b91c1c)を引き継ぐ設定 */
-        .style-normal .accent-border, .style-daikichi .accent-border { border-color: currentColor; }
-        .style-normal .accent-text, .style-daikichi .accent-text { color: currentColor; }
-        .style-normal .red-text, .style-daikichi .red-text { color: currentColor; }
 
-        .result-card-outer {
-            padding: 30px 40px !important;
-        }
-        
         .result-label-sub {
             font-size: 1.2rem;
             margin-bottom: 20px;
             font-weight: bold;
         }
 
+        /* 助言＋和歌：和歌(右)と助言(左)を区切り線で分けて配置する（おみくじ堂と同じ見せ方） */
         .result-main-message-area {
             display: flex;
+            flex-direction: row-reverse; /* 縦書きは右から読むため、和歌→線→助言の順に右から並べる */
+            align-items: flex-start;
             justify-content: center;
-            gap: 30px;
-            margin-bottom: 40px;
+            gap: 14px;
+            margin-bottom: 30px;
             width: 100%;
-            padding: 0 20px;
+            padding: 0 4px;
         }
-        .result-poem-vertical {
+        .result-message-flow-block {
             writing-mode: vertical-rl;
-            font-size: 2rem;
+            text-orientation: mixed;
+            font-size: 1.3rem;
             font-weight: bold;
-            letter-spacing: 0.2em;
-            line-height: 1.8;
-            height: 350px;
+            letter-spacing: 0.15em;
+            line-height: 2.15;
+            height: auto;
+            max-height: 420px;
+            min-height: 160px;
+            /* 最後の列（短い列）が下寄せ／均等配置されて浮いて見えないよう、常に先頭(上)基準で揃える */
+            text-align: start;
+            text-align-last: start;
+            text-justify: none;
         }
-        .result-advice-box {
-            writing-mode: vertical-rl;
-            border: 2px solid currentColor;
-            padding: 15px 10px;
-            font-size: 1rem;
-            line-height: 1.8;
-            height: 350px;
+        /* 和歌と助言の間の区切り線（開運・不運の区切り線と同じ見た目に統一） */
+        .result-message-divider {
+            width: 1px;
+            align-self: stretch;
+            background: currentColor;
+            opacity: 0.25;
+            flex-shrink: 0;
         }
-        .advice-label {
-            font-weight: 900;
-            border-bottom: 1px solid currentColor; /* 縦書きなので左線に見えるが実際は下 */
-            margin-left: 10px;
-            padding-bottom: 5px;
+        /* 和歌（引用部分）：本文よりはっきり小さく・薄い色にして「引用」だと一目でわかるようにする */
+        .result-poem-part {
+            font-size: 0.72em;
+            font-weight: 500;
+            letter-spacing: 0.3em;
+            opacity: 0.5;
+        }
+        /* 助言（本文）：和歌より一回り大きい太字にして、対比をはっきりさせる */
+        .result-desc-part {
+            font-size: 1.08em;
+            font-weight: bold;
         }
 
         .result-details-grid {
             display: flex;
             flex-direction: row-reverse; /* 縦書きなので右から左へ */
+            align-items: flex-start;
             justify-content: center;
             gap: 15px;
             width: 100%;
@@ -1307,8 +1344,8 @@
         }
         .detail-column {
             writing-mode: vertical-rl;
-            height: 250px;
-            font-size: 1.1rem;
+            height: auto;
+            font-size: 1.05rem;
             line-height: 1.5;
         }
         .detail-item-label {
@@ -1325,7 +1362,7 @@
             display: grid;
             grid-template-columns: 1fr;
             gap: 20px;
-            margin-bottom: 30px;
+            margin-bottom: 10px;
             text-align: left;
         }
         .lucky-box, .unlucky-box {
@@ -1338,12 +1375,9 @@
         .lucky-row { font-size: 0.9rem; margin-bottom: 4px; display: flex; align-items: flex-start;}
         .lucky-icon { margin-right: 5px; min-width: 20px; text-align: center; }
 
-        /* 縦書き列レイアウト（おみくじ堂スタイル） */
+        /* 縦書き列レイアウト（おみくじ堂スタイル：枠なしのプレーン表示） */
         .omikuji-lucky-columns {
             width: 100%;
-            border: 1px solid currentColor;
-            border-radius: 8px;
-            overflow: hidden;
             margin-bottom: 0;
         }
         .omikuji-lucky-inner {
@@ -1351,7 +1385,7 @@
             flex-direction: row-reverse;
             justify-content: space-evenly;
             align-items: flex-start;
-            padding: 16px 12px;
+            padding: 0 12px;
             gap: 0;
             min-height: 180px;
         }
@@ -5620,47 +5654,37 @@ body.theme-newyear {
             margin: 0 auto;
         }
         
-        .result-card-outer {
-            width: 100% !important;
-            min-height: auto !important; /* 高さを中身に合わせる */
-            padding: 25px 15px !important; /* 余白を少し詰める */
-            box-sizing: border-box;
+        @media (max-width: 640px) {
+            .result-card-outer {
+                width: 100% !important;
+                min-height: auto !important; /* 高さを中身に合わせる */
+                padding: 25px 15px !important; /* 余白を少し詰める */
+                box-sizing: border-box;
+            }
         }
 
         /* 2. スマホ時の各パーツのサイズ調整 */
         @media (max-width: 640px) {
-            /* 家紋とタイトル */
-            .result-kamon { font-size: 2rem !important; }
-            .result-title-text { font-size: 1.2rem !important; }
-            
-            /* メインのハンコ */
-            .result-circle-box {
-                width: 120px !important;
-                height: 120px !important;
-                padding: 5px !important;
-            }
+            /* 印章ヘッダー */
+            .result-stamp-brand { font-size: 1.3rem !important; }
+            .result-stamp-mark { width: 32px !important; height: 32px !important; }
+
+            /* 運勢帯 */
+            .result-rank-label { font-size: 1rem !important; letter-spacing: 0.35em !important; }
+            .result-rank-mountain { width: 20px !important; height: 20px !important; }
             .result-kanji-main {
-                /* ハンコ内の文字サイズを計算式で縮小 */
-                font-size: calc(100% + 4vw) !important; 
+                font-size: calc(100% + 3vw) !important;
             }
 
-            /* 和歌と助言エリア（縦書き） */
+            /* 和歌と助言エリア（縦書き・左右2ブロック） */
             .result-main-message-area {
-                gap: 10px !important; /* 間隔を詰める */
-                margin-bottom: 25px !important;
+                margin-bottom: 20px !important;
                 padding: 0 5px !important;
+                gap: 10px !important;
             }
-            .result-poem-vertical {
-                font-size: 1.4rem !important; /* 文字を小さく */
-                height: auto !important;
-                min-height: 280px !important; /* 最低高さを確保 */
-                line-height: 1.4 !important;
-            }
-            .result-advice-box {
-                font-size: 0.85rem !important;
-                height: auto !important;
-                min-height: 280px !important;
-                padding: 10px 5px !important;
+            .result-message-flow-block {
+                font-size: 1.1rem !important; /* 文字を小さく */
+                line-height: 1.8 !important;
             }
 
             /* 詳細項目（願い事など） */
@@ -5669,7 +5693,6 @@ body.theme-newyear {
                 padding: 15px 0 !important;
             }
             .detail-column {
-                height: 180px !important; /* 高さをスマホ用に短く */
                 font-size: 0.85rem !important; /* 文字サイズ縮小 */
                 line-height: 1.3 !important;
             }
@@ -7539,13 +7562,13 @@ body.sidebar-collapsed.sidebar-pinned #sidebar .nav-group-title {
 
             </div>
             
-            <!-- Ver. 3.2 システムフッター -->
+            <!-- Ver. 3.3 システムフッター -->
             <div class="mt-12 mb-4 text-center border-t border-zinc-800 pt-6">
                 <div class="flex flex-col items-center justify-center gap-2 text-xs text-zinc-500 font-mono">
                     <div class="flex items-center gap-2 flex-wrap justify-center">
-                        <span>運勢・天命乃杜 Ver. 3.2</span>
+                        <span>運勢・天命乃杜 Ver. 3.3</span>
                         <span>|</span>
-                        <span>リリース日: 2026/07/12</span>
+                        <span>リリース日: 2026/07/19</span>
                         <span>|</span>
                         <span class="inline-flex items-center gap-1 text-[10px] bg-green-950/50 text-green-400 border border-green-800 px-1.5 py-0.5 rounded font-bold"><i class="bi bi-patch-check-fill"></i>最新版</span>
                     </div>
@@ -8646,6 +8669,28 @@ body.sidebar-collapsed.sidebar-pinned #sidebar .nav-group-title {
             <div id="profile-dashboard-content"></div>
         </section>
 
+        <!-- ビュー: AI要約フィードバック確認（管理者専用） -->
+        <section id="view-summary-admin" class="view-section max-w-5xl mx-auto relative pb-20">
+            <div class="bento-card mb-6 relative overflow-hidden bg-gradient-to-br from-red-950 via-zinc-900 to-black border border-zinc-800 text-white" style="padding: 2rem;">
+                <div class="relative z-10 flex items-center justify-between gap-4 flex-wrap">
+                    <div>
+                        <p class="text-xs font-bold tracking-[0.3em] uppercase mb-2" style="color: var(--accent-gold);">ADMIN ONLY</p>
+                        <h2 class="text-2xl md:text-3xl font-black flex items-center gap-3" style="font-family: 'Zen Old Mincho', serif;">
+                            <i class="bi bi-clipboard-data text-red-400"></i>
+                            <span class="text-white">AI要約フィードバック確認</span>
+                        </h2>
+                    </div>
+                    <button onclick="showView('profile')" class="text-xs font-bold px-4 py-2 rounded-full border border-zinc-600 text-zinc-300 hover:bg-zinc-800 transition flex items-center gap-2">
+                        <i class="bi bi-arrow-left"></i> アカウント設定へ戻る
+                    </button>
+                </div>
+            </div>
+
+            <div id="summary-admin-content">
+                <div class="text-center py-10"><div class="spinner-border text-red-500" role="status"></div><p class="text-gray-400 text-xs mt-2">読み込み中...</p></div>
+            </div>
+        </section>
+
         <!-- ビュー: おみくじの轍 (履歴) -->
 <section id="view-history" class="view-section max-w-4xl mx-auto relative pb-20">
 
@@ -9140,6 +9185,7 @@ body.sidebar-collapsed.sidebar-pinned #sidebar .nav-group-title {
                     <div class="p-6 md:p-8 space-y-3 text-sm text-gray-600 dark:text-gray-400 leading-relaxed">
                         <p>「社務所だより」は、天命乃杜のアップデート情報や不具合修正のお知らせをまとめた運営からのお知らせ欄です。</p>
                         <p>「神籤草子」は、おみくじや運勢にまつわるコラム記事を集めた読みものコーナーです。おみくじの歴史や豆知識など、参拝の合間に読んでいただける内容を掲載しています。</p>
+                        <p>各記事の本文冒頭には「要約する」ボタンがあり、押すとAIが記事の要点を150文字程度に自動でまとめて表示します。長い記事でも先に概要をつかんでから読み進められます。要約結果はいいね・よくないねで評価でき、使用したAIモデル名や文字数の比較なども確認できます。なお、要約はAIによる自動生成のため、実際の記事内容と異なる場合があります。</p>
                     </div>
                 </div>
 
@@ -9301,7 +9347,7 @@ body.sidebar-collapsed.sidebar-pinned #sidebar .nav-group-title {
                             <span class="text-4xl text-red-400"><i class="bi bi-info-circle-fill"></i></span>
                             <span class="text-white">当サイトについて</span>
                         </h2>
-                        <p class="text-sm text-zinc-300 leading-relaxed max-w-xl" style="font-family: 'Shippori Mincho', serif;">制定: 2026/01/02 ・ 改定: 2026/07/11 (第13版) ・ 運営: nden148</p>
+                        <p class="text-sm text-zinc-300 leading-relaxed max-w-xl" style="font-family: 'Shippori Mincho', serif;">制定: 2026/01/02 ・ 改定: 2026/07/19 (第14版) ・ 運営: nden148</p>
                         <button onclick="downloadAsPDF('about')" id="about-pdf-btn" class="mt-3 text-xs font-bold flex items-center gap-2 px-4 py-2 rounded-full transition-all hover:-translate-y-0.5" style="background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.25); color: #fff;">
                             <i class="bi bi-file-earmark-pdf"></i> PDFをダウンロード
                         </button>
@@ -9481,7 +9527,7 @@ body.sidebar-collapsed.sidebar-pinned #sidebar .nav-group-title {
                         <div class="space-y-6">
                             <div class="pl-4 border-l-2 border-gray-200 dark:border-gray-700">
                                 <h4 class="font-bold text-base mb-2 text-gray-900 dark:text-white">第1条（サービスの性質）</h4>
-                                <p>本サービスは娯楽目的で提供されるものであり、その結果の正確性や効果を保証するものではありません。結果に基づく行動はユーザーの自己責任となります。特に「全国・土地の運気ランキング」は、独自のアルゴリズムに基づくエンターテインメントコンテンツであり、実際の気象情報や地質学的データとは無関係です。</p>
+                                <p>本サービスは娯楽目的で提供されるものであり、その結果の正確性や効果を保証するものではありません。結果に基づく行動はユーザーの自己責任となります。特に「全国・土地の運気ランキング」は、独自のアルゴリズムに基づくエンターテインメントコンテンツであり、実際の気象情報や地質学的データとは無関係です。また、「社務所だより」「神籤草子」の記事要約表示など、AI（人工知能）により自動生成される文章についても、その内容の正確性・完全性を保証するものではなく、実際の記事内容と異なる要約や誤りが含まれる可能性があります。要約はあくまで内容把握の補助としてご利用いただき、正確な情報は必ず記事本文でご確認ください。</p>
                             </div>
 
                             <div class="pl-4 border-l-2 border-gray-200 dark:border-gray-700">
@@ -9705,7 +9751,7 @@ body.sidebar-collapsed.sidebar-pinned #sidebar .nav-group-title {
                             <span class="text-4xl text-red-400"><i class="bi bi-shield-lock-fill"></i></span>
                             <span class="text-white">プライバシーポリシー</span>
                         </h2>
-                        <p class="text-sm text-zinc-300 leading-relaxed max-w-xl" style="font-family: 'Shippori Mincho', serif;">制定: 2026/01/02 ・ 改定: 2026/07/11 (第14版) ・ 運営: nden148</p>
+                        <p class="text-sm text-zinc-300 leading-relaxed max-w-xl" style="font-family: 'Shippori Mincho', serif;">制定: 2026/01/02 ・ 改定: 2026/07/19 (第16版) ・ 運営: nden148</p>
                         <button onclick="downloadAsPDF('privacy')" id="privacy-pdf-btn" class="mt-3 text-xs font-bold flex items-center gap-2 px-4 py-2 rounded-full transition-all hover:-translate-y-0.5" style="background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.25); color: #fff;">
                             <i class="bi bi-file-earmark-pdf"></i> PDFをダウンロード
                         </button>
@@ -9882,6 +9928,19 @@ body.sidebar-collapsed.sidebar-pinned #sidebar .nav-group-title {
                                     <p class="text-gray-500">利用目的：フォント・アイコン・地図表示・画像生成（おみくじ結果や御守の保存画像作成）等に用いるJavaScriptライブラリおよびフォントファイルの配信</p>
                                     <p class="text-gray-500">送信される情報：ファイル取得リクエストに伴うアクセス元IPアドレス、ブラウザ情報（各CDN事業者へ）</p>
                                     <p class="mt-1">特記事項：当サイトはBootstrap Icons・Leaflet・QRコード生成・画像保存機能（html-to-image）等の一部を、jsDelivr・cdnjs・Google Fontsといった外部CDN経由で配信しています。これらはいずれも静的なファイル配信のみを行うサービスであり、氏名・メールアドレス等の個人情報を収集するものではありませんが、ファイル取得の際にIPアドレスが各事業者へ送信される点にご留意ください。各社のデータ利用方針は <a href="https://www.jsdelivr.com/privacy-policy" target="_blank" rel="noopener noreferrer" class="underline text-blue-500">jsDelivr</a>／<a href="https://www.cloudflare.com/privacypolicy/" target="_blank" rel="noopener noreferrer" class="underline text-blue-500">cdnjs (Cloudflare)</a>／<a href="https://policies.google.com/privacy" target="_blank" rel="noopener noreferrer" class="underline text-blue-500">Google Fonts</a> をご参照ください。</p>
+                                </div>
+                                <div class="bg-white dark:bg-black/20 p-3 rounded border border-gray-200 dark:border-gray-700 text-xs">
+                                    <p class="font-bold text-sm">11. Cloudflare Workers AI (Cloudflare, Inc.)</p>
+                                    <p class="text-gray-500">利用目的：「社務所だより」「神籤草子」の記事要約機能において、AI（Llama 3.1系モデル）による記事本文の自動要約を生成するため</p>
+                                    <p class="text-gray-500">送信される情報：要約対象となる記事本文（当サイトが公開しているコラム・お知らせ記事の文章のみで、氏名・メールアドレス等の個人情報は含まれません）</p>
+                                    <p class="mt-1">特記事項：Cloudflare Workers AIは、Cloudflareが提供するサーバーレスのAI推論基盤です。入力された記事本文がモデルの学習・改善のために利用されることはありません。生成された要約文・使用モデル名・処理時間・文字数等はTursoデータベースに保存され、同じ記事に対する2回目以降のアクセス時に再利用されます。要約はAIによる自動生成であるため、実際の記事内容と異なる場合があります。Cloudflareのデータ利用方針については <a href="https://www.cloudflare.com/privacypolicy/" target="_blank" rel="noopener noreferrer" class="underline text-blue-500">Cloudflare プライバシーポリシー</a> をご参照ください。</p>
+                                    <p class="mt-1">なお、おみくじ結果画面に表示される「AI悩み相談（一言アドバイス）」機能も同じCloudflare Workers AIを利用していますが、こちらは入力いただいた悩みの内容・おみくじの運勢・生成された助言のいずれも当サイトのデータベースには一切保存されず、その場限りの表示にとどまります。ログインの有無を問わずご利用いただけます。</p>
+                                </div>
+                                <div class="bg-white dark:bg-black/20 p-3 rounded border border-gray-200 dark:border-gray-700 text-xs">
+                                    <p class="font-bold text-sm">12. AI夢占い機能におけるCloudflare Workers AI (Cloudflare, Inc.)</p>
+                                    <p class="text-gray-500">利用目的：会員限定機能「AI夢占い」において、ユーザーが入力した夢の内容をもとに、AI（Llama 3.1系モデル）による夢占い的な解釈を生成するため</p>
+                                    <p class="text-gray-500">送信される情報：ユーザーがご自身で入力された夢の内容の文章（氏名等の個人情報を含めないようご入力時にご留意ください）</p>
+                                    <p class="mt-1">特記事項：入力された夢の内容がモデルの学習・改善のために利用されることはありません。生成された解釈は、入力された夢の内容とともにログイン中のメールアドレスに紐づけてTursoデータベースに保存され、ご自身の「夢の記録」としてマイページ上で閲覧できます。本機能はログインユーザーのみご利用いただけ、利用回数は1時間あたり10回までのレート制限があります。夢の記録の削除をご希望の場合は、第8条に基づく退会手続きにより、関連する記録も含めて削除されます。解釈はAIによる自動生成であり、断定的な予言を意図するものではありません。Cloudflareのデータ利用方針については <a href="https://www.cloudflare.com/privacypolicy/" target="_blank" rel="noopener noreferrer" class="underline text-blue-500">Cloudflare プライバシーポリシー</a> をご参照ください。</p>
                                 </div>
                             </div>
                         </div>
@@ -10456,6 +10515,77 @@ function escapeHtml(str) {
     
 // ■ 社務所だより（ニュース）データ
     const newsData = [
+
+{
+    id: 83,
+    title: "【新機能・改善】AI要約・AI悩み相談・AI夢占いの追加と、おみくじ結果画面デザインの本格刷新について",
+    date: "2026/07/19",
+    time: "18:35",
+    tag: "新機能・改善",
+    tagColor: "text-purple-600",
+    borderColor: "border-purple-500",
+    desc: "Cloudflare Workers AIを用いた記事要約機能、おみくじ結果画面のAI悩み相談、会員限定のAI夢占いを新設しました。あわせて、おみくじ結果画面の札デザインをおみくじ堂風に本格刷新し、全国・土地の運気のDiscord実装、環境設定のテーマ切り替え刷新、免責事項・使い方などサイト文書の総点検など、多数の改善を実施しました。",
+    content: `
+        <div class="article-content">
+            <p>いつも「運勢・天命乃杜」をご利用いただき、誠にありがとうございます。運営者のnden148です。</p>
+            <p>本日2026年7月19日、天命乃杜をバージョン3.3に更新しました。AI機能の大幅な拡充から、おみくじ結果画面のデザイン本格刷新、サイト文書の総点検まで、多岐にわたる変更を行いましたので、以下にご報告いたします。</p>
+
+            <h3>1. AI要約・AI悩み相談・AI夢占いを新設</h3>
+            <p>Cloudflare Workers AI（Llama 3.1系モデル）を活用した、3つのAI機能を新たに追加しました。</p>
+            <ul class="list-disc ml-5 mb-4">
+                <li><strong>記事要約機能：</strong>「社務所だより」「神籤草子」の各記事に「要約する」ボタンを新設しました。要約中はシマー効果、生成中はストリーミング表示で結果が段々と表示されます。生成された要約はデータベースに保存され、2回目以降のアクセス時に再利用されます。要約下部にはいいね・バッドの評価ボタン（コメント欄付き）と、使用モデル名・元記事との文字数比較・回答時間などを表示する情報開示ダイアログを設けたほか、管理者専用の評価履歴閲覧機能も実装しました。</li>
+                <li><strong>AI悩み相談：</strong>おみくじ結果画面から、引いた運勢を踏まえた一言アドバイスをAIに相談できます。ログイン不要でご利用いただけ、内容はその場限りの表示にとどまりデータベースには保存されません（1時間あたり10回までのご利用制限があります）。</li>
+                <li><strong>AI夢占い：</strong>会員限定機能として、見た夢の内容を入力するとAIが夢占い的な解釈を返します。解釈結果は「夢の記録」としてマイページから閲覧できます（1時間あたり10回までのご利用制限があります）。</li>
+            </ul>
+            <p>これら3つのAI機能について、送信されるデータの内容や保存の有無をプライバシーポリシー第5条に明記し、第16版へ改訂いたしました。</p>
+
+            <h3>2. おみくじ結果画面の札デザインをおみくじ堂風に本格刷新</h3>
+            <p>先のアップデートで天命の授与所の札・ホーム画面の浮遊札に反映した、白い和紙と波線の二重枠を基調とした意匠を、おみくじ結果画面の札にも展開しました。あわせて、印章ヘッダーの背景色が運勢に関わらず固定色になっていた不具合、縦書き最終列の高さ・揃え位置のズレ、開運・不運エリアの列ごとの高さがバラついていた問題を修正し、大吉・大凶時の特別表示も含めて全体の見た目を整えました。</p>
+
+            <h3>3. 「全国・土地の運気」をDiscordにも実装</h3>
+            <p>これまでサイト本体にのみ存在していた「全国・土地の運気」を、公式Discord参拝所にもコマンドとして実装しました。都道府県データと運勢の計算式はサイト本体と完全に統一しており、同じ日であればサイト・Discordのどちらで確認しても同じ結果になります。</p>
+
+            <h3>4. 環境設定・テーマ切り替えの刷新</h3>
+            <p>これまでデバイスのテーマ設定にのみ連動していた表示テーマを、システム・ライト・ダークの3択から手動で選べるセグメントコントロールUIに刷新しました。あわせて不要になった「強制的にダークモードにする」設定は削除しています。また、テーマ・神速の祈り・サイドバーの挙動・タブタイトル演出の4つの環境設定を、ログインしていない方でも「使い方」ページから変更できるようにしました。</p>
+
+            <h3>5. サイト文書・法的表記の総点検</h3>
+            <p>AI機能の拡充にあわせて、サイト内の各種文書・表記を総点検しました。</p>
+            <ul class="list-disc ml-5 mb-4">
+                <li>「当サイトについて」の免責事項リストに、AIの出力に関する免責事項を新設したほか、CDN配信ライブラリの利用についても開示を追加しました。</li>
+                <li>Bootstrap Iconsを最新版（v1.13.1）に更新し、サイト内で使用している全201種類のアイコンを公式一覧と照合、7箇所のアイコン名の誤りを修正しました。</li>
+                <li>「今日は何の日API」のpowered byリンク先URLを、www付きの正式表記に修正しました。</li>
+                <li>開発者ページの自己紹介・プロフィール画像を更新し、実態と異なっていた開発スタイルの説明（プログラミング知識を持たずAIに全面的なサポートを受けて開発している旨）に修正しました。</li>
+                <li>「使い方」ページの記述と実際の機能を照合し、12星座占いの全48通りランキング表示、おみくじの轍のお気に入り登録機能、マジックリンクログインなど、説明が漏れていた箇所を追記しました。</li>
+                <li>©表記の法的な妥当性、当サイトについて・プライバシーポリシーの法的記述の正確性を調査した結果、いずれも問題がないことを確認しました。</li>
+                <li>PDFダウンロード機能がモバイル端末で意図せず印刷画面に直行してしまう件を調査し、説明文を実態に即した表現に修正しました。</li>
+                <li>サイトのWiki作成については、個人開発の規模では時期尚早と判断し、見送ることにしました。</li>
+            </ul>
+
+            <h3>6. UI・表示の細部修正</h3>
+            <ul class="list-disc ml-5 mb-4">
+                <li>フッターの背景色がページ背景と同化して境界が分かりづらかったため、専用の背景色を新設しました。あわせてフッターの「情報」列に漏れていた「使い方」へのリンクを追加しています。</li>
+                <li>SNSシェアのThreadsボタンがダークモードで黒地に黒アイコンとなり見えなくなっていた不具合を修正しました。</li>
+                <li>社務所だよりの一部カテゴリでアイコンが正しく表示されていなかった不具合を修正しました。</li>
+                <li>コラム記事内の和歌（夏越の祓）がダークモードに対応していなかった箇所、おみくじの轍「会員証が必要です」画面の鍵アイコンがライトモードに対応していなかった箇所を、それぞれ修正しました。</li>
+                <li>隠しコマンドのタブタイトル演出について、アカウント設定（未ログインの方は「使い方」ページ）からON/OFFを切り替えられるようにしました。</li>
+            </ul>
+
+            <h3>7. その他の修正</h3>
+            <ul class="list-disc ml-5 mb-4">
+                <li>Cloudflare Radarによるサイトスキャン結果を分析し、Web Bot Authという新しい認証方式に対応したボット・スキャナーが正しくAPIへアクセスできるよう、CORS設定にヘッダーを追加しました。</li>
+                <li>累計参拝者数・おみくじ発行総数のアイコン背景を、以前の立体的なグラデーション表示から平面・単色のデザインに戻しました。</li>
+                <li>天命の授与所の札が出現する際のフェードインアニメーションを廃止しました。</li>
+                <li>参拝証発行画面にあった「会員限定の機能」カードを、内容が重複していた比較表に整理・統合する形で削除しました。</li>
+                <li>デジタル御守授与所の説明文をDiscord Bot側の記述と統一しました。</li>
+            </ul>
+
+            <h3>今後について</h3>
+            <p>おみくじの轍への「今日の引き回数・ペース表示」「グラフ機能の復活（Apache ECharts）」、サイト公開からの経過日数に応じた節目演出については、検討の結果、今回は実装を見送ることといたしました。</p>
+
+            <p>以上、本日の変更内容のご報告でした。引き続き「運勢・天命乃杜」をよろしくお願いいたします。</p>
+        </div>
+    `
+},
 
 {
     id: 82,
@@ -16101,6 +16231,27 @@ window.renderFullColumnView = function() {
 
                 <!-- 記事本文 -->
                 <div class="p-6 md:p-12 bg-white dark:bg-zinc-900">
+
+                    <!-- AI要約セクション（本文を読む前に要点を確認できるよう、本文の直前に配置） -->
+                    <div id="summary-section" class="mb-8">
+                        <div class="flex items-center justify-between gap-3 flex-wrap p-4 md:p-5 rounded-2xl bg-gradient-to-r from-red-50 to-orange-50 dark:from-zinc-800 dark:to-zinc-800/60 border border-red-100 dark:border-zinc-700">
+                            <div class="flex items-center gap-3 min-w-0">
+                                <div class="w-10 h-10 rounded-full bg-gradient-to-br from-red-700 to-red-900 flex items-center justify-center text-white text-lg shrink-0">
+                                    <i class="bi bi-stars"></i>
+                                </div>
+                                <div class="min-w-0">
+                                    <p class="text-sm font-bold text-gray-800 dark:text-gray-100">AIで要約する</p>
+                                    <p class="text-xs text-gray-500 dark:text-gray-400 truncate">本文を読む前に、要点だけ先に確認できます</p>
+                                </div>
+                            </div>
+                            <button id="summarize-btn" onclick="requestArticleSummary('${type}', ${item.id})" class="shrink-0 flex items-center gap-2 px-5 py-2.5 rounded-full bg-gradient-to-r from-red-700 to-red-900 text-white text-sm font-bold shadow-md hover:shadow-lg hover:-translate-y-0.5 transition-all">
+                                <i class="bi bi-magic"></i>
+                                <span>要約する</span>
+                            </button>
+                        </div>
+                        <div id="summary-result" class="hidden mt-4"></div>
+                    </div>
+
                     <div class="article-content prose dark:prose-invert max-w-none leading-loose text-justify font-serif">
                         ${item.content}
                     </div>
@@ -17555,6 +17706,9 @@ function showLoading(show) {
             if(viewId === 'history') {
                 loadHistory();
             }
+            if(viewId === 'summary-admin') {
+                loadSummaryHistory();
+            }
             // ▼ ここが重要：都道府県ランキングの呼び出し
             if(viewId === 'prefecture') {
                 renderPrefectureRanking();
@@ -18171,8 +18325,8 @@ async function showResultDetail(isNewDraw, dataOverride = null) {
             const outer = document.getElementById(outerId);
             outer.innerHTML = ''; 
 
-            // クラスの適用
-            outer.className = 'result-card-outer';
+            // クラスの適用（枠は共通の波線スタンプ枠、背景色のみランクで変化）
+            outer.className = 'result-card-outer omikuji-scallop-border';
             if (data.type === "大吉") {
                 outer.classList.add("style-daikichi");
             } else if (data.type === "大凶") {
@@ -18181,12 +18335,12 @@ async function showResultDetail(isNewDraw, dataOverride = null) {
                 outer.classList.add("style-normal");
             }
 
-            // 1. ロゴ・タイトル
+            // 1. 印章ヘッダー（4文字縦書きブランド名 + 丸ロゴ）
             const headerDiv = document.createElement('div');
-            headerDiv.className = 'result-logo-area';
+            headerDiv.className = 'result-stamp-header omikuji-scallop-border';
             headerDiv.innerHTML = `
-                <div class="result-kamon"><div style="width:3rem;height:3rem;background-color:#b91c1c;border-radius:10px;display:flex;align-items:center;justify-content:center;font-family:'Zen Old Mincho',serif;font-size:2rem;font-weight:700;color:#c5a059;line-height:1;margin:0 auto;">天</div></div>
-                <div class="result-title-text accent-text">運勢・天命乃杜</div>
+                <div class="result-stamp-mark"><div style="width:22px;height:22px;background-color:var(--omikuji-accent);border-radius:4px;display:flex;align-items:center;justify-content:center;font-family:'Zen Old Mincho',serif;font-size:0.9rem;font-weight:700;color:#fff;line-height:1;">天</div></div>
+                <div class="result-stamp-brand">天命乃杜</div>
             `;
             outer.appendChild(headerDiv);
 
@@ -18201,48 +18355,85 @@ async function showResultDetail(isNewDraw, dataOverride = null) {
             issueDiv.textContent = `第 ${Number(displayIssueNum).toLocaleString()} 番`;
             outer.appendChild(issueDiv);
 
-            // 3. 運勢ハンコ（縦書き・画像風）
-            const circleBox = document.createElement('div');
-            circleBox.className = 'result-circle-box';
-            let fs = "4.2rem"; 
-            
-            if (data.type.length === 3) fs = "2.9rem"; 
-            if (data.type.length >= 4) fs = "2.4rem";
-            
-            circleBox.innerHTML = `<div class="result-kanji-main" style="font-size: ${fs}; white-space: nowrap;">${data.type}</div>`;
-            outer.appendChild(circleBox);
-
-            // 4. ラベル
-            const labelSub = document.createElement('div');
-            labelSub.className = 'result-label-sub accent-text';
-            labelSub.textContent = '運勢';
-            outer.appendChild(labelSub);
-
-            // 5. メッセージエリア
+            // 3. メッセージエリア（和歌(右)と助言(左)を区切り線で分けて配置。和歌は引用として鉤括弧付き）
             const msgArea = document.createElement('div');
             msgArea.className = 'result-main-message-area';
-            const adviceBox = document.createElement('div');
-            adviceBox.className = 'result-advice-box accent-border';
-            adviceBox.innerHTML = `<span class="advice-label accent-text">助言</span> <span class="accent-text">${data.desc || "心穏やかに過ごすべし。"}</span>`;
-            const poemDiv = document.createElement('div');
-            poemDiv.className = 'result-poem-vertical accent-text';
-            poemDiv.textContent = data.poem;
-            msgArea.appendChild(adviceBox);
-            msgArea.appendChild(poemDiv);
+            const poemText = data.poem ? data.poem.trim() : '';
+            const descText = (data.desc || "心穏やかに過ごすべし。").trim();
+
+            let poemBlock = null;
+            if (poemText) {
+                poemBlock = document.createElement('div');
+                poemBlock.className = 'result-message-flow-block result-poem-part accent-text';
+                poemBlock.textContent = `「${poemText}」`;
+                msgArea.appendChild(poemBlock);
+
+                const divider = document.createElement('div');
+                divider.className = 'result-message-divider';
+                msgArea.appendChild(divider);
+            }
+            const descBlock = document.createElement('div');
+            descBlock.className = 'result-message-flow-block result-desc-part accent-text';
+            descBlock.textContent = descText;
+            msgArea.appendChild(descBlock);
+
             outer.appendChild(msgArea);
 
-            // 6. 詳細項目
+            // 和歌・助言、それぞれ独立に「自然な高さを実測→列数を逆算→列の高さを統一」する
+            // （文字数からの机上計算だとフォントの実際のメトリクスとズレるため、実測ベースにする）
+            const desiredColumnHeight = 260; // 1列あたりの目安の高さ(px)
+            function fitFlowBlockHeight(block) {
+                block.style.height = 'auto';
+                block.style.maxHeight = 'none';
+                const naturalHeight = block.getBoundingClientRect().height || block.offsetHeight || 260;
+                const columns = Math.max(1, Math.round(naturalHeight / desiredColumnHeight));
+                let finalHeight = Math.ceil(naturalHeight / columns);
+                finalHeight = Math.max(160, Math.min(420, finalHeight));
+                block.style.height = finalHeight + 'px';
+                block.style.maxHeight = finalHeight + 'px';
+            }
+            if (poemBlock) fitFlowBlockHeight(poemBlock);
+            fitFlowBlockHeight(descBlock);
+
+            // 4. 運勢 [山]大吉/大凶 の帯
+            const rankRow = document.createElement('div');
+            rankRow.className = 'result-rank-row accent-text';
+            rankRow.innerHTML = `
+                <span class="result-rank-label">運勢</span>
+                <svg class="result-rank-mountain" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <circle cx="16" cy="16" r="14.5" stroke="currentColor" stroke-width="1.4"/>
+                    <path d="M7 21L13 11L17 17L20 13L25 21H7Z" fill="currentColor"/>
+                </svg>
+                <span class="result-kanji-main">${escapeHtml(data.type)}</span>
+            `;
+            outer.appendChild(rankRow);
+
+            // 5. 詳細項目
             const detailGrid = document.createElement('div');
             detailGrid.className = 'result-details-grid accent-border';
+            const detailCols = [];
             if (data.detail) {
                 data.detail.forEach(d => {
                     const col = document.createElement('div');
                     col.className = 'detail-column';
+                    col.style.height = 'auto'; // まず自然な高さで測るため制限を外す
                     col.innerHTML = `<span class="detail-item-label accent-text">${d.title}</span> <span class="detail-item-content accent-text">${d.content}</span>`;
                     detailGrid.appendChild(col);
+                    detailCols.push(col);
                 });
             }
             outer.appendChild(detailGrid);
+            // 全列の自然な高さを実測し、最大値に統一（内容量が違っても高さが揃うようにする）
+            if (detailCols.length) {
+                let maxColHeight = 0;
+                detailCols.forEach(col => {
+                    const h = col.getBoundingClientRect().height || col.offsetHeight || 0;
+                    if (h > maxColHeight) maxColHeight = h;
+                });
+                if (maxColHeight > 0) {
+                    detailCols.forEach(col => { col.style.height = maxColHeight + 'px'; });
+                }
+            }
 
             // 7. 開運・不運エリア（縦書き列レイアウト）
             const _colorMap = {
@@ -18606,8 +18797,9 @@ function resetSearch() {
             window.scrollTo(0, 0);
 
             // カードのベース背景色を取得
-            let bgColor = '#ffffff';
-            if (target.classList.contains('style-daikichi')) bgColor = '#ffb700';
+            let bgColor = '#fdfbf5';
+            if (target.classList.contains('style-daikichi')) bgColor = '#e8b923';
+            if (target.classList.contains('style-daikyo')) bgColor = '#2b2926';
 
             const doCapture = () => {
                 document.fonts.ready.then(() => {
@@ -18620,21 +18812,14 @@ function resetSearch() {
                     force('width',            '600px');
                     force('min-width',        '600px');
                     force('max-width',        '600px');
-                    force('box-shadow',       'none');
                     force('transform',        'none');
                     force('position',         'relative');
                     force('margin',           '0');
-                    force('padding',          '30px 40px');
+                    force('padding',          '46px 40px');
                     force('display',          'flex');
                     force('flex-direction',   'column');
                     force('align-items',      'center');
                     force('box-sizing',       'border-box');
-
-                    // 大吉のノイズSVG背景を除去
-                    if (target.classList.contains('style-daikichi')) {
-                        force('background-image', 'none');
-                        force('background-color', '#ffb700');
-                    }
 
                     // ── html-to-image でキャプチャ ──
                     htmlToImage.toBlob(target, {
@@ -18867,6 +19052,309 @@ ${getShareUrl()}`;
                 btn.disabled = false;
                 btn.innerHTML = '<i class="bi bi-stars"></i> 夢を占う';
             }
+        }
+
+        // ==========================================================
+        // 記事要約（社務所だより・神籤草子）
+        // ==========================================================
+        function stripHtmlToText(html) {
+            const tmp = document.createElement('div');
+            tmp.innerHTML = html || '';
+            return (tmp.textContent || tmp.innerText || '').replace(/\s+/g, ' ').trim();
+        }
+
+        async function requestArticleSummary(type, id) {
+            const item = type === 'news' ? newsData.find(d => d.id === id) : columnData.find(d => d.id === id);
+            if (!item) return;
+
+            const btn = document.getElementById('summarize-btn');
+            const resultArea = document.getElementById('summary-result');
+            if (!btn || !resultArea) return;
+
+            btn.disabled = true;
+            const originalBtnHtml = btn.innerHTML;
+            btn.innerHTML = '<i class="bi bi-hourglass-split"></i><span>要約中...</span>';
+
+            // 応答が来るまでのシマー効果（スケルトン表示）
+            resultArea.classList.remove('hidden');
+            resultArea.innerHTML = `
+                <div class="p-4 md:p-5 rounded-xl bg-red-50/60 dark:bg-zinc-800 border border-red-100 dark:border-zinc-700">
+                    <p id="summary-streaming-text" class="text-sm leading-relaxed text-gray-800 dark:text-gray-100"></p>
+                </div>
+            `;
+            const streamingTextEl = document.getElementById('summary-streaming-text');
+            let shimmerShown = true;
+            streamingTextEl.innerHTML = `
+                <span class="block animate-pulse space-y-2">
+                    <span class="block h-3 rounded bg-gray-300 dark:bg-zinc-700 w-full"></span>
+                    <span class="block h-3 rounded bg-gray-300 dark:bg-zinc-700 w-5/6"></span>
+                </span>
+            `;
+
+            const controller = new AbortController();
+            const timeoutId = setTimeout(() => controller.abort(), 45000);
+            const articleText = stripHtmlToText(item.content).slice(0, 6000);
+
+            try {
+                const res = await authFetch(`${API_BASE}/api/summarize`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        articleType: type,
+                        articleId: item.id,
+                        articleText: articleText,
+                        articleTitle: item.title
+                    }),
+                    signal: controller.signal
+                });
+
+                const contentType = res.headers.get('Content-Type') || '';
+
+                // キャッシュ済みの場合は通常のJSONで即座に返る（ストリーミング不要）
+                if (contentType.includes('application/json')) {
+                    clearTimeout(timeoutId);
+                    const data = await res.json();
+                    if (!res.ok) throw new Error(data.error || '要約に失敗しました');
+                    renderSummaryResult(type, item.id, data, articleText.length);
+                    return;
+                }
+
+                // 未キャッシュの場合：ストリーミング（text/event-stream）を逐次描画
+                if (!res.ok || !res.body) throw new Error('要約の取得に失敗しました');
+
+                const reader = res.body.getReader();
+                const decoder = new TextDecoder();
+                let buffer = '';
+                let accumulated = '';
+                let finalData = null;
+
+                while (true) {
+                    const { done, value } = await reader.read();
+                    if (done) break;
+                    buffer += decoder.decode(value, { stream: true });
+                    const lines = buffer.split('\n');
+                    buffer = lines.pop();
+
+                    for (const line of lines) {
+                        const trimmed = line.trim();
+                        if (!trimmed.startsWith('data:')) continue;
+                        const payload = trimmed.slice(5).trim();
+                        if (!payload) continue;
+
+                        let json;
+                        try { json = JSON.parse(payload); } catch (_) { continue; }
+
+                        if (json.error) throw new Error(json.error);
+
+                        if (json.delta) {
+                            if (shimmerShown) {
+                                streamingTextEl.textContent = '';
+                                shimmerShown = false;
+                            }
+                            accumulated += json.delta;
+                            streamingTextEl.textContent = accumulated;
+                        }
+                        if (json.done) {
+                            finalData = json;
+                        }
+                    }
+                }
+                clearTimeout(timeoutId);
+
+                if (finalData) {
+                    renderSummaryResult(type, item.id, finalData, articleText.length);
+                } else if (accumulated) {
+                    // doneイベントを取りこぼした場合のフォールバック表示
+                    renderSummaryResult(type, item.id, { summary_text: accumulated }, articleText.length);
+                } else {
+                    throw new Error('要約に失敗しました');
+                }
+            } catch (e) {
+                clearTimeout(timeoutId);
+                console.error(e);
+                resultArea.innerHTML = `<p class="text-sm text-red-600 dark:text-red-400 p-3">要約の取得に失敗しました。しばらくしてからもう一度お試しください。</p>`;
+                if (e.name === 'AbortError' && typeof window.showToast === 'function') {
+                    window.showToast('AIの応答に時間がかかりすぎたため中断しました。', 'error');
+                }
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = originalBtnHtml;
+            }
+        }
+
+        function renderSummaryResult(type, id, data, originalCharCountFallback) {
+            const resultArea = document.getElementById('summary-result');
+            if (!resultArea) return;
+
+            const originalCount = data.original_char_count || originalCharCountFallback || 0;
+            const summaryCount = data.summary_char_count || (data.summary_text ? data.summary_text.length : 0);
+            const ratio = originalCount > 0 ? Math.round((summaryCount / originalCount) * 100) : null;
+            const responseTime = data.response_time_ms != null ? (data.response_time_ms / 1000).toFixed(1) : null;
+
+            resultArea.innerHTML = `
+                <div id="summary-result-card" class="p-4 md:p-5 rounded-xl bg-red-50/60 dark:bg-zinc-800 border border-red-100 dark:border-zinc-700">
+                    <p class="text-sm leading-relaxed text-gray-800 dark:text-gray-100">${escapeHtml(data.summary_text || '')}</p>
+
+                    <div class="mt-3 flex items-center gap-2">
+                        <button data-vote="like" onclick="handleSummaryVote('${type}', ${id}, 'like', this)" class="summary-vote-btn text-xs flex items-center gap-1 px-3 py-1.5 rounded-full border border-gray-300 dark:border-zinc-600 text-gray-600 dark:text-gray-300 hover:bg-white dark:hover:bg-zinc-700 transition">
+                            <i class="bi bi-hand-thumbs-up"></i>
+                        </button>
+                        <button data-vote="dislike" onclick="handleSummaryVote('${type}', ${id}, 'dislike', this)" class="summary-vote-btn text-xs flex items-center gap-1 px-3 py-1.5 rounded-full border border-gray-300 dark:border-zinc-600 text-gray-600 dark:text-gray-300 hover:bg-white dark:hover:bg-zinc-700 transition">
+                            <i class="bi bi-hand-thumbs-down"></i>
+                        </button>
+                        <button onclick="toggleSummaryInfo(this)" class="ml-auto text-xs flex items-center gap-1 px-2 py-1.5 rounded-full text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 transition" title="この要約について">
+                            <i class="bi bi-info-circle"></i>
+                        </button>
+                    </div>
+
+                    <div class="summary-vote-detail hidden mt-2"></div>
+
+                    <div class="summary-info hidden mt-3 pt-3 border-t border-gray-200 dark:border-zinc-700 text-[11px] text-gray-500 dark:text-gray-400 space-y-1">
+                        <p>使用モデル：${escapeHtml(data.model_used || '不明')}</p>
+                        <p>文字数：${originalCount}文字 → ${summaryCount}文字${ratio !== null ? `（約${ratio}%に要約）` : ''}</p>
+                        ${responseTime !== null ? `<p>応答時間：約${responseTime}秒</p>` : ''}
+                        <p>AIの回答には間違いが含まれている場合があります。</p>
+                    </div>
+                </div>
+            `;
+        }
+
+        function toggleSummaryInfo(btn) {
+            const card = btn.closest('#summary-result-card');
+            const info = card ? card.querySelector('.summary-info') : null;
+            if (info) info.classList.toggle('hidden');
+        }
+
+        function handleSummaryVote(type, id, vote, btnEl) {
+            const card = btnEl.closest('#summary-result-card');
+            const detailArea = card ? card.querySelector('.summary-vote-detail') : null;
+            if (!card || !detailArea) return;
+
+            card.querySelectorAll('.summary-vote-btn').forEach(b => b.classList.remove('bg-red-600', 'text-white', 'border-red-600'));
+            btnEl.classList.add('bg-red-600', 'text-white', 'border-red-600');
+
+            const label = vote === 'like' ? '気に入った点はどこですか？（省略可）' : 'ご不満な点はどこですか？（省略可）';
+
+            detailArea.classList.remove('hidden');
+            detailArea.innerHTML = `
+                <div class="flex items-center gap-2">
+                    <span class="text-xs text-gray-500 dark:text-gray-400">${label}</span>
+                    <button onclick="toggleSummaryVoteDetailInput(this)" class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 transition">
+                        <i class="bi bi-arrow-down-short"></i>
+                    </button>
+                </div>
+                <div class="summary-vote-detail-input hidden mt-2 flex items-start gap-2">
+                    <textarea rows="2" placeholder="詳しく記述する（任意）" class="flex-1 text-xs p-2 rounded-lg border border-gray-300 dark:border-zinc-600 bg-white dark:bg-zinc-900 text-gray-700 dark:text-gray-200"></textarea>
+                    <button onclick="submitSummaryFeedback('${type}', ${id}, '${vote}', this)" class="shrink-0 text-xs px-3 py-2 rounded-lg bg-red-700 text-white font-bold hover:bg-red-800 transition">送信</button>
+                </div>
+            `;
+        }
+
+        function toggleSummaryVoteDetailInput(btn) {
+            const wrap = btn.closest('.summary-vote-detail');
+            const input = wrap ? wrap.querySelector('.summary-vote-detail-input') : null;
+            if (input) input.classList.toggle('hidden');
+        }
+
+        async function submitSummaryFeedback(type, id, vote, btnEl) {
+            const wrap = btnEl.closest('.summary-vote-detail-input');
+            const textarea = wrap ? wrap.querySelector('textarea') : null;
+            const detailText = (textarea && textarea.value ? textarea.value : '').trim();
+            const detailArea = btnEl.closest('.summary-vote-detail');
+
+            try {
+                const res = await authFetch(`${API_BASE}/api/summary-feedback`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ articleType: type, articleId: id, vote: vote, detailText: detailText || null })
+                });
+                if (!res.ok) throw new Error('送信に失敗しました');
+                if (typeof window.showToast === 'function') window.showToast('フィードバックありがとうございました。', 'success');
+                if (detailArea) detailArea.innerHTML = `<p class="text-xs text-gray-400">フィードバックを送信しました。ありがとうございます。</p>`;
+            } catch (e) {
+                console.error(e);
+                if (typeof window.showToast === 'function') window.showToast('送信に失敗しました。しばらくしてからお試しください。', 'error');
+            }
+        }
+
+        // ==========================================================
+        // AI要約フィードバック確認（管理者専用）
+        // ==========================================================
+        function formatAdminDate(iso) {
+            if (!iso) return '';
+            const d = new Date(iso);
+            if (isNaN(d.getTime())) return escapeHtml(iso);
+            const pad = n => String(n).padStart(2, '0');
+            return `${d.getFullYear()}/${pad(d.getMonth() + 1)}/${pad(d.getDate())} ${pad(d.getHours())}:${pad(d.getMinutes())}`;
+        }
+
+        async function loadSummaryHistory() {
+            const container = document.getElementById('summary-admin-content');
+            if (!container) return;
+
+            container.innerHTML = `<div class="text-center py-10"><div class="spinner-border text-red-500" role="status"></div><p class="text-gray-400 text-xs mt-2">読み込み中...</p></div>`;
+
+            try {
+                const res = await authFetch(`${API_BASE}/api/summary-history`);
+                if (res.status === 401) {
+                    container.innerHTML = `<p class="text-center text-sm text-gray-500 py-10">ログインが必要です。</p>`;
+                    return;
+                }
+                if (res.status === 403) {
+                    container.innerHTML = `<p class="text-center text-sm text-gray-500 py-10">このページを閲覧する権限がありません。</p>`;
+                    return;
+                }
+                const data = await res.json();
+                if (!res.ok) throw new Error(data.error || '取得に失敗しました');
+
+                const rows = data.history || [];
+                if (rows.length === 0) {
+                    container.innerHTML = `<p class="text-center text-sm text-gray-500 py-10">まだフィードバックはありません。</p>`;
+                    return;
+                }
+
+                container.innerHTML = `<div class="space-y-3">${rows.map(r => renderSummaryHistoryRow(r)).join('')}</div>`;
+            } catch (e) {
+                console.error(e);
+                container.innerHTML = `<p class="text-center text-sm text-red-500 py-10">読み込みに失敗しました。しばらくしてからもう一度お試しください。</p>`;
+            }
+        }
+
+        function renderSummaryHistoryRow(r) {
+            const isLike = r.vote === 'like';
+            const voteBadge = isLike
+                ? `<span class="text-xs font-bold px-2.5 py-1 rounded-full bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300 flex items-center gap-1 shrink-0"><i class="bi bi-hand-thumbs-up-fill"></i> いいね</span>`
+                : `<span class="text-xs font-bold px-2.5 py-1 rounded-full bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-300 flex items-center gap-1 shrink-0"><i class="bi bi-hand-thumbs-down-fill"></i> バッド</span>`;
+
+            // 未ログインで投稿された場合、サイトの他の箇所と同じく「ゲスト」と表示する
+            const username = r.username ? escapeHtml(r.username) : 'ゲスト';
+            const articleTypeLabel = r.article_type === 'news' ? '社務所だより' : '神籤草子';
+            const ratio = (r.original_char_count && r.summary_char_count)
+                ? Math.round((r.summary_char_count / r.original_char_count) * 100)
+                : null;
+            const responseTime = r.response_time_ms != null ? (r.response_time_ms / 1000).toFixed(1) : null;
+            const detail = r.detail_text
+                ? `<p class="mt-2 text-xs text-gray-600 dark:text-gray-300 bg-gray-50 dark:bg-zinc-800 rounded-lg p-2 leading-relaxed">${escapeHtml(r.detail_text)}</p>`
+                : '';
+
+            return `
+                <div class="p-4 rounded-xl bg-white dark:bg-zinc-900 border border-gray-100 dark:border-zinc-700">
+                    <div class="flex items-center justify-between gap-2 flex-wrap">
+                        <div class="flex items-center gap-2 flex-wrap min-w-0">
+                            ${voteBadge}
+                            <span class="text-xs text-gray-500 dark:text-gray-400 truncate">${articleTypeLabel} #${r.article_id}</span>
+                            <span class="text-xs font-bold text-gray-700 dark:text-gray-200 truncate">${username}</span>
+                        </div>
+                        <span class="text-[11px] text-gray-400 font-mono shrink-0">${formatAdminDate(r.created_at)}</span>
+                    </div>
+                    ${detail}
+                    <div class="mt-2 flex flex-wrap gap-x-4 gap-y-1 text-[11px] text-gray-400">
+                        <span>モデル：${escapeHtml(r.model_used || '不明')}</span>
+                        <span>文字数：${r.original_char_count ?? '?'}文字 → ${r.summary_char_count ?? '?'}文字${ratio !== null ? `（約${ratio}%）` : ''}</span>
+                        ${responseTime !== null ? `<span>応答時間：約${responseTime}秒</span>` : ''}
+                    </div>
+                </div>
+            `;
         }
 
         async function loadDreamHistory() {
@@ -20947,6 +21435,17 @@ async function renderSettingsDashboard() {
             </div>
             `}
 
+            <!-- 4.5 管理者専用：AI要約フィードバック確認 -->
+            <div class="stats-card-interactive p-4 rounded-2xl bg-gray-50 dark:bg-zinc-800/60 border border-gray-100 dark:border-zinc-700 flex items-center justify-between gap-3">
+                <div class="flex items-center gap-2 min-w-0">
+                    <i class="bi bi-clipboard-data text-gray-400"></i>
+                    <span class="text-xs text-gray-500 dark:text-gray-400 truncate">AI要約フィードバック確認（管理者専用）</span>
+                </div>
+                <button onclick="showView('summary-admin')" class="shrink-0 text-xs font-bold px-3 py-1.5 rounded-full border border-gray-300 dark:border-zinc-600 text-gray-600 dark:text-gray-300 hover:bg-white dark:hover:bg-zinc-700 transition">
+                    開く
+                </button>
+            </div>
+
             <!-- 5. Danger Zone (ログアウト・削除) -->
             <div class="stats-card-interactive profile-card-danger p-6 rounded-2xl bg-red-50 dark:bg-red-900/10 border-red-100 dark:border-red-900">
                 <div class="flex items-center gap-2 mb-4 text-[var(--accent-red)]">
@@ -22605,6 +23104,62 @@ window.applyTheme = function() {
 
         // ===== 更新の軌跡パネル =====
     const verDetailData = {
+        v33: {
+            ver: 'Ver. 3.3',
+            name: 'AI要約・AI悩み相談・AI夢占いの追加とおみくじ結果画面デザインの本格刷新',
+            date: '2026年7月19日',
+            sections: [
+                {
+                    icon: 'bi-stars', title: 'AI機能の大幅拡充',
+                    changes: [
+                        { type: 'new', text: '「社務所だより」「神籤草子」の記事に要約機能を新設。Cloudflare Workers AI（Llama 3.1系モデル）による自動生成で、シマー効果・ストリーミング表示・いいね/バッド評価・使用モデル等の情報開示・管理者専用の評価履歴閲覧まで実装。', sourceIds: [83] },
+                        { type: 'new', text: 'おみくじ結果画面に、ログイン不要で使えるAI悩み相談（一言アドバイス）を新設。データベースへの保存は行わない、その場限りの表示。', sourceIds: [83] },
+                        { type: 'new', text: '会員限定機能として、見た夢をAIが読み解くAI夢占いを新設。解釈結果は「夢の記録」としてマイページから閲覧可能。', sourceIds: [83] },
+                        { type: 'change', text: '上記3機能で送信されるデータの内容・保存の有無をプライバシーポリシー第5条に明記し、第16版へ改訂。', sourceIds: [83] }
+                    ]
+                },
+                {
+                    icon: 'bi-ticket-perforated', title: 'おみくじ結果画面デザインの本格刷新',
+                    changes: [
+                        { type: 'change', text: '天命の授与所の札と同じ、白い和紙と波線二重枠を基調とした意匠をおみくじ結果画面の札にも展開。印章ヘッダーの背景色固定バグ、縦書き列の高さ不揃い、開運・不運エリアの高さバラつきを修正。', sourceIds: [83] }
+                    ]
+                },
+                {
+                    icon: 'bi-geo-alt', title: '全国・土地の運気をDiscordに実装',
+                    changes: [
+                        { type: 'new', text: 'サイト本体にのみあった「全国・土地の運気」をDiscordにもコマンドとして実装。計算式・データはサイト本体と完全に統一。', sourceIds: [83] }
+                    ]
+                },
+                {
+                    icon: 'bi-palette', title: '環境設定・テーマ切り替えの刷新',
+                    changes: [
+                        { type: 'change', text: '表示テーマをシステム／ライト／ダークの3択から手動選択できるUIに刷新し、「強制的にダークモードにする」設定は廃止。', sourceIds: [83] },
+                        { type: 'change', text: 'テーマ・神速の祈り・サイドバー挙動・タブタイトル演出の4設定を、未ログインの方でも「使い方」ページから変更できるように拡張。', sourceIds: [83] }
+                    ]
+                },
+                {
+                    icon: 'bi-file-earmark-text', title: 'サイト文書・法的表記の総点検',
+                    changes: [
+                        { type: 'change', text: 'AI出力に関する免責事項・CDNライブラリの利用開示を新設。Bootstrap Iconsをv1.13.1に更新し全201アイコンを照合、7箇所を修正。powered byリンクURLを正式表記に修正。', sourceIds: [83] },
+                        { type: 'change', text: '開発者ページの自己紹介・プロフィール画像を実態に即した内容に修正。「使い方」ページの記述漏れ（12星座の全48通り表示・轍のお気に入り機能・マジックリンク等）を追記。', sourceIds: [83] },
+                        { type: 'fix', text: 'PDFダウンロード機能がモバイル端末で印刷画面に直行してしまう件の説明文を修正。©表記・法的記述の正確性を調査し問題なしと確認。', sourceIds: [83] }
+                    ]
+                },
+                {
+                    icon: 'bi-layout-text-window', title: 'UI・表示の細部修正',
+                    changes: [
+                        { type: 'fix', text: 'フッターに専用の背景色を新設し視認性を改善、「使い方」リンクの漏れを追加。Threadsシェアボタン・社務所だよりのカテゴリアイコン・夏越の祓の和歌・おみくじの轍の鍵アイコンなど、複数箇所のダーク/ライトモード表示崩れを修正。', sourceIds: [83] },
+                        { type: 'change', text: '隠しコマンドのタブタイトル演出をアカウント設定からON/OFF可能に。累計参拝者数等のアイコン背景を平面デザインに戻し、天命の授与所の札のフェードインアニメーションを廃止。', sourceIds: [83] }
+                    ]
+                },
+                {
+                    icon: 'bi-shield-check', title: 'その他の修正',
+                    changes: [
+                        { type: 'fix', text: 'Cloudflare Radarのスキャン結果を分析し、Web Bot Auth対応のボット・スキャナー向けにCORS設定へヘッダーを追加。参拝証発行画面の重複していた「会員限定の機能」カードを削除し、デジタル御守授与所の説明文をDiscord側と統一。', sourceIds: [83] }
+                    ]
+                }
+            ]
+        },
         v32: {
             ver: 'Ver. 3.2',
             name: 'セキュリティ強化・UI刷新・マジックリンクログイン対応',
@@ -23453,12 +24008,34 @@ window.applyTheme = function() {
         <div class="ver-panel-scroll">
             <div class="ver-timeline">
 
-                <!-- Ver 3.2（現在） -->
-                <div class="ver-timeline-item is-current" onclick="openVerDetail('v32')">
+                <!-- Ver 3.3（現在） -->
+                <div class="ver-timeline-item is-current" onclick="openVerDetail('v33')">
+                    <div class="ver-item-card">
+                        <div class="ver-item-top">
+                            <span class="ver-item-ver">Ver. 3.3</span>
+                            <span class="ver-item-badge ver-badge-current"><i class="bi bi-patch-check-fill"></i>最新版</span>
+                        </div>
+                        <div class="ver-item-date">2026年7月19日リリース</div>
+                        <div class="ver-item-name">AI要約・AI悩み相談・AI夢占いの追加とおみくじ結果画面デザインの本格刷新</div>
+                        <div class="ver-item-desc">Cloudflare Workers AIによる記事要約機能・AI悩み相談・AI夢占いを新設。おみくじ結果画面の札デザインをおみくじ堂風に本格刷新し、全国・土地の運気のDiscord実装、環境設定のテーマ切り替え刷新、免責事項・使い方などサイト文書の総点検など、多数の改善を実施。</div>
+                        <div class="ver-item-tags">
+                            <span class="ver-item-tag">AI要約機能</span>
+                            <span class="ver-item-tag">AI悩み相談</span>
+                            <span class="ver-item-tag">AI夢占い</span>
+                            <span class="ver-item-tag">札デザイン本格刷新</span>
+                            <span class="ver-item-tag">テーマ切替刷新</span>
+                            <span class="ver-item-tag">法的表記総点検</span>
+                        </div>
+                        <div class="ver-item-more"><i class="bi bi-chevron-right"></i>詳細を見る</div>
+                    </div>
+                </div>
+
+                <!-- Ver 3.2 -->
+                <div class="ver-timeline-item" onclick="openVerDetail('v32')">
                     <div class="ver-item-card">
                         <div class="ver-item-top">
                             <span class="ver-item-ver">Ver. 3.2</span>
-                            <span class="ver-item-badge ver-badge-current"><i class="bi bi-patch-check-fill"></i>最新版</span>
+                            <span class="ver-item-badge ver-badge-stable"><i class="bi bi-patch-check-fill"></i>機能追加</span>
                         </div>
                         <div class="ver-item-date">2026年7月12日リリース</div>
                         <div class="ver-item-name">セキュリティ強化・UI刷新・マジックリンクログイン対応</div>
