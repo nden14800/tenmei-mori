@@ -8669,28 +8669,6 @@ body.sidebar-collapsed.sidebar-pinned #sidebar .nav-group-title {
             <div id="profile-dashboard-content"></div>
         </section>
 
-        <!-- ビュー: AI要約フィードバック確認（管理者専用） -->
-        <section id="view-summary-admin" class="view-section max-w-5xl mx-auto relative pb-20">
-            <div class="bento-card mb-6 relative overflow-hidden bg-gradient-to-br from-red-950 via-zinc-900 to-black border border-zinc-800 text-white" style="padding: 2rem;">
-                <div class="relative z-10 flex items-center justify-between gap-4 flex-wrap">
-                    <div>
-                        <p class="text-xs font-bold tracking-[0.3em] uppercase mb-2" style="color: var(--accent-gold);">ADMIN ONLY</p>
-                        <h2 class="text-2xl md:text-3xl font-black flex items-center gap-3" style="font-family: 'Zen Old Mincho', serif;">
-                            <i class="bi bi-clipboard-data text-red-400"></i>
-                            <span class="text-white">AI要約フィードバック確認</span>
-                        </h2>
-                    </div>
-                    <button onclick="showView('profile')" class="text-xs font-bold px-4 py-2 rounded-full border border-zinc-600 text-zinc-300 hover:bg-zinc-800 transition flex items-center gap-2">
-                        <i class="bi bi-arrow-left"></i> アカウント設定へ戻る
-                    </button>
-                </div>
-            </div>
-
-            <div id="summary-admin-content">
-                <div class="text-center py-10"><div class="spinner-border text-red-500" role="status"></div><p class="text-gray-400 text-xs mt-2">読み込み中...</p></div>
-            </div>
-        </section>
-
         <!-- ビュー: おみくじの轍 (履歴) -->
 <section id="view-history" class="view-section max-w-4xl mx-auto relative pb-20">
 
@@ -17706,9 +17684,6 @@ function showLoading(show) {
             if(viewId === 'history') {
                 loadHistory();
             }
-            if(viewId === 'summary-admin') {
-                loadSummaryHistory();
-            }
             // ▼ ここが重要：都道府県ランキングの呼び出し
             if(viewId === 'prefecture') {
                 renderPrefectureRanking();
@@ -19275,105 +19250,6 @@ ${getShareUrl()}`;
                 console.error(e);
                 if (typeof window.showToast === 'function') window.showToast('送信に失敗しました。しばらくしてからお試しください。', 'error');
             }
-        }
-
-        // ==========================================================
-        // AI要約フィードバック確認（管理者専用）
-        // ==========================================================
-        function formatAdminDate(iso) {
-            if (!iso) return '';
-            const d = new Date(iso);
-            if (isNaN(d.getTime())) return escapeHtml(iso);
-            const pad = n => String(n).padStart(2, '0');
-            return `${d.getFullYear()}/${pad(d.getMonth() + 1)}/${pad(d.getDate())} ${pad(d.getHours())}:${pad(d.getMinutes())}`;
-        }
-
-        async function loadSummaryHistory() {
-            const container = document.getElementById('summary-admin-content');
-            if (!container) return;
-
-            container.innerHTML = `<div class="text-center py-10"><div class="spinner-border text-red-500" role="status"></div><p class="text-gray-400 text-xs mt-2">読み込み中...</p></div>`;
-
-            // サーバーが応答しない場合でも「読み込み中」のまま無限に固まらないよう、
-            // 10秒でタイムアウトさせる
-            const controller = new AbortController();
-            const timeoutId = setTimeout(() => controller.abort(), 10000);
-
-            try {
-                const res = await authFetch(`${API_BASE}/api/summary-history`, { signal: controller.signal });
-                clearTimeout(timeoutId);
-
-                if (res.status === 401) {
-                    container.innerHTML = `<p class="text-center text-sm text-gray-500 py-10">ログインが必要です。</p>`;
-                    return;
-                }
-                if (res.status === 403) {
-                    container.innerHTML = `<p class="text-center text-sm text-gray-500 py-10">このページを閲覧する権限がありません。</p>`;
-                    return;
-                }
-                if (res.status === 404) {
-                    container.innerHTML = `<p class="text-center text-sm text-red-500 py-10">APIが見つかりません（サーバー側が未反映の可能性があります）。</p>`;
-                    return;
-                }
-
-                let data;
-                try {
-                    data = await res.json();
-                } catch (parseErr) {
-                    throw new Error('サーバーからの応答を解析できませんでした');
-                }
-                if (!res.ok) throw new Error(data.error || '取得に失敗しました');
-
-                const rows = data.history || [];
-                if (rows.length === 0) {
-                    container.innerHTML = `<p class="text-center text-sm text-gray-500 py-10">まだフィードバックはありません。</p>`;
-                    return;
-                }
-
-                container.innerHTML = `<div class="space-y-3">${rows.map(r => renderSummaryHistoryRow(r)).join('')}</div>`;
-            } catch (e) {
-                clearTimeout(timeoutId);
-                console.error(e);
-                const isTimeout = e.name === 'AbortError';
-                container.innerHTML = `<p class="text-center text-sm text-red-500 py-10">${isTimeout ? 'サーバーの応答がありませんでした（タイムアウト）。' : '読み込みに失敗しました。'}しばらくしてからもう一度お試しください。</p>`;
-            }
-        }
-
-        function renderSummaryHistoryRow(r) {
-            const isLike = r.vote === 'like';
-            const voteBadge = isLike
-                ? `<span class="text-xs font-bold px-2.5 py-1 rounded-full bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300 flex items-center gap-1 shrink-0"><i class="bi bi-hand-thumbs-up-fill"></i> いいね</span>`
-                : `<span class="text-xs font-bold px-2.5 py-1 rounded-full bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-300 flex items-center gap-1 shrink-0"><i class="bi bi-hand-thumbs-down-fill"></i> バッド</span>`;
-
-            // 未ログインで投稿された場合、サイトの他の箇所と同じく「ゲスト」と表示する
-            const username = r.username ? escapeHtml(r.username) : 'ゲスト';
-            const articleTypeLabel = r.article_type === 'news' ? '社務所だより' : '神籤草子';
-            const ratio = (r.original_char_count && r.summary_char_count)
-                ? Math.round((r.summary_char_count / r.original_char_count) * 100)
-                : null;
-            const responseTime = r.response_time_ms != null ? (r.response_time_ms / 1000).toFixed(1) : null;
-            const detail = r.detail_text
-                ? `<p class="mt-2 text-xs text-gray-600 dark:text-gray-300 bg-gray-50 dark:bg-zinc-800 rounded-lg p-2 leading-relaxed">${escapeHtml(r.detail_text)}</p>`
-                : '';
-
-            return `
-                <div class="p-4 rounded-xl bg-white dark:bg-zinc-900 border border-gray-100 dark:border-zinc-700">
-                    <div class="flex items-center justify-between gap-2 flex-wrap">
-                        <div class="flex items-center gap-2 flex-wrap min-w-0">
-                            ${voteBadge}
-                            <span class="text-xs text-gray-500 dark:text-gray-400 truncate">${articleTypeLabel} #${r.article_id}</span>
-                            <span class="text-xs font-bold text-gray-700 dark:text-gray-200 truncate">${username}</span>
-                        </div>
-                        <span class="text-[11px] text-gray-400 font-mono shrink-0">${formatAdminDate(r.created_at)}</span>
-                    </div>
-                    ${detail}
-                    <div class="mt-2 flex flex-wrap gap-x-4 gap-y-1 text-[11px] text-gray-400">
-                        <span>モデル：${escapeHtml(r.model_used || '不明')}</span>
-                        <span>文字数：${r.original_char_count ?? '?'}文字 → ${r.summary_char_count ?? '?'}文字${ratio !== null ? `（約${ratio}%）` : ''}</span>
-                        ${responseTime !== null ? `<span>応答時間：約${responseTime}秒</span>` : ''}
-                    </div>
-                </div>
-            `;
         }
 
         async function loadDreamHistory() {
@@ -21453,24 +21329,6 @@ async function renderSettingsDashboard() {
                 <p class="text-xs text-gray-500 dark:text-gray-400 leading-relaxed">Googleアカウントで参拝証を取得されています。次回以降もGoogleアカウントでログインいただけます。</p>
             </div>
             `}
-
-            <!-- 4.5 管理者専用：AI要約フィードバック確認（サイト所有者のみ表示。実際の権限判定は必ずサーバー側で行う） -->
-            ${(currentState.user && currentState.user.email === 'nden14800@gmail.com') ? `
-            <div class="stats-card-interactive profile-card-secondary p-4 rounded-2xl bg-gradient-to-br from-red-50 to-white dark:from-red-950/40 dark:to-zinc-900 border border-red-200 dark:border-red-900/50 flex items-center justify-between gap-3 shadow-sm">
-                <div class="flex items-center gap-3 min-w-0">
-                    <div class="w-9 h-9 rounded-full flex items-center justify-center bg-red-100 dark:bg-red-900/40 flex-shrink-0">
-                        <i class="bi bi-clipboard-data text-red-600 dark:text-red-400"></i>
-                    </div>
-                    <div class="min-w-0">
-                        <h4 class="font-bold text-sm text-red-700 dark:text-red-300 truncate">AI要約フィードバック確認</h4>
-                        <span class="block text-[10px] font-bold tracking-wider text-red-400 dark:text-red-500 uppercase">Admin Only</span>
-                    </div>
-                </div>
-                <button onclick="showView('summary-admin')" class="shrink-0 text-xs font-bold px-4 py-2 rounded-full bg-red-600 text-white hover:bg-red-700 transition shadow-sm flex items-center gap-1.5">
-                    開く <i class="bi bi-arrow-right"></i>
-                </button>
-            </div>
-            ` : ''}
 
             <!-- 5. Danger Zone (ログアウト・削除) -->
             <div class="stats-card-interactive profile-card-danger p-6 rounded-2xl bg-red-50 dark:bg-red-900/10 border-red-100 dark:border-red-900">
