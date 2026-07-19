@@ -18769,6 +18769,9 @@ ${getShareUrl()}`;
             btn.innerHTML = '<i class="bi bi-hourglass-split"></i> 考え中...';
             responseArea.classList.add('hidden');
 
+            const controller = new AbortController();
+            const timeoutId = setTimeout(() => controller.abort(), 30000); // 30秒でタイムアウト
+
             try {
                 const res = await fetch(`${API_BASE}/api/worry-consult`, {
                     method: 'POST',
@@ -18776,8 +18779,10 @@ ${getShareUrl()}`;
                     body: JSON.stringify({
                         worry: worry,
                         omikujiType: currentState.lastResult.type
-                    })
+                    }),
+                    signal: controller.signal
                 });
+                clearTimeout(timeoutId);
                 const data = await res.json();
 
                 if (res.status === 429) {
@@ -18789,8 +18794,13 @@ ${getShareUrl()}`;
                 responseText.textContent = data.advice || '';
                 responseArea.classList.remove('hidden');
             } catch (e) {
+                clearTimeout(timeoutId);
                 console.error(e);
-                if (typeof window.showToast === 'function') window.showToast('相談中にエラーが発生しました。しばらくしてからお試しください。', 'error');
+                if (e.name === 'AbortError') {
+                    if (typeof window.showToast === 'function') window.showToast('AIの応答に時間がかかりすぎたため中断しました。しばらくしてからもう一度お試しください。', 'error');
+                } else {
+                    if (typeof window.showToast === 'function') window.showToast('相談中にエラーが発生しました。しばらくしてからお試しください。', 'error');
+                }
             } finally {
                 btn.disabled = false;
                 btn.innerHTML = '<i class="bi bi-send-fill"></i> 相談する';
@@ -18818,12 +18828,17 @@ ${getShareUrl()}`;
             btn.innerHTML = '<i class="bi bi-hourglass-split"></i> 読み解き中...';
             responseArea.classList.add('hidden');
 
+            const controller = new AbortController();
+            const timeoutId = setTimeout(() => controller.abort(), 30000); // 30秒でタイムアウト
+
             try {
                 const res = await authFetch(`${API_BASE}/api/dream-fortune`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ dream: dream })
+                    body: JSON.stringify({ dream: dream }),
+                    signal: controller.signal
                 });
+                clearTimeout(timeoutId);
                 const data = await res.json();
 
                 if (res.status === 429) {
@@ -18841,8 +18856,13 @@ ${getShareUrl()}`;
                 if (input) input.value = '';
                 loadDreamHistory();
             } catch (e) {
+                clearTimeout(timeoutId);
                 console.error(e);
-                if (typeof window.showToast === 'function') window.showToast('夢占い中にエラーが発生しました。しばらくしてからお試しください。', 'error');
+                if (e.name === 'AbortError') {
+                    if (typeof window.showToast === 'function') window.showToast('AIの応答に時間がかかりすぎたため中断しました。しばらくしてからもう一度お試しください。', 'error');
+                } else {
+                    if (typeof window.showToast === 'function') window.showToast('夢占い中にエラーが発生しました。しばらくしてからお試しください。', 'error');
+                }
             } finally {
                 btn.disabled = false;
                 btn.innerHTML = '<i class="bi bi-stars"></i> 夢を占う';
