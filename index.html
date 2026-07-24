@@ -77,8 +77,7 @@
         darkMode: 'class',
       }
     </script>
-   <!-- QRCode.js -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    <!-- ★変更(次の土曜日タスク9): おみくじ結果札のQRコード廃止に伴い、QRCode.jsライブラリの読み込みも撤去 -->
     
     <!-- html-to-image（html2canvas代替・SVGベースでborder-radius/QR正常描画） -->
     <script src="https://cdn.jsdelivr.net/npm/html-to-image@1.11.13/dist/html-to-image.min.js"></script>
@@ -1482,8 +1481,9 @@
             border-top: 2px solid currentColor;
             padding-top: 20px;
             display: flex;
-            justify-content: space-between;
-            align-items: flex-end;
+            flex-direction: column;
+            align-items: center;
+            gap: 12px;
         }
         .result-user-name {
             font-size: 1.2rem;
@@ -1492,24 +1492,13 @@
         .result-date {
             font-size: 0.9rem;
         }
-        /* QRコードを高画質にするための縮小表示設定 (修正版) */
-        .result-qr-container {
-            width: 60px;
-            height: 60px;
-            /* 親要素が狭くなっても絶対に縮ませない設定 */
-            flex-shrink: 0 !important; 
-        }
-        
-        .result-qr-container img, 
-        .result-qr-container canvas {
-            width: 60px !important;
-            height: 60px !important;
-            /* Tailwind等のレスポンシブ設定(max-width:100%)を強制解除して変形を防ぐ */
-            max-width: none !important; 
-            max-height: none !important;
-            object-fit: contain;
-            display: block;
-            margin: 0;
+        /* ★変更(次の土曜日タスク9)：QRコードを廃止し、フッターと同じ©表記を札下部中央に表示 */
+        .result-copyright {
+            width: 100%;
+            text-align: center;
+            font-size: 0.72rem;
+            letter-spacing: 0.08em;
+            opacity: 0.75;
         }
 
         /* 12星座カード */
@@ -5404,13 +5393,7 @@ body.theme-newyear {
        ここではシンプルに「背景色のブレンド」などで対応する想定 */
 }
 
-    /* QRコードを高画質にするための縮小表示設定 */
-        .result-qr-container img, 
-        .result-qr-container canvas {
-            width: 60px !important;  /* 見た目のサイズ */
-            height: 60px !important;
-            display: block;
-        }    
+    /* ★変更(次の土曜日タスク9): QRコード廃止に伴い.result-qr-container関連の定義は撤去 */
 
        /* --- グラフ用ツールチップ & 軸スタイル --- */
         .chart-tooltip {
@@ -9946,7 +9929,7 @@ body.sidebar-collapsed.sidebar-pinned #sidebar .nav-group-title {
                                     <p class="font-bold text-sm">10. CDN配信の静的ライブラリ（jsDelivr／cdnjs／Google Fonts 等）</p>
                                     <p class="text-gray-500">利用目的：フォント・アイコン・地図表示・画像生成（おみくじ結果や御守の保存画像作成）等に用いるJavaScriptライブラリおよびフォントファイルの配信</p>
                                     <p class="text-gray-500">送信される情報：ファイル取得リクエストに伴うアクセス元IPアドレス、ブラウザ情報（各CDN事業者へ）</p>
-                                    <p class="mt-1">特記事項：当サイトはBootstrap Icons・Leaflet・QRコード生成・画像保存機能（html-to-image）等の一部を、jsDelivr・cdnjs・Google Fontsといった外部CDN経由で配信しています。これらはいずれも静的なファイル配信のみを行うサービスであり、氏名・メールアドレス等の個人情報を収集するものではありませんが、ファイル取得の際にIPアドレスが各事業者へ送信される点にご留意ください。各社のデータ利用方針は <a href="https://www.jsdelivr.com/privacy-policy" target="_blank" rel="noopener noreferrer" class="underline text-blue-500">jsDelivr</a>／<a href="https://www.cloudflare.com/privacypolicy/" target="_blank" rel="noopener noreferrer" class="underline text-blue-500">cdnjs (Cloudflare)</a>／<a href="https://policies.google.com/privacy" target="_blank" rel="noopener noreferrer" class="underline text-blue-500">Google Fonts</a> をご参照ください。</p>
+                                    <p class="mt-1">特記事項：当サイトはBootstrap Icons・Leaflet・画像保存機能（html-to-image）等の一部を、jsDelivr・cdnjs・Google Fontsといった外部CDN経由で配信しています。これらはいずれも静的なファイル配信のみを行うサービスであり、氏名・メールアドレス等の個人情報を収集するものではありませんが、ファイル取得の際にIPアドレスが各事業者へ送信される点にご留意ください。各社のデータ利用方針は <a href="https://www.jsdelivr.com/privacy-policy" target="_blank" rel="noopener noreferrer" class="underline text-blue-500">jsDelivr</a>／<a href="https://www.cloudflare.com/privacypolicy/" target="_blank" rel="noopener noreferrer" class="underline text-blue-500">cdnjs (Cloudflare)</a>／<a href="https://policies.google.com/privacy" target="_blank" rel="noopener noreferrer" class="underline text-blue-500">Google Fonts</a> をご参照ください。</p>
                                 </div>
                                 <div class="bg-white dark:bg-black/20 p-3 rounded border border-gray-200 dark:border-gray-700 text-xs">
                                     <p class="font-bold text-sm">11. Cloudflare Workers AI (Cloudflare, Inc.)</p>
@@ -18580,7 +18563,7 @@ async function showResultDetail(isNewDraw, dataOverride = null) {
                 const footer = document.createElement('div');
                 footer.className = 'result-footer-info accent-border';
                 const metaDiv = document.createElement('div');
-                metaDiv.style.textAlign = 'left';
+                metaDiv.style.textAlign = 'center';
                 const name = data.username || "参拝者";
                 
                 let ts = Number(data.timestamp);
@@ -18594,26 +18577,12 @@ async function showResultDetail(isNewDraw, dataOverride = null) {
                     <div class="result-user-name accent-text">${escapeHtml(name)} 様の運勢</div>
                     <div class="result-date accent-text">参拝日: ${dateStr}</div>
                 `;
-                const qrDiv = document.createElement('div');
-                qrDiv.className = 'result-qr-container';
-                const qrTarget = document.createElement('div');
-                qrDiv.appendChild(qrTarget);
+                const copyrightDiv = document.createElement('div');
+                copyrightDiv.className = 'result-copyright';
+                copyrightDiv.textContent = '© 2026 天命乃杜 / nden148';
                 footer.appendChild(metaDiv);
-                footer.appendChild(qrDiv);
+                footer.appendChild(copyrightDiv);
                 outer.appendChild(footer);
-                
-                setTimeout(() => {
-                    // ★修正箇所: widthとheightを 60 → 128 に変更
-                    // これで内部的に高画質で生成され、CSSで60pxに縮小表示されます
-                    new QRCode(qrTarget, {
-                        text: SITE_URL, 
-                        width: 128,  // 大きく作る
-                        height: 128, // 大きく作る
-                        colorDark : "#000000", 
-                        colorLight : "#ffffff",
-                        correctLevel : QRCode.CorrectLevel.H
-                    });
-                }, 100);
             }
         }
 
@@ -18943,13 +18912,8 @@ function resetSearch() {
                 }); // document.fonts.ready
             }; // doCapture end
 
-            // QRコード描画完了を待ってからキャプチャ
-            const qrCanvas = target.querySelector('canvas');
-            if (qrCanvas) {
-                setTimeout(doCapture, 500);
-            } else {
-                setTimeout(doCapture, 100);
-            }
+            // ★変更(次の土曜日タスク9): QRコード廃止によりcanvas待機は不要に。常に短い待機時間でキャプチャ
+            setTimeout(doCapture, 100);
         }
 
         // サイトルートURLを返す（生成URL廃止）
