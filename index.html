@@ -3320,10 +3320,11 @@
 }
         
         .history-overlay {
-            position: absolute;
+            /* 旧方式(廃止予定)：現在は使用箇所なし。互換性のため定義のみ残置 */
+            position: fixed;
             top: 50%; left: 50%;
             transform: translate(-50%, -50%);
-            z-index: 10;
+            z-index: 2000;
             background-color: var(--card-bg);
             padding: 30px;
             border-radius: 12px;
@@ -3334,13 +3335,44 @@
             max-width: 400px;
         }
 
+        /* --- ログイン要求ロック画面 統一版 (天命Labsの.lab-lock-container方式に統一) --- */
+        /* 1. 位置合わせ専用コンテナ：親(.view-section等 position:relativeの要素)の
+              コンテンツ高さいっぱいに広がり、その中でflexで中央揃えする。
+              viewport基準(position:fixed)ではなく「セクション基準」で揃えるのがポイント。 */
+        .login-lock-container {
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            z-index: 2000 !important;
+            pointer-events: none; /* コンテナ自体はクリックを透過 */
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        /* 2. カード本体：見た目とクリック判定はこちらが担当 */
+        .login-lock-card {
+            pointer-events: auto;
+            background-color: var(--card-bg) !important;
+            border: 1px solid var(--card-border);
+            border-radius: 12px;
+            padding: 30px;
+            width: 80%;
+            max-width: 400px;
+            text-align: center;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.5);
+            filter: none !important;
+            opacity: 1 !important;
+            backdrop-filter: none !important;
+            transform: translateZ(0);
+        }
+
         /* --- 修正版：TENMEI Labs ロック画面スタイル --- */
 
 /* 1. ロック画面のコンテナ (位置合わせ専用・クリック透過) */
 .lab-lock-container {
     position: absolute;
     top: 0; left: 0; width: 100%; height: 100%;
-    z-index: 9999 !important; /* 最前面を強制 */
+    z-index: 2000 !important; /* ★修正：サイドバー(z-index:9999)と同値だったため、DOM順で後にあるこちらが
+                                  サイドバーの上に被って描画されていた。サイドバーより確実に低い値に変更 */
     pointer-events: none;     /* コンテナ自体はクリックを通す */
     /* フレックスボックスで中央揃え (HTMLのクラスと合わせて制御) */
     display: flex;
@@ -7358,18 +7390,6 @@ body.sidebar-collapsed.sidebar-pinned #sidebar .nav-group-title {
                         color: var(--text-main) !important;
                     }
 
-                    /* ---- 参拝の記録 ロック画面 ---- */
-                    html:not(.dark) #stats-lock > div {
-                        background: var(--card-bg) !important;
-                        border-color: var(--card-border) !important;
-                        border-top-color: var(--accent-red) !important;
-                    }
-                    html:not(.dark) #stats-lock h3 {
-                        color: var(--text-main) !important;
-                    }
-                    html:not(.dark) #stats-lock p {
-                        color: var(--text-sub) !important;
-                    }
             </style>
             
             <div class="bento-grid">
@@ -8357,6 +8377,9 @@ body.sidebar-collapsed.sidebar-pinned #sidebar .nav-group-title {
         </div>
     </div>
 
+    <!-- コンテンツ＋ロック画面ラッパー (position:relative でstats-lockの基準点。ヒーローカードは含めない) -->
+    <div class="relative">
+
     <!-- コンテンツラッパー -->
     <div id="stats-content-wrapper">
         
@@ -8412,18 +8435,22 @@ body.sidebar-collapsed.sidebar-pinned #sidebar .nav-group-title {
     </div>
 
     <!-- 非ログイン時のロック画面 -->
-    <div id="stats-lock" class="lab-lock-overlay hidden flex items-center justify-center">
-        <div class="backdrop-blur-xl p-8 rounded-2xl shadow-2xl max-w-sm w-full text-center mx-4" style="background: rgba(13,13,13,0.95); border: 1px solid #2a2a2a; border-top: 3px solid var(--accent-red);">
-            <i class="bi bi-person-lock text-5xl mb-4 block" style="color: #555;"></i>
-            <h3 class="text-xl font-bold mb-2" style="color:#e0e0e0; font-family:'Zen Old Mincho',serif;">記録は閉じられています</h3>
-            <p class="text-sm mb-6 leading-relaxed" style="color:#888;">
+    <div id="stats-lock" class="login-lock-container hidden">
+        <div class="login-lock-card">
+            <div class="lab-icon-box icon-bg-gray mx-auto mb-6" style="width:64px;height:64px;">
+                <i class="bi bi-person-lock"></i>
+            </div>
+            <h3 class="text-xl font-black mb-2" style="font-family:'Zen Old Mincho',serif;">記録は閉じられています</h3>
+            <p class="text-sm mb-6 leading-relaxed" style="color:var(--text-sub);">
                 自分だけの参拝記録を残し、<br>運勢の傾向を分析するにはログインが必要です。
             </p>
-            <button onclick="showView('auth')" class="btn-primary w-full shadow-lg">
+            <button onclick="showView('auth')" class="btn-primary shadow-lg">
                 <i class="bi bi-person-plus-fill"></i> 記録を始める
             </button>
         </div>
     </div>
+
+    </div> <!-- /コンテンツ＋ロック画面ラッパー -->
 </section>
 
         <!-- ビュー: ログイン/登録 (Bento UI版) -->
@@ -8706,6 +8733,9 @@ body.sidebar-collapsed.sidebar-pinned #sidebar .nav-group-title {
         </div>
     </div>
 
+    <!-- コンテンツ＋ロック画面ラッパー (position:relative でhistory-login-overlayの基準点。ヒーローカードは含めない) -->
+    <div class="relative">
+
     <!-- コンテンツコンテナ -->
     <div id="history-container">
 
@@ -8815,19 +8845,23 @@ body.sidebar-collapsed.sidebar-pinned #sidebar .nav-group-title {
     </div>
 
     <!-- 非ログイン時のオーバーレイ -->
-    <div id="history-login-overlay" class="history-overlay hidden">
-        <div class="lab-icon-box icon-bg-gray mx-auto mb-6" style="width:64px;height:64px;">
-            <i class="bi bi-lock-fill"></i>
+    <div id="history-login-overlay" class="login-lock-container hidden">
+        <div class="login-lock-card">
+            <div class="lab-icon-box icon-bg-gray mx-auto mb-6" style="width:64px;height:64px;">
+                <i class="bi bi-lock-fill"></i>
+            </div>
+            <h3 class="text-xl font-black mb-2" style="font-family:'Zen Old Mincho',serif;">轍を見るには会員証が必要です</h3>
+            <p class="text-sm mb-6 leading-relaxed" style="color:var(--text-sub);">
+                ログインすると、あなた自身の過去の運勢と、<br>他の参拝者の記録を閲覧・検索することができます。
+            </p>
+            <button onclick="showView('auth')" class="btn-primary shadow-lg">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16"><path d="M3 14s-1 0-1-1 1-4 6-4 6 3 6 4-1 1-1 1zm5-6a3 3 0 1 0 0-6 3 3 0 0 0 0 6"/></svg>
+                ログイン / 登録
+            </button>
         </div>
-        <h3 class="text-xl font-black mb-2" style="font-family:'Zen Old Mincho',serif;">轍を見るには会員証が必要です</h3>
-        <p class="text-sm mb-6 leading-relaxed" style="color:var(--text-sub);">
-            ログインすると、あなた自身の過去の運勢と、<br>他の参拝者の記録を閲覧・検索することができます。
-        </p>
-        <button onclick="showView('auth')" class="btn-primary shadow-lg">
-            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16"><path d="M3 14s-1 0-1-1 1-4 6-4 6 3 6 4-1 1-1 1zm5-6a3 3 0 1 0 0-6 3 3 0 0 0 0 6"/></svg>
-            ログイン / 登録
-        </button>
     </div>
+
+    </div> <!-- /コンテンツ＋ロック画面ラッパー -->
 </section>
 
         <!-- ビュー: AI夢占い（緊急追加!21②） -->
@@ -8858,6 +8892,9 @@ body.sidebar-collapsed.sidebar-pinned #sidebar .nav-group-title {
             </div>
         </div>
     </div>
+
+    <!-- コンテンツ＋ロック画面ラッパー (position:relative でdream-login-overlayの基準点。ヒーローカードは含めない) -->
+    <div class="relative">
 
     <!-- コンテンツコンテナ -->
     <div id="dream-container" style="min-height: 460px;">
@@ -8898,19 +8935,23 @@ body.sidebar-collapsed.sidebar-pinned #sidebar .nav-group-title {
     </div>
 
     <!-- 非ログイン時のオーバーレイ -->
-    <div id="dream-login-overlay" class="history-overlay hidden">
-        <div class="lab-icon-box icon-bg-gray mx-auto mb-6" style="width:64px;height:64px;">
-            <i class="bi bi-lock-fill"></i>
+    <div id="dream-login-overlay" class="login-lock-container hidden">
+        <div class="login-lock-card">
+            <div class="lab-icon-box icon-bg-gray mx-auto mb-6" style="width:64px;height:64px;">
+                <i class="bi bi-lock-fill"></i>
+            </div>
+            <h3 class="text-xl font-black mb-2" style="font-family:'Zen Old Mincho',serif;">夢占いには会員証が必要です</h3>
+            <p class="text-sm mb-6 leading-relaxed" style="color:var(--text-sub);">
+                ログインすると、AIによる夢占いと、<br>あなた自身の夢の記録を残すことができます。
+            </p>
+            <button onclick="showView('auth')" class="btn-primary shadow-lg">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16"><path d="M3 14s-1 0-1-1 1-4 6-4 6 3 6 4-1 1-1 1zm5-6a3 3 0 1 0 0-6 3 3 0 0 0 0 6"/></svg>
+                ログイン / 登録
+            </button>
         </div>
-        <h3 class="text-xl font-black mb-2" style="font-family:'Zen Old Mincho',serif;">夢占いには会員証が必要です</h3>
-        <p class="text-sm mb-6 leading-relaxed" style="color:var(--text-sub);">
-            ログインすると、AIによる夢占いと、<br>あなた自身の夢の記録を残すことができます。
-        </p>
-        <button onclick="showView('auth')" class="btn-primary shadow-lg">
-            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16"><path d="M3 14s-1 0-1-1 1-4 6-4 6 3 6 4-1 1-1 1zm5-6a3 3 0 1 0 0-6 3 3 0 0 0 0 6"/></svg>
-            ログイン / 登録
-        </button>
     </div>
+
+    </div> <!-- /コンテンツ＋ロック画面ラッパー -->
 </section>
 
         <!-- ビュー: 社務所だより（検索・ページ機能付き） -->
