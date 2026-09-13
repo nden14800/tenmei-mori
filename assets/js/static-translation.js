@@ -1,31 +1,34 @@
-const TRANSLATION_MANIFEST_URL = '/assets/data/static-translations/manifest.json';
+const BERGAMOT_MODULE_URL = 'https://cdn.jsdelivr.net/npm/@browsermt/bergamot-translator@0.4.9/translator.js';
+const BERGAMOT_REGISTRY_URL = 'https://storage.googleapis.com/bergamot-models-sandbox/0.3.3/registry.json';
+const BERGAMOT_DOWNLOAD_TIMEOUT = 0;
 
 const LANGUAGE_OPTIONS = [
-    { code: 'ja', locale: 'ja', native: '日本語', japanese: '日本語', mark: '日' },
-    { code: 'en', locale: 'en', native: 'English', japanese: '英語', mark: 'EN' },
-    { code: 'ko', locale: 'ko', native: '한국어', japanese: '韓国語', mark: '한' },
-    { code: 'zh', locale: 'zh-CN', native: '简体中文', japanese: '簡体中国語', mark: '简' },
-    { code: 'zh_hant', locale: 'zh-TW', native: '繁體中文', japanese: '繁体中国語', mark: '繁' },
-    { code: 'fr', locale: 'fr', native: 'Français', japanese: 'フランス語', mark: 'FR' },
-    { code: 'de', locale: 'de', native: 'Deutsch', japanese: 'ドイツ語', mark: 'DE' },
-    { code: 'es', locale: 'es', native: 'Español', japanese: 'スペイン語', mark: 'ES' },
-    { code: 'pt', locale: 'pt', native: 'Português', japanese: 'ポルトガル語', mark: 'PT' },
-    { code: 'vi', locale: 'vi', native: 'Tiếng Việt', japanese: 'ベトナム語', mark: 'VI' },
-    { code: 'id', locale: 'id', native: 'Bahasa Indonesia', japanese: 'インドネシア語', mark: 'ID' },
-    { code: 'th', locale: 'th', native: 'ไทย', japanese: 'タイ語', mark: 'TH' },
+    { code: 'ja', locale: 'ja', bergamot: 'ja', native: '日本語', japanese: '日本語', mark: '日' },
+    { code: 'en', locale: 'en', bergamot: 'en', native: 'English', japanese: '英語', mark: 'EN' },
+    { code: 'ko', locale: 'ko', bergamot: 'ko', native: '한국어', japanese: '韓国語', mark: '한' },
+    { code: 'zh', locale: 'zh-CN', bergamot: 'zh', native: '简体中文', japanese: '簡体中国語', mark: '简' },
+    { code: 'fr', locale: 'fr', bergamot: 'fr', native: 'Français', japanese: 'フランス語', mark: 'FR' },
+    { code: 'de', locale: 'de', bergamot: 'de', native: 'Deutsch', japanese: 'ドイツ語', mark: 'DE' },
+    { code: 'es', locale: 'es', bergamot: 'es', native: 'Español', japanese: 'スペイン語', mark: 'ES' },
+    { code: 'pt', locale: 'pt', bergamot: 'pt', native: 'Português', japanese: 'ポルトガル語', mark: 'PT' },
+    { code: 'vi', locale: 'vi', bergamot: 'vi', native: 'Tiếng Việt', japanese: 'ベトナム語', mark: 'VI' },
+    { code: 'id', locale: 'id', bergamot: 'id', native: 'Bahasa Indonesia', japanese: 'インドネシア語', mark: 'ID' },
+    { code: 'th', locale: 'th', bergamot: 'th', native: 'ไทย', japanese: 'タイ語', mark: 'TH' },
 ];
 
 const state = {
     currentLanguage: 'ja',
-    dictionaryCache: new Map(),
-    manifest: null,
-    manifestPromise: null,
     originalNodes: [],
     originalText: new WeakMap(),
+    translatedTextCache: new Map(),
+    translator: null,
+    translatorLanguage: null,
+    translatorModulePromise: null,
     translating: false,
     pendingLanguage: null,
     observed: false,
     mutationTimer: null,
+    translationRun: 0,
 };
 
 function getOption(code) {
@@ -41,8 +44,9 @@ function normalizeText(value) {
 }
 
 function restoreWhitespace(original, translated) {
-    const leading = String(original || '').match(/^\s*/)?.[0] || '';
-    const trailing = String(original || '').match(/\s*$/)?.[0] || '';
+    const source = String(original || '');
+    const leading = source.match(/^\s*/)?.[0] || '';
+    const trailing = source.match(/\s*$/)?.[0] || '';
     return `${leading}${translated}${trailing}`;
 }
 
@@ -100,6 +104,7 @@ function isExcludedTextNode(node) {
 
 function collectTextNodes() {
     const root = document.querySelector('.view-section.active') || document.getElementById('main-content') || document.body;
+    if (!root) return [];
     const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT, {
         acceptNode(node) {
             return isExcludedTextNode(node) ? NodeFilter.FILTER_REJECT : NodeFilter.FILTER_ACCEPT;
@@ -119,55 +124,95 @@ function collectTextNodes() {
 
 function restoreJapanese() {
     state.originalNodes.forEach((node) => {
-        if (node?.isConnected && state.originalText.has(node)) node.nodeValue = state.originalText.get(node);
+        if (node?.isConnected && state.originalText.has(node)) {
+            node.nodeValue = state.originalText.get(node);
+        }
     });
     document.documentElement.lang = 'ja';
 }
 
-async function loadManifest() {
-    if (state.manifest) return state.manifest;
-    if (!state.manifestPromise) {
-        state.manifestPromise = fetch(TRANSLATION_MANIFEST_URL, { credentials: 'omit', cache: 'force-cache' })
-            .then(async (response) => {
-                if (!response.ok) throw new Error(`translation_manifest_http_${response.status}`);
-                const manifest = await response.json();
-                if (manifest?.schemaVersion !== 1 || manifest?.sourceLanguage !== 'ja' || !manifest.files) {
-                    throw new Error('translation_manifest_invalid');
-                }
-                state.manifest = manifest;
-                return manifest;
-            })
-            .catch((error) => {
-                state.manifestPromise = null;
-                throw error;
+async function loadBergamotModule() {
+    if (!state.translatorModulePromise) {
+        state.translatorModulePromise = import(BERGAMOT_MODULE_URL).catch((error) => {
+            state.translatorModulePromise = null;
+            throw error;
+        });
+    }
+    return state.translatorModulePromise;
+}
+
+async function ensureTranslator(language) {
+    const option = getOption(language);
+    if (state.translator && state.translatorLanguage === option.code) return state.translator;
+
+    if (state.translator) {
+        try { state.translator.delete(); } catch (error) { console.warn('Bergamot translator cleanup failed:', error); }
+        state.translator = null;
+        state.translatorLanguage = null;
+    }
+
+    const module = await loadBergamotModule();
+    if (!module?.BatchTranslator) throw new Error('bergamot_batch_translator_unavailable');
+    state.translator = new module.BatchTranslator({
+        pivotLanguage: 'en',
+        registryUrl: BERGAMOT_REGISTRY_URL,
+        downloadTimeout: BERGAMOT_DOWNLOAD_TIMEOUT,
+        workers: 1,
+        batchSize: 8,
+        cacheSize: 2048,
+    });
+    state.translatorLanguage = option.code;
+    return state.translator;
+}
+
+async function translateUniqueTexts(language, texts, runId) {
+    const option = getOption(language);
+    const translator = await ensureTranslator(language);
+    const unique = [...new Set(texts.map(normalizeText).filter(Boolean))];
+    const missing = unique.filter((text) => !state.translatedTextCache.has(`${language}\u0000${text}`));
+
+    let completed = unique.length - missing.length;
+    const total = unique.length || 1;
+    const updateProgress = () => setStatus({
+        title: `${option.japanese}を表示しています`,
+        detail: `端末内のBergamot翻訳エンジンで本文を処理しています（${completed}/${unique.length}）。初回のみ翻訳モデルをダウンロードします。`,
+        loading: true,
+        progress: 45 + Math.round((completed / total) * 45),
+    });
+    updateProgress();
+
+    const batchSize = 32;
+    for (let start = 0; start < missing.length; start += batchSize) {
+        if (runId !== state.translationRun) return false;
+        const batch = missing.slice(start, start + batchSize);
+        const results = await Promise.all(batch.map(async (text) => {
+            const response = await translator.translate({
+                from: 'ja',
+                to: option.bergamot,
+                text,
+                html: false,
+                priority: 10,
             });
+            return [text, response?.target?.text];
+        }));
+        results.forEach(([source, translated]) => {
+            if (typeof translated === 'string' && normalizeText(translated)) {
+                state.translatedTextCache.set(`${language}\u0000${source}`, translated);
+            }
+            completed += 1;
+        });
+        updateProgress();
     }
-    return state.manifestPromise;
+    return runId === state.translationRun;
 }
 
-async function loadDictionary(language) {
-    if (state.dictionaryCache.has(language)) return state.dictionaryCache.get(language);
-    const manifest = await loadManifest();
-    const fileName = manifest.files?.[language];
-    if (!fileName || !/^[a-z_]+\.json$/i.test(fileName)) throw new Error(`translation_language_unavailable_${language}`);
-    const url = new URL(`/assets/data/static-translations/${fileName}`, window.location.origin);
-    if (url.origin !== window.location.origin) throw new Error('translation_dictionary_nonlocal');
-    const response = await fetch(url.href, { credentials: 'omit', cache: 'force-cache' });
-    if (!response.ok) throw new Error(`translation_dictionary_http_${response.status}`);
-    const dictionary = await response.json();
-    if (dictionary?.schemaVersion !== 1 || dictionary?.sourceLanguage !== 'ja' || dictionary?.targetLanguage !== language || !dictionary.translations) {
-        throw new Error('translation_dictionary_invalid');
-    }
-    state.dictionaryCache.set(language, dictionary.translations);
-    return dictionary.translations;
-}
-
-function applyDictionary(dictionary) {
-    const nodes = collectTextNodes();
+function applyBergamotTranslations(language, nodes) {
     let translatedCount = 0;
     for (const node of nodes) {
         const original = state.originalText.get(node);
-        const translated = dictionary[normalizeText(original)];
+        const normalized = normalizeText(original);
+        if (!normalized) continue;
+        const translated = state.translatedTextCache.get(`${language}\u0000${normalized}`);
         if (typeof translated === 'string' && translated.trim()) {
             node.nodeValue = restoreWhitespace(original, translated);
             translatedCount += 1;
@@ -178,15 +223,17 @@ function applyDictionary(dictionary) {
 
 async function selectLanguage(language, { force = false } = {}) {
     const option = getOption(language);
+    if (!force && option.code === state.currentLanguage && !state.translating) return;
     if (state.translating) {
         state.pendingLanguage = option.code;
         return;
     }
-    if (!force && option.code === state.currentLanguage) return;
 
+    const runId = ++state.translationRun;
     state.translating = true;
     state.pendingLanguage = option.code;
     updateLanguageButtons();
+
     try {
         restoreJapanese();
         if (option.code === 'ja') {
@@ -194,50 +241,42 @@ async function selectLanguage(language, { force = false } = {}) {
             setStatus({ title: '日本語を表示中です', detail: '公開時の原文へ戻しました。', loading: false });
             return;
         }
+
+        const nodes = collectTextNodes();
+        const uniqueCount = new Set(nodes.map((node) => normalizeText(state.originalText.get(node))).filter(Boolean)).size;
         setStatus({
-            title: `${option.japanese}の表示データを読み込んでいます`,
-            detail: 'このサイトが自己配信する軽量な翻訳データを読み込んでいます。本文を翻訳APIへ送信しません。',
+            title: `${option.japanese}の翻訳モデルを準備しています`,
+            detail: `Firefox Translationsで使われているBergamot系のローカル翻訳エンジンを初期化しています（対象 ${uniqueCount} 件）。`,
             loading: true,
-            progress: 30,
+            progress: 10,
         });
-        const dictionary = await loadDictionary(option.code);
-        if (state.pendingLanguage !== option.code) return;
-        setStatus({
-            title: `${option.japanese}を表示しています`,
-            detail: '表示中の公開本文を軽量な自己配信翻訳データで置き換えています。',
-            loading: true,
-            progress: 70,
-        });
-        const result = applyDictionary(dictionary);
-        if (state.pendingLanguage !== option.code) return;
+        await translateUniqueTexts(option.code, nodes.map((node) => state.originalText.get(node)), runId);
+        if (runId !== state.translationRun) return;
+
+        const result = applyBergamotTranslations(option.code, nodes);
         state.currentLanguage = option.code;
         document.documentElement.lang = option.locale;
         setStatus({
             title: `${option.japanese}を表示中です`,
-            detail: `公開本文を軽量な自己配信翻訳データで表示しました（${result.translated}/${result.total}件）。日本語を選ぶと原文へ戻ります。`,
+            detail: `端末内のBergamot翻訳エンジンで ${result.translated}/${result.total} 件を翻訳しました。本文は翻訳APIへ送信していません。`,
             loading: false,
             progress: 100,
         });
     } catch (error) {
-        console.error('Static translation display failed:', error);
+        console.error('Bergamot translation failed:', error);
         restoreJapanese();
         state.currentLanguage = 'ja';
         setStatus({
             title: '翻訳表示を開始できませんでした',
-            detail: '自己配信する軽量な翻訳データの取得に失敗しました。通信状況を確認して、もう一度お試しください。',
+            detail: 'ローカル翻訳エンジンまたは翻訳モデルの読み込みに失敗しました。通信状況を確認して、もう一度お試しください。',
             loading: false,
         });
     } finally {
         state.translating = false;
-        if (state.pendingLanguage !== option.code) {
-            const nextLanguage = state.pendingLanguage;
-            state.pendingLanguage = null;
-            updateLanguageButtons();
-            if (nextLanguage) void selectLanguage(nextLanguage);
-            return;
-        }
+        const nextLanguage = state.pendingLanguage !== option.code ? state.pendingLanguage : null;
         state.pendingLanguage = null;
         updateLanguageButtons();
+        if (nextLanguage) void selectLanguage(nextLanguage);
     }
 }
 
@@ -249,7 +288,7 @@ function observeViewChanges() {
         window.clearTimeout(state.mutationTimer);
         state.mutationTimer = window.setTimeout(() => {
             if (!state.translating && state.currentLanguage !== 'ja') void selectLanguage(state.currentLanguage, { force: true });
-        }, 180);
+        }, 220);
     });
     observer.observe(document.body, { attributes: true, subtree: true, attributeFilter: ['class'] });
     state.observed = true;
