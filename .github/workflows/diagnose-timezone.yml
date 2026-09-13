@@ -1,0 +1,22 @@
+name: Diagnose timezone implementation
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  diagnose:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Inspect timezone code
+        run: |
+          set -eu
+          echo '=== timezone-related lines ==='
+          grep -n -i -E 'timezone|time-zone|タイムゾーン|IANA|timeZone' index.html | head -n 120 || true
+          echo '=== AppConfig-related lines around timezone ==='
+          grep -n -i -E 'AppConfig|timezone|timeZone' index.html | grep -E 'AppConfig|timezone|timeZone' | head -n 220 || true
+          echo '=== likely preference/date helpers ==='
+          grep -n -E 'function (format|today|date|time|now|get.*Date|get.*Time)|toLocale(Date|String)|Intl\.DateTimeFormat|Date\.now|new Date\(' index.html | head -n 250 || true
