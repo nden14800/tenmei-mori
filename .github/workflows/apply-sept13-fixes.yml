@@ -1,0 +1,201 @@
+name: apply Sept 13 fixes
+
+on:
+  push:
+    paths:
+      - '.github/workflows/apply-sept13-fixes.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Patch site
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          import re
+          p = Path('index.html')
+          s = p.read_text(encoding='utf-8')
+
+          # Analytics: make consent state real and load GA only after explicit opt-in.
+          if 'const analyticsState = { configured: false, scriptPromise: null };' not in s:
+              s = s.replace(
+                  'const chatlingState = { loaded: false, scriptRequested: false, generation: 0 };',
+                  'const chatlingState = { loaded: false, scriptRequested: false, generation: 0 };\n        const analyticsState = { configured: false, scriptPromise: null };',
+                  1,
+              )
+
+          start = s.find('        function loadOptionalAnalytics() {')
+          if start < 0:
+              raise SystemExit('loadOptionalAnalytics start not found')
+          next_fn = s.find('\n        function ', start + 10)
+          if next_fn < 0:
+              raise SystemExit('next function after loadOptionalAnalytics not found')
+          new_fn = '''        function ensureAnalyticsConsentDefault() {
+            window.dataLayer = window.dataLayer || [];
+            window.gtag = window.gtag || function gtag(){ window.dataLayer.push(arguments); };
+            if (!window.__tenmeiAnalyticsConsentInitialized) {
+                window.gtag('consent', 'default', {
+                    analytics_storage: 'denied',
+                    ad_storage: 'denied',
+                    ad_user_data: 'denied',
+                    ad_personalization: 'denied',
+                    wait_for_update: 500
+                });
+                window.__tenmeiAnalyticsConsentInitialized = true;
+            }
+        }
+
+        function sendAnalyticsPageView() {
+            if (!analyticsState.configured || typeof window.gtag !== 'function') return;
+            window.gtag('event', 'page_view', {
+                send_to: 'G-LMJV6EK1DD',
+                page_location: window.location.href,
+                page_title: document.title
+            });
+        }
+
+        function loadOptionalAnalytics() {
+            ensureAnalyticsConsentDefault();
+            const preferences = readPreferences();
+            if (!preferences || preferences.analytics !== true) {
+                window.gtag('consent', 'update', { analytics_storage: 'denied' });
+                return;
+            }
+            window.gtag('consent', 'update', { analytics_storage: 'granted' });
+            const configure = () => {
+                if (!analyticsState.configured) {
+                    window.gtag('js', new Date());
+                    window.gtag('config', 'G-LMJV6EK1DD', { anonymize_ip: true, send_page_view: false });
+                    analyticsState.configured = true;
+                }
+                sendAnalyticsPageView();
+            };
+            if (document.getElementById('tenmei-google-analytics')) {
+                configure();
+                return;
+            }
+            if (analyticsState.scriptPromise) {
+                analyticsState.scriptPromise.then(configure).catch(() => {});
+                return;
+            }
+            analyticsState.scriptPromise = new Promise((resolve, reject) => {
+                const script = document.createElement('script');
+                script.id = 'tenmei-google-analytics';
+                script.async = true;
+                script.src = 'https://www.googletagmanager.com/gtag/js?id=G-LMJV6EK1DD';
+                script.onload = resolve;
+                script.onerror = reject;
+                document.head.appendChild(script);
+            }).then(configure).catch((error) => {
+                analyticsState.scriptPromise = null;
+                throw error;
+            });
+        }
+'''
+          s = s[:start] + new_fn + s[next_fn:]
+
+          # Analytics withdrawal must also change the in-memory consent state.
+          s = s.replace(
+              '        function removeAnalyticsCookies() {',
+              "        function removeAnalyticsCookies() {\n            ensureAnalyticsConsentDefault();\n            window.gtag('consent', 'update', { analytics_storage: 'denied' });",
+              1,
+          )
+
+          # Skip link stays keyboard-accessible, but cannot be revealed by normal scrolling.
+          start = s.find('    .sidebar-v4-skip-link {')
+          if start >= 0:
+              end = s.find('\n    }', start)
+              if end >= 0:
+                  block = '''    .sidebar-v4-skip-link {
+        position: fixed;
+        top: -96px;
+        left: 14px;
+        z-index: 10002;
+        padding: 11px 16px;
+        border: 1px solid color-mix(in srgb, var(--accent-gold) 62%, var(--card-border));
+        border-radius: 10px;
+        background: var(--card-bg);
+        color: var(--text-main);
+        font-family: 'Zen Kaku Gothic New', sans-serif;
+        font-size: 0.82rem;
+        font-weight: 800;
+        letter-spacing: 0.04em;
+        text-decoration: none;
+        opacity: 0;
+        visibility: hidden;
+        pointer-events: none;
+        transform: none;
+        transition: top 160ms cubic-bezier(0.23, 1, 0.32, 1), opacity 160ms ease;
+'''
+                  s = s[:start] + block + s[end:]
+                  s = s.replace(
+                      '.sidebar-v4-skip-link:focus-visible { transform: translateY(0); outline: 3px solid #f1d796; outline-offset: 3px; }',
+                      '.sidebar-v4-skip-link:focus-visible { top: 14px; opacity: 1; visibility: visible; pointer-events: auto; outline: 3px solid #f1d796; outline-offset: 3px; }',
+                      1,
+                  )
+
+          # Current canonical Maileroo privacy-policy URL.
+          s = s.replace('https://maileroo.com/privacy-policy', 'https://maileroo.com/legal/privacy-policy')
+
+          # Privacy revision marker.
+          s = s.replace('制定: 2026/01/02 ・ 改定: 2026/08/29 (第29版)', '制定: 2026/01/02 ・ 改定: 2026/09/13 (第30版)')
+
+          # Explicitly describe name-less / no-save behavior in the document comparison and how-to copy.
+          s = s.replace(
+              'ゲストIDで識別<br>（端末とサーバーに保存）</div></td><td class="highlight"><i class="bi bi-check-circle-fill" style="color:#16a34a;"></i><div class="text-[10px] mt-0.5" style="color:var(--text-sub);">クラウド保存<br>（端末を変えても引継ぎ可）</div>',
+              '参拝者名＋保存ONで保存<br>（保存OFFまたは名前なしは保存しない）</div></td><td class="highlight"><i class="bi bi-check-circle-fill" style="color:#16a34a;"></i><div class="text-[10px] mt-0.5" style="color:var(--text-sub);">クラウド保存<br>（保存ONなら端末を変えても引継ぎ可）</div>',
+              1,
+          )
+
+          # Print only the requested document, in a stable A4 box without clipping.
+          if 'id="tenmei-pdf-print-fixes"' not in s:
+              css = '''<style id="tenmei-pdf-print-fixes">
+@page { size: A4; margin: 14mm 12mm 16mm; }
+@media print {
+  html, body { width: auto !important; min-height: 0 !important; margin: 0 !important; padding: 0 !important; background: #fff !important; color: #111 !important; }
+  body { display: block !important; overflow: visible !important; }
+  #main-content { width: auto !important; max-width: none !important; margin: 0 !important; padding: 0 !important; }
+  .view-section.printing { display: block !important; position: static !important; width: 100% !important; max-width: none !important; min-height: 0 !important; margin: 0 !important; padding: 0 !important; overflow: visible !important; }
+  .view-section.printing .about-codex-content, .view-section.printing .privacy-ledger-content, .view-section.printing .howto-guide-content { width: 100% !important; max-width: none !important; margin: 0 !important; padding: 0 !important; overflow: visible !important; }
+  .view-section.printing .bento-card, .view-section.printing .privacy-ledger-article, .view-section.printing .about-codex-chapter { break-inside: auto !important; page-break-inside: auto !important; box-shadow: none !important; }
+  .view-section.printing h1, .view-section.printing h2, .view-section.printing h3, .view-section.printing h4 { break-after: avoid-page !important; page-break-after: avoid !important; }
+  .view-section.printing p, .view-section.printing li, .view-section.printing blockquote { orphans: 3; widows: 3; }
+  .view-section.printing table { width: 100% !important; max-width: 100% !important; border-collapse: collapse !important; break-inside: auto !important; page-break-inside: auto !important; }
+  .view-section.printing thead { display: table-header-group !important; }
+  .view-section.printing tr { break-inside: avoid !important; page-break-inside: avoid !important; }
+  .view-section.printing img, .view-section.printing svg { max-width: 100% !important; height: auto !important; }
+  .view-section.printing a { color: #111 !important; text-decoration: underline !important; overflow-wrap: anywhere !important; }
+  .view-section.printing [style*="overflow"], .view-section.printing .overflow-x-auto, .view-section.printing .overflow-hidden { overflow: visible !important; }
+}
+</style>\n'''
+              s = s.replace('</head>', css + '</head>', 1)
+
+          # GA Consent Mode must exist before initialization of optional services.
+          marker = '        function initializeCookiePreferences() {'
+          if marker in s and 'ensureAnalyticsConsentDefault();\n\n' + marker not in s:
+              s = s.replace(marker, '        ensureAnalyticsConsentDefault();\n\n' + marker, 1)
+
+          p.write_text(s, encoding='utf-8')
+          print('patched', p)
+          PY
+
+      - name: Remove one-shot workflow
+        run: |
+          rm -f .github/workflows/apply-sept13-fixes.yml
+
+      - name: Validate and commit
+        run: |
+          node --check tests/privacy-ui-regression.cjs
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add index.html .github/workflows/apply-sept13-fixes.yml
+          git diff --cached --quiet || git commit -m "fix: finalize analytics privacy and PDF output"
+          git push
