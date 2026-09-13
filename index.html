@@ -13,7 +13,7 @@
         const COOKIE_PREFERENCES_KEY = 'tenmei_cookie_preferences_v2';
         const COOKIE_PREFERENCES_VERSION = 3;
         const CHATLING_CHATBOT_ID = '1188176418';
-        const chatlingState = { loaded: false, scriptRequested: false };
+        const chatlingState = { loaded: false, scriptRequested: false, generation: 0 };
         const ANALYTICS_COOKIE_NAMES = ['_ga', '_gid', '_gat', '_ga_LMJV6EK1DD', '_clck', '_clsk', 'CLID', 'ANONCHK', 'MUID', 'SM'];
 
         function readPreferences() {
@@ -71,6 +71,7 @@
                 if (window.Chatling && typeof window.Chatling.destroy === 'function') window.Chatling.destroy();
             } catch (error) {}
             document.querySelectorAll('#chtl-chat-icon-container, #chtl-chat-iframe, #chtl-script').forEach((element) => element.remove());
+            document.querySelectorAll('[id^="chtl-"], [class^="chtl-"], [class*=" chtl-"], iframe[src*="chatling"]').forEach((element) => element.remove());
             removeStorageKeys(/^chtl_/i);
             try { delete window.Chatling; } catch (error) { window.Chatling = undefined; }
             try { delete window.chtlConfig; } catch (error) { window.chtlConfig = undefined; }
@@ -84,6 +85,7 @@
             const preferences = readPreferences();
             if (!preferences || preferences.supportChat !== true || chatlingState.scriptRequested) return;
             chatlingState.scriptRequested = true;
+            const generation = ++chatlingState.generation;
             // identify・variablesその他の個別情報を一切渡さない匿名の公式Widget初期化です。
             window.chtlConfig = { chatbotId: CHATLING_CHATBOT_ID };
             const script = document.createElement('script');
@@ -94,7 +96,7 @@
             script.src = 'https://chatling.ai/js/embed.js';
             script.onload = function () {
                 const currentPreferences = readPreferences();
-                if (!currentPreferences || currentPreferences.supportChat !== true) {
+                if (generation !== chatlingState.generation || !currentPreferences || currentPreferences.supportChat !== true) {
                     removeChatlingWidget();
                     chatlingState.loaded = false;
                     chatlingState.scriptRequested = false;
@@ -111,6 +113,7 @@
         }
 
         function stopOptionalSupportChat() {
+            ++chatlingState.generation;
             removeChatlingWidget();
             removeRetiredChannelTalkStorage();
             chatlingState.loaded = false;
@@ -7261,7 +7264,24 @@ html.reduce-motion .member-login-primary,
 html.reduce-motion .member-login-secondary,
 html.reduce-motion .member-login-dialog-close { animation: none !important; transition: none !important; }
 
-}.article-content {
+}
+/* 公開文書は利用者が明示的に選んだ場合だけ読書設定の対象にする。操作UIや印刷は対象外。 */
+html:not(.public-document-reading-disabled) :is(#view-about, #view-privacy, #view-howto) :is(.about-codex-content, .privacy-ledger-content, .howto-guide-content) {
+    font-family: var(--article-font-family);
+    font-size: var(--article-font-size);
+    line-height: var(--article-line-height);
+    max-width: var(--article-max-width);
+    margin-left: auto;
+    margin-right: auto;
+}
+html:not(.public-document-reading-disabled) :is(#view-about, #view-privacy, #view-howto) :is(.about-codex-content, .privacy-ledger-content, .howto-guide-content) :is(p, li, td, th, blockquote) {
+    font-family: var(--article-font-family) !important;
+    line-height: var(--article-line-height);
+}
+@media print {
+    :is(#view-about, #view-privacy, #view-howto) :is(.about-codex-content, .privacy-ledger-content, .howto-guide-content) { max-width: none !important; }
+}
+.article-content {
     font-size: var(--article-font-size);
     line-height: var(--article-line-height);
     font-family: var(--article-font-family) !important;
@@ -16695,7 +16715,7 @@ body.sidebar-collapsed.sidebar-pinned #sidebar .nav-group-title {
                             <section id="auth-feature-compare" class="auth-feature-summary" aria-labelledby="auth-feature-compare-title">
                                 <div class="auth-feature-summary-header">
                                     <i class="bi bi-list-check" aria-hidden="true"></i>
-                                    <div><h3 id="auth-feature-compare-title">参拝証で広がること</h3><p>おみくじ・占い・御守・読みものは、どなたでもすぐにご利用いただけます。</p></div>
+                                    <div><h3 id="auth-feature-compare-title">参拝証で広がること</h3><p>おみくじ・占い・御守・読みものはどなたでも利用できます。参拝証では、記録を端末を越えて引き継ぎ、お気に入り・AI夢占い・Labsを利用できます。なお、履歴保存は参拝者名のあるゲストでも利用できますが、設定で保存しないことも選べます。</p></div>
                                 </div>
                                 <div class="overflow-x-auto rounded-xl border border-gray-200 dark:border-zinc-700">
                                     <table class="comparison-table w-full text-left border-collapse" style="margin: 0; font-size: 0.85rem;">
@@ -17284,6 +17304,18 @@ body.sidebar-collapsed.sidebar-pinned #sidebar .nav-group-title {
                                 <label class="toggle-switch howto-guide-switch"><input type="checkbox" id="settings-reduce-motion-toggle" onchange="AppConfig.toggle('reduceMotion', this.checked)" aria-label="アニメーションを減らす設定を切り替える"><span class="slider" aria-hidden="true"></span><span class="howto-guide-switch-state" aria-hidden="true"></span></label>
                             </div>
                         </section>
+                        <section class="howto-guide-setting-card" aria-labelledby="settings-public-documents-heading">
+                            <div class="howto-guide-setting-row">
+                                <div class="howto-guide-setting-head"><span class="howto-guide-setting-icon"><i class="bi bi-file-earmark-text" aria-hidden="true"></i></span><div><h4 id="settings-public-documents-heading">公開文書にも読書設定を適用</h4><p>当サイトについて・プライバシーポリシー・使い方の本文にも、文字・行間・書体・幅を反映</p></div></div>
+                                <label class="toggle-switch howto-guide-switch"><input type="checkbox" id="settings-public-documents-toggle" onchange="AppConfig.toggle('publicDocumentReading', this.checked)" aria-label="公開文書に読書設定を適用する"><span class="slider" aria-hidden="true"></span><span class="howto-guide-switch-state" aria-hidden="true"></span></label>
+                            </div>
+                        </section>
+                        <section class="howto-guide-setting-card" aria-labelledby="settings-draw-history-heading">
+                            <div class="howto-guide-setting-row">
+                                <div class="howto-guide-setting-head"><span class="howto-guide-setting-icon"><i class="bi bi-bookmark-check" aria-hidden="true"></i></span><div><h4 id="settings-draw-history-heading">おみくじを履歴へ保存</h4><p>参拝者名またはログイン中のみ有効。OFFなら今回以降の結果は保存しません</p></div></div>
+                                <label class="toggle-switch howto-guide-switch"><input type="checkbox" id="settings-draw-history-toggle" onchange="AppConfig.toggle('saveDrawHistory', this.checked)" aria-label="おみくじを履歴へ保存する"><span class="slider" aria-hidden="true"></span><span class="howto-guide-switch-state" aria-hidden="true"></span></label>
+                            </div>
+                        </section>
                     </div>
                 </section>
 
@@ -17444,108 +17476,16 @@ body.sidebar-collapsed.sidebar-pinned #sidebar .nav-group-title {
                     </div>
                 </section>
 
-                <section class="howto-guide-entry howto-guide-entry--settings">
+                <section class="howto-guide-entry howto-guide-entry--settings" aria-labelledby="howto-settings-guide-heading">
                     <header class="howto-guide-entry-heading">
                         <span class="howto-guide-entry-number">10</span>
-                        <div><p>DISPLAY PREFERENCES</p><h3>環境設定</h3></div>
+                        <div><p>PREFERENCES</p><h3 id="howto-settings-guide-heading">環境・表示設定</h3></div>
                     </header>
                     <div class="howto-guide-entry-body">
-                        <p>表示テーマや演出の速さなど、閲覧環境に関する設定です。サイドバーの「環境・表示設定」から、参拝証をお持ちでない方もいつでも調整いただけます。</p>
-                        <p>タイムゾーンは、初期状態では端末の設定を使用します。「タイムゾーンを選ぶ」から地域を選ぶか、IANA形式の地域名を手動入力すると、画面上の日付・時刻・曜日と日次コンテンツの表示基準を変更できます。位置情報は使用しません。</p>
-                        <p>解析Cookieは、初回表示または「クッキー設定を開く」から許可・拒否を選べます。拒否した場合、Google AnalyticsおよびMicrosoft Clarityは読み込まれません。設定はいつでも変更できます。</p>
-                        <p class="howto-guide-muted">設定は未ログイン時にはこの端末（ブラウザ）に記憶され、参拝証をお持ちの方はログイン後にアカウント設定として同期されます。</p>
+                        <p>テーマ、操作、タイムゾーン、クッキー、読書表示は、サイドバーの「環境・表示設定」でまとめて変更できます。この案内ページには設定操作を重複して置いていません。</p>
                     </div>
-                    <div class="howto-guide-settings-grid" aria-label="環境設定の項目">
-                        <section class="howto-guide-setting-card howto-guide-setting-card--theme" aria-labelledby="howto-theme-heading">
-                            <div class="howto-guide-setting-head">
-                                <span class="howto-guide-setting-icon"><i class="bi bi-circle-half" aria-hidden="true"></i></span>
-                                <div><h4 id="howto-theme-heading">表示テーマ</h4><p>サイトの配色を選択</p></div>
-                            </div>
-                            <div class="theme-select-group howto-guide-option-group" data-value="system" role="group" aria-label="表示テーマ">
-                                <button type="button" class="theme-select-btn" data-theme="system" onclick="AppConfig.toggle('theme','system')" title="端末の設定に合わせる" aria-pressed="false"><i class="bi bi-circle-half" aria-hidden="true"></i><span>自動</span></button>
-                                <button type="button" class="theme-select-btn" data-theme="light" onclick="AppConfig.toggle('theme','light')" title="常にライトモード" aria-pressed="false"><i class="bi bi-sun-fill" aria-hidden="true"></i><span>ライト</span></button>
-                                <button type="button" class="theme-select-btn" data-theme="dark" onclick="AppConfig.toggle('theme','dark')" title="常にダークモード" aria-pressed="false"><i class="bi bi-moon-stars-fill" aria-hidden="true"></i><span>ダーク</span></button>
-                            </div>
-                        </section>
-
-                        <section class="howto-guide-setting-card" aria-labelledby="howto-speed-heading">
-                            <div class="howto-guide-setting-row">
-                                <div class="howto-guide-setting-head"><span class="howto-guide-setting-icon"><i class="bi bi-lightning-charge-fill" aria-hidden="true"></i></span><div><h4 id="howto-speed-heading">神速の祈り</h4><p>おみくじ演出を省略</p></div></div>
-                                <label class="toggle-switch howto-guide-switch"><input type="checkbox" id="howto-speed-toggle" onchange="AppConfig.toggle('speed', this.checked)" aria-label="神速の祈りを切り替える"><span class="slider" aria-hidden="true"></span><span class="howto-guide-switch-state" aria-hidden="true"></span></label>
-                            </div>
-                        </section>
-
-                        <section class="howto-guide-setting-card" aria-labelledby="howto-sidebar-heading">
-                            <div class="howto-guide-setting-row">
-                                <div class="howto-guide-setting-head"><span class="howto-guide-setting-icon"><i class="bi bi-layout-sidebar" aria-hidden="true"></i></span><div><h4 id="howto-sidebar-heading">サイドバーの挙動</h4><p>サイドバーの開閉方式を切り替え</p></div></div>
-                                <label class="toggle-switch howto-guide-switch" title="ON: ボタンで開閉 / OFF: ホバーで展開"><input type="checkbox" id="howto-sidebarbtn-toggle" onchange="AppConfig.toggle('sidebarButton', this.checked)" aria-label="サイドバーの開閉方式を切り替える"><span class="slider" aria-hidden="true"></span><span class="howto-guide-switch-state" aria-hidden="true"></span></label>
-                            </div>
-                        </section>
-
-                        <section class="howto-guide-setting-card" aria-labelledby="howto-tabtitle-heading">
-                            <div class="howto-guide-setting-row">
-                                <div class="howto-guide-setting-head"><span class="howto-guide-setting-icon"><i class="bi bi-window-stack" aria-hidden="true"></i></span><div><h4 id="howto-tabtitle-heading">タブの呼びかけ</h4><p>離席中、タブの文字が語りかけます</p></div></div>
-                                <label class="toggle-switch howto-guide-switch"><input type="checkbox" id="howto-tabtitle-toggle" onchange="AppConfig.toggle('tabTitle', this.checked)" aria-label="タブの呼びかけを切り替える"><span class="slider" aria-hidden="true"></span><span class="howto-guide-switch-state" aria-hidden="true"></span></label>
-                            </div>
-                        </section>
-                    </div>
+                    <button type="button" class="howto-guide-revisit-button" onclick="showView('settings')"><i class="bi bi-sliders2" aria-hidden="true"></i><span>環境・表示設定を開く</span></button>
                 </section>
-
-                <section class="howto-guide-entry howto-guide-entry--settings">
-                    <header class="howto-guide-entry-heading">
-                        <span class="howto-guide-entry-number"><i class="bi bi-body-text" aria-hidden="true"></i></span>
-                        <div><p>READING PREFERENCES</p><h3>読書設定</h3></div>
-                    </header>
-                    <div class="howto-guide-entry-body">
-                        <p>社務所だより・神籤草子などの記事本文の見え方を、お好みにあわせて調整できます。サイドバーの「環境・表示設定」から、参拝証をお持ちでない方もいつでも変更できます。</p>
-                    </div>
-                    <div class="howto-guide-settings-grid howto-guide-settings-grid--reading" aria-label="読書設定の項目">
-                        <section class="howto-guide-setting-card" aria-labelledby="howto-font-size-heading">
-                            <div class="howto-guide-setting-head"><span class="howto-guide-setting-icon"><i class="bi bi-textarea-t" aria-hidden="true"></i></span><div><h4 id="howto-font-size-heading">文字サイズ</h4><p>記事本文の文字の大きさ</p></div></div>
-                            <div class="theme-select-group opt-select-group howto-guide-option-group" data-setting="fontSize" data-value="md" role="group" aria-label="文字サイズ">
-                                <button type="button" class="theme-select-btn" data-value="sm" onclick="AppConfig.toggle('fontSize','sm')" aria-pressed="false"><span>小</span></button>
-                                <button type="button" class="theme-select-btn" data-value="md" onclick="AppConfig.toggle('fontSize','md')" aria-pressed="false"><span>標準</span></button>
-                                <button type="button" class="theme-select-btn" data-value="lg" onclick="AppConfig.toggle('fontSize','lg')" aria-pressed="false"><span>大</span></button>
-                                <button type="button" class="theme-select-btn" data-value="xl" onclick="AppConfig.toggle('fontSize','xl')" aria-pressed="false"><span>特大</span></button>
-                            </div>
-                        </section>
-
-                        <section class="howto-guide-setting-card" aria-labelledby="howto-line-height-heading">
-                            <div class="howto-guide-setting-head"><span class="howto-guide-setting-icon"><i class="bi bi-text-paragraph" aria-hidden="true"></i></span><div><h4 id="howto-line-height-heading">行間</h4><p>行と行の間隔</p></div></div>
-                            <div class="theme-select-group opt-select-group howto-guide-option-group" data-setting="lineHeight" data-value="normal" role="group" aria-label="行間">
-                                <button type="button" class="theme-select-btn" data-value="normal" onclick="AppConfig.toggle('lineHeight','normal')" aria-pressed="false"><span>標準</span></button>
-                                <button type="button" class="theme-select-btn" data-value="relaxed" onclick="AppConfig.toggle('lineHeight','relaxed')" aria-pressed="false"><span>ゆったり</span></button>
-                            </div>
-                        </section>
-
-                        <section class="howto-guide-setting-card" aria-labelledby="howto-body-font-heading">
-                            <div class="howto-guide-setting-head"><span class="howto-guide-setting-icon"><i class="bi bi-fonts" aria-hidden="true"></i></span><div><h4 id="howto-body-font-heading">本文の書体</h4><p>明朝体は雰囲気重視、ゴシック体は視認性重視です</p></div></div>
-                            <div class="theme-select-group opt-select-group howto-guide-option-group" data-setting="bodyFont" data-value="serif" role="group" aria-label="本文の書体">
-                                <button type="button" class="theme-select-btn" data-value="serif" onclick="AppConfig.toggle('bodyFont','serif')" aria-pressed="false"><span>明朝体</span></button>
-                                <button type="button" class="theme-select-btn" data-value="sans" onclick="AppConfig.toggle('bodyFont','sans')" aria-pressed="false"><span>ゴシック体</span></button>
-                            </div>
-                        </section>
-
-                        <section class="howto-guide-setting-card" aria-labelledby="howto-content-width-heading">
-                            <div class="howto-guide-setting-head"><span class="howto-guide-setting-icon"><i class="bi bi-arrows-angle-expand" aria-hidden="true"></i></span><div><h4 id="howto-content-width-heading">本文の幅</h4><p>1行あたりの文字量</p></div></div>
-                            <div class="theme-select-group opt-select-group howto-guide-option-group" data-setting="contentWidth" data-value="standard" role="group" aria-label="本文の幅">
-                                <button type="button" class="theme-select-btn" data-value="standard" onclick="AppConfig.toggle('contentWidth','standard')" aria-pressed="false"><span>標準</span></button>
-                                <button type="button" class="theme-select-btn" data-value="wide" onclick="AppConfig.toggle('contentWidth','wide')" aria-pressed="false"><span>広め</span></button>
-                            </div>
-                        </section>
-
-                        <section class="howto-guide-setting-card" aria-labelledby="howto-reduce-motion-heading">
-                            <div class="howto-guide-setting-row">
-                                <div class="howto-guide-setting-head"><span class="howto-guide-setting-icon"><i class="bi bi-universal-access" aria-hidden="true"></i></span><div><h4 id="howto-reduce-motion-heading">アニメーションを減らす</h4><p>演出や画面遷移のアニメーションを抑えます</p></div></div>
-                                <label class="toggle-switch howto-guide-switch"><input type="checkbox" id="howto-reduce-motion-toggle" onchange="AppConfig.toggle('reduceMotion', this.checked)" aria-label="アニメーションを減らす設定を切り替える"><span class="slider" aria-hidden="true"></span><span class="howto-guide-switch-state" aria-hidden="true"></span></label>
-                            </div>
-                        </section>
-                    </div>
-                </section>
-
-                <div class="howto-guide-reset-wrap">
-                    <button type="button" onclick="resetAllSettings()" class="howto-guide-reset-button"><i class="bi bi-arrow-counterclockwise" aria-hidden="true"></i><span>環境設定・読書設定・TENMEI Labs機能を全て初期値に戻す</span></button>
-                </div>
 
                 <section class="howto-guide-entry">
                     <header class="howto-guide-entry-heading">
@@ -18228,9 +18168,9 @@ body.sidebar-collapsed.sidebar-pinned #sidebar .nav-group-title {
                                 </div>
                                 <div class="bg-white dark:bg-black/20 p-3 rounded border border-gray-200 dark:border-gray-700 text-xs">
                                     <p class="font-bold text-sm">2. Cloudflare (Cloudflare, Inc.)</p>
-                                    <p class="text-gray-500">利用目的：コンテンツ配信（CDN）、サーバーレスコンピューティング（Workers）</p>
-                                    <p class="text-gray-500">送信される情報：アクセスログ、通信リクエスト</p>
-                                    <p class="mt-1">Cloudflareのデータ利用方針については <a href="https://www.cloudflare.com/privacypolicy/" target="_blank" rel="noopener noreferrer" class="underline text-blue-500">Cloudflare プライバシーポリシー</a> をご参照ください。</p>
+                                    <p class="text-gray-500">利用目的：静的コンテンツ配信（Pages/CDN）、API・認証補助・不正利用対策を含むサーバーレス処理（Workers）、AI機能の処理基盤、およびTurnstileによる自動化対策</p>
+                                    <p class="text-gray-500">送信・処理される情報：アクセス時のIPアドレス、ブラウザ・端末情報、リクエストURL・時刻・通信ログ、Cookie等のセキュリティ情報、Turnstileの判定に必要な情報、および利用者が当サイトのAI機能へ送信した入力内容（該当機能を利用した場合）</p>
+                                    <p class="mt-1">特記事項：Cloudflareは当サイトの公開・防御・API処理の基盤です。当サイトは、各機能の提供と不正利用防止に必要な範囲でCloudflareを利用します。Cloudflare側での取扱いは同社のポリシーをご確認ください。Cloudflareのデータ利用方針については <a href="https://www.cloudflare.com/privacypolicy/" target="_blank" rel="noopener noreferrer" class="underline text-blue-500">Cloudflare プライバシーポリシー</a> をご参照ください。</p>
                                 </div>
                                 <div class="bg-white dark:bg-black/20 p-3 rounded border border-gray-200 dark:border-gray-700 text-xs">
                                     <p class="font-bold text-sm">3. Turso (ChiselStrike, Inc.)</p>
@@ -27826,7 +27766,8 @@ async function showResultDetail(isNewDraw, dataOverride = null) {
         };
 
         // 2. サーバー通信（ログイン中、または参拝者名設定済みのゲストのみ）
-        if(currentState.user || getGuestId()) {
+        const shouldSaveResult = hasVisitorIdentity() && AppConfig.getCurrent().saveDrawHistory !== false;
+        if (shouldSaveResult) {
             try {
                 const res = await authFetch(`${API_BASE}/api/draw`, {
                     method: 'POST',
@@ -27870,7 +27811,8 @@ async function showResultDetail(isNewDraw, dataOverride = null) {
                 // エラーでも止まらず、仮データのまま表示へ進む
             }
         } else {
-            // ゲストの場合も、見かけ上のカウントを+1して即時反映させる
+            // 名前なし、または保存を希望しない場合はサーバー・履歴・統計へ送信しない。
+            // 表示中の発行番号は端末内の一時表示に限る。
             currentState.liveCount++;
             resultData.issue_number = currentState.liveCount;
             const counterEl = document.getElementById('live-counter');
@@ -32606,7 +32548,9 @@ const LiveChart = {
                 ['speed', !!settings.speed],
                 ['sidebarButton', !!settings.sidebarButton],
                 ['tabTitle', settings.tabTitle !== false],
-                ['reduceMotion', !!settings.reduceMotion]
+                ['reduceMotion', !!settings.reduceMotion],
+                ['publicDocumentReading', settings.publicDocumentReading !== false],
+                ['saveDrawHistory', settings.saveDrawHistory !== false]
             ];
             checkboxSettings.forEach(([key, value]) => {
                 scope.querySelectorAll(`input[onchange*="AppConfig.toggle('${key}'"]`).forEach(input => {
@@ -32651,7 +32595,11 @@ const LiveChart = {
                 reduceMotion: d.reduceMotion
             });
 
-            // 7. TENMEI Labs機能（幽玄の霧・黄金の神域・迎春雅モード）
+            // 7. 公開文書の読書設定・おみくじ保存
+            AppConfig.toggle('publicDocumentReading', d.publicDocumentReading);
+            AppConfig.toggle('saveDrawHistory', d.saveDrawHistory);
+
+            // 8. TENMEI Labs機能（幽玄の霧・黄金の神域・迎春雅モード）
             var mistContainer = document.getElementById('mist-container');
             if (mistContainer) mistContainer.classList.remove('active');
             var swMist = document.getElementById('switch-mist');
@@ -32692,6 +32640,8 @@ const AppConfig = {
         bodyFont: 'serif',    // serif / sans
         contentWidth: 'standard', // standard / wide
         reduceMotion: false,  // アニメーションを減らす
+        publicDocumentReading: true, // 公開文書にも読書設定を適用
+        saveDrawHistory: true, // 参拝者名・ログイン時のおみくじ保存
         // Labs機能
         mist: false,
         gold: false,
@@ -32777,11 +32727,10 @@ const AppConfig = {
                     btn.setAttribute('aria-pressed', String(isSelected));
                 });
             });
-        } else if(key === 'reduceMotion') {
-            applyReadingSettings({ reduceMotion: isActive });
-            document.querySelectorAll('input[onchange*="AppConfig.toggle(\'reduceMotion\'"]').forEach(el => {
-                el.checked = isActive;
-            });
+        } else if(['reduceMotion', 'publicDocumentReading', 'saveDrawHistory'].includes(key)) {
+            if (key === 'reduceMotion') applyReadingSettings({ reduceMotion: isActive });
+            if (key === 'publicDocumentReading') document.documentElement.classList.toggle('public-document-reading-disabled', !isActive);
+            document.querySelectorAll(`input[onchange*="AppConfig.toggle('${key}'"]`).forEach(el => { el.checked = isActive; });
         }
 
         // 今回変更した値を明示的に優先して保存する。複数画面に同じ設定UIが
@@ -32825,6 +32774,10 @@ async function saveLabSettings(overrides = {}) {
     });
     const swReduceMotion = document.querySelector('input[onchange*="AppConfig.toggle(\'reduceMotion\'"]');
     if(swReduceMotion) settings.reduceMotion = swReduceMotion.checked;
+    ['publicDocumentReading', 'saveDrawHistory'].forEach(key => {
+        const input = document.querySelector(`input[onchange*="AppConfig.toggle('${key}'"]`);
+        if (input) settings[key] = input.checked;
+    });
 
     // Labs機能のスイッチがあれば上書き (Labsモーダルを開いている場合)
     // Labs機能：スイッチがあればその値、なければbody/htmlのクラス状態を正とする
@@ -32910,6 +32863,7 @@ async function loadLabSettings() {
 
     // 5. 読書設定・アニメーションを減らす（正式機能）
     applyReadingSettings(settings);
+    document.documentElement.classList.toggle('public-document-reading-disabled', settings.publicDocumentReading === false);
 
     // 5. Labs機能群
     const mistContainer = document.getElementById('mist-container');
