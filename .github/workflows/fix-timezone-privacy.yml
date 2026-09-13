@@ -16,74 +16,19 @@ jobs:
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
-
-      - name: Patch site
+      - name: Diagnose current edition
         run: |
           python3 - <<'PY'
           from pathlib import Path
           import re
-
-          p = Path('index.html')
-          s = p.read_text(encoding='utf-8')
-
-          # Persist the timezone selection through AppConfig and also mirror it
-          # locally so older/local-only code paths see the same value.
-          old = "settings.timeZone = next;"
-          new = """if (typeof AppConfig !== 'undefined' && typeof AppConfig.toggle === 'function' && !window.__tenmeiTimeZonePersisting) {
-                window.__tenmeiTimeZonePersisting = true;
-                try { AppConfig.toggle('timeZone', next); }
-                finally { window.__tenmeiTimeZonePersisting = false; }
-            } else {
-                settings.timeZone = next;
-            }
-            try { window.localStorage.setItem('tenmei_timezone_setting', next); } catch (e) {}"""
-          if old in s:
-              s = s.replace(old, new, 1)
-
-          # Dynamic date keys must follow the selected timezone, not a fixed Tokyo zone.
-          s = s.replace("return new Date().toLocaleDateString('ja-JP', { timeZone: 'Asia/Tokyo', year: 'numeric', month: '2-digit', day: '2-digit' }).replaceAll('/', '-');", "return new Date().toLocaleDateString('ja-JP', { timeZone: getTimeZone(), year: 'numeric', month: '2-digit', day: '2-digit' }).replaceAll('/', '-');", 1)
-          s = s.replace("var todayKey = new Date().toISOString().slice(0,10);", "var todayKey = window.TenmeiTime && typeof window.TenmeiTime.getDateKey === 'function' ? window.TenmeiTime.getDateKey() : new Date().toISOString().slice(0,10);", 1)
-          s = s.replace("var fridayKey = 'tenmei_friday13_' + new Date().toISOString().slice(0,10);", "var fridayKey = 'tenmei_friday13_' + (window.TenmeiTime && typeof window.TenmeiTime.getDateKey === 'function' ? window.TenmeiTime.getDateKey() : new Date().toISOString().slice(0,10));", 1)
-          s = s.replace("return new Date(`${key}T00:00:00`);", "return new Date(`${key}T00:00:00Z`);", 1)
-
-          old_welcome = "welcomeDate.textContent = `${now.getFullYear()}年${now.getMonth()+1}月${now.getDate()}日 (${days[now.getDay()]})`;"
-          new_welcome = "const welcomeParts = window.TenmeiTime && typeof window.TenmeiTime.getDateParts === 'function' ? window.TenmeiTime.getDateParts(now) : { year: now.getFullYear(), month: now.getMonth() + 1, day: now.getDate() }; const welcomeWeekday = window.TenmeiTime && typeof window.TenmeiTime.getTimeZone === 'function' ? new Intl.DateTimeFormat('ja-JP', { timeZone: window.TenmeiTime.getTimeZone(), weekday: 'short' }).format(now) : days[now.getDay()]; welcomeDate.textContent = `${welcomeParts.year}年${welcomeParts.month}月${welcomeParts.day}日 (${welcomeWeekday})`;"
-          if old_welcome in s:
-              s = s.replace(old_welcome, new_welcome, 1)
-
-          # Current privacy-policy edition: 28th, last revised 2026-08-28.
-          s = re.sub(r'制定: 2026/01/02 ・ 改定: \d{4}/\d{2}/\d{2} \(第\d+版\) ・ 運営: nden148', '制定: 2026/01/02 ・ 改定: 2026/08/28 (第28版) ・ 運営: nden148', s, count=1)
-          s = re.sub(r'現行版：第\d+版（最終改定日：\d{4}年\d{1,2}月\d{1,2}日）', '現行版：第28版（最終改定日：2026年8月28日）', s, count=1)
-          if '制定: 2026/01/02 ・ 改定: 2026/08/28 (第28版) ・ 運営: nden148' not in s:
-              raise SystemExit('privacy header edition marker was not normalized')
-          if '現行版：第28版（最終改定日：2026年8月28日）' not in s:
-              raise SystemExit('privacy current-edition marker was not normalized')
-
-          p.write_text(s, encoding='utf-8')
-
-          t = Path('tests/public-document-regression.cjs')
-          if t.exists():
-              ts = t.read_text(encoding='utf-8')
-              ts = re.sub(r'制定: 2026/01/02 ・ 改定: \d{4}/\d{2}/\d{2} \(第\d+版\) ・ 運営: nden148', '制定: 2026/01/02 ・ 改定: 2026/08/28 (第28版) ・ 運営: nden148', ts, count=1)
-              ts = re.sub(r'現行版：第\d+版（最終改定日：\d{4}年\d{1,2}月\d{1,2}日）', '現行版：第28版（最終改定日：2026年8月28日）', ts, count=1)
-              ts = ts.replace('第18版の主な変更', '第28版の主な変更')
-              ts = ts.replace('privacyVersion: \'第18版\'', 'privacyVersion: \'第28版\'')
-              ts = ts.replace('policyVersion18Preserved', 'policyVersion28Preserved')
-              t.write_text(ts, encoding='utf-8')
+          s = Path('index.html').read_text(encoding='utf-8')
+          m = re.search(r'<section id="view-privacy"[\s\S]*?</section>\s*<!-- サイトフッター', s)
+          section = m.group(0) if m else s
+          print('--- PRIVACY EDITION MARKERS ---')
+          for line in section.splitlines():
+              if '第' in line and '版' in line:
+                  print(line.strip())
+          print('--- ALL EDITION TOKENS ---')
+          print(sorted(set(re.findall(r'第\d+版', section))))
           PY
-
-      - name: Validate
-        run: |
-          node --check tests/public-document-regression.cjs
-          node --check tests/howto-ui-regression.cjs
-          node tests/public-document-regression.cjs
-
-      - name: Commit fixes and clean temporary workflows
-        run: |
-          rm -f .github/workflows/fix-timezone-privacy.yml .github/workflows/timezone-repair-once.yml .github/workflows/diag.yml .github/workflows/run-complete-site-fixes.yml
-          git config user.name 'github-actions[bot]'
-          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-          git add -A
-          git diff --cached --quiet && echo 'No changes detected.' && exit 0
-          git commit -m 'fix: timezone and privacy policy edition'
-          git push
+          exit 1
