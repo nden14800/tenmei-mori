@@ -5,7 +5,7 @@ const path = require('node:path');
 const htmlPath = path.resolve(__dirname, '..', 'index.html');
 const html = fs.readFileSync(htmlPath, 'utf8');
 const howtoSection = html.match(
-  /<section id="view-howto"[\s\S]*?<section id="view-status"/
+  /<section id="view-howto"[\s\S]*?<section id="view-about"/
 )?.[0] || '';
 
 assert(howtoSection, '天命乃杜の使い方画面のセクションを抽出できません。');
@@ -48,12 +48,12 @@ requireSectionText(
   '社務所だより・神籤草子',
   '参拝証の発行（会員登録・ログイン）',
   '公式Discordサーバー',
-  '環境・表示設定',
-  '環境・表示設定を開く',
+  '環境設定',
+  '読書設定',
   'AI夢占い',
   'TENMEI LABS',
   'もう一度、簡単な案内を見る',
-  'おみくじの結果を画像またはPDFとして端末に保存したり、公式Discordサーバーへ結果を共有したりできます。',
+  'おみくじの結果を画像として端末に保存したり、公式Discordサーバーの参拝記録チャンネルへ結果を共有することもできます。',
   '未ログインの場合、端末のlocalStorageに保存したゲストIDで記録を識別し、参拝記録とゲストプロフィールは当サイトのサーバーにも保存されます。',
   '取得した位置情報はサーバーには送信・保存されません',
   '要約はAIによる自動生成のため、実際の記事内容と異なる場合があります。',
@@ -64,28 +64,39 @@ requireSectionText(
 });
 
 assert.equal(
-  (howtoSection.match(/class="howto-guide-entry-number"/g) || []).length,
+  (howtoSection.match(/<h3\b/g) || []).length,
   14,
   '使い方画面の案内見出しh3が14件ではありません。'
 );
 
+[
+  'howto-speed-toggle',
+  'howto-sidebarbtn-toggle',
+  'howto-tabtitle-toggle',
+  'howto-reduce-motion-toggle',
+].forEach((id) => {
+  requireSectionText(`id="${id}"`, `使い方画面の設定トグルIDが失われています: ${id}`);
+});
+
 assert.equal(
-  howtoSection.includes("AppConfig.toggle('"),
-  false,
-  '使い方画面に設定を変更する重複UIが残っています。'
+  (howtoSection.match(/class="howto-guide-switch-state"/g) || []).length,
+  4,
+  '環境・読書設定の4つのスイッチに明示的なON/OFF状態表示がありません。'
 );
-assert.ok(
-  howtoSection.includes("onclick=\"showView('settings')\""),
-  '使い方画面から正本の環境・表示設定へ移動できません。'
-);
-assert.ok(
-  html.includes('id="settings-public-documents-toggle"') && html.includes("AppConfig.toggle('publicDocumentReading', this.checked)"),
-  '公開文書の読書設定を切り替える正本の操作がありません。'
-);
-assert.ok(
-  html.includes('id="settings-draw-history-toggle"') && html.includes("AppConfig.toggle('saveDrawHistory', this.checked)"),
-  'おみくじ保存を切り替える正本の操作がありません。'
-);
+
+[
+  "onclick=\"AppConfig.toggle('theme','system')\"",
+  "onclick=\"AppConfig.toggle('theme','light')\"",
+  "onclick=\"AppConfig.toggle('theme','dark')\"",
+  "onclick=\"AppConfig.toggle('fontSize','sm')\"",
+  "onclick=\"AppConfig.toggle('lineHeight','relaxed')\"",
+  "onclick=\"AppConfig.toggle('bodyFont','sans')\"",
+  "onclick=\"AppConfig.toggle('contentWidth','wide')\"",
+  "onclick=\"resetAllSettings()\"",
+  "onclick=\"openTutorial()\"",
+].forEach((connection) => {
+  requireSectionText(connection, `使い方画面の既存操作接続が失われています: ${connection}`);
+});
 
 assert.equal(
   howtoSection.includes('howto-hero-card'),
@@ -111,12 +122,22 @@ assert.equal(
   '@media (min-width: 761px) and (max-width: 1366px) {',
   'body.sidebar-collapsed #main-content #view-howto.howto-guide-layout {',
   'margin-left: auto !important;',
-  ':is(#view-howto, #view-settings, #cookie-preferences-dialog) .howto-guide-switch input {',
+  '#view-howto .howto-guide-switch input {',
   'position: absolute;',
+  '#view-howto .howto-guide-switch-state::before { content: \'OFF\'; }',
+  '#view-howto .howto-guide-switch input:checked ~ .howto-guide-switch-state::before { content: \'ON\'; }',
+  '#view-howto .howto-guide-switch input:checked + .slider::before { transform: translateX(1.47rem); }',
   "btn.setAttribute('aria-pressed', String(isSelected));",
+  "btn.setAttribute('aria-pressed', String(isActive));",
 ].forEach((text) => {
   requireText(text, `使い方画面のテーマ・フォーカス・状態同期契約が失われています: ${text}`);
 });
+
+assert.equal(
+  (howtoSection.match(/aria-pressed="false"/g) || []).length,
+  13,
+  'テーマ・読書設定の選択ボタン13件に状態属性が付与されていません。'
+);
 
 console.log('天命乃杜の使い方画面の回帰テストに合格しました。');
 console.log(JSON.stringify({
