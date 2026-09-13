@@ -47,14 +47,37 @@
             document.head.appendChild(script);
         }
 
-        function loadOptionalAnalytics() {
-            const preferences = readPreferences();
-            if (!preferences || preferences.analytics !== true) return;
+        function ensureAnalyticsConsentDefault() {
             window.dataLayer = window.dataLayer || [];
             window.gtag = window.gtag || function gtag() { window.dataLayer.push(arguments); };
+            if (!window.__tenmeiAnalyticsConsentInitialized) {
+                window.gtag('consent', 'default', {
+                    analytics_storage: 'denied',
+                    ad_storage: 'denied',
+                    ad_user_data: 'denied',
+                    ad_personalization: 'denied',
+                    wait_for_update: 500
+                });
+                window.__tenmeiAnalyticsConsentInitialized = true;
+            }
+        }
+
+        function loadOptionalAnalytics() {
+            ensureAnalyticsConsentDefault();
+            const preferences = readPreferences();
+            if (!preferences || preferences.analytics !== true) {
+                window.gtag('consent', 'update', { analytics_storage: 'denied' });
+                return;
+            }
+            window.gtag('consent', 'update', { analytics_storage: 'granted' });
             window.gtag('js', new Date());
-            window.gtag('config', 'G-LMJV6EK1DD', { anonymize_ip: true });
-            appendScript('tenmei-google-analytics', 'https://www.googletagmanager.com/gtag/js?id=G-LMJV6EK1DD');
+            window.gtag('config', 'G-LMJV6EK1DD', { anonymize_ip: true, send_page_view: false });
+            appendScript('tenmei-google-analytics', 'https://www.googletagmanager.com/gtag/js?id=G-LMJV6EK1DD', () => {
+                window.gtag('event', 'page_view', {
+                    page_location: window.location.href,
+                    page_title: document.title
+                });
+            });
             appendScript('tenmei-microsoft-clarity', 'https://www.clarity.ms/tag/wo73lcg3xc');
         }
 
@@ -18020,7 +18043,7 @@ body.sidebar-collapsed.sidebar-pinned #sidebar .nav-group-title {
                 <div class="privacy-ledger-hero-copy">
                     <p class="privacy-ledger-eyebrow"><i class="bi bi-shield-check" aria-hidden="true"></i> PRIVACY REGISTER</p>
                     <h1 id="privacy-page-title">プライバシーポリシー</h1>
-                    <p class="privacy-ledger-meta">制定: 2026/01/02 ・ 改定: 2026/08/29 (第29版) ・ 運営: nden148</p>
+                    <p class="privacy-ledger-meta">制定: 2026/01/02 ・ 改定: 2026/09/13 (第30版) ・ 運営: nden148</p>
                     <p class="privacy-ledger-lead">情報の取扱い、外部サービス、保存と削除の考え方を、一つの規程として記しています。</p>
                     <div class="privacy-ledger-actions">
                         <button type="button" onclick="downloadAsPDF('privacy')" id="privacy-pdf-btn">
@@ -18164,7 +18187,7 @@ body.sidebar-collapsed.sidebar-pinned #sidebar .nav-group-title {
                                     <p class="font-bold text-sm">1. Maileroo (Maileroo Group Pty Ltd)</p>
                                     <p class="text-gray-500">利用目的：アカウント認証用メール（ワンタイムパスワード・ワンクリックログインリンク）の自動送信処理</p>
                                     <p class="text-gray-500">送信される情報：送信先メールアドレス、認証コード、ユーザー名、およびログイン時にメール本文へ含めるワンクリックログインリンク（一回限りのトークンとメールアドレスを含みます）</p>
-                                    <p class="mt-1">特記事項：当サイトのシステムは、メール送信リクエストをMailerooのAPIに送信します。Mailerooはオーストラリアに拠点を置く企業です。Mailerooの現行プライバシーポリシーによれば、送信されたメールの内容はトラブルシューティング・サポート対応の目的で最大90日間保持される場合があり、メールのメタデータおよび分析情報はそれより長く保持される場合があります。Mailerooのデータ利用方針については <a href="https://maileroo.com/privacy-policy" target="_blank" rel="noopener noreferrer" class="underline text-blue-500">Maileroo プライバシーポリシー</a> をご参照ください。</p>
+                                    <p class="mt-1">特記事項：当サイトのシステムは、メール送信リクエストをMailerooのAPIに送信します。Mailerooはオーストラリアに拠点を置く企業です。Mailerooの現行プライバシーポリシーによれば、送信されたメールの内容はトラブルシューティング・サポート対応の目的で最大90日間保持される場合があり、メールのメタデータおよび分析情報はそれより長く保持される場合があります。Mailerooのデータ利用方針については <a href="https://maileroo.com/legal/privacy-policy" target="_blank" rel="noopener noreferrer" class="underline text-blue-500">Maileroo プライバシーポリシー</a> をご参照ください。</p>
                                 </div>
                                 <div class="bg-white dark:bg-black/20 p-3 rounded border border-gray-200 dark:border-gray-700 text-xs">
                                     <p class="font-bold text-sm">2. Cloudflare (Cloudflare, Inc.)</p>
@@ -36325,6 +36348,115 @@ try {
       Chatling公式Web Widgetは、Cookie設定でAI案内を許可した場合だけ、head内の同意制御が匿名で読み込みます。
       独自のランチャーや独自チャットUIは実装せず、提供元の標準UIをそのまま使用します。
     -->
+
+
+<style id="tenmei-public-document-reading-complete-fix">
+html:not(.public-document-reading-disabled) :is(#view-about, #view-privacy, #view-howto) :is(p, li, td, th, blockquote, dt, dd, figcaption) {
+    font-size: var(--article-font-size) !important;
+    line-height: var(--article-line-height) !important;
+    font-family: var(--article-font-family) !important;
+}
+html:not(.public-document-reading-disabled) :is(#view-about, #view-privacy, #view-howto) :is(.about-codex-content, .privacy-ledger-content, .howto-guide-content, article, .article-content) {
+    max-width: var(--article-max-width) !important;
+    margin-left: auto !important;
+    margin-right: auto !important;
+}
+</style>
+<script>
+(function () {
+    'use strict';
+    function refreshPublicDocumentReading() {
+        const root = document.documentElement;
+        const enabled = !root.classList.contains('public-document-reading-disabled');
+        const styles = getComputedStyle(root);
+        const fontSize = styles.getPropertyValue('--article-font-size').trim();
+        const lineHeight = styles.getPropertyValue('--article-line-height').trim();
+        const fontFamily = styles.getPropertyValue('--article-font-family').trim();
+        const maxWidth = styles.getPropertyValue('--article-max-width').trim();
+
+        document.querySelectorAll(':is(#view-about, #view-privacy, #view-howto) :is(p, li, td, th, blockquote, dt, dd, figcaption)').forEach((element) => {
+            element.toggleAttribute('data-reading-settings-inline', enabled);
+            if (!enabled) {
+                element.style.removeProperty('font-size');
+                element.style.removeProperty('line-height');
+                element.style.removeProperty('font-family');
+                return;
+            }
+            if (fontSize) element.style.setProperty('font-size', fontSize);
+            if (lineHeight) element.style.setProperty('line-height', lineHeight);
+            if (fontFamily) element.style.setProperty('font-family', fontFamily);
+        });
+
+        document.querySelectorAll(':is(#view-about, #view-privacy, #view-howto) :is(.about-codex-content, .privacy-ledger-content, .howto-guide-content, article, .article-content)').forEach((element) => {
+            if (!enabled) {
+                element.style.removeProperty('max-width');
+                element.style.removeProperty('margin-left');
+                element.style.removeProperty('margin-right');
+                return;
+            }
+            if (maxWidth) element.style.setProperty('max-width', maxWidth);
+            element.style.setProperty('margin-left', 'auto');
+            element.style.setProperty('margin-right', 'auto');
+        });
+    }
+
+    function hookAppConfig() {
+        if (!window.AppConfig || typeof window.AppConfig.toggle !== 'function') return false;
+        if (window.AppConfig.__tenmeiPublicReadingHook) return true;
+        const original = window.AppConfig.toggle.bind(window.AppConfig);
+        window.AppConfig.toggle = function (key, value) {
+            const result = original(key, value);
+            if (key === 'publicDocumentReading') {
+                queueMicrotask(refreshPublicDocumentReading);
+                setTimeout(refreshPublicDocumentReading, 50);
+                setTimeout(refreshPublicDocumentReading, 250);
+            }
+            return result;
+        };
+        window.AppConfig.__tenmeiPublicReadingHook = true;
+        return true;
+    }
+
+    const observer = new MutationObserver(() => refreshPublicDocumentReading());
+    observer.observe(document.documentElement, { attributes: true, attributeFilter: ['class', 'style'] });
+    const installTimer = setInterval(() => { if (hookAppConfig()) clearInterval(installTimer); }, 100);
+    setTimeout(() => clearInterval(installTimer), 15000);
+    document.addEventListener('click', () => setTimeout(refreshPublicDocumentReading, 0), true);
+    window.addEventListener('hashchange', () => setTimeout(refreshPublicDocumentReading, 0));
+    window.addEventListener('popstate', () => setTimeout(refreshPublicDocumentReading, 0));
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', refreshPublicDocumentReading, { once: true });
+    } else {
+        refreshPublicDocumentReading();
+    }
+    window.TenmeiPublicDocumentReading = { refresh: refreshPublicDocumentReading };
+}());
+</script>
+
+
+<style id="tenmei-skip-link-fix">
+.sidebar-v4-skip-link { top: -100px !important; opacity: 0 !important; visibility: hidden !important; pointer-events: none !important; transform: none !important; }
+.sidebar-v4-skip-link:focus-visible { top: 12px !important; opacity: 1 !important; visibility: visible !important; pointer-events: auto !important; }
+</style>
+
+
+<style id="tenmei-pdf-print-fix-final">
+@page { size: A4; margin: 14mm 12mm 16mm; }
+@media print {
+  html, body { width: auto !important; min-height: 0 !important; margin: 0 !important; padding: 0 !important; background: #fff !important; color: #111 !important; overflow: visible !important; }
+  body { display: block !important; }
+  #main-content { width: auto !important; max-width: none !important; margin: 0 !important; padding: 0 !important; }
+  .view-section.printing { position: static !important; display: block !important; width: 100% !important; max-width: none !important; min-height: 0 !important; margin: 0 !important; padding: 0 !important; overflow: visible !important; }
+  .view-section.printing * { max-width: 100% !important; box-sizing: border-box !important; }
+  .view-section.printing h1, .view-section.printing h2, .view-section.printing h3, .view-section.printing h4 { break-after: avoid-page !important; page-break-after: avoid !important; }
+  .view-section.printing p, .view-section.printing li, .view-section.printing blockquote { orphans: 3; widows: 3; }
+  .view-section.printing table { width: 100% !important; max-width: 100% !important; border-collapse: collapse !important; overflow: visible !important; }
+  .view-section.printing thead { display: table-header-group !important; }
+  .view-section.printing tr { break-inside: avoid !important; page-break-inside: avoid !important; }
+  .view-section.printing img, .view-section.printing svg { max-width: 100% !important; height: auto !important; }
+  .view-section.printing a { overflow-wrap: anywhere !important; color: #111 !important; text-decoration: underline !important; }
+}
+</style>
 
 </body>
 </html>

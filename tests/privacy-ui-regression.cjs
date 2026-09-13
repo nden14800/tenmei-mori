@@ -102,7 +102,7 @@ assert.equal(
 );
 
 [
-  'https://maileroo.com/privacy-policy',
+  'https://maileroo.com/legal/privacy-policy',
   'https://www.cloudflare.com/privacypolicy/',
   'https://turso.tech/privacy-policy',
   'https://policies.google.com/privacy',
