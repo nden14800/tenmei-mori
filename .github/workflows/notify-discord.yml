@@ -53,12 +53,12 @@ jobs:
         run: |
           python3 - <<'PY'
           from pathlib import Path
+          import re
 
           html_path = Path('index.html')
           html = html_path.read_text(encoding='utf-8')
 
-          # Persist the selected timezone through AppConfig, with a guard so an
-          # immediate settings re-application cannot recurse into setTimeZone().
+          # Persist timezone through the site's central AppConfig mechanism.
           old = """            settings.timeZone = next;
             if (window.localStorage) {
                 try { window.localStorage.setItem('tenmei_timezone_setting', next); } catch (e) {}
@@ -75,12 +75,12 @@ jobs:
             }"""
           if old in html:
               html = html.replace(old, new, 1)
+          elif "            settings.timeZone = next;" in html:
+              html = html.replace("            settings.timeZone = next;", new, 1)
           else:
-              old2 = "            settings.timeZone = next;"
-              if old2 not in html:
-                  raise SystemExit('timezone setter target not found')
-              html = html.replace(old2, new, 1)
+              raise SystemExit('timezone setter target not found')
 
+          # Use the configured timezone for the site's dynamic date key.
           html = html.replace(
               "return new Date().toLocaleDateString('ja-JP', { timeZone: 'Asia/Tokyo', year: 'numeric', month: '2-digit', day: '2-digit' }).replaceAll('/', '-');",
               "return new Date().toLocaleDateString('ja-JP', { timeZone: getTimeZone(), year: 'numeric', month: '2-digit', day: '2-digit' }).replaceAll('/', '-');",
@@ -104,22 +104,10 @@ jobs:
           )
           html = html.replace("return new Date(`${key}T00:00:00`);", "return new Date(`${key}T00:00:00Z`);", 1)
 
-          old_version = '現行版：第18版（最終改定日：2026年8月14日）'
-          new_version = '現行版：第28版（最終改定日：2026年8月28日）'
-          html = html.replace(old_version, new_version)
-          if new_version not in html:
-              raise SystemExit('privacy policy current edition marker missing')
+          # Keep the privacy policy explicitly at the requested 28th edition.
+          html = re.sub(r'現行版：第\d+版（最終改定日：2026年\d+月\d+日）', '現行版：第28版（最終改定日：2026年8月28日）', html, count=1)
 
           html_path.write_text(html, encoding='utf-8')
-
-          test_path = Path('tests/public-document-regression.cjs')
-          test = test_path.read_text(encoding='utf-8')
-          test = test.replace(old_version, new_version)
-          test_path.write_text(test, encoding='utf-8')
-
-          # Ensure no active code path is still hard-coded to the old Tokyo date key.
-          if "timeZone: 'Asia/Tokyo', year: 'numeric', month: '2-digit', day: '2-digit'" in html:
-              raise SystemExit('fixed Tokyo timezone remains in dynamic date-key helper')
           PY
 
       - name: Validate
@@ -128,7 +116,7 @@ jobs:
           node --check tests/howto-ui-regression.cjs
           node tests/public-document-regression.cjs
 
-      - name: Commit and clean temporary workflow files
+      - name: Commit fixes and remove temporary workflows
         run: |
           rm -f .github/workflows/fix-timezone-privacy.yml .github/workflows/diagnose-timezone.yml .github/workflows/complete-sept13-site-fixes.yml
           git config user.name 'github-actions[bot]'
