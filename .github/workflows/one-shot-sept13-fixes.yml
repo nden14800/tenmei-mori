@@ -1,0 +1,232 @@
+name: one-shot sept13 fixes
+
+on:
+  push:
+    paths:
+      - '.github/workflows/one-shot-sept13-fixes.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Patch index.html
+        shell: python
+        run: |
+          from pathlib import Path
+          import re
+
+          path = Path('index.html')
+          html = path.read_text(encoding='utf-8')
+
+          def replace_once(source, pattern, replacement, label, flags=0):
+              updated, count = re.subn(pattern, replacement, source, count=1, flags=flags)
+              if count != 1:
+                  raise SystemExit(f'{label}: expected exactly one match, found {count}')
+              return updated
+
+          # 1) Google Analytics: explicit Consent Mode lifecycle + post-load page_view.
+          html = replace_once(
+              html,
+              r"const chatlingState = \{ loaded: false, scriptRequested: false, generation: 0 \};",
+              "const chatlingState = { loaded: false, scriptRequested: false, generation: 0 };\n        const analyticsState = { configured: false, scriptPromise: null };",
+              'analytics state'
+          )
+
+          html = replace_once(
+              html,
+              r"function loadOptionalAnalytics\(\) \{[\s\S]*?\n        \}",
+              '''function ensureAnalyticsConsentDefault() {
+            window.dataLayer = window.dataLayer || [];
+            window.gtag = window.gtag || function gtag(){ window.dataLayer.push(arguments); };
+            if (!window.__tenmeiAnalyticsConsentInitialized) {
+                window.gtag('consent', 'default', {
+                    analytics_storage: 'denied',
+                    ad_storage: 'denied',
+                    ad_user_data: 'denied',
+                    ad_personalization: 'denied,
+                    wait_for_update: 500
+                });
+                window.__tenmeiAnalyticsConsentInitialized = true;
+            }
+        }
+
+        function sendAnalyticsPageView() {
+            if (!analyticsState.configured || typeof window.gtag !== 'function') return;
+            window.gtag('event', 'page_view', {
+                send_to: 'G-LMJV6EK1DD',
+                page_location: window.location.href,
+                page_title: document.title
+            });
+        }
+
+        function loadOptionalAnalytics() {
+            ensureAnalyticsConsentDefault();
+            const preferences = readPreferences();
+            if (!preferences || preferences.analytics !== true) {
+                window.gtag('consent', 'update', { analytics_storage: 'denied' });
+                return;
+            }
+            window.gtag('consent', 'update', { analytics_storage: 'granted' });
+
+            const configure = () => {
+                if (!analyticsState.configured) {
+                    window.gtag('js', new Date());
+                    window.gtag('config', 'G-LMJV6EK1DD', {
+                        anonymize_ip: true,
+                        send_page_view: false
+                    });
+                    analyticsState.configured = true;
+                }
+                sendAnalyticsPageView();
+            };
+
+            if (document.getElementById('tenmei-google-analytics')) {
+                configure();
+                return;
+            }
+            if (analyticsState.scriptPromise) {
+                analyticsState.scriptPromise.then(configure).catch(() => {});
+                return;
+            }
+            analyticsState.scriptPromise = new Promise((resolve, reject) => {
+                const script = document.createElement('script');
+                script.id = 'tenmei-google-analytics';
+                script.async = true;
+                script.src = 'https://www.googletagmanager.com/gtag/js?id=G-LMJV6EK1DD';
+                script.onload = resolve;
+                script.onerror = reject;
+                document.head.appendChild(script);
+            }).then(() => {
+                configure();
+            }).catch((error) => {
+                analyticsState.scriptPromise = null;
+                throw error;
+            });
+        }''',
+              'loadOptionalAnalytics',
+              flags=re.MULTILINE
+          )
+
+          # 2) Make withdrawal immediately deny analytics again, including the in-memory Consent Mode state.
+          html = replace_once(
+              html,
+              r"function removeAnalyticsCookies\(\) \{",
+              "function removeAnalyticsCookies() {\n            ensureAnalyticsConsentDefault();\n            window.gtag('consent', 'update', { analytics_storage: 'denied' });",
+              'analytics revoke hook'
+          )
+
+          # 3) Skip link: keep it accessible to keyboard users, but make it completely absent from normal scrolling.
+          html = replace_once(
+              html,
+              r"\.sidebar-v4-skip-link \{[\s\S]*?\n    \}",
+              '''.sidebar-v4-skip-link {
+        position: fixed;
+        top: -96px;
+        left: 14px;
+        z-index: 10002;
+        padding: 11px 16px;
+        border: 1px solid color-mix(in srgb, var(--accent-gold) 62%, var(--card-border));
+        border-radius: 10px;
+        background: var(--card-bg);
+        color: var(--text-main);
+        font-family: 'Zen Kaku Gothic New', sans-serif;
+        font-size: 0.82rem;
+        font-weight: 800;
+        letter-spacing: 0.04em;
+        text-decoration: none;
+        opacity: 0;
+        visibility: hidden;
+        pointer-events: none;
+        transform: none;
+        transition: top 160ms cubic-bezier(0.23, 1, 0.32, 1), opacity 160ms ease;
+    }''',
+              'skip link css',
+              flags=re.MULTILINE
+          )
+          html = replace_once(
+              html,
+              r"\.sidebar-v4-skip-link:focus-visible \{[^\n]*\}",
+              ".sidebar-v4-skip-link:focus-visible { top: 14px; opacity: 1; visibility: visible; pointer-events: auto; outline: 3px solid #f1d796; outline-offset: 3px; }",
+              'skip link focus css'
+          )
+
+          # 4) Canonicalize Maileroo privacy policy link after its 2025/2026 site migration.
+          html = html.replace('https://maileroo.com/privacy-policy', 'https://maileroo.com/legal/privacy-policy')
+
+          # 5) Keep the policy revision date/version synchronized with this release and document the new behavior.
+          html = html.replace('制定: 2026/01/02 ・ 改定: 2026/08/29 (第29版)', '制定: 2026/01/02 ・ 改定: 2026/09/13 (第30版)')
+          html = html.replace(
+              '<strong>第29版の主な変更：外部サービスへ送信される情報と収集主体の記載を、現行Worker実装および各公式ポリシーに合わせて明確化しました。Mailerooの認証メールに含まれるワンクリックログインリンク、解析サービスが収集するアクセス日時・滞在時間、Cloudflare・外部CDN・解析サービスによるIPアドレス処理を明記しています。</strong>',
+              '<strong>第29版の主な変更：</strong>外部サービスへ送信される情報と収集主体の記載を、現行Worker実装および各公式ポリシーに合わせて明確化しました。<br><strong>第30版の主な変更：</strong>環境・表示設定を正本として使い方画面の設定重複を解消し、公開文書3画面へ読書設定を適用できる機能、おみくじ保存OFF・名前なしおみくじ、Chatling停止の競合対策、アクセス解析の同意状態同期、およびBergamot系ローカル翻訳への切り替えを反映しました。Mailerooのプライバシーポリシーリンクを現行URLへ更新しています。'
+          )
+
+          # 6) Make the guest/member comparison explicitly match the new save privacy behavior.
+          html = html.replace(
+              'ゲストIDで識別<br>（端末とサーバーに保存）</div></td><td class="highlight"><i class="bi bi-check-circle-fill" style="color:#16a34a;"></i><div class="text-[10px] mt-0.5" style="color:var(--text-sub);">クラウド保存<br>（端末を変えても引継ぎ可）</div>',
+              '参拝者名＋保存ONで保存<br>（保存OFFまたは名前なしは保存しない）</div></td><td class="highlight"><i class="bi bi-check-circle-fill" style="color:#16a34a;"></i><div class="text-[10px] mt-0.5" style="color:var(--text-sub);">クラウド保存<br>（保存ONなら端末を変えても引継ぎ可）</div>'
+          )
+          html = html.replace(
+              '<p>おみくじや占いは登録なしでもお楽しみいただけます。参拝の記録・おみくじの轍は、おみくじを引く前に参拝者名を設定するだけで未ログインでもご利用いただけます。未ログインの記録は、端末のlocalStorageに保存したゲストIDで識別され、参拝記録とゲストプロフィールは当サイトのサーバーにも保存されます。参拝証を発行（会員登録）すると、ログインして別の端末からもご自身のアカウントの記録を利用できるほか、お気に入り登録・AI夢占い・TENMEI LABSといった追加機能も使えるようになります。</p>',
+              '<p>おみくじや占いは登録なしでもお楽しみいただけます。おみくじは名前なしでも引けますが、その場合は結果を履歴・値・統計へ保存しません。参拝者名を設定したゲスト、またはログイン中の方は、環境・表示設定の「おみくじを履歴へ保存」がONのときだけ記録を保存できます。参拝者名付きゲストの記録は端末のlocalStorageに保存したゲストIDで識別され、参拝証を発行（会員登録）すると、ログインして別の端末からもご自身のアカウントの記録を利用できるほか、お気に入り登録・AI夢占い・TENMEI LABSといった追加機能も使えるようになります。</p>'
+          )
+
+          # 7) Better print-to-PDF output: stable A4 page box, no clipping/overflow, clean document-only layout.
+          print_css = '''
+<style id="tenmei-pdf-print-fixes">
+@page { size: A4; margin: 14mm 12mm 16mm; }
+@media print {
+  html, body { width: auto !important; min-height: 0 !important; margin: 0 !important; padding: 0 !important; background: #fff !important; color: #111 !important; }
+  body { display: block !important; overflow: visible !important; }
+  #main-content { width: auto !important; max-width: none !important; margin: 0 !important; padding: 0 !important; }
+  .view-section.printing { display: block !important; position: static !important; width: 100% !important; max-width: none !important; min-height: 0 !important; margin: 0 !important; padding: 0 !important; overflow: visible !important; }
+  .view-section.printing .about-codex-content,
+  .view-section.printing .privacy-ledger-content,
+  .view-section.printing .howto-guide-content { width: 100% !important; max-width: none !important; margin: 0 !important; padding: 0 !important; overflow: visible !important; }
+  .view-section.printing .bento-card,
+  .view-section.printing .privacy-ledger-article,
+  .view-section.printing .about-codex-chapter { break-inside: auto !important; page-break-inside: auto !important; box-shadow: none !important; }
+  .view-section.printing h1,
+  .view-section.printing h2,
+  .view-section.printing h3,
+  .view-section.printing h4 { break-after: avoid-page !important; page-break-after: avoid !important; }
+  .view-section.printing p,
+  .view-section.printing li,
+  .view-section.printing blockquote { orphans: 3; widows: 3; }
+  .view-section.printing table { width: 100% !important; max-width: 100% !important; border-collapse: collapse !important; break-inside: auto !important; page-break-inside: auto !important; }
+  .view-section.printing thead { display: table-header-group !important; }
+  .view-section.printing tr { break-inside: avoid !important; page-break-inside: avoid !important; }
+  .view-section.printing img,
+  .view-section.printing svg { max-width: 100% !important; height: auto !important; }
+  .view-section.printing a { color: #111 !important; text-decoration: underline !important; overflow-wrap: anywhere !important; }
+  .view-section.printing [style*="overflow"],
+  .view-section.printing .overflow-x-auto,
+  .view-section.printing .overflow-hidden { overflow: visible !important; }
+}
+</style>
+'''
+          if 'id="tenmei-pdf-print-fixes"' not in html:
+              html = html.replace('</head>', print_css + '</head>', 1)
+
+          # 8) Keep the browser-side consent and status UI synchronized on initial load.
+          marker = "        function initializeCookiePreferences() {"
+          if marker in html and "ensureAnalyticsConsentDefault();\n        function initializeCookiePreferences" not in html:
+              html = html.replace(marker, "        ensureAnalyticsConsentDefault();\n\n" + marker, 1)
+
+          path.write_text(html, encoding='utf-8')
+          print('index.html patched')
+      - name: Commit patched index
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add index.html
+          git diff --cached --quiet && exit 0
+          git commit -m "fix: harden analytics, skip link and PDF output"
+          git push
