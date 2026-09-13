@@ -5,7 +5,7 @@ on:
     branches: [main]
 
 permissions:
-  contents: write
+  contents: read
 
 jobs:
   notify:
@@ -48,3 +48,17 @@ jobs:
               headers: { 'Content-Type': 'application/json' },
               body: JSON.stringify(body)
             });
+
+  diagnose-timezone:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Inspect timezone code
+        run: |
+          echo '=== TZ MATCHES ==='
+          grep -n -i -E 'timezone|time-zone|タイムゾーン|IANA|timeZone' index.html | head -n 180 || true
+          echo '=== DATE/TIME MATCHES ==='
+          grep -n -E 'Intl\.DateTimeFormat|toLocale(Date|String)|getFullYear|getMonth|getDate|getDay|getHours|Date\.now|new Date\(' index.html | head -n 400 || true
+          echo '=== APP CONFIG MATCHES ==='
+          grep -n -E 'AppConfig|timezone|timeZone' index.html | head -n 400 || true
