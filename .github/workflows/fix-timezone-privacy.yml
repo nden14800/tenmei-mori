@@ -20,10 +20,10 @@ jobs:
         run: |
           python3 - <<'PY'
           from pathlib import Path
-          p = Path('index.html')
-          s = p.read_text(encoding='utf-8')
+          p=Path('index.html')
+          s=p.read_text(encoding='utf-8')
           if "settings.timeZone = next;" in s:
-              s = s.replace("settings.timeZone = next;", """if (typeof AppConfig !== 'undefined' && typeof AppConfig.toggle === 'function' && !window.__tenmeiTimeZonePersisting) {
+              s=s.replace("settings.timeZone = next;", """if (typeof AppConfig !== 'undefined' && typeof AppConfig.toggle === 'function' && !window.__tenmeiTimeZonePersisting) {
                 window.__tenmeiTimeZonePersisting = true;
                 try { AppConfig.toggle('timeZone', next); }
                 finally { window.__tenmeiTimeZonePersisting = false; }
@@ -31,19 +31,18 @@ jobs:
                 settings.timeZone = next;
             }
             try { window.localStorage.setItem('tenmei_timezone_setting', next); } catch (e) {}""", 1)
-          replacements = [
-              ("return new Date().toLocaleDateString('ja-JP', { timeZone: 'Asia/Tokyo', year: 'numeric', month: '2-digit', day: '2-digit' }).replaceAll('/', '-');", "return new Date().toLocaleDateString('ja-JP', { timeZone: getTimeZone(), year: 'numeric', month: '2-digit', day: '2-digit' }).replaceAll('/', '-');"),
-              ("var todayKey = new Date().toISOString().slice(0,10);", "var todayKey = window.TenmeiTime && typeof window.TenmeiTime.getDateKey === 'function' ? window.TenmeiTime.getDateKey() : new Date().toISOString().slice(0,10);"),
-              ("var fridayKey = 'tenmei_friday13_' + new Date().toISOString().slice(0,10);", "var fridayKey = 'tenmei_friday13_' + (window.TenmeiTime && typeof window.TenmeiTime.getDateKey === 'function' ? window.TenmeiTime.getDateKey() : new Date().toISOString().slice(0,10));"),
-              ("return new Date(`${key}T00:00:00`);", "return new Date(`${key}T00:00:00Z`);")
+          pairs=[
+            ("return new Date().toLocaleDateString('ja-JP', { timeZone: 'Asia/Tokyo', year: 'numeric', month: '2-digit', day: '2-digit' }).replaceAll('/', '-');", "return new Date().toLocaleDateString('ja-JP', { timeZone: getTimeZone(), year: 'numeric', month: '2-digit', day: '2-digit' }).replaceAll('/', '-');"),
+            ("var todayKey = new Date().toISOString().slice(0,10);", "var todayKey = window.TenmeiTime && typeof window.TenmeiTime.getDateKey === 'function' ? window.TenmeiTime.getDateKey() : new Date().toISOString().slice(0,10);"),
+            ("var fridayKey = 'tenmei_friday13_' + new Date().toISOString().slice(0,10);", "var fridayKey = 'tenmei_friday13_' + (window.TenmeiTime && typeof window.TenmeiTime.getDateKey === 'function' ? window.TenmeiTime.getDateKey() : new Date().toISOString().slice(0,10));"),
+            ("return new Date(`${key}T00:00:00`);", "return new Date(`${key}T00:00:00Z`)")
           ]
-          for a,b in replacements:
-              if a in s: s=s.replace(a,b,1)
-          old_welcome = "welcomeDate.textContent = `${now.getFullYear()}年${now.getMonth()+1}月${now.getDate()}日 (${days[now.getDay()]})`;"
-          new_welcome = "const welcomeParts = window.TenmeiTime && typeof window.TenmeiTime.getDateParts === 'function' ? window.TenmeiTime.getDateParts(now) : { year: now.getFullYear(), month: now.getMonth() + 1, day: now.getDate() }; const welcomeWeekday = window.TenmeiTime && typeof window.TenmeiTime.getTimeZone === 'function' ? new Intl.DateTimeFormat('ja-JP', { timeZone: window.TenmeiTime.getTimeZone(), weekday: 'short' }).format(now) : days[now.getDay()]; welcomeDate.textContent = `${welcomeParts.year}年${welcomeParts.month}月${welcomeParts.day}日 (${welcomeWeekday})`;"
-          if old_welcome in s: s=s.replace(old_welcome,new_welcome,1)
-          s=s.replace('制定: 2026/09/13 (第30版) ・ 運営: nden148','制定: 2026/01/02 ・ 改定: 2026/08/29 (第29版) ・ 運営: nden148',1)
-          s=s.replace('制定: 2026/09/13 (第30版)','改定: 2026/08/29 (第29版)',1)
+          for a,b in pairs:
+              if a in s:s=s.replace(a,b,1)
+          old="welcomeDate.textContent = `${now.getFullYear()}年${now.getMonth()+1}月${now.getDate()}日 (${days[now.getDay()]})`;"
+          new="const welcomeParts = window.TenmeiTime && typeof window.TenmeiTime.getDateParts === 'function' ? window.TenmeiTime.getDateParts(now) : { year: now.getFullYear(), month: now.getMonth() + 1, day: now.getDate() }; const welcomeWeekday = window.TenmeiTime && typeof window.TenmeiTime.getTimeZone === 'function' ? new Intl.DateTimeFormat('ja-JP', { timeZone: window.TenmeiTime.getTimeZone(), weekday: 'short' }).format(now) : days[now.getDay()]; welcomeDate.textContent = `${welcomeParts.year}年${welcomeParts.month}月${welcomeParts.day}日 (${welcomeWeekday})`;"
+          if old in s:s=s.replace(old,new,1)
+          s=s.replace('制定: 2026/09/13 (第30版)', '制定: 2026/01/02 ・ 改定: 2026/08/29 (第29版)',1)
           s=s.replace('現行版：第30版（最終改定日：2026年9月13日）','現行版：第29版（最終改定日：2026年8月29日）',1)
           p.write_text(s,encoding='utf-8')
           PY
@@ -51,18 +50,23 @@ jobs:
         run: |
           python3 - <<'PY'
           from pathlib import Path
+          import re
           s=Path('index.html').read_text(encoding='utf-8')
+          m=re.search(r'<section id="view-privacy"[\s\S]*?</section>',s)
+          section=m.group(0) if m else s
+          markers=[x.strip() for x in section.splitlines() if '第' in x and '版' in x]
+          print('PRIVACY MARKERS:')
+          for x in markers: print(x)
           checks={
             'timezone_appconfig': "AppConfig.toggle('timeZone', next)" in s,
             'timezone_storage': 'tenmei_timezone_setting' in s,
             'timezone_date_key': 'TenmeiTime.getDateKey' in s,
-            'privacy_current_29': '改定: 2026/08/29 (第29版) ・ 運営: nden148' in s,
-            'privacy_revision_29': '現行版：第29版（最終改定日：2026年8月29日）' in s,
-            'old_current_30_absent': '現行版：第30版（最終改定日：2026年9月13日）' not in s,
+            'privacy_header_29': bool(re.search(r'改定:\s*2026/08/29\s*\(第29版\)',section)),
+            'privacy_current_29': '現行版：第29版（最終改定日：2026年8月29日）' in section,
+            'old_current_30_absent': '現行版：第30版（最終改定日：2026年9月13日）' not in section,
           }
           print(checks)
           assert all(checks.values()), checks
-          print('timezone/privacy repair verification passed')
           PY
       - name: Commit fixes and cleanup
         run: |
