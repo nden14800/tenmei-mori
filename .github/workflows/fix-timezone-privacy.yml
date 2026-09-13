@@ -16,19 +16,104 @@ jobs:
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
-      - name: Diagnose current edition
+      - name: Patch site and tests
         run: |
           python3 - <<'PY'
           from pathlib import Path
           import re
-          s = Path('index.html').read_text(encoding='utf-8')
-          m = re.search(r'<section id="view-privacy"[\s\S]*?</section>\s*<!-- サイトフッター', s)
-          section = m.group(0) if m else s
-          print('--- PRIVACY EDITION MARKERS ---')
-          for line in section.splitlines():
-              if '第' in line and '版' in line:
-                  print(line.strip())
-          print('--- ALL EDITION TOKENS ---')
-          print(sorted(set(re.findall(r'第\d+版', section))))
+
+          p = Path('index.html')
+          s = p.read_text(encoding='utf-8')
+
+          # Timezone setting must use the real app configuration path.
+          old = "settings.timeZone = next;"
+          new = """if (typeof AppConfig !== 'undefined' && typeof AppConfig.toggle === 'function' && !window.__tenmeiTimeZonePersisting) {
+                window.__tenmeiTimeZonePersisting = true;
+                try { AppConfig.toggle('timeZone', next); }
+                finally { window.__tenmeiTimeZonePersisting = false; }
+            } else {
+                settings.timeZone = next;
+            }
+            try { window.localStorage.setItem('tenmei_timezone_setting', next); } catch (e) {}"""
+          if old in s:
+              s = s.replace(old, new, 1)
+
+          # Date/day keys and date displays follow the configured timezone.
+          pairs = [
+            ("return new Date().toLocaleDateString('ja-JP', { timeZone: 'Asia/Tokyo', year: 'numeric', month: '2-digit', day: '2-digit' }).replaceAll('/', '-');", "return new Date().toLocaleDateString('ja-JP', { timeZone: getTimeZone(), year: 'numeric', month: '2-digit', day: '2-digit' }).replaceAll('/', '-');"),
+            ("var todayKey = new Date().toISOString().slice(0,10);", "var todayKey = window.TenmeiTime && typeof window.TenmeiTime.getDateKey === 'function' ? window.TenmeiTime.getDateKey() : new Date().toISOString().slice(0,10);"),
+            ("var fridayKey = 'tenmei_friday13_' + new Date().toISOString().slice(0,10);", "var fridayKey = 'tenmei_friday13_' + (window.TenmeiTime && typeof window.TenmeiTime.getDateKey === 'function' ? window.TenmeiTime.getDateKey() : new Date().toISOString().slice(0,10));"),
+            ("return new Date(`${key}T00:00:00`);", "return new Date(`${key}T00:00:00Z`);")
+          ]
+          for a, b in pairs:
+              if a in s:
+                  s = s.replace(a, b, 1)
+
+          old_welcome = "welcomeDate.textContent = `${now.getFullYear()}年${now.getMonth()+1}月${now.getDate()}日 (${days[now.getDay()]})`;"
+          new_welcome = "const welcomeParts = window.TenmeiTime && typeof window.TenmeiTime.getDateParts === 'function' ? window.TenmeiTime.getDateParts(now) : { year: now.getFullYear(), month: now.getMonth() + 1, day: now.getDate() }; const welcomeWeekday = window.TenmeiTime && typeof window.TenmeiTime.getTimeZone === 'function' ? new Intl.DateTimeFormat('ja-JP', { timeZone: window.TenmeiTime.getTimeZone(), weekday: 'short' }).format(now) : days[now.getDay()]; welcomeDate.textContent = `${welcomeParts.year}年${welcomeParts.month}月${welcomeParts.day}日 (${welcomeWeekday})`;"
+          if old_welcome in s:
+              s = s.replace(old_welcome, new_welcome, 1)
+
+          # The current policy is the 29th edition. Do not change historical 25/26/28 entries.
+          s = s.replace(
+              '制定: 2026/01/02 ・ 改定: 2026/09/13 (第30版) ・ 運営: nden148',
+              '制定: 2026/01/02 ・ 改定: 2026/08/29 (第29版) ・ 運営: nden148',
+              1,
+          )
+          s = s.replace(
+              '現行版：第30版（最終改定日：2026年9月13日）',
+              '現行版：第29版（最終改定日：2026年8月29日）',
+              1,
+          )
+          if '制定: 2026/01/02 ・ 改定: 2026/08/29 (第29版) ・ 運営: nden148' not in s:
+              raise SystemExit('current privacy header was not corrected to edition 29')
+
+          p.write_text(s, encoding='utf-8')
+
+          # Synchronize the regression tests with the actual current edition.
+          for name in ('tests/public-document-regression.cjs', 'tests/privacy-ui-regression.cjs'):
+              t = Path(name)
+              if not t.exists():
+                  continue
+              ts = t.read_text(encoding='utf-8')
+              ts = ts.replace('制定: 2026/01/02 ・ 改定: 2026/08/14 (第18版) ・ 運営: nden148', '制定: 2026/01/02 ・ 改定: 2026/08/29 (第29版) ・ 運営: nden148')
+              ts = ts.replace('現行版：第18版（最終改定日：2026年8月14日）', '現行版：第29版（最終改定日：2026年8月29日）')
+              ts = ts.replace('第18版の主な変更：</strong>未ログイン時の参拝記録のサーバー保存、Googleログイン時に取得する表示名、Microsoft ClarityによるCookie・疑似匿名ID・セッション記録、退会時に削除するAI夢占いの夢の記録を明確化しました。', '第29版の主な変更：</strong>外部サービスへ送信される情報と収集主体の記載を、現行Worker実装および各公式ポリシーに合わせて明確化しました。Mailerooの認証メールに含まれるワンクリックログインリンク、解析サービスが収集するアクセス日時・滞在時間、Cloudflare・外部CDN・解析サービスによるIPアドレス処理を明記しています。')
+              ts = ts.replace('第18版の主な変更：', '第29版の主な変更：')
+              ts = ts.replace('privacyVersion: \'第18版\'', 'privacyVersion: \'第29版\'')
+              ts = ts.replace('policyVersion18Preserved', 'policyVersion29Preserved')
+              ts = ts.replace('policyVersion18', 'policyVersion29')
+              t.write_text(ts, encoding='utf-8')
           PY
-          exit 1
+
+      - name: Validate
+        run: |
+          node --check tests/public-document-regression.cjs
+          node --check tests/privacy-ui-regression.cjs
+          node --check tests/howto-ui-regression.cjs
+          node tests/public-document-regression.cjs
+          node tests/privacy-ui-regression.cjs
+          node tests/howto-ui-regression.cjs
+
+      - name: Verify timezone wiring
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          s = Path('index.html').read_text(encoding='utf-8')
+          assert "AppConfig.toggle('timeZone', next)" in s
+          assert "timeZone: 'Asia/Tokyo'" not in s or "getTimeZone()" in s
+          print('timezone wiring verified')
+          PY
+
+      - name: Commit fixes and remove temporary workflow
+        run: |
+          rm -f .github/workflows/fix-timezone-privacy.yml .github/workflows/timezone-repair-once.yml .github/workflows/diag.yml .github/workflows/run-complete-site-fixes.yml .github/workflows/complete-sept13-site-fixes.yml
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add -A
+          if git diff --cached --quiet; then
+            echo 'No changes detected.'
+            exit 0
+          fi
+          git commit -m 'fix: timezone setting and privacy policy edition 29'
+          git push
