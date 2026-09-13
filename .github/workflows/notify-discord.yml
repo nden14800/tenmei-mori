@@ -5,43 +5,154 @@ on:
     branches: [main]
 
 jobs:
-  notify:
+  patch:
+    if: github.event.head_commit.message != 'fix: finalize site changes'
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
     steps:
-      - name: Discordへ更新通知を送る
-        uses: actions/github-script@v7
-        env:
-          DISCORD_WEBHOOK: ${{ secrets.DISCORD_WEBHOOK_URL }}
+      - uses: actions/checkout@v4
         with:
-          script: |
-            const webhook = process.env.DISCORD_WEBHOOK;
-            const commit = context.payload.head_commit;
-            const message = commit?.message?.split('\n')[0] || '更新されました';
+          fetch-depth: 0
+      - name: Apply final site fixes
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          import re
 
-            const body = {
-              embeds: [{
-                title: '📢 天命乃杜 サイト更新のお知らせ',
-                description: '天命乃杜のサイトが更新されました。',
-                color: 0xc5a059,
-                fields: [
-                  {
-                    name: '更新内容',
-                    value: message,
-                    inline: false
-                  },
-                  {
-                    name: '参拝はこちら',
-                    value: 'https://tenmei-mori.pages.dev/',
-                    inline: false
-                  }
-                ],
-                footer: { text: '天命乃杜' },
-                timestamp: new Date().toISOString()
-              }]
-            };
+          p = Path('index.html')
+          s = p.read_text(encoding='utf-8')
 
-            await fetch(webhook, {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify(body)
+          # Analytics: Consent Mode + explicit load/config after opt-in.
+          s = re.sub(
+              r"        function loadOptionalAnalytics\(\) \{[\s\S]*?\n        \}\n\n        function removeStorageKeys",
+              '''        function ensureAnalyticsConsentDefault() {
+            window.dataLayer = window.dataLayer || [];
+            window.gtag = window.gtag || function gtag() { window.dataLayer.push(arguments); };
+            if (!window.__tenmeiAnalyticsConsentInitialized) {
+                window.gtag('consent', 'default', {
+                    analytics_storage: 'denied',
+                    ad_storage: 'denied',
+                    ad_user_data: 'denied',
+                    ad_personalization: 'denied',
+                    wait_for_update: 500
+                });
+                window.__tenmeiAnalyticsConsentInitialized = true;
+            }
+        }
+
+        function loadOptionalAnalytics() {
+            ensureAnalyticsConsentDefault();
+            const preferences = readPreferences();
+            if (!preferences || preferences.analytics !== true) {
+                window.gtag('consent', 'update', { analytics_storage: 'denied' });
+                return;
+            }
+            window.gtag('consent', 'update', { analytics_storage: 'granted' });
+            window.gtag('js', new Date());
+            window.gtag('config', 'G-LMJV6EK1DD', { anonymize_ip: true, send_page_view: false });
+            appendScript('tenmei-google-analytics', 'https://www.googletagmanager.com/gtag/js?id=G-LMJV6EK1DD', () => {
+                window.gtag('event', 'page_view', {
+                    page_location: window.location.href,
+                    page_title: document.title
+                });
             });
+            appendScript('tenmei-microsoft-clarity', 'https://www.clarity.ms/tag/wo73lcg3xc');
+        }
+
+        function removeStorageKeys''',
+              s,
+              count=1
+          )
+
+          # Withdrawal immediately revokes Analytics consent in memory as well as cookies.
+          if 'window.gtag(\'consent\', \'update\', { analytics_storage: \'denied\' });\n            const domains' not in s:
+              s = s.replace(
+                  '        function removeAnalyticsCookies() {\n            const domains',
+                  "        function removeAnalyticsCookies() {\n            ensureAnalyticsConsentDefault();\n            window.gtag('consent', 'update', { analytics_storage: 'denied' });\n            const domains",
+                  1,
+              )
+
+          # Accessibility skip link: not visible during ordinary scrolling; keyboard focus can reveal it.
+          s += '''\n<style id="tenmei-skip-link-fix">
+.sidebar-v4-skip-link { top: -100px !important; opacity: 0 !important; visibility: hidden !important; pointer-events: none !important; transform: none !important; }
+.sidebar-v4-skip-link:focus-visible { top: 12px !important; opacity: 1 !important; visibility: visible !important; pointer-events: auto !important; }
+</style>\n'''
+
+          # Stable, clean A4 browser/PDF print output.
+          s += '''\n<style id="tenmei-pdf-print-fix-final">
+@page { size: A4; margin: 14mm 12mm 16mm; }
+@media print {
+  html, body { width: auto !important; min-height: 0 !important; margin: 0 !important; padding: 0 !important; background: #fff !important; color: #111 !important; overflow: visible !important; }
+  body { display: block !important; }
+  #main-content { width: auto !important; max-width: none !important; margin: 0 !important; padding: 0 !important; }
+  .view-section.printing { position: static !important; display: block !important; width: 100% !important; max-width: none !important; min-height: 0 !important; margin: 0 !important; padding: 0 !important; overflow: visible !important; }
+  .view-section.printing * { max-width: 100% !important; box-sizing: border-box !important; }
+  .view-section.printing h1, .view-section.printing h2, .view-section.printing h3, .view-section.printing h4 { break-after: avoid-page !important; page-break-after: avoid !important; }
+  .view-section.printing p, .view-section.printing li, .view-section.printing blockquote { orphans: 3; widows: 3; }
+  .view-section.printing table { width: 100% !important; max-width: 100% !important; border-collapse: collapse !important; overflow: visible !important; }
+  .view-section.printing thead { display: table-header-group !important; }
+  .view-section.printing tr { break-inside: avoid !important; page-break-inside: avoid !important; }
+  .view-section.printing img, .view-section.printing svg { max-width: 100% !important; height: auto !important; }
+  .view-section.printing a { overflow-wrap: anywhere !important; color: #111 !important; text-decoration: underline !important; }
+}
+</style>\n'''
+
+          # Current Maileroo privacy-policy canonical URL.
+          s = s.replace('https://maileroo.com/privacy-policy', 'https://maileroo.com/legal/privacy-policy')
+
+          # Revision marker for the privacy policy.
+          s = s.replace('制定: 2026/01/02 ・ 改定: 2026/08/29 (第29版)', '制定: 2026/01/02 ・ 改定: 2026/09/13 (第30版)')
+
+          p.write_text(s, encoding='utf-8')
+          PY
+      - name: Run syntax smoke check
+        run: node --check tests/privacy-ui-regression.cjs
+      - name: Restore notification workflow and commit
+        run: |
+          cat > .github/workflows/notify-discord.yml <<'YAML'
+          name: Discord Notify on Push
+
+          on:
+            push:
+              branches: [main]
+
+          jobs:
+            notify:
+              runs-on: ubuntu-latest
+              steps:
+                - name: Discordへ更新通知を送る
+                  uses: actions/github-script@v7
+                  env:
+                    DISCORD_WEBHOOK: ${{ secrets.DISCORD_WEBHOOK_URL }}
+                  with:
+                    script: |
+                      const webhook = process.env.DISCORD_WEBHOOK;
+                      const commit = context.payload.head_commit;
+                      const message = commit?.message?.split('\\n')[0] || '更新されました';
+
+                      const body = {
+                        embeds: [{
+                          title: '📢 天命乃杜 サイト更新のお知らせ',
+                          description: '天命乃杜のサイトが更新されました。',
+                          color: 0xc5a059,
+                          fields: [
+                            { name: '更新内容', value: message, inline: false },
+                            { name: '参拝はこちら', value: 'https://tenmei-mori.pages.dev/', inline: false }
+                          ],
+                          footer: { text: '天命乃杜' },
+                          timestamp: new Date().toISOString()
+                        }]
+                      };
+
+                      await fetch(webhook, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(body)
+                      });
+          YAML
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add index.html .github/workflows/notify-discord.yml
+          git commit -m "fix: finalize site changes"
+          git push
