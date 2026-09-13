@@ -18043,7 +18043,7 @@ body.sidebar-collapsed.sidebar-pinned #sidebar .nav-group-title {
                 <div class="privacy-ledger-hero-copy">
                     <p class="privacy-ledger-eyebrow"><i class="bi bi-shield-check" aria-hidden="true"></i> PRIVACY REGISTER</p>
                     <h1 id="privacy-page-title">プライバシーポリシー</h1>
-                    <p class="privacy-ledger-meta">制定: 2026/01/02 ・ 改定: 2026/09/13 (第30版) ・ 運営: nden148</p>
+                    <p class="privacy-ledger-meta">制定: 2026/01/02 ・ 改定: 2026/08/29 (第29版) ・ 運営: nden148</p>
                     <p class="privacy-ledger-lead">情報の取扱い、外部サービス、保存と削除の考え方を、一つの規程として記しています。</p>
                     <div class="privacy-ledger-actions">
                         <button type="button" onclick="downloadAsPDF('privacy')" id="privacy-pdf-btn">
@@ -29924,7 +29924,7 @@ async function logout() {
         if(welcomeDate) {
             const now = new Date();
             const days = ['日', '月', '火', '水', '木', '金', '土'];
-            welcomeDate.textContent = `${now.getFullYear()}年${now.getMonth()+1}月${now.getDate()}日 (${days[now.getDay()]})`;
+            const welcomeParts = window.TenmeiTime && typeof window.TenmeiTime.getDateParts === 'function' ? window.TenmeiTime.getDateParts(now) : { year: now.getFullYear(), month: now.getMonth() + 1, day: now.getDate() }; const welcomeWeekday = window.TenmeiTime && typeof window.TenmeiTime.getTimeZone === 'function' ? new Intl.DateTimeFormat('ja-JP', { timeZone: window.TenmeiTime.getTimeZone(), weekday: 'short' }).format(now) : days[now.getDay()]; welcomeDate.textContent = `${welcomeParts.year}年${welcomeParts.month}月${welcomeParts.day}日 (${welcomeWeekday})`;
         }
 
         if (currentState.user) {
@@ -30018,7 +30018,7 @@ async function logout() {
         // 旧関数名は呼び出し側との互換性のため維持する。未初期化時のみ従来の日本標準時へ安全にフォールバックする。
         function getJSTDateString() {
             if (window.TenmeiTime && typeof window.TenmeiTime.getDateKey === 'function') return window.TenmeiTime.getDateKey();
-            return new Date().toLocaleDateString('ja-JP', { timeZone: 'Asia/Tokyo', year: 'numeric', month: '2-digit', day: '2-digit' }).replaceAll('/', '-');
+            return new Date().toLocaleDateString('ja-JP', { timeZone: getTimeZone(), year: 'numeric', month: '2-digit', day: '2-digit' }).replaceAll('/', '-');
         }
         
         function getFutureDateString(baseDateStr, daysToAdd) {
@@ -34944,7 +34944,7 @@ try {
 
     // ---------- ④ 季節の日のささやかな挨拶（1日1回まで） ----------
     try {
-        var todayKey = new Date().toISOString().slice(0,10);
+        var todayKey = window.TenmeiTime && typeof window.TenmeiTime.getDateKey === 'function' ? window.TenmeiTime.getDateKey() : new Date().toISOString().slice(0,10);
         var seasonalShownKey = 'tenmei_seasonal_egg_' + todayKey;
         if (!localStorage.getItem(seasonalShownKey)) {
             var now = new Date();
@@ -35025,7 +35025,7 @@ try {
 
     // ---------- ⑦ 13日の金曜日 ----------
     try {
-        var fridayKey = 'tenmei_friday13_' + new Date().toISOString().slice(0,10);
+        var fridayKey = 'tenmei_friday13_' + (window.TenmeiTime && typeof window.TenmeiTime.getDateKey === 'function' ? window.TenmeiTime.getDateKey() : new Date().toISOString().slice(0,10));
         if (!localStorage.getItem(fridayKey)) {
             var nowF = new Date();
             if (nowF.getDate() === 13 && nowF.getDay() === 5) {
@@ -36104,7 +36104,14 @@ try {
             const next = value === 'device' ? 'device' : String(value || '').trim();
             if (next !== 'device' && !isValidTimeZone(next)) return false;
             const settings = typeof AppConfig !== 'undefined' && typeof AppConfig.getCurrent === 'function' ? AppConfig.getCurrent() : {};
-            settings.timeZone = next;
+            if (typeof AppConfig !== 'undefined' && typeof AppConfig.toggle === 'function' && !window.__tenmeiTimeZonePersisting) {
+      window.__tenmeiTimeZonePersisting = true;
+      try { AppConfig.toggle('timeZone', next); }
+      finally { window.__tenmeiTimeZonePersisting = false; }
+  } else {
+      settings.timeZone = next;
+  }
+  try { window.localStorage.setItem('tenmei_timezone_setting', next); } catch (e) {}
             const signedInUser = typeof currentState !== 'undefined' && currentState && currentState.user ? currentState.user : null;
             const key = signedInUser ? `lab_settings_${signedInUser.email}` : 'lab_settings_guest';
             try { localStorage.setItem(key, JSON.stringify(settings)); } catch (error) {}
