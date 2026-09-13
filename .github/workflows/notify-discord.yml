@@ -5,10 +5,11 @@ on:
     branches: [main]
 
 permissions:
-  contents: read
+  contents: write
 
 jobs:
   notify:
+    if: github.event.head_commit.message != 'fix: apply timezone persistence and privacy version'
     runs-on: ubuntu-latest
     steps:
       - name: Discordへ更新通知を送る
@@ -20,45 +21,122 @@ jobs:
             const webhook = process.env.DISCORD_WEBHOOK;
             const commit = context.payload.head_commit;
             const message = commit?.message?.split('\n')[0] || '更新されました';
-
             const body = {
               embeds: [{
                 title: '📢 天命乃杜 サイト更新のお知らせ',
                 description: '天命乃杜のサイトが更新されました。',
                 color: 0xc5a059,
                 fields: [
-                  {
-                    name: '更新内容',
-                    value: message,
-                    inline: false
-                  },
-                  {
-                    name: '参拝はこちら',
-                    value: 'https://tenmei-mori.pages.dev/',
-                    inline: false
-                  }
+                  { name: '更新内容', value: message, inline: false },
+                  { name: '参拝はこちら', value: 'https://tenmei-mori.pages.dev/', inline: false }
                 ],
                 footer: { text: '天命乃杜' },
                 timestamp: new Date().toISOString()
               }]
             };
-
             await fetch(webhook, {
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
               body: JSON.stringify(body)
             });
 
-  diagnose-timezone:
+  fix-timezone:
+    if: github.event.head_commit.message != 'fix: apply timezone persistence and privacy version'
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-      - name: Inspect timezone code
+        with:
+          fetch-depth: 1
+
+      - name: Apply timezone and privacy fixes
         run: |
-          echo '=== TZ MATCHES ==='
-          grep -n -i -E 'timezone|time-zone|タイムゾーン|IANA|timeZone' index.html | head -n 180 || true
-          echo '=== DATE/TIME MATCHES ==='
-          grep -n -E 'Intl\.DateTimeFormat|toLocale(Date|String)|getFullYear|getMonth|getDate|getDay|getHours|Date\.now|new Date\(' index.html | head -n 400 || true
-          echo '=== APP CONFIG MATCHES ==='
-          grep -n -E 'AppConfig|timezone|timeZone' index.html | head -n 400 || true
+          python3 - <<'PY'
+          from pathlib import Path
+
+          html_path = Path('index.html')
+          html = html_path.read_text(encoding='utf-8')
+
+          # Persist the selected timezone through AppConfig, with a guard so an
+          # immediate settings re-application cannot recurse into setTimeZone().
+          old = """            settings.timeZone = next;
+            if (window.localStorage) {
+                try { window.localStorage.setItem('tenmei_timezone_setting', next); } catch (e) {}
+            }"""
+          new = """            if (typeof AppConfig !== 'undefined' && typeof AppConfig.toggle === 'function' && !window.__tenmeiTimeZonePersisting) {
+                window.__tenmeiTimeZonePersisting = true;
+                try {
+                    AppConfig.toggle('timeZone', next);
+                } finally {
+                    window.__tenmeiTimeZonePersisting = false;
+                }
+            } else {
+                settings.timeZone = next;
+            }"""
+          if old in html:
+              html = html.replace(old, new, 1)
+          else:
+              old2 = "            settings.timeZone = next;"
+              if old2 not in html:
+                  raise SystemExit('timezone setter target not found')
+              html = html.replace(old2, new, 1)
+
+          html = html.replace(
+              "return new Date().toLocaleDateString('ja-JP', { timeZone: 'Asia/Tokyo', year: 'numeric', month: '2-digit', day: '2-digit' }).replaceAll('/', '-');",
+              "return new Date().toLocaleDateString('ja-JP', { timeZone: getTimeZone(), year: 'numeric', month: '2-digit', day: '2-digit' }).replaceAll('/', '-');",
+              1,
+          )
+
+          old_welcome = "welcomeDate.textContent = `${now.getFullYear()}年${now.getMonth()+1}月${now.getDate()}日 (${days[now.getDay()]})`;"
+          new_welcome = "const welcomeParts = window.TenmeiTime && typeof window.TenmeiTime.getDateParts === 'function' ? window.TenmeiTime.getDateParts(now) : { year: now.getFullYear(), month: now.getMonth() + 1, day: now.getDate() }; const welcomeWeekday = window.TenmeiTime && typeof window.TenmeiTime.getTimeZone === 'function' ? new Intl.DateTimeFormat('ja-JP', { timeZone: window.TenmeiTime.getTimeZone(), weekday: 'short' }).format(now) : days[now.getDay()]; welcomeDate.textContent = `${welcomeParts.year}年${welcomeParts.month}月${welcomeParts.day}日 (${welcomeWeekday})`;"
+          if old_welcome in html:
+              html = html.replace(old_welcome, new_welcome, 1)
+
+          html = html.replace(
+              "var todayKey = new Date().toISOString().slice(0,10);",
+              "var todayKey = window.TenmeiTime && typeof window.TenmeiTime.getDateKey === 'function' ? window.TenmeiTime.getDateKey() : new Date().toISOString().slice(0,10);",
+              1,
+          )
+          html = html.replace(
+              "var fridayKey = 'tenmei_friday13_' + new Date().toISOString().slice(0,10);",
+              "var fridayKey = 'tenmei_friday13_' + (window.TenmeiTime && typeof window.TenmeiTime.getDateKey === 'function' ? window.TenmeiTime.getDateKey() : new Date().toISOString().slice(0,10));",
+              1,
+          )
+          html = html.replace("return new Date(`${key}T00:00:00`);", "return new Date(`${key}T00:00:00Z`);", 1)
+
+          old_version = '現行版：第18版（最終改定日：2026年8月14日）'
+          new_version = '現行版：第28版（最終改定日：2026年8月28日）'
+          html = html.replace(old_version, new_version)
+          if new_version not in html:
+              raise SystemExit('privacy policy current edition marker missing')
+
+          html_path.write_text(html, encoding='utf-8')
+
+          test_path = Path('tests/public-document-regression.cjs')
+          test = test_path.read_text(encoding='utf-8')
+          test = test.replace(old_version, new_version)
+          test_path.write_text(test, encoding='utf-8')
+
+          # Ensure no active code path is still hard-coded to the old Tokyo date key.
+          if "timeZone: 'Asia/Tokyo', year: 'numeric', month: '2-digit', day: '2-digit'" in html:
+              raise SystemExit('fixed Tokyo timezone remains in dynamic date-key helper')
+          PY
+
+      - name: Validate
+        run: |
+          node --check tests/public-document-regression.cjs
+          node --check tests/howto-ui-regression.cjs
+          node tests/public-document-regression.cjs
+
+      - name: Commit and clean temporary workflow files
+        run: |
+          rm -f .github/workflows/fix-timezone-privacy.yml .github/workflows/diagnose-timezone.yml .github/workflows/complete-sept13-site-fixes.yml
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add -A
+          if git diff --cached --quiet; then
+            echo 'No changes to commit.'
+            exit 0
+          fi
+          git commit -m 'fix: apply timezone persistence and privacy version'
+          git push
