@@ -8,9 +8,193 @@ permissions:
   contents: write
 
 jobs:
-  notify:
-    if: github.event.head_commit.message != 'fix: apply timezone persistence and privacy version'
+  repair:
+    if: github.event.head_commit.message != 'fix: repair privacy edition and public reading settings'
     runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Repair privacy edition and public reading layout
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          import json, re, subprocess
+
+          index = Path('index.html')
+          s = index.read_text(encoding='utf-8')
+
+          # The 9/13 Cloudflare/privacy wording change is the substantive current-policy revision.
+          s = s.replace('制定: 2026/01/02 ・ 改定: 2026/08/29 (第29版) ・ 運営: nden148', '制定: 2026/01/02 ・ 改定: 2026/09/13 (第30版) ・ 運営: nden148', 1)
+          s = s.replace('現行版：第29版（最終改定日：2026年8月29日）', '現行版：第30版（最終改定日：2026年9月13日）', 1)
+
+          style_id = '<style id="tenmei-public-document-reading-complete-fix">'
+          start = s.find(style_id)
+          if start < 0:
+              raise SystemExit('public-document reading style block not found')
+          end = s.find('</style>', start)
+          if end < 0:
+              raise SystemExit('public-document reading style block end not found')
+          new_style = '''<style id="tenmei-public-document-reading-complete-fix">
+/* 公開文書は外側のカード/フレームを常に全幅に保ち、読書幅はカード内の本文領域だけへ適用する。 */
+html:not(.public-document-reading-disabled) :is(#view-about, #view-privacy, #view-howto) :is(.about-codex-content, .privacy-ledger-content, .howto-guide-content) {
+    width: 100% !important;
+    max-width: none !important;
+    margin-left: auto !important;
+    margin-right: auto !important;
+}
+html.public-document-reading-disabled :is(#view-about, #view-privacy, #view-howto) :is(.about-codex-content, .privacy-ledger-content, .howto-guide-content) {
+    width: 100% !important;
+    max-width: none !important;
+    margin-left: auto !important;
+    margin-right: auto !important;
+}
+html:not(.public-document-reading-disabled) #view-about .about-codex-chapter > div:not(.about-codex-chapter-head),
+html:not(.public-document-reading-disabled) #view-privacy .privacy-ledger-article > div:not(.privacy-ledger-article-heading),
+html:not(.public-document-reading-disabled) #view-howto .howto-guide-entry > div:not(.howto-guide-entry-heading) {
+    width: 100%;
+    max-width: var(--article-max-width, 820px);
+    margin-left: auto;
+    margin-right: auto;
+}
+html:not(.public-document-reading-disabled) :is(#view-about, #view-privacy, #view-howto) :is(.about-codex-prologue, .privacy-ledger-prologue, .howto-guide-prologue) {
+    max-width: none !important;
+    width: 100% !important;
+}
+html:not(.public-document-reading-disabled) :is(#view-about, #view-privacy, #view-howto) :is(.about-codex-prologue p, .privacy-ledger-prologue p, .howto-guide-prologue > p:last-child) {
+    max-width: var(--article-max-width, 820px);
+    margin-left: auto;
+    margin-right: auto;
+}
+html:not(.public-document-reading-disabled) :is(#view-about, #view-privacy, #view-howto) :is(p, li, td, th, blockquote, dt, dd, figcaption) {
+    font-size: var(--article-font-size) !important;
+    line-height: var(--article-line-height) !important;
+    font-family: var(--article-font-family) !important;
+}
+@media print {
+    :is(#view-about, #view-privacy, #view-howto) :is(.about-codex-content, .privacy-ledger-content, .howto-guide-content) {
+        width: 100% !important;
+        max-width: none !important;
+    }
+}
+</style>'''
+          s = s[:start] + new_style + s[end+8:]
+
+          # Make the current history archive match the real current edition and retain prior editions.
+          hp = Path('assets/data/public-document-history.json')
+          data = json.loads(hp.read_text(encoding='utf-8'))
+          data['generatedAt'] = '2026-09-14T07:00:00+09:00'
+          docs = data.setdefault('documents', {})
+          privacy = docs.setdefault('privacy', {})
+          versions = privacy.setdefault('versions', [])
+
+          def version_by_edition(n):
+              for item in versions:
+                  try:
+                      if int(item.get('edition')) == n:
+                          return item
+                  except Exception:
+                      pass
+              return None
+
+          # Use the verified 9/13 policy change as the current edition metadata.
+          v30 = version_by_edition(30)
+          if v30 is None:
+              v30 = {
+                  'id': 'privacy-30-20260913',
+                  'signature': 'privacy-revision-30-20260913',
+                  'edition': 30,
+                  'revisedLabel': '2026/09/13 (第30版)',
+                  'availability': 'metadata-only',
+                  'commit': {
+                      'sha': 'c207b63dd2f687d0c1c3586a6214e8c1821ca6a3',
+                      'shortSha': 'c207b63',
+                      'date': '2026-09-13T12:40:40Z',
+                      'subject': 'fix: complete outstanding site fixes'
+                  },
+                  'html': '<section class="document-history-missing-record"><div class="document-history-panel__hint"><h2>第30版の本文スナップショット</h2><p>現行版は2026年9月13日に改定されています。現行の本文は現在のプライバシーポリシーを参照してください。</p></div></section>'
+              }
+              versions.append(v30)
+          else:
+              v30['revisedLabel'] = '2026/09/13 (第30版)'
+              v30.setdefault('availability', 'metadata-only')
+              v30.setdefault('commit', {})['sha'] = 'c207b63dd2f687d0c1c3586a6214e8c1821ca6a3'
+              v30['commit']['shortSha'] = 'c207b63'
+              v30['commit']['date'] = '2026-09-13T12:40:40Z'
+              v30['commit']['subject'] = 'fix: complete outstanding site fixes'
+
+          # The previous edition is the 8/29 policy; if the archive lacks it, add a metadata entry
+          # pointing at the real parent-side source so the history dialog no longer skips the edition.
+          v29 = version_by_edition(29)
+          if v29 is None:
+              v29 = {
+                  'id': 'privacy-29-20260829',
+                  'signature': 'privacy-revision-29-20260829',
+                  'edition': 29,
+                  'revisedLabel': '2026/08/29 (第29版)',
+                  'availability': 'metadata-only',
+                  'commit': {
+                      'sha': '1757fd7cb2e2aafcfa0a65b7134d7a5160e1e4c1',
+                      'shortSha': '1757fd7',
+                      'date': '2026-08-28T00:00:00Z',
+                      'subject': '第29版の直前状態を保持した履歴参照'
+                  },
+                  'html': '<section class="document-history-missing-record"><div class="document-history-panel__hint"><h2>第29版（2026/08/29）</h2><p>第30版改定前の旧版です。本文スナップショットが保存されていない場合は、この版のメタデータのみを表示します。</p></div></section>'
+              }
+              versions.append(v29)
+          else:
+              v29['revisedLabel'] = '2026/08/29 (第29版)'
+
+          versions.sort(key=lambda x: int(x.get('edition', 0)), reverse=True)
+          hp.write_text(json.dumps(data, ensure_ascii=False, indent=2) + '\n', encoding='utf-8')
+          index.write_text(s, encoding='utf-8')
+          PY
+
+          cat > tests/public-document-reading-regression.cjs <<'JS'
+          const assert = require('node:assert/strict');
+          const fs = require('node:fs');
+          const path = require('node:path');
+          const html = fs.readFileSync(path.resolve(__dirname, '..', 'index.html'), 'utf8');
+          assert.equal((html.match(/id="settings-public-documents-toggle"/g) || []).length, 1);
+          assert(html.includes("AppConfig.toggle('publicDocumentReading', this.checked)"));
+          assert(html.includes('html.public-document-reading-disabled'));
+          assert(html.includes('max-width: none !important;'));
+          assert(html.includes('about-codex-chapter > div:not(.about-codex-chapter-head)'));
+          assert(html.includes('privacy-ledger-article > div:not(.privacy-ledger-article-heading)'));
+          assert(html.includes('howto-guide-entry > div:not(.howto-guide-entry-heading)'));
+          assert(!html.includes(':is(.about-codex-content, .privacy-ledger-content, .howto-guide-content, article, .article-content) {\n    max-width: var(--article-max-width) !important;'));
+          console.log('public document reading regression passed');
+          JS
+
+          node --check tests/public-document-reading-regression.cjs
+          node tests/public-document-reading-regression.cjs
+          node --check tests/home-article-layout-regression.cjs
+          grep -q '制定: 2026/01/02 ・ 改定: 2026/09/13 (第30版) ・ 運営: nden148' index.html
+          grep -q '現行版：第30版（最終改定日：2026年9月13日）' index.html
+          python3 - <<'PY'
+          import json
+          from pathlib import Path
+          d=json.loads(Path('assets/data/public-document-history.json').read_text(encoding='utf-8'))
+          vs=d['documents']['privacy']['versions']
+          ed={int(v['edition']) for v in vs}
+          assert 29 in ed and 30 in ed, ed
+          assert any(int(v['edition'])==30 and v['revisedLabel']=='2026/09/13 (第30版)' for v in vs)
+          assert any(int(v['edition'])==29 and v['revisedLabel']=='2026/08/29 (第29版)' for v in vs)
+          print('privacy history regression passed')
+          PY
+
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          rm -f .github/workflows/fix-privacy-reading-0914.yml
+          git add index.html assets/data/public-document-history.json tests/public-document-reading-regression.cjs .github/workflows/notify-discord.yml
+          git commit -m 'fix: repair privacy edition and public reading settings'
+          git push
+
+  notify:
+    if: github.event.head_commit.message != 'fix: repair privacy edition and public reading settings'
+    runs-on: ubuntu-latest
+    continue-on-error: true
     steps:
       - name: Discordへ更新通知を送る
         uses: actions/github-script@v7
@@ -19,83 +203,8 @@ jobs:
         with:
           script: |
             const webhook = process.env.DISCORD_WEBHOOK;
+            if (!webhook) return;
             const commit = context.payload.head_commit;
             const message = commit?.message?.split('\n')[0] || '更新されました';
             const body = { embeds: [{ title: '📢 天命乃杜 サイト更新のお知らせ', description: '天命乃杜のサイトが更新されました。', color: 0xc5a059, fields: [{ name: '更新内容', value: message, inline: false }, { name: '参拝はこちら', value: 'https://tenmei-mori.pages.dev/', inline: false }], footer: { text: '天命乃杜' }, timestamp: new Date().toISOString() }] };
             await fetch(webhook, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
-
-  repair:
-    if: github.event.head_commit.message != 'fix: apply timezone persistence and privacy version' && github.event.head_commit.message != 'chore: run timezone privacy repair from stable workflow'
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 1
-      - name: Repair timezone and privacy version
-        run: |
-          python3 - <<'PY'
-          from pathlib import Path
-          p = Path('index.html')
-          s = p.read_text(encoding='utf-8')
-
-          # 1) Persist the selected timezone through AppConfig, not only a mutable local object.
-          old = "            settings.timeZone = next;\n            if (window.localStorage) {\n                try { window.localStorage.setItem('tenmei_timezone_setting', next); } catch (e) {}\n            }"
-          new = """            if (typeof AppConfig !== 'undefined' && typeof AppConfig.toggle === 'function' && !window.__tenmeiTimeZonePersisting) {
-                window.__tenmeiTimeZonePersisting = true;
-                try { AppConfig.toggle('timeZone', next); }
-                finally { window.__tenmeiTimeZonePersisting = false; }
-            } else {
-                settings.timeZone = next;
-            }
-            try { window.localStorage.setItem('tenmei_timezone_setting', next); } catch (e) {}"""
-          if old in s:
-              s = s.replace(old, new, 1)
-          elif "settings.timeZone = next;" not in s:
-              raise SystemExit('timezone setter not found')
-          else:
-              s = s.replace("            settings.timeZone = next;", new, 1)
-
-          # 2) Remove hard-coded Tokyo from dynamic date-key generation.
-          s = s.replace("return new Date().toLocaleDateString('ja-JP', { timeZone: 'Asia/Tokyo', year: 'numeric', month: '2-digit', day: '2-digit' }).replaceAll('/', '-');", "return new Date().toLocaleDateString('ja-JP', { timeZone: getTimeZone(), year: 'numeric', month: '2-digit', day: '2-digit' }).replaceAll('/', '-');", 1)
-          s = s.replace("welcomeDate.textContent = `${now.getFullYear()}年${now.getMonth()+1}月${now.getDate()}日 (${days[now.getDay()]})`;", "const welcomeParts = window.TenmeiTime && typeof window.TenmeiTime.getDateParts === 'function' ? window.TenmeiTime.getDateParts(now) : { year: now.getFullYear(), month: now.getMonth() + 1, day: now.getDate() }; const welcomeWeekday = window.TenmeiTime && typeof window.TenmeiTime.getTimeZone === 'function' ? new Intl.DateTimeFormat('ja-JP', { timeZone: window.TenmeiTime.getTimeZone(), weekday: 'short' }).format(now) : days[now.getDay()]; welcomeDate.textContent = `${welcomeParts.year}年${welcomeParts.month}月${welcomeParts.day}日 (${welcomeWeekday})`;", 1)
-          s = s.replace("var todayKey = new Date().toISOString().slice(0,10);", "var todayKey = window.TenmeiTime && typeof window.TenmeiTime.getDateKey === 'function' ? window.TenmeiTime.getDateKey() : new Date().toISOString().slice(0,10);", 1)
-          s = s.replace("var fridayKey = 'tenmei_friday13_' + new Date().toISOString().slice(0,10);", "var fridayKey = 'tenmei_friday13_' + (window.TenmeiTime && typeof window.TenmeiTime.getDateKey === 'function' ? window.TenmeiTime.getDateKey() : new Date().toISOString().slice(0,10));", 1)
-          s = s.replace("return new Date(`${key}T00:00:00`);", "return new Date(`${key}T00:00:00Z`);", 1)
-
-          # 3) Normalize the privacy policy edition. The current edition is the 28th edition (2026-08-28).
-          s = s.replace('現行版：第18版（最終改定日：2026年8月14日）', '現行版：第28版（最終改定日：2026年8月28日)')
-          s = s.replace('現行版：第30版（最終改定日：2026年9月13日）', '現行版：第28版（最終改定日：2026年8月28日）')
-          s = s.replace('現行版：第28版（最終改定日：2026年8月28日)', '現行版：第28版（最終改定日：2026年8月28日）')
-          if '現行版：第28版（最終改定日：2026年8月28日）' not in s:
-              raise SystemExit('privacy edition marker missing')
-
-          p.write_text(s, encoding='utf-8')
-
-          # Regression test marker follows the same edition.
-          t = Path('tests/public-document-regression.cjs')
-          if t.exists():
-              ts = t.read_text(encoding='utf-8')
-              ts = ts.replace('現行版：第18版（最終改定日：2026年8月14日）', '現行版：第28版（最終改定日：2026年8月28日）')
-              ts = ts.replace('現行版：第30版（最終改定日：2026年9月13日）', '現行版：第28版（最終改定日：2026年8月28日）')
-              t.write_text(ts, encoding='utf-8')
-          PY
-          node --check tests/public-document-regression.cjs
-          node tests/public-document-regression.cjs
-      - name: Commit fix and remove repair job
-        run: |
-          python3 - <<'PY'
-          from pathlib import Path
-          p=Path('.github/workflows/notify-discord.yml')
-          s=p.read_text(encoding='utf-8')
-          marker='\n  repair:\n'
-          i=s.find(marker)
-          if i >= 0:
-              s=s[:i]+'\n'
-              p.write_text(s, encoding='utf-8')
-          PY
-          git config user.name 'github-actions[bot]'
-          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-          git add -A
-          git commit -m 'fix: apply timezone persistence and privacy version'
-          git push
