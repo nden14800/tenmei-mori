@@ -1,83 +1,18 @@
-name: Fix timezone and privacy version
+name: Timezone Privacy Repair
 
 on:
   push:
-    branches: [main]
+    branches:
+      - main
 
 permissions:
   contents: write
 
 jobs:
-  fix:
-    if: github.event.head_commit.message != 'fix: apply timezone persistence and privacy version'
+  repair:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-
-      - name: Patch site
-        run: |
-          python3 - <<'PY'
-          from pathlib import Path
-          import re
-
-          html_path = Path('index.html')
-          html = html_path.read_text(encoding='utf-8')
-
-          old = "settings.timeZone = next;"
-          new = """if (typeof AppConfig !== 'undefined' && typeof AppConfig.toggle === 'function') {
-              AppConfig.toggle('timeZone', next);
-            } else {
-              settings.timeZone = next;
-            }"""
-          if old not in html:
-              raise SystemExit('timezone setter target not found')
-          html = html.replace(old, new, 1)
-
-          old_parse = "return new Date(`${key}T00:00:00`);"
-          new_parse = "return new Date(`${key}T00:00:00Z`);"
-          if old_parse not in html:
-              raise SystemExit('timezone date-key parser target not found')
-          html = html.replace(old_parse, new_parse, 1)
-
-          old_version = '現行版：第18版（最終改定日：2026年8月14日）'
-          new_version = '現行版：第28版（最終改定日：2026年8月28日）'
-          html = html.replace(old_version, new_version)
-
-          html_path.write_text(html, encoding='utf-8')
-
-          test_path = Path('tests/public-document-regression.cjs')
-          test = test_path.read_text(encoding='utf-8')
-          if old_version in test:
-              test = test.replace(old_version, new_version)
-          test_path.write_text(test, encoding='utf-8')
-
-          # Keep current privacy-policy edition unambiguous.
-          if new_version not in html:
-              raise SystemExit('privacy policy edition marker was not written to index.html')
-
-          # Validate the functional timezone persistence patch landed exactly once.
-          if html.count("AppConfig.toggle('timeZone', next)") != 1:
-              raise SystemExit('unexpected timezone persistence patch count')
-          PY
-
-      - name: Validate
-        run: |
-          node --check tests/public-document-regression.cjs
-          node --check tests/howto-ui-regression.cjs
-          node tests/public-document-regression.cjs
-
-      - name: Commit fixes and remove temporary workflow
-        run: |
-          rm -f .github/workflows/fix-timezone-privacy.yml
-          git config user.name 'github-actions[bot]'
-          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-          git add -A
-          if git diff --cached --quiet; then
-            echo 'No changes to commit.'
-            exit 0
-          fi
-          git commit -m 'fix: apply timezone persistence and privacy version'
-          git push
+      - name: Runner check
+        run: echo "timezone repair runner is active"
