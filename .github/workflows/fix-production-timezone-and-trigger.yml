@@ -1,0 +1,168 @@
+name: Fix production timezone persistence and trigger Pages deploy
+
+on:
+  push:
+    branches: [main]
+
+permissions:
+  contents: write
+
+jobs:
+  repair:
+    if: github.event.head_commit.message != 'fix: repair production timezone persistence'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Patch production site
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          import re
+
+          p = Path('index.html')
+          s = p.read_text(encoding='utf-8')
+          marker = 'tenmei-production-timezone-persistence-fix'
+
+          if marker not in s:
+              script = r'''<script id="tenmei-production-timezone-persistence-fix">
+          (() => {
+              const STORAGE_KEY = 'tenmei_timezone_setting';
+              const VALID_FALLBACK = 'Asia/Tokyo';
+
+              const isValidTimeZone = (value) => {
+                  if (!value || typeof value !== 'string') return false;
+                  try { new Intl.DateTimeFormat('en-US', { timeZone: value }).format(); return true; }
+                  catch (_) { return false; }
+              };
+
+              const readStoredTimeZone = () => {
+                  try {
+                      const value = localStorage.getItem(STORAGE_KEY);
+                      return isValidTimeZone(value) ? value : null;
+                  } catch (_) { return null; }
+              };
+
+              const persistTimeZone = (value) => {
+                  if (!isValidTimeZone(value)) return false;
+                  try { localStorage.setItem(STORAGE_KEY, value); } catch (_) {}
+
+                  try {
+                      if (typeof AppConfig !== 'undefined' && typeof AppConfig.toggle === 'function') {
+                          AppConfig.toggle('timeZone', value);
+                      }
+                  } catch (_) {}
+
+                  try {
+                      document.documentElement.dataset.timezone = value;
+                  } catch (_) {}
+
+                  try {
+                      if (window.TenmeiTime && typeof window.TenmeiTime.setTimeZone === 'function') {
+                          window.TenmeiTime.setTimeZone(value);
+                      }
+                  } catch (_) {}
+
+                  window.dispatchEvent(new CustomEvent('tenmei:timezonechange', { detail: { timeZone: value } }));
+                  return true;
+              };
+
+              const getZoneFromControl = (control) => {
+                  if (!control) return null;
+                  const value = control.value || control.getAttribute('data-timezone') || control.getAttribute('data-time-zone') || control.getAttribute('data-value');
+                  return isValidTimeZone(value) ? value : null;
+              };
+
+              const looksLikeTimeZoneControl = (control) => {
+                  if (!control || !(control instanceof Element)) return false;
+                  const text = [
+                      control.id,
+                      control.getAttribute('name'),
+                      control.getAttribute('aria-label'),
+                      control.getAttribute('title'),
+                      control.getAttribute('data-setting'),
+                      control.getAttribute('data-config-key')
+                  ].filter(Boolean).join(' ').toLowerCase();
+                  if (text.includes('timezone') || text.includes('time-zone') || text.includes('タイムゾーン')) return true;
+                  if (control.matches('select')) {
+                      return Array.from(control.options || []).some((option) => /タイムゾーン|timezone/i.test(option.textContent || '') || isValidTimeZone(option.value));
+                  }
+                  return false;
+              };
+
+              const bind = (root = document) => {
+                  root.querySelectorAll('select,button,[role="option"],[data-timezone],[data-time-zone],[data-value]').forEach((control) => {
+                      if (!looksLikeTimeZoneControl(control) || control.dataset.tenmeiTimezoneBound === '1') return;
+                      control.dataset.tenmeiTimezoneBound = '1';
+                      const handler = () => {
+                          const value = getZoneFromControl(control);
+                          if (!value) return;
+                          if (persistTimeZone(value)) {
+                              setTimeout(() => location.reload(), 250);
+                          }
+                      };
+                      control.addEventListener('change', handler, { passive: true });
+                      control.addEventListener('click', () => {
+                          const value = getZoneFromControl(control);
+                          if (value && !control.matches('select')) handler();
+                      }, { passive: true });
+                  });
+              };
+
+              const initial = readStoredTimeZone();
+              if (initial) {
+                  try { document.documentElement.dataset.timezone = initial; } catch (_) {}
+              }
+
+              window.TenmeiTime = window.TenmeiTime || {};
+              if (typeof window.TenmeiTime.getTimeZone !== 'function') {
+                  window.TenmeiTime.getTimeZone = () => readStoredTimeZone() || VALID_FALLBACK;
+              }
+              if (typeof window.TenmeiTime.setTimeZone !== 'function') {
+                  window.TenmeiTime.setTimeZone = (value) => persistTimeZone(value);
+              }
+
+              if (document.readyState === 'loading') {
+                  document.addEventListener('DOMContentLoaded', () => bind(), { once: true });
+              } else {
+                  bind();
+              }
+
+              new MutationObserver((mutations) => {
+                  for (const mutation of mutations) {
+                      if (mutation.addedNodes.length) { bind(); break; }
+                  }
+              }).observe(document.documentElement, { childList: true, subtree: true });
+          })();
+          </script>'''
+              match = re.search(r'</body>\s*</html>\s*$', s, re.IGNORECASE)
+              if not match:
+                  raise SystemExit('Could not find closing body/html tags in index.html')
+              s = s[:match.start()] + script + '\n' + s[match.start():]
+              p.write_text(s, encoding='utf-8')
+          else:
+              print('Timezone persistence fix already present')
+          PY
+
+      - name: Validate
+        run: |
+          node --check tests/howto-ui-regression.cjs
+          grep -q 'tenmei-production-timezone-persistence-fix' index.html
+          grep -q 'AppConfig.toggle' index.html
+          grep -q 'tenmei_timezone_setting' index.html
+
+      - name: Commit production fix and remove one-shot workflow
+        shell: bash
+        run: |
+          rm -f .github/workflows/fix-production-timezone-and-trigger.yml
+          printf '%s\n%s\n' "$(date -u +%Y-%m-%dT%H:%M:%SZ)" 'Production timezone persistence fix applied; trigger a fresh Cloudflare Pages deployment.' > .cloudflare-pages-deploy-trigger
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add index.html .cloudflare-pages-deploy-trigger
+          git add -u .github/workflows/fix-production-timezone-and-trigger.yml
+          git commit -m 'fix: repair production timezone persistence'
+          git push
