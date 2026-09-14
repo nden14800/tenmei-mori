@@ -1,0 +1,116 @@
+name: Fix timezone persistence and force production redeploy
+
+on:
+  push:
+    branches: [main]
+
+permissions:
+  contents: write
+
+jobs:
+  repair:
+    # This workflow intentionally makes one follow-up commit, then stops.
+    if: github.event.head_commit.message != 'fix: repair timezone persistence and force production redeploy'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout current main
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Repair timezone setting and add production build marker
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          from pathlib import Path
+          import re
+          from datetime import datetime, timezone
+
+          p = Path('index.html')
+          s = p.read_text(encoding='utf-8')
+
+          # Make the timezone control persist through the app's canonical config layer.
+          old_patterns = [
+              "settings.timeZone = next;",
+              "            settings.timeZone = next;",
+          ]
+          persistence = """if (typeof AppConfig !== 'undefined' && typeof AppConfig.toggle === 'function' && !window.__tenmeiTimeZonePersisting) {
+                  window.__tenmeiTimeZonePersisting = true;
+                  try { AppConfig.toggle('timeZone', next); }
+                  finally { window.__tenmeiTimeZonePersisting = false; }
+              } else {
+                  settings.timeZone = next;
+              }
+              try { window.localStorage.setItem('tenmei_timezone_setting', next); } catch (e) {}"""
+          if "AppConfig.toggle('timeZone', next)" not in s:
+              replaced = False
+              for old in old_patterns:
+                  if old in s:
+                      s = s.replace(old, persistence, 1)
+                      replaced = True
+                      break
+              if not replaced:
+                  raise SystemExit('timezone setter target not found')
+
+          # Ensure the selected timezone is actually used by date-key generation.
+          s = s.replace(
+              "return new Date().toLocaleDateString('ja-JP', { timeZone: 'Asia/Tokyo', year: 'numeric', month: '2-digit', day: '2-digit' }).replaceAll('/', '-');",
+              "return new Date().toLocaleDateString('ja-JP', { timeZone: getTimeZone(), year: 'numeric', month: '2-digit', day: '2-digit' }).replaceAll('/', '-');",
+              1,
+          )
+
+          # Replace UTC-based daily keys with the site's timezone-aware helper where present.
+          s = s.replace(
+              "var todayKey = new Date().toISOString().slice(0,10);",
+              "var todayKey = window.TenmeiTime && typeof window.TenmeiTime.getDateKey === 'function' ? window.TenmeiTime.getDateKey() : new Date().toISOString().slice(0,10);",
+              1,
+          )
+          s = s.replace(
+              "var fridayKey = 'tenmei_friday13_' + new Date().toISOString().slice(0,10);",
+              "var fridayKey = 'tenmei_friday13_' + (window.TenmeiTime && typeof window.TenmeiTime.getDateKey === 'function' ? window.TenmeiTime.getDateKey() : new Date().toISOString().slice(0,10));",
+              1,
+          )
+          s = s.replace(
+              "return new Date(`${key}T00:00:00`);",
+              "return new Date(`${key}T00:00:00Z`);",
+              1,
+          )
+
+          # Force a meaningful source change so Cloudflare Pages gets a fresh production build.
+          stamp = datetime.now(timezone.utc).astimezone().isoformat(timespec='seconds')
+          marker = '<meta name="tenmei-build" content="'
+          if marker in s:
+              s = re.sub(r'<meta name="tenmei-build" content="[^"]*"\s*/?>', f'<meta name="tenmei-build" content="{stamp}" />', s, count=1)
+          else:
+              head = s.find('</head>')
+              if head == -1:
+                  raise SystemExit('head closing tag not found')
+              s = s[:head] + f'<meta name="tenmei-build" content="{stamp}" />\n' + s[head:]
+
+          p.write_text(s, encoding='utf-8')
+          print('timezone persistence and production build marker patched')
+          PY
+
+      - name: Validate timezone contract
+        shell: bash
+        run: |
+          set -euo pipefail
+          grep -q "AppConfig.toggle('timeZone', next)" index.html
+          grep -q "tenmei_timezone_setting" index.html
+          grep -q 'tenmei-build' index.html
+          if grep -q "settings.timeZone = next;" index.html; then
+            echo 'Unexpected bare timezone assignment remains.'
+            exit 1
+          fi
+          echo 'timezone contract passed'
+
+      - name: Commit repaired production source
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add index.html
+          git commit -m 'fix: repair timezone persistence and force production redeploy'
+          git push
