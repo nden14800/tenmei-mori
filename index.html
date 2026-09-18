@@ -28117,7 +28117,9 @@ async function showResultDetail(isNewDraw, dataOverride = null) {
                     ts = Date.now();
                 }
                 const date = new Date(ts);
-                const dateStr = `${date.getFullYear()}年${date.getMonth()+1}月${date.getDate()}日 ${date.getHours()}:${String(date.getMinutes()).padStart(2,'0')}`;
+            const dateStr = window.TenmeiTime && typeof window.TenmeiTime.formatDateTime === 'function'
+                ? window.TenmeiTime.formatDateTime(date)
+                : `${date.getFullYear()}年${date.getMonth()+1}月${date.getDate()}日 ${date.getHours()}:${String(date.getMinutes()).padStart(2,'0')}`;
                 
                 metaDiv.innerHTML = `
                     <div class="result-user-name accent-text">${escapeHtml(name)} 様の運勢</div>
@@ -28268,8 +28270,16 @@ function renderHistoryList(historyData) {
         let dateStr = "----/--/--";
         let timeStr = "--:--";
         if (!isNaN(dateObj.getTime())) {
-            dateStr = `${dateObj.getFullYear()}.${String(dateObj.getMonth()+1).padStart(2,'0')}.${String(dateObj.getDate()).padStart(2,'0')}`;
-            timeStr = `${dateObj.getHours()}:${String(dateObj.getMinutes()).padStart(2,'0')}`;
+            const parts = window.TenmeiTime && typeof window.TenmeiTime.getDateParts === 'function'
+        ? window.TenmeiTime.getDateParts(dateObj)
+        : null;
+      if (parts) {
+        dateStr = `${parts.year}.${String(parts.month).padStart(2,'0')}.${String(parts.day).padStart(2,'0')}`;
+        timeStr = `${parts.hour}:${String(parts.minute).padStart(2,'0')}`;
+      } else {
+        dateStr = `${dateObj.getFullYear()}.${String(dateObj.getMonth()+1).padStart(2,'0')}.${String(dateObj.getDate()).padStart(2,'0')}`;
+        timeStr = `${dateObj.getHours()}:${String(dateObj.getMinutes()).padStart(2,'0')}`;
+      }
         }
 
         // バッジのスタイル決定（運勢によって色を変える）
@@ -31039,7 +31049,9 @@ function renderServerPagination(currentPage, totalItems, perPage) {
         let timestamp = Number(result.timestamp);
         if (!Number.isFinite(timestamp) || timestamp <= 0) timestamp = Date.now();
         const date = new Date(timestamp);
-        const formattedDate = `${date.getFullYear()}年${date.getMonth() + 1}月${date.getDate()}日 ${date.getHours()}:${String(date.getMinutes()).padStart(2, '0')}`;
+    const formattedDate = window.TenmeiTime && typeof window.TenmeiTime.formatDateTime === 'function'
+      ? window.TenmeiTime.formatDateTime(date)
+      : `${date.getFullYear()}年${date.getMonth() + 1}月${date.getDate()}日 ${date.getHours()}:${String(date.getMinutes()).padStart(2, '0')}`;
         issuedAt.textContent = `参拝日：${formattedDate}`;
 
         showToast('印刷画面を開きます。保存先で「PDFに保存」を選択してください。', 'info', 'おみくじ結果PDF');
