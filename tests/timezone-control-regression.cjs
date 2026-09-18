@@ -20,3 +20,7 @@ for (const pattern of forbiddenUtcDateKeyPatterns) {
 }
 
 console.log('timezone regression passed');
+
+// おみくじ結果・履歴・PDFの日時表示も、端末のローカル時刻ではなく選択中のタイムゾーンを使う。
+assert((html.match(/window\.TenmeiTime\.formatDateTime\(date\)/g) || []).length >= 2);
+assert(html.includes('window.TenmeiTime.getDateParts(dateObj)'));
