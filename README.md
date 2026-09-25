@@ -57,6 +57,12 @@
 4. 保存したくない場合は、環境・表示設定の「おみくじを履歴へ保存」をOFFにする
 5. 結果を確認。参拝証を発行すると、対応する記録・お気に入り・AI夢占い・TENMEI Labsなどの機能をアカウント単位で利用できます
 
+## 📦 本番デプロイ
+
+本番サイトは `main` ブランチへの push を契機に GitHub Actions から Cloudflare Pages プロジェクト `tenmei-mori` へデプロイします。ワークフローを実行するリポジトリには、Cloudflare の **Edit Cloudflare Workers** 権限を持つ API トークンを `CLOUDFLARE_API_TOKEN`、対象アカウント ID を `CLOUDFLARE_ACCOUNT_ID` として GitHub Actions Secrets に設定してください。
+
+`work` などの作業ブランチへのコミットだけでは本番デプロイは実行されません。変更を `main` に取り込み、GitHub Actions の **Deploy Cloudflare Pages** が成功したことを確認してから本番サイトを確認してください。
+
 ## ⚙️ 設定について
 
 設定は**環境・表示設定**を正本として一元管理しています。従来の「使い方」ページにあった重複した設定項目は廃止し、読書設定を本体へ統合しています。
