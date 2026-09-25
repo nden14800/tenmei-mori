@@ -59,9 +59,11 @@
 
 ## 📦 本番デプロイ
 
-本番サイトは `main` ブランチへの push を契機に GitHub Actions から Cloudflare Pages プロジェクト `tenmei-mori` へデプロイします。ワークフローを実行するリポジトリには、Cloudflare の **Edit Cloudflare Workers** 権限を持つ API トークンを `CLOUDFLARE_API_TOKEN`、対象アカウント ID を `CLOUDFLARE_ACCOUNT_ID` として GitHub Actions Secrets に設定してください。
+本番サイトは Cloudflare Pages の GitHub 連携で `main` ブランチを監視しており、`main` への push を契機に自動で本番デプロイされます。
 
-`work` などの作業ブランチへのコミットだけでは本番デプロイは実行されません。変更を `main` に取り込み、GitHub Actions の **Deploy Cloudflare Pages** が成功したことを確認してから本番サイトを確認してください。
+GitHub Actions の `Deploy Cloudflare Pages` ワークフローは、現在のCloudflare Pages Git連携による自動デプロイとは別系統です。通常の本番更新では、変更を `main` に取り込み、Cloudflare Pages のデプロイ完了を確認してください。
+
+`work` などの作業ブランチへのコミットだけでは本番デプロイは実行されません。変更を `main` に取り込んでから本番サイトを確認してください。
 
 ## ⚙️ 設定について
 
