@@ -16083,7 +16083,7 @@ body.sidebar-collapsed.sidebar-pinned #sidebar .nav-group-title {
                         </button>
                     </div>
                     <div id="worry-response-area" class="hidden mt-4 p-4 rounded-xl" style="background:var(--input-bg);border:1px solid var(--card-border);">
-                        <p id="worry-response-text" class="text-sm leading-relaxed"></p>
+                        <p id="worry-response-text" data-ai-response-text class="text-sm leading-relaxed"></p>
                     </div>
                     <p class="text-[10px] mt-3 leading-relaxed" style="color:var(--text-sub);opacity:0.8;">
                         ※AIによる一般的な助言であり、専門的な判断（医療・法律・金融等）の代わりにはなりません。重大な決断は専門家にご相談ください。
@@ -17081,7 +17081,7 @@ body.sidebar-collapsed.sidebar-pinned #sidebar .nav-group-title {
                 </div>
                 <div id="dream-response-area" class="hidden dream-response-card" aria-live="polite">
                     <p class="dream-response-label"><i class="bi bi-magic" aria-hidden="true"></i> DREAM INTERPRETATION</p>
-                    <p id="dream-response-text"></p>
+                    <p id="dream-response-text" data-ai-response-text></p>
                 </div>
                 <p class="dream-ai-disclaimer">※AIによる夢占い的な解釈であり、心理学的・医学的な診断ではありません。内容の正確性を保証するものではないため、あくまで娯楽としてお楽しみください。</p>
             </section>
@@ -28871,6 +28871,68 @@ ${luckyInfo}
 ${getShareUrl()}`;
         }
 
+        function setupUnifiedAiResponseControls(responseArea, options = {}) {
+            if (!responseArea) return;
+            const textEl = options.textEl || responseArea.querySelector('[data-ai-response-text]');
+            if (!textEl) return;
+            responseArea.classList.add('tenmei-ai-response');
+            responseArea.setAttribute('aria-live', 'polite');
+            responseArea.innerHTML = `
+                <div class="tenmei-ai-response-head">
+                    <span class="tenmei-ai-response-kicker"><i class="bi bi-stars" aria-hidden="true"></i>${options.kicker || 'AI RESPONSE'}</span>
+                    <button type="button" class="tenmei-ai-info-btn" data-ai-info-toggle title="このAI回答について" aria-expanded="false">
+                        <i class="bi bi-info-circle" aria-hidden="true"></i><span>情報</span>
+                    </button>
+                </div>
+                <p data-ai-response-text class="tenmei-ai-response-text"></p>
+                <div class="tenmei-ai-response-actions" aria-label="AI回答の評価">
+                    <span class="tenmei-ai-response-actions-label">この回答はいかがでしたか？</span>
+                    <button type="button" class="tenmei-ai-rate-btn" data-ai-rate="like" aria-pressed="false"><i class="bi bi-hand-thumbs-up" aria-hidden="true"></i><span>役に立った</span></button>
+                    <button type="button" class="tenmei-ai-rate-btn" data-ai-rate="dislike" aria-pressed="false"><i class="bi bi-hand-thumbs-down" aria-hidden="true"></i><span>改善してほしい</span></button>
+                </div>
+                <div class="tenmei-ai-info-panel hidden" data-ai-info-panel>
+                    <p><strong>${options.infoTitle || 'AIによる回答'}</strong></p>
+                    <p>${options.infoText || 'AIが入力内容をもとに生成した回答です。内容の正確性を保証するものではありません。'}</p>
+                </div>
+            `;
+            const newTextEl = responseArea.querySelector('[data-ai-response-text]');
+            if (options.text) newTextEl.textContent = options.text;
+            const infoBtn = responseArea.querySelector('[data-ai-info-toggle]');
+            const infoPanel = responseArea.querySelector('[data-ai-info-panel]');
+            infoBtn?.addEventListener('click', () => {
+                const open = !infoPanel.classList.contains('hidden');
+                infoPanel.classList.toggle('hidden', open);
+                infoBtn.setAttribute('aria-expanded', String(!open));
+            });
+            responseArea.querySelectorAll('[data-ai-rate]').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    responseArea.querySelectorAll('[data-ai-rate]').forEach(b => {
+                        b.classList.remove('is-selected');
+                        b.setAttribute('aria-pressed', 'false');
+                    });
+                    btn.classList.add('is-selected');
+                    btn.setAttribute('aria-pressed', 'true');
+                    if (typeof window.showToast === 'function') window.showToast('評価を受け付けました。ありがとうございます。', 'success');
+                });
+            });
+            return newTextEl;
+        }
+
+        function showUnifiedAiLoading(responseArea, kicker = 'AI RESPONSE') {
+            if (!responseArea) return;
+            responseArea.classList.remove('hidden');
+            responseArea.classList.add('tenmei-ai-response', 'is-loading');
+            responseArea.innerHTML = `
+                <div class="tenmei-ai-response-head">
+                    <span class="tenmei-ai-response-kicker"><i class="bi bi-stars" aria-hidden="true"></i>${kicker}</span>
+                    <span class="tenmei-ai-generating-label"><span class="tenmei-ai-dot"></span>生成中</span>
+                </div>
+                <div class="tenmei-ai-skeleton" aria-hidden="true">
+                    <span></span><span></span><span></span>
+                </div>
+            `;
+        }
+
         // --- AI悩み相談（緊急追加!21） ---
         async function submitWorryConsult() {
             const input = document.getElementById('worry-input');
@@ -28890,7 +28952,7 @@ ${getShareUrl()}`;
 
             btn.disabled = true;
             btn.innerHTML = '<i class="bi bi-hourglass-split"></i> 考え中...';
-            responseArea.classList.add('hidden');
+            showUnifiedAiLoading(responseArea, 'DIVINATION COMPANION');
 
             const controller = new AbortController();
             const timeoutId = setTimeout(() => controller.abort(), 30000); // 30秒でタイムアウト
@@ -28914,8 +28976,13 @@ ${getShareUrl()}`;
                 }
                 if (!res.ok) throw new Error(data.error || '相談に失敗しました');
 
-                responseText.textContent = data.advice || '';
-                responseArea.classList.remove('hidden');
+                setupUnifiedAiResponseControls(responseArea, {
+                    kicker: 'DIVINATION COMPANION',
+                    infoTitle: 'AI悩み相談について',
+                    infoText: 'おみくじの結果と入力された相談内容をもとにAIが生成した一般的な助言です。相談内容とAI回答はデータベースに保存されません。'
+                });
+                responseArea.querySelector('[data-ai-response-text]').textContent = data.advice || '';
+                responseArea.classList.remove('hidden', 'is-loading');
             } catch (e) {
                 clearTimeout(timeoutId);
                 console.error(e);
@@ -28949,7 +29016,7 @@ ${getShareUrl()}`;
 
             btn.disabled = true;
             btn.innerHTML = '<i class="bi bi-hourglass-split"></i> 読み解き中...';
-            responseArea.classList.add('hidden');
+            showUnifiedAiLoading(responseArea, 'DREAM INTERPRETATION');
 
             const controller = new AbortController();
             const timeoutId = setTimeout(() => controller.abort(), 30000); // 30秒でタイムアウト
@@ -28974,8 +29041,13 @@ ${getShareUrl()}`;
                 }
                 if (!res.ok) throw new Error(data.error || '夢占いに失敗しました');
 
-                responseText.textContent = data.interpretation || '';
-                responseArea.classList.remove('hidden');
+                setupUnifiedAiResponseControls(responseArea, {
+                    kicker: 'DREAM INTERPRETATION',
+                    infoTitle: 'AI夢占いについて',
+                    infoText: '入力された夢の内容をもとにAIが生成した夢占い的な解釈です。心理学的・医学的な診断ではありません。夢の記録は会員向け履歴として保存されます。'
+                });
+                responseArea.querySelector('[data-ai-response-text]').textContent = data.interpretation || '';
+                responseArea.classList.remove('hidden', 'is-loading');
                 if (input) input.value = '';
                 loadDreamHistory();
             } catch (e) {
@@ -36544,4 +36616,29 @@ html:not(.public-document-reading-disabled) :is(#view-about,#view-privacy,#view-
 @keyframes tenmei-ai-shimmer{0%,100%{opacity:.72}50%{opacity:1}}
 @media(prefers-reduced-motion:reduce){#view-article-detail .tenmei-ai-feature,#view-article-detail .tenmei-ai-feature *{animation:none!important;transition:none!important;}}
 @media(max-width:700px){#view-auth .auth-passport-hero,:is(#view-about,#view-privacy,#view-howto) :is(.about-codex-chapter,.privacy-ledger-article,.howto-guide-entry),#view-article-detail .tenmei-ai-feature{border-radius:18px;}}
+</style><style id="tenmei-ai-response-unification">
+.tenmei-ai-response{margin-top:20px!important;padding:18px!important;border:1px solid var(--card-border)!important;border-radius:18px!important;background:color-mix(in srgb,var(--card-bg) 96%,var(--input-bg))!important;box-shadow:0 8px 22px rgba(57,37,28,.05)!important;overflow:hidden;}
+.tenmei-ai-response-head{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:12px;padding-bottom:10px;border-bottom:1px solid var(--card-border);}
+.tenmei-ai-response-kicker{display:inline-flex;align-items:center;gap:7px;color:var(--accent-red);font-family:'Zen Kaku Gothic New',sans-serif;font-size:.68rem;font-weight:800;letter-spacing:.12em;}
+.tenmei-ai-info-btn{display:inline-flex;align-items:center;gap:5px;min-height:32px;padding:5px 9px;border:1px solid var(--card-border);border-radius:999px;background:transparent;color:var(--text-sub);font:inherit;font-size:.7rem;cursor:pointer;transition:transform 160ms ease,border-color 160ms ease,color 160ms ease,background 160ms ease;}
+.tenmei-ai-info-btn:hover{border-color:rgba(196,160,89,.7);color:var(--text-main);background:var(--input-bg);}
+.tenmei-ai-response-text{margin:0!important;color:var(--text-main);font-size:.92rem;line-height:1.85;white-space:pre-wrap;}
+.tenmei-ai-response-actions{display:flex;align-items:center;flex-wrap:wrap;gap:7px;margin-top:16px;padding-top:12px;border-top:1px solid var(--card-border);}
+.tenmei-ai-response-actions-label{margin-right:auto;color:var(--text-sub);font-size:.68rem;}
+.tenmei-ai-rate-btn{display:inline-flex;align-items:center;gap:5px;min-height:34px;padding:5px 10px;border:1px solid var(--card-border);border-radius:999px;background:transparent;color:var(--text-sub);font:inherit;font-size:.7rem;cursor:pointer;transition:transform 160ms ease,border-color 160ms ease,color 160ms ease,background 160ms ease;}
+.tenmei-ai-rate-btn:hover{transform:translateY(-1px);border-color:rgba(196,160,89,.7);color:var(--text-main);}
+.tenmei-ai-rate-btn.is-selected{border-color:var(--accent-red);background:color-mix(in srgb,var(--accent-red) 9%,var(--card-bg));color:var(--accent-red);font-weight:700;}
+.tenmei-ai-info-panel{margin-top:12px;padding:12px 13px;border:1px solid var(--card-border);border-radius:14px;background:var(--input-bg);color:var(--text-sub);font-size:.7rem;line-height:1.7;}
+.tenmei-ai-info-panel p{margin:0;}
+.tenmei-ai-info-panel p+p{margin-top:5px;}
+.tenmei-ai-generating-label{display:inline-flex;align-items:center;gap:7px;color:var(--text-sub);font-size:.7rem;font-weight:700;}
+.tenmei-ai-dot{width:7px;height:7px;border-radius:50%;background:var(--accent-red);animation:tenmei-ai-generating-pulse 1.15s ease-in-out infinite;}
+.tenmei-ai-response .tenmei-ai-skeleton{display:grid;gap:9px;}
+.tenmei-ai-response .tenmei-ai-skeleton span{display:block;height:11px;border-radius:999px;background:color-mix(in srgb,var(--text-sub) 18%,var(--card-bg));animation:tenmei-ai-skeleton-pulse 1.25s ease-in-out infinite;}
+.tenmei-ai-response .tenmei-ai-skeleton span:nth-child(2){width:84%;animation-delay:.12s;}
+.tenmei-ai-response .tenmei-ai-skeleton span:nth-child(3){width:68%;animation-delay:.24s;}
+@keyframes tenmei-ai-generating-pulse{0%,100%{opacity:.35;transform:scale(.8)}50%{opacity:1;transform:scale(1.15)}}
+@keyframes tenmei-ai-skeleton-pulse{0%,100%{opacity:.38}50%{opacity:.9}}
+@media(prefers-reduced-motion:reduce){.tenmei-ai-response *{animation:none!important;transition:none!important;}}
+@media(max-width:600px){.tenmei-ai-response-actions-label{width:100%;margin-right:0;}.tenmei-ai-rate-btn{flex:1;justify-content:center;}}
 </style>
