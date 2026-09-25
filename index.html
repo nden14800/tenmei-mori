@@ -30148,8 +30148,18 @@ async function logout() {
         // --- 設定済みタイムゾーンの日付文字列取得 ---
         // 旧関数名は呼び出し側との互換性のため維持する。未初期化時のみ従来の日本標準時へ安全にフォールバックする。
         function getJSTDateString() {
-            if (window.TenmeiTime && typeof window.TenmeiTime.getDateKey === 'function') return window.TenmeiTime.getDateKey();
-            return new Date().toLocaleDateString('ja-JP', { timeZone: getTimeZone(), year: 'numeric', month: '2-digit', day: '2-digit' }).replaceAll('/', '-');
+            // 「今日」の基準は毎回現在時刻から計算する。TenmeiTime の初期化前・
+            // 古いキャッシュ・日付跨ぎで残った dateKey をそのまま使わない。
+            const now = new Date();
+            const timeZone = typeof getTimeZone === 'function' ? getTimeZone() : 'Asia/Tokyo';
+            const parts = new Intl.DateTimeFormat('en-CA', {
+                timeZone,
+                year: 'numeric',
+                month: '2-digit',
+                day: '2-digit'
+            }).formatToParts(now);
+            const values = Object.fromEntries(parts.map(part => [part.type, part.value]));
+            return `${values.year}-${values.month}-${values.day}`;
         }
         
         function getFutureDateString(baseDateStr, daysToAdd) {
