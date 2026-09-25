@@ -17652,7 +17652,7 @@ body.sidebar-collapsed.sidebar-pinned #sidebar .nav-group-title {
                 <div class="about-codex-hero-copy">
                     <p class="about-codex-eyebrow"><i class="bi bi-journal-bookmark" aria-hidden="true"></i> SITE CHARTER</p>
                     <h1 id="about-page-title">当サイトについて</h1>
-                            <p class="about-codex-meta">制定: 2026/01/02 ・ 改定: 2026/08/27 (第25版) ・ 運営: nden148</p>
+                            <p class="about-codex-meta">制定: 2026/01/02 ・ 改定: 2026/09/25 (第31版) ・ 運営: nden148</p>
                     <p class="about-codex-lead">天命乃杜の由緒、利用規約、運営方針を一つの文書としてまとめています。</p>
                     <div class="about-codex-actions" aria-label="文書の操作">
                         <button onclick="downloadAsPDF('about')" id="about-pdf-btn" type="button">
@@ -29108,13 +29108,13 @@ ${getShareUrl()}`;
             resultArea.classList.remove('hidden');
             resultArea.classList.add('tenmei-ai-response', 'is-loading');
             resultArea.innerHTML = `
-                <div class="tenmei-ai-response-head">
-                    <span class="tenmei-ai-response-kicker"><i class="bi bi-stars" aria-hidden="true"></i>ARTICLE SUMMARY</span>
-                    <span class="tenmei-ai-generating-label"><span class="tenmei-ai-dot"></span>要約生成中</span>
+                <div class="tenmei-ai-response is-loading">
+                    <div class="tenmei-ai-response-head">
+                        <span class="tenmei-ai-response-kicker"><i class="bi bi-stars" aria-hidden="true"></i>ARTICLE SUMMARY</span>
+                        <span class="tenmei-ai-generating-label"><span class="tenmei-ai-dot"></span>生成中</span>
+                    </div>
+                    <p id="summary-streaming-text" data-ai-response-text class="tenmei-ai-response-text"></p>
                 </div>
-                <p id="summary-streaming-text" data-ai-response-text class="tenmei-ai-response-text">
-                    <span class="tenmei-ai-skeleton" aria-hidden="true"><span></span><span></span><span></span></span>
-                </p>
             `;
             const streamingTextEl = document.getElementById('summary-streaming-text');
             let shimmerShown = true;
@@ -29229,25 +29229,27 @@ ${getShareUrl()}`;
             resultArea.classList.remove('hidden', 'is-loading');
             resultArea.classList.add('tenmei-ai-response');
             resultArea.innerHTML = `
-                <div class="tenmei-ai-response-head">
-                    <span class="tenmei-ai-response-kicker"><i class="bi bi-stars" aria-hidden="true"></i>ARTICLE SUMMARY</span>
-                    <button type="button" class="tenmei-ai-info-btn" data-ai-summary-info-toggle title="このAI要約について" aria-expanded="false">
-                        <i class="bi bi-info-circle" aria-hidden="true"></i><span>情報</span>
-                    </button>
-                </div>
-                <p data-ai-response-text class="tenmei-ai-response-text">${escapeHtml(data.summary_text || '')}</p>
-                <div class="tenmei-ai-response-actions" aria-label="AI要約の評価">
-                    <span class="tenmei-ai-response-actions-label">この要約はいかがでしたか？</span>
-                    <button type="button" data-vote="like" class="tenmei-ai-rate-btn summary-vote-btn" aria-pressed="false"><i class="bi bi-hand-thumbs-up" aria-hidden="true"></i><span>役に立った</span></button>
-                    <button type="button" data-vote="dislike" class="tenmei-ai-rate-btn summary-vote-btn" aria-pressed="false"><i class="bi bi-hand-thumbs-down" aria-hidden="true"></i><span>改善してほしい</span></button>
-                </div>
-                <div class="summary-vote-detail hidden"></div>
-                <div class="tenmei-ai-info-panel hidden" data-ai-summary-info-panel>
-                    <p><strong>AI要約について</strong></p>
-                    <p>記事本文をもとにAIが生成した要約です。内容の正確性を保証するものではありません。</p>
-                    <p>使用モデル：${escapeHtml(data.model_used || '不明')}</p>
-                    <p>文字数：${originalCount}文字 → ${summaryCount}文字${ratio !== null ? `（約${ratio}%に要約）` : ''}</p>
-                    ${responseTime !== null ? `<p>応答時間：約${responseTime}秒</p>` : ''}
+                <div id="summary-result-card" class="tenmei-ai-response">
+                    <div class="tenmei-ai-response-head">
+                        <span class="tenmei-ai-response-kicker"><i class="bi bi-stars" aria-hidden="true"></i>ARTICLE SUMMARY</span>
+                        <button type="button" class="tenmei-ai-info-btn" onclick="toggleSummaryInfo(this)" title="このAI要約について" aria-expanded="false">
+                            <i class="bi bi-info-circle" aria-hidden="true"></i><span>情報</span>
+                        </button>
+                    </div>
+                    <p data-ai-response-text class="tenmei-ai-response-text">${escapeHtml(data.summary_text || '')}</p>
+                    <div class="tenmei-ai-response-actions" aria-label="AI要約の評価">
+                        <span class="tenmei-ai-response-actions-label">この要約はいかがでしたか？</span>
+                        <button type="button" data-vote="like" onclick="handleSummaryVote('${type}', ${id}, 'like', this)" class="tenmei-ai-rate-btn summary-vote-btn" aria-pressed="false"><i class="bi bi-hand-thumbs-up" aria-hidden="true"></i><span>役に立った</span></button>
+                        <button type="button" data-vote="dislike" onclick="handleSummaryVote('${type}', ${id}, 'dislike', this)" class="tenmei-ai-rate-btn summary-vote-btn" aria-pressed="false"><i class="bi bi-hand-thumbs-down" aria-hidden="true"></i><span>改善してほしい</span></button>
+                    </div>
+                    <div class="summary-vote-detail hidden"></div>
+                    <div class="tenmei-ai-info-panel summary-info hidden" data-ai-info-panel>
+                        <p><strong>AIによる記事要約</strong></p>
+                        <p>使用モデル：${escapeHtml(data.model_used || '不明')}</p>
+                        <p>文字数：${originalCount}文字 → ${summaryCount}文字${ratio !== null ? `（約${ratio}%に要約）` : ''}</p>
+                        ${responseTime !== null ? `<p>応答時間：約${responseTime}秒</p>` : ''}
+                        <p>AIの回答には間違いが含まれている場合があります。</p>
+                    </div>
                 </div>
             `;
 
@@ -29274,7 +29276,10 @@ ${getShareUrl()}`;
         function toggleSummaryInfo(btn) {
             const card = btn.closest('#summary-result-card');
             const info = card ? card.querySelector('.summary-info') : null;
-            if (info) info.classList.toggle('hidden');
+            if (!info) return;
+            const opening = info.classList.contains('hidden');
+            info.classList.toggle('hidden', !opening);
+            btn.setAttribute('aria-expanded', String(opening));
         }
 
         async function sendSummaryVote(type, id, vote, detailText) {
@@ -36675,4 +36680,9 @@ html:not(.public-document-reading-disabled) :is(#view-about,#view-privacy,#view-
 @keyframes tenmei-ai-skeleton-pulse{0%,100%{opacity:.38}50%{opacity:.9}}
 @media(prefers-reduced-motion:reduce){.tenmei-ai-response *{animation:none!important;transition:none!important;}}
 @media(max-width:600px){.tenmei-ai-response-actions-label{width:100%;margin-right:0;}.tenmei-ai-rate-btn{flex:1;justify-content:center;}}
+</style><style id="tenmei-ai-summary-unification-final">
+#summary-result-card.tenmei-ai-response{margin-top:0!important;}
+#summary-result-card .summary-vote-btn{font:inherit;}
+#summary-result-card .summary-vote-btn.bg-red-600{border-color:var(--accent-red)!important;background:color-mix(in srgb,var(--accent-red) 9%,var(--card-bg))!important;color:var(--accent-red)!important;}
+#summary-result-card .summary-vote-detail{margin-top:12px;}
 </style>
