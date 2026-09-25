@@ -2,6 +2,8 @@ name: Repair public documents and AI UI
 # One-time migration runner; it removes itself after applying the repair commit.
 
 on:
+  pull_request:
+    types: [opened, synchronize, reopened]
   push:
     branches: [main]
   workflow_dispatch:
@@ -11,7 +13,7 @@ permissions:
 
 jobs:
   repair:
-    if: github.event.head_commit.message != 'fix: unify public documents and AI UI'
+    if: github.event_name != 'push' || github.event.head_commit.message != 'fix: unify public documents and AI UI'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
