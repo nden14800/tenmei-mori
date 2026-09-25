@@ -1,0 +1,276 @@
+name: Repair public documents and AI UI
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  repair:
+    if: github.event.head_commit.message != 'fix: unify public documents and AI UI'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Apply unified UI fixes
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          from pathlib import Path
+          import re
+
+          p = Path('index.html')
+          s = p.read_text(encoding='utf-8')
+
+          # Privacy policy: synchronize the visible current-edition metadata with the
+          # already documented 2026-09-13 revision in the repository history.
+          s = s.replace(
+              '制定: 2026/01/02 ・ 改定: 2026/08/29 (第29版) ・ 運営: nden148',
+              '制定: 2026/01/02 ・ 改定: 2026/09/13 (第30版) ・ 運営: nden148',
+              1
+          )
+          s = s.replace(
+              '現行版：第29版（最終改定日：2026年8月29日）',
+              '現行版：第30版（最終改定日：2026年9月13日）',
+              1
+          )
+
+          # Keep the public-document outer card independent from the reading-width setting.
+          public_css = r'''
+          <style id="tenmei-public-document-unified-ui">
+          /* 公開文書: カード幅と本文幅を完全に分離 */
+          :is(#view-about, #view-privacy, #view-howto) :is(.about-codex-content, .privacy-ledger-content, .howto-guide-content) {
+              width: 100% !important;
+              max-width: none !important;
+              margin-inline: auto !important;
+              box-sizing: border-box !important;
+          }
+          :is(#view-about, #view-privacy, #view-howto) :is(.about-codex-chapter, .privacy-ledger-article, .howto-guide-entry) {
+              width: 100% !important;
+              max-width: none !important;
+              box-sizing: border-box !important;
+          }
+          html:not(.public-document-reading-disabled) :is(#view-about, #view-privacy, #view-howto) :is(.about-codex-chapter > div:not(.about-codex-chapter-head), .privacy-ledger-article > div:not(.privacy-ledger-article-heading), .howto-guide-entry > div:not(.howto-guide-entry-heading)) {
+              width: 100%;
+              max-width: var(--article-max-width, 820px);
+              margin-inline: auto;
+              box-sizing: border-box;
+          }
+          html:not(.public-document-reading-disabled) :is(#view-about, #view-privacy, #view-howto) :is(.about-codex-prologue, .privacy-ledger-prologue, .howto-guide-prologue) {
+              width: 100% !important;
+              max-width: none !important;
+          }
+          html:not(.public-document-reading-disabled) :is(#view-about, #view-privacy, #view-howto) :is(.about-codex-prologue p, .privacy-ledger-prologue p, .howto-guide-prologue > p:last-child) {
+              max-width: var(--article-max-width, 820px);
+              margin-inline: auto;
+          }
+          html:not(.public-document-reading-disabled) :is(#view-about, #view-privacy, #view-howto) :is(p, li, td, th, blockquote, dt, dd, figcaption) {
+              font-size: var(--article-font-size) !important;
+              line-height: var(--article-line-height) !important;
+              font-family: var(--article-font-family) !important;
+          }
+          /* 参拝証: 公開文書/結果カードと同じ紙面・文字組み */
+          #view-auth :is(.auth-passport-card, .auth-passport-paper, .auth-passport-shell, .auth-passport-main) {
+              box-sizing: border-box;
+              width: 100%;
+              max-width: 100%;
+          }
+          #view-auth .auth-passport-title {
+              font-family: var(--font-serif, var(--article-font-family, inherit)) !important;
+              line-height: 1.35 !important;
+              letter-spacing: .02em;
+          }
+          #view-auth :is(.auth-passport-card, .auth-passport-paper, .auth-passport-shell) :is(p, li, small, label, dt, dd) {
+              font-family: var(--article-font-family, inherit) !important;
+          }
+
+          /* AI機能共通: 要約・夢占い・悩み相談を同じ状態表現へ */
+          :is(#summary-section, #result-ai-consult, #view-dream .dream-oracle-layout, #view-dream .dream-oracle-main, #guide-ai-form) {
+              --ai-motion-duration: .28s;
+          }
+          :is(#summary-section, #result-ai-consult, #view-dream .dream-oracle-layout, #view-dream .dream-oracle-main, #guide-ai-form) :is(button, input, textarea) {
+              font-family: inherit;
+          }
+          .tenmei-ai-unified-action {
+              position: relative;
+              overflow: hidden;
+              transition: transform var(--ai-motion-duration) ease, box-shadow var(--ai-motion-duration) ease, opacity var(--ai-motion-duration) ease;
+          }
+          .tenmei-ai-unified-action:hover {
+              transform: translateY(-1px);
+          }
+          .tenmei-ai-unified-action[aria-busy="true"] {
+              pointer-events: none;
+              opacity: .82;
+          }
+          .tenmei-ai-unified-action[aria-busy="true"]::after {
+              content: "";
+              position: absolute;
+              inset: 0;
+              background: linear-gradient(110deg, transparent 20%, rgba(255,255,255,.24) 48%, transparent 76%);
+              transform: translateX(-120%);
+              animation: tenmei-ai-shimmer 1.15s ease-in-out infinite;
+          }
+          .tenmei-ai-unified-result {
+              animation: tenmei-ai-result-in .28s ease both;
+          }
+          .tenmei-ai-unified-result.tenmei-ai-processing {
+              position: relative;
+              overflow: hidden;
+          }
+          .tenmei-ai-unified-result.tenmei-ai-processing::before {
+              content: "";
+              display: block;
+              width: 24px;
+              height: 24px;
+              margin: 0 auto 12px;
+              border: 2px solid currentColor;
+              border-right-color: transparent;
+              border-radius: 50%;
+              animation: tenmei-ai-spin .7s linear infinite;
+              opacity: .7;
+          }
+          @keyframes tenmei-ai-shimmer {
+              to { transform: translateX(120%); }
+          }
+          @keyframes tenmei-ai-spin {
+              to { transform: rotate(360deg); }
+          }
+          @keyframes tenmei-ai-result-in {
+              from { opacity: 0; transform: translateY(6px); }
+              to { opacity: 1; transform: translateY(0); }
+          }
+          @media (prefers-reduced-motion: reduce) {
+              .tenmei-ai-unified-action,
+              .tenmei-ai-unified-result,
+              .tenmei-ai-unified-action[aria-busy="true"]::after,
+              .tenmei-ai-unified-result.tenmei-ai-processing::before {
+                  animation: none !important;
+                  transition: none !important;
+                  transform: none !important;
+              }
+          }
+          </style>
+          '''
+
+          ai_script = r'''
+          <script id="tenmei-ai-unified-ui">
+          (() => {
+              'use strict';
+
+              const mark = () => {
+                  const actions = document.querySelectorAll(
+                      '#summarize-btn, #result-ai-consult button, #result-ai-consult input[type="submit"], #result-ai-consult textarea + button, #guide-ai-form button, #view-dream button[type="submit"], #view-dream form button[type="submit"]'
+                  );
+                  actions.forEach((el) => el.classList.add('tenmei-ai-unified-action'));
+
+                  const results = document.querySelectorAll(
+                      '#summary-result, #result-ai-consult, #guide-ai-form + *, #view-dream .dream-oracle-result, #view-dream [data-dream-result]'
+                  );
+                  results.forEach((el) => el.classList.add('tenmei-ai-unified-result'));
+              };
+
+              const setBusy = (root, busy) => {
+                  if (!root) return;
+                  root.classList.toggle('tenmei-ai-processing', busy);
+                  root.setAttribute('aria-busy', busy ? 'true' : 'false');
+                  const buttons = root.querySelectorAll('button, input[type="submit"]');
+                  buttons.forEach((button) => {
+                      button.classList.add('tenmei-ai-unified-action');
+                      button.setAttribute('aria-busy', busy ? 'true' : 'false');
+                  });
+              };
+
+              const bindSummary = () => {
+                  const button = document.getElementById('summarize-btn');
+                  const result = document.getElementById('summary-result');
+                  if (!button || button.dataset.tenmeiAiUnified === '1') return;
+                  button.dataset.tenmeiAiUnified = '1';
+                  button.classList.add('tenmei-ai-unified-action');
+                  if (result) result.classList.add('tenmei-ai-unified-result');
+
+                  button.addEventListener('click', () => {
+                      setBusy(result || button.parentElement, true);
+                      window.setTimeout(() => {
+                          if (result) setBusy(result, false);
+                      }, 900);
+                  }, { capture: true });
+              };
+
+              const observe = () => {
+                  mark();
+                  bindSummary();
+                  const observer = new MutationObserver(() => {
+                      mark();
+                      bindSummary();
+                  });
+                  observer.observe(document.body, { childList: true, subtree: true, attributes: true, attributeFilter: ['class', 'style'] });
+              };
+
+              if (document.readyState === 'loading') {
+                  document.addEventListener('DOMContentLoaded', observe, { once: true });
+              } else {
+                  observe();
+              }
+          })();
+          </script>
+          '''
+
+          # Avoid duplicate insertion if this repair is rerun.
+          if 'id="tenmei-public-document-unified-ui"' not in s:
+              s = s.replace('</head>', public_css.replace('tenmei-public-document-unified-ui','tenmei-public-document-unified-ui') + '</head>', 1)
+          if 'id="tenmei-ai-unified-ui"' not in s:
+              s = s.replace('</body>', ai_script + '</body>', 1)
+
+          p.write_text(s, encoding='utf-8')
+          PY
+
+          cat > tests/public-document-and-ai-unified-ui-regression.cjs <<'JS'
+          const assert = require('node:assert/strict');
+          const fs = require('node:fs');
+          const path = require('node:path');
+          const html = fs.readFileSync(path.resolve(__dirname, '..', 'index.html'), 'utf8');
+
+          assert(html.includes('id="tenmei-public-document-unified-ui"'));
+          assert(html.includes('max-width: var(--article-max-width, 820px)'));
+          assert(html.includes('about-codex-chapter > div:not(.about-codex-chapter-head)'));
+          assert(html.includes('privacy-ledger-article > div:not(.privacy-ledger-article-heading)'));
+          assert(html.includes('howto-guide-entry > div:not(.howto-guide-entry-heading)'));
+
+          assert(html.includes('id="tenmei-ai-unified-ui"'));
+          assert(html.includes('tenmei-ai-unified-action'));
+          assert(html.includes('tenmei-ai-unified-result'));
+          assert(html.includes('tenmei-ai-shimmer'));
+          assert(html.includes('prefers-reduced-motion'));
+          assert(html.includes('id="summarize-btn"'));
+          assert(html.includes("requestArticleSummary('column'"));
+          assert(html.includes("requestArticleSummary('news'"));
+
+          assert(html.includes('参拝証の発行'));
+          assert(html.includes('auth-passport-title'));
+
+          assert(!html.includes('現行版：第29版（最終改定日：2026年8月29日）'));
+          assert(html.includes('現行版：第30版（最終改定日：2026年9月13日）'));
+
+          console.log('public document + AI unified UI regression passed');
+          JS
+
+          node --check tests/public-document-and-ai-unified-ui-regression.cjs
+          node tests/public-document-and-ai-unified-ui-regression.cjs
+          node --check tests/home-article-layout-regression.cjs
+          node --check tests/about-ui-regression.cjs
+          node --check tests/privacy-ui-regression.cjs
+          node --check tests/howto-ui-regression.cjs
+          node --check tests/auth-ui-regression.cjs
+
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add index.html tests/public-document-and-ai-unified-ui-regression.cjs
+          git commit -m 'fix: unify public documents and AI UI'
+          git push
