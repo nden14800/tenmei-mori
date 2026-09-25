@@ -28720,9 +28720,31 @@ function resetSearch() {
                 choiceStates.forEach(syncChoice);
                 dateStates.forEach(syncDate);
             };
-            // All static custom controls are already in the DOM at this point, so bind immediately.
-            // Waiting for DOMContentLoaded caused a short period where taps appeared to do nothing.
-            initialize();
+            // 初期ロード時に全ページの選択肢を一気にDOM生成すると、iOSで数秒間メインスレッドが占有され、
+            // 最初のタップが無反応に見えることがある。初期表示中のコントロールだけ先に構築し、
+            // 非表示・未到達のコントロールは最初の操作時またはアイドル時に遅延構築する。
+            const roots = [...document.querySelectorAll('[data-control-kind="choice"], [data-control-kind="date"]')];
+            const isVisible = (root) => {
+                const style = getComputedStyle(root);
+                return style.display !== 'none' && style.visibility !== 'hidden' && root.offsetParent !== null;
+            };
+            const buildRoot = (root) => {
+                if (!root || root.dataset.tenmeiControlReady === 'true') return;
+                if (root.dataset.controlKind === 'choice') buildChoice(root);
+                else if (root.dataset.controlKind === 'date') buildDate(root);
+                root.dataset.tenmeiControlReady = 'true';
+            };
+            roots.filter(isVisible).forEach(buildRoot);
+            document.addEventListener('pointerdown', (event) => {
+                const root = event.target.closest?.('[data-control-kind="choice"], [data-control-kind="date"]');
+                if (root) buildRoot(root);
+            }, true);
+            document.addEventListener('focusin', (event) => {
+                const root = event.target.closest?.('[data-control-kind="choice"], [data-control-kind="date"]');
+                if (root) buildRoot(root);
+            }, true);
+            const idle = window.requestIdleCallback || ((callback) => window.setTimeout(callback, 120));
+            idle(() => roots.forEach(buildRoot), { timeout: 1200 });
             return { syncAll, closeActive };
         })();
         window.TenmeiCustomControls = TenmeiCustomControls;
