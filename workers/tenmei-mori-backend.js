@@ -1793,13 +1793,15 @@ if (url.pathname === "/api/today-anniv" && method === "GET") {
             });
 
             const text =
-                result?.response
-                    ? String(result.response)
-                    : result?.choices?.[0]?.message?.content
-                        ? String(result.choices[0].message.content)
-                        : result?.choices?.[0]?.delta?.content
-                            ? String(result.choices[0].delta.content)
-                            : "";
+                result?.choices?.[0]?.message?.content
+                    ? String(result.choices[0].message.content)
+                    : result?.response
+                        ? String(result.response)
+                        : result?.result?.response
+                            ? String(result.result.response)
+                            : result?.choices?.[0]?.delta?.content
+                                ? String(result.choices[0].delta.content)
+                                : "";
 
             const answer = text.trim();
             if (answer) return answer;
