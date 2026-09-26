@@ -10888,39 +10888,8 @@ body.sidebar-collapsed.sidebar-pinned #sidebar .nav-group-title {
 
     /* ==========================================
        記事 読書進捗
-       一般的な記事サイトに合わせ、本文を邪魔しない最小表示。
+       本文を邪魔しない、薄いトッププログレスバーのみ。
        ========================================== */
-    body.reading-progress-active #main-content { padding-top: 0; }
-    #reading-progress-badge {
-        position: fixed;
-        top: 10px;
-        right: 18px;
-        z-index: 10000;
-        display: inline-flex;
-        align-items: center;
-        gap: 8px;
-        min-height: 30px;
-        padding: 0 10px;
-        border: 1px solid color-mix(in srgb, var(--border-color, #c9c0b8) 70%, transparent);
-        border-radius: 999px;
-        background: color-mix(in srgb, var(--card-bg, #fff) 94%, transparent);
-        color: var(--text-sub, #766965);
-        font-family: 'Zen Kaku Gothic New', sans-serif;
-        font-size: 0.66rem;
-        font-weight: 700;
-        backdrop-filter: blur(10px);
-        box-shadow: 0 3px 12px rgba(0,0,0,.06);
-        opacity: 0;
-        pointer-events: none;
-        transform: translateY(-6px);
-        transition: opacity .18s ease, transform .18s ease;
-    }
-    #reading-progress-badge.active { opacity: 1; transform: translateY(0); }
-    #reading-progress-badge strong {
-        color: var(--text-main, #322725);
-        font-size: .68rem;
-        font-variant-numeric: tabular-nums;
-    }
     #reading-progress-bar {
         position: fixed;
         top: 0;
@@ -10929,7 +10898,7 @@ body.sidebar-collapsed.sidebar-pinned #sidebar .nav-group-title {
         width: 100%;
         height: 2px;
         overflow: hidden;
-        background: color-mix(in srgb, var(--border-color, #a18c78) 22%, transparent);
+        background: color-mix(in srgb, var(--border-color, #a18c78) 20%, transparent);
         opacity: 0;
         pointer-events: none;
         transition: opacity .18s ease;
@@ -10942,17 +10911,7 @@ body.sidebar-collapsed.sidebar-pinned #sidebar .nav-group-title {
         transition: width .12s linear;
     }
     #reading-progress-fill.is-complete { background: var(--accent-gold); }
-    .dark #reading-progress-badge {
-        background: color-mix(in srgb, var(--card-bg, #171414) 92%, transparent);
-        border-color: color-mix(in srgb, var(--border-color, #5c514c) 80%, transparent);
-        box-shadow: 0 4px 14px rgba(0,0,0,.22);
-    }
-    .dark #reading-progress-badge strong { color: var(--text-main, #f4eee9); }
-    @media (max-width: 760px) {
-        #reading-progress-badge { top: 7px; right: 10px; min-height: 28px; padding: 0 9px; }
-    }
     @media (prefers-reduced-motion: reduce) {
-        #reading-progress-badge,
         #reading-progress-bar,
         #reading-progress-fill { transition: none !important; }
     }
@@ -10993,40 +10952,43 @@ body.sidebar-collapsed.sidebar-pinned #sidebar .nav-group-title {
     }
 
     /* ==========================================
-       Phase 5: シンプルな記事読書レイアウト
+       記事読書レイアウト・目次
+       一般的な長文記事に合わせた、静かなリンク一覧。
        ========================================== */
     .article-reading-layout {
         display: grid;
-        grid-template-columns: minmax(0, 680px) 180px;
+        grid-template-columns: minmax(0, 760px) 190px;
         justify-content: center;
         align-items: start;
-        gap: clamp(2rem, 5vw, 4.5rem);
+        gap: clamp(2rem, 5vw, 4rem);
     }
     .article-reading-main { min-width: 0; grid-column: 1; grid-row: 1; }
     .article-toc-sidebar {
         position: sticky;
-        top: 84px;
+        top: 88px;
         grid-column: 2;
         grid-row: 1;
         min-width: 0;
-        order: 2;
     }
     .article-toc-sidebar[hidden] { display: none !important; }
+
     .article-toc-unified { width: 100%; margin: 0; }
-    .article-toc-panel {
-        padding: 0;
-        border: 0;
-        background: transparent;
+    .article-toc-details { margin: 0; }
+    .article-toc-summary {
+        list-style: none;
+        cursor: pointer;
+        user-select: none;
     }
-    .article-toc-toggle { display: none; }
+    .article-toc-summary::-webkit-details-marker { display: none; }
+
     .article-toc-unified__title {
-        margin: 0 0 .7rem !important;
-        padding-bottom: .55rem;
-        border-bottom: 1px solid var(--border-color);
+        margin: 0 0 .65rem !important;
+        padding: 0 0 .55rem;
+        border-bottom: 1px solid var(--card-border);
         color: var(--text-sub) !important;
         font-family: 'Zen Kaku Gothic New', sans-serif !important;
         font-size: .68rem !important;
-        font-weight: 800 !important;
+        font-weight: 700 !important;
         letter-spacing: .08em;
     }
     .article-toc-unified__list {
@@ -11038,80 +11000,78 @@ body.sidebar-collapsed.sidebar-pinned #sidebar .nav-group-title {
         list-style: none;
     }
     .article-toc-unified__item { margin: 0; }
-    .article-toc-unified__item--sub { display: none; }
     .article-toc-unified__link {
         display: block;
-        padding: .42rem .55rem;
-        border-left: 1px solid var(--border-color);
-        border-radius: 0;
+        padding: .34rem 0 .34rem .7rem;
+        border-left: 1px solid var(--card-border);
         color: var(--text-sub) !important;
         font-family: 'Zen Kaku Gothic New', sans-serif !important;
         font-size: .72rem !important;
         font-weight: 500;
         line-height: 1.55 !important;
         text-decoration: none;
-        transition: color .14s ease, border-color .14s ease, background-color .14s ease;
+        transition: color .14s ease, border-color .14s ease;
     }
     .article-toc-unified__link:hover {
         color: var(--text-main) !important;
-        background: transparent;
+        border-left-color: var(--accent-red);
     }
-    .article-toc-unified__link.is-active {
-        color: var(--accent-red) !important;
-        border-left: 2px solid var(--accent-red);
-        background: transparent;
-        font-weight: 700;
-        box-shadow: none;
-    }
-    .article-toc-unified__link i { display: none; }
     .article-toc-unified__link:focus-visible {
         outline: 2px solid var(--accent-red);
-        outline-offset: 2px;
+        outline-offset: 3px;
     }
+
     @media (max-width: 1080px) {
         .article-reading-layout {
-            grid-template-columns: minmax(0, 680px);
+            grid-template-columns: minmax(0, 760px);
             justify-content: center;
         }
-        .article-reading-main { grid-column: 1; }
+        .article-reading-main { grid-column: 1; grid-row: 2; }
         .article-toc-sidebar {
-            position: relative;
-            top: auto;
+            position: static;
             grid-column: 1;
             grid-row: 1;
-            margin-bottom: 1rem;
+            margin-bottom: 1.25rem;
         }
-        .article-toc-unified__title { display: none; }
-        .article-toc-toggle {
+        .article-toc-details {
+            border-top: 1px solid var(--card-border);
+            border-bottom: 1px solid var(--card-border);
+        }
+        .article-toc-summary {
             display: flex;
-            width: 100%;
-            min-height: 40px;
+            min-height: 42px;
             align-items: center;
             justify-content: space-between;
-            padding: 0 .1rem .55rem;
-            border: 0;
-            border-bottom: 1px solid var(--border-color);
-            border-radius: 0;
-            background: transparent;
+            padding: 0;
             color: var(--text-main);
             font-family: 'Zen Kaku Gothic New', sans-serif;
-            font-size: .74rem;
+            font-size: .75rem;
             font-weight: 700;
-            cursor: pointer;
         }
-        .article-toc-toggle > span { display: inline-flex; align-items: center; }
-        .article-toc-toggle > i { transition: transform .14s ease; }
-        .article-toc-toggle.is-open > i { transform: rotate(180deg); }
-        .article-toc-panel { margin-top: .45rem; padding: 0; }
-        .article-toc-panel[hidden] { display: none !important; }
-        .article-toc-unified__list { padding: .15rem 0 .2rem; }
-        .article-toc-unified__link { padding: .38rem .55rem; }
+        .article-toc-summary::after {
+            content: '+';
+            color: var(--text-sub);
+            font-size: 1rem;
+            font-weight: 400;
+            line-height: 1;
+        }
+        .article-toc-details[open] .article-toc-summary::after { content: '−'; }
+        .article-toc-unified__title { display: none; }
+        .article-toc-unified__list {
+            padding: .2rem 0 .65rem;
+        }
+        .article-toc-unified__link {
+            padding: .4rem 0 .4rem .7rem;
+            font-size: .73rem !important;
+        }
     }
-    @media (max-width: 760px) {
-        .article-reading-layout { display: block; }
-        .article-toc-sidebar { margin-bottom: 1rem; }
-        .article-toc-toggle { min-height: 38px; font-size: .72rem; }
-        .article-toc-unified__link { font-size: .71rem !important; }
+    @media (min-width: 1081px) {
+        .article-toc-details > .article-toc-summary { display: block; cursor: default; }
+        .article-toc-details > .article-toc-summary::after { display: none; }
+        .article-toc-details > .article-toc-panel { display: block !important; }
+    }
+    @media (prefers-reduced-motion: reduce) {
+        .article-toc-unified__link { transition: none !important; }
     }
 
     /* 記事本文冒頭のメタ情報（文字数・読了目安） */
@@ -13343,11 +13303,6 @@ body.sidebar-collapsed.sidebar-pinned #sidebar .nav-group-title {
 
     <a class="sidebar-v4-skip-link" href="#main-content">本文へ移動</a>
 
-    <!-- 記事 読書進捗（記事閲覧時のみ表示） -->
-    <div id="reading-progress-badge" aria-label="現在の読書進捗">
-        <span>読書中</span>
-        <strong id="reading-progress-percent">0%</strong>
-    </div>
     <div id="reading-progress-bar" role="progressbar" aria-label="記事の読書進捗" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"><div id="reading-progress-fill"></div></div>
 
     <!-- 幽玄の霧コンテナ (高密度版) -->
@@ -27066,12 +27021,10 @@ function showLoading(show) {
             readingProgressState.reachedComplete = false;
 
             const bar = document.getElementById('reading-progress-bar');
-            const badge = document.getElementById('reading-progress-badge');
             if (bar) {
                 bar.classList.add('active');
                 bar.setAttribute('aria-valuenow', '0');
             }
-            if (badge) badge.classList.add('active');
             document.body.classList.add('reading-progress-active');
 
             window.addEventListener('scroll', onReadingProgressScroll, { passive: true });
@@ -27087,17 +27040,13 @@ function showLoading(show) {
             readingProgressState.reachedComplete = false;
 
             const bar = document.getElementById('reading-progress-bar');
-            const badge = document.getElementById('reading-progress-badge');
             const fill = document.getElementById('reading-progress-fill');
-            const percentEl = document.getElementById('reading-progress-percent');
             if (bar) {
                 bar.classList.remove('active');
                 bar.setAttribute('aria-valuenow', '0');
                 bar.removeAttribute('aria-valuetext');
             }
-            if (badge) badge.classList.remove('active');
             if (fill) fill.style.width = '0%';
-            if (percentEl) percentEl.textContent = '0%';
             document.body.classList.remove('reading-progress-active');
         }
 
@@ -27123,24 +27072,17 @@ function showLoading(show) {
         function updateReadingProgress() {
             if (!readingProgressState.contentEl) return;
             const percent = getCurrentArticleProgressPercent();
-            const roundedPercent = Math.round(percent);
             const fill = document.getElementById('reading-progress-fill');
-            const badge = document.getElementById('reading-progress-badge');
-            const percentEl = document.getElementById('reading-progress-percent');
             const bar = document.getElementById('reading-progress-bar');
-            if (!fill || !badge || !percentEl || !bar) return;
+            if (!fill || !bar) return;
 
             fill.style.width = percent + '%';
-            percentEl.textContent = roundedPercent + '%';
-            badge.setAttribute('aria-label', '現在の読書進捗 ' + roundedPercent + '%');
+            const roundedPercent = Math.round(percent);
             bar.setAttribute('aria-valuenow', String(roundedPercent));
             bar.setAttribute('aria-valuetext', roundedPercent + '%');
 
-            if (percent >= 99.5) {
-                fill.classList.add('is-complete');
-            } else {
-                fill.classList.remove('is-complete');
-            }
+            if (percent >= 99.5) fill.classList.add('is-complete');
+            else fill.classList.remove('is-complete');
         }
 
         // --- ホームアニメーション (ランダム性・多様性強化版) ---
@@ -35203,9 +35145,6 @@ try {
             var sidebar = document.querySelector('#article-detail-content .article-toc-sidebar');
             if (!contentEl || !sidebar) return;
 
-            if (window._articleTocObserver) window._articleTocObserver.disconnect();
-            if (window._articleTocResizeHandler) window.removeEventListener('resize', window._articleTocResizeHandler);
-
             sidebar.innerHTML = '';
             sidebar.hidden = true;
 
@@ -35217,19 +35156,20 @@ try {
                 h.style.scrollMarginTop = '76px';
             });
 
-            var toc = document.createElement('nav');
-            toc.className = 'article-toc-unified';
-            toc.setAttribute('aria-label', '記事の目次');
+            var nav = document.createElement('nav');
+            nav.className = 'article-toc-unified';
+            nav.setAttribute('aria-label', '記事の目次');
 
-            var toggle = document.createElement('button');
-            toggle.type = 'button';
-            toggle.className = 'article-toc-toggle';
-            toggle.setAttribute('aria-expanded', 'false');
-            toggle.innerHTML = '<span>目次</span><i class="bi bi-chevron-down" aria-hidden="true"></i>';
+            var details = document.createElement('details');
+            details.className = 'article-toc-details';
+            details.open = true;
+
+            var summary = document.createElement('summary');
+            summary.className = 'article-toc-summary';
+            summary.textContent = '目次';
 
             var panel = document.createElement('div');
             panel.className = 'article-toc-panel';
-            panel.hidden = false;
 
             var title = document.createElement('p');
             title.className = 'article-toc-unified__title';
@@ -35246,86 +35186,18 @@ try {
                 var link = document.createElement('a');
                 link.href = '#' + h.id;
                 link.className = 'article-toc-unified__link';
-                link.dataset.targetId = h.id;
                 link.textContent = h.textContent.trim();
-
-                link.addEventListener('click', function(event) {
-                    event.preventDefault();
-                    var target = document.getElementById(h.id);
-                    if (!target) return;
-                    target.scrollIntoView({ behavior: 'smooth', block: 'start' });
-                    if (window.matchMedia('(max-width: 1080px)').matches) {
-                        panel.hidden = true;
-                        toggle.setAttribute('aria-expanded', 'false');
-                        toggle.classList.remove('is-open');
-                    }
-                    if (history.replaceState) history.replaceState(null, '', '#' + h.id);
-                });
 
                 li.appendChild(link);
                 list.appendChild(li);
             });
 
             panel.appendChild(list);
-            toc.appendChild(toggle);
-            toc.appendChild(panel);
-            sidebar.appendChild(toc);
+            details.appendChild(summary);
+            details.appendChild(panel);
+            nav.appendChild(details);
+            sidebar.appendChild(nav);
             sidebar.hidden = false;
-
-            var links = Array.from(list.querySelectorAll('.article-toc-unified__link'));
-            var setActive = function(id) {
-                links.forEach(function(link) {
-                    var active = link.dataset.targetId === id;
-                    link.classList.toggle('is-active', active);
-                    if (active) link.setAttribute('aria-current', 'location');
-                    else link.removeAttribute('aria-current');
-                });
-            };
-
-            toggle.addEventListener('click', function() {
-                var nextOpen = panel.hidden;
-                panel.hidden = !nextOpen;
-                toggle.setAttribute('aria-expanded', String(nextOpen));
-                toggle.classList.toggle('is-open', nextOpen);
-            });
-
-            var syncMode = function() {
-                var compact = window.matchMedia('(max-width: 1080px)').matches;
-                if (compact) {
-                    if (!toggle.classList.contains('is-open')) panel.hidden = true;
-                } else {
-                    panel.hidden = false;
-                    toggle.setAttribute('aria-expanded', 'true');
-                    toggle.classList.add('is-open');
-                }
-            };
-            window._articleTocResizeHandler = syncMode;
-            window.addEventListener('resize', syncMode, { passive: true });
-            syncMode();
-
-            var visible = new Map();
-            window._articleTocObserver = new IntersectionObserver(function(entries) {
-                entries.forEach(function(entry) {
-                    if (entry.isIntersecting) visible.set(entry.target.id, entry.boundingClientRect.top);
-                    else visible.delete(entry.target.id);
-                });
-                var activeId = null;
-                var bestTop = Infinity;
-                visible.forEach(function(top, id) {
-                    if (top >= 0 && top < bestTop) {
-                        bestTop = top;
-                        activeId = id;
-                    }
-                });
-                if (!activeId) {
-                    var passed = headings.filter(function(h) { return h.getBoundingClientRect().top <= 110; });
-                    if (passed.length) activeId = passed[passed.length - 1].id;
-                }
-                setActive(activeId || headings[0].id);
-            }, { rootMargin: '-88px 0px -65% 0px', threshold: [0, 1] });
-
-            headings.forEach(function(h) { window._articleTocObserver.observe(h); });
-            setActive(headings[0].id);
         } catch (e) {}
     };
 
