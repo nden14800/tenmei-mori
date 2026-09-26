@@ -28906,8 +28906,9 @@ ${getShareUrl()}`;
 
         function setupUnifiedAiResponseControls(responseArea, options = {}) {
             if (!responseArea) return;
+            // この関数はローディング表示の直後にも呼ばれるため、
+            // 既存の[data-ai-response-text]が無くても最終表示を生成する。
             const textEl = options.textEl || responseArea.querySelector('[data-ai-response-text]');
-            if (!textEl) return;
             responseArea.classList.add('tenmei-ai-response');
             responseArea.setAttribute('aria-live', 'polite');
             responseArea.innerHTML = `
