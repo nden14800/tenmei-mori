@@ -1787,21 +1787,27 @@ if (url.pathname === "/api/today-anniv" && method === "GET") {
         try {
             const result = await env.AI.run("@cf/zai-org/glm-4.7-flash", {
                 messages,
-                max_completion_tokens: maxCompletionTokens,
+                max_completion_tokens: Math.max(256, maxCompletionTokens),
                 temperature: 0.4,
+                reasoning_effort: "none",
                 chat_template_kwargs: { enable_thinking: false }
             });
 
-            const text =
-                result?.choices?.[0]?.message?.content
-                    ? String(result.choices[0].message.content)
-                    : result?.response
-                        ? String(result.response)
-                        : result?.result?.response
-                            ? String(result.result.response)
-                            : result?.choices?.[0]?.delta?.content
-                                ? String(result.choices[0].delta.content)
-                                : "";
+            // GLM-4.7-Flashの同期応答はOpenAI互換のchoices形式が正式な出力。
+            // 互換レイヤー/旧レスポンス形式も残し、相談機能だけで形式差により
+            // 「AI応答が空でした」になるのを防ぐ。
+            const candidates = [
+                result?.choices?.[0]?.message?.content,
+                result?.choices?.[0]?.text,
+                result?.response,
+                result?.result?.response,
+                result?.result?.choices?.[0]?.message?.content,
+                result?.choices?.[0]?.delta?.content
+            ];
+
+            const text = candidates.find(value =>
+                typeof value === "string" && value.trim()
+            ) || "";
 
             const answer = text.trim();
             if (answer) return answer;
