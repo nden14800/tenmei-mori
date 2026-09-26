@@ -1787,9 +1787,8 @@ if (url.pathname === "/api/today-anniv" && method === "GET") {
         try {
             const result = await env.AI.run("@cf/zai-org/glm-4.7-flash", {
                 messages,
-                max_completion_tokens: Math.max(256, maxCompletionTokens),
+                max_completion_tokens: Math.max(512, maxCompletionTokens),
                 temperature: 0.4,
-                reasoning_effort: "none",
                 chat_template_kwargs: { enable_thinking: false }
             });
 
