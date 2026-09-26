@@ -28724,21 +28724,6 @@ function resetSearch() {
                 });
                 input.addEventListener('change', () => syncDate(state));
             };
-            let initialized = false;
-            const initialize = () => {
-                if (initialized) return;
-                initialized = true;
-                document.querySelectorAll('[data-control-kind="choice"]').forEach(buildChoice);
-                document.querySelectorAll('[data-control-kind="date"]').forEach(buildDate);
-                document.addEventListener('pointerdown', (event) => { if (activeRoot && !activeRoot.contains(event.target)) closeActive(false); });
-                document.addEventListener('click', (event) => {
-                    if (performance.now() >= suppressSyntheticTapUntil) return;
-                    suppressSyntheticTapUntil = 0;
-                    event.preventDefault();
-                    event.stopImmediatePropagation();
-                }, true);
-                document.addEventListener('keydown', (event) => { if (event.key === 'Escape' && activeRoot) closeActive(true); });
-            };
             const syncAll = () => {
                 choiceStates.forEach(syncChoice);
                 dateStates.forEach(syncDate);
@@ -28768,6 +28753,16 @@ function resetSearch() {
             }, true);
             const idle = window.requestIdleCallback || ((callback) => window.setTimeout(callback, 120));
             idle(() => roots.forEach(buildRoot), { timeout: 1200 });
+
+            // Phase 3: 開いているカスタムコントロールの外側タップとEscapeだけを共通処理する。
+            // clickをdocument全体で抑止せず、通常のボタン・リンクのclickはそのまま通過させる。
+            document.addEventListener('pointerdown', (event) => {
+                if (activeRoot && !activeRoot.contains(event.target)) closeActive(false);
+            }, true);
+            document.addEventListener('keydown', (event) => {
+                if (event.key === 'Escape' && activeRoot) closeActive(true);
+            });
+
             return { syncAll, closeActive };
         })();
         window.TenmeiCustomControls = TenmeiCustomControls;

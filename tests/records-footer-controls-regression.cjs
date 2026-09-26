@@ -152,6 +152,13 @@ assert(choicePointerDownHandler, '選択欄のpointerdown処理を抽出でき�
 assert.equal(choicePointerDownHandler[0].includes('selectChoice'), false, 'pointerdown時に選択を確定しており、スクロール操作が誤選択になります。');
 
 assert.equal(html.includes('<select'), false, 'OS標準のselect要素が残っています。');
+assert.equal(html.includes("document.querySelectorAll('[data-control-kind=\"choice\"]').forEach(buildChoice)"), false, '全選択欄の一括初期化が残っています。');
+assert.equal(html.includes("document.querySelectorAll('[data-control-kind=\"date\"]').forEach(buildDate)"), false, '全日付選択の一括初期化が残っています。');
+assert.equal(html.includes('event.stopImmediatePropagation();'), false, 'document全体のclick抑止が残っています。');
+requireText('roots.filter(isVisible).forEach(buildRoot);', '表示中コントロールの初期構築が失われています。');
+requireText('idle(() => roots.forEach(buildRoot), { timeout: 1200 });', '未表示コントロールの遅延構築が失われています。');
+requireText("if (activeRoot && !activeRoot.contains(event.target)) closeActive(false);", '選択欄の外側タップで閉じる共通処理がありません。');
+requireText("if (event.key === 'Escape' && activeRoot) closeActive(true);", 'Escapeキー処理がありません。');
 assert.equal(/<input[^>]+type=["']date["']/gi.test(html), false, 'OS標準の日付入力が残っています。');
 requireCount(/data-control-kind="choice"/g, 3, 'カスタム選択欄が3件保持されていません。');
 requireCount(/data-control-kind="date"/g, 2, 'カスタム日付選択が2件保持されていません。');
