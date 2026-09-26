@@ -1777,50 +1777,71 @@ if (url.pathname === "/api/today-anniv" && method === "GET") {
     if (systemPrompt) messages.push({ role: "system", content: systemPrompt });
     messages.push({ role: "user", content: prompt });
 
-    let lastError = null;
+    // GLM-4.7-FlashはWorkers AIのストリーミング経路を使用する。
+    // 同期レスポンスでreasoningにトークンを消費して本文contentが空になる
+    // ケースを避け、SSE全体を受け取ってから本文だけを抽出する。
+    try {
+        const stream = await env.AI.run("@cf/zai-org/glm-4.7-flash", {
+            messages,
+            stream: true,
+            max_completion_tokens: Math.max(512, maxCompletionTokens),
+            temperature: 0.4,
+            chat_template_kwargs: { enable_thinking: false }
+        });
 
-    // 悩み相談・夢占いは最終回答だけを必要とするため、
-    // Workers AIのストリームを手動でSSE解析せず、通常のJSON応答を受け取る。
-    // 直前のstream:true実装ではチャンク境界やレスポンス形式の差によって
-    // fullTextが空になり、実際にはAIが応答していても500になる問題があった。
-    for (let attempt = 0; attempt < 2; attempt += 1) {
-        try {
-            const result = await env.AI.run("@cf/zai-org/glm-4.7-flash", {
-                messages,
-                max_completion_tokens: Math.max(512, maxCompletionTokens),
-                temperature: 0.4,
-                chat_template_kwargs: { enable_thinking: false }
-            });
+        const raw = await new Response(stream).text();
+        const chunks = [];
+        for (const line of raw.split(/\r?\n/)) {
+            const trimmed = line.trim();
+            if (!trimmed.startsWith("data:")) continue;
+            const payload = trimmed.slice(5).trim();
+            if (!payload || payload === "[DONE]") continue;
 
-            // GLM-4.7-Flashの同期応答はOpenAI互換のchoices形式が正式な出力。
-            // 互換レイヤー/旧レスポンス形式も残し、相談機能だけで形式差により
-            // 「AI応答が空でした」になるのを防ぐ。
-            const candidates = [
-                result?.choices?.[0]?.message?.content,
-                result?.choices?.[0]?.text,
-                result?.response,
-                result?.result?.response,
-                result?.result?.choices?.[0]?.message?.content,
-                result?.choices?.[0]?.delta?.content
-            ];
-
-            const text = candidates.find(value =>
-                typeof value === "string" && value.trim()
-            ) || "";
-
-            const answer = text.trim();
-            if (answer) return answer;
-
-            lastError = new Error("AI応答が空でした");
-            console.error("Workers AI returned no text:", JSON.stringify(result));
-        } catch (error) {
-            lastError = error;
-            console.error("Workers AI invocation failed:", error);
-            if (attempt === 0) await new Promise(resolve => setTimeout(resolve, 350));
+            try {
+                const json = JSON.parse(payload);
+                const content =
+                    json?.choices?.[0]?.delta?.content ??
+                    json?.choices?.[0]?.message?.content ??
+                    json?.response ??
+                    json?.result?.response ??
+                    "";
+                if (typeof content === "string" && content.trim()) {
+                    chunks.push(content);
+                }
+            } catch (_) {
+                // SSE内の非JSON行は無視する。
+            }
         }
-    }
 
-    throw lastError || new Error("AI応答の取得に失敗しました");
+        const answer = chunks.join("").trim();
+        if (answer) return answer;
+
+        // ストリーム形式が変更された場合の同期フォールバック。
+        const result = await env.AI.run("@cf/zai-org/glm-4.7-flash", {
+            messages,
+            max_completion_tokens: Math.max(512, maxCompletionTokens),
+            temperature: 0.4,
+            chat_template_kwargs: { enable_thinking: false }
+        });
+
+        const candidates = [
+            result?.choices?.[0]?.message?.content,
+            result?.choices?.[0]?.text,
+            result?.response,
+            result?.result?.response,
+            result?.result?.choices?.[0]?.message?.content,
+            result?.choices?.[0]?.delta?.content
+        ];
+        const fallback = candidates.find(value =>
+            typeof value === "string" && value.trim()
+        ) || "";
+
+        if (fallback.trim()) return fallback.trim();
+        throw new Error("AI応答が空でした");
+    } catch (error) {
+        console.error("Workers AI consultation failed:", error);
+        throw error;
+    }
 }
 
         // ① AI悩み相談（ログイン不要・レート制限あり・その場限りの表示、DB保存なし）
