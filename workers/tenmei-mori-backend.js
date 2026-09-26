@@ -1778,57 +1778,34 @@ if (url.pathname === "/api/today-anniv" && method === "GET") {
     messages.push({ role: "user", content: prompt });
 
     let lastError = null;
+
+    // 悩み相談・夢占いは最終回答だけを必要とするため、
+    // Workers AIのストリームを手動でSSE解析せず、通常のJSON応答を受け取る。
+    // 直前のstream:true実装ではチャンク境界やレスポンス形式の差によって
+    // fullTextが空になり、実際にはAIが応答していても500になる問題があった。
     for (let attempt = 0; attempt < 2; attempt += 1) {
         try {
-            const aiStream = await env.AI.run("@cf/zai-org/glm-4.7-flash", {
+            const result = await env.AI.run("@cf/zai-org/glm-4.7-flash", {
                 messages,
                 max_completion_tokens: maxCompletionTokens,
                 temperature: 0.4,
-                chat_template_kwargs: { enable_thinking: false },
-                stream: true
+                chat_template_kwargs: { enable_thinking: false }
             });
 
-            const reader = aiStream.getReader();
-            const decoder = new TextDecoder();
-            let buffer = "";
-            let fullText = "";
+            const text =
+                result?.response
+                    ? String(result.response)
+                    : result?.choices?.[0]?.message?.content
+                        ? String(result.choices[0].message.content)
+                        : result?.choices?.[0]?.delta?.content
+                            ? String(result.choices[0].delta.content)
+                            : "";
 
-            while (true) {
-                const { done, value } = await reader.read();
-                if (done) break;
-
-                buffer += decoder.decode(value, { stream: true });
-                const lines = buffer.split("\n");
-                buffer = lines.pop() || "";
-
-                for (const line of lines) {
-                    const trimmed = line.trim();
-                    if (!trimmed.startsWith("data:")) continue;
-
-                    const payload = trimmed.slice(5).trim();
-                    if (!payload || payload === "[DONE]") continue;
-
-                    try {
-                        const json = JSON.parse(payload);
-                        const delta =
-                            json?.choices?.[0]?.delta?.content
-                                ? String(json.choices[0].delta.content)
-                                : json?.response
-                                    ? String(json.response)
-                                    : "";
-
-                        if (delta) fullText += delta;
-                    } catch (_) {
-                        // 不完全なSSE行は次のチャンクで再構成されるため無視する。
-                    }
-                }
-            }
-
-            const text = fullText.trim();
-            if (text) return text;
+            const answer = text.trim();
+            if (answer) return answer;
 
             lastError = new Error("AI応答が空でした");
-            console.error("Workers AI returned no text");
+            console.error("Workers AI returned no text:", JSON.stringify(result));
         } catch (error) {
             lastError = error;
             console.error("Workers AI invocation failed:", error);
@@ -1838,6 +1815,7 @@ if (url.pathname === "/api/today-anniv" && method === "GET") {
 
     throw lastError || new Error("AI応答の取得に失敗しました");
 }
+
         // ① AI悩み相談（ログイン不要・レート制限あり・その場限りの表示、DB保存なし）
         if (url.pathname === "/api/worry-consult" && method === "POST") {
             try {
