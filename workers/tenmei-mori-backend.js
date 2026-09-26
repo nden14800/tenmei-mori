@@ -1862,6 +1862,44 @@ if (url.pathname === "/api/today-anniv" && method === "GET") {
             return answer;
         }
 
+        // 悩み相談専用の同期Workers AI呼び出し。
+        // 相談APIは最終的にJSONを返すため、SSEストリームを使わず
+        // Workers AIの同期レスポンスを直接取得して安定性を優先する。
+        async function callWorryConsultAI(prompt, systemPrompt, maxCompletionTokens = 192) {
+            const messages = [];
+            if (systemPrompt) messages.push({ role: "system", content: systemPrompt });
+            messages.push({ role: "user", content: prompt });
+
+            const result = await env.AI.run("@cf/zai-org/glm-4.7-flash", {
+                messages,
+                max_completion_tokens: Math.max(512, maxCompletionTokens),
+                temperature: 0.4,
+                chat_template_kwargs: {
+                    enable_thinking: false
+                }
+            });
+
+            const candidates = [
+                result?.choices?.[0]?.message?.content,
+                result?.choices?.[0]?.text,
+                result?.response,
+                result?.result?.response,
+                result?.result?.choices?.[0]?.message?.content,
+                result?.choices?.[0]?.delta?.content
+            ];
+
+            const answer = candidates.find(value =>
+                typeof value === "string" && value.trim()
+            );
+
+            if (!answer) {
+                console.error("Workers AI consultation returned an empty response:", JSON.stringify(result));
+                throw new Error("AI応答が空でした");
+            }
+
+            return answer.trim();
+        }
+
         // ① AI悩み相談（ログイン不要・レート制限あり・その場限りの表示、DB保存なし）
         if (url.pathname === "/api/worry-consult" && method === "POST") {
             try {
@@ -1881,11 +1919,11 @@ if (url.pathname === "/api/today-anniv" && method === "GET") {
                 const systemPrompt = "あなたは日本の神社のおみくじに添える、やさしく穏やかな助言者です。断定的な予言や医療・法律・金融の専門的助言は行わず、120文字以内の短い日本語で、前向きで具体的な一言アドバイスのみを返してください。";
                 const prompt = `今日引いたおみくじの結果は「${omikujiType || "不明"}」でした。参拝者の悩み・気になっていることは次の通りです：「${worry}」\n\nこの内容を踏まえた、短い一言アドバイスをください。`;
 
-                const advice = await callWorkersAI(
-    prompt,
-    systemPrompt,
-    192
-);
+                const advice = await callWorryConsultAI(
+                    prompt,
+                    systemPrompt,
+                    192
+                );
                 return new Response(JSON.stringify({ advice }), { headers: { ...corsHeaders, "Content-Type": "application/json" } });
             } catch (e) {
                 return new Response(JSON.stringify({ error: e.message }), { status: 500, headers: corsHeaders });
