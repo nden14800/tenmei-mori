@@ -1780,27 +1780,55 @@ if (url.pathname === "/api/today-anniv" && method === "GET") {
     let lastError = null;
     for (let attempt = 0; attempt < 2; attempt += 1) {
         try {
-            const result = await env.AI.run("@cf/zai-org/glm-4.7-flash", {
+            const aiStream = await env.AI.run("@cf/zai-org/glm-4.7-flash", {
                 messages,
                 max_completion_tokens: maxCompletionTokens,
                 temperature: 0.4,
                 chat_template_kwargs: { enable_thinking: false },
-                stream: false
+                stream: true
             });
 
-            const text =
-                result?.choices?.[0]?.message?.content
-                    ? String(result.choices[0].message.content).trim()
-                    : result?.response
-                        ? String(result.response).trim()
-                        : result?.result?.response
-                            ? String(result.result.response).trim()
-                            : "";
+            const reader = aiStream.getReader();
+            const decoder = new TextDecoder();
+            let buffer = "";
+            let fullText = "";
 
+            while (true) {
+                const { done, value } = await reader.read();
+                if (done) break;
+
+                buffer += decoder.decode(value, { stream: true });
+                const lines = buffer.split("\n");
+                buffer = lines.pop() || "";
+
+                for (const line of lines) {
+                    const trimmed = line.trim();
+                    if (!trimmed.startsWith("data:")) continue;
+
+                    const payload = trimmed.slice(5).trim();
+                    if (!payload || payload === "[DONE]") continue;
+
+                    try {
+                        const json = JSON.parse(payload);
+                        const delta =
+                            json?.choices?.[0]?.delta?.content
+                                ? String(json.choices[0].delta.content)
+                                : json?.response
+                                    ? String(json.response)
+                                    : "";
+
+                        if (delta) fullText += delta;
+                    } catch (_) {
+                        // 不完全なSSE行は次のチャンクで再構成されるため無視する。
+                    }
+                }
+            }
+
+            const text = fullText.trim();
             if (text) return text;
 
             lastError = new Error("AI応答が空でした");
-            console.error("Workers AI returned no text:", JSON.stringify(result));
+            console.error("Workers AI returned no text");
         } catch (error) {
             lastError = error;
             console.error("Workers AI invocation failed:", error);
