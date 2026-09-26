@@ -1773,76 +1773,94 @@ if (url.pathname === "/api/today-anniv" && method === "GET") {
         // AI機能（緊急追加!21：悩み相談・夢占い）
         // ==========================================================
         async function callWorkersAI(prompt, systemPrompt, maxCompletionTokens = 192) {
-    const messages = [];
-    if (systemPrompt) messages.push({ role: "system", content: systemPrompt });
-    messages.push({ role: "user", content: prompt });
+            const messages = [];
+            if (systemPrompt) messages.push({ role: "system", content: systemPrompt });
+            messages.push({ role: "user", content: prompt });
 
-    // GLM-4.7-FlashはWorkers AIのストリーミング経路を使用する。
-    // 同期レスポンスでreasoningにトークンを消費して本文contentが空になる
-    // ケースを避け、SSE全体を受け取ってから本文だけを抽出する。
-    try {
-        const stream = await env.AI.run("@cf/zai-org/glm-4.7-flash", {
-            messages,
-            stream: true,
-            max_completion_tokens: Math.max(512, maxCompletionTokens),
-            temperature: 0.4,
-            chat_template_kwargs: { enable_thinking: false }
-        });
-
-        const raw = await new Response(stream).text();
-        const chunks = [];
-        for (const line of raw.split(/\r?\n/)) {
-            const trimmed = line.trim();
-            if (!trimmed.startsWith("data:")) continue;
-            const payload = trimmed.slice(5).trim();
-            if (!payload || payload === "[DONE]") continue;
-
-            try {
-                const json = JSON.parse(payload);
-                const content =
-                    json?.choices?.[0]?.delta?.content ??
-                    json?.choices?.[0]?.message?.content ??
-                    json?.response ??
-                    json?.result?.response ??
-                    "";
-                if (typeof content === "string" && content.trim()) {
-                    chunks.push(content);
+            // 記事要約と同じWorkers AIストリーム処理を使用する。
+            // AIレスポンスをResponse.text()で一括変換せず、getReader()で
+            // SSEのチャンク境界をまたいでも正しく再構成する。
+            const aiStream = await env.AI.run("@cf/zai-org/glm-4.7-flash", {
+                messages,
+                stream: true,
+                max_completion_tokens: Math.max(512, maxCompletionTokens),
+                temperature: 0.4,
+                chat_template_kwargs: {
+                    enable_thinking: false
                 }
-            } catch (_) {
-                // SSE内の非JSON行は無視する。
+            });
+
+            const reader = aiStream.getReader();
+            const decoder = new TextDecoder();
+            let buffer = "";
+            let fullText = "";
+
+            while (true) {
+                const { done, value } = await reader.read();
+                if (done) break;
+
+                buffer += decoder.decode(value, { stream: true });
+                const lines = buffer.split("\n");
+                buffer = lines.pop() || "";
+
+                for (const line of lines) {
+                    const trimmed = line.trim();
+                    if (!trimmed.startsWith("data:")) continue;
+
+                    const payload = trimmed.slice(5).trim();
+                    if (!payload || payload === "[DONE]") continue;
+
+                    try {
+                        const json = JSON.parse(payload);
+                        const content =
+                            json?.choices?.[0]?.delta?.content ??
+                            json?.choices?.[0]?.message?.content ??
+                            json?.response ??
+                            json?.result?.response ??
+                            "";
+
+                        if (typeof content === "string" && content) {
+                            fullText += content;
+                        }
+                    } catch (_) {
+                        // 要約と同じく、JSONとして解釈できないSSE行は無視する。
+                    }
+                }
             }
+
+            // decoderの最後の未完了UTF-8/SSEデータを処理する。
+            buffer += decoder.decode();
+            if (buffer.trim()) {
+                for (const line of buffer.split("\n")) {
+                    const trimmed = line.trim();
+                    if (!trimmed.startsWith("data:")) continue;
+
+                    const payload = trimmed.slice(5).trim();
+                    if (!payload || payload === "[DONE]") continue;
+
+                    try {
+                        const json = JSON.parse(payload);
+                        const content =
+                            json?.choices?.[0]?.delta?.content ??
+                            json?.choices?.[0]?.message?.content ??
+                            json?.response ??
+                            json?.result?.response ??
+                            "";
+
+                        if (typeof content === "string" && content) {
+                            fullText += content;
+                        }
+                    } catch (_) {}
+                }
+            }
+
+            const answer = fullText.trim();
+            if (!answer) {
+                throw new Error("AI応答が空でした");
+            }
+
+            return answer;
         }
-
-        const answer = chunks.join("").trim();
-        if (answer) return answer;
-
-        // ストリーム形式が変更された場合の同期フォールバック。
-        const result = await env.AI.run("@cf/zai-org/glm-4.7-flash", {
-            messages,
-            max_completion_tokens: Math.max(512, maxCompletionTokens),
-            temperature: 0.4,
-            chat_template_kwargs: { enable_thinking: false }
-        });
-
-        const candidates = [
-            result?.choices?.[0]?.message?.content,
-            result?.choices?.[0]?.text,
-            result?.response,
-            result?.result?.response,
-            result?.result?.choices?.[0]?.message?.content,
-            result?.choices?.[0]?.delta?.content
-        ];
-        const fallback = candidates.find(value =>
-            typeof value === "string" && value.trim()
-        ) || "";
-
-        if (fallback.trim()) return fallback.trim();
-        throw new Error("AI応答が空でした");
-    } catch (error) {
-        console.error("Workers AI consultation failed:", error);
-        throw error;
-    }
-}
 
         // ① AI悩み相談（ログイン不要・レート制限あり・その場限りの表示、DB保存なし）
         if (url.pathname === "/api/worry-consult" && method === "POST") {
