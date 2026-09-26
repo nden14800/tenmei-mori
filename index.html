@@ -36727,7 +36727,69 @@ document.addEventListener('change',e=>{
 document.addEventListener('DOMContentLoaded',()=>{show('privacy','32');show('about','25');});
 })();
 </script>
-</body>
+<script id="revision-selector-description-script">
+(function(){
+'use strict';
+const descriptions={
+ privacy:{
+  32:'第9条の改定履歴を現行の第32版・改定日と一致させ、公開履歴を第31版・第32版まで実際のGit履歴に合わせて整合しました。',
+  31:'AI機能、Cloudflare Workersバックエンド、公開文書の改定履歴および表示・操作UIを再照合し、実装と本文の不一致を修正しました。',
+  30:'第29版からの改定日・版番号の更新を反映し、外部サービス、認証メール、解析サービスおよびAI機能の記載を現行実装と照合しました。',
+  29:'外部サービスへ送信される情報と収集主体を現行Worker実装および各公式ポリシーに合わせて明確化しました。',
+  28:'旧「天命乃杜 AI案内」を廃止し、Cookie設定で許可した場合のみChatlingの標準ウィジェットとAI Agentによる匿名のAI案内を表示する運用へ変更しました。',
+  27:'Cookie同意、解析サービス、タイムゾーン、AI機能およびレート制限に関する記載を現行実装と照合し、公開文書の旧版履歴を整理しました。',
+  26:'Chatling移行後の本番JavaScript回帰とサービス状況判定を修正しました。',
+  25:'設定・文書・ステータスの追加前として記録されているプライバシーポリシーの版です。'
+ },
+ about:{
+  25:'2026年8月27日改定の現行「当サイトについて」本文として確認できる版です。',
+  24:'本文スナップショット未記録のため、内容を推測せず「本文未記録」としています。',
+  23:'設定・文書・ステータスの追加前に公開されていた版です。',
+  22:'AI案内の利用範囲とデータ取扱いを明記した版です。',
+  21:'軽量な静的翻訳データへ移行した版です。',
+  20:'翻訳モデルを自己配信へ移行した版です。',
+  19:'オンデバイス多言語表示へ移行した版です。',
+  18:'自動翻訳と公開文書の旧版閲覧を追加した版です。',
+  17:'「当サイトについて」を文書テンプレートへ刷新した版です。',
+  16:'更新の軌跡でVer.3.4のタグ表示が本文追記に追従していなかった不具合を修正した版です。',
+  15:'AI夢占いの免責注意書きを追加し、利用規約のAI免責範囲を拡充した版です。',
+  14:'Ver.3.3公開に伴う社務所だより・更新の軌跡の追加とプライバシーポリシー改訂を反映した版です。',
+  13:'PDFダウンロード機能の説明文をモバイル全般の表現に修正した版です。',
+  12:'サービス比較表を廃止し、自サイトの機能紹介に置き換えた版です。',
+  11:'パスワードハッシュ化の記述をSHA-256からPBKDF2に修正し、改定日を更新した版です。',
+  10:'広告非掲載の理由を説明する項目を追加した版です。',
+  9:'画像生成ライブラリをhtml2canvasからhtml-to-imageへ移行した版です。',
+  8:'Discordの連絡方針に関する記載を更新した版です。',
+  7:'「当サイトについて」の本文を更新した版です。',
+  6:'「当サイトについて」の本文を更新した版です。',
+  5:'「当サイトについて」の本文を更新した版です。',
+  4:'「当サイトについて」の本文を更新した版です。',
+  3:'「当サイトについて」の本文を更新した版です。'
+ }
+};
+const dates={
+ privacy:{32:'2026/09/26',31:'2026/09/25',30:'2026/09/13',29:'2026/08/29',28:'2026/08/28',27:'2026/08/28',26:'2026/08/28',25:'2026/08/27'},
+ about:{25:'2026/08/27',24:'本文未記録',23:'2026/08/26',22:'2026/08/26',21:'2026/08/26',20:'2026/08/26',19:'2026/08/26',18:'2026/08/26',17:'2026/08/14',16:'2026/07/26',15:'2026/07/25',14:'2026/07/19',13:'2026/07/11',12:'2026/07/11',11:'2026/07/11',10:'2026/06/20',9:'2026/06/06',8:'2026/05/01',7:'2026/01/25',6:'日付未記録',5:'日付未記録',4:'日付未記録',3:'日付未記録'}
+};
+function render(key,value){
+ const node=document.getElementById(key+'-revision-description');
+ if(!node)return;
+ const v=String(value), desc=descriptions[key]?.[v];
+ const date=dates[key]?.[v]||'日付未記録';
+ node.innerHTML=desc
+  ? '<strong>第'+v+'版 ・ '+date+'</strong><span>'+desc+'</span>'
+  : '<strong>第'+v+'版</strong><span>この版の改定内容は確認できません。</span>';
+}
+document.addEventListener('change',function(event){
+ if(event.target?.id==='privacy-revision-select')render('privacy',event.target.value);
+ if(event.target?.id==='about-revision-select')render('about',event.target.value);
+});
+document.addEventListener('DOMContentLoaded',function(){
+ render('privacy','32');
+ render('about','25');
+});
+})();
+</script></body>
 </html>
 <style id="tenmei-ui-unification-fix">
 /* Ver.4.0 cross-screen normalization: public documents, passport, and article AI summary. */
