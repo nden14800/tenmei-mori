@@ -28724,50 +28724,33 @@ function resetSearch() {
                 });
                 input.addEventListener('change', () => syncDate(state));
             };
-            let initialized = false;
-            const initialize = () => {
-                if (initialized) return;
-                initialized = true;
-                document.querySelectorAll('[data-control-kind="choice"]').forEach(buildChoice);
-                document.querySelectorAll('[data-control-kind="date"]').forEach(buildDate);
-                document.addEventListener('pointerdown', (event) => { if (activeRoot && !activeRoot.contains(event.target)) closeActive(false); });
-                document.addEventListener('click', (event) => {
-                    if (performance.now() >= suppressSyntheticTapUntil) return;
-                    suppressSyntheticTapUntil = 0;
-                    event.preventDefault();
-                    event.stopImmediatePropagation();
-                }, true);
-                document.addEventListener('keydown', (event) => { if (event.key === 'Escape' && activeRoot) closeActive(true); });
-            };
             const syncAll = () => {
                 choiceStates.forEach(syncChoice);
                 dateStates.forEach(syncDate);
             };
-            // 初期ロード時に全ページの選択肢を一気にDOM生成すると、iOSで数秒間メインスレッドが占有され、
-            // 最初のタップが無反応に見えることがある。初期表示中のコントロールだけ先に構築し、
-            // 非表示・未到達のコントロールは最初の操作時またはアイドル時に遅延構築する。
+            // 全コントロールを同じ初期化経路で即時構築する。
+            // 遅延構築を挟むと、iOS等で最初のpointerdownが「構築だけ」で消費され、
+            // 最初のタップが無反応に見えるため、操作可能な状態をDOM準備完了時に揃える。
             const roots = [...document.querySelectorAll('[data-control-kind="choice"], [data-control-kind="date"]')];
-            const isVisible = (root) => {
-                const style = getComputedStyle(root);
-                return style.display !== 'none' && style.visibility !== 'hidden' && root.offsetParent !== null;
-            };
             const buildRoot = (root) => {
                 if (!root || root.dataset.tenmeiControlReady === 'true') return;
                 if (root.dataset.controlKind === 'choice') buildChoice(root);
                 else if (root.dataset.controlKind === 'date') buildDate(root);
                 root.dataset.tenmeiControlReady = 'true';
             };
-            roots.filter(isVisible).forEach(buildRoot);
+            roots.forEach(buildRoot);
             document.addEventListener('pointerdown', (event) => {
-                const root = event.target.closest?.('[data-control-kind="choice"], [data-control-kind="date"]');
-                if (root) buildRoot(root);
+                if (activeRoot && !activeRoot.contains(event.target)) closeActive(false);
             }, true);
-            document.addEventListener('focusin', (event) => {
-                const root = event.target.closest?.('[data-control-kind="choice"], [data-control-kind="date"]');
-                if (root) buildRoot(root);
+            document.addEventListener('click', (event) => {
+                if (performance.now() >= suppressSyntheticTapUntil) return;
+                suppressSyntheticTapUntil = 0;
+                event.preventDefault();
+                event.stopImmediatePropagation();
             }, true);
-            const idle = window.requestIdleCallback || ((callback) => window.setTimeout(callback, 120));
-            idle(() => roots.forEach(buildRoot), { timeout: 1200 });
+            document.addEventListener('keydown', (event) => {
+                if (event.key === 'Escape' && activeRoot) closeActive(true);
+            });
             return { syncAll, closeActive };
         })();
         window.TenmeiCustomControls = TenmeiCustomControls;
