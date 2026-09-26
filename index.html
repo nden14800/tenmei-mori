@@ -28443,7 +28443,6 @@ function resetSearch() {
             let activeRoot = null;
             let typeaheadBuffer = '';
             let typeaheadTimer = null;
-            let suppressSyntheticTapUntil = 0;
             const choicePointerMoveTolerance = 10;
 
             const escapeHTML = (value) => String(value).replace(/[&<>'"]/g, (character) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;' }[character]));
@@ -28577,14 +28576,9 @@ function resetSearch() {
                     state.ignoreClickUntil = performance.now() + 500;
                 });
                 listbox.addEventListener('pointerup', (event) => {
-                    const pending = clearPendingPointer(event.pointerId);
-                    if (!pending || pending.moved) return;
-                    // iOSではpopoverを閉じた直後の合成clickが同じ座標の下層へ届くことがあるため、
-                    // タップ確定時だけ直後のclickをキャプチャ段階で一度だけ吸収する。
-                    event.preventDefault();
-                    event.stopPropagation();
-                    suppressSyntheticTapUntil = performance.now() + 700;
-                    selectChoice(state, pending.optionIndex);
+                    // 選択の確定はclick側で行う。pointerupでpopoverを閉じないことで、
+                    // iOSの後続clickをdocument全体で抑止する必要がなくなり、下層UIを巻き込まない。
+                    clearPendingPointer(event.pointerId);
                 });
                 listbox.addEventListener('pointercancel', (event) => {
                     clearPendingPointer(event.pointerId);
@@ -28724,21 +28718,9 @@ function resetSearch() {
                 });
                 input.addEventListener('change', () => syncDate(state));
             };
-            let initialized = false;
-            const initialize = () => {
-                if (initialized) return;
-                initialized = true;
-                document.querySelectorAll('[data-control-kind="choice"]').forEach(buildChoice);
-                document.querySelectorAll('[data-control-kind="date"]').forEach(buildDate);
-                document.addEventListener('pointerdown', (event) => { if (activeRoot && !activeRoot.contains(event.target)) closeActive(false); });
-                document.addEventListener('click', (event) => {
-                    if (performance.now() >= suppressSyntheticTapUntil) return;
-                    suppressSyntheticTapUntil = 0;
-                    event.preventDefault();
-                    event.stopImmediatePropagation();
-                }, true);
-                document.addEventListener('keydown', (event) => { if (event.key === 'Escape' && activeRoot) closeActive(true); });
-            };
+            document.addEventListener('keydown', (event) => {
+                if (event.key === 'Escape' && activeRoot) closeActive(true);
+            });
             const syncAll = () => {
                 choiceStates.forEach(syncChoice);
                 dateStates.forEach(syncDate);
@@ -28760,7 +28742,12 @@ function resetSearch() {
             roots.filter(isVisible).forEach(buildRoot);
             document.addEventListener('pointerdown', (event) => {
                 const root = event.target.closest?.('[data-control-kind="choice"], [data-control-kind="date"]');
-                if (root) buildRoot(root);
+                if (root) {
+                    if (activeRoot && activeRoot !== root) closeActive(false);
+                    buildRoot(root);
+                    return;
+                }
+                if (activeRoot && !activeRoot.contains(event.target)) closeActive(false);
             }, true);
             document.addEventListener('focusin', (event) => {
                 const root = event.target.closest?.('[data-control-kind="choice"], [data-control-kind="date"]');
