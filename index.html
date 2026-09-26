@@ -36110,7 +36110,7 @@ try {
 
         async function loadDocumentHistoryArchive() {
             if (documentHistoryState.archive) return documentHistoryState.archive;
-            const response = await fetch(DOCUMENT_HISTORY_URL, { credentials: 'same-origin', cache: 'force-cache' });
+            const response = await fetch(DOCUMENT_HISTORY_URL, { credentials: 'same-origin', cache: 'no-store' });
             if (!response.ok) throw new Error(`archive_http_${response.status}`);
             const archive = await response.json();
             if (!archive || !archive.documents || typeof archive.documents !== 'object') throw new Error('archive_invalid');
