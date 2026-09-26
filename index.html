@@ -29259,29 +29259,36 @@ ${getShareUrl()}`;
             resultArea.classList.remove('hidden', 'is-loading');
             resultArea.classList.add('tenmei-ai-response');
             resultArea.innerHTML = `
-                <div id="summary-result-card" class="tenmei-ai-response">
+
                     <div class="tenmei-ai-response-head">
                         <span class="tenmei-ai-response-kicker"><i class="bi bi-stars" aria-hidden="true"></i>ARTICLE SUMMARY</span>
-                        <button type="button" class="tenmei-ai-info-btn" onclick="toggleSummaryInfo(this)" title="このAI要約について" aria-expanded="false">
+                        <button type="button" class="tenmei-ai-info-btn" data-ai-info-toggle title="このAI回答について" aria-expanded="false">
                             <i class="bi bi-info-circle" aria-hidden="true"></i><span>情報</span>
                         </button>
                     </div>
                     <p data-ai-response-text class="tenmei-ai-response-text">${escapeHtml(data.summary_text || '')}</p>
                     <div class="tenmei-ai-response-actions" aria-label="AI要約の評価">
                         <span class="tenmei-ai-response-actions-label">この要約はいかがでしたか？</span>
-                        <button type="button" data-vote="like" onclick="handleSummaryVote('${type}', ${id}, 'like', this)" class="tenmei-ai-rate-btn summary-vote-btn" aria-pressed="false"><i class="bi bi-hand-thumbs-up" aria-hidden="true"></i><span>役に立った</span></button>
-                        <button type="button" data-vote="dislike" onclick="handleSummaryVote('${type}', ${id}, 'dislike', this)" class="tenmei-ai-rate-btn summary-vote-btn" aria-pressed="false"><i class="bi bi-hand-thumbs-down" aria-hidden="true"></i><span>改善してほしい</span></button>
+                        <button type="button" data-vote="like" class="tenmei-ai-rate-btn summary-vote-btn" aria-pressed="false"><i class="bi bi-hand-thumbs-up" aria-hidden="true"></i><span>役に立った</span></button>
+                        <button type="button" data-vote="dislike" class="tenmei-ai-rate-btn summary-vote-btn" aria-pressed="false"><i class="bi bi-hand-thumbs-down" aria-hidden="true"></i><span>改善してほしい</span></button>
                     </div>
                     <div class="summary-vote-detail hidden"></div>
                     <div class="tenmei-ai-info-panel summary-info hidden" data-ai-info-panel>
-                        <p><strong>AIによる記事要約</strong></p>
+                        <p><strong>AIによる回答</strong></p>
                         <p>使用モデル：${escapeHtml(data.model_used || '不明')}</p>
                         <p>文字数：${originalCount}文字 → ${summaryCount}文字${ratio !== null ? `（約${ratio}%に要約）` : ''}</p>
                         ${responseTime !== null ? `<p>応答時間：約${responseTime}秒</p>` : ''}
-                        <p>AIの回答には間違いが含まれている場合があります。</p>
+                        <p>AIが入力内容をもとに生成した回答です。内容の正確性を保証するものではありません。</p>
                     </div>
-                </div>
-            `;            resultArea.querySelectorAll('[data-vote]').forEach(btn => {
+            `;            const infoBtn = resultArea.querySelector('[data-ai-info-toggle]');
+            const infoPanel = resultArea.querySelector('[data-ai-info-panel]');
+            infoBtn?.addEventListener('click', () => {
+                const opening = infoPanel.classList.contains('hidden');
+                infoPanel.classList.toggle('hidden', !opening);
+                infoBtn.setAttribute('aria-expanded', String(opening));
+            });
+
+            resultArea.querySelectorAll('[data-vote]').forEach(btn => {
                 btn.addEventListener('click', () => {
                     resultArea.querySelectorAll('[data-vote]').forEach(b => {
                         b.classList.remove('is-selected');
@@ -29294,14 +29301,6 @@ ${getShareUrl()}`;
             });
         }
 
-        function toggleSummaryInfo(btn) {
-            const card = btn.closest('#summary-result-card');
-            const info = card ? card.querySelector('.summary-info') : null;
-            if (!info) return;
-            const opening = info.classList.contains('hidden');
-            info.classList.toggle('hidden', !opening);
-            btn.setAttribute('aria-expanded', String(opening));
-        }
 
         async function sendSummaryVote(type, id, vote, detailText) {
             try {
@@ -29320,7 +29319,7 @@ ${getShareUrl()}`;
         }
 
         function handleSummaryVote(type, id, vote, btnEl) {
-            const card = btnEl.closest('#summary-result-card');
+            const card = btnEl.closest('#summary-result') || btnEl.closest('.tenmei-ai-response');
             const detailArea = card ? card.querySelector('.summary-vote-detail') : null;
             if (!card || !detailArea) return;
 
