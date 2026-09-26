@@ -15870,12 +15870,12 @@ body.sidebar-collapsed.sidebar-pinned #sidebar .nav-group-title {
                     <article class="home-v4-counter home-v4-counter--worshippers">
                         <div class="home-v4-counter-icon"><i class="bi bi-people-fill" aria-hidden="true"></i></div>
                         <div class="home-v4-counter-copy"><p>累計参拝者数</p><strong id="worshipper-counter">---</strong></div>
-                        <div class="home-v4-counter-meta"><span><i class="bi bi-circle-fill" aria-hidden="true"></i>更新：<span class="counter-update-time">--:--:--</span></span><span><i class="bi bi-arrow-counterclockwise" aria-hidden="true"></i>最終リセット：2026/1/25</span></div>
+                        <div class="home-v4-counter-meta"><span><i class="bi bi-circle-fill" aria-hidden="true"></i>更新間隔：60秒</span><span><i class="bi bi-arrow-counterclockwise" aria-hidden="true"></i>最終更新：<span class="counter-update-time">--:--:--</span></span></div>
                     </article>
                     <article class="home-v4-counter home-v4-counter--draws">
                         <div class="home-v4-counter-icon"><i class="bi bi-layers-fill" aria-hidden="true"></i></div>
                         <div class="home-v4-counter-copy"><p>おみくじ発行総数</p><strong id="live-counter">---</strong></div>
-                        <div class="home-v4-counter-meta"><span><i class="bi bi-circle-fill" aria-hidden="true"></i>更新：<span class="counter-update-time">--:--:--</span></span><span><i class="bi bi-arrow-counterclockwise" aria-hidden="true"></i>最終リセット：2026/1/25</span></div>
+                        <div class="home-v4-counter-meta"><span><i class="bi bi-circle-fill" aria-hidden="true"></i>更新間隔：60秒</span><span><i class="bi bi-arrow-counterclockwise" aria-hidden="true"></i>最終更新：<span class="counter-update-time">--:--:--</span></span></div>
                     </article>
                 </section>
 
@@ -15885,7 +15885,7 @@ body.sidebar-collapsed.sidebar-pinned #sidebar .nav-group-title {
                         <span id="today-anniv-date" class="home-v4-section-note"></span>
                     </div>
                     <div id="today-anniv-body" class="home-v4-anniv-list"><span>読み込み中...</span></div>
-                    <p class="home-v4-source"><a href="https://www.whatistoday.cyou/" target="_blank" rel="noopener">powered by 今日は何の日API</a></p>
+                    <p class="home-v4-source"><a href="https://api.whatistoday.cyou/index.cgi/" target="_blank" rel="noopener">powered by whatistodayAPI</a></p>
                 </section>
 
                 <section class="home-v4-section-card" aria-labelledby="home-shortcuts-title">
@@ -27375,29 +27375,6 @@ function showLoading(show) {
             }
         }
 
-        // --- ライブカウンター (API連携) ---
-        function startLiveCounter() {
-            const el = document.getElementById('live-counter');
-            const timeEl = document.getElementById('counter-time');
-            
-            fetchCount();
-            setInterval(fetchCount, 60000);
-
-            async function fetchCount() {
-                const now = new Date();
-                timeEl.textContent = now.toLocaleTimeString();
-                try {
-                    const res = await fetch(`${API_BASE}/api/counter`);
-                    if(res.ok) {
-                        const data = await res.json();
-                        // サーバーの値をそのまま表示
-                        currentState.liveCount = (data.count || 0);
-                        el.textContent = currentState.liveCount.toLocaleString() + "本";
-                    }
-                } catch(e) { console.error(e); }
-            }
-        }
-
         // 修正版 fetchHistoryStats
 async function fetchHistoryStats() {
     try {
@@ -32043,6 +32020,9 @@ async function renderSettingsDashboard() {
     }
 
 
+        // カウンターAPIの更新間隔は60秒。画面上の「更新間隔：60秒」と同じ値を使用する。
+        const COUNTER_REFRESH_INTERVAL_MS = 60 * 1000;
+
         async function startLiveCounter() {
     const el = document.getElementById('live-counter'); 
     const uEl = document.getElementById('worshipper-counter'); 
@@ -32075,7 +32055,7 @@ async function renderSettingsDashboard() {
     // 初回実行時にチャート初期化
     LiveChart.init(); 
     fetchCount();
-    setInterval(fetchCount, 60000);
+    setInterval(fetchCount, COUNTER_REFRESH_INTERVAL_MS);
 }
 
 // ★New!24: 今日は何の日
