@@ -10887,245 +10887,74 @@ body.sidebar-collapsed.sidebar-pinned #sidebar .nav-group-title {
     }
 
     /* ==========================================
-       記事 読書ナビゲーション（社務所だより／神籤草子 共通）
-       本文領域を押し下げて上部に常設し、進捗率と残り時間を
-       常時見せながら、本文へ一切重ならないようにする。
+       記事 読書進捗
+       一般的な記事サイトに合わせ、本文を邪魔しない最小表示。
        ========================================== */
-    body.reading-progress-active #main-content {
-        padding-top: 72px;
-        transition: padding-top 0.2s ease-out;
-    }
-    body.reading-progress-active.reading-progress-details-open #main-content {
-        padding-top: 182px;
-    }
+    body.reading-progress-active #main-content { padding-top: 0; }
     #reading-progress-badge {
-        --reading-progress: 0%;
         position: fixed;
-        top: 8px;
-        left: 50%;
+        top: 10px;
+        right: 18px;
         z-index: 10000;
-        display: grid;
-        grid-template-columns: 38px minmax(0, 1fr) auto;
+        display: inline-flex;
         align-items: center;
-        column-gap: 10px;
-        width: min(660px, calc(100vw - 120px));
-        min-height: 44px;
-        box-sizing: border-box;
-        padding: 5px 13px 5px 6px;
-        border: 1px solid color-mix(in srgb, var(--accent-gold) 31%, var(--border-color, #a18c78));
-        border-radius: 16px;
-        background: color-mix(in srgb, var(--card-bg, #fff) 96%, transparent);
-        box-shadow: 0 8px 22px rgba(75, 45, 31, 0.10);
-        color: var(--text-primary, #3f342b);
+        gap: 8px;
+        min-height: 30px;
+        padding: 0 10px;
+        border: 1px solid color-mix(in srgb, var(--border-color, #c9c0b8) 70%, transparent);
+        border-radius: 999px;
+        background: color-mix(in srgb, var(--card-bg, #fff) 94%, transparent);
+        color: var(--text-sub, #766965);
         font-family: 'Zen Kaku Gothic New', sans-serif;
+        font-size: 0.66rem;
+        font-weight: 700;
+        backdrop-filter: blur(10px);
+        box-shadow: 0 3px 12px rgba(0,0,0,.06);
         opacity: 0;
         pointer-events: none;
-        transform: translate(-50%, -16px);
-        transition: opacity 0.22s ease-out, transform 0.22s ease-out, background 0.2s ease-out;
+        transform: translateY(-6px);
+        transition: opacity .18s ease, transform .18s ease;
     }
-    #reading-progress-badge.active { opacity: 1; transform: translate(-50%, 0); }
-    #reading-progress-badge .rp-orbit {
-        position: relative;
-        display: grid;
-        place-items: center;
-        width: 34px;
-        height: 34px;
-        border-radius: 10px;
-        background: color-mix(in srgb, var(--accent-red) 7%, var(--card-bg, #fff));
-        box-shadow: none;
-    }
-    #reading-progress-badge .rp-ring {
-        position: absolute;
-        inset: 0;
-        width: 100%;
-        height: 100%;
-        overflow: visible;
-        transform: rotate(-90deg);
-    }
-    #reading-progress-badge .rp-ring-track,
-    #reading-progress-badge .rp-ring-progress {
-        fill: none;
-        stroke-width: 3;
-    }
-    #reading-progress-badge .rp-ring-track {
-        stroke: color-mix(in srgb, var(--accent-gold) 18%, transparent);
-    }
-    #reading-progress-badge .rp-ring-progress {
-        stroke: var(--accent-red);
-        stroke-linecap: round;
-        stroke-dasharray: 94.248;
-        stroke-dashoffset: 94.248;
-        transition: stroke-dashoffset 0.16s ease-out, stroke 0.2s ease-out;
-    }
-    #reading-progress-badge .rp-percent {
-        position: relative;
-        z-index: 1;
-        color: var(--accent-red);
-        font-size: 0.64rem;
-        font-weight: 800;
+    #reading-progress-badge.active { opacity: 1; transform: translateY(0); }
+    #reading-progress-badge strong {
+        color: var(--text-main, #322725);
+        font-size: .68rem;
         font-variant-numeric: tabular-nums;
-        letter-spacing: -0.02em;
     }
-    #reading-progress-badge .rp-copy {
-        display: grid;
-        gap: 1px;
-        min-width: 0;
-    }
-    #reading-progress-badge .rp-kicker {
-        display: inline-flex;
-        align-items: center;
-        gap: 5px;
-        color: var(--text-sub, #766965);
-        font-size: 0.58rem;
-        font-weight: 800;
-        letter-spacing: 0.08em;
-        line-height: 1.1;
-    }
-    #reading-progress-badge .rp-readout {
-        display: flex;
-        align-items: baseline;
-        min-width: 0;
-    }
-    #reading-progress-badge .rp-time {
-        min-width: 0;
-        overflow: hidden;
-        flex: 1 1 auto;
-        color: color-mix(in srgb, var(--text-primary, #3f342b) 84%, var(--accent-gold));
-        font-size: 0.72rem;
-        font-weight: 700;
-        letter-spacing: 0.04em;
-        line-height: 1.25;
-        text-overflow: ellipsis;
-        white-space: nowrap;
-    }
-    #reading-progress-badge .rp-details-toggle {
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        gap: 5px;
-        min-height: 28px;
-        padding: 0 8px;
-        border: 1px solid color-mix(in srgb, var(--border-color, #a18c78) 68%, transparent);
-        border-radius: 8px;
-        background: transparent;
-        color: color-mix(in srgb, var(--accent-red) 82%, var(--text-primary, #3f342b));
-        font-family: inherit;
-        font-size: 0.62rem;
-        font-weight: 800;
-        letter-spacing: 0.04em;
-        pointer-events: auto;
-        transition: background 0.16s ease-out, border-color 0.16s ease-out, transform 0.16s ease-out;
-    }
-    #reading-progress-badge .rp-details-toggle:hover,
-    #reading-progress-badge .rp-details-toggle[aria-expanded="true"] {
-        border-color: color-mix(in srgb, var(--accent-red) 42%, var(--accent-gold));
-        background: color-mix(in srgb, var(--accent-red) 11%, transparent);
-    }
-    #reading-progress-badge .rp-details-toggle:active { transform: scale(0.97); }
-    #reading-progress-badge.is-complete .rp-time { color: var(--accent-gold); }
-
-    .rp-details {
-        position: fixed;
-        top: 67px;
-        left: 50%;
-        z-index: 10000;
-        width: min(660px, calc(100vw - 120px));
-        box-sizing: border-box;
-        padding: 13px 14px 12px;
-        border: 1px solid color-mix(in srgb, var(--accent-gold) 31%, var(--border-color, #a18c78));
-        border-radius: 0 0 16px 16px;
-        background: var(--card-bg, #fff);
-        box-shadow: 0 12px 28px rgba(75, 45, 31, 0.12);
-        color: var(--text-primary, #3f342b);
-        font-family: 'Zen Kaku Gothic New', sans-serif;
-        transform: translateX(-50%);
-    }
-    .rp-details[hidden] { display: none; }
-    .rp-details-head { display: flex; align-items: flex-start; gap: 12px; }
-    .rp-details-head p { margin: 0; color: var(--text-primary, #3f342b); font-family: 'Noto Serif JP', serif; font-size: 0.88rem; font-weight: 700; }
-    .rp-details-head small { display: block; margin-top: 2px; color: color-mix(in srgb, var(--text-primary, #3f342b) 62%, var(--accent-gold)); font-size: 0.62rem; }
-    .rp-pace-stats { display: grid; grid-template-columns: minmax(0, 1fr); gap: 6px; margin: 10px 0 0; }
-    .rp-pace-stats > div { min-width: 0; padding: 7px 8px; border: 1px solid color-mix(in srgb, var(--border-color, #a18c78) 48%, transparent); border-radius: 9px; background: color-mix(in srgb, var(--accent-gold) 5%, transparent); }
-    .rp-pace-stats dt { color: color-mix(in srgb, var(--text-primary, #3f342b) 58%, var(--accent-gold)); font-size: 0.52rem; font-weight: 700; line-height: 1.2; }
-    .rp-pace-stats dd { overflow: hidden; margin: 3px 0 0; color: var(--text-primary, #3f342b); font-size: 0.68rem; font-weight: 800; line-height: 1.3; text-overflow: ellipsis; white-space: nowrap; }
-    .rp-details-note { display: flex; align-items: flex-start; gap: 5px; margin: 9px 0 0; padding-top: 8px; border-top: 1px solid color-mix(in srgb, var(--border-color, #a18c78) 42%, transparent); color: color-mix(in srgb, var(--text-primary, #3f342b) 67%, var(--accent-gold)); font-size: 0.57rem; line-height: 1.55; }
-    .rp-details-note i { margin-top: 1px; color: var(--accent-gold); }
-
     #reading-progress-bar {
         position: fixed;
-        top: 57px;
-        left: 50%;
+        top: 0;
+        left: 0;
         z-index: 10001;
-        width: min(660px, calc(100vw - 120px));
-        height: 3px;
+        width: 100%;
+        height: 2px;
         overflow: hidden;
-        border-radius: 999px;
-        background: color-mix(in srgb, var(--border-color, #a18c78) 28%, transparent);
+        background: color-mix(in srgb, var(--border-color, #a18c78) 22%, transparent);
         opacity: 0;
         pointer-events: none;
-        transform: translateX(-50%);
-        transition: opacity 0.2s ease-out;
+        transition: opacity .18s ease;
     }
     #reading-progress-bar.active { opacity: 1; }
     #reading-progress-fill {
         height: 100%;
-        width: 0%;
-        border-radius: inherit;
-        background: linear-gradient(90deg, var(--accent-red), var(--accent-gold));
-        box-shadow: 0 0 9px rgba(197,160,89,0.58);
-        transition: width 0.16s ease-out;
+        width: 0;
+        background: var(--accent-red);
+        transition: width .12s linear;
     }
-    #reading-progress-fill.is-complete { animation: reading-progress-complete-pulse 0.8s ease; }
-    @keyframes reading-progress-complete-pulse {
-        0% { box-shadow: 0 0 7px rgba(197,160,89,0.5); }
-        48% { box-shadow: 0 0 15px 3px rgba(197,160,89,0.88), 0 0 22px 4px rgba(185,28,28,0.3); }
-        100% { box-shadow: 0 0 7px rgba(197,160,89,0.5); }
-    }
+    #reading-progress-fill.is-complete { background: var(--accent-gold); }
     .dark #reading-progress-badge {
-        background: linear-gradient(112deg, rgba(27,22,22,0.98), rgba(70,45,31,0.92));
-        border-color: rgba(229,199,128,0.32);
-        box-shadow: 0 12px 30px rgba(0,0,0,0.42), inset 0 1px 0 rgba(255,255,255,0.07);
-        color: #eee6da;
+        background: color-mix(in srgb, var(--card-bg, #171414) 92%, transparent);
+        border-color: color-mix(in srgb, var(--border-color, #5c514c) 80%, transparent);
+        box-shadow: 0 4px 14px rgba(0,0,0,.22);
     }
-    .dark #reading-progress-badge .rp-orbit { background: #201919; }
-    .dark #reading-progress-badge .rp-kicker { color: #e7c873; }
-    .dark #reading-progress-badge .rp-time { color: #eee6da; }
-    .dark #reading-progress-badge .rp-details-toggle { border-color: rgba(229,199,128,0.34); background: rgba(229,199,128,0.08); color: #f0d68e; }
-    .dark .rp-details { background: linear-gradient(135deg, rgba(31,24,25,0.99), rgba(62,41,29,0.97)); border-color: rgba(229,199,128,0.31); box-shadow: 0 16px 34px rgba(0,0,0,0.45); color: #eee6da; }
-    .dark .rp-details-head p, .dark .rp-pace-stats dd { color: #eee6da; }
-    .dark .rp-details-head small, .dark .rp-details-note { color: rgba(238,230,218,0.7); }
-    .dark .rp-pace-stats > div { background: rgba(229,199,128,0.1); border-color: rgba(229,199,128,0.22); }
-    .dark .rp-pace-stats dt { color: rgba(238,230,218,0.63); }
-    .dark .rp-details-note { border-top-color: rgba(255,255,255,0.14); }
-    .dark #reading-progress-bar { background: rgba(255,255,255,0.14); }
-
-    @media (max-width: 640px) {
-        body.reading-progress-active #main-content { padding-top: 68px; }
-        body.reading-progress-active.reading-progress-details-open #main-content { padding-top: 196px; }
-        #reading-progress-badge {
-            top: 7px;
-            grid-template-columns: 34px minmax(0, 1fr) auto;
-            column-gap: 8px;
-            width: calc(100vw - 20px);
-            min-height: 40px;
-            padding: 4px 10px 4px 5px;
-            border-radius: 14px;
-        }
-        #reading-progress-badge .rp-orbit { width: 30px; height: 30px; }
-        #reading-progress-badge .rp-percent { font-size: 0.57rem; }
-        #reading-progress-badge .rp-details-toggle { min-height: 27px; padding: 0 7px; font-size: 0.58rem; }
-        .rp-details { top: 62px; width: calc(100vw - 20px); padding: 11px 11px 10px; border-radius: 0 0 14px 14px; }
-        .rp-details-note { font-size: 0.54rem; }
-        #reading-progress-badge .rp-kicker { display: none; }
-        #reading-progress-badge .rp-time { font-size: 0.68rem; }
-        #reading-progress-badge .rp-progress-readout { gap: 4px; padding-left: 8px; font-size: 0.77rem; }
-        #reading-progress-bar { top: 52px; width: calc(100vw - 20px); }
+    .dark #reading-progress-badge strong { color: var(--text-main, #f4eee9); }
+    @media (max-width: 760px) {
+        #reading-progress-badge { top: 7px; right: 10px; min-height: 28px; padding: 0 9px; }
     }
     @media (prefers-reduced-motion: reduce) {
-        body.reading-progress-active #main-content,
+        #reading-progress-badge,
         #reading-progress-bar,
-        #reading-progress-fill,
-        #reading-progress-badge { transition: none !important; animation: none !important; }
+        #reading-progress-fill { transition: none !important; }
     }
 
     /* ==========================================
@@ -11164,59 +10993,126 @@ body.sidebar-collapsed.sidebar-pinned #sidebar .nav-group-title {
     }
 
     /* ==========================================
-       記事本文の目次（社務所だより・神籤草子 共通）
-       読書を妨げない、シンプルなリスト型ナビゲーション
+       Phase 5: シンプルな記事読書レイアウト
        ========================================== */
-    .article-toc-unified > div {
-        padding: 1rem !important;
-        border: 1px solid var(--card-border) !important;
-        border-radius: 14px !important;
-        background: color-mix(in srgb, var(--card-bg) 97%, transparent) !important;
-        box-shadow: none !important;
+    .article-reading-layout {
+        display: grid;
+        grid-template-columns: minmax(0, 680px) 180px;
+        justify-content: center;
+        align-items: start;
+        gap: clamp(2rem, 5vw, 4.5rem);
     }
+    .article-reading-main { min-width: 0; grid-column: 1; grid-row: 1; }
+    .article-toc-sidebar {
+        position: sticky;
+        top: 84px;
+        grid-column: 2;
+        grid-row: 1;
+        min-width: 0;
+        order: 2;
+    }
+    .article-toc-sidebar[hidden] { display: none !important; }
+    .article-toc-unified { width: 100%; margin: 0; }
+    .article-toc-panel {
+        padding: 0;
+        border: 0;
+        background: transparent;
+    }
+    .article-toc-toggle { display: none; }
     .article-toc-unified__title {
-        display: flex;
-        align-items: center;
-        gap: 0.45rem;
-        margin: 0 0 0.65rem !important;
+        margin: 0 0 .7rem !important;
+        padding-bottom: .55rem;
+        border-bottom: 1px solid var(--border-color);
         color: var(--text-sub) !important;
         font-family: 'Zen Kaku Gothic New', sans-serif !important;
-        font-size: 0.72rem !important;
+        font-size: .68rem !important;
         font-weight: 800 !important;
-        letter-spacing: 0.08em;
-        text-transform: uppercase;
+        letter-spacing: .08em;
     }
     .article-toc-unified__list {
-        display: grid;
-        grid-template-columns: repeat(2, minmax(0, 1fr));
-        gap: 0.2rem 1rem;
+        display: flex;
+        flex-direction: column;
+        gap: 0;
         margin: 0;
         padding: 0;
         list-style: none;
     }
-    .article-toc-unified__item { min-width: 0; margin: 0; }
-    .article-toc-unified__item--sub { grid-column: auto; }
+    .article-toc-unified__item { margin: 0; }
+    .article-toc-unified__item--sub { display: none; }
     .article-toc-unified__link {
-        display: grid;
-        grid-template-columns: 1.2rem minmax(0, 1fr);
-        align-items: start;
-        gap: 0.25rem;
-        min-height: 36px;
-        padding: 0.45rem 0.3rem;
-        border-radius: 8px;
-        color: var(--text-main) !important;
+        display: block;
+        padding: .42rem .55rem;
+        border-left: 1px solid var(--border-color);
+        border-radius: 0;
+        color: var(--text-sub) !important;
         font-family: 'Zen Kaku Gothic New', sans-serif !important;
-        font-size: 0.82rem !important;
-        font-weight: 650;
-        line-height: 1.45 !important;
+        font-size: .72rem !important;
+        font-weight: 500;
+        line-height: 1.55 !important;
         text-decoration: none;
-        transition: background-color 140ms ease, color 140ms ease;
+        transition: color .14s ease, border-color .14s ease, background-color .14s ease;
     }
-    .article-toc-unified__link i { margin-top: 0.18rem; color: var(--accent-red); font-size: 0.68rem; }
-    .article-toc-unified__item--sub .article-toc-unified__link { padding-left: 0.9rem; color: var(--text-sub) !important; font-size: 0.75rem !important; font-weight: 600; }
-    .article-toc-unified__link:hover { color: var(--accent-red) !important; background: color-mix(in srgb, var(--accent-red) 7%, transparent); }
-    .article-toc-unified__link:focus-visible { outline: 2px solid var(--accent-red); outline-offset: 2px; }
-    @media (max-width: 640px) { .article-toc-unified__list { grid-template-columns: 1fr; } }
+    .article-toc-unified__link:hover {
+        color: var(--text-main) !important;
+        background: transparent;
+    }
+    .article-toc-unified__link.is-active {
+        color: var(--accent-red) !important;
+        border-left: 2px solid var(--accent-red);
+        background: transparent;
+        font-weight: 700;
+        box-shadow: none;
+    }
+    .article-toc-unified__link i { display: none; }
+    .article-toc-unified__link:focus-visible {
+        outline: 2px solid var(--accent-red);
+        outline-offset: 2px;
+    }
+    @media (max-width: 1080px) {
+        .article-reading-layout {
+            grid-template-columns: minmax(0, 680px);
+            justify-content: center;
+        }
+        .article-reading-main { grid-column: 1; }
+        .article-toc-sidebar {
+            position: relative;
+            top: auto;
+            grid-column: 1;
+            grid-row: 1;
+            margin-bottom: 1rem;
+        }
+        .article-toc-unified__title { display: none; }
+        .article-toc-toggle {
+            display: flex;
+            width: 100%;
+            min-height: 40px;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 .1rem .55rem;
+            border: 0;
+            border-bottom: 1px solid var(--border-color);
+            border-radius: 0;
+            background: transparent;
+            color: var(--text-main);
+            font-family: 'Zen Kaku Gothic New', sans-serif;
+            font-size: .74rem;
+            font-weight: 700;
+            cursor: pointer;
+        }
+        .article-toc-toggle > span { display: inline-flex; align-items: center; }
+        .article-toc-toggle > i { transition: transform .14s ease; }
+        .article-toc-toggle.is-open > i { transform: rotate(180deg); }
+        .article-toc-panel { margin-top: .45rem; padding: 0; }
+        .article-toc-panel[hidden] { display: none !important; }
+        .article-toc-unified__list { padding: .15rem 0 .2rem; }
+        .article-toc-unified__link { padding: .38rem .55rem; }
+    }
+    @media (max-width: 760px) {
+        .article-reading-layout { display: block; }
+        .article-toc-sidebar { margin-bottom: 1rem; }
+        .article-toc-toggle { min-height: 38px; font-size: .72rem; }
+        .article-toc-unified__link { font-size: .71rem !important; }
+    }
 
     /* 記事本文冒頭のメタ情報（文字数・読了目安） */
     .article-meta-readinfo {
@@ -13447,17 +13343,11 @@ body.sidebar-collapsed.sidebar-pinned #sidebar .nav-group-title {
 
     <a class="sidebar-v4-skip-link" href="#main-content">本文へ移動</a>
 
-    <!-- 記事 読書ナビゲーション（本文と重ならない予約領域へ常時表示） -->
+    <!-- 記事 読書進捗（記事閲覧時のみ表示） -->
     <div id="reading-progress-badge" aria-label="現在の読書進捗">
-        <span class="rp-orbit" aria-hidden="true"><svg class="rp-ring" viewBox="0 0 36 36" focusable="false"><circle class="rp-ring-track" cx="18" cy="18" r="15"></circle><circle id="reading-progress-ring" class="rp-ring-progress" cx="18" cy="18" r="15"></circle></svg><span id="reading-progress-percent" class="rp-percent">0%</span></span>
-        <span class="rp-copy"><span class="rp-kicker"><i class="bi bi-bookmark" aria-hidden="true"></i> 読書中</span><span class="rp-readout"><span id="reading-progress-time" class="rp-time">残り約0分</span></span></span>
-        <button id="reading-progress-details-toggle" class="rp-details-toggle" type="button" aria-expanded="false" aria-controls="reading-progress-details"><i class="bi bi-info-circle" aria-hidden="true"></i><span>詳細</span></button>
+        <span>読書中</span>
+        <strong id="reading-progress-percent">0%</strong>
     </div>
-    <section id="reading-progress-details" class="rp-details" aria-label="読書時間の目安" hidden>
-        <div class="rp-details-head"><div><p>読書時間の目安</p><small>本文量を固定の標準速度で換算しています</small></div></div>
-        <dl class="rp-pace-stats"><div><dt>標準速度</dt><dd id="reading-progress-standard-speed">500字／分</dd></div></dl>
-        <p class="rp-details-note"><i class="bi bi-info-circle" aria-hidden="true"></i> 残り時間は、本文を1分あたり500字で読む場合の目安です。画像がある記事では、閲覧時間も加算しています。</p>
-    </section>
     <div id="reading-progress-bar" role="progressbar" aria-label="記事の読書進捗" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"><div id="reading-progress-fill"></div></div>
 
     <!-- 幽玄の霧コンテナ (高密度版) -->
@@ -25525,8 +25415,11 @@ window.renderFullColumnView = function() {
                             </div>
                             <div id="summary-result" class="hidden mt-4"></div>
                         </section>
-                        <div class="news-chronicle-body">
-                            <div class="article-content prose dark:prose-invert max-w-none leading-loose text-justify">${item.content}</div>
+                        <div class="article-reading-layout">
+                            <aside class="article-toc-sidebar" aria-label="記事の目次"></aside>
+                            <div class="news-chronicle-body article-reading-main">
+                                <div class="article-content prose dark:prose-invert max-w-none leading-loose text-justify">${item.content}</div>
+                            </div>
                         </div>
                     </article>`;
             } else {
@@ -25559,8 +25452,11 @@ window.renderFullColumnView = function() {
                             </div>
                             <div id="summary-result" class="hidden mt-4"></div>
                         </section>
-                        <div class="column-reader-body">
-                            <div class="article-content prose dark:prose-invert max-w-none leading-loose text-justify" data-column-color="${colorKey}">${item.content}</div>
+                        <div class="article-reading-layout">
+                            <aside class="article-toc-sidebar" aria-label="記事の目次"></aside>
+                            <div class="column-reader-body article-reading-main">
+                                <div class="article-content prose dark:prose-invert max-w-none leading-loose text-justify" data-column-color="${colorKey}">${item.content}</div>
+                            </div>
                         </div>
                     </article>`;
             }            // ★修正: 記事本文はフォント読み込み確定後にフェードイン表示することで、
@@ -25588,7 +25484,7 @@ window.renderFullColumnView = function() {
             showView('article-detail');
             window.scrollTo(0, 0);
             buildArticleTOC();
-            startReadingProgress(readingMeta);
+            startReadingProgress();
         }
     };
 
@@ -27151,36 +27047,23 @@ function showLoading(show) {
         // ==========================================
         //  記事 読書進捗トラッキング (社務所だより／神籤草子 共通)
         // ==========================================
-        const STANDARD_ARTICLE_READING_SPEED = 500;
         const readingProgressState = {
             contentEl: null,
             progressStartEl: null,
             progressEndEl: null,
-            totalMinutes: 1,
-            charCount: 0,
-            imageSeconds: 0,
             ticking: false,
             reachedComplete: false
         };
 
-        function startReadingProgress(readingMeta) {
-            stopReadingProgress(); // 念のため既存のリスナーを解除してから開始
-
+        function startReadingProgress() {
+            stopReadingProgress();
             const el = document.querySelector('#article-detail-content .article-content');
             if (!el) return;
 
-            const meta = typeof readingMeta === 'object' && readingMeta ? readingMeta : { readMinutes: readingMeta };
-            // 目次は本文を読むための補助導線であり、読書進捗・残り時間の対象には含めない。
-            const readingChildren = Array.from(el.children).filter(child => !child.classList.contains('article-toc-unified'));
             readingProgressState.contentEl = el;
-            readingProgressState.progressStartEl = readingChildren[0] || el;
-            readingProgressState.progressEndEl = readingChildren[readingChildren.length - 1] || el;
-            readingProgressState.totalMinutes = Math.max(1, Number(meta.readMinutes) || 1);
-            readingProgressState.charCount = Math.max(1, Number(meta.charCount) || Math.round(readingProgressState.totalMinutes * STANDARD_ARTICLE_READING_SPEED));
-            readingProgressState.imageSeconds = Math.max(0, Number(meta.imageSeconds) || 0);
+            readingProgressState.progressStartEl = el;
+            readingProgressState.progressEndEl = el;
             readingProgressState.reachedComplete = false;
-            setupReadingProgressControls();
-            setReadingProgressDetails(false);
 
             const bar = document.getElementById('reading-progress-bar');
             const badge = document.getElementById('reading-progress-badge');
@@ -27192,7 +27075,7 @@ function showLoading(show) {
             document.body.classList.add('reading-progress-active');
 
             window.addEventListener('scroll', onReadingProgressScroll, { passive: true });
-            updateReadingProgress(); // 初期表示
+            updateReadingProgress();
         }
 
         function stopReadingProgress() {
@@ -27202,46 +27085,20 @@ function showLoading(show) {
             readingProgressState.progressEndEl = null;
             readingProgressState.ticking = false;
             readingProgressState.reachedComplete = false;
-            setReadingProgressDetails(false);
 
             const bar = document.getElementById('reading-progress-bar');
             const badge = document.getElementById('reading-progress-badge');
             const fill = document.getElementById('reading-progress-fill');
-            const ring = document.getElementById('reading-progress-ring');
-            const timeEl = document.getElementById('reading-progress-time');
+            const percentEl = document.getElementById('reading-progress-percent');
             if (bar) {
                 bar.classList.remove('active');
                 bar.setAttribute('aria-valuenow', '0');
                 bar.removeAttribute('aria-valuetext');
             }
-            if (badge) { badge.classList.remove('active'); badge.classList.remove('is-complete'); badge.style.setProperty('--reading-progress', '0%'); }
-            if (fill) { fill.style.width = '0%'; fill.classList.remove('is-complete'); }
-            if (ring) ring.style.strokeDashoffset = '94.248';
-            if (timeEl) timeEl.textContent = '残り0秒';
+            if (badge) badge.classList.remove('active');
+            if (fill) fill.style.width = '0%';
+            if (percentEl) percentEl.textContent = '0%';
             document.body.classList.remove('reading-progress-active');
-        }
-
-        function setupReadingProgressControls() {
-            const toggle = document.getElementById('reading-progress-details-toggle');
-            if (!toggle || toggle.dataset.bound === 'true') return;
-
-            toggle.dataset.bound = 'true';
-            toggle.addEventListener('click', () => {
-                const details = document.getElementById('reading-progress-details');
-                setReadingProgressDetails(Boolean(details?.hidden));
-            });
-            document.addEventListener('keydown', (event) => {
-                if (event.key === 'Escape') setReadingProgressDetails(false);
-            });
-        }
-
-        function setReadingProgressDetails(open) {
-            const details = document.getElementById('reading-progress-details');
-            const toggle = document.getElementById('reading-progress-details-toggle');
-            const shouldOpen = Boolean(open && readingProgressState.contentEl);
-            if (details) details.hidden = !shouldOpen;
-            if (toggle) toggle.setAttribute('aria-expanded', String(shouldOpen));
-            document.body.classList.toggle('reading-progress-details-open', shouldOpen);
         }
 
         function getCurrentArticleProgressPercent() {
@@ -27250,39 +27107,14 @@ function showLoading(show) {
             if (!startEl || !endEl) return 0;
             const startRect = startEl.getBoundingClientRect();
             const endRect = endEl.getBoundingClientRect();
-            const viewportH = window.innerHeight;
             const readingHeight = Math.max(1, endRect.bottom - startRect.top);
-            const percent = ((viewportH - startRect.top) / readingHeight) * 100;
-            return Math.max(0, Math.min(100, percent));
-        }
-
-        function formatRemainingTime(seconds) {
-            const safeSeconds = Math.max(1, Math.ceil(seconds));
-            const minutes = Math.floor(safeSeconds / 60);
-            const remainderSeconds = safeSeconds % 60;
-            return minutes > 0 ? `${minutes}分${String(remainderSeconds).padStart(2, '0')}秒` : `${remainderSeconds}秒`;
-        }
-
-        function getStandardRemainingSeconds(percent) {
-            const remainingRatio = Math.max(0, 1 - percent / 100);
-            const textSeconds = (readingProgressState.charCount / STANDARD_ARTICLE_READING_SPEED) * 60 * remainingRatio;
-            const imageSeconds = readingProgressState.imageSeconds * remainingRatio;
-            return Math.max(0, Math.ceil(textSeconds + imageSeconds));
-        }
-
-        function getRemainingPresentation(percent) {
-            if (percent >= 99.5) return { text: '読了しました', aria: '読了しました' };
-            const remainingTime = formatRemainingTime(getStandardRemainingSeconds(percent));
-            return {
-                text: `残り${remainingTime}`,
-                aria: `標準速度${STANDARD_ARTICLE_READING_SPEED.toLocaleString()}字／分で残り${remainingTime}`
-            };
+            return Math.max(0, Math.min(100, ((window.innerHeight - startRect.top) / readingHeight) * 100));
         }
 
         function onReadingProgressScroll() {
             if (readingProgressState.ticking) return;
             readingProgressState.ticking = true;
-            window.requestAnimationFrame(() => {
+            window.requestAnimationFrame(function() {
                 updateReadingProgress();
                 readingProgressState.ticking = false;
             });
@@ -27290,43 +27122,24 @@ function showLoading(show) {
 
         function updateReadingProgress() {
             if (!readingProgressState.contentEl) return;
-
-            // 記事本文の上端と本文高さから、本文の見え始めを0%、下端到達を100%として進捗を求める。
             const percent = getCurrentArticleProgressPercent();
-
+            const roundedPercent = Math.round(percent);
             const fill = document.getElementById('reading-progress-fill');
             const badge = document.getElementById('reading-progress-badge');
-            const ring = document.getElementById('reading-progress-ring');
             const percentEl = document.getElementById('reading-progress-percent');
-            const timeEl = document.getElementById('reading-progress-time');
-            if (!fill || !ring || !percentEl || !timeEl) return;
-
-            const roundedPercent = Math.round(percent);
-            const progressText = roundedPercent + '%';
-            const remainingPresentation = getRemainingPresentation(percent);
+            const bar = document.getElementById('reading-progress-bar');
+            if (!fill || !badge || !percentEl || !bar) return;
 
             fill.style.width = percent + '%';
-            ring.style.strokeDashoffset = String(94.248 * (1 - percent / 100));
-            percentEl.textContent = progressText;
-            timeEl.textContent = remainingPresentation.text;
-            if (badge) {
-                badge.style.setProperty('--reading-progress', progressText);
-                badge.setAttribute('aria-label', `現在の読書進捗 ${progressText}、${remainingPresentation.aria}`);
-            }
-            const bar = document.getElementById('reading-progress-bar');
-            if (bar) {
-                bar.setAttribute('aria-valuenow', String(roundedPercent));
-                bar.setAttribute('aria-valuetext', `${progressText}、${remainingPresentation.aria}`);
-            }
+            percentEl.textContent = roundedPercent + '%';
+            badge.setAttribute('aria-label', '現在の読書進捗 ' + roundedPercent + '%');
+            bar.setAttribute('aria-valuenow', String(roundedPercent));
+            bar.setAttribute('aria-valuetext', roundedPercent + '%');
 
-            if (percent >= 99.5 && !readingProgressState.reachedComplete) {
-                readingProgressState.reachedComplete = true;
+            if (percent >= 99.5) {
                 fill.classList.add('is-complete');
-                if (badge) badge.classList.add('is-complete');
-                fill.addEventListener('animationend', () => fill.classList.remove('is-complete'), { once: true });
-            } else if (percent < 99.5 && readingProgressState.reachedComplete) {
-                readingProgressState.reachedComplete = false;
-                if (badge) badge.classList.remove('is-complete');
+            } else {
+                fill.classList.remove('is-complete');
             }
         }
 
@@ -35387,40 +35200,132 @@ try {
     window.buildArticleTOC = function() {
         try {
             var contentEl = document.querySelector('#article-detail-content .article-content');
-            if (!contentEl) return;
+            var sidebar = document.querySelector('#article-detail-content .article-toc-sidebar');
+            if (!contentEl || !sidebar) return;
 
-            var old = contentEl.querySelector('.article-toc-unified');
-            if (old) old.parentNode.removeChild(old);
+            if (window._articleTocObserver) window._articleTocObserver.disconnect();
+            if (window._articleTocResizeHandler) window.removeEventListener('resize', window._articleTocResizeHandler);
 
-            // h3・h4の両方を拾い、当サイトについて等（initTOC）と同じ入れ子構造にする
-            var headings = contentEl.querySelectorAll('h3, h4');
+            sidebar.innerHTML = '';
+            sidebar.hidden = true;
+
+            var headings = Array.from(contentEl.querySelectorAll('h3'));
             if (headings.length < 2) return;
 
-            var items = '';
             headings.forEach(function(h, idx) {
-                var id = 'toc-h-' + idx;
-                h.id = id;
-                var isH3 = h.tagName.toLowerCase() === 'h3';
-                var indent = isH3 ? '' : ' article-toc-unified__item--sub';
-                var icon = isH3 ? 'bi-caret-right-fill' : 'bi-dot';
-                items += '<li class="article-toc-unified__item' + indent + '"><a href="#' + id + '" class="article-toc-unified__link" onclick="event.preventDefault(); var t=document.getElementById(\'' + id + '\'); if(t) t.scrollIntoView({behavior:\'smooth\', block:\'start\'});"><i class="bi ' + icon + '" aria-hidden="true"></i><span>' + h.textContent + '</span></a></li>';
+                h.id = 'article-toc-h-' + idx;
+                h.style.scrollMarginTop = '76px';
             });
 
             var toc = document.createElement('nav');
-            // article-toc-unified-title: 見出しを敢えてh3にしない（.article-content h3 { border-left:赤; font-size:1.4rem; ... }
-            // というグローバルルールを誤って拾い、目次見出しだけ赤ボーダー付きの大きな文字になってしまっていたため、pタグに変更）
-            // article-toc-unified: 本文より少し広い補助幅を用い、標準設定でも目次と本文の重心が離れすぎないようにする。
-            // 広め設定では補助幅も100%へ追従する。
-            toc.className = 'article-toc-unified mb-6';
-            toc.style.width = '100%';
-            toc.style.maxWidth = 'var(--article-support-max-width, 820px)';
-            toc.style.margin = '0 auto 1.4rem';
-            toc.innerHTML =
-                '<div>' +
-                    '<p class="article-toc-unified__title"><i class="bi bi-list-ul" aria-hidden="true"></i>目次</p>' +
-                    '<ul class="article-toc-unified__list">' + items + '</ul>' +
-                '</div>';
-            contentEl.insertBefore(toc, contentEl.firstChild);
+            toc.className = 'article-toc-unified';
+            toc.setAttribute('aria-label', '記事の目次');
+
+            var toggle = document.createElement('button');
+            toggle.type = 'button';
+            toggle.className = 'article-toc-toggle';
+            toggle.setAttribute('aria-expanded', 'false');
+            toggle.innerHTML = '<span>目次</span><i class="bi bi-chevron-down" aria-hidden="true"></i>';
+
+            var panel = document.createElement('div');
+            panel.className = 'article-toc-panel';
+            panel.hidden = false;
+
+            var title = document.createElement('p');
+            title.className = 'article-toc-unified__title';
+            title.textContent = '目次';
+            panel.appendChild(title);
+
+            var list = document.createElement('ul');
+            list.className = 'article-toc-unified__list';
+
+            headings.forEach(function(h) {
+                var li = document.createElement('li');
+                li.className = 'article-toc-unified__item';
+
+                var link = document.createElement('a');
+                link.href = '#' + h.id;
+                link.className = 'article-toc-unified__link';
+                link.dataset.targetId = h.id;
+                link.textContent = h.textContent.trim();
+
+                link.addEventListener('click', function(event) {
+                    event.preventDefault();
+                    var target = document.getElementById(h.id);
+                    if (!target) return;
+                    target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                    if (window.matchMedia('(max-width: 1080px)').matches) {
+                        panel.hidden = true;
+                        toggle.setAttribute('aria-expanded', 'false');
+                        toggle.classList.remove('is-open');
+                    }
+                    if (history.replaceState) history.replaceState(null, '', '#' + h.id);
+                });
+
+                li.appendChild(link);
+                list.appendChild(li);
+            });
+
+            panel.appendChild(list);
+            toc.appendChild(toggle);
+            toc.appendChild(panel);
+            sidebar.appendChild(toc);
+            sidebar.hidden = false;
+
+            var links = Array.from(list.querySelectorAll('.article-toc-unified__link'));
+            var setActive = function(id) {
+                links.forEach(function(link) {
+                    var active = link.dataset.targetId === id;
+                    link.classList.toggle('is-active', active);
+                    if (active) link.setAttribute('aria-current', 'location');
+                    else link.removeAttribute('aria-current');
+                });
+            };
+
+            toggle.addEventListener('click', function() {
+                var nextOpen = panel.hidden;
+                panel.hidden = !nextOpen;
+                toggle.setAttribute('aria-expanded', String(nextOpen));
+                toggle.classList.toggle('is-open', nextOpen);
+            });
+
+            var syncMode = function() {
+                var compact = window.matchMedia('(max-width: 1080px)').matches;
+                if (compact) {
+                    if (!toggle.classList.contains('is-open')) panel.hidden = true;
+                } else {
+                    panel.hidden = false;
+                    toggle.setAttribute('aria-expanded', 'true');
+                    toggle.classList.add('is-open');
+                }
+            };
+            window._articleTocResizeHandler = syncMode;
+            window.addEventListener('resize', syncMode, { passive: true });
+            syncMode();
+
+            var visible = new Map();
+            window._articleTocObserver = new IntersectionObserver(function(entries) {
+                entries.forEach(function(entry) {
+                    if (entry.isIntersecting) visible.set(entry.target.id, entry.boundingClientRect.top);
+                    else visible.delete(entry.target.id);
+                });
+                var activeId = null;
+                var bestTop = Infinity;
+                visible.forEach(function(top, id) {
+                    if (top >= 0 && top < bestTop) {
+                        bestTop = top;
+                        activeId = id;
+                    }
+                });
+                if (!activeId) {
+                    var passed = headings.filter(function(h) { return h.getBoundingClientRect().top <= 110; });
+                    if (passed.length) activeId = passed[passed.length - 1].id;
+                }
+                setActive(activeId || headings[0].id);
+            }, { rootMargin: '-88px 0px -65% 0px', threshold: [0, 1] });
+
+            headings.forEach(function(h) { window._articleTocObserver.observe(h); });
+            setActive(headings[0].id);
         } catch (e) {}
     };
 
