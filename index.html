@@ -10953,7 +10953,7 @@ body.sidebar-collapsed.sidebar-pinned #sidebar .nav-group-title {
 
     /* ==========================================
        記事読書レイアウト・目次
-       一般的な長文記事に合わせた、静かなリンク一覧。
+       本文を邪魔しない、一般的な記事サイト型の目次。
        ========================================== */
     .article-reading-layout {
         display: grid;
@@ -10969,20 +10969,21 @@ body.sidebar-collapsed.sidebar-pinned #sidebar .nav-group-title {
         grid-column: 2;
         grid-row: 1;
         min-width: 0;
+        max-height: calc(100vh - 112px);
+        overflow: auto;
+        scrollbar-width: thin;
     }
     .article-toc-sidebar[hidden] { display: none !important; }
-
     .article-toc-unified { width: 100%; margin: 0; }
     .article-toc-details { margin: 0; }
     .article-toc-summary {
         list-style: none;
-        cursor: pointer;
         user-select: none;
     }
     .article-toc-summary::-webkit-details-marker { display: none; }
 
     .article-toc-unified__title {
-        margin: 0 0 .65rem !important;
+        margin: 0 0 .7rem !important;
         padding: 0 0 .55rem;
         border-bottom: 1px solid var(--card-border);
         color: var(--text-sub) !important;
@@ -11010,11 +11011,16 @@ body.sidebar-collapsed.sidebar-pinned #sidebar .nav-group-title {
         font-weight: 500;
         line-height: 1.55 !important;
         text-decoration: none;
-        transition: color .14s ease, border-color .14s ease;
+        transition: color .14s ease, border-color .14s ease, font-weight .14s ease;
     }
     .article-toc-unified__link:hover {
         color: var(--text-main) !important;
-        border-left-color: var(--accent-red);
+        border-left-color: var(--text-sub);
+    }
+    .article-toc-unified__link.is-active {
+        color: var(--accent-red) !important;
+        border-left: 2px solid var(--accent-red);
+        font-weight: 700;
     }
     .article-toc-unified__link:focus-visible {
         outline: 2px solid var(--accent-red);
@@ -11031,6 +11037,8 @@ body.sidebar-collapsed.sidebar-pinned #sidebar .nav-group-title {
             position: static;
             grid-column: 1;
             grid-row: 1;
+            max-height: none;
+            overflow: visible;
             margin-bottom: 1.25rem;
         }
         .article-toc-details {
@@ -11047,6 +11055,7 @@ body.sidebar-collapsed.sidebar-pinned #sidebar .nav-group-title {
             font-family: 'Zen Kaku Gothic New', sans-serif;
             font-size: .75rem;
             font-weight: 700;
+            cursor: pointer;
         }
         .article-toc-summary::after {
             content: '+';
@@ -11057,16 +11066,17 @@ body.sidebar-collapsed.sidebar-pinned #sidebar .nav-group-title {
         }
         .article-toc-details[open] .article-toc-summary::after { content: '−'; }
         .article-toc-unified__title { display: none; }
-        .article-toc-unified__list {
-            padding: .2rem 0 .65rem;
-        }
+        .article-toc-unified__list { padding: .2rem 0 .65rem; }
         .article-toc-unified__link {
             padding: .4rem 0 .4rem .7rem;
             font-size: .73rem !important;
         }
     }
     @media (min-width: 1081px) {
-        .article-toc-details > .article-toc-summary { display: block; cursor: default; }
+        .article-toc-details > .article-toc-summary {
+            display: block;
+            cursor: default;
+        }
         .article-toc-details > .article-toc-summary::after { display: none; }
         .article-toc-details > .article-toc-panel { display: block !important; }
     }
@@ -35145,6 +35155,15 @@ try {
             var sidebar = document.querySelector('#article-detail-content .article-toc-sidebar');
             if (!contentEl || !sidebar) return;
 
+            if (window._articleTocObserver) {
+                window._articleTocObserver.disconnect();
+                window._articleTocObserver = null;
+            }
+            if (window._articleTocResizeHandler) {
+                window.removeEventListener('resize', window._articleTocResizeHandler);
+                window._articleTocResizeHandler = null;
+            }
+
             sidebar.innerHTML = '';
             sidebar.hidden = true;
 
@@ -35162,7 +35181,7 @@ try {
 
             var details = document.createElement('details');
             details.className = 'article-toc-details';
-            details.open = true;
+            details.open = window.matchMedia('(min-width: 1081px)').matches;
 
             var summary = document.createElement('summary');
             summary.className = 'article-toc-summary';
@@ -35186,7 +35205,27 @@ try {
                 var link = document.createElement('a');
                 link.href = '#' + h.id;
                 link.className = 'article-toc-unified__link';
+                link.dataset.targetId = h.id;
                 link.textContent = h.textContent.trim();
+
+                link.addEventListener('click', function(event) {
+                    event.preventDefault();
+                    var target = document.getElementById(h.id);
+                    if (!target) return;
+
+                    var reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+                    target.scrollIntoView({
+                        behavior: reduceMotion ? 'auto' : 'smooth',
+                        block: 'start'
+                    });
+
+                    if (window.matchMedia('(max-width: 1080px)').matches) {
+                        details.open = false;
+                    }
+                    if (history.replaceState) {
+                        history.replaceState(null, '', '#' + h.id);
+                    }
+                });
 
                 li.appendChild(link);
                 list.appendChild(li);
@@ -35198,6 +35237,57 @@ try {
             nav.appendChild(details);
             sidebar.appendChild(nav);
             sidebar.hidden = false;
+
+            var links = Array.from(list.querySelectorAll('.article-toc-unified__link'));
+
+            var setActive = function(id) {
+                links.forEach(function(link) {
+                    var active = link.dataset.targetId === id;
+                    link.classList.toggle('is-active', active);
+                    if (active) link.setAttribute('aria-current', 'location');
+                    else link.removeAttribute('aria-current');
+                });
+            };
+
+            var visible = new Map();
+            window._articleTocObserver = new IntersectionObserver(function(entries) {
+                entries.forEach(function(entry) {
+                    if (entry.isIntersecting) {
+                        visible.set(entry.target.id, entry.boundingClientRect.top);
+                    } else {
+                        visible.delete(entry.target.id);
+                    }
+                });
+
+                var activeId = null;
+                var bestTop = Infinity;
+                visible.forEach(function(top, id) {
+                    if (top >= 0 && top < bestTop) {
+                        bestTop = top;
+                        activeId = id;
+                    }
+                });
+
+                if (!activeId) {
+                    var passed = headings.filter(function(h) {
+                        return h.getBoundingClientRect().top <= 110;
+                    });
+                    if (passed.length) activeId = passed[passed.length - 1].id;
+                }
+
+                setActive(activeId || headings[0].id);
+            }, { rootMargin: '-88px 0px -65% 0px', threshold: [0, 1] });
+
+            headings.forEach(function(h) {
+                window._articleTocObserver.observe(h);
+            });
+            setActive(headings[0].id);
+
+            window._articleTocResizeHandler = function() {
+                var desktop = window.matchMedia('(min-width: 1081px)').matches;
+                details.open = desktop;
+            };
+            window.addEventListener('resize', window._articleTocResizeHandler, { passive: true });
         } catch (e) {}
     };
 
