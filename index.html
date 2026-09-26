@@ -11167,12 +11167,45 @@ body.sidebar-collapsed.sidebar-pinned #sidebar .nav-group-title {
        記事本文の目次（社務所だより・神籤草子 共通）
        読書を妨げない、シンプルなリスト型ナビゲーション
        ========================================== */
+    .article-toc-unified {
+        scroll-margin-top: 92px;
+    }
     .article-toc-unified > div {
         padding: 1rem !important;
         border: 1px solid var(--card-border) !important;
         border-radius: 14px !important;
         background: color-mix(in srgb, var(--card-bg) 97%, transparent) !important;
         box-shadow: none !important;
+    }
+    .article-toc-unified__mobile-toggle {
+        display: none;
+        width: 100%;
+        margin: 0 0 0.65rem;
+        padding: 0.55rem 0.7rem;
+        border: 1px solid var(--card-border);
+        border-radius: 9px;
+        background: var(--input-bg);
+        color: var(--text-main);
+        font: inherit;
+        font-size: 0.76rem;
+        font-weight: 700;
+        cursor: pointer;
+        text-align: left;
+    }
+    .article-toc-unified__link.is-active {
+        color: var(--accent-red) !important;
+        background: color-mix(in srgb, var(--accent-red) 8%, transparent);
+        font-weight: 800;
+    }
+    .article-toc-unified__link.is-active i {
+        color: var(--accent-red);
+    }
+    @media (min-width: 1025px) {
+        .article-toc-unified {
+            position: sticky;
+            top: 84px;
+            z-index: 5;
+        }
     }
     .article-toc-unified__title {
         display: flex;
@@ -11216,7 +11249,16 @@ body.sidebar-collapsed.sidebar-pinned #sidebar .nav-group-title {
     .article-toc-unified__item--sub .article-toc-unified__link { padding-left: 0.9rem; color: var(--text-sub) !important; font-size: 0.75rem !important; font-weight: 600; }
     .article-toc-unified__link:hover { color: var(--accent-red) !important; background: color-mix(in srgb, var(--accent-red) 7%, transparent); }
     .article-toc-unified__link:focus-visible { outline: 2px solid var(--accent-red); outline-offset: 2px; }
-    @media (max-width: 640px) { .article-toc-unified__list { grid-template-columns: 1fr; } }
+    @media (max-width: 640px) {
+        .article-toc-unified__mobile-toggle { display: block; }
+        .article-toc-unified[data-toc-open="false"] .article-toc-unified__list,
+        .article-toc-unified[data-toc-open="false"] .article-toc-unified__title { display: none; }
+        .article-toc-unified[data-toc-open="false"] > div { padding: 0.75rem !important; }
+        .article-toc-unified__list { grid-template-columns: 1fr; }
+    }
+    @media (prefers-reduced-motion: reduce) {
+        .article-toc-unified__link { transition: none !important; }
+    }
 
     /* 記事本文冒頭のメタ情報（文字数・読了目安） */
     .article-meta-readinfo {
@@ -35387,9 +35429,14 @@ try {
             if (!contentEl) return;
 
             var old = contentEl.querySelector('.article-toc-unified');
-            if (old) old.parentNode.removeChild(old);
+            if (old) {
+                if (old.__activeObserver) {
+                    try { old.__activeObserver.disconnect(); } catch (e) {}
+                }
+                old.parentNode.removeChild(old);
+            }
 
-            // h3・h4の両方を拾い、当サイトについて等（initTOC）と同じ入れ子構造にする
+            // h3・h4の両方を拾い、既存の目次コンテナを維持したまま読書用ナビゲーションを生成する。
             var headings = contentEl.querySelectorAll('h3, h4');
             if (headings.length < 2) return;
 
@@ -35397,27 +35444,64 @@ try {
             headings.forEach(function(h, idx) {
                 var id = 'toc-h-' + idx;
                 h.id = id;
+                h.style.scrollMarginTop = '96px';
                 var isH3 = h.tagName.toLowerCase() === 'h3';
                 var indent = isH3 ? '' : ' article-toc-unified__item--sub';
                 var icon = isH3 ? 'bi-caret-right-fill' : 'bi-dot';
-                items += '<li class="article-toc-unified__item' + indent + '"><a href="#' + id + '" class="article-toc-unified__link" onclick="event.preventDefault(); var t=document.getElementById(\'' + id + '\'); if(t) t.scrollIntoView({behavior:\'smooth\', block:\'start\'});"><i class="bi ' + icon + '" aria-hidden="true"></i><span>' + h.textContent + '</span></a></li>';
+                items += '<li class="article-toc-unified__item' + indent + '"><a href="#' + id + '" class="article-toc-unified__link" data-toc-target="' + id + '" onclick="event.preventDefault(); var t=document.getElementById(\'' + id + '\'); if(t) t.scrollIntoView({behavior:\'smooth\', block:\'start\'});"><i class="bi ' + icon + '" aria-hidden="true"></i><span>' + h.textContent + '</span></a></li>';
             });
 
             var toc = document.createElement('nav');
-            // article-toc-unified-title: 見出しを敢えてh3にしない（.article-content h3 { border-left:赤; font-size:1.4rem; ... }
-            // というグローバルルールを誤って拾い、目次見出しだけ赤ボーダー付きの大きな文字になってしまっていたため、pタグに変更）
-            // article-toc-unified: 本文より少し広い補助幅を用い、標準設定でも目次と本文の重心が離れすぎないようにする。
-            // 広め設定では補助幅も100%へ追従する。
             toc.className = 'article-toc-unified mb-6';
+            toc.setAttribute('aria-label', '記事の目次');
             toc.style.width = '100%';
             toc.style.maxWidth = 'var(--article-support-max-width, 820px)';
             toc.style.margin = '0 auto 1.4rem';
             toc.innerHTML =
                 '<div>' +
+                    '<button type="button" class="article-toc-unified__mobile-toggle" aria-expanded="true" aria-controls="article-toc-unified-list">目次を閉じる</button>' +
                     '<p class="article-toc-unified__title"><i class="bi bi-list-ul" aria-hidden="true"></i>目次</p>' +
-                    '<ul class="article-toc-unified__list">' + items + '</ul>' +
+                    '<ul id="article-toc-unified-list" class="article-toc-unified__list">' + items + '</ul>' +
                 '</div>';
             contentEl.insertBefore(toc, contentEl.firstChild);
+
+            var toggle = toc.querySelector('.article-toc-unified__mobile-toggle');
+            var list = toc.querySelector('.article-toc-unified__list');
+            if (toggle && list) {
+                toggle.addEventListener('click', function() {
+                    var isOpen = toc.getAttribute('data-toc-open') !== 'false';
+                    toc.setAttribute('data-toc-open', isOpen ? 'false' : 'true');
+                    toggle.setAttribute('aria-expanded', String(!isOpen));
+                    toggle.textContent = isOpen ? '目次を開く' : '目次を閉じる';
+                });
+            }
+
+            if ('IntersectionObserver' in window) {
+                var links = Array.prototype.slice.call(toc.querySelectorAll('[data-toc-target]'));
+                var observer = new IntersectionObserver(function(entries) {
+                    entries.forEach(function(entry) {
+                        if (!entry.isIntersecting) return;
+                        links.forEach(function(link) {
+                            var active = link.getAttribute('data-toc-target') === entry.target.id;
+                            link.classList.toggle('is-active', active);
+                            if (active) link.setAttribute('aria-current', 'location');
+                            else link.removeAttribute('aria-current');
+                        });
+                    });
+                }, { rootMargin: '-84px 0px -62% 0px', threshold: [0, 0.15, 0.5] });
+                headings.forEach(function(h) { observer.observe(h); });
+                toc.__activeObserver = observer;
+            }
+
+            toc.querySelectorAll('[data-toc-target]').forEach(function(link) {
+                link.addEventListener('click', function() {
+                    if (window.innerWidth <= 640 && toggle && toc.getAttribute('data-toc-open') !== 'false') {
+                        toc.setAttribute('data-toc-open', 'false');
+                        toggle.setAttribute('aria-expanded', 'false');
+                        toggle.textContent = '目次を開く';
+                    }
+                });
+            });
         } catch (e) {}
     };
 
