@@ -17049,7 +17049,7 @@ body.sidebar-collapsed.sidebar-pinned #sidebar .nav-group-title {
                     <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" fill="currentColor" viewBox="0 0 16 16"><path d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001q.044.06.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1 1 0 0 0-.115-.1zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0"/></svg>
                     検索
                 </button>
-                <button onclick="resetSearch()" aria-label="検索条件をリセット" class="px-4 py-2 rounded-xl text-sm flex-shrink-0 transition-all hover:border-red-400" style="border:1px solid var(--card-border);color:var(--text-sub);">
+                <button type="button" id="history-reset-button" aria-label="検索条件をリセット" class="px-4 py-2 rounded-xl text-sm flex-shrink-0 transition-all hover:border-red-400" style="border:1px solid var(--card-border);color:var(--text-sub);">
                     <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" fill="currentColor" viewBox="0 0 16 16"><path fill-rule="evenodd" d="M8 3a5 5 0 1 1-4.546 2.914.5.5 0 0 0-.908-.417A6 6 0 1 0 8 2z"/><path d="M8 4.466V.534a.25.25 0 0 0-.41-.192L5.23 2.308a.25.25 0 0 0 0 .384l2.36 1.966A.25.25 0 0 0 8 4.466"/></svg>
                 </button>
             </div>
@@ -28357,7 +28357,10 @@ function resetSearch() {
     document.getElementById('search-keyword').value = '';
     document.getElementById('search-date-start').value = '';
     document.getElementById('search-date-end').value = '';
-    window.TenmeiCustomControls?.syncAll();
+    if (window.TenmeiCustomControls) {
+        window.TenmeiCustomControls.closeActive?.();
+        window.TenmeiCustomControls.syncAll?.();
+    }
     loadHistory(1);
 }
 
@@ -28665,7 +28668,11 @@ function resetSearch() {
                 else if (root.dataset.controlKind === 'date') buildDate(root);
                 root.dataset.tenmeiControlReady = 'true';
             };
-            roots.filter(isVisible).forEach(buildRoot);
+            const isInActiveView = (root) => {
+                const view = root.closest('.view-section');
+                return !view || view.classList.contains('active');
+            };
+            roots.filter((root) => isVisible(root) && isInActiveView(root)).forEach(buildRoot);
             document.addEventListener('pointerdown', (event) => {
                 const root = event.target.closest?.('[data-control-kind="choice"], [data-control-kind="date"]');
                 if (root) {
@@ -28679,8 +28686,8 @@ function resetSearch() {
                 const root = event.target.closest?.('[data-control-kind="choice"], [data-control-kind="date"]');
                 if (root) buildRoot(root);
             }, true);
-            const idle = window.requestIdleCallback || ((callback) => window.setTimeout(callback, 120));
-            idle(() => roots.forEach(buildRoot), { timeout: 1200 });
+            // 非表示画面のコントロールは一括生成しない。画面切替後の最初の操作で即時構築する。
+            // これにより初期数秒間のメインスレッド占有を避ける。
             return { syncAll, closeActive };
         })();
         window.TenmeiCustomControls = TenmeiCustomControls;
@@ -36897,7 +36904,7 @@ function buildHowtoArticleTOC(){
     var summary=document.createElement('summary');
     summary.className='article-toc-summary';
     summary.setAttribute('aria-label','天命乃杜の使い方の目次を開く');
-    summary.innerHTML='<span class="article-toc-summary-label"><span class="article-toc-summary-icon" aria-hidden="true"><i class="bi bi-list-ul"></i></span><span>目次</span></span><span class="article-toc-summary-chevron" aria-hidden="true"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16"><path fill-rule="evenodd" d="M1.646 4.646a.5.5 0 0 1 .708 0L8 10.293l5.646-5.647a.5.5 0 0 1 .708.708l-6 6a.5.5 0 0 1 .708 0l-6-6a.5.5 0 0 1 0-.708"/></svg></span>';
+    summary.innerHTML='<span class="article-toc-summary-label"><span class="article-toc-summary-icon" aria-hidden="true"><i class="bi bi-list-ul"></i></span><span>目次</span></span><span class="article-toc-summary-chevron" aria-hidden="true"><i class="bi bi-chevron-down"></i></span>';
     var panel=document.createElement('div');
     panel.className='article-toc-panel';
     var list=document.createElement('ul');
@@ -37005,7 +37012,85 @@ window.addEventListener('hashchange',function(){setTimeout(buildHowtoArticleTOC,
 </script>
 </body>
 
-</html>
+
+<style id="tenmei-custom-control-unification-fix">
+/* Common custom controls: one visual language across every screen. */
+.tenmei-choice__trigger,
+.tenmei-date__trigger {
+    min-height: 46px;
+    border-radius: 12px;
+    padding: 8px 12px;
+    border-color: var(--card-border);
+    background: var(--input-bg);
+    color: var(--text-main);
+    font-family: 'Zen Kaku Gothic New', 'Zen Old Mincho', sans-serif;
+    font-size: .88rem;
+    font-weight: 600;
+    box-shadow: none;
+}
+.tenmei-choice__trigger:hover,
+.tenmei-date__trigger:hover {
+    border-color: color-mix(in srgb, var(--tenmei-control-accent) 46%, var(--card-border));
+}
+.tenmei-choice__trigger:focus-visible,
+.tenmei-date__trigger:focus-visible,
+.tenmei-choice[data-open="true"] .tenmei-choice__trigger,
+.tenmei-date[data-open="true"] .tenmei-date__trigger {
+    border-color: var(--tenmei-control-accent);
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--tenmei-control-accent) 14%, transparent);
+}
+.tenmei-choice__popover,
+.tenmei-date__popover {
+    border-radius: 12px;
+    padding: 6px;
+    box-shadow: 0 16px 34px rgba(31,22,18,.16);
+}
+.tenmei-choice__option {
+    min-height: 40px;
+    border-radius: 9px;
+    padding: 8px 10px;
+    font-size: .84rem;
+}
+.tenmei-choice__option[aria-selected="true"] {
+    font-weight: 700;
+}
+.tenmei-choice__chevron,
+.tenmei-date__chevron {
+    transition: transform 160ms ease, color 160ms ease;
+}
+@media (prefers-reduced-motion: reduce) {
+    .tenmei-choice__chevron,
+    .tenmei-date__chevron { transition: none; }
+}
+</style>
+<script id="tenmei-history-reset-and-control-fix">
+(function(){
+    'use strict';
+    function bindHistoryReset(){
+        var button=document.getElementById('history-reset-button');
+        if(!button||button.dataset.bound==='true')return;
+        button.dataset.bound='true';
+        button.addEventListener('click',function(event){
+            event.preventDefault();
+            if(typeof window.resetSearch==='function') window.resetSearch();
+        });
+    }
+    function refreshActiveControls(){
+        var roots=document.querySelectorAll('[data-control-kind="choice"],[data-control-kind="date"]');
+        roots.forEach(function(root){
+            var view=root.closest('.view-section');
+            if(!view||view.classList.contains('active')){
+                if(window.TenmeiCustomControls && typeof window.TenmeiCustomControls.syncAll==='function'){
+                    window.TenmeiCustomControls.syncAll();
+                }
+            }
+        });
+    }
+    if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',function(){bindHistoryReset();refreshActiveControls();},{once:true});
+    else { bindHistoryReset(); refreshActiveControls(); }
+    window.addEventListener('viewchange',function(){ setTimeout(function(){ bindHistoryReset(); refreshActiveControls(); },0); });
+})();
+</script></html>
 <style id="tenmei-ui-unification-fix">
 /* Ver.4.0 cross-screen normalization: public documents, passport, and article AI summary. */
 :is(#view-about,#view-privacy,#view-howto) :is(.about-codex-chapter,.privacy-ledger-article,.howto-guide-entry),
