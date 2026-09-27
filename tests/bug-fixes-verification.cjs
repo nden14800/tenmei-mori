@@ -51,7 +51,7 @@ console.log('✓ CSS が body.sidebar-hover-mode セレクタで状態管理し�
 
 console.log('\n🟢 【不具合1の検証結果】toggleSidebar() の重複定義と相互排他的な状態管理は正常\n');
 
-console.log('🔍 【不具合2検証】public-document-history.json の生成と about 第24版...\n');
+console.log('🔍 【不具合2検証】public-document-history.json の手動管理と版履歴...\n');
 
 // 6. about 第24版が「欠番」として記録されているか
 assert.ok(historyJson.documents?.about?.versions || historyJson.about?.versions, 'about versions がない');
@@ -88,7 +88,12 @@ const hasManualEntries = [...aboutVersions, ...privacyVersions].some((version) =
 );
 assert.ok(hasManualEntries, '手動管理アーカイブに改定内容を持つエントリがありません');
 console.log(`✓ privacy 最新版: 第${latestPrivacy.edition}版`);
-assert.ok(latestPrivacy.edition >= 28, 'privacy 最新版が 28版以上でない');
+assert.equal(latestPrivacy.edition, 33, 'privacy 最新版が第33版でない');
+const privacyEdition32 = privacyVersions.find(v => v.edition === 32);
+assert.ok(privacyEdition32, 'privacy 第32版が手動アーカイブに存在しない');
+assert.equal(privacyEdition32.availability, 'full', 'privacy 第32版の本文スナップショットが full ではない');
+assert.ok(typeof privacyEdition32.html === 'string' && privacyEdition32.html.length > 0, 'privacy 第32版の本文スナップショットが空です');
+console.log('✓ privacy 第32版の本文スナップショットが手動アーカイブに保存されています');
 
 // 9. 生成メタデータの検査
 assert.equal(historyJson.source?.type, 'manual-curated', 'source type が manual-curated でない');
