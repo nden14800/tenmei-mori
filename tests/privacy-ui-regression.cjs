@@ -174,4 +174,9 @@ for (const documentKey of ['about', 'privacy']) {
 assert.equal(archive.documents.about.versions.find((version) => version.edition === 24).html, '', '当サイトについて第24版の未記録本文をHTMLで擬似再現してはいけません。');
 assert.equal(archive.documents.privacy.versions.find((version) => version.edition === 15).availability, 'missing', 'プライバシー第15版は欠番・記録なしとして保持します。');
 assert(fs.readFileSync(path.resolve(__dirname, '..', 'index.html'), 'utf8').includes('本文スナップショット未記録'), '未記録版の正直なスナップショット表示がありません。');
+assert(html.includes('class="document-revision-snapshot__details"'), '本文スナップショットが開閉可能なdetailsになっていません。');
+assert(html.includes('class="document-revision-snapshot__summary"'), '本文スナップショットの開閉見出しがありません。');
+assert(html.includes('bi bi-chevron-down document-revision-snapshot__chevron'), '本文スナップショットの開閉アイコンがサイト共通のBootstrap Iconsになっていません。');
+assert(html.includes('.document-revision-snapshot__details[open] .document-revision-snapshot__chevron'), '本文スナップショットの開閉状態とアイコン表示が連動していません。');
+assert(!html.includes('<details class="document-revision-snapshot__details" open>'), '本文スナップショットは初期状態で開いてはいけません。');
 console.log('公開文書手動アーカイブの回帰テストに合格しました。')
