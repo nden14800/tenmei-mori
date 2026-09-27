@@ -1980,63 +1980,7 @@ if (url.pathname === "/api/today-anniv" && method === "GET") {
             } catch (e) {
                 return new Response(JSON.stringify({ error: e.message }), { status: 500, headers: corsHeaders });
             }
-        }
-
-{omikujiType || "不明"}」でした。参拝者の悩み・気になっていることは次の通りです：「${worry}」\n\nこの内容を踏まえた、短い一言アドバイスをください。`;
-
-                const advice = await callWorryConsultAI(
-                    prompt,
-                    systemPrompt,
-                    192
-                );
-                return new Response(JSON.stringify({ advice }), { headers: { ...corsHeaders, "Content-Type": "application/json" } });
-            } catch (e) {
-                return new Response(JSON.stringify({ error: e.message }), { status: 500, headers: corsHeaders });
-            }
-        }
-
-        // ② AI夢占い（ログイン必須・履歴をTursoに保存）
-        if (url.pathname === "/api/dream-fortune" && method === "POST") {
-            try {
-                const session = await verifySession(request);
-                if (!session) return new Response(JSON.stringify({ error: "Unauthorized" }), { status: 401, headers: corsHeaders });
-
-                const ip = request.headers.get("CF-Connecting-IP") || "unknown";
-                const rate = await checkRateLimit(ip, "dream_fortune", 10, 3600);
-                if (!rate.allowed) {
-                    const waitSec = rate.resetTime - Math.floor(Date.now() / 1000);
-                    const msg = `しばらく経ってからもう一度お試しください（あと約${Math.max(1, waitSec)}秒）`;
-                    return new Response(JSON.stringify({ error: msg, message: msg }), { status: 429, headers: { ...corsHeaders, "Content-Type": "application/json" } });
-                }
-
-                const { dream } = await request.json();
-                if (!dream || typeof dream !== "string" || dream.length > 400) {
-                    return new Response(JSON.stringify({ error: "入力内容をご確認ください（400文字以内）" }), { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } });
-                }
-
-                const systemPrompt = "あなたは日本の夢占いに詳しい、やさしい語り口の鑑定人です。断定的な予言は避け、150文字以内の日本語で、夢に込められた意味を前向きに解釈してください。";
-                const prompt = `次のような夢を見ました：「${dream}」\n\nこの夢の夢占い的な意味を教えてください。`;
-                const interpretation = await callWorkersAI(
-    prompt,
-    systemPrompt,
-    256
-);
-
-                const jstNow = new Date(new Date().toLocaleString("en-US", { timeZone: "Asia/Tokyo" }));
-                const createdAt = jstNow.toISOString();
-
-                await runSQL(
-                    "INSERT INTO dream_history (user_email, dream_text, interpretation, created_at) VALUES (?, ?, ?, ?)",
-                    [session.email, dream, interpretation, createdAt]
-                );
-
-                return new Response(JSON.stringify({ interpretation }), { headers: { ...corsHeaders, "Content-Type": "application/json" } });
-            } catch (e) {
-                return new Response(JSON.stringify({ error: e.message }), { status: 500, headers: corsHeaders });
-            }
-        }
-
-        // ② 過去の夢の履歴取得
+        }        // ② 過去の夢の履歴取得
         if (url.pathname === "/api/dream-history" && method === "GET") {
             try {
                 const session = await verifySession(request);
