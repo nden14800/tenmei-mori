@@ -14,7 +14,7 @@ function forbidText(text, message) {
 }
 
 requireText(
-  '制定: 2026/01/02 ・ 改定: 2026/08/14 (第18版) ・ 運営: nden148',
+  '制定: 2026/01/02 ・ 改定: 2026/09/26 (第32版) ・ 運営: nden148',
   'プライバシーポリシーの現行版と最終改定日がありません。'
 );
 requireText(
@@ -46,12 +46,12 @@ requireText(
   '退会時のdream_history削除が第8条に明示されていません。'
 );
 requireText(
-  '現行版：第18版（最終改定日：2026年8月14日）',
+  '現行版：第32版（最終改定日：2026年9月26日）',
   '第9条に現行版・最終改定日がありません。'
 );
 requireText(
-  '第18版の主な変更：</strong>未ログイン時の参拝記録のサーバー保存、Googleログイン時に取得する表示名、Microsoft ClarityによるCookie・疑似匿名ID・セッション記録、退会時に削除するAI夢占いの夢の記録を明確化しました。',
-  '第18版の変更履歴がありません。'
+  '第9条の改定履歴を現行の第32版・改定日と一致させ、公開アーカイブとの整合を確認。',
+  '第9条の選択欄から版を選ぶと、その版について確認できた実際の改定内容を表示します。本文スナップショットを確認できない版については、推測で内容を補いません。'
 );
 requireText(
   '退会または削除まで保存（無期限の可用性・復旧は保証しません）',
@@ -84,7 +84,7 @@ forbidText(
 
 console.log('公開文書の整合性回帰テストに合格しました。');
 console.log(JSON.stringify({
-  privacyVersion: '第18版',
+  privacyVersion: '第32版',
   guestServerStorageDisclosed: true,
   googleDisplayNameDisclosed: true,
   claritySessionTrackingDisclosed: true,
