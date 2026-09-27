@@ -81,6 +81,12 @@ console.log('✓ about 第22版・23版も存在');
 assert.ok(historyJson.documents?.privacy?.versions || historyJson.privacy?.versions, 'privacy versions がない');
 const privacyVersions = historyJson.documents?.privacy?.versions || historyJson.privacy?.versions;
 const latestPrivacy = privacyVersions[0];  // 配列の最初 = 最新
+
+// 手動アーカイブに実データが存在することを確認するためのテスト用フラグ
+const hasManualEntries = [...aboutVersions, ...privacyVersions].some((version) =>
+  Number.isInteger(version?.edition) && typeof version?.changeDescription === 'string' && version.changeDescription.trim().length > 0
+);
+assert.ok(hasManualEntries, '手動管理アーカイブに改定内容を持つエントリがありません');
 console.log(`✓ privacy 最新版: 第${latestPrivacy.edition}版`);
 assert.ok(latestPrivacy.edition >= 28, 'privacy 最新版が 28版以上でない');
 
