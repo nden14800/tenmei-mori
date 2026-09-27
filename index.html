@@ -36238,7 +36238,10 @@ try {
 
         function sanitizeDocumentHistoryPreview(container) {
             container.querySelectorAll('script, style, iframe, object, embed, form, input, textarea, select, button').forEach((element) => element.remove());
-            container.querySelectorAll('.view-section').forEach((element) => element.setAttribute('data-document-history-source-view', ''));
+            container.querySelectorAll('.view-section').forEach((element) => {
+                element.setAttribute('data-document-history-source-view', '');
+                element.classList.remove('view-section');
+            });
             container.querySelectorAll('[id]').forEach((element) => element.removeAttribute('id'));
             container.querySelectorAll('*').forEach((element) => {
                 Array.from(element.attributes).forEach((attribute) => {
