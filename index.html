@@ -36822,6 +36822,13 @@ function render(documentKey,edition,archive){
   if(hasSnapshot){
     snapshot.hidden=false;
     snapshot.innerHTML='<div class="document-revision-snapshot__label">第'+escapeHtml(edition)+'版の本文スナップショット</div><div class="document-revision-snapshot__body">'+item.html+'</div>';
+    // 保存HTMLはサイト本体の画面セクションをそのまま含むため、
+    // .view-section の画面切り替え用CSSがスナップショット側にも適用される。
+    // 「本文」として表示する際は、表示制御用のクラスだけを除去する。
+    snapshot.querySelectorAll('.view-section').forEach((element)=>{
+      element.classList.remove('view-section');
+      element.setAttribute('data-document-history-source-view','');
+    });
   }else{
     const availabilityLabel=item?.availability==='missing'?'欠番・記録なし':'本文スナップショット未記録';
     const detail=item?.changeDescription||'確認できた改定内容はありません。';
