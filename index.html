@@ -10953,9 +10953,8 @@ body.sidebar-collapsed.sidebar-pinned #sidebar .nav-group-title {
 
     /* ==========================================
        記事読書レイアウト・目次
-       Anthropic型の固定サイドナビゲーション。
-       本文幅を一切奪わず、スクロール中も左端から
-       セクションへ直接移動できる。
+       上部：要約の下に固定される通常の目次
+       読書中：左端に細いセクションレールを固定表示
        ========================================== */
     .article-reading-layout {
         display: block;
@@ -10967,35 +10966,125 @@ body.sidebar-collapsed.sidebar-pinned #sidebar .nav-group-title {
         min-width: 0;
     }
 
+    /* 要約直下に残す固定目次 */
     .article-toc-sidebar {
         position: fixed;
-        top: 50%;
-        left: 18px;
+        top: 76px;
+        left: 50%;
         z-index: 1000;
-        width: max-content;
+        width: min(860px, calc(100vw - 32px));
         margin: 0;
         min-width: 0;
-        transform: translateY(-50%);
-        pointer-events: none;
+        transform: translateX(-50%);
     }
     .article-toc-sidebar[hidden] {
         display: none !important;
     }
-
     .article-toc-unified {
-        width: max-content;
+        position: relative;
+        width: 100%;
         margin: 0;
-        pointer-events: auto;
     }
-
     .article-toc-details {
+        position: relative;
         margin: 0;
     }
-    .article-toc-details > summary {
+    .article-toc-summary {
+        display: flex;
+        min-height: 46px;
+        align-items: center;
+        justify-content: space-between;
+        gap: .75rem;
+        list-style: none;
+        margin: 0;
+        padding: .72rem .95rem;
+        border: 1px solid var(--card-border);
+        border-radius: 10px;
+        color: var(--text-main);
+        background: var(--card-bg, #fff);
+        box-shadow: 0 5px 18px rgba(0, 0, 0, .055);
+        font-family: 'Zen Kaku Gothic New', sans-serif;
+        font-size: .82rem;
+        font-weight: 700;
+        cursor: pointer;
+        user-select: none;
+    }
+    .article-toc-summary::after {
+        content: '';
+        width: 7px;
+        height: 7px;
+        flex: 0 0 auto;
+        border-right: 1.5px solid currentColor;
+        border-bottom: 1.5px solid currentColor;
+        color: var(--text-sub);
+        transform: rotate(45deg) translateY(-2px);
+    }
+    .article-toc-details[open] > .article-toc-summary::after {
+        transform: rotate(225deg) translate(-1px, -1px);
+    }
+    .article-toc-summary::-webkit-details-marker {
         display: none;
     }
-
+    .article-toc-panel {
+        position: absolute;
+        top: calc(100% + 8px);
+        left: 0;
+        right: 0;
+        max-height: min(62vh, 520px);
+        overflow: auto;
+        padding: .45rem;
+        border: 1px solid var(--card-border);
+        border-radius: 12px;
+        background: var(--card-bg, #fff);
+        box-shadow: 0 16px 40px rgba(0, 0, 0, .12);
+    }
     .article-toc-unified__list {
+        display: flex;
+        flex-direction: column;
+        gap: 1px;
+        margin: 0;
+        padding: 0;
+        list-style: none;
+    }
+    .article-toc-unified__item {
+        margin: 0;
+    }
+    .article-toc-unified__link {
+        position: relative;
+        display: block;
+        margin: 0;
+        padding: .58rem .72rem .58rem 1rem;
+        border-left: 2px solid transparent;
+        border-radius: 7px;
+        color: var(--text-sub) !important;
+        font-family: 'Zen Kaku Gothic New', sans-serif !important;
+        font-size: .8rem !important;
+        font-weight: 500;
+        line-height: 1.55 !important;
+        text-decoration: none;
+        overflow-wrap: anywhere;
+        transition: color .14s ease, border-color .14s ease, background-color .14s ease;
+    }
+    .article-toc-unified__link:hover,
+    .article-toc-unified__link.is-active {
+        color: var(--text-main) !important;
+        border-left-color: var(--accent-red);
+        background: color-mix(in srgb, var(--accent-red) 5%, transparent);
+    }
+    .article-toc-unified__link.is-active {
+        font-weight: 700;
+    }
+
+    /* 読書中に常時見える Anthropic 型の左レール */
+    .article-toc-rail {
+        position: fixed;
+        top: 50%;
+        left: 18px;
+        z-index: 999;
+        transform: translateY(-50%);
+        pointer-events: none;
+    }
+    .article-toc-rail__list {
         display: flex;
         flex-direction: column;
         align-items: flex-start;
@@ -11004,134 +11093,112 @@ body.sidebar-collapsed.sidebar-pinned #sidebar .nav-group-title {
         padding: 0;
         list-style: none;
     }
-
-    .article-toc-unified__item {
-        display: flex;
-        align-items: center;
-        min-height: 18px;
+    .article-toc-rail__item {
         margin: 0;
         padding: 0;
     }
-
-    .article-toc-unified__link {
+    .article-toc-rail__link {
         display: inline-flex;
         align-items: center;
-        gap: 10px;
-        min-height: 18px;
-        margin: 0;
+        gap: 9px;
+        min-height: 12px;
         padding: 0;
-        border: 0;
-        border-radius: 0;
-        background: transparent !important;
-        color: var(--text-sub) !important;
-        font-family: 'Zen Kaku Gothic New', sans-serif !important;
-        font-size: .76rem !important;
-        font-weight: 600;
-        line-height: 1.35 !important;
+        color: var(--text-sub);
+        font-size: 0;
+        line-height: 1;
         text-decoration: none;
-        white-space: nowrap;
         opacity: .62;
+        pointer-events: auto;
         transition: opacity .16s ease, color .16s ease, gap .18s ease;
     }
-
-    .article-toc-unified__link::before {
+    .article-toc-rail__link::before {
         content: '';
         display: block;
-        width: 12px;
+        width: 13px;
         height: 1px;
-        flex: 0 0 12px;
+        flex: 0 0 13px;
         background: currentColor;
         opacity: .72;
         transition: width .18s ease, opacity .18s ease;
     }
-
-    .article-toc-unified__link:hover {
-        color: var(--text-main) !important;
-        opacity: 1;
-        gap: 10px;
-    }
-
-    .article-toc-unified__link:hover::before {
-        width: 20px;
-        flex-basis: 20px;
-        opacity: .95;
-    }
-
-    .article-toc-unified__link.is-active {
-        color: var(--text-main) !important;
-        font-weight: 700;
-        opacity: 1;
-        gap: 10px;
-    }
-
-    .article-toc-unified__link.is-active::before {
-        width: 28px;
-        flex-basis: 28px;
-        background: var(--accent-red);
+    .article-toc-rail__link:hover {
+        color: var(--text-main);
         opacity: 1;
     }
-
-    .article-toc-unified__link:focus-visible {
+    .article-toc-rail__link:hover::before {
+        width: 21px;
+        flex-basis: 21px;
+        opacity: 1;
+    }
+    .article-toc-rail__link.is-active {
+        color: var(--accent-red);
+        opacity: 1;
+    }
+    .article-toc-rail__link.is-active::before {
+        width: 27px;
+        flex-basis: 27px;
+        opacity: 1;
+    }
+    .article-toc-rail__link:focus-visible {
         outline: 0;
-        color: var(--text-main) !important;
         opacity: 1;
+        color: var(--text-main);
     }
-
-    .article-toc-unified__link:focus-visible::before {
-        width: 28px;
-        flex-basis: 28px;
+    .article-toc-rail__link[aria-current="location"]::after {
+        content: attr(data-label);
+        position: absolute;
+        left: 38px;
+        white-space: nowrap;
+        font-family: 'Zen Kaku Gothic New', sans-serif;
+        font-size: .72rem;
+        font-weight: 700;
+        color: var(--text-main);
+        opacity: 0;
+        pointer-events: none;
+        transform: translateX(-4px);
+        transition: opacity .15s ease, transform .15s ease;
+    }
+    .article-toc-rail__link.is-active[aria-current="location"]::after {
+        opacity: 1;
+        transform: translateX(0);
     }
 
     @media (max-width: 1100px) {
+        .article-toc-rail { left: 8px; }
+    }
+    @media (max-width: 760px) {
         .article-toc-sidebar {
-            left: 10px;
+            top: 60px;
+            width: calc(100vw - 20px);
         }
-        .article-toc-unified__list {
-            gap: 11px;
+        .article-toc-summary {
+            min-height: 44px;
+            padding: .65rem .82rem;
         }
-        .article-toc-unified__link {
-            font-size: .7rem !important;
+        .article-toc-rail {
+            left: 6px;
         }
-        .article-toc-unified__link::before {
+        .article-toc-rail__list {
+            gap: 10px;
+        }
+        .article-toc-rail__link::before {
             width: 10px;
             flex-basis: 10px;
         }
-        .article-toc-unified__link.is-active::before,
-        .article-toc-unified__link:hover::before {
+        .article-toc-rail__link.is-active::before {
             width: 22px;
             flex-basis: 22px;
         }
-    }
-
-    @media (max-width: 760px) {
-        .article-toc-sidebar {
-            left: 7px;
-        }
-        .article-toc-unified__list {
-            gap: 9px;
-        }
-        .article-toc-unified__link {
-            font-size: 0 !important;
-        }
-        .article-toc-unified__link::before {
-            width: 11px;
-            flex-basis: 11px;
-            opacity: .5;
-        }
-        .article-toc-unified__link.is-active::before,
-        .article-toc-unified__link:hover::before {
-            width: 24px;
-            flex-basis: 24px;
-            opacity: 1;
-        }
-        .article-toc-unified__link.is-active {
-            font-size: .68rem !important;
+        .article-toc-rail__link[aria-current="location"]::after {
+            left: 30px;
+            font-size: .66rem;
         }
     }
-
     @media (prefers-reduced-motion: reduce) {
-        .article-toc-unified__link,
-        .article-toc-unified__link::before {
+        .article-toc-summary,
+        .article-toc-rail__link,
+        .article-toc-rail__link::before,
+        .article-toc-rail__link::after {
             transition: none !important;
         }
     }
@@ -35220,7 +35287,7 @@ try {
 
             headings.forEach(function(h, idx) {
                 h.id = 'article-toc-h-' + idx;
-                h.style.scrollMarginTop = '96px';
+                h.style.scrollMarginTop = '136px';
             });
 
             var nav = document.createElement('nav');
@@ -35229,12 +35296,30 @@ try {
 
             var details = document.createElement('details');
             details.className = 'article-toc-details';
-            details.open = true;
+            details.open = false;
+
+            var summary = document.createElement('summary');
+            summary.className = 'article-toc-summary';
+            summary.textContent = '目次';
+            summary.setAttribute('aria-label', '記事の目次を開く');
+
+            var panel = document.createElement('div');
+            panel.className = 'article-toc-panel';
 
             var list = document.createElement('ul');
             list.className = 'article-toc-unified__list';
 
+            var rail = document.createElement('div');
+            rail.className = 'article-toc-rail';
+            rail.setAttribute('aria-hidden', 'false');
+
+            var railList = document.createElement('ul');
+            railList.className = 'article-toc-rail__list';
+
             headings.forEach(function(h) {
+                var label = h.textContent.trim().replace(/^\s*(?:[0-9０-９]+)[.．、:：)）-]+\s*/, '');
+                label = label || h.textContent.trim();
+
                 var li = document.createElement('li');
                 li.className = 'article-toc-unified__item';
 
@@ -35242,42 +35327,62 @@ try {
                 link.href = '#' + h.id;
                 link.className = 'article-toc-unified__link';
                 link.dataset.targetId = h.id;
-
-                var label = h.textContent.trim().replace(/^\s*(?:[0-9０-９]+)[.．、:：)）-]+\s*/, '');
-                label = label || h.textContent.trim();
                 link.textContent = label;
-                link.setAttribute('aria-label', label);
-                link.title = label;
 
-                link.addEventListener('click', function(event) {
+                var railItem = document.createElement('li');
+                railItem.className = 'article-toc-rail__item';
+
+                var railLink = document.createElement('a');
+                railLink.href = '#' + h.id;
+                railLink.className = 'article-toc-rail__link';
+                railLink.dataset.targetId = h.id;
+                railLink.dataset.label = label;
+                railLink.setAttribute('aria-label', label);
+                railLink.title = label;
+
+                var go = function(event) {
                     event.preventDefault();
                     var target = document.getElementById(h.id);
                     if (!target) return;
-
                     var reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
                     target.scrollIntoView({
                         behavior: reduceMotion ? 'auto' : 'smooth',
                         block: 'start'
                     });
+                    if (history.replaceState) history.replaceState(null, '', '#' + h.id);
+                };
 
-                    if (history.replaceState) {
-                        history.replaceState(null, '', '#' + h.id);
-                    }
-                });
+                link.addEventListener('click', go);
+                railLink.addEventListener('click', go);
 
                 li.appendChild(link);
                 list.appendChild(li);
+                railItem.appendChild(railLink);
+                railList.appendChild(railItem);
             });
 
-            details.appendChild(list);
+            panel.appendChild(list);
+            details.appendChild(summary);
+            details.appendChild(panel);
             nav.appendChild(details);
             sidebar.appendChild(nav);
+
+            rail.appendChild(railList);
+            sidebar.appendChild(rail);
+
             sidebar.hidden = false;
 
             var links = Array.from(list.querySelectorAll('.article-toc-unified__link'));
+            var railLinks = Array.from(railList.querySelectorAll('.article-toc-rail__link'));
 
             var setActive = function(id) {
                 links.forEach(function(link) {
+                    var active = link.dataset.targetId === id;
+                    link.classList.toggle('is-active', active);
+                    if (active) link.setAttribute('aria-current', 'location');
+                    else link.removeAttribute('aria-current');
+                });
+                railLinks.forEach(function(link) {
                     var active = link.dataset.targetId === id;
                     link.classList.toggle('is-active', active);
                     if (active) link.setAttribute('aria-current', 'location');
@@ -35288,11 +35393,8 @@ try {
             var visible = new Map();
             window._articleTocObserver = new IntersectionObserver(function(entries) {
                 entries.forEach(function(entry) {
-                    if (entry.isIntersecting) {
-                        visible.set(entry.target.id, entry.boundingClientRect.top);
-                    } else {
-                        visible.delete(entry.target.id);
-                    }
+                    if (entry.isIntersecting) visible.set(entry.target.id, entry.boundingClientRect.top);
+                    else visible.delete(entry.target.id);
                 });
 
                 var activeId = null;
@@ -35306,18 +35408,16 @@ try {
 
                 if (!activeId) {
                     var passed = headings.filter(function(h) {
-                        return h.getBoundingClientRect().top <= 120;
+                        return h.getBoundingClientRect().top <= 150;
                     });
                     if (passed.length) activeId = passed[passed.length - 1].id;
                 }
-
                 setActive(activeId || headings[0].id);
-            }, { rootMargin: '-90px 0px -70% 0px', threshold: [0, 1] });
+            }, { rootMargin: '-130px 0px -65% 0px', threshold: [0, 1] });
 
             headings.forEach(function(h) {
                 window._articleTocObserver.observe(h);
             });
-
             setActive(headings[0].id);
         } catch (e) {}
     };
@@ -36597,9 +36697,4 @@ html:not(.public-document-reading-disabled) :is(#view-about,#view-privacy,#view-
 #summary-result-card .summary-vote-btn.bg-red-600{border-color:var(--accent-red)!important;background:color-mix(in srgb,var(--accent-red) 9%,var(--card-bg))!important;color:var(--accent-red)!important;}
 #summary-result-card .summary-vote-detail{margin-top:12px;}
 </style>
-<style id="tenmei-article-toc-rail-final">
-.column-reader-body .article-content .article-toc-unified { width:max-content !important; max-width:none !important; margin:0 !important; }
-.column-reader-body .article-content .article-toc-unified > div { padding:0 !important; border:0 !important; border-radius:0 !important; background:transparent !important; }
-.column-reader-body .article-content .article-toc-unified p { color:inherit !important; }
-.column-reader-body .article-content .article-toc-unified a { color:inherit; font-size:inherit; line-height:inherit; }
-</style>
+
