@@ -10953,65 +10953,103 @@ body.sidebar-collapsed.sidebar-pinned #sidebar .nav-group-title {
 
     /* ==========================================
        記事読書レイアウト・目次
-       ドキュメントサイト型の控えめなサイド目次。
+       Anthropic系の「本文幅を奪わない上部ナビゲーション」。
+       目次は記事横に常設せず、スクロール中も上部に残る
+       コンパクトなナビゲーションから必要な時だけ開く。
        ========================================== */
     .article-reading-layout {
-        display: grid;
-        grid-template-columns: minmax(0, 760px) 220px;
-        justify-content: center;
-        align-items: start;
-        gap: 34px;
+        display: block;
+        width: 100%;
+        min-width: 0;
     }
     .article-reading-main {
+        width: 100%;
         min-width: 0;
-        grid-column: 1;
-        grid-row: 1;
     }
+
     .article-toc-sidebar {
         position: sticky;
-        top: 92px;
-        grid-column: 2;
-        grid-row: 1;
+        top: 72px;
+        z-index: 30;
+        width: min(100%, 860px);
+        margin: 0 auto 1.35rem;
         min-width: 0;
-        max-height: calc(100vh - 124px);
-        overflow-y: auto;
-        overflow-x: hidden;
-        scrollbar-width: thin;
-        scrollbar-color: var(--card-border) transparent;
     }
-    .article-toc-sidebar[hidden] { display: none !important; }
+    .article-toc-sidebar[hidden] {
+        display: none !important;
+    }
 
     .article-toc-unified {
+        position: relative;
         width: 100%;
         margin: 0;
     }
+
     .article-toc-details {
+        position: relative;
         margin: 0;
     }
+
     .article-toc-summary {
-        display: block;
+        display: flex;
+        min-height: 46px;
+        align-items: center;
+        justify-content: space-between;
+        gap: .75rem;
         list-style: none;
-        margin: 0 0 .7rem;
-        padding: 0 0 .7rem;
-        border-bottom: 1px solid var(--card-border);
+        margin: 0;
+        padding: .72rem .95rem;
+        border: 1px solid var(--card-border);
+        border-radius: 12px;
         color: var(--text-main);
+        background: color-mix(in srgb, var(--card-bg, #fff) 96%, var(--text-main));
+        box-shadow: 0 5px 18px rgba(0, 0, 0, .055);
         font-family: 'Zen Kaku Gothic New', sans-serif;
-        font-size: .78rem;
+        font-size: .82rem;
         font-weight: 700;
-        letter-spacing: .04em;
+        letter-spacing: .02em;
         line-height: 1.4;
+        cursor: pointer;
         user-select: none;
+        transition: border-color .16s ease, box-shadow .16s ease, background-color .16s ease;
     }
-    .article-toc-summary::-webkit-details-marker { display: none; }
+    .article-toc-summary::after {
+        content: '\\F282';
+        flex: 0 0 auto;
+        font-family: 'bootstrap-icons';
+        color: var(--text-sub);
+        font-size: .78rem;
+        transition: transform .16s ease;
+    }
+    .article-toc-details[open] > .article-toc-summary {
+        border-color: color-mix(in srgb, var(--accent-red) 28%, var(--card-border));
+        box-shadow: 0 8px 24px rgba(0, 0, 0, .075);
+    }
+    .article-toc-details[open] > .article-toc-summary::after {
+        transform: rotate(180deg);
+    }
+    .article-toc-summary::-webkit-details-marker {
+        display: none;
+    }
 
-    .article-toc-panel { margin: 0; }
-
-    .article-toc-unified__title { display: none !important; }
+    .article-toc-panel {
+        position: absolute;
+        top: calc(100% + 8px);
+        left: 0;
+        right: 0;
+        max-height: min(62vh, 520px);
+        overflow: auto;
+        padding: .45rem;
+        border: 1px solid var(--card-border);
+        border-radius: 14px;
+        background: var(--card-bg, #fff);
+        box-shadow: 0 16px 40px rgba(0, 0, 0, .12);
+    }
 
     .article-toc-unified__list {
         display: flex;
         flex-direction: column;
-        gap: 0;
+        gap: 1px;
         margin: 0;
         padding: 0;
         list-style: none;
@@ -11023,98 +11061,55 @@ body.sidebar-collapsed.sidebar-pinned #sidebar .nav-group-title {
         position: relative;
         display: block;
         margin: 0;
-        padding: .42rem .15rem .42rem .9rem;
-        border-left: 1px solid transparent;
+        padding: .58rem .72rem .58rem 1rem;
+        border-left: 2px solid transparent;
+        border-radius: 7px;
         color: var(--text-sub) !important;
         font-family: 'Zen Kaku Gothic New', sans-serif !important;
-        font-size: .77rem !important;
+        font-size: .8rem !important;
         font-weight: 500;
         line-height: 1.55 !important;
         text-decoration: none;
         overflow-wrap: anywhere;
-        transition: color .15s ease, border-color .15s ease, background-color .15s ease;
+        transition: color .14s ease, border-color .14s ease, background-color .14s ease;
     }
     .article-toc-unified__link:hover {
         color: var(--text-main) !important;
-        background: color-mix(in srgb, var(--text-main) 4%, transparent);
+        background: color-mix(in srgb, var(--text-main) 5%, transparent);
     }
     .article-toc-unified__link.is-active {
         color: var(--accent-red) !important;
-        border-left: 2px solid var(--accent-red);
+        border-left-color: var(--accent-red);
         font-weight: 700;
-        background: color-mix(in srgb, var(--accent-red) 4%, transparent);
+        background: color-mix(in srgb, var(--accent-red) 5%, transparent);
     }
     .article-toc-unified__link:focus-visible {
         outline: 2px solid var(--accent-red);
         outline-offset: 2px;
-        border-radius: 2px;
     }
 
     @media (max-width: 900px) {
-        .article-reading-layout {
-            grid-template-columns: minmax(0, 760px);
-            justify-content: center;
-            gap: 0;
-        }
-        .article-reading-main {
-            grid-column: 1;
-            grid-row: 2;
-        }
         .article-toc-sidebar {
-            position: static;
-            grid-column: 1;
-            grid-row: 1;
-            max-height: none;
-            overflow: visible;
-            margin-bottom: 1.5rem;
-        }
-        .article-toc-details {
-            border-top: 1px solid var(--card-border);
-            border-bottom: 1px solid var(--card-border);
+            top: 58px;
+            width: 100%;
+            margin-bottom: 1rem;
         }
         .article-toc-summary {
-            display: flex;
-            min-height: 48px;
-            align-items: center;
-            justify-content: space-between;
-            margin: 0;
-            padding: 0;
-            border: 0;
-            color: var(--text-main);
-            cursor: pointer;
+            min-height: 44px;
+            padding: .65rem .82rem;
         }
-        .article-toc-summary::after {
-            content: '+';
-            color: var(--text-sub);
-            font-size: 1rem;
-            font-weight: 400;
-            line-height: 1;
-        }
-        .article-toc-details[open] .article-toc-summary::after {
-            content: '−';
-        }
-        .article-toc-unified__list {
-            padding: .15rem 0 .7rem;
+        .article-toc-panel {
+            max-height: min(64vh, 500px);
         }
         .article-toc-unified__link {
-            padding: .45rem 0 .45rem .9rem;
+            padding: .56rem .62rem .56rem .9rem;
             font-size: .78rem !important;
         }
     }
 
-    @media (min-width: 901px) {
-        .article-toc-details > .article-toc-summary {
-            cursor: default;
-        }
-        .article-toc-details > .article-toc-summary::after {
-            display: none;
-        }
-        .article-toc-details > .article-toc-panel {
-            display: block !important;
-        }
-    }
-
     @media (prefers-reduced-motion: reduce) {
+        .article-toc-summary,
+        .article-toc-summary::after,
         .article-toc-unified__link {
             transition: none !important;
         }
@@ -35195,10 +35190,6 @@ try {
                 window._articleTocObserver.disconnect();
                 window._articleTocObserver = null;
             }
-            if (window._articleTocResizeHandler) {
-                window.removeEventListener('resize', window._articleTocResizeHandler);
-                window._articleTocResizeHandler = null;
-            }
 
             sidebar.innerHTML = '';
             sidebar.hidden = true;
@@ -35208,7 +35199,7 @@ try {
 
             headings.forEach(function(h, idx) {
                 h.id = 'article-toc-h-' + idx;
-                h.style.scrollMarginTop = '76px';
+                h.style.scrollMarginTop = '136px';
             });
 
             var nav = document.createElement('nav');
@@ -35217,11 +35208,12 @@ try {
 
             var details = document.createElement('details');
             details.className = 'article-toc-details';
-            details.open = window.matchMedia('(min-width: 901px)').matches;
+            details.open = false;
 
             var summary = document.createElement('summary');
             summary.className = 'article-toc-summary';
             summary.textContent = '目次';
+            summary.setAttribute('aria-label', '記事の目次を開く');
 
             var panel = document.createElement('div');
             panel.className = 'article-toc-panel';
@@ -35238,8 +35230,6 @@ try {
                 link.className = 'article-toc-unified__link';
                 link.dataset.targetId = h.id;
 
-                // 本文側の見出し番号は本文では残し、目次ではナビゲーションとしての
-                // 重複した番号表示を避ける。
                 var label = h.textContent.trim().replace(/^\s*(?:[0-9０-９]+)[.．、:：)）-]+\s*/, '');
                 link.textContent = label || h.textContent.trim();
 
@@ -35254,9 +35244,8 @@ try {
                         block: 'start'
                     });
 
-                    if (window.matchMedia('(max-width: 900px)').matches) {
-                        details.open = false;
-                    }
+                    details.open = false;
+
                     if (history.replaceState) {
                         history.replaceState(null, '', '#' + h.id);
                     }
@@ -35305,24 +35294,18 @@ try {
 
                 if (!activeId) {
                     var passed = headings.filter(function(h) {
-                        return h.getBoundingClientRect().top <= 110;
+                        return h.getBoundingClientRect().top <= 150;
                     });
                     if (passed.length) activeId = passed[passed.length - 1].id;
                 }
 
                 setActive(activeId || headings[0].id);
-            }, { rootMargin: '-92px 0px -65% 0px', threshold: [0, 1] });
+            }, { rootMargin: '-130px 0px -65% 0px', threshold: [0, 1] });
 
             headings.forEach(function(h) {
                 window._articleTocObserver.observe(h);
             });
             setActive(headings[0].id);
-
-            window._articleTocResizeHandler = function() {
-                var desktop = window.matchMedia('(min-width: 901px)').matches;
-                details.open = desktop;
-            };
-            window.addEventListener('resize', window._articleTocResizeHandler, { passive: true });
         } catch (e) {}
     };
 
