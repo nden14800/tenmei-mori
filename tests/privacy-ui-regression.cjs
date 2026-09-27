@@ -39,7 +39,7 @@ requireSectionText('id="privacy-toc-list"', 'プライバシーポリシー画�
 const revisionOptionsMatch = privacySection.match(/data-control-id="privacy-revision-select"[^>]*data-options='([^']+)'/);
 assert(revisionOptionsMatch, 'プライバシー第9条の版選択肢が定義されていません。');
 const revisionEditions = JSON.parse(revisionOptionsMatch[1]).map((option) => Number(option.value));
-[32,31,30,29,28,27,26,25,24,23,22,21,20,19,18,17,16,15,14,13,12,11,10,9,8,7,6,5,4,3].forEach((edition) => assert(revisionEditions.includes(edition), `プライバシー第${edition}版の選択肢がありません。`));
+[33,32,31,30,29,28,27,26,25,24,23,22,21,20,19,18,17,16,15,14,13,12,11,10,9,8,7,6,5,4,3].forEach((edition) => assert(revisionEditions.includes(edition), `プライバシー第${edition}版の選択肢がありません。`));
 assert(revisionEditions.includes(15), 'プライバシー第15版の欠番・記録なし表示が選択肢にありません。');
 assert(privacySection.includes('第15版</span>') || privacySection.includes('第15版'), 'プライバシー第15版の明示がHTMLにありません。');
 assert(html.includes('.dark .document-revision-selector{'), 'REVISION HISTORYのダークモードCSSがありません。');
@@ -162,7 +162,12 @@ for (const documentKey of ['about', 'privacy']) {
   assert(document && document.current, documentKey + 'のcurrentメタデータがありません。');
   const editions = document.versions.map((version) => version.edition);
   assert.equal(new Set(editions).size, editions.length, documentKey + 'の版番号が重複しています。');
-  assert(!editions.includes(Number(document.current.edition)), documentKey + 'の現行版が以前の版一覧に混入しています。');
+  assert(editions.includes(Number(document.current.edition)), documentKey + 'の現行版が版一覧に収録されていません。');
+  const currentVersion = document.versions.find((version) => version.edition === Number(document.current.edition));
+  assert(currentVersion, documentKey + 'の現行版アーカイブがありません。');
+  assert(currentVersion.availability === 'full', documentKey + 'の現行版がfullとして記録されていません。');
+  assert(currentVersion.html && currentVersion.html.trim(), documentKey + 'の現行版本文スナップショットがありません。');
+  assert(currentVersion.changeDescription && currentVersion.changeDescription.trim(), documentKey + 'の現行版改定内容がありません。');
   document.versions.forEach((version) => {
     if (version.availability === 'missing' || version.availability === 'metadata-only') {
       assert(!version.html || !version.html.trim(), documentKey + '第' + version.edition + '版は未記録扱いなのに本文HTMLがあります。');

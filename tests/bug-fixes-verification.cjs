@@ -56,6 +56,12 @@ console.log('🔍 【不具合2検証】public-document-history.json の手動�
 // 6. about 第24版が「欠番」として記録されているか
 assert.ok(historyJson.documents?.about?.versions || historyJson.about?.versions, 'about versions がない');
 const aboutVersions = historyJson.documents?.about?.versions || historyJson.about?.versions;
+const aboutCurrent = historyJson.documents?.about?.current;
+const aboutEdition25 = aboutVersions.find(v => v.edition === 25);
+assert.equal(aboutCurrent?.edition, 25, 'about 現行版が第25版でない');
+assert.ok(aboutEdition25, 'about 第25版が手動アーカイブに存在しない');
+assert.equal(aboutEdition25.availability, 'full', 'about 第25版の本文スナップショットがfullではない');
+assert.ok(typeof aboutEdition25.html === 'string' && aboutEdition25.html.length > 0, 'about 第25版の本文スナップショットが空です');
 const edition24 = aboutVersions.find(v => v.edition === 24);
 
 assert.ok(edition24, 'about 第24版が存在しない');
@@ -89,6 +95,10 @@ const hasManualEntries = [...aboutVersions, ...privacyVersions].some((version) =
 assert.ok(hasManualEntries, '手動管理アーカイブに改定内容を持つエントリがありません');
 console.log(`✓ privacy 最新版: 第${latestPrivacy.edition}版`);
 assert.equal(latestPrivacy.edition, 33, 'privacy 最新版が第33版でない');
+const privacyEdition33 = privacyVersions.find(v => v.edition === 33);
+assert.ok(privacyEdition33, 'privacy 第33版が手動アーカイブに存在しない');
+assert.equal(privacyEdition33.availability, 'full', 'privacy 第33版の本文スナップショットが full ではない');
+assert.ok(typeof privacyEdition33.html === 'string' && privacyEdition33.html.length > 0, 'privacy 第33版の本文スナップショットが空です');
 const privacyEdition32 = privacyVersions.find(v => v.edition === 32);
 assert.ok(privacyEdition32, 'privacy 第32版が手動アーカイブに存在しない');
 assert.equal(privacyEdition32.availability, 'full', 'privacy 第32版の本文スナップショットが full ではない');
