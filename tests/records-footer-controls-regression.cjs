@@ -74,26 +74,28 @@ assert.equal(
 
 [
   '<footer id="site-footer" class="footer-v4">',
-  'class="footer-v4-line"',
-  'id="footer-main-grid" class="footer-v4-main"',
-  'class="footer-v4-brand"',
-  'class="footer-v4-social"',
-  'id="footer-nav-grid" class="footer-v4-nav" aria-label="フッターの主要ナビゲーション"',
-  'class="footer-v4-bottom"',
-  '.footer-v4 {',
-  '.footer-v4-social-link {',
-  '.footer-v4-nav {',
-  'border-radius: 0;',
-  'grid-template-columns: minmax(240px, 0.78fr) minmax(0, 2.22fr);',
-  '.footer-v4-social-link.footer-v4-social-discord',
-  '.footer-v4-social-link.footer-v4-social-github',
-  '.footer-v4-social-link.footer-v4-social-youtube',
+  'class="footer-v5-line"',
+  'class="footer-v5-shell"',
+  'class="footer-v5-intro"',
+  'class="footer-v5-brand"',
+  'class="footer-v5-social"',
+  'id="footer-nav-grid" class="footer-v5-nav" aria-label="フッターの主要ナビゲーション"',
+  'class="footer-v5-bottom"',
+  '.footer-v5-line',
+  '.footer-v5-shell',
+  '.footer-v5-nav',
+  '.footer-v5-column',
+  '.footer-v5-social-link',
+  '.footer-v5-social-discord',
+  '.footer-v5-social-github',
+  '.footer-v5-social-youtube',
 ].forEach((text) => requireText(text, `フッターのVer.4.0構造またはテーマ規則が不足しています: ${text}`));
 
 const footerSection = html.match(/<footer id="site-footer"[\s\S]*?<\/footer>/)?.[0] || '';
 assert(footerSection, 'サイトフッターを抽出できません。');
 assert.equal(footerSection.includes('class="footer-v4-group"'), false, 'フッターのリンク群が個別カードとして再導入されています。');
-requireCount(/class="footer-v4-social-link footer-v4-social-(discord|github|youtube)"/g, 3, 'フッターのブランド色付きSNS導線が3件保持されていません。');
+requireCount(/class="footer-v5-social-link footer-v5-social-(discord|github|youtube)"/g, 3, 'フッターのSNS導線が3件保持されていません。');
+requireCount(/class="footer-v5-column"/g, 4, 'フッターの4つのナビゲーション列が保持されていません。');
 requireCount(/showView\('/g, 15, '既存の内部画面遷移導線が不足しています。');
 
 [

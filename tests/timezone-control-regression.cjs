@@ -51,3 +51,9 @@ function getPartsInTimeZone(date, timeZone) {
 const timestamp = new Date('2026-01-02T00:05:00.000Z');
 assert.deepEqual(getPartsInTimeZone(timestamp, 'Asia/Tokyo'), { year: 2026, month: 1, day: 2, hour: 9, minute: 5 });
 assert.deepEqual(getPartsInTimeZone(timestamp, 'America/Los_Angeles'), { year: 2026, month: 1, day: 1, hour: 16, minute: 5 });
+
+assert(html.includes('id="pref-update-time"'));
+assert(html.includes('id="zodiac-update-time"'));
+assert(html.includes('updateDailyViewUpdateLabels()'));
+assert(html.includes("prefUpdate.textContent"));
+assert(html.includes("zodiacUpdate.textContent"));

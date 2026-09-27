@@ -2573,7 +2573,7 @@
 #view-about #about-toc-list li a:hover { background: var(--about-gold-soft); color: var(--about-red); }
 #view-about #about-toc-list li a i { margin: 0.18rem 0 0; color: var(--about-gold); }
 #view-about #about-toc-list li:has(.bi-dot) a { font-size: 0.72rem; font-weight: 500; }
-.about-codex-content { display: grid; gap: 1.25rem; margin-top: 1.25rem; }
+.about-codex-content { display: grid; gap: 1.25rem; row-gap: 20px !important; margin-top: 1.25rem; }
 .about-codex-prologue {
     position: relative;
     overflow: hidden;
@@ -7293,12 +7293,12 @@ html.reduce-motion .member-login-dialog-close { animation: none !important; tran
 }
 /* 公開文書は利用者が明示的に選んだ場合だけ読書設定の対象にする。操作UIや印刷は対象外。 */
 html:not(.public-document-reading-disabled) :is(#view-about, #view-privacy, #view-howto) :is(.about-codex-content, .privacy-ledger-content, .howto-guide-content) {
-    font-family: var(--article-font-family);
-    font-size: var(--article-font-size);
-    line-height: var(--article-line-height);
-    max-width: var(--article-max-width);
-    margin-left: auto;
-    margin-right: auto;
+    font-family: var(--article-font-family) !important;
+    font-size: var(--article-font-size) !important;
+    line-height: var(--article-line-height) !important;
+    max-width: var(--article-max-width) !important;
+    margin-left: auto !important;
+    margin-right: auto !important;
 }
 html:not(.public-document-reading-disabled) :is(#view-about, #view-privacy, #view-howto) :is(.about-codex-content, .privacy-ledger-content, .howto-guide-content) :is(p, li, td, th, blockquote) {
     font-family: var(--article-font-family) !important;
@@ -16487,7 +16487,7 @@ body.sidebar-collapsed.sidebar-pinned #sidebar .nav-group-title {
             <h2 class="prefecture-observatory-title">全国・土地の運気</h2>
             <p class="prefecture-observatory-summary">47都道府県の「地の利」を、日ごとの巡りとして静かに読み解きます。気になる土地の位置と、その日の流れをランキングと地図からお確かめください。</p>
             <div class="prefecture-observatory-meta" aria-label="更新情報">
-                <strong>日本時間 0:00 更新</strong>
+                <strong id="pref-update-time">---</strong>
                 <span class="prefecture-observatory-meta-separator" aria-hidden="true"></span>
                 <span id="pref-date-display">---</span>
             </div>
@@ -17457,16 +17457,17 @@ body.sidebar-collapsed.sidebar-pinned #sidebar .nav-group-title {
                                 <button type="button" class="theme-select-btn" data-value="wide" onclick="AppConfig.toggle('contentWidth','wide')" aria-pressed="false"><span>広め</span></button>
                             </div>
                         </section>
+                        <section class="howto-guide-setting-card" aria-labelledby="settings-public-documents-heading">
+                            <div class="howto-guide-setting-head"><span class="howto-guide-setting-icon"><i class="bi bi-file-earmark-text" aria-hidden="true"></i></span><div><h4 id="settings-public-documents-heading">公開文書への読書設定</h4><p>「当サイトについて」「プライバシーポリシー」「使い方」に、上の読書設定を反映します</p></div></div>
+                            <div class="theme-select-group opt-select-group howto-guide-option-group" data-setting="publicDocumentReading" data-value="true" role="group" aria-label="公開文書への読書設定">
+                                <button type="button" class="theme-select-btn" data-value="true" onclick="AppConfig.toggle('publicDocumentReading', true)" aria-pressed="true"><span>適用する</span></button>
+                                <button type="button" class="theme-select-btn" data-value="false" onclick="AppConfig.toggle('publicDocumentReading', false)" aria-pressed="false"><span>適用しない</span></button>
+                            </div>
+                        </section>
                         <section class="howto-guide-setting-card" aria-labelledby="settings-reduce-motion-heading">
                             <div class="howto-guide-setting-row">
                                 <div class="howto-guide-setting-head"><span class="howto-guide-setting-icon"><i class="bi bi-universal-access" aria-hidden="true"></i></span><div><h4 id="settings-reduce-motion-heading">アニメーションを減らす</h4><p>演出や画面遷移のアニメーションを抑えます</p></div></div>
                                 <label class="toggle-switch howto-guide-switch"><input type="checkbox" id="settings-reduce-motion-toggle" onchange="AppConfig.toggle('reduceMotion', this.checked)" aria-label="アニメーションを減らす設定を切り替える"><span class="slider" aria-hidden="true"></span><span class="howto-guide-switch-state" aria-hidden="true"></span></label>
-                            </div>
-                        </section>
-                        <section class="howto-guide-setting-card" aria-labelledby="settings-public-documents-heading">
-                            <div class="howto-guide-setting-row">
-                                <div class="howto-guide-setting-head"><span class="howto-guide-setting-icon"><i class="bi bi-file-earmark-text" aria-hidden="true"></i></span><div><h4 id="settings-public-documents-heading">公開文書にも読書設定を適用</h4><p>当サイトについて・プライバシーポリシー・使い方の本文にも、文字・行間・書体・幅を反映</p></div></div>
-                                <label class="toggle-switch howto-guide-switch"><input type="checkbox" id="settings-public-documents-toggle" onchange="AppConfig.toggle('publicDocumentReading', this.checked)" aria-label="公開文書に読書設定を適用する"><span class="slider" aria-hidden="true"></span><span class="howto-guide-switch-state" aria-hidden="true"></span></label>
                             </div>
                         </section>
                         <section class="howto-guide-setting-card" aria-labelledby="settings-draw-history-heading">
@@ -18529,6 +18530,34 @@ body.sidebar-collapsed.sidebar-pinned #sidebar .nav-group-title {
         </section>
 
         <!-- サイトフッター -->
+<style id="tenmei-footer-refresh">
+.footer-v4{width:100%;margin-top:72px;border:0;border-top:1px solid var(--card-border);border-radius:0;background:var(--footer-bg);box-shadow:none;overflow:visible}
+.footer-v5-line{width:min(100%,1120px);height:2px;margin:0 auto;background:linear-gradient(90deg,transparent,var(--accent-red) 28%,var(--accent-gold) 50%,var(--accent-red) 72%,transparent)}
+.footer-v5-shell{width:min(100%,1120px);margin:0 auto;padding:46px 32px 22px;box-sizing:border-box}
+.footer-v5-intro{display:flex;align-items:flex-end;justify-content:space-between;gap:32px;padding-bottom:34px}
+.footer-v5-brand{display:flex;align-items:center;gap:15px;min-width:0}
+.footer-v5-brand-mark{display:grid;width:52px;height:52px;flex:0 0 52px;place-items:center;overflow:hidden;border:1px solid color-mix(in srgb,var(--accent-gold) 45%,var(--card-border));border-radius:16px;background:var(--card-bg);box-shadow:0 8px 22px rgba(68,34,28,.08)}
+.footer-v5-brand-mark img{width:100%;height:100%;object-fit:cover}
+.footer-v5-eyebrow{margin:0 0 3px;color:var(--accent-red);font-size:.62rem;font-weight:900;letter-spacing:.18em}
+.footer-v5-brand-name{margin:0;color:var(--text-main);font-family:'Zen Old Mincho',serif;font-size:1.18rem;font-weight:900;letter-spacing:.12em}
+.footer-v5-brand-copy{margin:5px 0 0;color:var(--text-sub);font-size:.78rem;line-height:1.7}
+.footer-v5-social{display:flex;gap:9px;flex:0 0 auto}
+.footer-v5-social-link{display:grid;width:40px;height:40px;place-items:center;border:1px solid var(--card-border);border-radius:12px;background:var(--card-bg);color:var(--text-main);text-decoration:none;transition:transform 160ms ease,border-color 160ms ease,color 160ms ease}
+.footer-v5-social-link:hover{transform:translateY(-2px);border-color:var(--accent-red);color:var(--accent-red)}
+.footer-v5-social-discord{background:#5865f2;border-color:#5865f2;color:#fff}.footer-v5-social-github{background:#24292f;border-color:#24292f;color:#fff}.footer-v5-social-youtube{background:#ff0000;border-color:#ff0000;color:#fff}
+.footer-v5-nav{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:34px;padding:32px 0 36px;border-top:1px solid var(--card-border);border-bottom:1px solid var(--card-border)}
+.footer-v5-column{display:flex;min-width:0;flex-direction:column;align-items:flex-start;gap:8px}
+.footer-v5-column h2{margin:0 0 6px;color:var(--text-main);font-family:'Zen Kaku Gothic New',sans-serif;font-size:.68rem;font-weight:900;letter-spacing:.12em}
+.footer-v5-column a,.footer-v5-column button{display:inline-flex;align-items:center;min-height:28px;padding:0;border:0;background:transparent;color:var(--text-sub);cursor:pointer;font:inherit;font-size:.78rem;line-height:1.55;text-align:left;text-decoration:none;transition:color 150ms ease,transform 150ms ease}
+.footer-v5-column a:hover,.footer-v5-column button:hover{color:var(--accent-red);transform:translateX(2px)}
+.footer-v5-column a:focus-visible,.footer-v5-column button:focus-visible,.footer-v5-social-link:focus-visible,.footer-v5-brand-mark:focus-visible,.footer-v5-legal a:focus-visible{outline:3px solid color-mix(in srgb,var(--accent-red) 45%,transparent);outline-offset:3px;border-radius:5px}
+.footer-v5-bottom{display:flex;align-items:center;justify-content:space-between;gap:20px;padding-top:20px;color:var(--text-sub);font-size:.68rem;line-height:1.6}
+.footer-v5-legal{display:flex;flex-wrap:wrap;justify-content:flex-end;gap:6px 18px}.footer-v5-legal a{color:inherit;text-decoration:none}.footer-v5-legal a:hover{color:var(--accent-red)}
+.dark .footer-v4{background:#0d0c0c;border-top-color:rgba(255,255,255,.10)}
+@media(max-width:900px){.footer-v5-shell{padding:38px 24px 20px}.footer-v5-intro{align-items:flex-start;flex-direction:column}.footer-v5-nav{grid-template-columns:repeat(2,minmax(0,1fr));gap:28px 24px}.footer-v5-bottom{align-items:flex-start;flex-direction:column}.footer-v5-legal{justify-content:flex-start}}
+@media(max-width:500px){.footer-v4{margin-top:48px}.footer-v5-shell{padding:30px 18px 18px}.footer-v5-nav{grid-template-columns:1fr;gap:24px}.footer-v5-bottom{gap:12px}.footer-v5-brand-name{font-size:1.05rem}}
+@media(prefers-reduced-motion:reduce){.footer-v5-social-link,.footer-v5-column a,.footer-v5-column button,.footer-v5-legal a{transition:none!important}}
+</style>
         <style>
             /* フッター：スマホ幅でのレイアウト崩れ対策
                (日本語の見出し語がスペースなしで詰まっているため、
@@ -18549,83 +18578,20 @@ body.sidebar-collapsed.sidebar-pinned #sidebar .nav-group-title {
                 }
             }
         </style>
-        <footer id="site-footer" class="footer-v4">
-
-            <!-- 上部グラデーションライン（境界線を兼ねる。ボーダーとの二重線を避けるためこの1本のみ） -->
-            <div class="footer-v4-line" aria-hidden="true"></div>
-
-            <!-- メインコンテンツエリア -->
-            <div id="footer-main-grid" class="footer-v4-main">
-
-                <!-- 左：ロゴ＋説明 -->
-                <section class="footer-v4-brand" aria-label="天命乃杜について">
-                    <div class="footer-v4-brand-top">
-                        <div class="footer-v4-brand-mark">
-                            <img src="favicon/apple-touch-icon.png" alt="天命乃杜">
-                        </div>
-                        <p class="footer-v4-brand-name">運勢・天命乃杜</p>
-                    </div>
-                    <p class="footer-v4-brand-copy">おみくじ・星座占い・御守など、日々の運勢を見守る和風参拝サイト。</p>
-                    <!-- SNSアイコン -->
-                    <div class="footer-v4-social">
-                        <a class="footer-v4-social-link footer-v4-social-discord" href="https://discord.gg/Ys6hpbNdcV" target="_blank" rel="noopener noreferrer" aria-label="公式Discord参拝所を新しいタブで開く">
-                            <i class="bi bi-discord" style="color:#fff;font-size:1rem;"></i>
-                        </a>
-                        <a class="footer-v4-social-link footer-v4-social-github" href="https://github.com/nden14800" target="_blank" rel="noopener noreferrer" aria-label="nden14800のGitHubを新しいタブで開く">
-                            <i class="bi bi-github" style="color:var(--text-main);font-size:1rem;"></i>
-                        </a>
-                        <a class="footer-v4-social-link footer-v4-social-youtube" href="https://www.youtube.com/@nden148-x2g" target="_blank" rel="noopener noreferrer" aria-label="nden148のYouTubeを新しいタブで開く">
-                            <i class="bi bi-youtube" style="color:#fff;font-size:1rem;"></i>
-                        </a>
-                    </div>
-                </section>
-
-                <!-- 右：ナビ4列 -->
-                <nav id="footer-nav-grid" class="footer-v4-nav" aria-label="フッターの主要ナビゲーション">
-                    <div>
-                        <div style="font-size:0.65rem;font-weight:700;letter-spacing:0.15em;color:var(--text-sub);text-transform:uppercase;margin-bottom:12px;padding-bottom:8px;border-bottom:1px solid var(--card-border);">コンテンツ</div>
-                        <div style="display:flex;flex-direction:column;gap:9px;">
-                            <a onclick="showView('home')" style="font-size:0.8rem;color:var(--text-main);text-decoration:none;cursor:pointer;transition:color 0.15s;" onmouseenter="this.style.color='var(--accent-red)'" onmouseleave="this.style.color='var(--text-main)'">ホーム</a>
-                            <a onclick="showView('draw')" style="font-size:0.8rem;color:var(--text-main);text-decoration:none;cursor:pointer;transition:color 0.15s;" onmouseenter="this.style.color='var(--accent-red)'" onmouseleave="this.style.color='var(--text-main)'">おみくじ</a>
-                            <a onclick="showView('zodiac')" style="font-size:0.8rem;color:var(--text-main);text-decoration:none;cursor:pointer;transition:color 0.15s;" onmouseenter="this.style.color='var(--accent-red)'" onmouseleave="this.style.color='var(--text-main)'">12星座占い</a>
-                            <a onclick="showView('omamori')" style="font-size:0.8rem;color:var(--text-main);text-decoration:none;cursor:pointer;transition:color 0.15s;" onmouseenter="this.style.color='var(--accent-red)'" onmouseleave="this.style.color='var(--text-main)'">御守</a>
-                        </div>
-                    </div>
-                    <div>
-                        <div style="font-size:0.65rem;font-weight:700;letter-spacing:0.15em;color:var(--text-sub);text-transform:uppercase;margin-bottom:12px;padding-bottom:8px;border-bottom:1px solid var(--card-border);">コミュニティ</div>
-                        <div style="display:flex;flex-direction:column;gap:9px;">
-                            <a onclick="showView('prefecture')" style="font-size:0.8rem;color:var(--text-main);text-decoration:none;cursor:pointer;transition:color 0.15s;" onmouseenter="this.style.color='var(--accent-red)'" onmouseleave="this.style.color='var(--text-main)'">全国の運気</a>
-                            <a onclick="showView('history')" style="font-size:0.8rem;color:var(--text-main);text-decoration:none;cursor:pointer;transition:color 0.15s;" onmouseenter="this.style.color='var(--accent-red)'" onmouseleave="this.style.color='var(--text-main)'">おみくじの轍</a>
-                            <a onclick="showView('news')" style="font-size:0.8rem;color:var(--text-main);text-decoration:none;cursor:pointer;transition:color 0.15s;" onmouseenter="this.style.color='var(--accent-red)'" onmouseleave="this.style.color='var(--text-main)'">社務所だより</a>
-                            <a onclick="showView('column')" style="font-size:0.8rem;color:var(--text-main);text-decoration:none;cursor:pointer;transition:color 0.15s;" onmouseenter="this.style.color='var(--accent-red)'" onmouseleave="this.style.color='var(--text-main)'">神籤草子</a>
-                        </div>
-                    </div>
-                    <div>
-                        <div style="font-size:0.65rem;font-weight:700;letter-spacing:0.15em;color:var(--text-sub);text-transform:uppercase;margin-bottom:12px;padding-bottom:8px;border-bottom:1px solid var(--card-border);">情報</div>
-                        <div style="display:flex;flex-direction:column;gap:9px;">
-                            <a onclick="showView('about')" style="font-size:0.8rem;color:var(--text-main);text-decoration:none;cursor:pointer;transition:color 0.15s;" onmouseenter="this.style.color='var(--accent-red)'" onmouseleave="this.style.color='var(--text-main)'">当サイトについて</a>
-                            <a onclick="showView('privacy')" style="font-size:0.8rem;color:var(--text-main);text-decoration:none;cursor:pointer;transition:color 0.15s;" onmouseenter="this.style.color='var(--accent-red)'" onmouseleave="this.style.color='var(--text-main)'">プライバシーポリシー</a>
-                            <a onclick="showView('developer')" style="font-size:0.8rem;color:var(--text-main);text-decoration:none;cursor:pointer;transition:color 0.15s;" onmouseenter="this.style.color='var(--accent-red)'" onmouseleave="this.style.color='var(--text-main)'">開発者について</a>
-                            <a onclick="showView('howto')" style="font-size:0.8rem;color:var(--text-main);text-decoration:none;cursor:pointer;transition:color 0.15s;" onmouseenter="this.style.color='var(--accent-red)'" onmouseleave="this.style.color='var(--text-main)'">使い方</a>
-                            <a href="https://tenmei-mori-status.pages.dev" target="_blank" rel="noopener noreferrer" style="font-size:0.8rem;color:var(--text-main);text-decoration:none;cursor:pointer;transition:color 0.15s;" onmouseenter="this.style.color='var(--accent-red)'" onmouseleave="this.style.color='var(--text-main)'">サービス状況 <i class="bi bi-box-arrow-up-right" aria-hidden="true"></i></a>
-                            <a onclick="showView('settings')" style="font-size:0.8rem;color:var(--text-main);text-decoration:none;cursor:pointer;transition:color 0.15s;" onmouseenter="this.style.color='var(--accent-red)'" onmouseleave="this.style.color='var(--text-main)'">環境・表示設定</a>
-                            <a href="#translation-dialog" onclick="event.preventDefault(); openTranslationPanel();" style="font-size:0.8rem;color:var(--text-main);text-decoration:none;cursor:pointer;transition:color 0.15s;" onmouseenter="this.style.color='var(--accent-red)'" onmouseleave="this.style.color='var(--text-main)'" aria-haspopup="dialog" aria-controls="translation-dialog">表示言語</a>
-                        </div>
-                    </div>
-                    <div>
-                        <div style="font-size:0.65rem;font-weight:700;letter-spacing:0.15em;color:var(--text-sub);text-transform:uppercase;margin-bottom:12px;padding-bottom:8px;border-bottom:1px solid var(--card-border);">アカウント</div>
-                        <div style="display:flex;flex-direction:column;gap:9px;">
-                            <a onclick="showView('lab')" style="font-size:0.8rem;color:var(--text-main);text-decoration:none;cursor:pointer;transition:color 0.15s;" onmouseenter="this.style.color='var(--accent-red)'" onmouseleave="this.style.color='var(--text-main)'">TENMEI Labs</a>
-                            <a onclick="showView('stats')" style="font-size:0.8rem;color:var(--text-main);text-decoration:none;cursor:pointer;transition:color 0.15s;" onmouseenter="this.style.color='var(--accent-red)'" onmouseleave="this.style.color='var(--text-main)'">参拝の記録</a>
-                            <a onclick="showView('auth')" style="font-size:0.8rem;color:var(--text-main);text-decoration:none;cursor:pointer;transition:color 0.15s;" onmouseenter="this.style.color='var(--accent-red)'" onmouseleave="this.style.color='var(--text-main)'">参拝証の発行</a>
-                        </div>
-                    </div>
+        <footer id="site-footer" class="footer-v4" role="contentinfo">
+            <div class="footer-v5-line" aria-hidden="true"></div>
+            <div class="footer-v5-shell">
+                <div class="footer-v5-intro">
+                    <div class="footer-v5-brand"><a class="footer-v5-brand-mark" href="#" onclick="event.preventDefault();showView('home');" aria-label="天命乃杜のホームへ"><img src="favicon/apple-touch-icon.png" alt="天命乃杜"></a><div><p class="footer-v5-eyebrow">TENMEI MORI</p><p class="footer-v5-brand-name">運勢・天命乃杜</p><p class="footer-v5-brand-copy">おみくじ、星座占い、御守、読み物をひとつの参拝所に。</p></div></div>
+                    <div class="footer-v5-social" aria-label="公式リンク"><a class="footer-v5-social-link footer-v5-social-discord" href="https://discord.gg/Ys6hpbNdcV" target="_blank" rel="noopener noreferrer" aria-label="公式Discord参拝所を新しいタブで開く"><i class="bi bi-discord" aria-hidden="true"></i></a><a class="footer-v5-social-link footer-v5-social-github" href="https://github.com/nden14800" target="_blank" rel="noopener noreferrer" aria-label="nden14800のGitHubを新しいタブで開く"><i class="bi bi-github" aria-hidden="true"></i></a><a class="footer-v5-social-link footer-v5-social-youtube" href="https://www.youtube.com/@nden148-x2g" target="_blank" rel="noopener noreferrer" aria-label="nden148のYouTubeを新しいタブで開く"><i class="bi bi-youtube" aria-hidden="true"></i></a></div>
+                </div>
+                <nav id="footer-nav-grid" class="footer-v5-nav" aria-label="フッターの主要ナビゲーション">
+                    <div class="footer-v5-column"><h2>参拝</h2><a onclick="showView('home')">ホーム</a><a onclick="showView('draw')">おみくじ</a><a onclick="showView('zodiac')">12星座占い</a><a onclick="showView('omamori')">御守</a></div>
+                    <div class="footer-v5-column"><h2>記録・読み物</h2><a onclick="showView('prefecture')">全国の運気</a><a onclick="showView('history')">おみくじの轍</a><a onclick="showView('news')">社務所だより</a><a onclick="showView('column')">神籤草子</a><a onclick="showView('stats')">参拝の記録</a></div>
+                    <div class="footer-v5-column"><h2>案内・設定</h2><a onclick="showView('about')">当サイトについて</a><a onclick="showView('privacy')">プライバシーポリシー</a><a onclick="showView('howto')">使い方</a><a onclick="showView('settings')">環境・表示設定</a><button type="button" onclick="openCookiePreferences()">クッキー設定</button><a href="https://tenmei-mori-status.pages.dev" target="_blank" rel="noopener noreferrer">サービス状況 <i class="bi bi-box-arrow-up-right" aria-hidden="true"></i></a></div>
+                    <div class="footer-v5-column"><h2>アカウント・開発</h2><a onclick="showView('developer')">開発者について</a><a onclick="showView('lab')">TENMEI Labs</a><a onclick="showView('auth')">参拝証の発行</a><a href="#translation-dialog" onclick="event.preventDefault(); openTranslationPanel();" aria-haspopup="dialog" aria-controls="translation-dialog">表示言語</a></div>
                 </nav>
-            </div>
-
-            <!-- 著作権表記 -->
-            <div class="footer-v4-bottom">
-                <span>© 2026 天命乃杜 / nden148</span>
+                <div class="footer-v5-bottom"><div class="footer-v5-copyright">© 2026 天命乃杜 / nden148</div><div class="footer-v5-legal" aria-label="フッター補助リンク"><a onclick="showView('privacy')">プライバシー</a><a onclick="showView('howto')">使い方</a><a onclick="showView('about')">当サイトについて</a><a href="https://tenmei-mori-status.pages.dev" target="_blank" rel="noopener noreferrer">サービス状況</a></div></div>
             </div>
         </footer>
 
@@ -25738,6 +25704,7 @@ window.renderFullColumnView = function() {
         const dayLabel = window.TenmeiTime ? new Intl.DateTimeFormat('ja-JP', { timeZone: window.TenmeiTime.getTimeZone(), weekday: 'short' }).format(new Date()) : '';
         dateDisplay.innerHTML = `${dateParts[0]}年${dateParts[1]}月${dateParts[2]}日${dayLabel ? `（${dayLabel}）` : ''}`;
     }
+    updateDailyViewUpdateLabels();
 
     // 1. まず全員の「生の乱数(0〜1)」を取得する
     let rawData = prefecturesList.map((pref, index) => {
@@ -30168,12 +30135,20 @@ async function logout() {
         }
 
         // 12星座ロジック
+        function updateDailyViewUpdateLabels() {
+            const zone = typeof getTimeZone === 'function' ? getTimeZone() : 'Asia/Tokyo';
+            const prefUpdate = document.getElementById('pref-update-time');
+            if (prefUpdate) prefUpdate.textContent = zone + ' 0:00 更新';
+            const zodiacUpdate = document.getElementById('zodiac-update-time');
+            if (zodiacUpdate) zodiacUpdate.textContent = zone + ' 0:00 更新';
+        }
+
         function initZodiacSystem() {
             const dateStr = getJSTDateString();
             const dateParts = dateStr.split('-');
             const dayLabel = window.TenmeiTime ? new Intl.DateTimeFormat('ja-JP', { timeZone: window.TenmeiTime.getTimeZone(), weekday: 'short' }).format(new Date()) : '';
             const zoneLabel = window.TenmeiTime ? window.TenmeiTime.getTimeZone() : 'Asia/Tokyo';
-            document.getElementById('current-date-display').innerHTML = `${dateParts[0]}年${dateParts[1]}月${dateParts[2]}日${dayLabel ? `（${dayLabel}）` : ''} <span class="text-sm font-normal ml-2 text-gray-500 dark:text-gray-400">(${zoneLabel} 0:00 更新)</span>`;
+            document.getElementById('current-date-display').innerHTML = `${dateParts[0]}年${dateParts[1]}月${dateParts[2]}日${dayLabel ? `（${dayLabel}）` : ''} <span id="zodiac-update-time" class="text-sm font-normal ml-2 text-gray-500 dark:text-gray-400"></span>`;
             generateDailyRanking(dateStr);
             renderRanking();
         }
@@ -32722,6 +32697,18 @@ const LiveChart = {
                     });
                 });
             }
+            if (settings.publicDocumentReading !== undefined) {
+                const enabled = !!settings.publicDocumentReading;
+                root.classList.toggle('public-document-reading-disabled', !enabled);
+                document.querySelectorAll('.opt-select-group[data-setting="publicDocumentReading"]').forEach(group => {
+                    group.dataset.value = String(enabled);
+                    group.querySelectorAll('.theme-select-btn').forEach(btn => {
+                        const isSelected = btn.dataset.value === String(enabled);
+                        btn.classList.toggle('active', isSelected);
+                        btn.setAttribute('aria-pressed', String(isSelected));
+                    });
+                });
+            }
             if (settings.reduceMotion !== undefined) {
                 root.classList.toggle('reduce-motion', !!settings.reduceMotion);
                 document.querySelectorAll('input[onchange*="AppConfig.toggle(\'reduceMotion\'"]').forEach(el => {
@@ -32750,7 +32737,6 @@ const LiveChart = {
                 ['sidebarButton', !!settings.sidebarButton],
                 ['tabTitle', settings.tabTitle !== false],
                 ['reduceMotion', !!settings.reduceMotion],
-                ['publicDocumentReading', settings.publicDocumentReading !== false],
                 ['saveDrawHistory', settings.saveDrawHistory !== false]
             ];
             checkboxSettings.forEach(([key, value]) => {
@@ -32928,9 +32914,11 @@ const AppConfig = {
                     btn.setAttribute('aria-pressed', String(isSelected));
                 });
             });
-        } else if(['reduceMotion', 'publicDocumentReading', 'saveDrawHistory'].includes(key)) {
+        } else if(['fontSize', 'lineHeight', 'bodyFont', 'contentWidth', 'publicDocumentReading'].includes(key)) {
+            if (key === 'publicDocumentReading') applyReadingSettings({ publicDocumentReading: !!isActive });
+            else applyReadingSettings({ [key]: isActive });
+        } else if(['reduceMotion', 'saveDrawHistory'].includes(key)) {
             if (key === 'reduceMotion') applyReadingSettings({ reduceMotion: isActive });
-            if (key === 'publicDocumentReading') document.documentElement.classList.toggle('public-document-reading-disabled', !isActive);
             document.querySelectorAll(`input[onchange*="AppConfig.toggle('${key}'"]`).forEach(el => { el.checked = isActive; });
         }
 
@@ -32975,10 +32963,10 @@ async function saveLabSettings(overrides = {}) {
     });
     const swReduceMotion = document.querySelector('input[onchange*="AppConfig.toggle(\'reduceMotion\'"]');
     if(swReduceMotion) settings.reduceMotion = swReduceMotion.checked;
-    ['publicDocumentReading', 'saveDrawHistory'].forEach(key => {
-        const input = document.querySelector(`input[onchange*="AppConfig.toggle('${key}'"]`);
-        if (input) settings[key] = input.checked;
-    });
+    const publicReadingGroup = document.querySelector('.opt-select-group[data-setting="publicDocumentReading"]');
+    if (publicReadingGroup && publicReadingGroup.dataset.value !== '') settings.publicDocumentReading = publicReadingGroup.dataset.value === 'true';
+    const swSaveDrawHistory = document.querySelector('input[onchange*="AppConfig.toggle(\\'saveDrawHistory\\'"]');
+    if (swSaveDrawHistory) settings.saveDrawHistory = swSaveDrawHistory.checked;
 
     // Labs機能のスイッチがあれば上書き (Labsモーダルを開いている場合)
     // Labs機能：スイッチがあればその値、なければbody/htmlのクラス状態を正とする
@@ -36462,6 +36450,7 @@ try {
                 finally { window.__tenmeiTimeZonePersisting = false; }
             }
             updateTimeZoneSummaries();
+            updateDailyViewUpdateLabels();
             refreshDailyViews();
             window.dispatchEvent(new CustomEvent('tenmei:timezone-changed', { detail: { setting: next, timeZone: getTimeZone() } }));
             return true;
