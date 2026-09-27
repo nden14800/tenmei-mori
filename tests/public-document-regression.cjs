@@ -2,7 +2,8 @@ const assert = require('node:assert/strict');
 const fs = require('node:fs');
 const path = require('node:path');
 
-const htmlPath = path.resolve(__dirname, '..', 'index.html');
+const root = path.resolve(__dirname, '..');
+const htmlPath = path.join(root, 'index.html');
 const html = fs.readFileSync(htmlPath, 'utf8');
 const worker = fs.readFileSync(path.join(root, 'workers', 'tenmei-mori-backend.js'), 'utf8');
 
@@ -17,7 +18,7 @@ function forbidText(text, message) {
 }
 
 requireText(
-  '制定: 2026/01/02 ・ 改定: 2026/09/26 (第32版) ・ 運営: nden148',
+  '制定: 2026/01/02 ・ 改定: 2026/09/27 (第33版) ・ 運営: nden148',
   'プライバシーポリシーの現行版と最終改定日がありません。'
 );
 requireText(
@@ -49,7 +50,7 @@ requireText(
   '退会時のdream_history削除が第8条に明示されていません。'
 );
 requireText(
-  '現行版：第32版（最終改定日：2026年9月26日）',
+  '現行版：第33版（最終改定日：2026年9月27日）',
   '第9条に現行版・最終改定日がありません。'
 );
 requireText(
@@ -87,7 +88,7 @@ forbidText(
 
 console.log('公開文書の整合性回帰テストに合格しました。');
 console.log(JSON.stringify({
-  privacyVersion: '第32版',
+  privacyVersion: '第33版',
   guestServerStorageDisclosed: true,
   googleDisplayNameDisclosed: true,
   claritySessionTrackingDisclosed: true,
