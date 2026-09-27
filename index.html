@@ -11208,16 +11208,18 @@ body.sidebar-collapsed.sidebar-pinned #sidebar .nav-group-title {
         background: var(--card-bg, #171717);
     }
 
-    /* 左サイドバーと読書レールが重ならないよう、サイドバーの状態に合わせて退避 */
+    /* 左サイドバー展開中は読書レールを一時的に隠し、右へ移動して本文やサイドバーに重ならないようにする */
     @media (min-width: 1025px) {
-        body:has(#sidebar:hover) .article-toc-rail {
-            left: 264px;
+        .article-toc-rail {
+            transition: opacity 120ms ease-out, visibility 120ms ease-out;
         }
-        body.sidebar-pinned .article-toc-rail {
-            left: 244px;
-        }
-        body.sidebar-pinned #sidebar.sidebar-v4 .article-toc-rail {
-            left: 276px;
+        body:has(#sidebar:hover) .article-toc-rail,
+        body.sidebar-pinned .article-toc-rail,
+        body.sidebar-open .article-toc-rail {
+            left: 96px;
+            opacity: 0;
+            visibility: hidden;
+            pointer-events: none;
         }
     }
     @media (max-width: 1024px) {
