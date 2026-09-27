@@ -4,10 +4,13 @@ const path = require('node:path');
 
 const htmlPath = path.resolve(__dirname, '..', 'index.html');
 const html = fs.readFileSync(htmlPath, 'utf8');
+const worker = fs.readFileSync(path.join(root, 'workers', 'tenmei-mori-backend.js'), 'utf8');
 
 function requireText(text, message) {
   assert(html.includes(text), message);
 }
+
+assert(worker.includes('DELETE FROM summary_feedback WHERE user_email = ?'), '退会時にsummary_feedbackが削除されていません。');
 
 function forbidText(text, message) {
   assert(!html.includes(text), message);
