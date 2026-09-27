@@ -7291,22 +7291,13 @@ html.reduce-motion .member-login-secondary,
 html.reduce-motion .member-login-dialog-close { animation: none !important; transition: none !important; }
 
 }
-/* 公開文書は利用者が明示的に選んだ場合だけ読書設定の対象にする。操作UIや印刷は対象外。 */
-html:not(.public-document-reading-disabled) :is(#view-about, #view-privacy, #view-howto) :is(.about-codex-content, .privacy-ledger-content, .howto-guide-content) {
-    font-family: var(--article-font-family) !important;
-    font-size: var(--article-font-size) !important;
-    line-height: var(--article-line-height) !important;
-    max-width: var(--article-max-width) !important;
-    margin-left: auto !important;
-    margin-right: auto !important;
-}
-html:not(.public-document-reading-disabled) :is(#view-about, #view-privacy, #view-howto) :is(.about-codex-content, .privacy-ledger-content, .howto-guide-content) :is(p, li, td, th, blockquote) {
-    font-family: var(--article-font-family) !important;
-    line-height: var(--article-line-height);
-}
-@media print {
-    :is(#view-about, #view-privacy, #view-howto) :is(.about-codex-content, .privacy-ledger-content, .howto-guide-content) { max-width: none !important; }
-}
+/* 公開文書の読書設定は本文だけに反映し、初期値では既存デザインを一切上書きしない。 */
+html:not(.public-document-reading-disabled) :is(#view-about,#view-privacy,#view-howto) :is(.about-codex-content,.privacy-ledger-content,.howto-guide-content){width:100%!important;max-width:none!important;margin-inline:auto!important;}
+html.public-document-reading-content-width-custom:not(.public-document-reading-disabled) :is(#view-about,#view-privacy,#view-howto) :is(.about-codex-prologue p,.privacy-ledger-prologue p,.howto-guide-prologue>p:last-child,.about-codex-chapter>div:not(.about-codex-chapter-head),.privacy-ledger-article>div:not(.privacy-ledger-article-heading),.howto-guide-entry>div:not(.howto-guide-entry-heading)){width:100%;max-width:var(--article-max-width,100%);margin-inline:auto;}
+html.public-document-reading-font-size-custom:not(.public-document-reading-disabled) :is(#view-about,#view-privacy,#view-howto) :is(p,li,td,th,blockquote,dt,dd,figcaption){font-size:var(--article-font-size)!important;}
+html.public-document-reading-line-height-custom:not(.public-document-reading-disabled) :is(#view-about,#view-privacy,#view-howto) :is(p,li,td,th,blockquote,dt,dd,figcaption){line-height:var(--article-line-height)!important;}
+html.public-document-reading-body-font-custom:not(.public-document-reading-disabled) :is(#view-about,#view-privacy,#view-howto) :is(p,li,td,th,blockquote,dt,dd,figcaption){font-family:var(--article-font-family)!important;}
+@media print{:is(#view-about,#view-privacy,#view-howto) :is(.about-codex-content,.privacy-ledger-content,.howto-guide-content){width:100%!important;max-width:none!important;}}
 .article-content {
     font-size: var(--article-font-size);
     line-height: var(--article-line-height);
@@ -31597,6 +31588,16 @@ async function renderSettingsDashboard() {
                             <button type="button" class="theme-select-btn ${(settings.contentWidth||'standard')==='wide'?'active':''}" data-value="wide" onclick="AppConfig.toggle('contentWidth','wide')"><span>広め</span></button>
                         </div>
                     </div>
+                    <div class="pt-3 border-t border-gray-100 dark:border-zinc-700">
+                        <div class="text-sm font-bold text-gray-700 dark:text-gray-300 mb-2">
+                            公開文書への読書設定
+                            <span class="block text-[10px] text-gray-400 font-normal">「当サイトについて」「プライバシーポリシー」「使い方」に読書設定を反映</span>
+                        </div>
+                        <div class="theme-select-group opt-select-group" data-setting="publicDocumentReading" data-value="${settings.publicDocumentReading !== false ? 'true' : 'false'}" role="group" aria-label="公開文書への読書設定">
+                            <button type="button" class="theme-select-btn ${settings.publicDocumentReading !== false ? 'active' : ''}" data-value="true" onclick="AppConfig.toggle('publicDocumentReading', true)" aria-pressed="${settings.publicDocumentReading !== false}"><span>適用する</span></button>
+                            <button type="button" class="theme-select-btn ${settings.publicDocumentReading === false ? 'active' : ''}" data-value="false" onclick="AppConfig.toggle('publicDocumentReading', false)" aria-pressed="${settings.publicDocumentReading === false}"><span>適用しない</span></button>
+                        </div>
+                    </div>
                     <div class="flex justify-between items-center pt-3 border-t border-gray-100 dark:border-zinc-700">
                         <div class="flex items-center gap-2">
                             <div class="w-8 h-8 rounded-full rs-accent-teal-icon flex items-center justify-center">
@@ -32651,6 +32652,7 @@ const LiveChart = {
             if (settings.fontSize !== undefined) {
                 const sizeMap = { sm: '0.9rem', md: '1rem', lg: '1.15rem', xl: '1.3rem' };
                 root.style.setProperty('--article-font-size', sizeMap[settings.fontSize] || sizeMap.md);
+                root.classList.toggle('public-document-reading-font-size-custom', settings.fontSize !== 'md');
                 document.querySelectorAll('.opt-select-group[data-setting="fontSize"]').forEach(group => {
                     group.dataset.value = settings.fontSize;
                     group.querySelectorAll('.theme-select-btn').forEach(btn => {
@@ -32663,6 +32665,7 @@ const LiveChart = {
             if (settings.lineHeight !== undefined) {
                 const lineMap = { normal: '1.9', relaxed: '2.3' };
                 root.style.setProperty('--article-line-height', lineMap[settings.lineHeight] || lineMap.normal);
+                root.classList.toggle('public-document-reading-line-height-custom', settings.lineHeight !== 'normal');
                 document.querySelectorAll('.opt-select-group[data-setting="lineHeight"]').forEach(group => {
                     group.dataset.value = settings.lineHeight;
                     group.querySelectorAll('.theme-select-btn').forEach(btn => {
@@ -32675,6 +32678,7 @@ const LiveChart = {
             if (settings.bodyFont !== undefined) {
                 const fontMap = { serif: "'Zen Old Mincho', 'Shippori Mincho', serif", sans: "'Zen Kaku Gothic New', sans-serif" };
                 root.style.setProperty('--article-font-family', fontMap[settings.bodyFont] || fontMap.serif);
+                root.classList.toggle('public-document-reading-body-font-custom', settings.bodyFont !== 'serif');
                 document.querySelectorAll('.opt-select-group[data-setting="bodyFont"]').forEach(group => {
                     group.dataset.value = settings.bodyFont;
                     group.querySelectorAll('.theme-select-btn').forEach(btn => {
@@ -32689,6 +32693,7 @@ const LiveChart = {
                 const supportWidthMap = { standard: '820px', wide: '100%' };
                 root.style.setProperty('--article-max-width', widthMap[settings.contentWidth] || widthMap.standard);
                 root.style.setProperty('--article-support-max-width', supportWidthMap[settings.contentWidth] || supportWidthMap.standard);
+                root.classList.toggle('public-document-reading-content-width-custom', settings.contentWidth !== 'standard');
                 document.querySelectorAll('.opt-select-group[data-setting="contentWidth"]').forEach(group => {
                     group.dataset.value = settings.contentWidth;
                     group.querySelectorAll('.theme-select-btn').forEach(btn => {
@@ -36694,14 +36699,12 @@ try {
 
 
 <style id="tenmei-public-document-reading-complete-fix">
-/* 公開文書は記事と同じく、外側のカード/フレームは全幅。幅設定は本文カラムだけに適用する。 */
-html:is(.public-document-reading-disabled) :is(#view-about,#view-privacy,#view-howto) :is(.about-codex-content,.privacy-ledger-content,.howto-guide-content),
-html:not(.public-document-reading-disabled) :is(#view-about,#view-privacy,#view-howto) :is(.about-codex-content,.privacy-ledger-content,.howto-guide-content){width:100%!important;max-width:none!important;margin-inline:auto!important;}
-html:not(.public-document-reading-disabled) :is(#view-about,#view-privacy,#view-howto) :is(.about-codex-prologue,.privacy-ledger-prologue,.howto-guide-prologue){width:100%!important;max-width:none!important;}
-html:not(.public-document-reading-disabled) :is(#view-about,#view-privacy,#view-howto) :is(.about-codex-prologue p,.privacy-ledger-prologue p,.howto-guide-prologue>p:last-child){width:100%;max-width:var(--article-max-width,820px);margin-inline:auto;}
-html:not(.public-document-reading-disabled) :is(#view-about,#view-privacy,#view-howto) :is(.about-codex-chapter>div:not(.about-codex-chapter-head),.privacy-ledger-article>div:not(.privacy-ledger-article-heading),.howto-guide-entry>div:not(.howto-guide-entry-heading)){width:100%;max-width:var(--article-max-width,820px);margin-inline:auto;}
-html:not(.public-document-reading-disabled) :is(#view-about,#view-privacy,#view-howto) :is(p,li,td,th,blockquote,dt,dd,figcaption){font-size:var(--article-font-size)!important;line-height:var(--article-line-height)!important;font-family:var(--article-font-family)!important;}
-@media print{ :is(#view-about,#view-privacy,#view-howto) :is(.about-codex-content,.privacy-ledger-content,.howto-guide-content){width:100%!important;max-width:none!important;} }
+/* 公開文書の読書設定は本文だけに反映し、初期値では既存デザインを一切上書きしない。 */
+html.public-document-reading-content-width-custom:not(.public-document-reading-disabled) :is(#view-about,#view-privacy,#view-howto) :is(.about-codex-prologue p,.privacy-ledger-prologue p,.howto-guide-prologue>p:last-child,.about-codex-chapter>div:not(.about-codex-chapter-head),.privacy-ledger-article>div:not(.privacy-ledger-article-heading),.howto-guide-entry>div:not(.howto-guide-entry-heading)){width:100%!important;max-width:var(--article-max-width,100%);margin-inline:auto;}
+html.public-document-reading-font-size-custom:not(.public-document-reading-disabled) :is(#view-about,#view-privacy,#view-howto) :is(p,li,td,th,blockquote,dt,dd,figcaption){font-size:var(--article-font-size)!important;}
+html.public-document-reading-line-height-custom:not(.public-document-reading-disabled) :is(#view-about,#view-privacy,#view-howto) :is(p,li,td,th,blockquote,dt,dd,figcaption){line-height:var(--article-line-height)!important;}
+html.public-document-reading-body-font-custom:not(.public-document-reading-disabled) :is(#view-about,#view-privacy,#view-howto) :is(p,li,td,th,blockquote,dt,dd,figcaption){font-family:var(--article-font-family)!important;}
+@media print{:is(#view-about,#view-privacy,#view-howto) :is(.about-codex-content,.privacy-ledger-content,.howto-guide-content){width:100%!important;max-width:none!important;}}
 </style>
 <script>
 (function () {
@@ -36715,21 +36718,23 @@ html:not(.public-document-reading-disabled) :is(#view-about,#view-privacy,#view-
         const fontFamily = styles.getPropertyValue('--article-font-family').trim();
         const maxWidth = styles.getPropertyValue('--article-max-width').trim();
 
+        const customFontSize = enabled && root.classList.contains('public-document-reading-font-size-custom');
+        const customLineHeight = enabled && root.classList.contains('public-document-reading-line-height-custom');
+        const customBodyFont = enabled && root.classList.contains('public-document-reading-body-font-custom');
+        const customContentWidth = enabled && root.classList.contains('public-document-reading-content-width-custom');
+
         document.querySelectorAll(':is(#view-about, #view-privacy, #view-howto) :is(p, li, td, th, blockquote, dt, dd, figcaption)').forEach((element) => {
-            element.toggleAttribute('data-reading-settings-inline', enabled);
-            if (!enabled) {
-                element.style.removeProperty('font-size');
-                element.style.removeProperty('line-height');
-                element.style.removeProperty('font-family');
-                return;
-            }
-            if (fontSize) element.style.setProperty('font-size', fontSize);
-            if (lineHeight) element.style.setProperty('line-height', lineHeight);
-            if (fontFamily) element.style.setProperty('font-family', fontFamily);
+            element.toggleAttribute('data-reading-settings-inline', enabled && (customFontSize || customLineHeight || customBodyFont));
+            if (customFontSize && fontSize) element.style.setProperty('font-size', fontSize);
+            else element.style.removeProperty('font-size');
+            if (customLineHeight && lineHeight) element.style.setProperty('line-height', lineHeight);
+            else element.style.removeProperty('line-height');
+            if (customBodyFont && fontFamily) element.style.setProperty('font-family', fontFamily);
+            else element.style.removeProperty('font-family');
         });
 
-        document.querySelectorAll(':is(#view-about, #view-privacy, #view-howto) :is(.about-codex-content, .privacy-ledger-content, .howto-guide-content, article, .article-content)').forEach((element) => {
-            if (!enabled) {
+        document.querySelectorAll(':is(#view-about, #view-privacy, #view-howto) :is(.about-codex-prologue p, .privacy-ledger-prologue p, .howto-guide-prologue>p:last-child, .about-codex-chapter>div:not(.about-codex-chapter-head), .privacy-ledger-article>div:not(.privacy-ledger-article-heading), .howto-guide-entry>div:not(.howto-guide-entry-heading))').forEach((element) => {
+            if (!customContentWidth) {
                 element.style.removeProperty('max-width');
                 element.style.removeProperty('margin-left');
                 element.style.removeProperty('margin-right');
