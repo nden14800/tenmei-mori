@@ -28847,9 +28847,7 @@ ${getShareUrl()}`;
 
         function setupUnifiedAiResponseControls(responseArea, options = {}) {
             if (!responseArea) return;
-            // この関数はローディング表示の直後にも呼ばれるため、
-            // 既存の[data-ai-response-text]が無くても最終表示を生成する。
-            const textEl = options.textEl || responseArea.querySelector('[data-ai-response-text]');
+            // AI要約以外は評価・フィードバックを保存せず、要約と同じ回答シェルだけを使う。
             responseArea.classList.add('tenmei-ai-response');
             responseArea.setAttribute('aria-live', 'polite');
             responseArea.innerHTML = `
@@ -28860,14 +28858,9 @@ ${getShareUrl()}`;
                     </button>
                 </div>
                 <p data-ai-response-text class="tenmei-ai-response-text"></p>
-                <div class="tenmei-ai-response-actions" aria-label="AI回答の評価">
-                    <span class="tenmei-ai-response-actions-label">この回答はいかがでしたか？</span>
-                    <button type="button" class="tenmei-ai-rate-btn" data-ai-rate="like" aria-pressed="false"><i class="bi bi-hand-thumbs-up" aria-hidden="true"></i><span>役に立った</span></button>
-                    <button type="button" class="tenmei-ai-rate-btn" data-ai-rate="dislike" aria-pressed="false"><i class="bi bi-hand-thumbs-down" aria-hidden="true"></i><span>改善してほしい</span></button>
-                </div>
                 <div class="tenmei-ai-info-panel hidden" data-ai-info-panel>
                     <p><strong>${options.infoTitle || 'AIによる回答'}</strong></p>
-                    <p>${options.infoText || 'AIが入力内容をもとに生成した回答です。内容の正確性を保証するものではありません。'}</p>
+                    <div class="tenmei-ai-info-content">${options.infoText || 'AIが入力内容をもとに生成した回答です。内容の正確性を保証するものではありません。'}</div>
                 </div>
             `;
             const newTextEl = responseArea.querySelector('[data-ai-response-text]');
@@ -28878,17 +28871,6 @@ ${getShareUrl()}`;
                 const open = !infoPanel.classList.contains('hidden');
                 infoPanel.classList.toggle('hidden', open);
                 infoBtn.setAttribute('aria-expanded', String(!open));
-            });
-            responseArea.querySelectorAll('[data-ai-rate]').forEach(btn => {
-                btn.addEventListener('click', () => {
-                    responseArea.querySelectorAll('[data-ai-rate]').forEach(b => {
-                        b.classList.remove('is-selected');
-                        b.setAttribute('aria-pressed', 'false');
-                    });
-                    btn.classList.add('is-selected');
-                    btn.setAttribute('aria-pressed', 'true');
-                    if (typeof window.showToast === 'function') window.showToast('評価を受け付けました。ありがとうございます。', 'success');
-                });
             });
             return newTextEl;
         }
@@ -28902,10 +28884,67 @@ ${getShareUrl()}`;
                     <span class="tenmei-ai-response-kicker"><i class="bi bi-stars" aria-hidden="true"></i>${kicker}</span>
                     <span class="tenmei-ai-generating-label"><span class="tenmei-ai-dot"></span>生成中</span>
                 </div>
-                <div class="tenmei-ai-skeleton" aria-hidden="true">
-                    <span></span><span></span><span></span>
-                </div>
+                <p data-ai-streaming-text class="tenmei-ai-response-text"></p>
             `;
+        }
+
+        async function consumeUnifiedAiStream(response, responseArea) {
+            if (!response.ok || !response.body) {
+                let message = 'AIの応答を取得できませんでした。';
+                try {
+                    const data = await response.json();
+                    message = data.message || data.error || message;
+                } catch (_) {}
+                throw new Error(message);
+            }
+            const reader = response.body.getReader();
+            const decoder = new TextDecoder();
+            let buffer = '';
+            let accumulated = '';
+            let finalData = null;
+            const textEl = responseArea.querySelector('[data-ai-streaming-text]');
+            while (true) {
+                const { done, value } = await reader.read();
+                if (done) break;
+                buffer += decoder.decode(value, { stream: true });
+                const lines = buffer.split('\\n');
+                buffer = lines.pop() || '';
+                for (const line of lines) {
+                    const trimmed = line.trim();
+                    if (!trimmed.startsWith('data:')) continue;
+                    const payload = trimmed.slice(5).trim();
+                    if (!payload) continue;
+                    let json;
+                    try { json = JSON.parse(payload); } catch (_) { continue; }
+                    if (json.error) throw new Error(json.error);
+                    if (json.delta) {
+                        accumulated += String(json.delta);
+                        if (textEl) textEl.textContent = accumulated;
+                    }
+                    if (json.done) finalData = json;
+                }
+            }
+            buffer += decoder.decode();
+            for (const line of buffer.split('\\n')) {
+                const trimmed = line.trim();
+                if (!trimmed.startsWith('data:')) continue;
+                const payload = trimmed.slice(5).trim();
+                if (!payload) continue;
+                try {
+                    const json = JSON.parse(payload);
+                    if (json.error) throw new Error(json.error);
+                    if (json.delta) {
+                        accumulated += String(json.delta);
+                        if (textEl) textEl.textContent = accumulated;
+                    }
+                    if (json.done) finalData = json;
+                } catch (e) {
+                    if (e?.message && e.message !== 'Unexpected end of JSON input') throw e;
+                }
+            }
+            if (!finalData && accumulated) finalData = { text: accumulated };
+            if (!finalData) throw new Error('AI応答が空でした');
+            return { finalData, accumulated };
         }
 
         // --- AI悩み相談（緊急追加!21） ---
@@ -28913,9 +28952,7 @@ ${getShareUrl()}`;
             const input = document.getElementById('worry-input');
             const btn = document.getElementById('worry-submit-btn');
             const responseArea = document.getElementById('worry-response-area');
-            const responseText = null;
             const worry = (input?.value || '').trim();
-
             if (!worry) {
                 if (typeof window.showToast === 'function') window.showToast('相談したい内容を入力してください。', 'warning');
                 return;
@@ -28924,48 +28961,44 @@ ${getShareUrl()}`;
                 if (typeof window.showToast === 'function') window.showToast('おみくじの結果が見つかりません。', 'error');
                 return;
             }
-
             btn.disabled = true;
             btn.innerHTML = '<i class="bi bi-hourglass-split"></i> 考え中...';
             showUnifiedAiLoading(responseArea, 'DIVINATION COMPANION');
-
             const controller = new AbortController();
-            const timeoutId = setTimeout(() => controller.abort(), 30000); // 30秒でタイムアウト
-
+            const timeoutId = setTimeout(() => controller.abort(), 45000);
+            const startedAt = performance.now();
             try {
                 const res = await fetch(`${API_BASE}/api/worry-consult`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        worry: worry,
-                        omikujiType: currentState.lastResult.type
-                    }),
+                    body: JSON.stringify({ worry: worry, omikujiType: currentState.lastResult.type }),
                     signal: controller.signal
                 });
+                const { finalData, accumulated } = await consumeUnifiedAiStream(res, responseArea);
                 clearTimeout(timeoutId);
-                const data = await res.json();
-
-                if (res.status === 429) {
-                    if (typeof window.showToast === 'function') window.showToast(data.message || 'しばらく時間をおいてから、もう一度お試しください。', 'warning', '天命の戒め');
-                    return;
-                }
-                if (!res.ok) throw new Error(data.error || '相談に失敗しました');
-
+                const responseTime = finalData.response_time_ms != null ? (Number(finalData.response_time_ms) / 1000).toFixed(1) : ((performance.now() - startedAt) / 1000).toFixed(1);
+                const answer = finalData.advice || finalData.text || accumulated || '';
                 setupUnifiedAiResponseControls(responseArea, {
                     kicker: 'DIVINATION COMPANION',
                     infoTitle: 'AI悩み相談について',
-                    infoText: 'おみくじの結果と入力された相談内容をもとにAIが生成した一般的な助言です。相談内容とAI回答はデータベースに保存されません。'
+                    infoText: `<dl class="tenmei-ai-info-list">
+                        <div><dt>使用モデル</dt><dd>${escapeHtml(finalData.model_used || '@cf/zai-org/glm-4.7-flash')}</dd></div>
+                        <div><dt>入力</dt><dd>今日のおみくじ「${escapeHtml(currentState.lastResult.type || '不明')}」と今回入力した相談内容</dd></div>
+                        <div><dt>出力</dt><dd>120文字以内の短い一般的な助言</dd></div>
+                        <div><dt>応答時間</dt><dd>約${escapeHtml(responseTime)}秒</dd></div>
+                        <div><dt>保存</dt><dd>相談内容・AI回答はデータベースに保存されません。</dd></div>
+                        <div><dt>注意</dt><dd>医療・法律・金融などの専門的判断や断定的な予言を行うものではありません。</dd></div>
+                    </dl>`
                 });
-                responseArea.querySelector('[data-ai-response-text]').textContent = data.advice || '';
+                responseArea.querySelector('[data-ai-response-text]').textContent = answer;
                 responseArea.classList.remove('hidden', 'is-loading');
             } catch (e) {
                 clearTimeout(timeoutId);
                 console.error(e);
-                if (e.name === 'AbortError') {
-                    if (typeof window.showToast === 'function') window.showToast('AIの応答に時間がかかりすぎたため中断しました。しばらくしてからもう一度お試しください。', 'error');
-                } else {
-                    if (typeof window.showToast === 'function') window.showToast('相談中にエラーが発生しました。しばらくしてからお試しください。', 'error');
-                }
+                responseArea.classList.remove('is-loading');
+                responseArea.innerHTML = '<p class="text-sm text-red-600 dark:text-red-400 p-3">' + escapeHtml(e.message || 'AIの応答取得に失敗しました。') + '</p>';
+                if (e.name === 'AbortError' && typeof window.showToast === 'function') window.showToast('AIの応答に時間がかかりすぎたため中断しました。', 'error');
+                else if (typeof window.showToast === 'function') window.showToast('相談中にエラーが発生しました。しばらくしてからお試しください。', 'error');
             } finally {
                 btn.disabled = false;
                 btn.innerHTML = '<i class="bi bi-send-fill"></i> 相談する';
@@ -28977,9 +29010,7 @@ ${getShareUrl()}`;
             const input = document.getElementById('dream-input');
             const btn = document.getElementById('dream-submit-btn');
             const responseArea = document.getElementById('dream-response-area');
-            const responseText = null;
             const dream = (input?.value || '').trim();
-
             if (!dream) {
                 if (typeof window.showToast === 'function') window.showToast('見た夢の内容を入力してください。', 'warning');
                 return;
@@ -28988,14 +29019,12 @@ ${getShareUrl()}`;
                 openMemberLoginDialog('dream', btn || document.activeElement);
                 return;
             }
-
             btn.disabled = true;
             btn.innerHTML = '<i class="bi bi-hourglass-split"></i> 読み解き中...';
             showUnifiedAiLoading(responseArea, 'DREAM INTERPRETATION');
-
             const controller = new AbortController();
-            const timeoutId = setTimeout(() => controller.abort(), 30000); // 30秒でタイムアウト
-
+            const timeoutId = setTimeout(() => controller.abort(), 45000);
+            const startedAt = performance.now();
             try {
                 const res = await authFetch(`${API_BASE}/api/dream-fortune`, {
                     method: 'POST',
@@ -29003,36 +29032,38 @@ ${getShareUrl()}`;
                     body: JSON.stringify({ dream: dream }),
                     signal: controller.signal
                 });
-                clearTimeout(timeoutId);
-                const data = await res.json();
-
-                if (res.status === 429) {
-                    if (typeof window.showToast === 'function') window.showToast(data.message || 'しばらく時間をおいてから、もう一度お試しください。', 'warning', '天命の戒め');
-                    return;
-                }
                 if (res.status === 401) {
-                    if (typeof window.showToast === 'function') window.showToast('セッションが切れています。再度ログインしてください。', 'error');
-                    return;
+                    let message = 'セッションが切れています。再度ログインしてください。';
+                    try { const data = await res.json(); message = data.message || data.error || message; } catch (_) {}
+                    throw new Error(message);
                 }
-                if (!res.ok) throw new Error(data.error || '夢占いに失敗しました');
-
+                const { finalData, accumulated } = await consumeUnifiedAiStream(res, responseArea);
+                clearTimeout(timeoutId);
+                const responseTime = finalData.response_time_ms != null ? (Number(finalData.response_time_ms) / 1000).toFixed(1) : ((performance.now() - startedAt) / 1000).toFixed(1);
+                const interpretation = finalData.interpretation || finalData.text || accumulated || '';
                 setupUnifiedAiResponseControls(responseArea, {
                     kicker: 'DREAM INTERPRETATION',
                     infoTitle: 'AI夢占いについて',
-                    infoText: '入力された夢の内容をもとにAIが生成した夢占い的な解釈です。心理学的・医学的な診断ではありません。夢の記録は会員向け履歴として保存されます。'
+                    infoText: `<dl class="tenmei-ai-info-list">
+                        <div><dt>使用モデル</dt><dd>${escapeHtml(finalData.model_used || '@cf/zai-org/glm-4.7-flash')}</dd></div>
+                        <div><dt>入力</dt><dd>今回入力した夢の内容（最大400文字）</dd></div>
+                        <div><dt>出力</dt><dd>150文字以内の夢占い的な解釈</dd></div>
+                        <div><dt>応答時間</dt><dd>約${escapeHtml(responseTime)}秒</dd></div>
+                        <div><dt>保存</dt><dd>夢の本文・AIによる解釈・生成日時は会員向けの夢の記録として保存されます。</dd></div>
+                        <div><dt>注意</dt><dd>心理学的・医学的な診断ではなく、断定的な予言を避けた娯楽向けの解釈です。</dd></div>
+                    </dl>`
                 });
-                responseArea.querySelector('[data-ai-response-text]').textContent = data.interpretation || '';
+                responseArea.querySelector('[data-ai-response-text]').textContent = interpretation;
                 responseArea.classList.remove('hidden', 'is-loading');
                 if (input) input.value = '';
                 loadDreamHistory();
             } catch (e) {
                 clearTimeout(timeoutId);
                 console.error(e);
-                if (e.name === 'AbortError') {
-                    if (typeof window.showToast === 'function') window.showToast('AIの応答に時間がかかりすぎたため中断しました。しばらくしてからもう一度お試しください。', 'error');
-                } else {
-                    if (typeof window.showToast === 'function') window.showToast('夢占い中にエラーが発生しました。しばらくしてからお試しください。', 'error');
-                }
+                responseArea.classList.remove('is-loading');
+                responseArea.innerHTML = '<p class="text-sm text-red-600 dark:text-red-400 p-3">' + escapeHtml(e.message || 'AIの応答取得に失敗しました。') + '</p>';
+                if (e.name === 'AbortError' && typeof window.showToast === 'function') window.showToast('AIの応答に時間がかかりすぎたため中断しました。', 'error');
+                else if (typeof window.showToast === 'function') window.showToast('夢占い中にエラーが発生しました。しばらくしてからお試しください。', 'error');
             } finally {
                 btn.disabled = false;
                 btn.innerHTML = '<i class="bi bi-stars"></i> 夢を占う';
@@ -37549,6 +37580,11 @@ window.addEventListener('hashchange',function(){setTimeout(buildAboutArticleTOC,
 .tenmei-ai-rate-btn:hover{transform:translateY(-1px);border-color:rgba(196,160,89,.7);color:var(--text-main);}
 .tenmei-ai-rate-btn.is-selected{border-color:var(--accent-red);background:color-mix(in srgb,var(--accent-red) 9%,var(--card-bg));color:var(--accent-red);font-weight:700;}
 .tenmei-ai-info-panel{margin-top:12px;padding:12px 13px;border:1px solid var(--card-border);border-radius:14px;background:var(--input-bg);color:var(--text-sub);font-size:.7rem;line-height:1.7;}
+    .tenmei-ai-info-list { margin: 0; display: grid; gap: 8px; }
+    .tenmei-ai-info-list > div { display: grid; grid-template-columns: 6.5em 1fr; gap: 10px; }
+    .tenmei-ai-info-list dt { font-weight: 700; color: var(--text-sub); }
+    .tenmei-ai-info-list dd { margin: 0; color: var(--text-main); }
+
 .tenmei-ai-info-panel p{margin:0;}
 .tenmei-ai-info-panel p+p{margin-top:5px;}
 .tenmei-ai-generating-label{display:inline-flex;align-items:center;gap:7px;color:var(--text-sub);font-size:.7rem;font-weight:700;}
