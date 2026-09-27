@@ -1865,72 +1865,116 @@ if (url.pathname === "/api/today-anniv" && method === "GET") {
 
         // 悩み相談・夢占いは、記事要約と同じSSEストリーミング方式を使う。
         // 生成中の本文をそのままクライアントへ送り、完了後に必要な保存処理を行う。
+        // Workers AIのレスポンス形式を、ストリーム／非ストリームの両方で同じように抽出する。
+        function extractAIText(payload) {
+            if (payload == null) return "";
+            if (typeof payload === "string") return payload;
+            if (Array.isArray(payload)) return payload.map(extractAIText).filter(Boolean).join("");
+            const candidates = [
+                payload?.choices?.[0]?.delta?.content,
+                payload?.choices?.[0]?.message?.content,
+                payload?.choices?.[0]?.text,
+                payload?.response,
+                payload?.result?.response,
+                payload?.result?.text,
+                payload?.output_text,
+                payload?.text
+            ];
+            for (const value of candidates) {
+                const text = extractAIText(value);
+                if (text) return text;
+            }
+            return "";
+        }
+
+        async function runNonStreamingAI(messages, maxCompletionTokens) {
+            const result = await env.AI.run("@cf/zai-org/glm-4.7-flash", {
+                messages, stream: false, max_completion_tokens: Math.max(512, maxCompletionTokens),
+                temperature: 0.4, chat_template_kwargs: { enable_thinking: false }
+            });
+            const answer = extractAIText(result).trim();
+            if (!answer) throw new Error("AI応答が空でした");
+            return answer;
+        }
+
         async function streamUnifiedAIResponse(prompt, systemPrompt, maxCompletionTokens, onComplete) {
             const modelUsed = "@cf/zai-org/glm-4.7-flash";
             const messages = [];
             if (systemPrompt) messages.push({ role: "system", content: systemPrompt });
             messages.push({ role: "user", content: prompt });
-            const aiStream = await env.AI.run(modelUsed, {
-                messages, stream: true, max_completion_tokens: Math.max(512, maxCompletionTokens),
-                temperature: 0.4, chat_template_kwargs: { enable_thinking: false }
-            });
+            const startedAt = Date.now();
             const { readable, writable } = new TransformStream();
             const writer = writable.getWriter();
             const encoder = new TextEncoder();
             const decoder = new TextDecoder();
-            const startedAt = Date.now();
+
             ctx.waitUntil((async () => {
-                let fullText = "", buffer = "";
+                let fullText = "";
                 try {
+                    const aiStream = await env.AI.run(modelUsed, {
+                        messages, stream: true, max_completion_tokens: Math.max(512, maxCompletionTokens),
+                        temperature: 0.4, chat_template_kwargs: { enable_thinking: false }
+                    });
+                    if (!aiStream || typeof aiStream.getReader !== "function") {
+                        throw new Error("Workers AIがストリームを返しませんでした");
+                    }
+
                     const reader = aiStream.getReader();
+                    let buffer = "";
+                    const emitPayload = async (payload) => {
+                        if (!payload || payload === "[DONE]") return;
+                        try {
+                            const json = JSON.parse(payload);
+                            const delta = extractAIText(json);
+                            if (delta) {
+                                fullText += delta;
+                                await writer.write(encoder.encode("data: " + JSON.stringify({delta}) + "\n\n"));
+                            }
+                        } catch (_) {}
+                    };
+                    const processLines = async (text, flush = false) => {
+                        if (text) buffer += text;
+                        const lines = buffer.split("\n");
+                        buffer = flush ? "" : (lines.pop() || "");
+                        for (const line of lines) {
+                            const trimmed = line.trim();
+                            if (!trimmed) continue;
+                            if (trimmed.startsWith("data:")) await emitPayload(trimmed.slice(5).trim());
+                            else if (trimmed.startsWith("{")) await emitPayload(trimmed);
+                        }
+                    };
+
                     while (true) {
                         const { done, value } = await reader.read();
                         if (done) break;
-                        buffer += decoder.decode(value, { stream: true });
-                        const lines = buffer.split("\n");
-                        buffer = lines.pop() || "";
-                        for (const line of lines) {
-                            const trimmed = line.trim();
-                            if (!trimmed.startsWith("data:")) continue;
-                            const payload = trimmed.slice(5).trim();
-                            if (!payload || payload === "[DONE]") continue;
-                            try {
-                                const json = JSON.parse(payload);
-                                const delta = json?.choices?.[0]?.delta?.content ?? json?.choices?.[0]?.message?.content ?? json?.response ?? json?.result?.response ?? "";
-                                if (typeof delta === "string" && delta) {
-                                    fullText += delta;
-                                    await writer.write(encoder.encode(`data: ${JSON.stringify({delta})}\n\n`));
-                                }
-                            } catch (_) {}
-                        }
+                        await processLines(decoder.decode(value, { stream: true }));
                     }
-                    buffer += decoder.decode();
-                    for (const line of buffer.split("\n")) {
-                        const trimmed = line.trim();
-                        if (!trimmed.startsWith("data:")) continue;
-                        const payload = trimmed.slice(5).trim();
-                        if (!payload || payload === "[DONE]") continue;
-                        try {
-                            const json = JSON.parse(payload);
-                            const delta = json?.choices?.[0]?.delta?.content ?? json?.choices?.[0]?.message?.content ?? json?.response ?? json?.result?.response ?? "";
-                            if (typeof delta === "string" && delta) {
-                                fullText += delta;
-                                await writer.write(encoder.encode(`data: ${JSON.stringify({delta})}\n\n`));
-                            }
-                        } catch (_) {}
+                    await processLines(decoder.decode(), true);
+
+                    if (!fullText.trim() && buffer.trim()) {
+                        await emitPayload(buffer.trim().replace(/^data:\s*/, ""));
                     }
+
+                    if (!fullText.trim()) {
+                        fullText = await runNonStreamingAI(messages, maxCompletionTokens);
+                        await writer.write(encoder.encode("data: " + JSON.stringify({delta: fullText}) + "\n\n"));
+                    }
+
                     const answer = fullText.trim();
                     if (!answer) throw new Error("AI応答が空でした");
                     const responseTimeMs = Date.now() - startedAt;
                     const extra = await onComplete(answer, responseTimeMs, modelUsed) || {};
-                    await writer.write(encoder.encode(`data: ${JSON.stringify({done:true,text:answer,model_used:modelUsed,response_time_ms:responseTimeMs,...extra})}\n\n`));
+                    await writer.write(encoder.encode("data: " + JSON.stringify({done:true,text:answer,model_used:modelUsed,response_time_ms:responseTimeMs,...extra}) + "\n\n"));
                 } catch (e) {
-                    try { await writer.write(encoder.encode(`data: ${JSON.stringify({error:e.message || "AI応答中にエラーが発生しました"})}\n\n`)); } catch (_) {}
+                    try { await writer.write(encoder.encode("data: " + JSON.stringify({error:e.message || "AI応答中にエラーが発生しました"}) + "\n\n")); } catch (_) {}
                 } finally {
                     try { await writer.close(); } catch (_) {}
                 }
             })());
-            return new Response(readable, { headers: { ...corsHeaders, "Content-Type": "text/event-stream", "Cache-Control": "no-cache" } });
+
+            return new Response(readable, {
+                headers: { ...corsHeaders, "Content-Type": "text/event-stream; charset=utf-8", "Cache-Control": "no-cache, no-transform", "X-Accel-Buffering": "no" }
+            });
         }
 
         if (url.pathname === "/api/worry-consult" && method === "POST") {
