@@ -10953,254 +10953,196 @@ body.sidebar-collapsed.sidebar-pinned #sidebar .nav-group-title {
 
     /* ==========================================
        記事読書レイアウト・目次
-       上部：要約の下に固定される通常の目次
-       読書中：左端に細いセクションレールを固定表示
+       要約の直下：通常の目次
+       読書中：左端の細いセクションレール
        ========================================== */
-    .article-reading-layout {
-        display: block;
-        width: 100%;
-        min-width: 0;
-    }
-    .article-reading-main {
-        width: 100%;
-        min-width: 0;
-    }
+    .article-reading-layout { display:block; width:100%; min-width:0; }
+    .article-reading-main { width:100%; min-width:0; }
 
-    /* 要約直下に残す固定目次 */
+    /* 要約の直下に置く通常の目次。画面上部には固定しない。 */
     .article-toc-sidebar {
-        position: fixed;
-        top: 76px;
-        left: 50%;
-        z-index: 1000;
-        width: min(860px, calc(100vw - 32px));
-        margin: 0;
-        min-width: 0;
-        transform: translateX(-50%);
+        position:relative;
+        width:100%;
+        margin:1.25rem 0 1.5rem;
+        min-width:0;
     }
-    .article-toc-sidebar[hidden] {
-        display: none !important;
-    }
-    .article-toc-unified {
-        position: relative;
-        width: 100%;
-        margin: 0;
-    }
-    .article-toc-details {
-        position: relative;
-        margin: 0;
-    }
-    .article-toc-summary {
-        display: flex;
-        min-height: 46px;
-        align-items: center;
-        justify-content: space-between;
-        gap: .75rem;
-        list-style: none;
-        margin: 0;
-        padding: .72rem .95rem;
-        border: 1px solid var(--card-border);
-        border-radius: 10px;
-        color: var(--text-main);
-        background: var(--card-bg, #fff);
-        box-shadow: 0 5px 18px rgba(0, 0, 0, .055);
-        font-family: 'Zen Kaku Gothic New', sans-serif;
-        font-size: .82rem;
-        font-weight: 700;
-        cursor: pointer;
-        user-select: none;
-    }
-    .article-toc-summary::after {
-        content: '';
-        width: 7px;
-        height: 7px;
-        flex: 0 0 auto;
-        border-right: 1.5px solid currentColor;
-        border-bottom: 1.5px solid currentColor;
-        color: var(--text-sub);
-        transform: rotate(45deg) translateY(-2px);
-    }
-    .article-toc-details[open] > .article-toc-summary::after {
-        transform: rotate(225deg) translate(-1px, -1px);
-    }
-    .article-toc-summary::-webkit-details-marker {
-        display: none;
-    }
+    .article-toc-sidebar[hidden] { display:none !important; }
+    .article-toc-unified { width:100%; margin:0; }
+    .article-toc-details { margin:0; }
+    .article-toc-summary { display:none; }
     .article-toc-panel {
-        position: absolute;
-        top: calc(100% + 8px);
-        left: 0;
-        right: 0;
-        max-height: min(62vh, 520px);
-        overflow: auto;
-        padding: .45rem;
-        border: 1px solid var(--card-border);
-        border-radius: 12px;
-        background: var(--card-bg, #fff);
-        box-shadow: 0 16px 40px rgba(0, 0, 0, .12);
+        margin:0;
+        padding:clamp(1.15rem,2.5vw,1.65rem);
+        border:1px solid var(--card-border);
+        border-radius:18px;
+        background:var(--card-bg,#fff);
+        box-shadow:0 10px 26px rgba(68,34,28,.045);
+    }
+    .article-toc-panel-head {
+        display:flex;
+        align-items:end;
+        justify-content:space-between;
+        gap:1rem;
+        padding-bottom:.9rem;
+        border-bottom:1px solid var(--card-border);
+    }
+    .article-toc-kicker {
+        margin:0;
+        color:var(--accent-red);
+        font-family:'Zen Kaku Gothic New',sans-serif;
+        font-size:.65rem;
+        font-weight:800;
+        letter-spacing:.13em;
+        line-height:1.3;
+    }
+    .article-toc-kicker i { margin-right:.28rem; }
+    .article-toc-heading {
+        margin:.32rem 0 0;
+        color:var(--text-main);
+        font-family:'Zen Old Mincho','Shippori Mincho',serif;
+        font-size:clamp(1.05rem,2vw,1.3rem);
+        font-weight:700;
+        letter-spacing:.06em;
+        line-height:1.4;
+    }
+    .article-toc-note {
+        margin:0;
+        color:var(--text-sub);
+        font-family:'Zen Kaku Gothic New',sans-serif;
+        font-size:.68rem;
+        white-space:nowrap;
     }
     .article-toc-unified__list {
-        display: flex;
-        flex-direction: column;
-        gap: 1px;
-        margin: 0;
-        padding: 0;
-        list-style: none;
+        display:grid;
+        grid-template-columns:repeat(2,minmax(0,1fr));
+        gap:.38rem 1.1rem;
+        margin:.9rem 0 0;
+        padding:0;
+        list-style:none;
     }
-    .article-toc-unified__item {
-        margin: 0;
-    }
+    .article-toc-unified__item { margin:0; }
     .article-toc-unified__link {
-        position: relative;
-        display: block;
-        margin: 0;
-        padding: .58rem .72rem .58rem 1rem;
-        border-left: 2px solid transparent;
-        border-radius: 7px;
-        color: var(--text-sub) !important;
-        font-family: 'Zen Kaku Gothic New', sans-serif !important;
-        font-size: .8rem !important;
-        font-weight: 500;
-        line-height: 1.55 !important;
-        text-decoration: none;
-        overflow-wrap: anywhere;
-        transition: color .14s ease, border-color .14s ease, background-color .14s ease;
+        display:flex;
+        align-items:flex-start;
+        gap:.42rem;
+        width:100%;
+        margin:0;
+        padding:.4rem .48rem;
+        border:0;
+        border-radius:8px;
+        background:transparent;
+        color:var(--text-sub)!important;
+        font-family:'Zen Kaku Gothic New',sans-serif!important;
+        font-size:.76rem!important;
+        font-weight:600;
+        line-height:1.55!important;
+        text-decoration:none;
+        overflow-wrap:anywhere;
+        transition:background-color .16s ease,color .16s ease;
+    }
+    .article-toc-unified__link::before {
+        content:'\F26A';
+        flex:0 0 auto;
+        margin-top:.18rem;
+        color:var(--accent-red);
+        font-family:'bootstrap-icons';
+        font-size:.62rem;
+        line-height:1;
     }
     .article-toc-unified__link:hover,
     .article-toc-unified__link.is-active {
-        color: var(--text-main) !important;
-        border-left-color: var(--accent-red);
-        background: color-mix(in srgb, var(--accent-red) 5%, transparent);
+        color:var(--accent-red)!important;
+        background:color-mix(in srgb,var(--accent-red) 6%,transparent);
     }
-    .article-toc-unified__link.is-active {
-        font-weight: 700;
+    .article-toc-unified__link:focus-visible {
+        outline:2px solid color-mix(in srgb,var(--accent-red) 45%,transparent);
+        outline-offset:2px;
     }
 
-    /* 読書中に常時見える Anthropic 型の左レール */
+    /* 読書中の左端レール。現在位置だけ少し長くなる。 */
     .article-toc-rail {
-        position: fixed;
-        top: 50%;
-        left: 18px;
-        z-index: 999;
-        transform: translateY(-50%);
-        pointer-events: none;
+        position:fixed;
+        top:50%;
+        left:16px;
+        z-index:999;
+        transform:translateY(-50%);
+        pointer-events:none;
     }
     .article-toc-rail__list {
-        display: flex;
-        flex-direction: column;
-        align-items: flex-start;
-        gap: 13px;
-        margin: 0;
-        padding: 0;
-        list-style: none;
+        display:flex;
+        flex-direction:column;
+        align-items:flex-start;
+        gap:13px;
+        margin:0;
+        padding:0;
+        list-style:none;
     }
-    .article-toc-rail__item {
-        margin: 0;
-        padding: 0;
-    }
+    .article-toc-rail__item { margin:0; padding:0; }
     .article-toc-rail__link {
-        display: inline-flex;
-        align-items: center;
-        gap: 9px;
-        min-height: 12px;
-        padding: 0;
-        color: var(--text-sub);
-        font-size: 0;
-        line-height: 1;
-        text-decoration: none;
-        opacity: .62;
-        pointer-events: auto;
-        transition: opacity .16s ease, color .16s ease, gap .18s ease;
+        position:relative;
+        display:inline-flex;
+        align-items:center;
+        min-height:12px;
+        padding:0;
+        color:var(--text-sub);
+        font-size:0;
+        line-height:1;
+        text-decoration:none;
+        opacity:.58;
+        pointer-events:auto;
+        transition:opacity .16s ease,color .16s ease;
     }
     .article-toc-rail__link::before {
-        content: '';
-        display: block;
-        width: 13px;
-        height: 1px;
-        flex: 0 0 13px;
-        background: currentColor;
-        opacity: .72;
-        transition: width .18s ease, opacity .18s ease;
+        content:'';
+        display:block;
+        width:12px;
+        height:1px;
+        background:currentColor;
+        opacity:.72;
+        transition:width .18s ease,opacity .18s ease;
     }
-    .article-toc-rail__link:hover {
-        color: var(--text-main);
-        opacity: 1;
-    }
-    .article-toc-rail__link:hover::before {
-        width: 21px;
-        flex-basis: 21px;
-        opacity: 1;
-    }
-    .article-toc-rail__link.is-active {
-        color: var(--accent-red);
-        opacity: 1;
-    }
-    .article-toc-rail__link.is-active::before {
-        width: 27px;
-        flex-basis: 27px;
-        opacity: 1;
+    .article-toc-rail__link.is-active { color:var(--accent-red); opacity:1; }
+    .article-toc-rail__link.is-active::before { width:20px; opacity:1; }
+    .article-toc-rail__link:hover { color:var(--text-main); opacity:1; }
+    .article-toc-rail__link.is-label-visible::after {
+        content:attr(data-label);
+        position:absolute;
+        left:29px;
+        top:50%;
+        white-space:nowrap;
+        padding:.2rem .42rem;
+        border:1px solid var(--card-border);
+        border-radius:5px;
+        background:var(--card-bg,#fff);
+        color:var(--text-main);
+        font-family:'Zen Kaku Gothic New',sans-serif;
+        font-size:.66rem;
+        font-weight:700;
+        line-height:1.35;
+        box-shadow:0 4px 12px rgba(0,0,0,.08);
+        transform:translateY(-50%);
+        pointer-events:none;
     }
     .article-toc-rail__link:focus-visible {
-        outline: 0;
-        opacity: 1;
-        color: var(--text-main);
+        outline:2px solid var(--accent-red);
+        outline-offset:4px;
     }
-    .article-toc-rail__link[aria-current="location"]::after {
-        content: attr(data-label);
-        position: absolute;
-        left: 38px;
-        white-space: nowrap;
-        font-family: 'Zen Kaku Gothic New', sans-serif;
-        font-size: .72rem;
-        font-weight: 700;
-        color: var(--text-main);
-        opacity: 0;
-        pointer-events: none;
-        transform: translateX(-4px);
-        transition: opacity .15s ease, transform .15s ease;
-    }
-    .article-toc-rail__link.is-active[aria-current="location"]::after {
-        opacity: 1;
-        transform: translateX(0);
-    }
-
-    @media (max-width: 1100px) {
-        .article-toc-rail { left: 8px; }
-    }
-    @media (max-width: 760px) {
-        .article-toc-sidebar {
-            top: 60px;
-            width: calc(100vw - 20px);
-        }
-        .article-toc-summary {
-            min-height: 44px;
-            padding: .65rem .82rem;
-        }
-        .article-toc-rail {
-            left: 6px;
-        }
-        .article-toc-rail__list {
-            gap: 10px;
-        }
-        .article-toc-rail__link::before {
-            width: 10px;
-            flex-basis: 10px;
-        }
-        .article-toc-rail__link.is-active::before {
-            width: 22px;
-            flex-basis: 22px;
-        }
-        .article-toc-rail__link[aria-current="location"]::after {
-            left: 30px;
-            font-size: .66rem;
+    @media(max-width:760px) {
+        .article-toc-sidebar { margin-top:1rem; margin-bottom:1.25rem; }
+        .article-toc-panel { padding:1rem; border-radius:14px; }
+        .article-toc-panel-head { align-items:flex-start; flex-direction:column; gap:.25rem; }
+        .article-toc-note { white-space:normal; }
+        .article-toc-unified__list { grid-template-columns:1fr; }
+        .article-toc-rail { left:6px; }
+        .article-toc-rail__list { gap:10px; }
+        .article-toc-rail__link::before { width:9px; }
+        .article-toc-rail__link.is-active::before { width:17px; }
+        .article-toc-rail__link.is-label-visible::after {
+            left:24px; font-size:.61rem; max-width:calc(100vw - 42px); white-space:normal;
         }
     }
-    @media (prefers-reduced-motion: reduce) {
-        .article-toc-summary,
-        .article-toc-rail__link,
-        .article-toc-rail__link::before,
-        .article-toc-rail__link::after {
-            transition: none !important;
-        }
+    @media(prefers-reduced-motion:reduce) {
+        .article-toc-unified__link,.article-toc-rail__link,.article-toc-rail__link::before { transition:none!important; }
     }
 
     /* 記事本文冒頭のメタ情報（文字数・読了目安） */
@@ -35270,166 +35212,147 @@ try {
     // 目次のある他画面とUIが異なっていた。
     window.buildArticleTOC = function() {
         try {
-            var contentEl = document.querySelector('#article-detail-content .article-content');
-            var sidebar = document.querySelector('#article-detail-content .article-toc-sidebar');
-            if (!contentEl || !sidebar) return;
+            var contentEl=document.querySelector('#article-detail-content .article-content');
+            var sidebar=document.querySelector('#article-detail-content .article-toc-sidebar');
+            if(!contentEl||!sidebar)return;
 
-            if (window._articleTocObserver) {
-                window._articleTocObserver.disconnect();
-                window._articleTocObserver = null;
-            }
+            if(window._articleTocObserver){window._articleTocObserver.disconnect();window._articleTocObserver=null;}
+            sidebar.innerHTML='';
+            sidebar.hidden=true;
 
-            sidebar.innerHTML = '';
-            sidebar.hidden = true;
+            var headings=Array.from(contentEl.querySelectorAll('h3'));
+            if(headings.length<2)return;
 
-            var headings = Array.from(contentEl.querySelectorAll('h3'));
-            if (headings.length < 2) return;
-
-            headings.forEach(function(h, idx) {
-                h.id = 'article-toc-h-' + idx;
-                h.style.scrollMarginTop = '136px';
+            headings.forEach(function(h,idx){
+                h.id='article-toc-h-'+idx;
+                h.style.scrollMarginTop='24px';
             });
 
-            var nav = document.createElement('nav');
-            nav.className = 'article-toc-unified';
-            nav.setAttribute('aria-label', '記事の目次');
+            var nav=document.createElement('nav');
+            nav.className='article-toc-unified';
+            nav.setAttribute('aria-label','記事の目次');
 
-            var details = document.createElement('details');
-            details.className = 'article-toc-details';
-            details.open = false;
+            var panel=document.createElement('div');
+            panel.className='article-toc-panel';
 
-            var summary = document.createElement('summary');
-            summary.className = 'article-toc-summary';
-            summary.setAttribute('aria-label', '記事の目次を開く');
-            summary.innerHTML = '<span class="article-toc-summary__icon" aria-hidden="true"><i class="bi bi-list-ul"></i></span><span class="article-toc-summary__value">目次</span><i class="bi bi-chevron-down article-toc-summary__chevron" aria-hidden="true"></i>';
+            var head=document.createElement('div');
+            head.className='article-toc-panel-head';
+            var headCopy=document.createElement('div');
+            var kicker=document.createElement('p');
+            kicker.className='article-toc-kicker';
+            kicker.innerHTML='<i class="bi bi-list-nested" aria-hidden="true"></i> CONTENTS';
+            var title=document.createElement('h2');
+            title.className='article-toc-heading';
+            title.textContent='目次';
+            headCopy.appendChild(kicker);
+            headCopy.appendChild(title);
 
-            var panel = document.createElement('div');
-            panel.className = 'article-toc-panel';
+            var note=document.createElement('p');
+            note.className='article-toc-note';
+            note.textContent='見出しを選んで本文へ移動';
+            head.appendChild(headCopy);
+            head.appendChild(note);
 
-            var list = document.createElement('ul');
-            list.className = 'article-toc-unified__list';
+            var list=document.createElement('ul');
+            list.className='article-toc-unified__list';
 
-            var rail = document.createElement('div');
-            rail.className = 'article-toc-rail';
-            rail.setAttribute('aria-hidden', 'false');
+            var rail=document.createElement('div');
+            rail.className='article-toc-rail';
+            rail.setAttribute('aria-label','読書中の目次');
+            var railList=document.createElement('ul');
+            railList.className='article-toc-rail__list';
 
-            var railList = document.createElement('ul');
-            railList.className = 'article-toc-rail__list';
+            var railLinks=[];
 
-            headings.forEach(function(h) {
-                var label = h.textContent.trim().replace(/^\s*(?:[0-9０-９]+)[.．、:：)）-]+\s*/, '');
-                label = label || h.textContent.trim();
+            headings.forEach(function(h){
+                var label=h.textContent.trim().replace(/^\s*(?:[0-9０-９]+)[.．、:：)）-]+\s*/,'');
+                label=label||h.textContent.trim();
 
-                var li = document.createElement('li');
-                li.className = 'article-toc-unified__item';
+                var li=document.createElement('li');
+                li.className='article-toc-unified__item';
+                var link=document.createElement('a');
+                link.href='#'+h.id;
+                link.className='article-toc-unified__link';
+                link.dataset.targetId=h.id;
+                link.innerHTML='<span>'+escapeHTML(label)+'</span>';
 
-                var link = document.createElement('a');
-                link.href = '#' + h.id;
-                link.className = 'article-toc-unified__link';
-                link.dataset.targetId = h.id;
-                link.textContent = label;
+                var railItem=document.createElement('li');
+                railItem.className='article-toc-rail__item';
+                var railLink=document.createElement('a');
+                railLink.href='#'+h.id;
+                railLink.className='article-toc-rail__link';
+                railLink.dataset.targetId=h.id;
+                railLink.dataset.label=label;
+                railLink.setAttribute('aria-label',label);
+                railLink.title=label;
+                railLinks.push(railLink);
 
-                var railItem = document.createElement('li');
-                railItem.className = 'article-toc-rail__item';
-
-                var railLink = document.createElement('a');
-                railLink.href = '#' + h.id;
-                railLink.className = 'article-toc-rail__link';
-                railLink.dataset.targetId = h.id;
-                railLink.dataset.label = label;
-                railLink.setAttribute('aria-label', label);
-                railLink.title = label;
-
-                var go = function(event) {
+                var go=function(event){
                     event.preventDefault();
-                    var target = document.getElementById(h.id);
-                    if (!target) return;
-                    if (event.currentTarget === railLink) {
-                        railLinks.forEach(function(item) { item.classList.remove('is-expanded'); });
-                        railLink.classList.add('is-expanded');
-                        window.clearTimeout(railLink._labelTimer);
-                        railLink._labelTimer = window.setTimeout(function() {
-                            railLink.classList.remove('is-expanded');
-                        }, 1800);
-                    } else if (details.open) {
-                        details.open = false;
-                    }
-                    var reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-                    target.scrollIntoView({
-                        behavior: reduceMotion ? 'auto' : 'smooth',
-                        block: 'start'
-                    });
-                    if (history.replaceState) history.replaceState(null, '', '#' + h.id);
+                    var target=document.getElementById(h.id);
+                    if(!target)return;
+                    var reduceMotion=window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+                    target.scrollIntoView({behavior:reduceMotion?'auto':'smooth',block:'start'});
+                    if(history.replaceState)history.replaceState(null,'','#'+h.id);
+
+                    railLinks.forEach(function(other){other.classList.remove('is-label-visible');});
+                    railLink.classList.add('is-label-visible');
+                    window.clearTimeout(railLink._labelTimer);
+                    railLink._labelTimer=window.setTimeout(function(){railLink.classList.remove('is-label-visible');},2200);
                 };
 
-                link.addEventListener('click', go);
-                railLink.addEventListener('click', go);
-
+                link.addEventListener('click',go);
+                railLink.addEventListener('click',go);
                 li.appendChild(link);
                 list.appendChild(li);
                 railItem.appendChild(railLink);
                 railList.appendChild(railItem);
             });
 
+            panel.appendChild(head);
             panel.appendChild(list);
-            details.appendChild(summary);
-            details.appendChild(panel);
-            nav.appendChild(details);
+            nav.appendChild(panel);
             sidebar.appendChild(nav);
-
             rail.appendChild(railList);
             sidebar.appendChild(rail);
+            sidebar.hidden=false;
 
-            sidebar.hidden = false;
-
-            var links = Array.from(list.querySelectorAll('.article-toc-unified__link'));
-            var railLinks = Array.from(railList.querySelectorAll('.article-toc-rail__link'));
-
-            var setActive = function(id) {
-                links.forEach(function(link) {
-                    var active = link.dataset.targetId === id;
-                    link.classList.toggle('is-active', active);
-                    if (active) link.setAttribute('aria-current', 'location');
+            var links=Array.from(list.querySelectorAll('.article-toc-unified__link'));
+            var setActive=function(id){
+                links.forEach(function(link){
+                    var active=link.dataset.targetId===id;
+                    link.classList.toggle('is-active',active);
+                    if(active)link.setAttribute('aria-current','location');
                     else link.removeAttribute('aria-current');
                 });
-                railLinks.forEach(function(link) {
-                    var active = link.dataset.targetId === id;
-                    link.classList.toggle('is-active', active);
-                    if (active) link.setAttribute('aria-current', 'location');
+                railLinks.forEach(function(link){
+                    var active=link.dataset.targetId===id;
+                    link.classList.toggle('is-active',active);
+                    if(active)link.setAttribute('aria-current','location');
                     else link.removeAttribute('aria-current');
                 });
             };
 
-            var visible = new Map();
-            window._articleTocObserver = new IntersectionObserver(function(entries) {
-                entries.forEach(function(entry) {
-                    if (entry.isIntersecting) visible.set(entry.target.id, entry.boundingClientRect.top);
+            var visible=new Map();
+            window._articleTocObserver=new IntersectionObserver(function(entries){
+                entries.forEach(function(entry){
+                    if(entry.isIntersecting)visible.set(entry.target.id,entry.boundingClientRect.top);
                     else visible.delete(entry.target.id);
                 });
-
-                var activeId = null;
-                var bestTop = Infinity;
-                visible.forEach(function(top, id) {
-                    if (top >= 0 && top < bestTop) {
-                        bestTop = top;
-                        activeId = id;
-                    }
+                var activeId=null,bestTop=Infinity;
+                visible.forEach(function(top,id){
+                    if(top>=0&&top<bestTop){bestTop=top;activeId=id;}
                 });
-
-                if (!activeId) {
-                    var passed = headings.filter(function(h) {
-                        return h.getBoundingClientRect().top <= 150;
-                    });
-                    if (passed.length) activeId = passed[passed.length - 1].id;
+                if(!activeId){
+                    var passed=headings.filter(function(h){return h.getBoundingClientRect().top<=120;});
+                    if(passed.length)activeId=passed[passed.length-1].id;
                 }
-                setActive(activeId || headings[0].id);
-            }, { rootMargin: '-130px 0px -65% 0px', threshold: [0, 1] });
+                setActive(activeId||headings[0].id);
+            },{rootMargin:'-100px 0px -65% 0px',threshold:[0,1]});
 
-            headings.forEach(function(h) {
-                window._articleTocObserver.observe(h);
-            });
+            headings.forEach(function(h){window._articleTocObserver.observe(h);});
             setActive(headings[0].id);
-        } catch (e) {}
+        }catch(e){}
     };
 
     // ---------- ② 上へ戻るボタンの表示制御 ----------
