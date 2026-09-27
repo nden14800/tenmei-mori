@@ -17785,7 +17785,7 @@ body.sidebar-collapsed.sidebar-pinned #sidebar .nav-group-title {
                                                 <button type="button" class="tenmei-choice__trigger" id="about-revision-select-trigger" aria-haspopup="listbox" aria-expanded="false" aria-controls="about-revision-select-options" aria-label="当サイトについての版を選ぶ"><span class="tenmei-choice__icon" aria-hidden="true"><i class="bi bi-clock-history"></i></span><span class="tenmei-choice__value"></span><i class="bi bi-chevron-down tenmei-choice__chevron" aria-hidden="true"></i></button>
                                                 <div class="tenmei-choice__popover" id="about-revision-select-popover" hidden><div class="tenmei-choice__options" id="about-revision-select-options" role="listbox" aria-label="当サイトについての版を選ぶ"></div></div>
                                             </div>
-                                            <div id="about-revision-description" class="document-revision-description" aria-live="polite"><strong>現行版：第25版 ・ 2026/08/27 ・ 現行版</strong><span>第25版では、設定・文書・サービスステータスを追加する前の公開文書スナップショットを正本として保存。</span></div><div id="about-revision-snapshot" class="document-revision-snapshot" hidden aria-live="polite"></div>
+                                            <div id="about-revision-description" class="document-revision-description" aria-live="polite"><strong>第24版 ・ 本文未記録</strong><span>本文スナップショットと元コミットを確認できないため、本文を推測せず欠落記録のみを保持。</span></div><div id="about-revision-snapshot" class="document-revision-snapshot" aria-live="polite"><div class="document-revision-snapshot__missing">第24版の本文スナップショットは保存されていません。確認できない本文を推測して表示していません。</div></div>
                 </div>
                 <section class="about-codex-chapter about-codex-chapter--features bento-card p-0 overflow-hidden">
                     <header class="about-codex-chapter-head p-6 border-b border-gray-100 dark:border-gray-800 bg-gray-50 dark:bg-zinc-900/50"><p class="about-codex-chapter-label">CHAPTER 01</p>
@@ -18476,7 +18476,7 @@ body.sidebar-collapsed.sidebar-pinned #sidebar .nav-group-title {
                                         <button type="button" class="tenmei-choice__trigger" id="privacy-revision-select-trigger" aria-haspopup="listbox" aria-expanded="false" aria-controls="privacy-revision-select-options" aria-label="プライバシーポリシーの版を選ぶ"><span class="tenmei-choice__icon" aria-hidden="true"><i class="bi bi-clock-history"></i></span><span class="tenmei-choice__value"></span><i class="bi bi-chevron-down tenmei-choice__chevron" aria-hidden="true"></i></button>
                                         <div class="tenmei-choice__popover" id="privacy-revision-select-popover" hidden><div class="tenmei-choice__options" id="privacy-revision-select-options" role="listbox" aria-label="プライバシーポリシーの版を選ぶ"></div></div>
                                     </div>
-                                    <div id="privacy-revision-description" class="document-revision-description" aria-live="polite"><strong>現行版：第32版 ・ 2026/09/26 ・ 現行版</strong><span>第32版の改定履歴を現行の第32版・改定日と一致させ、公開アーカイブとの整合を確認。 本文スナップショットは保存されていないため、内容を推測して補完していない。</span></div><div id="privacy-revision-snapshot" class="document-revision-snapshot" hidden aria-live="polite"></div>
+                                    <div id="privacy-revision-description" class="document-revision-description" aria-live="polite"><strong>第31版 ・ 2026/09/25 ・ 本文未記録</strong><span>AI機能、Cloudflare Workersバックエンド、公開文書の改定履歴、表示・操作UIを再照合し、実装との不一致を修正。本文スナップショットは保存されていないため、内容を推測して補完していない。</span></div><div id="privacy-revision-snapshot" class="document-revision-snapshot" aria-live="polite"><div class="document-revision-snapshot__missing">第31版の本文スナップショットは保存されていません。確認できない本文を推測して表示していません。</div></div>
                                 </div>
                         </div>
 
@@ -36807,7 +36807,7 @@ function render(documentKey,edition,archive){
   const snapshot=document.getElementById(documentKey+'-revision-snapshot');
   if(!node)return;
   const item=(archive?.documents?.[documentKey]?.versions||[]).find(v=>String(v.edition)===String(edition));
-  const current=CURRENT[documentKey];
+  const current=archive?.documents?.[documentKey]?.current||CURRENT[documentKey];
   const isCurrent=String(current.edition)===String(edition);
   const date=item?.revisedLabel?.match(/^(\d{4}\/\d{1,2}\/\d{1,2})/)?.[1]||item?.revisedLabel||current.date||'日付未記録';
   const status=item?.availability==='missing'?'欠番・記録なし':item?.availability==='metadata-only'?'本文未記録':isCurrent?'現行版':'';
@@ -36820,13 +36820,14 @@ function render(documentKey,edition,archive){
     snapshot.innerHTML='<div class="document-revision-snapshot__label">第'+escapeHtml(edition)+'版の本文スナップショット</div><div class="document-revision-snapshot__body">'+item.html+'</div>';
   }else{
     snapshot.hidden=false;
-    snapshot.innerHTML='<div class="document-revision-snapshot__missing">この版の本文スナップショットは保存されていません。確認できない本文を推測して表示していません。</div>';
+    snapshot.innerHTML='<div class="document-revision-snapshot__missing">第'+escapeHtml(edition)+'版の本文スナップショットは保存されていません。確認できない本文を推測して表示していません。</div>';
   }
 }
 function syncOptions(documentKey,archive){
   const root=document.querySelector('[data-control-id="'+documentKey+'-revision-select"]');
   if(!root)return;
-  const versions=(archive?.documents?.[documentKey]?.versions||[]).filter(v=>String(v.edition)!==String(CURRENT[documentKey].edition));
+  const current=archive?.documents?.[documentKey]?.current||CURRENT[documentKey];
+  const versions=(archive?.documents?.[documentKey]?.versions||[]).filter(v=>String(v.edition)!==String(current.edition));
   const options=versions.slice().sort((a,b)=>Number(b.edition)-Number(a.edition)).map(v=>({
     value:String(v.edition),
     label:'第'+v.edition+'版',
