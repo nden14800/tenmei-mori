@@ -39,8 +39,9 @@ requireSectionText('id="privacy-toc-list"', 'プライバシーポリシー画�
 const revisionOptionsMatch = privacySection.match(/data-control-id="privacy-revision-select"[^>]*data-options='([^']+)'/);
 assert(revisionOptionsMatch, 'プライバシー第9条の版選択肢が定義されていません。');
 const revisionEditions = JSON.parse(revisionOptionsMatch[1]).map((option) => Number(option.value));
-[32,31,30,29,28,27,26,25,24,23,22,21,20,19,18,17,16,14,13,12,11,10,9,8,7,6,5,4,3].forEach((edition) => assert(revisionEditions.includes(edition), `プライバシー第${edition}版の選択肢がありません。`));
-assert.equal(revisionEditions.includes(15), false, '確認できない第15版を推測で追加してはいけません。');
+[32,31,30,29,28,27,26,25,24,23,22,21,20,19,18,17,16,15,14,13,12,11,10,9,8,7,6,5,4,3].forEach((edition) => assert(revisionEditions.includes(edition), `プライバシー第${edition}版の選択肢がありません。`));
+assert(revisionEditions.includes(15), 'プライバシー第15版の欠番・記録なし表示が選択肢にありません。');
+assert(privacySection.includes('第15版</span>') || privacySection.includes('第15版'), 'プライバシー第15版の明示がHTMLにありません。');
 assert(html.includes('.dark .document-revision-selector{'), 'REVISION HISTORYのダークモードCSSがありません。');
 assert(html.includes('.dark .document-revision-description{'), 'REVISION HISTORY説明欄のダークモードCSSがありません。');
 requireSectionText(
