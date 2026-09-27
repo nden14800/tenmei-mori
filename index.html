@@ -13506,13 +13506,20 @@ body.sidebar-collapsed.sidebar-pinned #sidebar .nav-group-title {
 </style>
 <style id="document-revision-snapshot-styles">
 .document-revision-snapshot{margin-top:1rem;border:1px solid rgba(159,29,37,.14);border-radius:18px;background:rgba(255,255,255,.72);overflow:hidden}
-.document-revision-snapshot__label{padding:.8rem 1rem;border-bottom:1px solid rgba(159,29,37,.10);font-size:.72rem;font-weight:800;letter-spacing:.08em;color:#7a6963}
-.document-revision-snapshot__body{padding:1rem;overflow:visible}
+.document-revision-snapshot__details{margin:0}
+.document-revision-snapshot__summary{display:flex;align-items:center;justify-content:space-between;gap:.75rem;min-height:48px;padding:.8rem 1rem;cursor:pointer;list-style:none;font-size:.72rem;font-weight:800;letter-spacing:.08em;color:#7a6963}
+.document-revision-snapshot__summary::-webkit-details-marker{display:none}
+.document-revision-snapshot__summary:focus-visible{outline:2px solid currentColor;outline-offset:-2px;border-radius:17px}
+.document-revision-snapshot__chevron{flex:0 0 auto;font-size:.9rem;transition:transform .16s ease}
+.document-revision-snapshot__details[open] .document-revision-snapshot__chevron{transform:rotate(180deg)}
+.document-revision-snapshot__body{padding:1rem;border-top:1px solid rgba(159,29,37,.10);overflow:visible}
 .document-revision-snapshot__body>section{max-width:none!important;margin:0!important}
 .document-revision-snapshot__missing{padding:1rem;color:#6b5d57;line-height:1.8}
 .dark .document-revision-snapshot{border-color:rgba(210,170,105,.24);background:rgba(24,20,19,.8)}
-.dark .document-revision-snapshot__label{border-color:rgba(210,170,105,.16);color:#c9bdb6}
+.dark .document-revision-snapshot__summary{color:#c9bdb6}
+.dark .document-revision-snapshot__body{border-color:rgba(210,170,105,.16)}
 .dark .document-revision-snapshot__missing{color:#e6ddd7}
+@media(prefers-reduced-motion:reduce){.document-revision-snapshot__chevron{transition:none}}
 </style>
 </head>
 
@@ -36821,7 +36828,7 @@ function render(documentKey,edition,archive){
   const hasSnapshot=typeof item?.html==='string'&&item.html.trim().length>0&&item?.availability!=='missing'&&item?.availability!=='metadata-only';
   if(hasSnapshot){
     snapshot.hidden=false;
-    snapshot.innerHTML='<div class="document-revision-snapshot__label">第'+escapeHtml(edition)+'版の本文スナップショット</div><div class="document-revision-snapshot__body">'+item.html+'</div>';
+    snapshot.innerHTML='<details class="document-revision-snapshot__details"><summary class="document-revision-snapshot__summary"><span>第'+escapeHtml(edition)+'版の本文スナップショット</span><i class="bi bi-chevron-down document-revision-snapshot__chevron" aria-hidden="true"></i></summary><div class="document-revision-snapshot__body">'+item.html+'</div></details>';
     // 保存HTMLはサイト本体の画面セクションをそのまま含むため、
     // .view-section の画面切り替え用CSSがスナップショット側にも適用される。
     // 「本文」として表示する際は、表示制御用のクラスだけを除去する。
@@ -36834,7 +36841,7 @@ function render(documentKey,edition,archive){
     const detail=item?.changeDescription||'確認できた改定内容はありません。';
     const commitInfo=item?.commit?.shortSha&&item.commit.shortSha!=='記録なし'?'元コミット: '+item.commit.shortSha:'元コミット: 記録なし';
     snapshot.hidden=false;
-    snapshot.innerHTML='<div class="document-revision-snapshot__label">第'+escapeHtml(edition)+'版 — '+escapeHtml(availabilityLabel)+'</div><div class="document-revision-snapshot__body"><div class="document-revision-snapshot__missing"><strong>本文について</strong><p>この版の本文スナップショットは保存・確認できていません。確認できない本文を推測・復元して表示していません。</p><strong>確認できた改定内容</strong><p>'+escapeHtml(detail)+'</p><p>'+escapeHtml(commitInfo)+'</p></div></div>';
+    snapshot.innerHTML='<details class="document-revision-snapshot__details"><summary class="document-revision-snapshot__summary"><span>第'+escapeHtml(edition)+'版 — '+escapeHtml(availabilityLabel)+'</span><i class="bi bi-chevron-down document-revision-snapshot__chevron" aria-hidden="true"></i></summary><div class="document-revision-snapshot__body"><div class="document-revision-snapshot__missing"><strong>本文について</strong><p>この版の本文スナップショットは保存・確認できていません。確認できない本文を推測・復元して表示していません。</p><strong>確認できた改定内容</strong><p>'+escapeHtml(detail)+'</p><p>'+escapeHtml(commitInfo)+'</p></div></div></details>';
   }
 }
 function syncOptions(documentKey,archive){
