@@ -17781,7 +17781,7 @@ body.sidebar-collapsed.sidebar-pinned #sidebar .nav-group-title {
                     <div class="document-revision-selector" data-revision-document="about">
                                             <p class="document-revision-selector__label">REVISION HISTORY / EDITION</p>
                                             <div class="tenmei-choice" data-control-kind="choice" data-control-id="about-revision-select" data-control-label="当サイトについての版を選ぶ" data-options='[{"value":"24","label":"第24版","detail":"本文未記録"},{"value":"23","label":"第23版","detail":"2026/08/26"},{"value":"22","label":"第22版","detail":"2026/08/26"},{"value":"21","label":"第21版","detail":"2026/08/26"},{"value":"20","label":"第20版","detail":"2026/08/26"},{"value":"19","label":"第19版","detail":"2026/08/26"},{"value":"18","label":"第18版","detail":"2026/08/26"},{"value":"17","label":"第17版","detail":"2026/08/14"},{"value":"16","label":"第16版","detail":"2026/07/26"},{"value":"15","label":"第15版","detail":"2026/07/25"},{"value":"14","label":"第14版","detail":"2026/07/19"},{"value":"13","label":"第13版","detail":"2026/07/11"},{"value":"12","label":"第12版","detail":"2026/07/11"},{"value":"11","label":"第11版","detail":"2026/07/11"},{"value":"10","label":"第10版","detail":"2026/06/20"},{"value":"9","label":"第9版","detail":"2026/06/06"},{"value":"8","label":"第8版","detail":"2026/05/01"},{"value":"7","label":"第7版","detail":"2026/01/25"},{"value":"6","label":"第6版","detail":"2026/1/23"},{"value":"5","label":"第5版","detail":"2026/1/17"},{"value":"4","label":"第4版","detail":"2026/1/14"},{"value":"3","label":"第3版","detail":"2026/1/5"}]'>
-                                                <input type="hidden" id="about-revision-select" value="25">
+                                                <input type="hidden" id="about-revision-select" value="24">
                                                 <button type="button" class="tenmei-choice__trigger" id="about-revision-select-trigger" aria-haspopup="listbox" aria-expanded="false" aria-controls="about-revision-select-options" aria-label="当サイトについての版を選ぶ"><span class="tenmei-choice__icon" aria-hidden="true"><i class="bi bi-clock-history"></i></span><span class="tenmei-choice__value"></span><i class="bi bi-chevron-down tenmei-choice__chevron" aria-hidden="true"></i></button>
                                                 <div class="tenmei-choice__popover" id="about-revision-select-popover" hidden><div class="tenmei-choice__options" id="about-revision-select-options" role="listbox" aria-label="当サイトについての版を選ぶ"></div></div>
                                             </div>
@@ -18472,7 +18472,7 @@ body.sidebar-collapsed.sidebar-pinned #sidebar .nav-group-title {
                                 <div class="document-revision-selector" data-revision-document="privacy">
                                     <p class="document-revision-selector__label">REVISION HISTORY / EDITION</p>
                                     <div class="tenmei-choice" data-control-kind="choice" data-control-id="privacy-revision-select" data-control-label="プライバシーポリシーの版を選ぶ" data-options='[{"value":"31","label":"第31版","detail":"2026/09/25"},{"value":"30","label":"第30版","detail":"2026/09/13"},{"value":"29","label":"第29版","detail":"2026/08/29"},{"value":"28","label":"第28版","detail":"2026/08/28"},{"value":"27","label":"第27版","detail":"2026/08/28"},{"value":"26","label":"第26版","detail":"2026/08/28"},{"value":"25","label":"第25版","detail":"2026/08/27"},{"value":"24","label":"第24版","detail":"2026/08/26"},{"value":"23","label":"第23版","detail":"2026/08/26"},{"value":"22","label":"第22版","detail":"2026/08/26"},{"value":"21","label":"第21版","detail":"2026/08/26"},{"value":"20","label":"第20版","detail":"2026/08/26"},{"value":"19","label":"第19版","detail":"2026/08/26"},{"value":"18","label":"第18版","detail":"2026/08/14"},{"value":"17","label":"第17版","detail":"2026/07/31"},{"value":"16","label":"第16版","detail":"2026/07/19"},{"value":"15","label":"第15版","detail":"欠番・記録なし"},{"value":"14","label":"第14版","detail":"2026/07/11"},{"value":"13","label":"第13版","detail":"2026/07/11"},{"value":"12","label":"第12版","detail":"2026/05/30"},{"value":"11","label":"第11版","detail":"2026/05/19"},{"value":"10","label":"第10版","detail":"2026/05/17"},{"value":"9","label":"第9版","detail":"2026/05/17"},{"value":"8","label":"第8版","detail":"2026/05/10"},{"value":"7","label":"第7版","detail":"2026/05/09"},{"value":"6","label":"第6版","detail":"2026/01/25"},{"value":"5","label":"第5版","detail":"2026/1/23"},{"value":"4","label":"第4版","detail":"2026/1/17"},{"value":"3","label":"第3版","detail":"2026/1/5"}]'>
-                                        <input type="hidden" id="privacy-revision-select" value="32">
+                                        <input type="hidden" id="privacy-revision-select" value="31">
                                         <button type="button" class="tenmei-choice__trigger" id="privacy-revision-select-trigger" aria-haspopup="listbox" aria-expanded="false" aria-controls="privacy-revision-select-options" aria-label="プライバシーポリシーの版を選ぶ"><span class="tenmei-choice__icon" aria-hidden="true"><i class="bi bi-clock-history"></i></span><span class="tenmei-choice__value"></span><i class="bi bi-chevron-down tenmei-choice__chevron" aria-hidden="true"></i></button>
                                         <div class="tenmei-choice__popover" id="privacy-revision-select-popover" hidden><div class="tenmei-choice__options" id="privacy-revision-select-options" role="listbox" aria-label="プライバシーポリシーの版を選ぶ"></div></div>
                                     </div>
@@ -36840,7 +36840,15 @@ async function initialize(){
     if(!response.ok)throw new Error('archive_http_'+response.status);
     const archive=await response.json();
     ['about','privacy'].forEach(key=>syncOptions(key,archive));
+    ['about','privacy'].forEach(key=>{
+      const input=document.getElementById(key+'-revision-select');
+      const root=document.querySelector('[data-control-id="'+key+'-revision-select"]');
+      let options=[];
+      try{options=JSON.parse(root?.dataset.options||'[]');}catch(_){}
+      if(input&&options[0])input.value=options[0].value;
+    });
     if(window.TenmeiCustomControls?.syncAll)window.TenmeiCustomControls.syncAll();
+    ['about','privacy'].forEach(key=>render(key,document.getElementById(key+'-revision-select')?.value,archive));
     document.addEventListener('change',event=>{
       if(event.target?.id==='about-revision-select')render('about',event.target.value,archive);
       if(event.target?.id==='privacy-revision-select')render('privacy',event.target.value,archive);
