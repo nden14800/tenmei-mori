@@ -18021,7 +18021,7 @@ body.sidebar-collapsed.sidebar-pinned #sidebar .nav-group-title {
     </nav>
 
 
-    <div id="developer-content-area"><div class="developer-study-grid">
+    <div class="developer-study-grid">
         <div class="developer-study-flow">
             <article class="developer-study-pane" aria-labelledby="developer-introduction-title">
                 <div class="developer-study-pane-header">
@@ -18158,8 +18158,7 @@ body.sidebar-collapsed.sidebar-pinned #sidebar .nav-group-title {
                 </a>
             </li>
         </ul>
-    </div>
-</section>
+    </section>
 </section>
 
         <section id="view-privacy" class="view-section privacy-ledger-layout" aria-labelledby="privacy-page-title">
@@ -37026,7 +37025,7 @@ window.addEventListener('hashchange',function(){setTimeout(buildHowtoArticleTOC,
 </script>
 
 <style id="developer-article-toc-unification">
-/* About page: reuse the completed article TOC interaction without changing the document content. */
+/* Developer page: reuse the completed article TOC interaction without changing the document content. */
 #view-developer #developer-toc-container.article-toc-unified {
   width:100%; max-width:var(--article-support-max-width,820px); margin:1.35rem auto 0!important;
   border:0; background:transparent; box-shadow:none;
@@ -37037,7 +37036,7 @@ window.addEventListener('hashchange',function(){setTimeout(buildHowtoArticleTOC,
 #view-developer #developer-toc-container .article-toc-panel { max-height:none; }
 #view-developer #developer-toc-container .article-toc-unified__list { grid-template-columns:repeat(2,minmax(0,1fr)); }
 #view-developer #developer-toc-container .article-toc-unified__link { font-family:'Zen Kaku Gothic New',sans-serif; }
-#view-developer .developer-study-pane h3 { scroll-margin-top:136px; }
+#view-developer .developer-study-pane h2, #view-developer .developer-study-pane h3 { scroll-margin-top:136px; }
 @media(max-width:700px){
   #view-developer #developer-toc-container.article-toc-unified { margin-top:1rem!important; }
   #view-developer #developer-toc-container .article-toc-unified__list { grid-template-columns:1fr; }
@@ -37049,11 +37048,11 @@ window.addEventListener('hashchange',function(){setTimeout(buildHowtoArticleTOC,
 function buildDeveloperArticleTOC(){
   try{
     var container=document.getElementById('developer-toc-container');
-    var content=document.getElementById('developer-content-area');
+    var content=document.querySelector('#view-developer .developer-study-grid');
     if(!container||!content)return;
     var headings=Array.from(content.querySelectorAll('.developer-study-pane h2, .developer-study-pane h3'));
     if(headings.length<2){container.classList.add('hidden');return;}
-    container.classList.remove('hidden','about-codex-toc');
+    container.classList.remove('hidden','developer-toc');
     container.classList.add('article-toc-unified');
     container.innerHTML='';
     var details=document.createElement('details');
