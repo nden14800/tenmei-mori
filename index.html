@@ -11107,7 +11107,7 @@ body.sidebar-collapsed.sidebar-pinned #sidebar .nav-group-title {
     .article-toc-rail {
         position: fixed;
         top: 50%;
-        left: 12px;
+        left: 96px;
         z-index: 10050;
         display: block;
         transform: translateY(-50%);
@@ -11208,7 +11208,19 @@ body.sidebar-collapsed.sidebar-pinned #sidebar .nav-group-title {
         background: var(--card-bg, #171717);
     }
 
-    @media (max-width: 1100px) {
+    /* 左サイドバーと読書レールが重ならないよう、サイドバーの状態に合わせて退避 */
+    @media (min-width: 1025px) {
+        body:has(#sidebar:hover) .article-toc-rail {
+            left: 264px;
+        }
+        body.sidebar-pinned .article-toc-rail {
+            left: 244px;
+        }
+        body.sidebar-pinned #sidebar.sidebar-v4 .article-toc-rail {
+            left: 276px;
+        }
+    }
+    @media (max-width: 1024px) {
         .article-toc-rail {
             left: 8px;
         }
@@ -35343,6 +35355,10 @@ try {
                 clearTimeout(window._articleTocRailRevealTimer);
                 window._articleTocRailRevealTimer = null;
             }
+            if (window._articleTocRailOutsideHandler) {
+                document.removeEventListener('pointerdown', window._articleTocRailOutsideHandler, true);
+                window._articleTocRailOutsideHandler = null;
+            }
 
             sidebar.innerHTML = '';
             sidebar.hidden = true;
@@ -35438,13 +35454,11 @@ try {
                     if (history.replaceState) history.replaceState(null, '', '#' + h.id);
 
                     /* 通常目次は開いたまま。読書中レールはクリックした時だけラベルを出す。 */
-                    railLinks.forEach(function(item) {
-                        item.classList.remove('is-revealed');
-                    });
+                    closeRailReveal();
                     railLink.classList.add('is-revealed');
-                    if (window._articleTocRailRevealTimer) clearTimeout(window._articleTocRailRevealTimer);
                     window._articleTocRailRevealTimer = setTimeout(function() {
                         railLink.classList.remove('is-revealed');
+                        window._articleTocRailRevealTimer = null;
                     }, 1800);
                 };
 
@@ -35467,6 +35481,21 @@ try {
             sidebar.appendChild(rail);
 
             sidebar.hidden = false;
+
+            /* レール外をタップ／クリックしたら、表示中のラベルを閉じる */
+            var closeRailReveal = function() {
+                railLinks.forEach(function(item) {
+                    item.classList.remove('is-revealed');
+                });
+                if (window._articleTocRailRevealTimer) {
+                    clearTimeout(window._articleTocRailRevealTimer);
+                    window._articleTocRailRevealTimer = null;
+                }
+            };
+            window._articleTocRailOutsideHandler = function(event) {
+                if (!rail.contains(event.target)) closeRailReveal();
+            };
+            document.addEventListener('pointerdown', window._articleTocRailOutsideHandler, true);
 
             var links = Array.from(list.querySelectorAll('.article-toc-unified__link'));
             var railLinks = Array.from(railList.querySelectorAll('.article-toc-rail__link'));
