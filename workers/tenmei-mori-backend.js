@@ -1899,7 +1899,7 @@ if (url.pathname === "/api/today-anniv" && method === "GET") {
                                 const delta = json?.choices?.[0]?.delta?.content ?? json?.choices?.[0]?.message?.content ?? json?.response ?? json?.result?.response ?? "";
                                 if (typeof delta === "string" && delta) {
                                     fullText += delta;
-                                    await writer.write(encoder.encode(`data: ${JSON.stringify({delta})}\\n\\n`));
+                                    await writer.write(encoder.encode(`data: ${JSON.stringify({delta})}\n\n`));
                                 }
                             } catch (_) {}
                         }
@@ -1915,7 +1915,7 @@ if (url.pathname === "/api/today-anniv" && method === "GET") {
                             const delta = json?.choices?.[0]?.delta?.content ?? json?.choices?.[0]?.message?.content ?? json?.response ?? json?.result?.response ?? "";
                             if (typeof delta === "string" && delta) {
                                 fullText += delta;
-                                await writer.write(encoder.encode(`data: ${JSON.stringify({delta})}\\n\\n`));
+                                await writer.write(encoder.encode(`data: ${JSON.stringify({delta})}\n\n`));
                             }
                         } catch (_) {}
                     }
@@ -1923,9 +1923,9 @@ if (url.pathname === "/api/today-anniv" && method === "GET") {
                     if (!answer) throw new Error("AI応答が空でした");
                     const responseTimeMs = Date.now() - startedAt;
                     const extra = await onComplete(answer, responseTimeMs, modelUsed) || {};
-                    await writer.write(encoder.encode(`data: ${JSON.stringify({done:true,text:answer,model_used:modelUsed,response_time_ms:responseTimeMs,...extra})}\\n\\n`));
+                    await writer.write(encoder.encode(`data: ${JSON.stringify({done:true,text:answer,model_used:modelUsed,response_time_ms:responseTimeMs,...extra})}\n\n`));
                 } catch (e) {
-                    try { await writer.write(encoder.encode(`data: ${JSON.stringify({error:e.message || "AI応答中にエラーが発生しました"})}\\n\\n`)); } catch (_) {}
+                    try { await writer.write(encoder.encode(`data: ${JSON.stringify({error:e.message || "AI応答中にエラーが発生しました"})}\n\n`)); } catch (_) {}
                 } finally {
                     try { await writer.close(); } catch (_) {}
                 }
