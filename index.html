@@ -10953,9 +10953,9 @@ body.sidebar-collapsed.sidebar-pinned #sidebar .nav-group-title {
 
     /* ==========================================
        記事読書レイアウト・目次
-       Anthropic系の「本文幅を奪わない上部ナビゲーション」。
-       目次は記事横に常設せず、スクロール中も上部に残る
-       コンパクトなナビゲーションから必要な時だけ開く。
+       Anthropic型の固定サイドナビゲーション。
+       本文幅を一切奪わず、スクロール中も左端から
+       セクションへ直接移動できる。
        ========================================== */
     .article-reading-layout {
         display: block;
@@ -10969,152 +10969,169 @@ body.sidebar-collapsed.sidebar-pinned #sidebar .nav-group-title {
 
     .article-toc-sidebar {
         position: fixed;
-        top: 76px;
-        left: 50%;
+        top: 50%;
+        left: 18px;
         z-index: 1000;
-        width: min(860px, calc(100vw - 32px));
+        width: max-content;
         margin: 0;
         min-width: 0;
-        transform: translateX(-50%);
+        transform: translateY(-50%);
+        pointer-events: none;
     }
     .article-toc-sidebar[hidden] {
         display: none !important;
     }
 
     .article-toc-unified {
-        position: relative;
-        width: 100%;
+        width: max-content;
         margin: 0;
+        pointer-events: auto;
     }
 
     .article-toc-details {
-        position: relative;
         margin: 0;
     }
-
-    .article-toc-summary {
-        display: flex;
-        min-height: 46px;
-        align-items: center;
-        justify-content: space-between;
-        gap: .75rem;
-        list-style: none;
-        margin: 0;
-        padding: .72rem .95rem;
-        border: 1px solid var(--card-border);
-        border-radius: 12px;
-        color: var(--text-main);
-        background: color-mix(in srgb, var(--card-bg, #fff) 96%, var(--text-main));
-        box-shadow: 0 5px 18px rgba(0, 0, 0, .055);
-        font-family: 'Zen Kaku Gothic New', sans-serif;
-        font-size: .82rem;
-        font-weight: 700;
-        letter-spacing: .02em;
-        line-height: 1.4;
-        cursor: pointer;
-        user-select: none;
-        transition: border-color .16s ease, box-shadow .16s ease, background-color .16s ease;
-    }
-    .article-toc-summary::after {
-        content: '';
-        width: 7px;
-        height: 7px;
-        flex: 0 0 auto;
-        border-right: 1.5px solid currentColor;
-        border-bottom: 1.5px solid currentColor;
-        color: var(--text-sub);
-        transform: rotate(45deg) translateY(-2px);
-        transition: transform .16s ease;
-    }
-    .article-toc-details[open] > .article-toc-summary {
-        border-color: color-mix(in srgb, var(--accent-red) 28%, var(--card-border));
-        box-shadow: 0 8px 24px rgba(0, 0, 0, .075);
-    }
-    .article-toc-details[open] > .article-toc-summary::after {
-        transform: rotate(225deg) translate(-1px, -1px);
-    }
-    .article-toc-summary::-webkit-details-marker {
+    .article-toc-details > summary {
         display: none;
-    }
-
-    .article-toc-panel {
-        position: absolute;
-        top: calc(100% + 8px);
-        left: 0;
-        right: 0;
-        max-height: min(62vh, 520px);
-        overflow: auto;
-        padding: .45rem;
-        border: 1px solid var(--card-border);
-        border-radius: 14px;
-        background: var(--card-bg, #fff);
-        box-shadow: 0 16px 40px rgba(0, 0, 0, .12);
     }
 
     .article-toc-unified__list {
         display: flex;
         flex-direction: column;
-        gap: 1px;
+        align-items: flex-start;
+        gap: 13px;
         margin: 0;
         padding: 0;
         list-style: none;
     }
+
     .article-toc-unified__item {
+        display: flex;
+        align-items: center;
+        min-height: 18px;
         margin: 0;
-    }
-    .article-toc-unified__link {
-        position: relative;
-        display: block;
-        margin: 0;
-        padding: .58rem .72rem .58rem 1rem;
-        border-left: 2px solid transparent;
-        border-radius: 7px;
-        color: var(--text-sub) !important;
-        font-family: 'Zen Kaku Gothic New', sans-serif !important;
-        font-size: .8rem !important;
-        font-weight: 500;
-        line-height: 1.55 !important;
-        text-decoration: none;
-        overflow-wrap: anywhere;
-        transition: color .14s ease, border-color .14s ease, background-color .14s ease;
-    }
-    .article-toc-unified__link:hover {
-        color: var(--text-main) !important;
-        background: color-mix(in srgb, var(--text-main) 5%, transparent);
-    }
-    .article-toc-unified__link.is-active {
-        color: var(--accent-red) !important;
-        border-left-color: var(--accent-red);
-        font-weight: 700;
-        background: color-mix(in srgb, var(--accent-red) 5%, transparent);
-    }
-    .article-toc-unified__link:focus-visible {
-        outline: 2px solid var(--accent-red);
-        outline-offset: 2px;
+        padding: 0;
     }
 
-    @media (max-width: 900px) {
+    .article-toc-unified__link {
+        display: inline-flex;
+        align-items: center;
+        gap: 10px;
+        min-height: 18px;
+        margin: 0;
+        padding: 0;
+        border: 0;
+        border-radius: 0;
+        background: transparent !important;
+        color: var(--text-sub) !important;
+        font-family: 'Zen Kaku Gothic New', sans-serif !important;
+        font-size: .76rem !important;
+        font-weight: 600;
+        line-height: 1.35 !important;
+        text-decoration: none;
+        white-space: nowrap;
+        opacity: .62;
+        transition: opacity .16s ease, color .16s ease, gap .18s ease;
+    }
+
+    .article-toc-unified__link::before {
+        content: '';
+        display: block;
+        width: 12px;
+        height: 1px;
+        flex: 0 0 12px;
+        background: currentColor;
+        opacity: .72;
+        transition: width .18s ease, opacity .18s ease;
+    }
+
+    .article-toc-unified__link:hover {
+        color: var(--text-main) !important;
+        opacity: 1;
+        gap: 10px;
+    }
+
+    .article-toc-unified__link:hover::before {
+        width: 20px;
+        flex-basis: 20px;
+        opacity: .95;
+    }
+
+    .article-toc-unified__link.is-active {
+        color: var(--text-main) !important;
+        font-weight: 700;
+        opacity: 1;
+        gap: 10px;
+    }
+
+    .article-toc-unified__link.is-active::before {
+        width: 28px;
+        flex-basis: 28px;
+        background: var(--accent-red);
+        opacity: 1;
+    }
+
+    .article-toc-unified__link:focus-visible {
+        outline: 0;
+        color: var(--text-main) !important;
+        opacity: 1;
+    }
+
+    .article-toc-unified__link:focus-visible::before {
+        width: 28px;
+        flex-basis: 28px;
+    }
+
+    @media (max-width: 1100px) {
         .article-toc-sidebar {
-            top: 60px;
-            width: calc(100vw - 20px);
+            left: 10px;
         }
-        .article-toc-summary {
-            min-height: 44px;
-            padding: .65rem .82rem;
-        }
-        .article-toc-panel {
-            max-height: min(64vh, 500px);
+        .article-toc-unified__list {
+            gap: 11px;
         }
         .article-toc-unified__link {
-            padding: .56rem .62rem .56rem .9rem;
-            font-size: .78rem !important;
+            font-size: .7rem !important;
+        }
+        .article-toc-unified__link::before {
+            width: 10px;
+            flex-basis: 10px;
+        }
+        .article-toc-unified__link.is-active::before,
+        .article-toc-unified__link:hover::before {
+            width: 22px;
+            flex-basis: 22px;
+        }
+    }
+
+    @media (max-width: 760px) {
+        .article-toc-sidebar {
+            left: 7px;
+        }
+        .article-toc-unified__list {
+            gap: 9px;
+        }
+        .article-toc-unified__link {
+            font-size: 0 !important;
+        }
+        .article-toc-unified__link::before {
+            width: 11px;
+            flex-basis: 11px;
+            opacity: .5;
+        }
+        .article-toc-unified__link.is-active::before,
+        .article-toc-unified__link:hover::before {
+            width: 24px;
+            flex-basis: 24px;
+            opacity: 1;
+        }
+        .article-toc-unified__link.is-active {
+            font-size: .68rem !important;
         }
     }
 
     @media (prefers-reduced-motion: reduce) {
-        .article-toc-summary,
-        .article-toc-summary::after,
-        .article-toc-unified__link {
+        .article-toc-unified__link,
+        .article-toc-unified__link::before {
             transition: none !important;
         }
     }
@@ -35203,7 +35220,7 @@ try {
 
             headings.forEach(function(h, idx) {
                 h.id = 'article-toc-h-' + idx;
-                h.style.scrollMarginTop = '136px';
+                h.style.scrollMarginTop = '96px';
             });
 
             var nav = document.createElement('nav');
@@ -35212,15 +35229,7 @@ try {
 
             var details = document.createElement('details');
             details.className = 'article-toc-details';
-            details.open = false;
-
-            var summary = document.createElement('summary');
-            summary.className = 'article-toc-summary';
-            summary.textContent = '目次';
-            summary.setAttribute('aria-label', '記事の目次を開く');
-
-            var panel = document.createElement('div');
-            panel.className = 'article-toc-panel';
+            details.open = true;
 
             var list = document.createElement('ul');
             list.className = 'article-toc-unified__list';
@@ -35235,7 +35244,10 @@ try {
                 link.dataset.targetId = h.id;
 
                 var label = h.textContent.trim().replace(/^\s*(?:[0-9０-９]+)[.．、:：)）-]+\s*/, '');
-                link.textContent = label || h.textContent.trim();
+                label = label || h.textContent.trim();
+                link.textContent = label;
+                link.setAttribute('aria-label', label);
+                link.title = label;
 
                 link.addEventListener('click', function(event) {
                     event.preventDefault();
@@ -35248,8 +35260,6 @@ try {
                         block: 'start'
                     });
 
-                    details.open = false;
-
                     if (history.replaceState) {
                         history.replaceState(null, '', '#' + h.id);
                     }
@@ -35259,9 +35269,7 @@ try {
                 list.appendChild(li);
             });
 
-            panel.appendChild(list);
-            details.appendChild(summary);
-            details.appendChild(panel);
+            details.appendChild(list);
             nav.appendChild(details);
             sidebar.appendChild(nav);
             sidebar.hidden = false;
@@ -35298,17 +35306,18 @@ try {
 
                 if (!activeId) {
                     var passed = headings.filter(function(h) {
-                        return h.getBoundingClientRect().top <= 150;
+                        return h.getBoundingClientRect().top <= 120;
                     });
                     if (passed.length) activeId = passed[passed.length - 1].id;
                 }
 
                 setActive(activeId || headings[0].id);
-            }, { rootMargin: '-130px 0px -65% 0px', threshold: [0, 1] });
+            }, { rootMargin: '-90px 0px -70% 0px', threshold: [0, 1] });
 
             headings.forEach(function(h) {
                 window._articleTocObserver.observe(h);
             });
+
             setActive(headings[0].id);
         } catch (e) {}
     };
@@ -36587,4 +36596,10 @@ html:not(.public-document-reading-disabled) :is(#view-about,#view-privacy,#view-
 #summary-result-card .summary-vote-btn{font:inherit;}
 #summary-result-card .summary-vote-btn.bg-red-600{border-color:var(--accent-red)!important;background:color-mix(in srgb,var(--accent-red) 9%,var(--card-bg))!important;color:var(--accent-red)!important;}
 #summary-result-card .summary-vote-detail{margin-top:12px;}
+</style>
+<style id="tenmei-article-toc-rail-final">
+.column-reader-body .article-content .article-toc-unified { width:max-content !important; max-width:none !important; margin:0 !important; }
+.column-reader-body .article-content .article-toc-unified > div { padding:0 !important; border:0 !important; border-radius:0 !important; background:transparent !important; }
+.column-reader-body .article-content .article-toc-unified p { color:inherit !important; }
+.column-reader-body .article-content .article-toc-unified a { color:inherit; font-size:inherit; line-height:inherit; }
 </style>
