@@ -151,3 +151,27 @@ console.log(JSON.stringify({
   printRulesPresent: true,
   visibleFocusPresent: true,
 }, null, 2));
+
+// 公開文書手動アーカイブの正本性・スナップショット契約
+const archivePath = path.resolve(__dirname, '..', 'assets', 'data', 'public-document-history.json');
+const archive = JSON.parse(fs.readFileSync(archivePath, 'utf8'));
+for (const documentKey of ['about', 'privacy']) {
+  const document = archive.documents[documentKey];
+  assert(document && document.current, documentKey + 'のcurrentメタデータがありません。');
+  const editions = document.versions.map((version) => version.edition);
+  assert.equal(new Set(editions).size, editions.length, documentKey + 'の版番号が重複しています。');
+  assert(!editions.includes(Number(document.current.edition)), documentKey + 'の現行版が以前の版一覧に混入しています。');
+  document.versions.forEach((version) => {
+    if (version.availability === 'missing' || version.availability === 'metadata-only') {
+      assert(!version.html || !version.html.trim(), documentKey + '第' + version.edition + '版は未記録扱いなのに本文HTMLがあります。');
+      assert(version.changeDescription && version.changeDescription.trim(), documentKey + '第' + version.edition + '版の確認済み情報がありません。');
+    } else {
+      assert(version.html && version.html.trim(), documentKey + '第' + version.edition + '版の本文スナップショットがありません。');
+      assert(version.changeDescription && version.changeDescription.trim(), documentKey + '第' + version.edition + '版の改定内容がありません。');
+    }
+  });
+}
+assert.equal(archive.documents.about.versions.find((version) => version.edition === 24).html, '', '当サイトについて第24版の未記録本文をHTMLで擬似再現してはいけません。');
+assert.equal(archive.documents.privacy.versions.find((version) => version.edition === 15).availability, 'missing', 'プライバシー第15版は欠番・記録なしとして保持します。');
+assert(fs.readFileSync(path.resolve(__dirname, '..', 'index.html'), 'utf8').includes('本文スナップショット未記録'), '未記録版の正直なスナップショット表示がありません。');
+console.log('公開文書手動アーカイブの回帰テストに合格しました。')
