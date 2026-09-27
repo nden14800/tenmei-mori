@@ -1438,6 +1438,7 @@ if (url.pathname === "/api/today-anniv" && method === "GET") {
                 await runSQL("DELETE FROM user_profiles WHERE user_email = ?", [email]);
                 await runSQL("DELETE FROM goshuin WHERE user_email = ?", [email]);
                 await runSQL("DELETE FROM favorites WHERE email = ?", [email]);
+                await runSQL("DELETE FROM summary_feedback WHERE user_email = ?", [email]);
                 await runSQL("DELETE FROM settings WHERE email = ?", [email]);
                 await runSQL("DELETE FROM sessions WHERE email = ?", [email]);
                 await runSQL("DELETE FROM auth_codes WHERE email = ?", [email]);
