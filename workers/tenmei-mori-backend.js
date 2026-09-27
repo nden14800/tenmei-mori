@@ -1863,62 +1863,126 @@ if (url.pathname === "/api/today-anniv" && method === "GET") {
             return answer;
         }
 
-        // 悩み相談専用の同期Workers AI呼び出し。
-        // 相談APIは最終的にJSONを返すため、SSEストリームを使わず
-        // Workers AIの同期レスポンスを直接取得して安定性を優先する。
-        async function callWorryConsultAI(prompt, systemPrompt, maxCompletionTokens = 192) {
+        // 悩み相談・夢占いは、記事要約と同じSSEストリーミング方式を使う。
+        // 生成中の本文をそのままクライアントへ送り、完了後に必要な保存処理を行う。
+        async function streamUnifiedAIResponse(prompt, systemPrompt, maxCompletionTokens, onComplete) {
+            const modelUsed = "@cf/zai-org/glm-4.7-flash";
             const messages = [];
             if (systemPrompt) messages.push({ role: "system", content: systemPrompt });
             messages.push({ role: "user", content: prompt });
-
-            const result = await env.AI.run("@cf/zai-org/glm-4.7-flash", {
-                messages,
-                max_completion_tokens: Math.max(512, maxCompletionTokens),
-                temperature: 0.4,
-                chat_template_kwargs: {
-                    enable_thinking: false
-                }
+            const aiStream = await env.AI.run(modelUsed, {
+                messages, stream: true, max_completion_tokens: Math.max(512, maxCompletionTokens),
+                temperature: 0.4, chat_template_kwargs: { enable_thinking: false }
             });
-
-            const candidates = [
-                result?.choices?.[0]?.message?.content,
-                result?.choices?.[0]?.text,
-                result?.response,
-                result?.result?.response,
-                result?.result?.choices?.[0]?.message?.content,
-                result?.choices?.[0]?.delta?.content
-            ];
-
-            const answer = candidates.find(value =>
-                typeof value === "string" && value.trim()
-            );
-
-            if (!answer) {
-                console.error("Workers AI consultation returned an empty response:", JSON.stringify(result));
-                throw new Error("AI応答が空でした");
-            }
-
-            return answer.trim();
+            const { readable, writable } = new TransformStream();
+            const writer = writable.getWriter();
+            const encoder = new TextEncoder();
+            const decoder = new TextDecoder();
+            const startedAt = Date.now();
+            ctx.waitUntil((async () => {
+                let fullText = "", buffer = "";
+                try {
+                    const reader = aiStream.getReader();
+                    while (true) {
+                        const { done, value } = await reader.read();
+                        if (done) break;
+                        buffer += decoder.decode(value, { stream: true });
+                        const lines = buffer.split("\n");
+                        buffer = lines.pop() || "";
+                        for (const line of lines) {
+                            const trimmed = line.trim();
+                            if (!trimmed.startsWith("data:")) continue;
+                            const payload = trimmed.slice(5).trim();
+                            if (!payload || payload === "[DONE]") continue;
+                            try {
+                                const json = JSON.parse(payload);
+                                const delta = json?.choices?.[0]?.delta?.content ?? json?.choices?.[0]?.message?.content ?? json?.response ?? json?.result?.response ?? "";
+                                if (typeof delta === "string" && delta) {
+                                    fullText += delta;
+                                    await writer.write(encoder.encode(`data: ${JSON.stringify({delta})}\\n\\n`));
+                                }
+                            } catch (_) {}
+                        }
+                    }
+                    buffer += decoder.decode();
+                    for (const line of buffer.split("\n")) {
+                        const trimmed = line.trim();
+                        if (!trimmed.startsWith("data:")) continue;
+                        const payload = trimmed.slice(5).trim();
+                        if (!payload || payload === "[DONE]") continue;
+                        try {
+                            const json = JSON.parse(payload);
+                            const delta = json?.choices?.[0]?.delta?.content ?? json?.choices?.[0]?.message?.content ?? json?.response ?? json?.result?.response ?? "";
+                            if (typeof delta === "string" && delta) {
+                                fullText += delta;
+                                await writer.write(encoder.encode(`data: ${JSON.stringify({delta})}\\n\\n`));
+                            }
+                        } catch (_) {}
+                    }
+                    const answer = fullText.trim();
+                    if (!answer) throw new Error("AI応答が空でした");
+                    const responseTimeMs = Date.now() - startedAt;
+                    const extra = await onComplete(answer, responseTimeMs, modelUsed) || {};
+                    await writer.write(encoder.encode(`data: ${JSON.stringify({done:true,text:answer,model_used:modelUsed,response_time_ms:responseTimeMs,...extra})}\\n\\n`));
+                } catch (e) {
+                    try { await writer.write(encoder.encode(`data: ${JSON.stringify({error:e.message || "AI応答中にエラーが発生しました"})}\\n\\n`)); } catch (_) {}
+                } finally {
+                    try { await writer.close(); } catch (_) {}
+                }
+            })());
+            return new Response(readable, { headers: { ...corsHeaders, "Content-Type": "text/event-stream", "Cache-Control": "no-cache" } });
         }
 
-        // ① AI悩み相談（ログイン不要・レート制限あり・その場限りの表示、DB保存なし）
         if (url.pathname === "/api/worry-consult" && method === "POST") {
             try {
                 const ip = request.headers.get("CF-Connecting-IP") || "unknown";
-                const rate = await checkRateLimit(ip, "worry_consult", 10, 3600); // 1時間10回まで
+                const rate = await checkRateLimit(ip, "worry_consult", 10, 3600);
                 if (!rate.allowed) {
                     const waitSec = rate.resetTime - Math.floor(Date.now() / 1000);
                     const msg = `しばらく経ってからもう一度お試しください（あと約${Math.max(1, waitSec)}秒）`;
                     return new Response(JSON.stringify({ error: msg, message: msg }), { status: 429, headers: { ...corsHeaders, "Content-Type": "application/json" } });
                 }
-
                 const { worry, omikujiType } = await request.json();
                 if (!worry || typeof worry !== "string" || worry.length > 300) {
                     return new Response(JSON.stringify({ error: "入力内容をご確認ください（300文字以内）" }), { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } });
                 }
-
                 const systemPrompt = "あなたは日本の神社のおみくじに添える、やさしく穏やかな助言者です。断定的な予言や医療・法律・金融の専門的助言は行わず、120文字以内の短い日本語で、前向きで具体的な一言アドバイスのみを返してください。";
-                const prompt = `今日引いたおみくじの結果は「${omikujiType || "不明"}」でした。参拝者の悩み・気になっていることは次の通りです：「${worry}」\n\nこの内容を踏まえた、短い一言アドバイスをください。`;
+                const prompt = `今日引いたおみくじの結果は「${omikujiType || "不明"}」でした。参拝者の悩み・気になっていることは次の通りです：「${worry}」\\n\\nこの内容を踏まえた、短い一言アドバイスをください。`;
+                return await streamUnifiedAIResponse(prompt, systemPrompt, 192, async () => ({}));
+            } catch (e) {
+                return new Response(JSON.stringify({ error: e.message }), { status: 500, headers: corsHeaders });
+            }
+        }
+
+        // ② AI夢占い（ログイン必須・履歴をTursoに保存）
+        if (url.pathname === "/api/dream-fortune" && method === "POST") {
+            try {
+                const session = await verifySession(request);
+                if (!session) return new Response(JSON.stringify({ error: "Unauthorized" }), { status: 401, headers: corsHeaders });
+                const ip = request.headers.get("CF-Connecting-IP") || "unknown";
+                const rate = await checkRateLimit(ip, "dream_fortune", 10, 3600);
+                if (!rate.allowed) {
+                    const waitSec = rate.resetTime - Math.floor(Date.now() / 1000);
+                    const msg = `しばらく経ってからもう一度お試しください（あと約${Math.max(1, waitSec)}秒）`;
+                    return new Response(JSON.stringify({ error: msg, message: msg }), { status: 429, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+                }
+                const { dream } = await request.json();
+                if (!dream || typeof dream !== "string" || dream.length > 400) {
+                    return new Response(JSON.stringify({ error: "入力内容をご確認ください（400文字以内）" }), { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+                }
+                const systemPrompt = "あなたは日本の夢占いに詳しい、やさしい語り口の鑑定人です。断定的な予言は避け、150文字以内の日本語で、夢に込められた意味を前向きに解釈してください。";
+                const prompt = `次のような夢を見ました：「${dream}」\\n\\nこの夢の夢占い的な意味を教えてください。`;
+                return await streamUnifiedAIResponse(prompt, systemPrompt, 256, async (interpretation) => {
+                    const jstNow = new Date(new Date().toLocaleString("en-US", { timeZone: "Asia/Tokyo" }));
+                    await runSQL("INSERT INTO dream_history (user_email, dream_text, interpretation, created_at) VALUES (?, ?, ?, ?)", [session.email, dream, interpretation, jstNow.toISOString()]);
+                    return { interpretation };
+                });
+            } catch (e) {
+                return new Response(JSON.stringify({ error: e.message }), { status: 500, headers: corsHeaders });
+            }
+        }
+
+{omikujiType || "不明"}」でした。参拝者の悩み・気になっていることは次の通りです：「${worry}」\n\nこの内容を踏まえた、短い一言アドバイスをください。`;
 
                 const advice = await callWorryConsultAI(
                     prompt,
