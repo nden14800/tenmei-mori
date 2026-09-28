@@ -25679,8 +25679,20 @@ window.renderFullColumnView = function() {
                 headerBgClass = style.bg;
                 iconColorClass = style.text;
 
-                // コラム用タグのHTML
-                tagHtml = `<span class="${style.tagBg} ${style.tagText} px-3 py-1 rounded-full text-xs font-bold shadow-sm border border-black/5">${item.category}</span>`;
+                // 一覧と同じ配色を詳細タグにも適用する。
+                const columnTagStyle = {
+                    indigo: { text: 'var(--column-indigo)', background: 'rgba(113, 84, 196, 0.10)', border: 'rgba(113, 84, 196, 0.24)' },
+                    blue: { text: '#2563eb', background: 'rgba(37, 99, 235, 0.10)', border: 'rgba(37, 99, 235, 0.24)' },
+                    gray: { text: '#4b5563', background: 'rgba(107, 114, 128, 0.10)', border: 'rgba(107, 114, 128, 0.24)' },
+                    green: { text: '#047857', background: 'rgba(5, 150, 105, 0.10)', border: 'rgba(5, 150, 105, 0.24)' },
+                    purple: { text: '#7e22ce', background: 'rgba(126, 34, 206, 0.10)', border: 'rgba(126, 34, 206, 0.24)' },
+                    orange: { text: '#c2410c', background: 'rgba(234, 88, 12, 0.10)', border: 'rgba(234, 88, 12, 0.24)' },
+                    pink: { text: '#be185d', background: 'rgba(190, 24, 93, 0.10)', border: 'rgba(190, 24, 93, 0.24)' },
+                    yellow: { text: '#a16207', background: 'rgba(202, 138, 4, 0.11)', border: 'rgba(202, 138, 4, 0.26)' },
+                    red: { text: '#b91c1c', background: 'rgba(185, 28, 28, 0.10)', border: 'rgba(185, 28, 28, 0.24)' }
+                };
+                const tagStyle = columnTagStyle[colorKey] || columnTagStyle.indigo;
+                tagHtml = `<span class="px-3 py-1 rounded-full text-xs font-bold shadow-sm border border-black/5" style="color: ${tagStyle.text}; background: ${tagStyle.background}; border-color: ${tagStyle.border};">${item.category}</span>`;
             }
 
             // --- 文字数・読了目安の算出（一覧と同じ共通関数を利用） ---
