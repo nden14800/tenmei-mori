@@ -2573,9 +2573,11 @@
 #view-about #about-toc-list li a:hover { background: var(--about-gold-soft); color: var(--about-red); }
 #view-about #about-toc-list li a i { margin: 0.18rem 0 0; color: var(--about-gold); }
 #view-about #about-toc-list li:has(.bi-dot) a { font-size: 0.72rem; font-weight: 500; }
-.about-codex-content { display: grid; gap: 20px !important; margin-top: 1.25rem; }
-/* 当サイトについての本文はGridの行間を正本として、プロローグ・改定履歴・CHAPTERカードを常に独立したカードとして表示する。 */
-#view-about #about-content-area > * { margin-top: 0 !important; margin-bottom: 0 !important; }
+.about-codex-content { display: grid; gap: 0 !important; margin-top: 1.25rem; }
+/* 当サイトについての各セクションは、直下要素間に明示的な20pxの余白を設ける。 */
+#view-about #about-content-area > * + * { margin-top: 20px !important; }
+/* 改定履歴ブロックの末尾だけは余計な下余白を持たせない。 */
+#view-about #about-content-area > .about-codex-revision-history { margin-bottom: 0 !important; }
 .about-codex-prologue {
     position: relative;
     overflow: hidden;
@@ -34307,8 +34309,7 @@ window.applyTheme = function() {
 
         <!-- バージョンリスト -->
         <div class="ver-panel-scroll">
-            <div class="ver-timeline-item is-current" onclick="openVerDetail('v41')">
-                    <div class="ver-timeline">
+            <div class="ver-timeline">
                 <div class="ver-timeline-item is-current" onclick="openVerDetail('v41')">
                     <div class="ver-item-card">
                         <div class="ver-item-top">
@@ -34326,7 +34327,6 @@ window.applyTheme = function() {
                             <span class="ver-item-tag">UI修正</span>
                         </div>
                         <div class="ver-item-more"><i class="bi bi-chevron-right"></i>詳細を見る</div>
-                    </div>
                 </div>
 
                 <!-- Ver 4.0（現在） -->
