@@ -25485,13 +25485,25 @@ window.renderFullColumnView = function() {
         const dateValue = String(item.date || '').replace(/\//g, '-');
         // 社務所だよりと同じく、一覧には記事用に書き下ろした説明だけを表示する。
         // 本文contentは文字数・読了目安の算出にだけ使い、カード説明へのフォールバックには使わない。
+        const columnColorMap = {
+            indigo: { text: 'var(--column-indigo)', background: 'rgba(113, 84, 196, 0.10)', border: 'rgba(113, 84, 196, 0.24)' },
+            blue: { text: '#2563eb', background: 'rgba(37, 99, 235, 0.10)', border: 'rgba(37, 99, 235, 0.24)' },
+            gray: { text: '#4b5563', background: 'rgba(107, 114, 128, 0.10)', border: 'rgba(107, 114, 128, 0.24)' },
+            green: { text: '#047857', background: 'rgba(5, 150, 105, 0.10)', border: 'rgba(5, 150, 105, 0.24)' },
+            purple: { text: '#7e22ce', background: 'rgba(126, 34, 206, 0.10)', border: 'rgba(126, 34, 206, 0.24)' },
+            orange: { text: '#c2410c', background: 'rgba(234, 88, 12, 0.10)', border: 'rgba(234, 88, 12, 0.24)' },
+            pink: { text: '#be185d', background: 'rgba(190, 24, 93, 0.10)', border: 'rgba(190, 24, 93, 0.24)' },
+            yellow: { text: '#a16207', background: 'rgba(202, 138, 4, 0.11)', border: 'rgba(202, 138, 4, 0.26)' },
+            red: { text: '#b91c1c', background: 'rgba(185, 28, 28, 0.10)', border: 'rgba(185, 28, 28, 0.24)' }
+        };
+        const columnTagStyle = columnColorMap[item.colorClass] || columnColorMap.indigo;
         const listDescription = String(item.desc || '').trim();
         const excerpt = listDescription || '本文を開いて、杜の読み物をお楽しみください。';
         return `
             <article class="column-library-card" aria-labelledby="${articleTitleId}">
                 <button type="button" class="column-library-card-surface" onclick="openArticle('column', ${item.id})" aria-labelledby="${articleTitleId}" aria-label="${item.title}を読む"></button>
                 <div class="column-library-card-top">
-                    <span class="column-library-category"><i class="bi ${item.icon || 'bi-journal-text'}" aria-hidden="true"></i> ${item.category}</span>
+                    <span class="column-library-category" style="color: ${columnTagStyle.text}; background: ${columnTagStyle.background}; border-color: ${columnTagStyle.border};"><i class="bi ${item.icon || 'bi-journal-text'}" aria-hidden="true"></i> ${item.category}</span>
                     <time datetime="${dateValue}">${item.date}</time>
                 </div>
                 <div class="column-library-card-copy">
