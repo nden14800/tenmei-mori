@@ -1,0 +1,7 @@
+# Column 064 image prompt
+
+A refined editorial illustration for a Japanese shrine column about **秋祭りと実りへの感謝**, set in a peaceful early-autumn shrine. A traditional Shinto shrine approach at warm late-afternoon golden hour, a softly lit vermilion torii and wooden worship hall in the background, a wooden offering table in the foreground with newly harvested rice, bundled rice stalks, seasonal fruits and vegetables, subtle shide paper streamers, autumn foliage and gentle sunlight, calm Japanese seasonal elegance, natural warm ivory and muted gold palette, contemplative atmosphere, subtle paper texture, cinematic but natural soft light, highly detailed, balanced composition with generous negative space for website cropping, no people, no readable text, no logos, no watermark, no fantasy effects, no modern objects. Wide horizontal 16:9 editorial hero image, suitable for a Japanese shrine and fortune-column website.
+
+## Negative prompt
+
+Readable Japanese characters, typography, captions, logo, watermark, distorted torii, extra objects, oversaturated colors, neon, anime style, cartoon style, horror, crowds, identifiable real shrine, photorealistic people, low resolution, blur, malformed architecture.
