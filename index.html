@@ -25577,7 +25577,18 @@ window.renderFullColumnView = function() {
             let iconColorClass = ""; // アイコンの色 (text-xxx)
             let headerBgClass = "";  // ヘッダー背景色 (from-xxx to-xxx)
             let tagHtml = "";        // タグのHTML
-            let columnTagStyle = null; // 神籤草子の詳細カテゴリ配色
+            const columnTagStyles = {
+                    indigo: { text: 'var(--column-indigo)', background: 'rgba(113, 84, 196, 0.10)', border: 'rgba(113, 84, 196, 0.24)' },
+                    blue: { text: '#2563eb', background: 'rgba(37, 99, 235, 0.10)', border: 'rgba(37, 99, 235, 0.24)' },
+                    gray: { text: '#4b5563', background: 'rgba(107, 114, 128, 0.10)', border: 'rgba(107, 114, 128, 0.24)' },
+                    green: { text: '#047857', background: 'rgba(5, 150, 105, 0.10)', border: 'rgba(5, 150, 105, 0.24)' },
+                    purple: { text: '#7e22ce', background: 'rgba(126, 34, 206, 0.10)', border: 'rgba(126, 34, 206, 0.24)' },
+                    orange: { text: '#c2410c', background: 'rgba(234, 88, 12, 0.10)', border: 'rgba(234, 88, 12, 0.24)' },
+                    pink: { text: '#be185d', background: 'rgba(190, 24, 93, 0.10)', border: 'rgba(190, 24, 93, 0.24)' },
+                    yellow: { text: '#a16207', background: 'rgba(202, 138, 4, 0.11)', border: 'rgba(202, 138, 4, 0.26)' },
+                    red: { text: '#b91c1c', background: 'rgba(185, 28, 28, 0.10)', border: 'rgba(185, 28, 28, 0.24)' }
+                };
+            let detailTagStyle = null; // 神籤草子の詳細カテゴリ配色
 
             if (type === 'news') {
                 // ■ ニュースの場合：記事データのtagColorを正本として一覧と同じ色を使用
@@ -25681,22 +25692,13 @@ window.renderFullColumnView = function() {
                 iconColorClass = style.text;
 
                 // 一覧と同じ配色を詳細タグにも適用する。
-                columnTagStyle = {
-                    indigo: { text: 'var(--column-indigo)', background: 'rgba(113, 84, 196, 0.10)', border: 'rgba(113, 84, 196, 0.24)' },
-                    blue: { text: '#2563eb', background: 'rgba(37, 99, 235, 0.10)', border: 'rgba(37, 99, 235, 0.24)' },
-                    gray: { text: '#4b5563', background: 'rgba(107, 114, 128, 0.10)', border: 'rgba(107, 114, 128, 0.24)' },
-                    green: { text: '#047857', background: 'rgba(5, 150, 105, 0.10)', border: 'rgba(5, 150, 105, 0.24)' },
-                    purple: { text: '#7e22ce', background: 'rgba(126, 34, 206, 0.10)', border: 'rgba(126, 34, 206, 0.24)' },
-                    orange: { text: '#c2410c', background: 'rgba(234, 88, 12, 0.10)', border: 'rgba(234, 88, 12, 0.24)' },
-                    pink: { text: '#be185d', background: 'rgba(190, 24, 93, 0.10)', border: 'rgba(190, 24, 93, 0.24)' },
-                    yellow: { text: '#a16207', background: 'rgba(202, 138, 4, 0.11)', border: 'rgba(202, 138, 4, 0.26)' },
-                    red: { text: '#b91c1c', background: 'rgba(185, 28, 28, 0.10)', border: 'rgba(185, 28, 28, 0.24)' }
-                };
-                const tagStyle = columnTagStyle[colorKey] || columnTagStyle.indigo;
-                tagHtml = `<span class="px-3 py-1 rounded-full text-xs font-bold shadow-sm border border-black/5" style="color: ${tagStyle.text}; background: ${tagStyle.background}; border-color: ${tagStyle.border};">${item.category}</span>`;
+                detailTagStyle = columnTagStyles[colorKey] || columnTagStyles.indigo;
+                tagHtml = `<span class="px-3 py-1 rounded-full text-xs font-bold shadow-sm border border-black/5" style="color: ${detailTagStyle.text}; background: ${detailTagStyle.background}; border-color: ${detailTagStyle.border};">${item.category}</span>`;
             }
 
-            // --- 文字数・読了目安の算出（一覧と同じ共通関数を利用） ---
+                        const resolvedColumnTagStyle = detailTagStyle || columnTagStyles.indigo;
+
+// --- 文字数・読了目安の算出（一覧と同じ共通関数を利用） ---
             const readingMeta = getArticleReadingMeta(item.content);
 
             // 社務所だよりは社務所記録帳テンプレートで描画し、神籤草子の詳細表示は既存構造を維持する。
@@ -25746,7 +25748,7 @@ window.renderFullColumnView = function() {
                             <p class="column-reader-eyebrow"><i class="bi bi-book-half" aria-hidden="true"></i> SACRED READING</p>
                             <div class="column-reader-meta">
                                 <time datetime="${dateValue}">${item.date} ${item.time || ''}</time>
-                                <span class="column-reader-category" style="color: ${tagStyle.text}; background: ${tagStyle.background}; border-color: ${tagStyle.border};">${item.category}</span>
+                                <span class="column-reader-category" style="color: ${resolvedColumnTagStyle.text}; background: ${resolvedColumnTagStyle.background}; border-color: ${resolvedColumnTagStyle.border};">${item.category}</span>
                             </div>
                             <h1 id="${columnTitleId}" class="column-reader-title">${item.title}</h1>
                             <div class="column-reader-readinfo" aria-label="本文${readingMeta.charCount.toLocaleString()}文字、読了目安約${readingMeta.readMinutes}分">
