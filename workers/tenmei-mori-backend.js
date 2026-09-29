@@ -1068,21 +1068,14 @@ export default {
                     countSql += whereStr;
                 }
 
-                // ページ番号に応じた行番号をSQL側で確定させる。
-                // LIMIT/OFFSETの結果に依存せず、検索後の並び順を固定したうえで
-                // 31件目以降も正しく取得できるようにする。
-                const filteredSql = sql + " ORDER BY timestamp DESC, id DESC";
-                const pagedSql = `
-                    SELECT * FROM (
-                        SELECT h.*, ROW_NUMBER() OVER (ORDER BY h.timestamp DESC, h.id DESC) AS __tenmei_row_num
-                        FROM (${filteredSql}) AS h
-                    )
-                    WHERE __tenmei_row_num > ${offset}
-                      AND __tenmei_row_num <= ${offset + limit}
-                    ORDER BY __tenmei_row_num ASC
-                `;
-                
-                const rows = await runSQL(pagedSql, queryParams);
+                // 検索条件に一致する全レコードを取得してから、サーバー側でページ分割する。
+                // Turso/SQLiteのネストしたROW_NUMBER()によるページングを使わず、
+                // 検索結果そのものを確定させてからJavaScript側で切り出す。
+                // これによりページ2以降も、フィルタ条件を維持したまま確実に取得できる。
+                sql += " ORDER BY timestamp DESC, id DESC";
+
+                const allRows = await runSQL(sql, queryParams);
+                const rows = allRows.slice(offset, offset + limit);
                 const countRows = await runSQL(countSql, queryParams);
                 const totalItems = Number(countRows[0].cnt);
 
