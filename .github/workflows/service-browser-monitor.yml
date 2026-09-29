@@ -1,0 +1,43 @@
+name: Service browser monitor
+
+on:
+  schedule:
+    - cron: '*/10 * * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: service-browser-monitor
+  cancel-in-progress: true
+
+jobs:
+  monitor:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Check out main
+        uses: actions/checkout@v4
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Install Playwright
+        run: npm install --no-save --no-package-lock playwright@1.55.0
+      - name: Install Chromium
+        run: npx playwright install --with-deps chromium
+      - name: Run browser and API checks
+        run: node tests/status-browser-monitor.cjs
+        continue-on-error: true
+      - name: Publish health snapshot
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add status/health.json
+          if git diff --cached --quiet; then
+            echo "Health snapshot unchanged."
+            exit 0
+          fi
+          git commit -m "chore(status): update browser health snapshot"
+          git push

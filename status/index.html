@@ -1,206 +1,49 @@
 <!doctype html>
 <html lang="ja">
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-  <meta name="robots" content="index,follow">
-  <meta name="theme-color" content="#f7f1e7">
-  <title>サービス状況 | 運勢・天命乃杜</title>
-  <style>
-    :root { color-scheme: light dark; --paper:#f7f1e7; --paper-soft:#fffdf8; --ink:#2c2927; --muted:#716a63; --line:#ded2c1; --red:#9a2830; --red-deep:#731e24; --gold:#ad8243; --green:#157347; --amber:#a46109; --focus:#174b82; --shadow:0 22px 64px rgba(60,42,26,.13); }
-    * { box-sizing:border-box; }
-    body { min-width:320px; margin:0; background:radial-gradient(circle at 85% -8%, rgba(173,130,67,.16), transparent 29rem), linear-gradient(140deg,#fbf7f0 0%,var(--paper) 60%,#efe2cf 100%); color:var(--ink); font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Yu Gothic UI","Yu Gothic",Meiryo,sans-serif; line-height:1.6; }
-    a { color:inherit; }
-    button,a { -webkit-tap-highlight-color:transparent; }
-    :focus-visible { outline:3px solid var(--focus); outline-offset:3px; }
-    .site-header { max-width:1120px; margin:0 auto; padding:clamp(22px,4vw,42px) clamp(18px,4vw,40px) 12px; display:flex; align-items:center; justify-content:space-between; gap:18px; }
-    .brand { display:inline-flex; align-items:center; gap:10px; text-decoration:none; font-weight:800; letter-spacing:.05em; }
-    .brand-mark { width:34px; height:34px; display:grid; place-items:center; border:1px solid color-mix(in srgb,var(--red) 48%,var(--line)); border-radius:50%; color:var(--red); background:color-mix(in srgb,var(--paper-soft) 88%,var(--gold)); font-family:Georgia,"Yu Mincho",serif; font-size:17px; box-shadow:inset 0 0 0 3px rgba(255,255,255,.75); }
-    .back-link { display:inline-flex; align-items:center; gap:8px; min-height:42px; padding:8px 13px; border:1px solid var(--line); border-radius:999px; background:rgba(255,253,248,.76); color:var(--ink); font-size:14px; font-weight:700; text-decoration:none; transition:transform 160ms cubic-bezier(.23,1,.32,1),border-color 160ms,background 160ms; }
-    .back-link:hover { transform:translateY(-1px); border-color:color-mix(in srgb,var(--gold) 60%,var(--line)); background:var(--paper-soft); }
-    .wrap { max-width:1120px; margin:0 auto; padding:12px clamp(18px,4vw,40px) 60px; }
-    .hero { padding:clamp(26px,5vw,54px); border:1px solid color-mix(in srgb,var(--gold) 36%,var(--line)); border-radius:28px; background:linear-gradient(135deg,rgba(255,253,248,.96),rgba(250,243,232,.88)); box-shadow:var(--shadow); }
-    .eyebrow { display:flex; align-items:center; gap:9px; margin:0; color:var(--red); font-size:12px; font-weight:850; letter-spacing:.15em; }
-    .pulse { width:10px; height:10px; border-radius:50%; background:var(--gold); box-shadow:0 0 0 5px rgba(173,130,67,.12); }
-    h1 { margin:14px 0 6px; font-family:Georgia,"Yu Mincho",serif; font-size:clamp(32px,6vw,54px); line-height:1.22; letter-spacing:.045em; }
-    .lead { max-width:700px; margin:0; color:var(--muted); font-size:clamp(15px,2vw,17px); }
-    .overall { display:flex; align-items:flex-start; justify-content:space-between; gap:20px; margin-top:32px; padding-top:25px; border-top:1px solid var(--line); }
-    .overall-title { margin:0; font-size:14px; font-weight:800; letter-spacing:.08em; }
-    .overall-copy { margin:4px 0 0; color:var(--muted); font-size:14px; }
-    .status-pill { display:inline-flex; flex:0 0 auto; align-items:center; justify-content:center; gap:9px; min-height:42px; padding:9px 15px; border:1px solid var(--line); border-radius:999px; background:var(--paper-soft); font-size:14px; font-weight:850; white-space:nowrap; }
-    .status-pill .dot { width:9px; height:9px; border-radius:50%; background:var(--gold); }
-    .status-pill.operational { border-color:color-mix(in srgb,var(--green) 45%,var(--line)); color:var(--green); background:color-mix(in srgb,var(--green) 8%,var(--paper-soft)); }.status-pill.operational .dot { background:var(--green); box-shadow:0 0 0 5px color-mix(in srgb,var(--green) 13%,transparent); }
-    .status-pill.maintenance { border-color:color-mix(in srgb,var(--red) 52%,var(--line)); color:var(--red); background:color-mix(in srgb,var(--red) 8%,var(--paper-soft)); }.status-pill.maintenance .dot { background:var(--red); box-shadow:0 0 0 5px color-mix(in srgb,var(--red) 13%,transparent); }
-    .status-pill.unknown { border-color:color-mix(in srgb,var(--amber) 52%,var(--line)); color:var(--amber); background:color-mix(in srgb,var(--amber) 8%,var(--paper-soft)); }.status-pill.unknown .dot { background:var(--amber); }
-    .status-pill.degraded { border-color:color-mix(in srgb,var(--amber) 58%,var(--line)); color:var(--amber); background:color-mix(in srgb,var(--amber) 10%,var(--paper-soft)); }.status-pill.degraded .dot { background:var(--amber); box-shadow:0 0 0 5px color-mix(in srgb,var(--amber) 13%,transparent); }
-    .content { display:grid; grid-template-columns:minmax(0,1.5fr) minmax(280px,.72fr); gap:20px; margin-top:20px; }
-    .panel { border:1px solid var(--line); border-radius:20px; background:rgba(255,253,248,.86); box-shadow:0 12px 32px rgba(60,42,26,.06); }
-    .panel-heading { display:flex; align-items:baseline; justify-content:space-between; gap:12px; padding:20px 22px 16px; border-bottom:1px solid var(--line); }
-    .panel-heading h2 { margin:0; font-family:Georgia,"Yu Mincho",serif; font-size:21px; letter-spacing:.04em; }.panel-heading p { margin:0; color:var(--muted); font-size:12px; font-weight:700; letter-spacing:.08em; }
-    .components { display:grid; gap:0; padding:0 22px; }
-    .component { display:grid; grid-template-columns:auto minmax(0,1fr) auto; align-items:center; gap:14px; min-height:81px; border-bottom:1px solid color-mix(in srgb,var(--line) 75%,transparent); }.component:last-child { border-bottom:0; }
-    .component-icon { width:34px; height:34px; display:grid; place-items:center; border:1px solid var(--line); border-radius:50%; color:var(--gold); font-size:15px; }.component-copy { min-width:0; }.component-name { margin:0; font-size:15px; font-weight:850; }.component-status { color:var(--green); font-size:12px; font-weight:850; text-align:right; }.component.maintenance .component-status { color:var(--red); }.component.maintenance .component-icon { color:var(--red); border-color:color-mix(in srgb,var(--red) 38%,var(--line)); }.component.unknown .component-status { color:var(--amber); }.component.unknown .component-icon { color:var(--amber); border-color:color-mix(in srgb,var(--amber) 38%,var(--line)); }.component.degraded .component-status { color:var(--amber); }.component.degraded .component-icon { color:var(--amber); border-color:color-mix(in srgb,var(--amber) 38%,var(--line)); }.component.external .component-status { color:var(--muted); }.component.external .component-icon { color:var(--gold); }
-    .notice { padding:20px 22px 22px; }.notice-card { padding:16px; border:1px solid color-mix(in srgb,var(--gold) 44%,var(--line)); border-radius:14px; background:linear-gradient(135deg,color-mix(in srgb,var(--gold) 8%,var(--paper-soft)),var(--paper-soft)); }.notice-card.maintenance { border-color:color-mix(in srgb,var(--red) 45%,var(--line)); background:linear-gradient(135deg,color-mix(in srgb,var(--red) 7%,var(--paper-soft)),var(--paper-soft)); }.notice-kicker { display:flex; align-items:center; gap:8px; margin:0; color:var(--gold); font-size:11px; font-weight:850; letter-spacing:.1em; }.notice-card.maintenance .notice-kicker { color:var(--red); }.notice-title { margin:7px 0 4px; font-size:15px; font-weight:850; }.notice-text { margin:0; color:var(--muted); font-size:13px; line-height:1.75; }.notice-time { margin:11px 0 0; color:var(--ink); font-size:13px; font-weight:800; }
-    .aside-body { padding:20px 22px 22px; }.aside-body p { margin:0; color:var(--muted); font-size:13px; line-height:1.8; }.check-time { display:block; margin-top:14px; color:var(--muted); font-size:12px; }.refresh { display:inline-flex; width:100%; align-items:center; justify-content:center; gap:8px; min-height:44px; margin-top:17px; padding:10px 14px; border:1px solid var(--red); border-radius:11px; background:var(--red); color:#fffaf4; font:inherit; font-size:14px; font-weight:850; cursor:pointer; transition:transform 160ms cubic-bezier(.23,1,.32,1),background 160ms; }.refresh:hover { background:var(--red-deep); }.refresh:active { transform:scale(.97); }.refresh[aria-busy="true"] { opacity:.75; cursor:wait; }
-    .architecture { margin-top:20px; padding:18px 20px; border-left:3px solid var(--gold); border-radius:0 14px 14px 0; background:rgba(255,253,248,.7); color:var(--muted); font-size:13px; line-height:1.8; }.architecture strong { color:var(--ink); }
-    .repository-panel { margin-top:20px; }.repository-body { display:grid; gap:10px; }.repository-body p { margin:0; }.repository-links { display:grid; gap:8px; }.repository-links a, .repository-meta a { color:var(--red); font-weight:800; text-decoration:underline; text-underline-offset:3px; overflow-wrap:anywhere; }.repository-meta { font-size:12px; }
-    footer { max-width:1120px; margin:0 auto; padding:0 clamp(18px,4vw,40px) max(28px,env(safe-area-inset-bottom)); color:var(--muted); font-size:12px; }.footer-line { padding-top:18px; border-top:1px solid color-mix(in srgb,var(--line) 75%,transparent); }
-    @media (max-width:760px) { .site-header { padding-top:max(18px,env(safe-area-inset-top)); }.back-link .back-label { display:none; }.back-link { width:42px; padding:8px; }.hero { border-radius:21px; }.overall { display:grid; gap:15px; }.content { grid-template-columns:1fr; }.panel-heading,.notice,.aside-body { padding-left:17px; padding-right:17px; }.components { padding:0 17px; }.component { grid-template-columns:auto minmax(0,1fr); gap:10px; padding:13px 0; }.component-status { grid-column:2; text-align:left; }.component-detail { line-height:1.55; } }
-    @media (prefers-color-scheme:dark) { :root { --paper:#181513; --paper-soft:#211d19; --ink:#f5ede3; --muted:#c6bbae; --line:#4d4238; --focus:#8fc5ff; --shadow:0 22px 64px rgba(0,0,0,.32); } body { background:radial-gradient(circle at 85% -8%,rgba(173,130,67,.15),transparent 29rem),linear-gradient(140deg,#191614 0%,#211b17 60%,#30251d 100%); }.hero { background:linear-gradient(135deg,rgba(33,29,25,.96),rgba(39,31,24,.9)); }.panel,.architecture { background:rgba(33,29,25,.88); }.back-link { background:rgba(33,29,25,.8); }.brand-mark { box-shadow:inset 0 0 0 3px rgba(255,255,255,.05); } }
-  </style>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="robots" content="index,follow">
+<meta name="theme-color" content="#f5f4f0">
+<title>サービス状況 | 運勢・天命乃杜</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/font/bootstrap-icons.min.css">
+<style>
+:root{color-scheme:light dark;--bg:#f5f4f0;--card:#fff;--soft:#faf8f3;--text:#1a1a1a;--muted:#666;--line:#e2e0da;--red:#b91c1c;--gold:#c5a059;--green:#16834b;--amber:#a46109;--focus:#174b82;--shadow:0 18px 50px rgba(30,20,10,.09)}
+*{box-sizing:border-box}body{margin:0;min-width:320px;background:radial-gradient(circle at 85% -8%,rgba(197,160,89,.16),transparent 30rem),var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Yu Gothic UI","Yu Gothic",Meiryo,sans-serif;line-height:1.6}a{color:inherit}button,a{-webkit-tap-highlight-color:transparent}:focus-visible{outline:3px solid var(--focus);outline-offset:3px}
+.header,.wrap,footer{max-width:1160px;margin:auto;padding-left:clamp(18px,4vw,40px);padding-right:clamp(18px,4vw,40px)}.header{padding-top:28px;padding-bottom:14px;display:flex;align-items:center;justify-content:space-between;gap:16px}.brand{display:inline-flex;align-items:center;gap:10px;text-decoration:none;font-weight:800}.mark{display:grid;place-items:center;width:34px;height:34px;border:1px solid color-mix(in srgb,var(--red) 45%,var(--line));border-radius:50%;color:var(--red);font-family:Georgia,"Yu Mincho",serif}.back{display:inline-flex;align-items:center;gap:8px;padding:9px 13px;border:1px solid var(--line);border-radius:999px;background:var(--card);text-decoration:none;font-weight:750;font-size:14px}
+.wrap{padding-top:14px;padding-bottom:60px}.hero{padding:clamp(26px,5vw,52px);border:1px solid color-mix(in srgb,var(--gold) 40%,var(--line));border-radius:28px;background:linear-gradient(135deg,var(--card),var(--soft));box-shadow:var(--shadow)}.eyebrow{margin:0;color:var(--red);font-size:12px;font-weight:850;letter-spacing:.15em}.eyebrow i{margin-right:7px}.hero h1{margin:13px 0 6px;font-family:Georgia,"Yu Mincho",serif;font-size:clamp(34px,6vw,56px);line-height:1.18;letter-spacing:.04em}.lead{max-width:760px;margin:0;color:var(--muted);font-size:clamp(15px,2vw,17px)}
+.overall{display:flex;align-items:center;justify-content:space-between;gap:20px;margin-top:30px;padding-top:24px;border-top:1px solid var(--line)}.overall h2{margin:0;font-size:14px;letter-spacing:.08em}.overall p{margin:4px 0 0;color:var(--muted);font-size:14px}.pill{display:inline-flex;align-items:center;gap:9px;min-height:42px;padding:9px 15px;border:1px solid var(--line);border-radius:999px;background:var(--card);font-weight:850;white-space:nowrap}.pill i{font-size:10px}.operational{color:var(--green);border-color:color-mix(in srgb,var(--green) 40%,var(--line));background:color-mix(in srgb,var(--green) 7%,var(--card))}.degraded,.unknown{color:var(--amber);border-color:color-mix(in srgb,var(--amber) 45%,var(--line));background:color-mix(in srgb,var(--amber) 7%,var(--card))}.outage,.maintenance{color:var(--red);border-color:color-mix(in srgb,var(--red) 45%,var(--line));background:color-mix(in srgb,var(--red) 7%,var(--card))}
+.grid{display:grid;grid-template-columns:minmax(0,1.55fr) minmax(290px,.72fr);gap:20px;margin-top:20px}.panel{border:1px solid var(--line);border-radius:20px;background:color-mix(in srgb,var(--card) 94%,transparent);box-shadow:0 10px 30px rgba(30,20,10,.05);overflow:hidden}.heading{display:flex;align-items:baseline;justify-content:space-between;gap:12px;padding:20px 22px 16px;border-bottom:1px solid var(--line)}.heading h2{margin:0;font-family:Georgia,"Yu Mincho",serif;font-size:21px}.heading small{color:var(--muted);font-weight:750;letter-spacing:.08em}.components{padding:0 22px}.component{display:grid;grid-template-columns:40px minmax(0,1fr) auto;align-items:center;gap:14px;min-height:88px;border-bottom:1px solid var(--line)}.component:last-child{border-bottom:0}.icon{display:grid;place-items:center;width:38px;height:38px;border:1px solid var(--line);border-radius:12px;color:var(--gold);background:var(--soft);font-size:17px}.component h3{margin:0;font-size:15px}.detail{margin:3px 0 0;color:var(--muted);font-size:12px}.component-status{font-size:12px;font-weight:850;text-align:right}.component-status.operational{color:var(--green)}.component-status.degraded,.component-status.unknown{color:var(--amber)}.component-status.outage,.component-status.maintenance{color:var(--red)}.external{color:var(--muted)}
+.body{padding:20px 22px}.notice{padding:15px;border:1px solid var(--line);border-radius:14px;background:var(--soft)}.notice i{margin-right:7px}.notice strong{display:block;font-size:14px}.notice p{margin:5px 0 0;color:var(--muted);font-size:13px}.meta{margin-top:14px;color:var(--muted);font-size:12px}.refresh{display:inline-flex;width:100%;align-items:center;justify-content:center;gap:8px;margin-top:16px;min-height:44px;padding:10px 14px;border:0;border-radius:11px;background:var(--red);color:#fff;font:inherit;font-weight:850;cursor:pointer}.refresh:disabled{opacity:.6;cursor:wait}
+.monitor{margin-top:20px}.monitor-body{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;padding:18px 22px}.metric{padding:14px;border:1px solid var(--line);border-radius:13px;background:var(--soft)}.metric span{display:block;color:var(--muted);font-size:11px;font-weight:750}.metric strong{display:block;margin-top:4px;font-size:15px}.architecture{margin-top:20px;padding:18px 20px;border-left:3px solid var(--gold);background:var(--soft);color:var(--muted);font-size:13px}.architecture strong{color:var(--text)}
+.repo{margin-top:20px}.repo .body{display:grid;gap:10px}.repo a{color:var(--red);font-weight:800;text-decoration:underline;text-underline-offset:3px;overflow-wrap:anywhere}footer{padding-bottom:max(28px,env(safe-area-inset-bottom));color:var(--muted);font-size:12px}.footer-line{padding-top:18px;border-top:1px solid var(--line)}
+@media(max-width:760px){.header{padding-top:max(18px,env(safe-area-inset-top))}.back-label{display:none}.back{width:42px;height:42px;padding:8px;justify-content:center}.hero{border-radius:21px}.overall{display:grid;gap:15px}.grid{grid-template-columns:1fr}.heading,.body{padding-left:17px;padding-right:17px}.components{padding:0 17px}.component{grid-template-columns:40px minmax(0,1fr);padding:14px 0}.component-status{grid-column:2;text-align:left}.monitor-body{grid-template-columns:1fr;padding-left:17px;padding-right:17px}}
+@media(prefers-color-scheme:dark){:root{--bg:#0d0d0d;--card:#111;--soft:#171717;--text:#e4e4e7;--muted:#a1a1aa;--line:#2a2a2a;--shadow:0 18px 50px rgba(0,0,0,.3)}}
+</style>
 </head>
 <body>
-  <header class="site-header">
-    <a class="brand" href="https://tenmei-mori.pages.dev" aria-label="運勢・天命乃杜 本体へ戻る"><span class="brand-mark" aria-hidden="true">天</span><span>運勢・天命乃杜</span></a>
-    <a class="back-link" href="https://tenmei-mori.pages.dev" aria-label="天命乃杜の本体へ戻る"><span class="back-icon" aria-hidden="true">←</span><span class="back-label">本体へ戻る</span></a>
-  </header>
-  <main class="wrap">
-    <section class="hero" aria-labelledby="page-title">
-      <p class="eyebrow"><span class="pulse" aria-hidden="true"></span>SERVICE STATUS</p>
-      <h1 id="page-title">サービス状況</h1>
-      <p class="lead">天命乃杜の公開サービスについて、現在の状態と計画メンテナンスをお知らせします。</p>
-      <div class="overall">
-        <div><p class="overall-title">現在の状態</p><p class="overall-copy" id="overall-copy">状態を確認しています。</p></div>
-        <span id="overall-pill" class="status-pill unknown" role="status" aria-live="polite"><span class="dot" aria-hidden="true"></span><span id="overall-label">確認中</span></span>
-      </div>
-    </section>
-    <div class="content">
-      <section class="panel" aria-labelledby="components-title">
-        <header class="panel-heading"><div><p>COMPONENTS</p><h2 id="components-title">サービス別の状態</h2></div><p>READ-ONLY</p></header>
-        <div class="components" id="components" aria-live="polite" aria-busy="true"></div>
-      </section>
-      <aside class="panel" aria-labelledby="notice-title">
-        <header class="panel-heading"><div><p>NOTICE</p><h2 id="notice-title">お知らせ</h2></div></header>
-        <div class="notice" id="notice" role="status" aria-live="polite"></div>
-        <div class="aside-body"><p>このページは本体のメンテナンス画面とは別の公開サイトから配信しています。状態確認のために、利用者の入力内容・おみくじ履歴・AI相談内容を送信しません。</p><span class="check-time" id="checked-at">確認時刻: --</span><button id="refresh" class="refresh" type="button"><span aria-hidden="true">↻</span>状態を更新する</button></div>
-      </aside>
-    </div>
-    <p class="architecture"><strong>独立した閲覧経路について。</strong> このページは天命乃杜の本体とは別に配信されます。本体の計画メンテナンス中も、読み取り専用の状態確認経路を使って案内を表示します。状態確認経路そのものに到達できない場合も、このページは「確認できません」と表示します。</p>
-    <section class="panel repository-panel" aria-labelledby="repository-title">
-      <header class="panel-heading"><div><p>OPEN SOURCE</p><h2 id="repository-title">公開リポジトリ</h2></div><p>READ-ONLY</p></header>
-      <div class="aside-body repository-body">
-        <p>このstatusページと本体の公開ソースは、以下のGitHubリポジトリで確認できます。リポジトリはソースの公開先であり、障害時の問い合わせ窓口や有人サポート窓口ではありません。</p>
-        <p class="repository-links"><a href="https://github.com/nden14800/tenmei-mori" target="_blank" rel="noopener noreferrer">本体: nden14800/tenmei-mori ↗</a><a href="https://github.com/nden14800/tenmei-mori-article-analysis-dashboard" target="_blank" rel="noopener noreferrer">記事分析: nden14800/tenmei-mori-article-analysis-dashboard ↗</a></p>
-        <p class="repository-meta">statusページ: <a href="https://github.com/nden14800/tenmei-mori/tree/main/status" target="_blank" rel="noopener noreferrer">main/status ↗</a>　・　<a href="https://tenmei-mori.pages.dev/#developer" target="_blank" rel="noopener noreferrer">開発者について ↗</a></p>
-      </div>
-    </section>
-  </main>
-  <footer><div class="footer-line">運勢・天命乃杜 サービス状況　・　最終更新は端末の日本時間で表示します</div></footer>
-  <script>
-  (() => {
-    'use strict';
-    const API_BASE = 'https://tenmei-mori-backend.nden14800.workers.dev';
-    const SITE_URL = 'https://tenmei-mori.pages.dev/';
-    const statusEndpoint = API_BASE + '/api/system/maintenance';
-    const counterEndpoint = API_BASE + '/api/counter';
-    const node = (id) => document.getElementById(id);
-    const clock = new Intl.DateTimeFormat('ja-JP', { timeZone:'Asia/Tokyo', year:'numeric', month:'long', day:'numeric', weekday:'short', hour:'2-digit', minute:'2-digit', second:'2-digit' });
-    const components = [
-      { icon:'◌', name:'公開サイト' },
-      { icon:'⌁', name:'基礎API' },
-      { icon:'◎', name:'おみくじ・参拝の記録' },
-      { icon:'✦', name:'AI案内' }
-    ];
-    function setPill(kind, label, copy) {
-      const pill = node('overall-pill');
-      pill.className = 'status-pill ' + kind;
-      node('overall-label').textContent = label;
-      node('overall-copy').textContent = copy;
-    }
-    function componentMarkup(states) {
-      return components.map((component) => {
-        const state = states[component.name] || { kind:'unknown', status:'確認できません', detail:'このサービスの状態を確認できません。' };
-        const article = document.createElement('article');
-        article.className = 'component ' + state.kind;
-        const icon = document.createElement('span');
-        icon.className = 'component-icon'; icon.setAttribute('aria-hidden', 'true'); icon.textContent = component.icon;
-        const copy = document.createElement('div'); copy.className = 'component-copy';
-        const title = document.createElement('h3'); title.className = 'component-name'; title.textContent = component.name;
-        const detail = document.createElement('p'); detail.className = 'component-detail'; detail.textContent = state.detail;
-        copy.append(title, detail);
-        const status = document.createElement('span'); status.className = 'component-status'; status.textContent = state.status;
-        article.append(icon, copy, status);
-        return article;
-      });
-    }
-    function renderComponents(states) {
-      const container = node('components');
-      container.replaceChildren(...componentMarkup(states));
-    }
-    function setNotice(kind, title, text, time) {
-      const notice = node('notice');
-      const card = document.createElement('article'); card.className = 'notice-card ' + kind;
-      const kicker = document.createElement('p'); kicker.className = 'notice-kicker';
-      const mark = document.createElement('span'); mark.setAttribute('aria-hidden', 'true'); mark.textContent = kind === 'maintenance' ? '▲' : kind === 'operational' ? '●' : '!';
-      kicker.append(mark, document.createTextNode(kind === 'maintenance' ? 'SCHEDULED MAINTENANCE' : kind === 'operational' ? 'NO ACTIVE INCIDENTS' : 'STATUS UNAVAILABLE'));
-      const heading = document.createElement('h3'); heading.className = 'notice-title'; heading.textContent = title;
-      const body = document.createElement('p'); body.className = 'notice-text'; body.textContent = text;
-      card.append(kicker, heading, body);
-      if (time) { const stamp = document.createElement('p'); stamp.className = 'notice-time'; stamp.textContent = time; card.append(stamp); }
-      notice.replaceChildren(card);
-    }
-    function state(kind, status, detail) { return { kind, status, detail }; }
-    async function fetchCheck(url, label) {
-      const response = await fetch(url, { cache:'no-store', credentials:'omit', redirect:'error' });
-      if (!response.ok) throw new Error(label + ' ' + response.status);
-      return response;
-    }
-    async function refresh() {
-      const button = node('refresh');
-      button.setAttribute('aria-busy', 'true'); button.disabled = true; node('components').setAttribute('aria-busy', 'true');
-      const checkedStates = {};
-      try {
-        let maintenance;
-        try {
-          const response = await fetchCheck(statusEndpoint, 'maintenance endpoint');
-          maintenance = await response.json();
-          if (!maintenance || typeof maintenance.active !== 'boolean') throw new Error('invalid maintenance payload');
-        } catch (error) {
-          renderComponents({
-            '公開サイト': state('degraded','一部確認','公開サイトは表示できますが、メンテナンス状態を確認できません。'),
-            '基礎API': state('unknown','確認できません','メンテナンス状態を確認できません。'),
-            'おみくじ・参拝の記録': state('unknown','確認できません','基礎APIの状態を確認できません。'),
-            'AI案内': state('external','外部サービス','Chatlingの状態はこのページから検証できません。')
-          });
-          setPill('degraded','一部の状態を確認できません','本体の表示とは別に、基礎APIの状態確認に失敗しました。');
-          setNotice('degraded','状態確認APIに接続できません','このページは表示されていますが、メンテナンス状態を取得できませんでした。時間を置いて更新してください。');
-          return;
-        }
-        if (maintenance.active === true) {
-          checkedStates['公開サイト'] = state('maintenance','メンテナンス中','計画メンテナンスのため一時停止しています。');
-          checkedStates['基礎API'] = state('maintenance','メンテナンス中','計画メンテナンスのため実行要求を停止しています。');
-          checkedStates['おみくじ・参拝の記録'] = state('maintenance','メンテナンス中','計画メンテナンスのため一時停止しています。');
-          checkedStates['AI案内'] = state('external','外部サービス','メンテナンス状態により本体側の案内を停止しています。');
-          renderComponents(checkedStates);
-          setPill('maintenance','メンテナンス中','計画メンテナンスにより、一部を含む各サービスを停止しています。');
-          setNotice('maintenance', maintenance.title || '計画メンテナンスを実施しています', maintenance.message || 'より安定した環境を整えるため、一時的にサービスを停止しています。', maintenance.scheduleLabel || '終了時刻は状況により前後する場合があります。');
-          return;
-        }
-        let siteOk = false;
-        let apiOk = false;
-        try { await fetchCheck(SITE_URL, 'site'); siteOk = true; } catch (error) {}
-        try { const counter = await fetchCheck(counterEndpoint, 'counter endpoint'); const payload = await counter.json(); apiOk = Number.isFinite(Number(payload.count)) && Number.isFinite(Number(payload.userCount)); } catch (error) {}
-        checkedStates['公開サイト'] = siteOk ? state('operational','到達確認','公開トップページのHTTP到達確認に成功しました。画面内の操作までは実行していません。') : state('degraded','応答異常','公開トップページのHTTP到達確認に失敗しました。');
-        checkedStates['基礎API'] = apiOk ? state('operational','応答確認','カウンターAPIの応答とJSON形式を確認しました。') : state('degraded','応答異常','基礎APIの応答またはJSON形式を確認できません。');
-        checkedStates['おみくじ・参拝の記録'] = apiOk ? state('operational','基礎API連動','カウンターAPIの正常応答を確認しました。個別操作までは実行していません。') : state('degraded','利用影響の可能性','基礎APIの異常により利用できない可能性があります。');
-        checkedStates['AI案内'] = state('external','外部サービス','Chatlingの外部ウィジェット応答はこのページから検証できません。');
-        renderComponents(checkedStates);
-        if (siteOk && apiOk) {
-          setPill('operational','主要経路を確認','公開サイトのHTTP到達と基礎APIの応答・形式を確認しました。画面操作と外部AI案内は未検証です。');
-          setNotice('operational','確認した範囲では到達障害はありません','公開サイトのHTTP応答と基礎APIの実応答を確認しました。画面操作と外部サービスはこのページでは検証していません。');
-        } else {
-          setPill('degraded','一部サービスに問題','公開サイトまたは基礎APIの実応答を確認できませんでした。');
-          setNotice('degraded','一部のサービスを確認できません','公開サイトと基礎APIの実際の応答結果を反映しています。時間を置いて更新してください。');
-        }
-      } finally {
-        node('checked-at').textContent = '確認時刻: ' + clock.format(new Date());
-        node('components').setAttribute('aria-busy', 'false'); button.removeAttribute('aria-busy'); button.disabled = false;
-      }
-    }
-    node('refresh').addEventListener('click', refresh);
-    refresh();
-    window.setInterval(refresh, 60000);
-  })();
-  </script>
-</body>
-</html>
+<header class="header"><a class="brand" href="https://tenmei-mori.pages.dev" aria-label="運勢・天命乃杜 本体へ戻る"><span class="mark">天</span><span>運勢・天命乃杜</span></a><a class="back" href="https://tenmei-mori.pages.dev" aria-label="本体へ戻る"><i class="bi bi-arrow-left" aria-hidden="true"></i><span class="back-label">本体へ戻る</span></a></header>
+<main class="wrap">
+<section class="hero" aria-labelledby="page-title"><p class="eyebrow"><i class="bi bi-activity" aria-hidden="true"></i>SERVICE STATUS</p><h1 id="page-title">サービス状況</h1><p class="lead">天命乃杜の公開サービスを、HTTP応答だけでなく実ブラウザの実行確認まで含めて監視しています。</p><div class="overall"><div><h2>現在の状態</h2><p id="overall-copy">状態を確認しています。</p></div><span id="overall-pill" class="pill unknown" role="status" aria-live="polite"><i class="bi bi-circle-fill" aria-hidden="true"></i><span id="overall-label">確認中</span></span></div></section>
+<div class="grid"><section class="panel" aria-labelledby="components-title"><header class="heading"><div><small>COMPONENTS</small><h2 id="components-title">サービス別の状態</h2></div><small id="monitor-label">AUTO MONITOR</small></header><div id="components" class="components" aria-live="polite"></div></section>
+<aside class="panel" aria-labelledby="notice-title"><header class="heading"><div><small>NOTICE</small><h2 id="notice-title">お知らせ</h2></div></header><div class="body"><div id="notice" class="notice"></div><div class="meta" id="checked-at">最終確認: --</div><button id="refresh" class="refresh" type="button"><i class="bi bi-arrow-clockwise" aria-hidden="true"></i>状態を更新</button></div></aside></div>
+<section class="panel monitor" aria-labelledby="monitor-title"><header class="heading"><div><small>VERIFICATION</small><h2 id="monitor-title">監視の確認範囲</h2></div><small>NO API KEY</small></header><div class="monitor-body"><div class="metric"><span>ブラウザ実行</span><strong id="browser-check">確認中</strong></div><div class="metric"><span>API応答</span><strong id="api-check">確認中</strong></div><div class="metric"><span>監視更新</span><strong id="probe-age">確認中</strong></div></div></section>
+<p class="architecture"><strong>正常判定の基準。</strong> HTTP 200だけでは「正常」としません。公開サイトを実ブラウザで開き、JavaScriptの実行時エラーと主要画面の構造を確認した監視結果が新しく取得でき、基礎APIも正常応答した場合だけ「正常稼働」と表示します。監視結果が古い・取得できない場合は正常扱いにしません。</p>
+<section class="panel repo" aria-labelledby="repo-title"><header class="heading"><div><small>OPEN SOURCE</small><h2 id="repo-title">公開リポジトリ</h2></div></header><div class="body"><p>このstatusページと監視処理は <a href="https://github.com/nden14800/tenmei-mori" target="_blank" rel="noopener noreferrer">nden14800/tenmei-mori</a> で公開しています。監視はGitHub Actions上の実ブラウザで実行し、結果だけを公開JSONへ保存します。</p><p><a href="https://github.com/nden14800/tenmei-mori/tree/main/status" target="_blank" rel="noopener noreferrer">main/status ↗</a></p></div></section>
+</main>
+<footer><div class="footer-line">運勢・天命乃杜 サービス状況　・　最終確認時刻は日本時間で表示します</div></footer>
+<script>
+(()=>{'use strict';
+const API='https://tenmei-mori-backend.nden14800.workers.dev',HEALTH='https://raw.githubusercontent.com/nden14800/tenmei-mori/main/status/health.json',MAINT=API+'/api/system/maintenance';
+const $=id=>document.getElementById(id),clock=new Intl.DateTimeFormat('ja-JP',{timeZone:'Asia/Tokyo',year:'numeric',month:'long',day:'numeric',weekday:'short',hour:'2-digit',minute:'2-digit',second:'2-digit'});
+const names=[['bi-globe2','公開サイト'],['bi-diagram-3','基礎API'],['bi-stars','おみくじ・参拝の記録'],['bi-chat-square-text','AI案内']];
+const stateText={operational:'正常稼働',degraded:'一部障害',outage:'障害',maintenance:'メンテナンス中',unknown:'確認できません'};
+function pill(kind,label,copy){$('overall-pill').className='pill '+kind;$('overall-label').textContent=label;$('overall-copy').textContent=copy}
+function render(states){$('components').replaceChildren(...names.map(([icon,name])=>{const s=states[name]||{kind:'unknown',detail:'状態を確認できません。'};const a=document.createElement('article');a.className='component';const i=document.createElement('span');i.className='icon';i.innerHTML='<i class="bi '+icon+'" aria-hidden="true"></i>';const c=document.createElement('div');const h=document.createElement('h3');h.textContent=name;const d=document.createElement('p');d.className='detail';d.textContent=s.detail||'';c.append(h,d);const st=document.createElement('span');st.className='component-status '+s.kind;st.textContent=s.status||stateText[s.kind]||'確認できません';a.append(i,c,st);return a}))}
+async function json(url){const r=await fetch(url,{cache:'no-store',credentials:'omit'});if(!r.ok)throw new Error(String(r.status));return r.json()}
+async function refresh(){const b=$('refresh');b.disabled=true;try{const [m,h]=await Promise.all([json(MAINT),json(HEALTH)]);const age=Date.now()-Date.parse(h.checkedAt||0),fresh=Number.isFinite(age)&&age>=0&&age<=20*60*1000,browser=h.browser&&h.browser.ok===true,api=h.api&&h.api.ok===true;if(!m||typeof m.active!=='boolean')throw new Error('maintenance');if(m.active){render(Object.fromEntries(names.map(([,n])=>[n,{kind:'maintenance',status:'メンテナンス中',detail:'計画メンテナンスにより停止しています。'}])));pill('maintenance','メンテナンス中','計画メンテナンスが有効です。');$('notice').innerHTML='<i class="bi bi-tools"></i><strong>'+escapeHtml(m.title||'計画メンテナンスを実施しています')+'</strong><p>'+escapeHtml(m.message||'一時的にサービスを停止しています。')+'</p>'}else{const k=browser&&api&&fresh?'operational':(h.browser?.ok===false||h.api?.ok===false?'outage':'unknown');render({'公開サイト':{kind:browser&&fresh?'operational':k,status:browser&&fresh?'正常稼働':stateText[k],detail:browser&&fresh?'実ブラウザで主要画面とJavaScript実行を確認済み。':'ブラウザ監視の最新正常結果を確認できません。'},'基礎API':{kind:api?'operational':k,status:api?'正常稼働':stateText[k],detail:api?'メンテナンスAPI・カウンターAPIの応答を確認済み。':'基礎APIの正常応答を確認できません。'},'おみくじ・参拝の記録':{kind:api?'operational':k,status:api?'API確認済み':stateText[k],detail:api?'参拝記録系の基礎API経路を確認済み。':'基礎API障害のため利用影響を確認できません。'},'AI案内':{kind:'external',status:'外部サービス',detail:'Chatlingはこの監視の正常判定には含めていません。'}});pill(k,k==='operational'?'正常稼働':stateText[k],k==='operational'?'実ブラウザ・APIとも最新の正常結果を確認しています。':'正常稼働を確認するための最新監視結果が揃っていません。');$('notice').innerHTML=k==='operational'?'<i class="bi bi-check-circle-fill"></i><strong>確認した範囲では障害はありません</strong><p>実ブラウザのJavaScript実行、主要画面構造、基礎APIの応答を確認しています。</p>':'<i class="bi bi-exclamation-triangle-fill"></i><strong>正常稼働を確認できません</strong><p>監視結果が古い、取得できない、または監視対象に異常があります。正常とは表示しません。</p>'}$('browser-check').textContent=browser?'正常':'異常/未確認';$('api-check').textContent=api?'正常':'異常/未確認';$('probe-age').textContent=fresh?Math.max(0,Math.floor(age/60000))+'分前':'古い/未取得';$('checked-at').textContent='ページ確認: '+clock.format(new Date())+'　・　監視結果: '+(h.checkedAt?clock.format(new Date(h.checkedAt)):'--')}catch(e){pill('unknown','確認できません','監視結果を取得できないため、正常とは判定しません。');render(Object.fromEntries(names.map(([,n])=>[n,{kind:'unknown',status:'確認できません',detail:'監視結果を取得できません。'}])));$('notice').innerHTML='<i class="bi bi-question-circle-fill"></i><strong>状態を確認できません</strong><p>監視結果または状態確認APIに接続できませんでした。</p>';$('browser-check').textContent='確認できません';$('api-check').textContent='確認できません';$('probe-age').textContent='確認できません'}finally{b.disabled=false}}
+function escapeHtml(s){const d=document.createElement('div');d.textContent=s;return d.innerHTML}
+$('refresh').addEventListener('click',refresh);refresh();setInterval(refresh,60000)
+})()
+</script>
+</body></html>

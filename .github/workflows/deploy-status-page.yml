@@ -1,39 +1,40 @@
-name: Deploy Cloudflare Pages
+name: Deploy service status page
 
 on:
   push:
     branches:
       - main
-    paths-ignore:
-      - 'status/health.json'
+    paths:
+      - 'status/index.html'
+      - '.github/workflows/deploy-status-page.yml'
   workflow_dispatch:
 
 permissions:
   contents: read
 
 concurrency:
-  group: cloudflare-pages-production
+  group: cloudflare-pages-status-production
   cancel-in-progress: false
 
 jobs:
   deploy:
-    name: Deploy production site
+    name: Deploy status production site
     runs-on: ubuntu-latest
     environment:
       name: production
-      url: https://tenmei-mori.pages.dev/
+      url: https://tenmei-mori-status.pages.dev/
     steps:
       - name: Check out production source
         uses: actions/checkout@v4
-      - name: Verify static site entry point
-        run: test -f index.html
-      - name: Deploy to Cloudflare Pages
+      - name: Verify status entry point
+        run: test -f status/index.html
+      - name: Deploy status page to Cloudflare Pages
         uses: cloudflare/wrangler-action@v3
         with:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
           command: >-
-            pages deploy .
-            --project-name=tenmei-mori
+            pages deploy status
+            --project-name=tenmei-mori-status
             --branch=main
             --commit-dirty=true
