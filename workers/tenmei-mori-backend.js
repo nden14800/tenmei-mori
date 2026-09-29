@@ -1031,7 +1031,7 @@ export default {
                 }
 
                 const page = parseInt(params.get("page") || "1");
-                const limit = 6; // おみくじの轍はニュース・コラムと1ページ6件で統一
+                const limit = 30; // おみくじの轍はAI夢占いと1ページ30件で統一
                 const offset = (page - 1) * limit;
 
                 let sql = "SELECT * FROM history";
