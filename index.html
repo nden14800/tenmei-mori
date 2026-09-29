@@ -28438,10 +28438,14 @@ async function loadHistory(page = 1) {
             // 状態更新
             historyPageState.page = data.page;
             historyPageState.totalItems = data.totalItems;
-            historyPageState.filteredData = data.global;
+            // API側の件数設定にかかわらず、表示側でも1ページ30件を上限にする
+            const pageItems = Array.isArray(data.global)
+                ? data.global.slice(0, historyPageState.perPage)
+                : [];
+            historyPageState.filteredData = pageItems;
 
-            renderHistoryList(data.global);
-            renderServerPagination(data.page, data.totalItems, 30);
+            renderHistoryList(pageItems);
+            renderServerPagination(data.page, data.totalItems, historyPageState.perPage);
             
         } else {
             console.error("Load failed status:", res.status);
