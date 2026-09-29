@@ -44,4 +44,4 @@ const cutoff = Date.now() - retentionMs;
 history.samples = history.samples.filter(item => Date.parse(item.at) >= cutoff);
 history.incidents = history.incidents.filter(item => Date.parse(item.start) >= cutoff);
 
-fs.writeFileSync(HISTORY, JSON.stringify(history, null, 2) + '\\n');
+fs.writeFileSync(HISTORY, JSON.stringify(history, null, 2) + '\n');
