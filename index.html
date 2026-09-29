@@ -36831,16 +36831,8 @@ try {
             const time = window.TenmeiTime && typeof window.TenmeiTime.formatDateTime === 'function' ? window.TenmeiTime.formatDateTime() : new Intl.DateTimeFormat('ja-JP', { dateStyle: 'medium', timeStyle: 'medium' }).format(new Date());
             checked.textContent = `確認時刻: ${time}`;
         };
-        const originalShowView = window.showView;
-        if (typeof originalShowView === 'function' && !originalShowView.__tenmeiStatusWrapped) {
-            const wrappedShowView = function wrappedShowView(viewName, ...args) {
-                const result = originalShowView.call(this, viewName, ...args);
-                if (viewName === 'status') window.refreshServiceStatus();
-                return result;
-            };
-            wrappedShowView.__tenmeiStatusWrapped = true;
-            window.showView = wrappedShowView;
-        }
+        // showView はセキュリティガードで読み取り専用に固定されるため、
+        // ここでは再代入せず、status画面への遷移時だけ更新処理を直接予約する。
         document.addEventListener('click', (event) => {
             const trigger = event.target.closest('[onclick*="showView(\'status\')"]');
             if (trigger) window.setTimeout(() => window.refreshServiceStatus(), 0);
