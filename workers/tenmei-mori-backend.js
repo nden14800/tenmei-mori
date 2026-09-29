@@ -1,13 +1,5 @@
 // @ts-nocheck
-/**
- * 運勢・天命乃杜 Cloudflare Workers Backend (Turso HTTP版 - 最適化・修正済)
- * 
- * 【修正内容】
- * 1. プロフィール取得時の「全件カウント」を廃止し、キャッシュ値を利用するように変更。
- *    これにより「Rows Read（読み取り行数）」の爆発的消費を防ぎます。
- * 2. データの自己修復ロジックは、数値が欠落している場合のみ実行するように制限。
- * 3. データベースへの負荷を考慮した設計に統一。
- */
+/*
 
 // 設定定数
 const ALLOWED_ORIGIN = "https://tenmei-mori.pages.dev";
@@ -1068,14 +1060,23 @@ export default {
                     countSql += whereStr;
                 }
 
-                // 検索条件に一致する全レコードを取得してから、サーバー側でページ分割する。
-                // これにより、検索結果が31件以上ある場合も2ページ目以降を確実に表示する。
-                sql += " ORDER BY timestamp DESC";
+                // ページ番号に応じた行番号をSQL側で確定させる。
+                // LIMIT/OFFSETの結果に依存せず、検索後の並び順を固定したうえで
+                // 31件目以降も正しく取得できるようにする。
+                const filteredSql = sql + " ORDER BY timestamp DESC, id DESC";
+                const pagedSql = `
+                    SELECT * FROM (
+                        SELECT h.*, ROW_NUMBER() OVER (ORDER BY h.timestamp DESC, h.id DESC) AS __tenmei_row_num
+                        FROM (${filteredSql}) AS h
+                    )
+                    WHERE __tenmei_row_num > ${offset}
+                      AND __tenmei_row_num <= ${offset + limit}
+                    ORDER BY __tenmei_row_num ASC
+                `;
                 
-                const allRows = await runSQL(sql, queryParams);
+                const rows = await runSQL(pagedSql, queryParams);
                 const countRows = await runSQL(countSql, queryParams);
                 const totalItems = Number(countRows[0].cnt);
-                const rows = allRows.slice(offset, offset + limit);
 
                 // 個人の全件数もプロフィールテーブルから取れるならその方が良いが、
                 // ここでは検索機能の一部なのでCOUNT(*)を使わざるを得ない場合もある。
