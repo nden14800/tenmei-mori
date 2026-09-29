@@ -25208,7 +25208,7 @@ function escapeHtml(str) {
 // 履歴ページネーション用の状態管理
 let historyPageState = {
     page: 1,
-    perPage: 100, // 1ページ100件
+    perPage: 6, // 1ページ6件（ニュース・コラムと統一）
     filteredData: [] // 現在表示対象となっているデータ（検索結果含む）
 };
         
@@ -28441,7 +28441,7 @@ async function loadHistory(page = 1) {
             historyPageState.filteredData = data.global;
 
             renderHistoryList(data.global);
-            renderServerPagination(data.page, data.totalItems, 100);
+            renderServerPagination(data.page, data.totalItems, 6);
             
         } else {
             console.error("Load failed status:", res.status);
