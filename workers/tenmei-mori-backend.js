@@ -1068,13 +1068,14 @@ export default {
                     countSql += whereStr;
                 }
 
-                // LIMIT / OFFSET は数値をSQLへ直接埋め込み、ページ2以降でも確実にオフセットされるようにする
-                // limit と offset は上で数値化済みのローカル値なので、ユーザー入力を直接SQLへ入れない。
-                sql += ` ORDER BY timestamp DESC LIMIT ${limit} OFFSET ${offset}`;
+                // 検索条件に一致する全レコードを取得してから、サーバー側でページ分割する。
+                // これにより、検索結果が31件以上ある場合も2ページ目以降を確実に表示する。
+                sql += " ORDER BY timestamp DESC";
                 
-                const rows = await runSQL(sql, queryParams);
+                const allRows = await runSQL(sql, queryParams);
                 const countRows = await runSQL(countSql, queryParams);
                 const totalItems = Number(countRows[0].cnt);
+                const rows = allRows.slice(offset, offset + limit);
 
                 // 個人の全件数もプロフィールテーブルから取れるならその方が良いが、
                 // ここでは検索機能の一部なのでCOUNT(*)を使わざるを得ない場合もある。
