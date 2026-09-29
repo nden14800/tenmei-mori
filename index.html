@@ -11628,6 +11628,13 @@ body.sidebar-collapsed.sidebar-pinned #sidebar .nav-group-title {
     }
     .tenmei-choice:focus-within,
     .tenmei-date:focus-within { z-index: 80; }
+    .tenmei-choice[data-open="true"],
+    .tenmei-date[data-open="true"] { z-index: 240 !important; }
+    .tenmei-choice[data-open="true"] .tenmei-choice__popover,
+    .tenmei-date[data-open="true"] .tenmei-date__popover {
+        z-index: 241 !important;
+        pointer-events: auto;
+    }
     .tenmei-choice__trigger,
     .tenmei-date__trigger {
         display: grid;
@@ -28610,6 +28617,7 @@ function resetSearch() {
                 if (trigger) trigger.setAttribute('aria-expanded', 'false');
                 if (popover) popover.hidden = true;
                 root.closest('.history-control-bar, .zodiac-ranking-panel')?.classList.remove('is-control-expanded');
+                root.style.zIndex = '';
                 activeRoot = null;
                 if (returnFocus) trigger?.focus();
             };
@@ -28652,6 +28660,7 @@ function resetSearch() {
                 if (activeRoot && activeRoot !== state.root) closeActive(false);
                 activeRoot = state.root;
                 state.root.dataset.open = 'true';
+                state.root.style.zIndex = '240';
                 state.root.closest('.history-control-bar, .zodiac-ranking-panel')?.classList.add('is-control-expanded');
                 state.popover.hidden = false;
                 state.trigger.setAttribute('aria-expanded', 'true');
@@ -28800,6 +28809,7 @@ function resetSearch() {
                 state.view = new Date(base.getFullYear(), base.getMonth(), 1);
                 activeRoot = state.root;
                 state.root.dataset.open = 'true';
+                state.root.style.zIndex = '240';
                 state.root.closest('.history-control-bar, .zodiac-ranking-panel')?.classList.add('is-control-expanded');
                 state.popover.hidden = false;
                 state.trigger.setAttribute('aria-expanded', 'true');
@@ -37657,7 +37667,12 @@ window.addEventListener('hashchange',function(){setTimeout(buildAboutArticleTOC,
     }
     if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',function(){bindHistoryReset();refreshActiveControls();},{once:true});
     else { bindHistoryReset(); refreshActiveControls(); }
-    window.addEventListener('viewchange',function(){ setTimeout(function(){ bindHistoryReset(); refreshActiveControls(); },0); });
+    window.addEventListener('viewchange',function(){
+        if(window.TenmeiCustomControls && typeof window.TenmeiCustomControls.closeActive==='function'){
+            window.TenmeiCustomControls.closeActive(false);
+        }
+        setTimeout(function(){ bindHistoryReset(); refreshActiveControls(); },0);
+    });
 })();
 </script></html>
 <style id="tenmei-ui-unification-fix">
