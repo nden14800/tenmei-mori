@@ -37,8 +37,26 @@ async function main() {
     if (browserErrors.length) throw new Error(`JavaScript実行時エラー: ${browserErrors[0]}`);
     if (consoleErrors.length) throw new Error(`公開サイト内console.error: ${consoleErrors[0]}`);
     if (missing.length) throw new Error(`主要画面の必須要素不足: ${missing.join(', ')}`);
+
+    // 重要なユーザー経路を実際に1回実行する。存在確認だけでは「ボタンはあるが死んでいる」を検出できない。
+    await page.locator('[onclick="startOmikuji()"]').first().click({ timeout: 10000 });
+    await page.waitForTimeout(1500);
+    const interaction = await page.evaluate(() => ({
+      drawView: !!document.querySelector('#view-draw'),
+      resultView: !!document.querySelector('#view-result'),
+      activeView: [...document.querySelectorAll('.view-section')].find(el => {
+        const style = getComputedStyle(el);
+        return style.display !== 'none' && !el.classList.contains('hidden');
+      })?.id || ''
+    }));
+    if (!interaction.drawView && !interaction.resultView) {
+      throw new Error(`おみくじ開始操作後の画面遷移を確認できません（active: ${interaction.activeView || 'none'}）`);
+    }
+    if (browserErrors.length) throw new Error(`操作後JavaScript実行時エラー: ${browserErrors[0]}`);
+    if (consoleErrors.length) throw new Error(`操作後console.error: ${consoleErrors[0]}`);
+
     browserOk = true;
-    browserReason = '実ブラウザでページ表示、JavaScript実行、主要ホーム画面構造を確認しました。';
+    browserReason = '実ブラウザで表示、JavaScript実行、主要ホーム画面構造、おみくじ開始操作まで確認しました。';
   } catch (error) {
     browserReason = error instanceof Error ? error.message : String(error);
   } finally {
