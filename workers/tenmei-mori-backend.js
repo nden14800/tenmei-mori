@@ -1068,9 +1068,11 @@ export default {
                     countSql += whereStr;
                 }
 
-                sql += " ORDER BY timestamp DESC LIMIT ? OFFSET ?";
+                // LIMIT / OFFSET は数値をSQLへ直接埋め込み、ページ2以降でも確実にオフセットされるようにする
+                // limit と offset は上で数値化済みのローカル値なので、ユーザー入力を直接SQLへ入れない。
+                sql += ` ORDER BY timestamp DESC LIMIT ${limit} OFFSET ${offset}`;
                 
-                const rows = await runSQL(sql, [...queryParams, limit, offset]);
+                const rows = await runSQL(sql, queryParams);
                 const countRows = await runSQL(countSql, queryParams);
                 const totalItems = Number(countRows[0].cnt);
 
