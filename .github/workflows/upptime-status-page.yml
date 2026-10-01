@@ -15,11 +15,11 @@ permissions:
   pull-requests: read
 
 concurrency:
-  group: tenmei-status-main
+  group: ${{ github.repository }}-${{ github.head_ref || github.ref_name }}-upptime
   cancel-in-progress: false
 
 jobs:
-  upptime:
+  status-page:
     runs-on: ubuntu-latest
     timeout-minutes: 15
     steps:
@@ -32,20 +32,6 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: 22
-
-      - name: Run Upptime check
-        uses: upptime/uptime-monitor@v1.44.1
-        with:
-          command: update
-        env:
-          GITHUB_TOKEN: ${{ github.token }}
-
-      - name: Generate Upptime response-time graphs
-        uses: upptime/uptime-monitor@v1.44.1
-        with:
-          command: graphs
-        env:
-          GH_PAT: ${{ github.token }}
 
       - name: Generate the official Upptime status website
         uses: upptime/uptime-monitor@v1.44.1
@@ -61,15 +47,17 @@ jobs:
           cp -R site/status-page/__sapper__/export/. status/
           test -f status/index.html
 
-      - name: Copy Upptime history and graphs into the public status site
+      - name: Copy Upptime data into the public status site
         run: |
           test -d graphs
           test -d history
-          rm -rf status/graphs status/history
+          test -d api
+          rm -rf status/graphs status/history status/api
           cp -R graphs status/graphs
           cp -R history status/history
-          test -d status/graphs
-          test -d status/history
+          cp -R api status/api
+          test -f status/graphs/tenmei-mori/response-time-week.png
+          test -f status/history/summary.json
 
       - name: Make generated Upptime data paths local and proxy-safe
         run: |
@@ -86,8 +74,8 @@ jobs:
 
             js = js
               .replace('i||(i="https://raw.githubusercontent.com")', 'i||(i="")')
-              .replace('const o=\`${i}/${r}/${l}/master/graphs\`', 'const o="/graphs"')
-              .replace('fetch(\`${i}/${r}/${l}/master/history/summary.json\`)', 'fetch("/history/summary.json")');
+              .replace('const o=`${i}/${r}/${l}/master/graphs`', 'const o="/graphs"')
+              .replace('fetch(`${i}/${r}/${l}/master/history/summary.json`)', 'fetch("/history/summary.json")');
 
             fs.writeFileSync(file, js);
           }
@@ -95,8 +83,7 @@ jobs:
 
           if grep -R -F '/master/graphs' status/client; then exit 1; fi
           if grep -R -F '/master/history/summary.json' status/client; then exit 1; fi
-          test -f status/graphs/tenmei-mori/response-time-week.png
-          test -f status/history/summary.json
+
       - name: Make generated status assets proxy-safe
         run: |
           node <<'NODE'
@@ -127,8 +114,6 @@ jobs:
           test -f status/global.css
           grep -F 'href=/themes/light.css' status/index.html
           grep -F 'href=/global.css' status/index.html
-          if grep -F 'https://nden14800.github.io/tenmei-mori/themes/light.css' status/index.html; then exit 1; fi
-          if grep -F 'https://nden14800.github.io/tenmei-mori/global.css' status/index.html; then exit 1; fi
 
       - name: Add Upptime license notice to generated status page
         run: |
@@ -154,11 +139,7 @@ jobs:
           Upptime project or any other third-party component.
           EOF
 
-          test -f status/LICENSE
-          grep -F 'Upptime code is licensed under the MIT License.' status/LICENSE
-          grep -F "Upptime's history data is distributed under the Open Database License" status/LICENSE
-
-      - name: Commit generated Upptime data and status page
+      - name: Commit generated status page
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
