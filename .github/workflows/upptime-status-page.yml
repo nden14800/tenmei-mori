@@ -61,6 +61,42 @@ jobs:
           cp -R site/status-page/__sapper__/export/. status/
           test -f status/index.html
 
+      - name: Copy Upptime history and graphs into the public status site
+        run: |
+          test -d graphs
+          test -d history
+          rm -rf status/graphs status/history
+          cp -R graphs status/graphs
+          cp -R history status/history
+          test -d status/graphs
+          test -d status/history
+
+      - name: Make generated Upptime data paths local and proxy-safe
+        run: |
+          node <<'NODE'
+          const fs = require("fs");
+          const path = require("path");
+          const root = "status/client";
+
+          for (const name of fs.readdirSync(root)) {
+            if (!name.endsWith(".js")) continue;
+            const file = path.join(root, name);
+            let js = fs.readFileSync(file, "utf8");
+            if (!js.includes("/master/graphs") && !js.includes("/master/history/summary.json")) continue;
+
+            js = js
+              .replace('i||(i="https://raw.githubusercontent.com")', 'i||(i="")')
+              .replace('const o=\`${i}/${r}/${l}/master/graphs\`', 'const o="/graphs"')
+              .replace('fetch(\`${i}/${r}/${l}/master/history/summary.json\`)', 'fetch("/history/summary.json")');
+
+            fs.writeFileSync(file, js);
+          }
+          NODE
+
+          grep -R -F '/master/graphs' status/client && exit 1 || true
+          grep -R -F '/master/history/summary.json' status/client && exit 1 || true
+          test -f status/graphs/tenmei-mori/response-time-week.png
+          test -f status/history/summary.json
       - name: Make generated status assets proxy-safe
         run: |
           node <<'NODE'
