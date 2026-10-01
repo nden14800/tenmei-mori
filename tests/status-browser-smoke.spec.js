@@ -3,6 +3,19 @@ const { test, expect } = require('@playwright/test');
 const SITE = 'https://tenmei-mori.pages.dev/';
 const STATUS = 'https://tenmei-mori-status.pages.dev/';
 
+async function dismissTutorial(page) {
+  const overlay = page.locator('#tutorial-overlay.active');
+  if (await overlay.count()) {
+    const close = overlay.getByRole('button', { name: /スキップ|閉じる|次へ/ }).first();
+    if (await close.count()) {
+      await close.click({ force: true });
+    } else {
+      await page.keyboard.press('Escape');
+    }
+    await expect(overlay).toBeHidden({ timeout: 5000 }).catch(() => {});
+  }
+}
+
 test.describe.configure({ mode: 'serial' });
 
 test('main site loads without browser JavaScript errors', async ({ page }) => {
@@ -27,6 +40,7 @@ test('main site internal navigation works, including developer view', async ({ p
     timeout: 30000
   });
   expect(response && response.ok()).toBeTruthy();
+  await dismissTutorial(page);
 
   const checks = [
     ['開発者について', '#view-developer', 'nden148'],
@@ -49,6 +63,7 @@ test('main site internal navigation works, including developer view', async ({ p
 
 test('main site representative navigation controls are wired', async ({ page }) => {
   await page.goto(SITE, { waitUntil: 'domcontentloaded', timeout: 30000 });
+  await dismissTutorial(page);
 
   const controls = page.locator('[onclick*="showView("]');
   const count = await controls.count();
