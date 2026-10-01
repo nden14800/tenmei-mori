@@ -36982,6 +36982,25 @@ function render(documentKey,edition,archive){
       element.classList.remove('view-section');
       element.setAttribute('data-document-history-source-view','');
     });
+    // 保存HTMLは過去のサイト全体を含むため、現在のページと同じIDが重複することがある。
+    // 特に #view-developer が重複すると showView() がスナップショット内の要素を取得し、
+    // 閉じた details の中で表示されるため、実際の開発者画面が表示されなくなる。
+    const idsOutsideSnapshot=new Set(
+      Array.from(document.querySelectorAll('[id]'))
+        .filter((element)=>!snapshot.contains(element))
+        .map((element)=>element.id)
+        .filter(Boolean)
+    );
+    const idsInSnapshot=new Set();
+    snapshot.querySelectorAll('[id]').forEach((element)=>{
+      const id=element.id;
+      if(!id)return;
+      if(idsOutsideSnapshot.has(id)||idsInSnapshot.has(id)){
+        element.removeAttribute('id');
+        return;
+      }
+      idsInSnapshot.add(id);
+    });
   }else{
     const availabilityLabel=item?.availability==='missing'?'欠番・記録なし':'本文スナップショット未記録';
     const detail=item?.changeDescription||'確認できた改定内容はありません。';
