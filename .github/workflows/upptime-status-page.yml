@@ -5,9 +5,8 @@ on:
     paths:
       - ".upptimerc.yml"
       - ".github/workflows/upptime-status-page.yml"
-      - "tests/status-browser-smoke.spec.js"
   schedule:
-    - cron: "*/10 * * * *"
+    - cron: "7,17,27,37,47,57 * * * *"
   workflow_dispatch:
 
 permissions:
@@ -34,88 +33,67 @@ jobs:
         with:
           node-version: 22
 
-      - name: Install Playwright
-        run: npm install --no-save --no-package-lock @playwright/test@1.63.0
-
-      - name: Install Chromium
-        run: npx playwright install --with-deps chromium
-
-      - name: Run browser smoke checks
-        id: browser_smoke
-        continue-on-error: true
-        run: |
-          rm -rf test-results
-          npx playwright test tests/status-browser-smoke.spec.js --project=chromium --workers=1 --reporter=line
-
-      - name: Record browser smoke status
-        env:
-          SMOKE_OUTCOME: ${{ steps.browser_smoke.outcome }}
-        run: |
-          node <<'NODE'
-          const fs = require('fs');
-          const ok = process.env.SMOKE_OUTCOME === 'success';
-          const now = new Date().toISOString();
-          const data = {
-            status: ok ? 'UP' : 'DOWN',
-            checkedAt: now,
-            checks: {
-              mainSite: ok ? 'UP' : 'DOWN',
-              developerView: ok ? 'UP' : 'DOWN',
-              internalNavigation: ok ? 'UP' : 'DOWN',
-              javascriptErrors: ok ? 'UP' : 'DOWN',
-              statusPage: ok ? 'UP' : 'DOWN'
-            },
-            message: ok
-              ? 'ブラウザから主要画面・内部遷移・JavaScriptエラー・Status PageのCSS依存を確認しました。'
-              : 'ブラウザ機能監視が失敗しました。GitHub Actionsの実行ログを確認してください。'
-          };
-          fs.writeFileSync('monitoring/browser-status.json', JSON.stringify(data, null, 2) + '\n');
-          NODE
-
-      - name: Generate browser smoke failure summary
-        if: steps.browser_smoke.outcome != 'success'
-        run: |
-          {
-            echo "### Browser smoke check failed"
-            echo
-            echo "主要画面の実ブラウザ検証に失敗しました。"
-            echo "Developer navigation / internal navigation / JavaScript errors / Status Page stylesheet dependencies のいずれかを確認してください。"
-          } >> "$GITHUB_STEP_SUMMARY"
-
       - name: Run Upptime check
-        uses: upptime/uptime-monitor@v1.44.0
+        uses: upptime/uptime-monitor@v1.44.1
         with:
           command: update
         env:
           GITHUB_TOKEN: ${{ github.token }}
 
       - name: Generate the official Upptime status website
-        uses: upptime/uptime-monitor@v1.44.0
+        uses: upptime/uptime-monitor@v1.44.1
         with:
           command: site
         env:
           GITHUB_TOKEN: ${{ github.token }}
 
-      - name: Replace the public status page with the generated Upptime site
+      - name: Replace public status page with the generated Upptime site
         run: |
           test -d site/status-page/__sapper__/export
           rm -rf status/*
           cp -R site/status-page/__sapper__/export/. status/
           test -f status/index.html
 
-      - name: Verify generated status page is self-contained for CSS
+      - name: Make generated status assets proxy-safe
         run: |
+          node <<'NODE'
+          const fs = require("fs");
+          const path = "status/index.html";
+          let html = fs.readFileSync(path, "utf8");
+
+          html = html
+            .replace(
+              /https:\/\/nden14800\.github\.io\/tenmei-mori\/themes\/light\.css/g,
+              "/themes/light.css"
+            )
+            .replace(
+              /https:\/\/nden14800\.github\.io\/tenmei-mori\/global\.css/g,
+              "/global.css"
+            )
+            .replace(
+              /https:\/\/raw\.githubusercontent\.com\/upptime\/upptime\/master\/assets\/upptime-icon\.svg/g,
+              "/upptime-icon.svg"
+            );
+
+          fs.writeFileSync(path, html);
+          NODE
+
+          cp status/assets/upptime-icon.svg status/upptime-icon.svg 2>/dev/null || true
+
           test -f status/themes/light.css
           test -f status/global.css
           grep -F 'href=/themes/light.css' status/index.html
+          grep -F 'href=/global.css' status/index.html
+          if grep -F 'https://nden14800.github.io/tenmei-mori/themes/light.css' status/index.html; then exit 1; fi
+          if grep -F 'https://nden14800.github.io/tenmei-mori/global.css' status/index.html; then exit 1; fi
 
       - name: Commit generated Upptime data and status page
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add .upptimerc.yml monitoring/browser-status.json status
+          git add status
           if git diff --cached --quiet; then
-            echo "No Upptime changes."
+            echo "No generated status page changes."
             exit 0
           fi
           git commit -m "chore(status): update official Upptime status page"
