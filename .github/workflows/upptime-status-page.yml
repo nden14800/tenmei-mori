@@ -87,6 +87,34 @@ jobs:
           if grep -F 'https://nden14800.github.io/tenmei-mori/themes/light.css' status/index.html; then exit 1; fi
           if grep -F 'https://nden14800.github.io/tenmei-mori/global.css' status/index.html; then exit 1; fi
 
+      - name: Add Upptime license notice to generated status page
+        run: |
+          cat > status/LICENSE <<'EOF'
+          Upptime third-party notice
+          ==========================
+
+          The generated status page in this directory is produced with Upptime.
+
+          Upptime code is licensed under the MIT License.
+          Copyright (c) Anand Chowdhary.
+
+          Upptime's history data is distributed under the Open Database License
+          (ODbL), as documented by the Upptime project.
+
+          Upptime source:
+          https://github.com/upptime/upptime
+
+          Upptime uptime-monitor action:
+          https://github.com/upptime/uptime-monitor
+
+          These notices do not change the license terms of the original
+          Upptime project or any other third-party component.
+          EOF
+
+          test -f status/LICENSE
+          grep -F 'Upptime code is licensed under the MIT License.' status/LICENSE
+          grep -F 'Upptime'''s history data is distributed under the Open Database License' status/LICENSE
+
       - name: Commit generated Upptime data and status page
         run: |
           git config user.name "github-actions[bot]"
