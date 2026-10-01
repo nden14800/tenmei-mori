@@ -93,8 +93,8 @@ jobs:
           }
           NODE
 
-          grep -R -F '/master/graphs' status/client && exit 1 || true
-          grep -R -F '/master/history/summary.json' status/client && exit 1 || true
+          if grep -R -F '/master/graphs' status/client; then exit 1; fi
+          if grep -R -F '/master/history/summary.json' status/client; then exit 1; fi
           test -f status/graphs/tenmei-mori/response-time-week.png
           test -f status/history/summary.json
       - name: Make generated status assets proxy-safe
