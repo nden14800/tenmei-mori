@@ -1,0 +1,59 @@
+name: Generate Upptime status page
+
+on:
+  schedule:
+    - cron: "*/10 * * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  issues: write
+  pull-requests: read
+
+concurrency:
+  group: upptime-status-page
+  cancel-in-progress: false
+
+jobs:
+  upptime:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Check out main
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Run Upptime check
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: npx --yes @upptime/uptime-monitor@1.43.16
+
+      - name: Generate the official Upptime status website
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: npx --yes @upptime/uptime-monitor@1.43.16 site
+
+      - name: Replace the public status page with the generated Upptime site
+        run: |
+          test -d site/status-page/__sapper__/export
+          rm -rf status/*
+          cp -R site/status-page/__sapper__/export/. status/
+          test -f status/index.html
+
+      - name: Commit generated Upptime data and status page
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add .upptimerc.yml status .upptime
+          if git diff --cached --quiet; then
+            echo "No Upptime changes."
+            exit 0
+          fi
+          git commit -m "chore(status): use official Upptime status page"
+          git push
