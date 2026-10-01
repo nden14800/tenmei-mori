@@ -34,14 +34,18 @@ jobs:
           node-version: 22
 
       - name: Run Upptime check
+        uses: upptime/uptime-monitor@v1.43.15
+        with:
+          command: update
         env:
           GITHUB_TOKEN: ${{ github.token }}
-        run: npx --yes @upptime/uptime-monitor@1.43.15
 
       - name: Generate the official Upptime status website
+        uses: upptime/uptime-monitor@v1.43.15
+        with:
+          command: site
         env:
           GITHUB_TOKEN: ${{ github.token }}
-        run: npx --yes @upptime/uptime-monitor@1.43.15 site
 
       - name: Replace the public status page with the generated Upptime site
         run: |
@@ -52,6 +56,7 @@ jobs:
 
       - name: Commit generated Upptime data and status page
         run: |
+          git pull --rebase origin main
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add .upptimerc.yml status
