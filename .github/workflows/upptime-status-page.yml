@@ -5,6 +5,7 @@ on:
     paths:
       - ".upptimerc.yml"
       - ".github/workflows/upptime-status-page.yml"
+      - "tests/status-browser-smoke.spec.js"
   schedule:
     - cron: "*/10 * * * *"
   workflow_dispatch:
@@ -21,7 +22,7 @@ concurrency:
 jobs:
   upptime:
     runs-on: ubuntu-latest
-    timeout-minutes: 10
+    timeout-minutes: 15
     steps:
       - name: Check out main
         uses: actions/checkout@v4
@@ -32,6 +33,54 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: 22
+
+      - name: Install Playwright
+        run: npm install --no-save --no-package-lock @playwright/test@1.63.0
+
+      - name: Install Chromium
+        run: npx playwright install --with-deps chromium
+
+      - name: Run browser smoke checks
+        id: browser_smoke
+        continue-on-error: true
+        run: |
+          rm -rf test-results
+          npx playwright test tests/status-browser-smoke.spec.js --project=chromium --workers=1 --reporter=line
+
+      - name: Record browser smoke status
+        env:
+          SMOKE_OUTCOME: ${{ steps.browser_smoke.outcome }}
+        run: |
+          node <<'NODE'
+          const fs = require('fs');
+          const ok = process.env.SMOKE_OUTCOME === 'success';
+          const now = new Date().toISOString();
+          const data = {
+            status: ok ? 'UP' : 'DOWN',
+            checkedAt: now,
+            checks: {
+              mainSite: ok ? 'UP' : 'DOWN',
+              developerView: ok ? 'UP' : 'DOWN',
+              internalNavigation: ok ? 'UP' : 'DOWN',
+              javascriptErrors: ok ? 'UP' : 'DOWN',
+              statusPage: ok ? 'UP' : 'DOWN'
+            },
+            message: ok
+              ? 'ブラウザから主要画面・内部遷移・JavaScriptエラー・Status PageのCSS依存を確認しました。'
+              : 'ブラウザ機能監視が失敗しました。GitHub Actionsの実行ログを確認してください。'
+          };
+          fs.writeFileSync('monitoring/browser-status.json', JSON.stringify(data, null, 2) + '\n');
+          NODE
+
+      - name: Generate browser smoke failure summary
+        if: steps.browser_smoke.outcome != 'success'
+        run: |
+          {
+            echo "### Browser smoke check failed"
+            echo
+            echo "主要画面の実ブラウザ検証に失敗しました。"
+            echo "Developer navigation / internal navigation / JavaScript errors / Status Page stylesheet dependencies のいずれかを確認してください。"
+          } >> "$GITHUB_STEP_SUMMARY"
 
       - name: Run Upptime check
         uses: upptime/uptime-monitor@v1.44.0
@@ -54,11 +103,17 @@ jobs:
           cp -R site/status-page/__sapper__/export/. status/
           test -f status/index.html
 
+      - name: Verify generated status page is self-contained for CSS
+        run: |
+          test -f status/themes/light.css
+          test -f status/global.css
+          grep -F 'href=/themes/light.css' status/index.html
+
       - name: Commit generated Upptime data and status page
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add .upptimerc.yml status
+          git add .upptimerc.yml monitoring/browser-status.json status
           if git diff --cached --quiet; then
             echo "No Upptime changes."
             exit 0
