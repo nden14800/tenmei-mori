@@ -5,42 +5,88 @@ const STATUS = 'https://tenmei-mori-status.pages.dev/';
 
 test.describe.configure({ mode: 'serial' });
 
-test('main site loads without browser JavaScript errors and internal navigation works', async ({ page }) => {
+test('main site loads without browser JavaScript errors', async ({ page }) => {
   const errors = [];
   page.on('pageerror', (error) => errors.push(String(error)));
 
-  const response = await page.goto(SITE, { waitUntil: 'domcontentloaded', timeout: 30000 });
+  const response = await page.goto(SITE, {
+    waitUntil: 'domcontentloaded',
+    timeout: 30000
+  });
+
   expect(response && response.ok()).toBeTruthy();
+  await expect(page.getByText('開発者について', { exact: true }).first())
+    .toBeVisible({ timeout: 10000 });
 
-  await expect(page.getByText('開発者について', { exact: true }).first()).toBeVisible({ timeout: 10000 });
-  await page.getByText('開発者について', { exact: true }).first().click();
-  await expect(page.locator('#view-developer')).toBeVisible({ timeout: 10000 });
-  await expect(page.locator('#view-developer')).toContainText('nden148', { timeout: 10000 });
-
-  await page.getByText('当サイトについて', { exact: true }).first().click();
-  await expect(page.locator('#view-about')).toBeVisible({ timeout: 10000 });
-
-  await page.getByText('プライバシー', { exact: true }).first().click();
-  await expect(page.locator('#view-privacy')).toBeVisible({ timeout: 10000 });
-
-  await page.getByText('使い方', { exact: true }).first().click();
-  await expect(page.locator('#view-howto')).toBeVisible({ timeout: 10000 });
-
-  expect(errors, 'ブラウザ実行中にJavaScriptエラーが発生しています').toEqual([]);
+  expect(errors, 'メインサイトのブラウザ実行中にJavaScriptエラーが発生しています').toEqual([]);
 });
 
-test('status page loads with same-origin stylesheets', async ({ page }) => {
-  const externalStyles = [];
-  const response = await page.goto(STATUS, { waitUntil: 'domcontentloaded', timeout: 30000 });
+test('main site internal navigation works, including developer view', async ({ page }) => {
+  const response = await page.goto(SITE, {
+    waitUntil: 'domcontentloaded',
+    timeout: 30000
+  });
+  expect(response && response.ok()).toBeTruthy();
+
+  const checks = [
+    ['開発者について', '#view-developer', 'nden148'],
+    ['当サイトについて', '#view-about', null],
+    ['プライバシー', '#view-privacy', null],
+    ['使い方', '#view-howto', null]
+  ];
+
+  for (const [label, selector, text] of checks) {
+    await page.getByText(label, { exact: true }).first().click();
+    const target = page.locator(selector);
+    await expect(target, `${label}を押しても対象画面が表示されません`).toBeVisible({
+      timeout: 10000
+    });
+    if (text) {
+      await expect(target).toContainText(text, { timeout: 10000 });
+    }
+  }
+});
+
+test('main site representative navigation controls are wired', async ({ page }) => {
+  await page.goto(SITE, { waitUntil: 'domcontentloaded', timeout: 30000 });
+
+  const controls = page.locator('[onclick*="showView("]');
+  const count = await controls.count();
+  expect(count, 'showView() を使う内部ナビゲーションが見つかりません').toBeGreaterThan(0);
+
+  const samples = Math.min(count, 12);
+  for (let i = 0; i < samples; i += 1) {
+    const control = controls.nth(i);
+    if (!(await control.isVisible())) continue;
+
+    const onclick = await control.getAttribute('onclick');
+    const match = onclick && onclick.match(/showView\(['"]([^'"]+)['"]\)/);
+    if (!match) continue;
+
+    const target = page.locator('#view-' + match[1]);
+    await control.click();
+    await expect(
+      target,
+      "内部ナビゲーション showView('" + match[1] + "') が対象画面を表示しません"
+    ).toBeVisible({ timeout: 10000 });
+  }
+});
+
+test('status page uses local stylesheets and no external stylesheet URLs', async ({ page }) => {
+  const response = await page.goto(STATUS, {
+    waitUntil: 'domcontentloaded',
+    timeout: 30000
+  });
   expect(response && response.ok()).toBeTruthy();
 
   const styles = await page.locator('link[rel="stylesheet"]').evaluateAll((links) =>
     links.map((link) => link.href)
   );
-  for (const href of styles) {
-    if (href && !href.startsWith(new URL(STATUS).origin)) externalStyles.push(href);
-  }
+  const externalStyles = styles.filter(
+    (href) => href && !href.startsWith(new URL(STATUS).origin)
+  );
 
   expect(externalStyles, 'Status Pageが外部CSSへ依存しています').toEqual([]);
-  await expect(page.getByText('運勢・天命乃杜のサービス状況')).toBeVisible({ timeout: 10000 });
+  await expect(page.getByText('運勢・天命乃杜のサービス状況'))
+    .toBeVisible({ timeout: 10000 });
 });
