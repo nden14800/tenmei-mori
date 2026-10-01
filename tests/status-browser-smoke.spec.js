@@ -55,6 +55,8 @@ test('main site internal navigation works, including developer view', async ({ p
     await expect(target, `${label}を押しても対象画面が表示されません`).toBeVisible({
       timeout: 10000
     });
+    const box = await target.boundingBox();
+    expect(box, `${label}の表示領域がありません`).not.toBeNull();
     if (text) {
       await expect(target).toContainText(text, { timeout: 10000 });
     }
