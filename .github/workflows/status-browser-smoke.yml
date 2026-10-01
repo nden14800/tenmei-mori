@@ -1,0 +1,91 @@
+name: Browser smoke monitoring
+
+on:
+  push:
+    paths:
+      - "tests/status-browser-smoke.spec.js"
+      - "functions/_middleware.js"
+      - ".github/workflows/status-browser-smoke.yml"
+  schedule:
+    - cron: "2,12,22,32,42,52 * * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: browser-smoke-monitoring
+  cancel-in-progress: false
+
+jobs:
+  smoke:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Check out main
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Install Playwright
+        run: npm install --no-save --no-package-lock @playwright/test@1.63.0
+
+      - name: Install Chromium
+        run: npx playwright install --with-deps chromium
+
+      - name: Run browser smoke checks
+        id: browser_smoke
+        continue-on-error: true
+        run: |
+          rm -rf test-results
+          npx playwright test tests/status-browser-smoke.spec.js --workers=1 --reporter=line
+
+      - name: Record browser smoke status
+        env:
+          SMOKE_OUTCOME: ${{ steps.browser_smoke.outcome }}
+        run: |
+          node <<'NODE'
+          const fs = require("fs");
+          const ok = process.env.SMOKE_OUTCOME === "success";
+          const now = new Date().toISOString();
+          const data = {
+            status: ok ? "UP" : "DOWN",
+            checkedAt: now,
+            checks: {
+              mainSite: ok ? "UP" : "DOWN",
+              developerView: ok ? "UP" : "DOWN",
+              internalNavigation: ok ? "UP" : "DOWN",
+              javascriptErrors: ok ? "UP" : "DOWN",
+              statusPage: ok ? "UP" : "DOWN"
+            },
+            message: ok
+              ? "ブラウザから主要画面・内部遷移・JavaScriptエラー・Status PageのCSS依存を確認しました。"
+              : "ブラウザ機能監視が失敗しました。GitHub Actionsの実行ログを確認してください。"
+          };
+          fs.writeFileSync(
+            "monitoring/browser-status.json",
+            JSON.stringify(data, null, 2) + "\n"
+          );
+          NODE
+
+      - name: Commit browser smoke result
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add monitoring/browser-status.json
+          if git diff --cached --quiet; then
+            echo "Browser smoke status unchanged."
+            exit 0
+          fi
+          git commit -m "chore(status): update browser smoke result"
+          git pull --rebase origin main
+          git push
+
+      - name: Fail the workflow when browser smoke failed
+        if: steps.browser_smoke.outcome != 'success'
+        run: exit 1
