@@ -16,7 +16,6 @@ const DEVELOPER_NAV_FIX = `
 
     document.querySelectorAll(".view-section").forEach(function (view) {
       view.classList.remove("active");
-      view.style.removeProperty("display");
     });
 
     target.classList.add("active", "tenmei-developer-forced-visible");
@@ -40,13 +39,12 @@ const DEVELOPER_NAV_FIX = `
 
   document.addEventListener("click", function (event) {
     var element = event.target && event.target.closest
-      ? event.target.closest("a,button,[role=\"button\"],div")
+      ? event.target.closest("a,button,[role=\"button\"]")
       : null;
 
     if (!isDeveloperTarget(element)) return;
 
     event.preventDefault();
-    event.stopImmediatePropagation();
 
     var handled = false;
     if (typeof window.showView === "function") {
