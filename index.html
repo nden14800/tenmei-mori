@@ -25344,6 +25344,32 @@ let historyPageState = {
         
 
     // ==========================================
+    //  記事カテゴリ配色の正本
+    //  一覧・詳細で同じデータを参照し、色定義の分岐を防ぐ。
+    // ==========================================
+    const NEWS_TAG_COLOR_CLASS_MAP = Object.freeze({
+        "text-red-700": "tag-important", "text-red-600": "tag-important",
+        "text-blue-600": "tag-update", "text-indigo-600": "tag-update",
+        "text-purple-600": "tag-purple", "text-teal-600": "tag-teal",
+        "text-green-600": "tag-green", "text-emerald-600": "tag-teal",
+        "text-amber-600": "tag-system", "text-yellow-600": "tag-system",
+        "text-orange-600": "tag-orange", "text-rose-600": "tag-pink",
+        "text-gray-600": "tag-info", "text-gray-500": "tag-info"
+    });
+
+    const COLUMN_TAG_STYLES = Object.freeze({
+        indigo: { text: 'var(--column-indigo)', background: 'rgba(113, 84, 196, 0.10)', border: 'rgba(113, 84, 196, 0.24)' },
+        blue: { text: '#2563eb', background: 'rgba(37, 99, 235, 0.10)', border: 'rgba(37, 99, 235, 0.24)' },
+        gray: { text: '#4b5563', background: 'rgba(107, 114, 128, 0.10)', border: 'rgba(107, 114, 128, 0.24)' },
+        green: { text: '#047857', background: 'rgba(5, 150, 105, 0.10)', border: 'rgba(5, 150, 105, 0.24)' },
+        purple: { text: '#7e22ce', background: 'rgba(126, 34, 206, 0.10)', border: 'rgba(126, 34, 206, 0.24)' },
+        orange: { text: '#c2410c', background: 'rgba(234, 88, 12, 0.10)', border: 'rgba(234, 88, 12, 0.24)' },
+        pink: { text: '#be185d', background: 'rgba(190, 24, 93, 0.10)', border: 'rgba(190, 24, 93, 0.24)' },
+        yellow: { text: '#a16207', background: 'rgba(202, 138, 4, 0.11)', border: 'rgba(202, 138, 4, 0.26)' },
+        red: { text: '#b91c1c', background: 'rgba(185, 28, 28, 0.10)', border: 'rgba(185, 28, 28, 0.24)' }
+    });
+
+    // ==========================================
     //  ページネーション＆検索機能ロジック
     // ==========================================
     
@@ -25556,72 +25582,7 @@ let historyPageState = {
             // 文字列の部分一致でカテゴリ色を推測すると、「お知らせ・改善」と
             // 「新機能・改善」のように異なるカテゴリが意図せず別色になるため、
             // 既存のtagColor定義を一覧表示へそのまま反映する。
-            const tagColorClassMap = {
-                    "text-red-700": "tag-important",
-                    "text-red-600": "tag-important",
-                    "text-blue-600": "tag-update",
-                    "text-indigo-600": "tag-update",
-                    "text-purple-600": "tag-purple",
-                    "text-teal-600": "tag-teal",
-                    "text-green-600": "tag-green",
-                    "text-emerald-600": "tag-teal",
-                    "text-amber-600": "tag-system",
-                    "text-yellow-600": "tag-system",
-                    "text-orange-600": "tag-orange",
-                    "text-rose-600": "tag-pink",
-                    "text-gray-600": "tag-info",
-                    "text-gray-500": "tag-info"
-                }
-            if (item.tagColor && tagColorClassMap[item.tagColor]) {
-                tagClass = tagColorClassMap[item.tagColor];
-            }
-
-            // 色とは独立して、カテゴリに対応するアイコンだけを決める。
-            if (tag.includes('重要') || tag.includes('障害')) { iconName = 'bi-exclamation-triangle'; }
-            else if (tag === 'お知らせ') { iconName = 'bi-megaphone-fill'; }
-            else if (tag.includes('セキュリティ')) { iconName = 'bi-shield-lock-fill'; }
-            else if (tag.includes('不具合') || tag.includes('バグ')) { iconName = 'bi-bug'; }
-            else if (tag.includes('メンテナンス') || tag.includes('システム')) { iconName = 'bi-cone-striped'; }
-            else if (tag.includes('新機能')) { iconName = 'bi-stars'; }
-            else if (tag.includes('デザイン') || tag.includes('意匠') || tag.includes('改装')) { iconName = 'bi-palette'; }
-            else if (tag.includes('解説') || tag.includes('規約') || tag.includes('技術')) { iconName = 'bi-book'; }
-            else if (tag.includes('挨拶') || tag.includes('イベント')) { iconName = 'bi-flower1'; }
-            else if (tag.includes('開発') || tag.includes('裏話')) { iconName = 'bi-chat-quote'; }
-            else if (tag.includes('復旧') || tag.includes('修復') || tag.includes('結界')) { iconName = 'bi-shield-check'; }
-            else if (tag.includes('刷新') || tag.includes('アップデート') || tag.includes('メジャー') || tag.includes('強化')) { iconName = 'bi-rocket-takeoff'; }
-            else if (tag.includes('撤去') || tag.includes('廃棄')) { iconName = 'bi-trash3'; }
-            else if (tag.includes('制限') || tag.includes('緩和') || tag.includes('仕様')) { iconName = 'bi-sliders'; }
-            else if (tag.includes('統一') || tag.includes('調整') || tag.includes('整理')) { iconName = 'bi-grid-3x3-gap'; }
-            else if (tag.includes('報告')) { iconName = 'bi-clipboard-data'; }
-            else if (tag.includes('表記') || tag.includes('改訂')) { iconName = 'bi-fonts'; }
-
-            const readingMeta = getArticleReadingMeta(item.content);
-            const articleTitleId = `news-article-title-${item.id}`;
-            const dateValue = String(item.date || '').replace(/\//g, '-');
-            return `
-                <article class="news-bulletin-card" aria-labelledby="${articleTitleId}">
-                    <button type="button" class="news-bulletin-card-surface" onclick="openArticle('news', ${item.id})" aria-labelledby="${articleTitleId}" aria-label="${item.title}を読む"></button>
-                    <div class="news-bulletin-card-meta">
-                        <span class="news-tag ${tagClass}"><i class="bi ${iconName}" aria-hidden="true"></i> ${item.tag}</span>
-                        <time datetime="${dateValue}">${item.date}</time>
-                    </div>
-                    <div class="news-bulletin-card-copy">
-                        <h3 id="${articleTitleId}" class="news-bulletin-card-title"><span class="news-bulletin-card-open">${item.title}</span></h3>
-                        <p class="news-bulletin-card-desc">${item.desc || '詳細をご覧ください。'}</p>
-                    </div>
-                    <div class="news-bulletin-card-footer">
-                        <div class="news-bulletin-readinfo" aria-label="本文${readingMeta.charCount.toLocaleString()}文字、読了目安約${readingMeta.readMinutes}分">
-                            <span><i class="bi bi-file-earmark-text" aria-hidden="true"></i> ${readingMeta.charCount.toLocaleString()}文字</span>
-                            <span class="news-bulletin-readinfo-separator" aria-hidden="true">・</span>
-                            <span><i class="bi bi-clock-history" aria-hidden="true"></i> 約${readingMeta.readMinutes}分</span>
-                        </div>
-                        <span class="news-bulletin-readmore" aria-hidden="true">記録を読む <i class="bi bi-arrow-right"></i></span>
-                    </div>
-                </article>`;
-        }).join('');
-        pagination.innerHTML = createPaginationHTML('news', currentPage, totalPages, "changePage('news', {P})");
-        container.setAttribute('aria-busy', 'false');
-    };
+            const tagColorClassMap = NEWS_TAG_COLOR_CLASS_MAP;
 
         
 // 3. 「神籤草子」描画関数（モダン・書架UI版）
@@ -25669,17 +25630,7 @@ window.renderFullColumnView = function() {
         const dateValue = String(item.date || '').replace(/\//g, '-');
         // 社務所だよりと同じく、一覧には記事用に書き下ろした説明だけを表示する。
         // 本文contentは文字数・読了目安の算出にだけ使い、カード説明へのフォールバックには使わない。
-        const columnColorMap = {
-            indigo: { text: 'var(--column-indigo)', background: 'rgba(113, 84, 196, 0.10)', border: 'rgba(113, 84, 196, 0.24)' },
-            blue: { text: '#2563eb', background: 'rgba(37, 99, 235, 0.10)', border: 'rgba(37, 99, 235, 0.24)' },
-            gray: { text: '#4b5563', background: 'rgba(107, 114, 128, 0.10)', border: 'rgba(107, 114, 128, 0.24)' },
-            green: { text: '#047857', background: 'rgba(5, 150, 105, 0.10)', border: 'rgba(5, 150, 105, 0.24)' },
-            purple: { text: '#7e22ce', background: 'rgba(126, 34, 206, 0.10)', border: 'rgba(126, 34, 206, 0.24)' },
-            orange: { text: '#c2410c', background: 'rgba(234, 88, 12, 0.10)', border: 'rgba(234, 88, 12, 0.24)' },
-            pink: { text: '#be185d', background: 'rgba(190, 24, 93, 0.10)', border: 'rgba(190, 24, 93, 0.24)' },
-            yellow: { text: '#a16207', background: 'rgba(202, 138, 4, 0.11)', border: 'rgba(202, 138, 4, 0.26)' },
-            red: { text: '#b91c1c', background: 'rgba(185, 28, 28, 0.10)', border: 'rgba(185, 28, 28, 0.24)' }
-        };
+        const columnColorMap = COLUMN_TAG_STYLES;
         const columnTagStyle = columnColorMap[item.colorClass] || columnColorMap.indigo;
         const listDescription = String(item.desc || '').trim();
         const excerpt = listDescription || '本文を開いて、杜の読み物をお楽しみください。';
@@ -25761,17 +25712,7 @@ window.renderFullColumnView = function() {
             let iconColorClass = ""; // アイコンの色 (text-xxx)
             let headerBgClass = "";  // ヘッダー背景色 (from-xxx to-xxx)
             let tagHtml = "";        // タグのHTML
-            const columnTagStyles = {
-                    indigo: { text: 'var(--column-indigo)', background: 'rgba(113, 84, 196, 0.10)', border: 'rgba(113, 84, 196, 0.24)' },
-                    blue: { text: '#2563eb', background: 'rgba(37, 99, 235, 0.10)', border: 'rgba(37, 99, 235, 0.24)' },
-                    gray: { text: '#4b5563', background: 'rgba(107, 114, 128, 0.10)', border: 'rgba(107, 114, 128, 0.24)' },
-                    green: { text: '#047857', background: 'rgba(5, 150, 105, 0.10)', border: 'rgba(5, 150, 105, 0.24)' },
-                    purple: { text: '#7e22ce', background: 'rgba(126, 34, 206, 0.10)', border: 'rgba(126, 34, 206, 0.24)' },
-                    orange: { text: '#c2410c', background: 'rgba(234, 88, 12, 0.10)', border: 'rgba(234, 88, 12, 0.24)' },
-                    pink: { text: '#be185d', background: 'rgba(190, 24, 93, 0.10)', border: 'rgba(190, 24, 93, 0.24)' },
-                    yellow: { text: '#a16207', background: 'rgba(202, 138, 4, 0.11)', border: 'rgba(202, 138, 4, 0.26)' },
-                    red: { text: '#b91c1c', background: 'rgba(185, 28, 28, 0.10)', border: 'rgba(185, 28, 28, 0.24)' }
-                };
+            const columnTagStyles = COLUMN_TAG_STYLES;
             let detailTagStyle = null; // 神籤草子の詳細カテゴリ配色
 
             if (type === 'news') {
@@ -25780,22 +25721,7 @@ window.renderFullColumnView = function() {
                 let iconName = "bi-info-circle";
                 const t = item.tag || "";
 
-                const tagColorClassMap = {
-                    "text-red-700": "tag-important",
-                    "text-red-600": "tag-important",
-                    "text-blue-600": "tag-update",
-                    "text-indigo-600": "tag-update",
-                    "text-purple-600": "tag-purple",
-                    "text-teal-600": "tag-teal",
-                    "text-green-600": "tag-green",
-                    "text-emerald-600": "tag-teal",
-                    "text-amber-600": "tag-system",
-                    "text-yellow-600": "tag-system",
-                    "text-orange-600": "tag-orange",
-                    "text-rose-600": "tag-pink",
-                    "text-gray-600": "tag-info",
-                    "text-gray-500": "tag-info"
-                };
+                const tagColorClassMap = NEWS_TAG_COLOR_CLASS_MAP;
                 if (item.tagColor && tagColorClassMap[item.tagColor]) {
                     tagClass = tagColorClassMap[item.tagColor];
                 }
@@ -25879,10 +25805,10 @@ window.renderFullColumnView = function() {
 
                 const style = colorMap[colorKey] || colorMap['gray'];
                 headerBgClass = style.bg;
-                iconColorClass = style.text;
-
-                // 一覧と同じ配色を詳細タグにも適用する。
                 detailTagStyle = columnTagStyles[colorKey] || columnTagStyles.indigo;
+                iconColorClass = '';
+
+                // 一覧と同じ配色を詳細タグとヘッダーアイコンにも適用する。
                 tagHtml = `<span class="px-3 py-1 rounded-full text-xs font-bold shadow-sm border border-black/5" style="color: ${detailTagStyle.text}; background: ${detailTagStyle.background}; border-color: ${detailTagStyle.border};">${item.category}</span>`;
             }
 
@@ -25934,7 +25860,7 @@ window.renderFullColumnView = function() {
                 container.innerHTML = `
                     <article class="column-reader-document" aria-labelledby="${columnTitleId}">
                         <header class="column-reader-header">
-                            <div class="column-reader-icon" aria-hidden="true"><i class="bi ${iconClass}"></i></div>
+                            <div class="column-reader-icon" aria-hidden="true"><i class="bi ${iconClass}" style="color: ${resolvedColumnTagStyle.text};"></i></div>
                             <p class="column-reader-eyebrow"><i class="bi bi-book-half" aria-hidden="true"></i> SACRED READING</p>
                             <div class="column-reader-meta">
                                 <time datetime="${dateValue}">${item.date} ${item.time || ''}</time>
