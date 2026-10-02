@@ -103,6 +103,32 @@ assert(
   requireText(text, `神籤草子記事詳細の既存機能接続が失われています: ${text}`);
 });
 
+// 一覧と詳細のカテゴリ色マッピングが分岐して表示差を生まないことを確認する。
+const newsListMap = html.match(/const tagColorClassMap = \{[\s\S]*?\n\s*\}/)?.[0] || '';
+const newsDetailStart = html.indexOf('// ■ ニュースの場合：記事データのtagColorを正本として一覧と同じ色を使用');
+const newsDetailMap = newsDetailStart >= 0
+  ? html.slice(newsDetailStart).match(/const tagColorClassMap = \{[\s\S]*?\n\s*\}/)?.[0] || ''
+  : '';
+assert(newsListMap, '社務所だより一覧のカテゴリ色マッピングが見つかりません。');
+assert(newsDetailMap, '社務所だより詳細のカテゴリ色マッピングが見つかりません。');
+assert(newsListMap === newsDetailMap, '社務所だより一覧と詳細のカテゴリ色マッピングが一致していません。');
+assert(
+  newsDetailMap.includes('"text-red-700": "tag-important"'),
+  '社務所だより詳細にtext-red-700（Ver.4.2のセキュリティカテゴリ色）の対応がありません。'
+);
+
+const columnListMap = html.match(/const columnColorMap = \{[\s\S]*?\n\s*\};/)?.[0] || '';
+const columnDetailStart = html.indexOf('const columnTagStyles =');
+const columnDetailMap = columnDetailStart >= 0
+  ? html.slice(columnDetailStart).match(/const columnTagStyles = \{[\s\S]*?\n\s*\};/)?.[0] || ''
+  : '';
+assert(columnListMap, '神籤草子一覧のカテゴリ色マッピングが見つかりません。');
+assert(columnDetailMap, '神籤草子詳細のカテゴリ色マッピングが見つかりません。');
+for (const colorKey of ['indigo', 'blue', 'gray', 'green', 'purple', 'orange', 'pink', 'yellow', 'red']) {
+  assert(columnListMap.includes(`    ${colorKey}:`), `神籤草子一覧に${colorKey}カテゴリ色がありません。`);
+  assert(columnDetailMap.includes(`    ${colorKey}:`), `神籤草子詳細に${colorKey}カテゴリ色がありません。`);
+}
+
 requireDetailSectionText('id="article-detail-content"', '共用記事詳細の動的コンテンツIDが失われています。');
 requireDetailSectionText('article-reader-back', '神籤草子用に切り替える共用戻る導線がありません。');
 assert.equal(
