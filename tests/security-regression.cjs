@@ -6,6 +6,8 @@ const indexPath = path.join(repositoryRoot, 'index.html');
 const headersPath = path.join(repositoryRoot, '_headers');
 const index = fs.readFileSync(indexPath, 'utf8');
 const headers = fs.readFileSync(headersPath, 'utf8');
+const workerPath = path.join(repositoryRoot, 'workers', 'tenmei-mori-backend.js');
+const worker = fs.readFileSync(workerPath, 'utf8');
 const failures = [];
 
 function expect(condition, message) {
@@ -67,6 +69,10 @@ expect(!headers.includes("'unsafe-eval'"), 'CSPにunsafe-evalを追加しては�
 expect(headers.includes('X-Content-Type-Options: nosniff'), 'X-Content-Type-Options: nosniffがありません。');
 expect(headers.includes('X-Frame-Options: DENY'), 'X-Frame-Options: DENYがありません。');
 expect(headers.includes('Referrer-Policy: strict-origin-when-cross-origin'), 'Referrer-Policyがありません。');
+
+expect(!/Math\\.random\\(\\).*900000/.test(worker), '認証コード生成にMath.random()を使用しています。');
+expect(!worker.includes('tenmei-mori-fallback'), '認証用暗号鍵に固定フォールバック秘密値が残っています。');
+expect(/crypto\\.getRandomValues\\(codeBytes\\)/.test(worker), '認証コード生成に暗号学的乱数が使われていません。');
 
 if (failures.length > 0) {
   console.error('セキュリティ回帰テストに失敗しました。');
