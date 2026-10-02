@@ -30,7 +30,7 @@ assert(historyHtml, '更新の軌跡のパネルHTMLを抽出できません。'
   "openVerDetail('v42')",
   "v42: {",
   "ver: 'Ver. 4.2'",
-  "date: '2026年9月28日'",
+  "date: '2026年10月2日',
   'Ver. 4.0',
   "v40: {",
   "ver: 'Ver. 4.0'",
