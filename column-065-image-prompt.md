@@ -1,0 +1,7 @@
+# Column 065 image prompt
+
+A refined editorial illustration for a Japanese shrine column about **神無月と神在月**, set in mid-autumn. A peaceful Japanese shrine approach at late autumn golden hour, a traditional vermilion torii and wooden worship hall in the background, golden rice ears and grasses in the foreground, red and amber maple leaves framing the scene, a calm distant mountain landscape and soft evening sky, subtle suggestion of a seasonal gathering without depicting specific deities or a real identifiable shrine, warm ivory and muted gold palette, restrained Japanese seasonal elegance, contemplative atmosphere, subtle paper texture, cinematic but natural soft light, highly detailed, balanced composition with generous negative space for website cropping, no people, no readable text, no logos, no watermark, no fantasy effects, no modern objects. Wide horizontal 16:9 editorial hero image, suitable for a Japanese shrine and fortune-column website.
+
+## Negative prompt
+
+Readable Japanese characters, typography, captions, logo, watermark, identifiable real shrine, named deity depiction, fantasy gods, crowds, photorealistic people, oversaturated colors, neon, anime style, cartoon style, horror, modern buildings, low resolution, blur, malformed architecture.

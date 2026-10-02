@@ -52,7 +52,7 @@ requireColumnSectionText('id="view-column-list" class="column-library-list"', '�
 requireColumnSectionText('id="column-pagination" class="column-library-pagination"', '神籤草子一覧のページングIDが失われています。');
 
 const columnEntries = [...columnDataSource.matchAll(/\n\s*\{\s*\n\s*id:\s*(\d+),[\s\S]*?\n\s*desc:\s*"([^"]+)",/g)];
-assert.equal(columnEntries.length, 62, '神籤草子の全62記事に一覧専用説明が設定されていません。');
+assert.equal(columnEntries.length, 65, '神籤草子の全65記事に一覧専用説明が設定されていません。');
 const columnDescriptionLengths = [];
 for (const [, id, description] of columnEntries) {
   columnDescriptionLengths.push(description.length);

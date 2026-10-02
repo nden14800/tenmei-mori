@@ -9,7 +9,7 @@ const generatedImages = [
   ...[2, 3, 4].map((id) => ({ id, extension: 'webp' })),
   ...Array.from({ length: 20 }, (_, offset) => ({ id: 5 + offset, extension: 'webp' })),
   ...Array.from({ length: 20 }, (_, offset) => ({ id: 25 + offset, extension: 'webp' })),
-  ...[45, 46, 47, 48, 49, 50, 51, 52, 54, 55, 56, 57, 58, 59, 60, 61, 62].map((id) => ({ id, extension: 'webp' })),
+  ...[45, 46, 47, 48, 49, 50, 51, 52, 54, 55, 56, 57, 58, 59, 60, 61, 62, 63, 64, 65].map((id) => ({ id, extension: 'webp' })),
 ];
 const additionalGeneratedImageSources = [
   'assets/article-images/omikuji-rank-order-12.webp',
