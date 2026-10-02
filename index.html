@@ -34243,6 +34243,9 @@ window.applyTheme = function() {
     }
 
     function openVerHistory() {
+        const historyCount = document.querySelectorAll('#ver-history-panel .ver-timeline-item').length;
+        const historyCountElement = document.getElementById('ver-history-count');
+        if (historyCountElement) historyCountElement.textContent = historyCount;
         verHistoryReturnFocus = document.activeElement instanceof HTMLElement ? document.activeElement : null;
         syncVerHistoryKeyboard();
         document.getElementById('ver-history-overlay').classList.add('active');
@@ -34592,7 +34595,7 @@ window.applyTheme = function() {
                 <p class="ver-panel-eyebrow"><i class="bi bi-clock-history" aria-hidden="true"></i> UPDATE ARCHIVE</p>
                 <h2 class="ver-panel-title">更新の軌跡</h2>
                 <p class="ver-panel-summary">天命乃杜の歩みを、公開順に静かに辿ります。</p>
-                <p class="ver-panel-meta"><i class="bi bi-journal-bookmark" aria-hidden="true"></i> 全20件の更新記録</p>
+                <p class="ver-panel-meta"><i class="bi bi-journal-bookmark" aria-hidden="true"></i> 全<span id="ver-history-count">0</span>件の更新記録</p>
             </div>
             <div class="ver-panel-emblem" data-ver4-hero-emblem aria-hidden="true">
                 <i class="bi bi-clock-history"></i>
