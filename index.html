@@ -15993,7 +15993,7 @@ body.sidebar-collapsed.sidebar-pinned #sidebar .nav-group-title {
                 </section>
 
                 <footer class="home-v4-release" aria-label="現在のバージョン情報">
-                    <span>運勢・天命乃杜 <strong>Ver. 4.1</strong></span><span aria-hidden="true">・</span><span>2026年9月28日リリース</span><span class="home-v4-release-status"><i class="bi bi-patch-check-fill" aria-hidden="true"></i>最新版</span>
+                    <span>運勢・天命乃杜 <strong>Ver. 4.2</strong></span><span aria-hidden="true">・</span><span>2026年10月2日リリース</span><span class="home-v4-release-status"><i class="bi bi-patch-check-fill" aria-hidden="true"></i>最新版</span>
                     <button type="button" onclick="openVerHistory()"><i class="bi bi-clock-history" aria-hidden="true"></i>更新の軌跡</button>
                 </footer>
             </div>
@@ -19310,6 +19310,98 @@ function escapeHtml(str) {
 // ■ 社務所だより（ニュース）データ
     const newsData = [
 
+
+{
+    id: 89,
+    title: "【安定化・セキュリティ強化】Ver.4.2「運用基盤と安全性の強化」— 履歴・監視・ナビゲーション・認証を整えました",
+    date: "2026/10/02",
+    time: "20:00",
+    tag: "安定化・セキュリティ",
+    tagColor: "text-indigo-600",
+    borderColor: "border-indigo-500",
+    desc: "Ver.4.1公開後に行った、おみくじの轍のページネーション、カスタム操作欄、開発者画面の遷移、サービス状況・自動監視、Cloudflare Pagesの運用、認証コードの安全性など、実際のコミットで行った安定化・運用基盤・セキュリティ強化をVer.4.2としてまとめました。",
+    content: `
+        <div class="article-content">
+            <p>いつも「運勢・天命乃杜」をご利用いただき、誠にありがとうございます。運営者のnden148です。</p>
+            <p>Ver.4.1「継続改善」の公開後も、サイトを実際に使いながら見つかった不具合や、運用していくうえで必要になった仕組みを一つずつ整えてきました。</p>
+            <p>今回は、見た目を大きく変えるアップデートではありません。その代わり、履歴をきちんと次のページまで読めること、画面遷移が途中で止まらないこと、サービスの状態を確認できること、認証に使う乱数を安全に扱うことなど、普段は目立ちにくい部分を中心に改善しています。</p>
+            <p>これらをまとめて、Ver.4.2「運用基盤と安全性の強化」としてご報告します。</p>
+
+            <h3>1. Ver.4.1のその後とVer.4.2について</h3>
+            <p>Ver.4.1では読書体験、公開文書、AI機能、設定、記事まわりを中心に整えました。そこから先は、実際の利用で見つかった「動くけれど、条件が増えると不安定になる」部分や、運営側で確認しにくかった部分に手を入れています。</p>
+            <p>特に今回は、サイト本体だけでなく、サービス状況を公開する別ページ、ブラウザによる自動監視、Cloudflare Pagesのデプロイ経路、Workerの認証処理まで範囲が広がっています。</p>
+
+            <h3>2. 「おみくじの轍」のページネーションを大幅に安定化</h3>
+            <ul class="list-disc ml-5 mb-4">
+                <li>「おみくじの轍」の1ページあたりの表示件数を、AI夢占いの履歴と合わせて30件へ統一しました。</li>
+                <li>ページ2以降で検索条件やオフセットが正しく維持されない問題を、複数段階にわたって修正しました。SQLのLIMIT/OFFSETの扱い、検索結果の確定方法、並び順の安定化を順番に見直しています。</li>
+                <li>最終的には、検索条件に一致する結果を timestamp と id の降順で確定してからサーバー側でページ分割する方式へ整理し、ページ2以降でも同じ検索条件を維持できるようにしました。</li>
+                <li>画面側でも1ページ30件を上限として扱うようにし、API側の件数設定と表示側の件数設定がずれないようにしました。</li>
+            </ul>
+            <p>ページネーションは単純に「次へ」を置くだけではなく、検索条件、並び順、API、画面表示のすべてが同じ単位で動く必要があります。今回の修正では、その部分を一つずつ揃えました。</p>
+
+            <h3>3. カスタム選択欄と入力欄の操作感をさらに調整</h3>
+            <ul class="list-disc ml-5 mb-4">
+                <li>カスタム選択欄・日付選択欄について、開いている操作欄がほかのコントロールに重ならないよう、開いている要素のz-indexとポップオーバーの優先順位を整理しました。</li>
+                <li>別の画面へ移動したときに開いたままのカスタムコントロールを閉じ、表示状態を次の画面へ持ち越さないようにしました。</li>
+                <li>入力欄のフォーカスリングについて、ゲスト名入力などの見た目を共通化し、フォーカス時のリング幅を4pxから3pxへ調整しました。</li>
+            </ul>
+            <p>ここは新しいデザインを作ったわけではなく、Ver.4.0以降に整えてきたカスタム操作欄の見た目と挙動を崩さず、重なりや画面切り替え時の残留だけを修正しています。</p>
+
+            <h3>4. 「開発者について」の画面遷移を根本から修正</h3>
+            <p>「開発者について」を開いたときに、実際の開発者画面ではなくフッターだけが見える場合がある問題について、段階的に原因を切り分けました。</p>
+            <ul class="list-disc ml-5 mb-4">
+                <li>SPA側の画面遷移が失敗した場合に備えたフォールバック処理を追加しました。</li>
+                <li>その後、強制表示の仕組みが隠しビューのレイアウトを壊さないよう、表示・クリック処理を調整しました。</li>
+                <li>さらに、通常のSPA処理と競合していた開発者ナビゲーション用のMiddlewareを撤去し、不要な二重処理を残さない構成へ戻しました。</li>
+                <li>公開文書の過去版スナップショットを読み込む際には、保存された過去HTMLに現在のページと同じidが含まれていても、現在ページ側のビューIDを奪わないよう重複idを除去する処理を追加しました。</li>
+            </ul>
+            <p>この修正では、単に「開発者画面を強制的に表示する」だけではなく、過去版HTMLを表示する仕組みとのID衝突まで含めて、画面遷移の根本原因を整理しています。</p>
+
+            <h3>5. 「サービス状況」ページと自動監視を新しい運用基盤として整備</h3>
+            <p>今回の大きな変更の一つが、メインサイトとは別にサービス状態を確認できるページを整えたことです。<a href="https://tenmei-mori-status.pages.dev" target="_blank" rel="noopener noreferrer">サービス状況ページ</a>を独立して配信し、公開サイト・基礎API・おみくじや参拝記録の基礎経路・外部AIサービスを分けて確認できるようにしました。</p>
+            <ul class="list-disc ml-5 mb-4">
+                <li>GitHub Actions上で実ブラウザによる監視を行い、公開サイトをChromiumで開いて主要画面、内部遷移、JavaScript実行、Status Pageの依存関係などを確認する仕組みを追加しました。</li>
+                <li>ブラウザ監視とAPI監視の結果を公開JSONへ保存し、HTTP 200だけでは「正常稼働」と判定しない仕組みにしました。監視結果が古い場合も正常とは表示しません。</li>
+                <li>サービス状況ページには、現在のコンポーネント状態に加えて、監視結果の確認時刻、ブラウザ実行・API応答・監視更新の確認欄を追加しました。</li>
+                <li>過去90日間の監視サンプルから稼働率を表示し、最近のインシデントを履歴として表示できるようにしました。</li>
+                <li>監視の実行・公開データ生成・グラフ・レスポンスタイム・稼働率・Status Page生成を分離し、公式Upptimeの仕組みを使った自動生成へ整理しました。</li>
+                <li>生成されたグラフやsummary、health snapshotなどの公開生成物も自動更新されるようにし、ブラウザ監視とデータ生成が同時に競合しないようワークフローを分離・直列化しました。</li>
+                <li>Cloudflare Pagesの本番デプロイについて、Git連携を使ってmainへの変更を本番へ反映する経路を整理しました。</li>
+                <li>一時的に検討・導入したFlareWatch関連の監視設定については、利用できないデプロイを整理して撤去しました。現在の監視基盤は、実ブラウザ監視とUpptime系の公開生成を中心にしています。</li>
+                <li>外部CSSへ依存しないStatus Pageの生成、ライセンス表記の追加・検証、ローカル生成グラフの検証なども行いました。</li>
+            </ul>
+            <p>これらの監視結果を記録するため、9月29日から10月2日にかけて自動生成されたhealth snapshot、uptime history、graphs、summaryなどの更新コミットも積み重なっています。表示だけを作って終わりではなく、実際に監視結果が継続して公開されるところまで整えています。</p>
+
+            <h3>6. 認証コードの生成方法とOAuth用秘密情報の扱いを強化</h3>
+            <p>セキュリティの総点検で、Worker側の認証コード生成とOAuth関連の秘密情報について、2点の改善を行いました。</p>
+            <ul class="list-disc ml-5 mb-4">
+                <li>6桁の認証コード生成に使っていた <code>Math.random()</code> を廃止し、Web Crypto APIの <code>crypto.getRandomValues()</code> を使う暗号学的乱数へ変更しました。900,000通りの範囲へ偏りが出ないよう、範囲外の乱数を引き直してからコードを作る方式にしています。</li>
+                <li>OAuth用の秘密情報が設定されていない場合に固定のフォールバック文字列を使う方式を廃止し、16文字未満を含む不正な秘密情報ならサーバー設定エラーとして処理を止めるようにしました。</li>
+                <li>これらの再発防止として、Workerの回帰テストに「認証コード生成へMath.randomを使わない」「固定フォールバック秘密値を残さない」「crypto.getRandomValuesを使う」というチェックを追加し、正規表現の誤りも修正しました。</li>
+            </ul>
+            <p>認証周りは画面からは見えにくい部分ですが、ログインに関わる処理なので、今回のVer.4.2では明確に記録しておくことにしました。</p>
+
+            <h3>7. 公開文書・メインサイトの状態について</h3>
+            <p>今回のVer.4.2のコミット範囲を確認したうえで、「当サイトについて」「プライバシーポリシー」「天命乃杜の使い方」についても現在の実装との整合を点検しました。</p>
+            <p>今回の範囲では、これら3つの本文を変更する必要がある新しい利用者向け仕様は確認されませんでした。そのため、文章だけを無理に書き換えたり、履歴のために架空の改定内容を追加したりはしていません。現在の公開文書・第33版のプライバシーポリシーなど、既存の内容をそのまま維持します。</p>
+
+            <h3>8. そのほかの運用・安定化</h3>
+            <ul class="list-disc ml-5 mb-4">
+                <li>ブラウザ監視の失敗時にも監視状態を「不明」として記録し、誤って正常扱いしないようにしました。</li>
+                <li>ステータスページの生成と監視処理を分離し、生成された状態データを壊さずに更新できるようにしました。</li>
+                <li>サービス状況ページのダークモード、モバイル表示、フォーカス表示、公開リポジトリ案内などを整えました。</li>
+                <li>mainへの本番デプロイを前提にしたCloudflare PagesのGit連携を整理し、通常のpushから本番反映までの経路を明確にしました。Cloudflare公式ドキュメントでも、Git連携では接続したブランチへのpushを契機に自動デプロイできることが案内されています。citeturn1search9turn1search11</li>
+            </ul>
+            <p>一見すると細かな修正が多い更新ですが、Ver.4.2では「機能を増やす」よりも「既にある機能が、条件が増えても壊れにくく、確認しやすく、安全に動く」ことを重視しました。</p>
+
+            <h3>9. これからについて</h3>
+            <p>Ver.4.2では、サイト本体の操作性だけでなく、監視・デプロイ・認証といった普段は見えにくい土台まで含めて整えました。</p>
+            <p>今後も、必要になった改善を実際の変更として積み重ね、その内容を「更新の軌跡」と「社務所だより」で確認できる形にしていきます。更新時期を固定することはせず、今回のように実際に行った変更をまとめてお知らせします。</p>
+            <p>以上、Ver.4.2のご報告でした。引き続き「運勢・天命乃杜」をよろしくお願いいたします。</p>
+        </div>
+    `
+},
 {
     id: 88,
     title: "【継続改善・安定化】Ver.4.1「継続改善」— 記事・公開文書・AI機能・UIをまとめて整えました",
@@ -33219,6 +33311,49 @@ window.applyTheme = function() {
 
         // ===== 更新の軌跡パネル =====
     const verDetailData = {
+        v42: {
+            ver: 'Ver. 4.2',
+            name: '「運用基盤と安全性の強化」履歴・監視・ナビゲーション・認証の安定化',
+            date: '2026年10月2日',
+            sections: [
+                {
+                    icon: 'bi-clock-history', title: '履歴・ページネーションを安定化',
+                    changes: [
+                        { type: 'fix', text: '「おみくじの轍」の検索結果ページ2以降を安定して取得できるよう、ページサイズを30件へ統一し、検索条件・並び順・ページ分割の処理を整理。画面側でも1ページ30件を上限として扱うようにしました。', sourceIds: [89] }
+                    ]
+                },
+                {
+                    icon: 'bi-sliders', title: 'カスタム操作欄とフォーカス表示を調整',
+                    changes: [
+                        { type: 'fix', text: 'カスタム選択欄・日付選択欄の重なりを防ぎ、画面遷移時に開いたままの操作欄を閉じるよう修正。入力欄のフォーカスリングも共通の見た目へ調整しました。', sourceIds: [89] }
+                    ]
+                },
+                {
+                    icon: 'bi-person-badge', title: '開発者画面と過去版スナップショットの遷移を修正',
+                    changes: [
+                        { type: 'fix', text: '「開発者について」の遷移失敗時のフォールバック、競合するナビゲーション処理の撤去、過去版HTMLの重複idによるビュー衝突防止を行い、画面遷移を安定化しました。', sourceIds: [89] }
+                    ]
+                },
+                {
+                    icon: 'bi-activity', title: 'サービス状況と自動監視を整備',
+                    changes: [
+                        { type: 'new', text: '独立したサービス状況ページ、実ブラウザ監視、API監視、過去90日間の稼働履歴、インシデント表示、Upptime系の自動生成・グラフ・レスポンスタイム記録を整備しました。', sourceIds: [89] }
+                    ]
+                },
+                {
+                    icon: 'bi-cloud-arrow-up', title: '本番デプロイと運用経路を整理',
+                    changes: [
+                        { type: 'fix', text: 'Cloudflare PagesのGit連携によるmain本番デプロイ経路を整理し、ステータスページ側の生成・公開処理も分離。利用できないFlareWatch関連設定は撤去しました。', sourceIds: [89] }
+                    ]
+                },
+                {
+                    icon: 'bi-shield-lock', title: '認証コードと秘密情報の安全性を強化',
+                    changes: [
+                        { type: 'fix', text: '認証コードをMath.random()からcrypto.getRandomValues()へ変更し、OAuth用秘密情報の固定フォールバックを廃止。秘密情報が不正・不足の場合は設定エラーとして処理を止めるようにしました。回帰テストも追加・修正しています。', sourceIds: [89] }
+                    ]
+                }
+            ]
+        },
         v41: {
             ver: 'Ver. 4.1',
             name: '「継続改善」記事・公開文書・AI機能・UI安定化',
@@ -34445,11 +34580,31 @@ window.applyTheme = function() {
         <!-- バージョンリスト -->
         <div class="ver-panel-scroll">
             <div class="ver-timeline">
-                <div class="ver-timeline-item is-current" onclick="openVerDetail('v41')">
+                <div class="ver-timeline-item is-current" onclick="openVerDetail('v42')">
+                    <div class="ver-item-card">
+                        <div class="ver-item-top">
+                            <span class="ver-item-ver">Ver. 4.2</span>
+                            <span class="ver-item-badge ver-badge-current"><i class="bi bi-patch-check-fill"></i>最新版</span>
+                        </div>
+                        <div class="ver-item-date">2026年10月2日リリース</div>
+                        <div class="ver-item-name">「運用基盤と安全性の強化」履歴・監視・ナビゲーション・認証の安定化</div>
+                        <div class="ver-item-desc">おみくじの轍のページネーション、カスタム操作欄、開発者画面の遷移、サービス状況・自動監視、本番デプロイ、認証コードの安全性などを実際の変更に基づいて整えました。</div>
+                        <div class="ver-item-tags">
+                            <span class="ver-item-tag">履歴安定化</span>
+                            <span class="ver-item-tag">監視基盤</span>
+                            <span class="ver-item-tag">ナビゲーション修正</span>
+                            <span class="ver-item-tag">デプロイ整理</span>
+                            <span class="ver-item-tag">セキュリティ強化</span>
+                        </div>
+                        <div class="ver-item-more"><i class="bi bi-chevron-right"></i>詳細を見る</div>
+                    </div>
+                </div>
+
+<div class="ver-timeline-item" onclick="openVerDetail('v41')">
                     <div class="ver-item-card">
                         <div class="ver-item-top">
                             <span class="ver-item-ver">Ver. 4.1</span>
-                            <span class="ver-item-badge ver-badge-current"><i class="bi bi-patch-check-fill"></i>最新版</span>
+                            <span class="ver-item-badge ver-badge-stable"><i class="bi bi-patch-check-fill"></i>機能改善</span>
                         </div>
                         <div class="ver-item-date">2026年9月28日リリース</div>
                         <div class="ver-item-name">「継続改善」記事・公開文書・AI機能・UI安定化</div>
@@ -34830,23 +34985,7 @@ window.applyTheme = function() {
                 </div>
 
                 <!-- Ver 1.0 -->
-                <div class="ver-timeline-item" onclick="openVerDetail('v10')">
-                    <div class="ver-item-card">
-                        <div class="ver-item-top">
-                            <span class="ver-item-ver">Ver. 1.0</span>
-                            <span class="ver-item-badge ver-badge-stable"><i class="bi bi-star-fill"></i>正式公開</span>
-                        </div>
-                        <div class="ver-item-date">2026年1月2日リリース</div>
-                        <div class="ver-item-name">天命乃杜、正式公開</div>
-                        <div class="ver-item-desc">おみくじ、12星座×血液型占い、アカウントシステム、記事機能を搭載して正式リリース。TENMEI Labsも同月公開。</div>
-                        <div class="ver-item-tags">
-                            <span class="ver-item-tag">正式公開</span>
-                            <span class="ver-item-tag">全機能解禁</span>
-                            <span class="ver-item-tag">Labs開設</span>
-                        </div>
-                        <div class="ver-item-more"><i class="bi bi-chevron-right"></i>詳細を見る</div>
-                    </div>
-                </div>
+                
 
                 <!-- α 0.1 -->
                 
