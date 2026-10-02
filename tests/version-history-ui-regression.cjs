@@ -53,16 +53,18 @@ assert(historyHtml, '更新の軌跡のパネルHTMLを抽出できません。'
 ].forEach((text) => requireText(text, `Ver.4.1の以前の版が保持されていません: ${text}`));
 
 assert(historyHtml.includes("openVerDetail('v40')"), 'Ver.4.0が以前の版として残っていません。');
+assert(historyHtml.includes("openVerDetail('v10')"), 'Ver.1.0の正式公開カードが更新の軌跡から消えています。');
 assert(!historyHtml.includes("openVerDetail('beta')"), '最古のbeta履歴が一覧から除外されていません。');
 
 const historyItems = (historyHtml.match(/class="ver-timeline-item/g) || []).length;
-assert.equal(historyItems, 20, `更新の軌跡の履歴件数が変わっています（期待値: 20、実際: ${historyItems}）。`);
+assert.equal(historyItems, 21, `更新の軌跡の履歴件数が変わっています（期待値: 21、実際: ${historyItems}）。`);
 
 [
   "openVerDetail('v40')",
   "openVerDetail('v36')",
   "openVerDetail('v35')",
   "openVerDetail('v30')",
+  "openVerDetail('v10')",
   "openVerDetail('beta')",
   'function openVerHistory() {',
   'function closeVerHistory() {',
@@ -109,7 +111,7 @@ assert.equal(historyItems, 20, `更新の軌跡の履歴件数が変わってい
 console.log('更新の軌跡Ver.4.2 UI回帰テストに合格しました。');
 console.log(JSON.stringify({
   archiveHeroContract: true,
-  twentyHistoryItemsPreserved: true,
+  twentyOneHistoryItemsPreserved: true,
   ver42LatestReleasePresent: true,
   ver40ArchivedReleasePresent: true,
   homeVersionLabelUpdatedTo42: true,
