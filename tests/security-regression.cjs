@@ -70,9 +70,9 @@ expect(headers.includes('X-Content-Type-Options: nosniff'), 'X-Content-Type-Opti
 expect(headers.includes('X-Frame-Options: DENY'), 'X-Frame-Options: DENYがありません。');
 expect(headers.includes('Referrer-Policy: strict-origin-when-cross-origin'), 'Referrer-Policyがありません。');
 
-expect(!/Math\\.random\\(\\).*900000/.test(worker), '認証コード生成にMath.random()を使用しています。');
+expect(!/Math\.random\(\).*900000/.test(worker), '認証コード生成にMath.random()を使用しています。');
 expect(!worker.includes('tenmei-mori-fallback'), '認証用暗号鍵に固定フォールバック秘密値が残っています。');
-expect(/crypto\\.getRandomValues\\(codeBytes\\)/.test(worker), '認証コード生成に暗号学的乱数が使われていません。');
+expect(/crypto\.getRandomValues\(codeBytes\)/.test(worker), '認証コード生成に暗号学的乱数が使われていません。');
 
 if (failures.length > 0) {
   console.error('セキュリティ回帰テストに失敗しました。');
