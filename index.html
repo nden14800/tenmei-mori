@@ -25583,6 +25583,56 @@ let historyPageState = {
             // 「新機能・改善」のように異なるカテゴリが意図せず別色になるため、
             // 既存のtagColor定義を一覧表示へそのまま反映する。
             const tagColorClassMap = NEWS_TAG_COLOR_CLASS_MAP;
+            if (item.tagColor && tagColorClassMap[item.tagColor]) {
+                tagClass = tagColorClassMap[item.tagColor];
+            }
+
+            // 色とは独立して、カテゴリに対応するアイコンだけを決める。
+            if (tag.includes('重要') || tag.includes('障害')) { iconName = 'bi-exclamation-triangle'; }
+            else if (tag === 'お知らせ') { iconName = 'bi-megaphone-fill'; }
+            else if (tag.includes('セキュリティ')) { iconName = 'bi-shield-lock-fill'; }
+            else if (tag.includes('不具合') || tag.includes('バグ')) { iconName = 'bi-bug'; }
+            else if (tag.includes('メンテナンス') || tag.includes('システム')) { iconName = 'bi-cone-striped'; }
+            else if (tag.includes('新機能')) { iconName = 'bi-stars'; }
+            else if (tag.includes('デザイン') || tag.includes('意匠') || tag.includes('改装')) { iconName = 'bi-palette'; }
+            else if (tag.includes('解説') || tag.includes('規約') || tag.includes('技術')) { iconName = 'bi-book'; }
+            else if (tag.includes('挨拶') || tag.includes('イベント')) { iconName = 'bi-flower1'; }
+            else if (tag.includes('開発') || tag.includes('裏話')) { iconName = 'bi-chat-quote'; }
+            else if (tag.includes('復旧') || tag.includes('修復') || tag.includes('結界')) { iconName = 'bi-shield-check'; }
+            else if (tag.includes('刷新') || tag.includes('アップデート') || tag.includes('メジャー') || tag.includes('強化')) { iconName = 'bi-rocket-takeoff'; }
+            else if (tag.includes('撤去') || tag.includes('廃棄')) { iconName = 'bi-trash3'; }
+            else if (tag.includes('制限') || tag.includes('緩和') || tag.includes('仕様')) { iconName = 'bi-sliders'; }
+            else if (tag.includes('統一') || tag.includes('調整') || tag.includes('整理')) { iconName = 'bi-grid-3x3-gap'; }
+            else if (tag.includes('報告')) { iconName = 'bi-clipboard-data'; }
+            else if (tag.includes('表記') || tag.includes('改訂')) { iconName = 'bi-fonts'; }
+
+            const readingMeta = getArticleReadingMeta(item.content);
+            const articleTitleId = `news-article-title-${item.id}`;
+            const dateValue = String(item.date || '').replace(/\//g, '-');
+            return `
+                <article class="news-bulletin-card" aria-labelledby="${articleTitleId}">
+                    <button type="button" class="news-bulletin-card-surface" onclick="openArticle('news', ${item.id})" aria-labelledby="${articleTitleId}" aria-label="${item.title}を読む"></button>
+                    <div class="news-bulletin-card-meta">
+                        <span class="news-tag ${tagClass}"><i class="bi ${iconName}" aria-hidden="true"></i> ${item.tag}</span>
+                        <time datetime="${dateValue}">${item.date}</time>
+                    </div>
+                    <div class="news-bulletin-card-copy">
+                        <h3 id="${articleTitleId}" class="news-bulletin-card-title"><span class="news-bulletin-card-open">${item.title}</span></h3>
+                        <p class="news-bulletin-card-desc">${item.desc || '詳細をご覧ください。'}</p>
+                    </div>
+                    <div class="news-bulletin-card-footer">
+                        <div class="news-bulletin-readinfo" aria-label="本文${readingMeta.charCount.toLocaleString()}文字、読了目安約${readingMeta.readMinutes}分">
+                            <span><i class="bi bi-file-earmark-text" aria-hidden="true"></i> ${readingMeta.charCount.toLocaleString()}文字</span>
+                            <span class="news-bulletin-readinfo-separator" aria-hidden="true">・</span>
+                            <span><i class="bi bi-clock-history" aria-hidden="true"></i> 約${readingMeta.readMinutes}分</span>
+                        </div>
+                        <span class="news-bulletin-readmore" aria-hidden="true">記録を読む <i class="bi bi-arrow-right"></i></span>
+                    </div>
+                </article>`;
+        }).join('');
+        pagination.innerHTML = createPaginationHTML('news', currentPage, totalPages, "changePage('news', {P})");
+        container.setAttribute('aria-busy', 'false');
+    };
 
         
 // 3. 「神籤草子」描画関数（モダン・書架UI版）

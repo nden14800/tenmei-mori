@@ -130,6 +130,15 @@ assert(
   '神籤草子記事詳細のヘッダーアイコンがカテゴリ色の正本を参照していません。'
 );
 
+// 社務所だより一覧の描画関数が神籤草子描画関数を飲み込まないことを確認する。
+// 共通色正本化の際に一覧描画本体が誤削除されると、両関数が入れ子になり一覧が壊れる。
+const newsRenderStart = html.indexOf('window.renderFullNewsView = function()');
+const columnRenderStart = html.indexOf('window.renderFullColumnView = function()');
+assert(newsRenderStart >= 0 && columnRenderStart > newsRenderStart, '社務所だより／神籤草子の描画関数順序が壊れています。');
+const newsRenderSection = html.slice(newsRenderStart, columnRenderStart);
+assert(newsRenderSection.includes("}).join('');"), '社務所だより一覧のカード描画本体が失われています。');
+assert(!newsRenderSection.includes('window.renderFullColumnView = function()'), '神籤草子描画関数が社務所だより描画関数へ入れ子になっています。');
+
 requireDetailSectionText('id="article-detail-content"', '共用記事詳細の動的コンテンツIDが失われています。');
 requireDetailSectionText('article-reader-back', '神籤草子用に切り替える共用戻る導線がありません。');
 assert.equal(
