@@ -283,9 +283,16 @@ export default {
         // Googleアカウント連携用のstateは、この署名済みペイロードではなく、上記の
         // 一回限り乱数チケットとHttpOnly Cookieの照合を使う。いずれのフローでも
         // 生のセッショントークンやメールアドレスをURLに含めない。
+        function requireSecret(secret) {
+            if (typeof secret !== "string" || secret.length < 16) {
+                throw new Error("Server Configuration Error: required secret is missing");
+            }
+            return secret;
+        }
+
         async function signState(payloadJson, secret) {
             const key = await crypto.subtle.importKey(
-                "raw", new TextEncoder().encode(secret || "tenmei-mori-fallback"),
+                "raw", new TextEncoder().encode(requireSecret(secret)),
                 { name: "HMAC", hash: "SHA-256" }, false, ["sign"]
             );
             const sigBuffer = await crypto.subtle.sign("HMAC", key, new TextEncoder().encode(payloadJson));
@@ -311,7 +318,7 @@ export default {
         // 載せ、実際のセッショントークンはフロントエンドが /api/auth/exchange を
         // POSTで叩いて初めて受け取る方式に変更する。
         async function getAesKey(secret) {
-            const keyBytes = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(secret || "tenmei-mori-fallback"));
+            const keyBytes = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(requireSecret(secret)));
             return crypto.subtle.importKey("raw", keyBytes, { name: "AES-GCM" }, false, ["encrypt", "decrypt"]);
         }
         async function encryptForUrl(payloadJson, secret) {
@@ -616,7 +623,13 @@ export default {
                     if (rows.length > 0) throw new Error("そのメールアドレスは既に登録されています");
                 }
 
-                const code = Math.floor(100000 + Math.random() * 900000).toString();
+                const codeBytes = new Uint32Array(1);
+                let codeNumber;
+                do {
+                    crypto.getRandomValues(codeBytes);
+                } while (codeBytes[0] >= 4294800000);
+                codeNumber = 100000 + (codeBytes[0] % 900000);
+                const code = codeNumber.toString();
                 const now = Date.now();
 
                 // ワンクリックログイン用のマジックリンクは「ログイン」時のみ発行する。
