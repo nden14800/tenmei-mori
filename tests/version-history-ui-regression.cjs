@@ -39,12 +39,18 @@ assert(historyHtml, '更新の軌跡のパネルHTMLを抽出できません。'
 ].forEach((text) => requireText(text, `Ver.4.0の正式リリース表記または詳細データが失われています: ${text}`));
 
 [
+  "openVerDetail('v42')",
+  '2026年10月2日リリース',
+  'Ver. 4.2',
+  'id: 89,',
+  'date: "2026/10/02"',
+].forEach((text) => requireText(text, `Ver.4.2の現在版・記事契約が不足しています: ${text}`));
+
+[
   "openVerDetail('v41')",
   '2026年9月28日リリース',
   'Ver. 4.1',
-  'id: 89,',
-  'date: "2026/10/02"',
-].forEach((text) => requireText(text, `Ver.4.1の現在版・記事契約が不足しています: ${text}`));
+].forEach((text) => requireText(text, `Ver.4.1の以前の版が保持されていません: ${text}`));
 
 assert(historyHtml.includes("openVerDetail('v40')"), 'Ver.4.0が以前の版として残っていません。');
 assert(!historyHtml.includes("openVerDetail('beta')"), '最古のbeta履歴が一覧から除外されていません。');
