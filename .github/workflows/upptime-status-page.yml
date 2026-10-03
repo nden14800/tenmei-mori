@@ -5,6 +5,7 @@ on:
     paths:
       - ".upptimerc.yml"
       - ".github/workflows/upptime-status-page.yml"
+      - "status/global.css"
   schedule:
     - cron: "7,17,27,37,47,57 * * * *"
   workflow_dispatch:
@@ -40,12 +41,18 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ github.token }}
 
+      - name: Preserve custom public status UI
+        run: |
+          test -f status/global.css
+          cp status/global.css /tmp/tenmei-status-global.css
+
       - name: Replace public status page with the generated Upptime site
         run: |
           test -d site/status-page/__sapper__/export
           rm -rf status/*
           cp -R site/status-page/__sapper__/export/. status/
           test -f status/index.html
+          cp /tmp/tenmei-status-global.css status/global.css
 
       - name: Copy Upptime data into the public status site
         run: |
