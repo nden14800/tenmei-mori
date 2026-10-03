@@ -127,7 +127,7 @@ jobs:
           };
 
           fs.writeFileSync(
-            "monitoring/browser-status.json",
+            "status/browser-health.json",
             JSON.stringify(data, null, 2) + "\n"
           );
           NODE
@@ -136,11 +136,11 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add monitoring/browser-status.json
+          git add status/browser-health.json
           if git diff --cached --quiet; then
             echo "Browser smoke status unchanged."
             exit 0
           fi
-          git commit -m "chore(status): update browser smoke result"
+          git commit -m "chore(status): update browser smoke health"
           git pull --rebase origin main
           git push
