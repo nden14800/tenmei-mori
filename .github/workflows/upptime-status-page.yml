@@ -45,6 +45,7 @@ jobs:
         run: |
           test -f status/global.css
           cp status/global.css /tmp/tenmei-status-global.css
+          cp status/custom-status.js /tmp/tenmei-custom-status.js
 
       - name: Replace public status page with the generated Upptime site
         run: |
@@ -53,6 +54,7 @@ jobs:
           cp -R site/status-page/__sapper__/export/. status/
           test -f status/index.html
           cp /tmp/tenmei-status-global.css status/global.css
+          cp /tmp/tenmei-custom-status.js status/custom-status.js
 
       - name: Copy Upptime data into the public status site
         run: |
@@ -121,6 +123,17 @@ jobs:
           test -f status/global.css
           grep -F 'href=/themes/light.css' status/index.html
           grep -F 'href=/global.css' status/index.html
+
+      - name: Add custom status page script
+        run: |
+          node <<'NODE'
+          const fs = require("fs");
+          const path = "status/index.html";
+          let html = fs.readFileSync(path, "utf8");
+          const tag = '<script src="/custom-status.js"></script>';
+          if (!html.includes(tag)) html = html.replace("</body>", tag + "</body>");
+          fs.writeFileSync(path, html);
+          NODE
 
       - name: Add Upptime license notice to generated status page
         run: |
