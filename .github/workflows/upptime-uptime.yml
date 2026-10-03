@@ -47,7 +47,7 @@ jobs:
         run: |
           node <<'NODE'
           const fs = require("fs");
-          const data = JSON.parse(fs.readFileSync("monitoring/browser-status.json", "utf8"));
+          const data = JSON.parse(fs.readFileSync("status/browser-health.json", "utf8"));
           const title = "🛑 天命乃杜 ブラウザ機能監視 is down";
           const state = data.status === "UP" ? "up" : "down";
 
@@ -122,7 +122,7 @@ jobs:
             "",
             "### 監視データ",
             "",
-            "monitoring/browser-status.json に最新の監視結果を保存しています。"
+            "status/browser-health.json に最新のブラウザ監視結果を保存しています。"
           ].join("\n");
 
           fs.writeFileSync("/tmp/browser-incident.md", body);
