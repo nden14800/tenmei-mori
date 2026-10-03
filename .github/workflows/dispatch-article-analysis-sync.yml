@@ -1,0 +1,31 @@
+name: Dispatch article-analysis sync
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - "index.html"
+
+jobs:
+  dispatch:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Dispatch dashboard sync
+        env:
+          SYNC_TOKEN: ${{ secrets.ARTICLE_ANALYSIS_SYNC_TOKEN }}
+          SOURCE_SHA: ${{ github.sha }}
+        if: ${{ env.SYNC_TOKEN != '' }}
+        run: |
+          curl --fail-with-body --request POST \
+            --url "https://api.github.com/repos/nden14800/tenmei-mori-article-analysis-dashboard/dispatches" \
+            --header "Accept: application/vnd.github+json" \
+            --header "Authorization: Bearer $SYNC_TOKEN" \
+            --header "X-GitHub-Api-Version: 2026-03-10" \
+            --data "{\"event_type\":\"tenmei-mori-updated\",\"client_payload\":{\"source_sha\":\"$SOURCE_SHA\"}}"
+
+      - name: Explain disabled dispatch
+        env:
+          SYNC_TOKEN: ${{ secrets.ARTICLE_ANALYSIS_SYNC_TOKEN }}
+        if: ${{ env.SYNC_TOKEN == '' }}
+        run: echo "ARTICLE_ANALYSIS_SYNC_TOKEN is not configured; dashboard 5-minute fallback polling remains active."
