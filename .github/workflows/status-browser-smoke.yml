@@ -43,16 +43,69 @@ jobs:
         continue-on-error: true
         run: |
           rm -rf test-results
-          npx playwright test tests/status-browser-smoke.spec.js --workers=1 --reporter=line
+          mkdir -p test-results
+          set +e
+          npx playwright test tests/status-browser-smoke.spec.js --workers=1 --reporter=json > test-results/browser-smoke.json
+          exit_code=$?
+          echo "$exit_code" > test-results/browser-smoke.exit
+          exit "$exit_code"
 
       - name: Record browser smoke status
         env:
-          SMOKE_OUTCOME: ${{ steps.browser_smoke.conclusion }}
+          SMOKE_OUTCOME: ${{ steps.browser_smoke.outcome }}
         run: |
           node <<'NODE'
           const fs = require("fs");
+
           const ok = process.env.SMOKE_OUTCOME === "success";
           const now = new Date().toISOString();
+          let failureDetails = [];
+
+          if (!ok) {
+            try {
+              const report = JSON.parse(
+                fs.readFileSync("test-results/browser-smoke.json", "utf8")
+              );
+
+              const collect = (suite) => {
+                for (const spec of suite.specs || []) {
+                  for (const test of spec.tests || []) {
+                    for (const result of test.results || []) {
+                      if (result.status === "failed" || result.error) {
+                        const error = result.error;
+                        const message =
+                          typeof error === "string"
+                            ? error
+                            : error?.message || "Playwright test failed";
+                        failureDetails.push({
+                          check: spec.title,
+                          message: String(message).slice(0, 2000)
+                        });
+                      }
+                    }
+                  }
+                }
+                for (const child of suite.suites || []) collect(child);
+              };
+
+              for (const suite of report.suites || []) collect(suite);
+            } catch (error) {
+              failureDetails.push({
+                check: "browser-smoke-report",
+                message: `監視結果の詳細取得に失敗しました: ${error.message}`
+              });
+            }
+          }
+
+          const uniqueFailures = failureDetails.filter(
+            (item, index, all) =>
+              all.findIndex(
+                (candidate) =>
+                  candidate.check === item.check &&
+                  candidate.message === item.message
+              ) === index
+          );
+
           const data = {
             status: ok ? "UP" : "DOWN",
             checkedAt: now,
@@ -63,10 +116,16 @@ jobs:
               javascriptErrors: ok ? "UP" : "DOWN",
               statusPage: ok ? "UP" : "DOWN"
             },
+            failureDetails: uniqueFailures,
             message: ok
               ? "ブラウザから主要画面・内部遷移・JavaScriptエラー・Status PageのCSS依存を確認しました。"
-              : "ブラウザ機能監視が失敗しました。GitHub Actionsの実行ログを確認してください。"
+              : uniqueFailures.length
+                ? `ブラウザ機能監視で異常を検知しました: ${uniqueFailures
+                    .map((item) => `${item.check}: ${item.message}`)
+                    .join(" / ")}`
+                : "ブラウザ機能監視が失敗しました。GitHub Actionsの実行ログを確認してください。"
           };
+
           fs.writeFileSync(
             "monitoring/browser-status.json",
             JSON.stringify(data, null, 2) + "\n"
