@@ -5,8 +5,6 @@ on:
     paths:
       - ".upptimerc.yml"
       - ".github/workflows/upptime-status-page.yml"
-      - "status/global.css"
-      - "status/custom-status.js"
   schedule:
     - cron: "7,17,27,37,47,57 * * * *"
   workflow_dispatch:
@@ -35,13 +33,6 @@ jobs:
         with:
           node-version: 22
 
-      - name: Preserve custom public status UI
-        run: |
-          test -f status/global.css
-          test -f status/custom-status.js
-          cp status/global.css /tmp/tenmei-status-global.css
-          cp status/custom-status.js /tmp/tenmei-custom-status.js
-
       - name: Generate the official Upptime status website
         uses: upptime/uptime-monitor@v1.44.1
         with:
@@ -55,8 +46,6 @@ jobs:
           rm -rf status/*
           cp -R site/status-page/__sapper__/export/. status/
           test -f status/index.html
-          cp /tmp/tenmei-status-global.css status/global.css
-          cp /tmp/tenmei-custom-status.js status/custom-status.js
 
       - name: Copy Upptime data into the public status site
         run: |
@@ -122,20 +111,8 @@ jobs:
           cp status/assets/upptime-icon.svg status/upptime-icon.svg 2>/dev/null || true
 
           test -f status/themes/light.css
-          test -f status/global.css
           grep -F 'href=/themes/light.css' status/index.html
           grep -F 'href=/global.css' status/index.html
-
-      - name: Add custom status page script
-        run: |
-          node <<'NODE'
-          const fs = require("fs");
-          const path = "status/index.html";
-          let html = fs.readFileSync(path, "utf8");
-          const tag = '<script src="/custom-status.js"></script>';
-          if (!html.includes(tag)) html = html.replace("</body>", tag + "</body>");
-          fs.writeFileSync(path, html);
-          NODE
 
       - name: Add Upptime license notice to generated status page
         run: |
