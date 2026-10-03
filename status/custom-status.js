@@ -1,91 +1,129 @@
 (() => {
   "use strict";
 
-  const ROOT_CLASS = "tm-status-enhanced";
+  const root = document.documentElement;
+  const body = document.body;
 
-  function allArticles() {
-    return [...document.querySelectorAll("main article")];
-  }
+  function q(s, el = document) { return el.querySelector(s); }
+  function qa(s, el = document) { return [...el.querySelectorAll(s)]; }
 
-  function stateFromArticles() {
-    const articles = allArticles();
-    if (articles.some(a => a.classList.contains("down") || a.classList.contains("down-active"))) return "down";
-    if (articles.some(a => a.classList.contains("degraded"))) return "degraded";
+  function classifyArticle(article) {
+    if (article.classList.contains("down") || article.classList.contains("down-active")) return "down";
+    if (article.classList.contains("degraded")) return "degraded";
     return "up";
   }
 
-  function ensureOverview() {
-    const main = document.querySelector("main");
-    const header = main?.querySelector(":scope > header");
-    if (!main || !header) return;
-
-    let overview = document.querySelector(".tm-overview");
-    if (!overview) {
-      overview = document.createElement("section");
-      overview.className = "tm-overview";
-      overview.setAttribute("aria-live", "polite");
-      overview.innerHTML = [
-        '<div class="tm-overview-icon" aria-hidden="true"></div>',
-        '<div class="tm-overview-copy">',
-        '<div class="tm-overview-title"></div>',
-        '<div class="tm-overview-detail"></div>',
-        '</div>'
-      ].join("");
-      header.insertAdjacentElement("afterend", overview);
-    }
-
-    const state = stateFromArticles();
-    overview.dataset.state = state;
-
-    const title = overview.querySelector(".tm-overview-title");
-    const detail = overview.querySelector(".tm-overview-detail");
-
-    if (state === "down") {
-      title.textContent = "一部のサービスで障害が発生しています";
-      detail.textContent = "現在の障害状況と影響範囲を確認してください。";
-    } else if (state === "degraded") {
-      title.textContent = "一部のサービスの状態が低下しています";
-      detail.textContent = "現在のサービス状況を確認してください。";
-    } else {
-      title.textContent = "すべてのシステムが正常に稼働しています";
-      detail.textContent = "現在、確認されている障害はありません。";
-    }
+  function getState() {
+    const articles = qa("main article");
+    if (articles.some(a => classifyArticle(a) === "down")) return "down";
+    if (articles.some(a => classifyArticle(a) === "degraded")) return "degraded";
+    return "up";
   }
 
-  function enhanceSections() {
-    const main = document.querySelector("main");
-    if (!main) return;
+  function stateText(state) {
+    return state === "down"
+      ? ["We're experiencing issues", "一部のサービスで問題が発生しています"]
+      : state === "degraded"
+        ? ["Some systems are experiencing issues", "一部のサービスの状態が低下しています"]
+        : ["We're fully operational", "すべてのシステムが正常に稼働しています"];
+  }
 
-    const sections = [...main.querySelectorAll(":scope > section")];
-    for (const section of sections) {
-      const articles = section.querySelectorAll(":scope > article");
-      if (!articles.length) continue;
-      if (!section.querySelector(":scope > .tm-section-heading")) {
-        const heading = document.createElement("div");
-        heading.className = "tm-section-heading";
-        heading.textContent = "システム状況";
+  function buildShell() {
+    const main = q("main.container");
+    if (!main || main.dataset.tmBuilt === "1") return;
+    main.dataset.tmBuilt = "1";
+    body.classList.add("tm-status-v2");
+
+    const header = q(":scope > header", main);
+    if (header) header.classList.add("tm-native-header");
+
+    let hero = q(".tm-hero");
+    if (!hero) {
+      hero = document.createElement("section");
+      hero.className = "tm-hero";
+      hero.innerHTML = [
+        '<div class="tm-hero-status"><span class="tm-hero-dot"></span><span class="tm-hero-status-text"></span></div>',
+        '<h2 class="tm-hero-title"></h2>',
+        '<p class="tm-hero-description"></p>'
+      ].join("");
+      (header || main.firstElementChild)?.insertAdjacentElement("afterend", hero);
+    }
+
+    const state = getState();
+    const copy = stateText(state);
+    hero.dataset.state = state;
+    q(".tm-hero-title", hero).textContent = copy[0];
+    q(".tm-hero-description", hero).textContent = copy[1];
+
+    qa("main > section").forEach(section => {
+      if (section === hero) return;
+      const articles = qa(":scope > article", section);
+      if (!articles.length) return;
+
+      const hasIncident = articles.some(a =>
+        a.classList.contains("down-active") ||
+        a.classList.contains("down") ||
+        a.classList.contains("degraded")
+      );
+
+      section.classList.add(hasIncident ? "tm-incident-section" : "tm-system-section");
+
+      let heading = q(":scope > .tm-v2-heading", section);
+      if (!heading) {
+        heading = document.createElement("div");
+        heading.className = "tm-v2-heading";
+        heading.innerHTML = '<h2></h2>';
         section.prepend(heading);
       }
-      section.classList.add("tm-system-section");
-      articles.forEach(article => article.classList.add("tm-component-card"));
-    }
 
-    document.querySelectorAll("article").forEach(article => {
-      const h = article.querySelector("h4");
-      if (h && !h.querySelector(".tm-card-dot")) {
-        const dot = document.createElement("span");
-        dot.className = "tm-card-dot";
-        dot.setAttribute("aria-hidden", "true");
-        h.prepend(dot);
-      }
+      q("h2", heading).textContent = hasIncident ? "Incidents" : "System status";
+
+      articles.forEach(article => {
+        article.classList.add("tm-v2-row");
+        const state = classifyArticle(article);
+        article.dataset.tmState = state;
+
+        const title = q("h4", article);
+        if (title && !q(".tm-row-dot", title)) {
+          const dot = document.createElement("span");
+          dot.className = "tm-row-dot";
+          dot.setAttribute("aria-hidden", "true");
+          title.prepend(dot);
+        }
+      });
     });
+
+    const changed = q(".changed", main);
+    if (changed) changed.classList.add("tm-metric-picker");
+
+    const live = q(".live-status", main);
+    if (live) live.classList.add("tm-metrics-section");
+
+    const footer = q("footer");
+    if (footer) footer.classList.add("tm-v2-footer");
   }
 
-  function enhance() {
-    if (!document.body) return;
-    document.body.classList.add(ROOT_CLASS);
-    ensureOverview();
-    enhanceSections();
+  function enhanceNav() {
+    const nav = q("nav");
+    if (!nav || nav.dataset.tmBuilt === "1") return;
+    nav.dataset.tmBuilt = "1";
+    nav.classList.add("tm-v2-nav");
+
+    const container = q(".container", nav);
+    if (!container) return;
+
+    const ul = q("ul", container);
+    if (!ul) return;
+
+    const brand = document.createElement("li");
+    brand.className = "tm-brand";
+    brand.innerHTML = '<a href="/" aria-label="運勢・天命乃杜 Status"><span class="tm-brand-mark"></span><span>運勢・天命乃杜</span></a>';
+    ul.prepend(brand);
+  }
+
+  function run() {
+    enhanceNav();
+    buildShell();
   }
 
   let scheduled = false;
@@ -94,7 +132,7 @@
     scheduled = true;
     requestAnimationFrame(() => {
       scheduled = false;
-      enhance();
+      run();
     });
   };
 
@@ -104,6 +142,8 @@
     schedule();
   }
 
-  const observer = new MutationObserver(schedule);
-  observer.observe(document.documentElement, { childList: true, subtree: true });
+  new MutationObserver(schedule).observe(document.documentElement, {
+    childList: true,
+    subtree: true
+  });
 })();
