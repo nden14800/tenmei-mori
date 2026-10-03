@@ -81,17 +81,17 @@ jobs:
             if (!name.endsWith(".js")) continue;
             const file = path.join(root, name);
             let js = fs.readFileSync(file, "utf8");
-            if (!js.includes("/master/graphs") && !js.includes("/master/history/summary.json")) continue;
 
             js = js
-              .replace('i||(i="https://raw.githubusercontent.com")', 'i||(i="")')
-              .replace('const o=`${i}/${r}/${l}/master/graphs`', 'const o="/graphs"')
-              .replace('fetch(`${i}/${r}/${l}/master/history/summary.json`)', 'fetch("/history/summary.json")');
+              .replaceAll('https://raw.githubusercontent.com', '')
+              .replaceAll('/master/graphs', '/graphs')
+              .replaceAll('/master/history/summary.json', '/history/summary.json');
 
             fs.writeFileSync(file, js);
           }
           NODE
 
+          if grep -R -F 'raw.githubusercontent.com' status/client; then exit 1; fi
           if grep -R -F '/master/graphs' status/client; then exit 1; fi
           if grep -R -F '/master/history/summary.json' status/client; then exit 1; fi
 
