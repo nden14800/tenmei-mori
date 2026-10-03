@@ -136,3 +136,8 @@ jobs:
             console.error("GitHub Issue detail update failed:", error.message);
           }
           NODE
+      - name: Remove simulated test incident
+        if: ${{ github.event_name == 'push' && contains(github.event.head_commit.message, 'cleanup simulated incident') }}
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh api --method DELETE repos/nden14800/tenmei-mori/issues/26
