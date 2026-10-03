@@ -35,18 +35,19 @@ jobs:
         with:
           node-version: 22
 
+      - name: Preserve custom public status UI
+        run: |
+          test -f status/global.css
+          test -f status/custom-status.js
+          cp status/global.css /tmp/tenmei-status-global.css
+          cp status/custom-status.js /tmp/tenmei-custom-status.js
+
       - name: Generate the official Upptime status website
         uses: upptime/uptime-monitor@v1.44.1
         with:
           command: site
         env:
           GITHUB_TOKEN: ${{ github.token }}
-
-      - name: Preserve custom public status UI
-        run: |
-          test -f status/global.css
-          cp status/global.css /tmp/tenmei-status-global.css
-          cp status/custom-status.js /tmp/tenmei-custom-status.js
 
       - name: Replace public status page with the generated Upptime site
         run: |
