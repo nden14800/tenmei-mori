@@ -44,12 +44,24 @@ jobs:
         run: |
           rm -rf test-results
           mkdir -p test-results
-          printf '%s\n' '{"suites":[]}' > browser-smoke-report.json
+          rm -f browser-smoke-report.json browser-smoke-stderr.log browser-smoke.exit
           set +e
-          npx playwright test tests/status-browser-smoke.spec.js --workers=1 --reporter=json > browser-smoke-report.json
+          PLAYWRIGHT_JSON_OUTPUT_NAME=browser-smoke-report.json npx playwright test tests/status-browser-smoke.spec.js --workers=1 --reporter=json 2>browser-smoke-stderr.log
           exit_code=$?
           echo "$exit_code" > browser-smoke.exit
           exit "$exit_code"
+
+      - name: Upload browser smoke diagnostics
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: browser-smoke-${{ github.run_id }}
+          path: |
+            browser-smoke-report.json
+            browser-smoke-stderr.log
+            browser-smoke.exit
+          if-no-files-found: warn
+          retention-days: 7
 
       - name: Record browser smoke status
         env:
@@ -107,6 +119,13 @@ jobs:
               ) === index
           );
 
+          if (!ok && uniqueFailures.length === 0) {
+            try {
+              const stderr = fs.readFileSync("browser-smoke-stderr.log", "utf8").trim();
+              if (stderr) uniqueFailures.push({ check: "browser-smoke", message: stderr.replace(/\\s+/g, " ").slice(0, 2000) });
+            } catch {}
+          }
+
           const data = {
             status: ok ? "UP" : "DOWN",
             checkedAt: now,
@@ -121,9 +140,7 @@ jobs:
             message: ok
               ? "ブラウザから主要画面・内部遷移・JavaScriptエラー・Status PageのCSS依存を確認しました。"
               : uniqueFailures.length
-                ? `ブラウザ機能監視で異常を検知しました: ${uniqueFailures
-                    .map((item) => `${item.check}: ${item.message}`)
-                    .join(" / ")}`
+                ? uniqueFailures.map((item) => `${item.check}: ${item.message}`).join(" / ")
                 : "ブラウザ機能監視が失敗しました。GitHub Actionsの実行ログを確認してください。"
           };
 
@@ -135,6 +152,10 @@ jobs:
 
       - name: Commit browser smoke result
         run: |
+          cp status/browser-health.json /tmp/browser-health.json
+          git fetch origin main
+          git reset --hard origin/main
+          cp /tmp/browser-health.json status/browser-health.json
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add status/browser-health.json
