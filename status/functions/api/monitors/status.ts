@@ -2,6 +2,7 @@ import maintenancesConfig from '../../../maintenances.json'
 import { isMaintenanceActive, type MaintenanceWindow } from '../../../src/lib/maintenance'
 import { normalizeMonitorCollection } from '../../../src/lib/monitorData'
 import { parseCheckInterval } from '../../../src/lib/monitorRequest'
+import monitors from '../../../monitors.json'
 
 interface KVNamespaceLike {
   get(key: string, options?: { type?: string }): Promise<any>
