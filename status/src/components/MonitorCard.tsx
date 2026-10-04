@@ -21,34 +21,21 @@ import {
   type TimelinePeriod,
 } from '../lib/monitorTimeline'
 
-const BAR_STATUS_LABELS: Record<Language, Record<BarStatus, string>> = {
-  fr: {
-    operational: 'Opérationnel',
-    degraded: 'Performance dégradée',
-    maintenance: 'Maintenance planifiée',
-    incident: 'Indisponible',
-    unknown: 'Pas de données',
-  },
-  en: {
-    operational: 'Operational',
-    degraded: 'Degraded performance',
-    maintenance: 'Scheduled maintenance',
-    incident: 'Down',
-    unknown: 'No data',
-  },
-  uk: {
-    operational: 'Працює',
-    degraded: 'Знижена продуктивність',
-    maintenance: 'Заплановане обслуговування',
-    incident: 'Недоступний',
-    unknown: 'Немає даних',
-  },
-}
-
 function getBarStatusLabel(barStatus: BarStatus, language: Language): string {
-  return BAR_STATUS_LABELS[language]?.[barStatus] ?? BAR_STATUS_LABELS.en[barStatus]
+  const t = getTranslations(language)
+  switch (barStatus) {
+    case 'operational':
+      return t.operational
+    case 'degraded':
+      return t.degraded
+    case 'maintenance':
+      return t.maintenance
+    case 'incident':
+      return t.down
+    case 'unknown':
+      return t.noData
+  }
 }
-
 function getSafeExternalUrl(value: string | undefined): string | undefined {
   if (!value) return undefined
 
