@@ -86,6 +86,24 @@ export const NATIVE_NAMES = ENABLED_LANGUAGES.reduce((acc, lang) => {
   return acc
 }, {} as Record<Language, string>)
 
+export function getIntlLocale(lang: Language): string {
+  const locales: Record<Language, string> = {
+    ja: 'ja-JP',
+    en: 'en-US',
+    ko: 'ko-KR',
+    zh: 'zh-CN',
+    fr: 'fr-FR',
+    de: 'de-DE',
+    es: 'es-ES',
+    pt: 'pt-PT',
+    vi: 'vi-VN',
+    id: 'id-ID',
+    th: 'th-TH',
+    uk: 'uk-UA',
+  }
+  return locales[lang] ?? 'en-US'
+}
+
 export function getTranslations(lang: Language): Translations {
   if (!ENABLED_LANGUAGES.includes(lang)) {
     return ALL_LOCALES[ENABLED_LANGUAGES[0] as Language]
