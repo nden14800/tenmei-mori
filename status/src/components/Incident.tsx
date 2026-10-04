@@ -57,7 +57,7 @@ export default function Incident({ incident, language }: IncidentProps) {
 
   const formatDate = (timestamp: string) => {
     const date = new Date(timestamp)
-    const locale = language === 'fr' ? 'fr-FR' : language === 'uk' ? 'uk-UA' : 'en-US'
+    const locale = language === 'fr' ? 'fr-FR' : language === 'uk' ? 'uk-UA' : language === 'ja' ? 'ja-JP' : 'en-US'
     return date.toLocaleString(locale, {
       month: 'short',
       day: 'numeric',
