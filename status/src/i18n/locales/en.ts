@@ -55,6 +55,15 @@ export const en: Translations = {
     contact: 'Contact',
     status: 'Status',
     sponsor: 'Sponsor',
+    incidentHistoryTitle: 'Incident history',
+    incidentHistoryDescription: 'All stored incidents are shown here, including incidents older than 30 days.',
+    incidentCountLabel: 'incidents',
+    incidentStarted: 'Started',
+    incidentResolvedAt: 'Resolved',
+    incidentDuration: 'Duration',
+    incidentResolved: 'Resolved',
+    incidentOngoing: 'Ongoing',
+    incidentStillDown: 'Still down',
 
     // Language toggle
     changeLanguageTooltip: 'Change language',
