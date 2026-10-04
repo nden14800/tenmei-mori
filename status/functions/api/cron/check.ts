@@ -188,8 +188,8 @@ async function sendStatusAlert(
   previousStatus: MonitorStatus | undefined,
   currentStatus: MonitorStatus,
   responseTime: number,
-): Promise<boolean> {
-  if (!alertUrl || !alertSecret || !previousStatus || previousStatus === currentStatus) return false
+): Promise<{ sent: boolean; responseStatus?: number }> {
+  if (!alertUrl || !alertSecret || !previousStatus || previousStatus === currentStatus) return { sent: false }
 
   try {
     const response = await fetch(alertUrl, {
@@ -206,9 +206,9 @@ async function sendStatusAlert(
         responseTime,
       }),
     })
-    return response.ok
+    return { sent: response.ok, responseStatus: response.status }
   } catch {
-    return false
+    return { sent: false }
   }
 }
 
@@ -315,7 +315,7 @@ export const onRequest = async (context: any) => {
           previousStatus !== result.status &&
           Date.now() - lastAlertAt >= alertCooldownMs
         ) {
-          const sent = await sendStatusAlert(
+          const alertResult = await sendStatusAlert(
             DISCORD_STATUS_ALERT_URL,
             DISCORD_STATUS_ALERT_SECRET,
             monitor,
@@ -326,7 +326,7 @@ export const onRequest = async (context: any) => {
           const attemptedAt = new Date().toISOString()
           updatedAlertState = {
             lastAttemptAt: attemptedAt,
-            ...(sent
+            ...(alertResult.sent
               ? {
                   lastAlertStatus: result.status,
                   lastSuccessAt: attemptedAt,
