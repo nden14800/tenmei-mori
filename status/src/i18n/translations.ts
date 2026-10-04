@@ -52,6 +52,15 @@ export interface Translations {
   contact: string
   status: string
   sponsor: string
+  incidentHistoryTitle: string
+  incidentHistoryDescription: string
+  incidentCountLabel: string
+  incidentStarted: string
+  incidentResolvedAt: string
+  incidentDuration: string
+  incidentResolved: string
+  incidentOngoing: string
+  incidentStillDown: string
   changeLanguageTooltip: string
   languageCode: string
   nativeName: string
