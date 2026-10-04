@@ -73,8 +73,55 @@ export const onRequest: PagesFunction<Env> = async (context) => {
     const { KV_STATUS_PAGE, CRON_CHECK_INTERVAL } = context.env
     const checkIntervalMinutes = parseCheckInterval(CRON_CHECK_INTERVAL, 1) ?? 1
 
-    const monitorsData = await KV_STATUS_PAGE.get('monitors', { type: 'json' })
-    const lastUpdate = await KV_STATUS_PAGE.get('lastUpdate')
+    let monitorsData = await KV_STATUS_PAGE.get('monitors', { type: 'json' })
+    let lastUpdate = await KV_STATUS_PAGE.get('lastUpdate')
+
+    // Bootstrap real monitor data when the KV is empty (for example after a fresh
+    // deployment or when the external Cron Worker has not fired yet). This performs
+    // real HTTP checks and only runs while no monitor data exists.
+    if (!monitorsData || typeof monitorsData !== 'object' || Array.isArray(monitorsData) || Object.keys(monitorsData).length === 0) {
+      const checkedAt = new Date().toISOString()
+      const bootstrapped: Record<string, any> = {}
+
+      await Promise.all(monitors.map(async (monitor) => {
+        const started = Date.now()
+        try {
+          const response = await fetch(monitor.url, {
+            method: monitor.method || 'GET',
+            redirect: monitor.followRedirect === false ? 'manual' : 'follow',
+            headers: { 'User-Agent': 'tenmei-mori-uptimeworker-bootstrap/1.0' },
+          })
+          const responseTime = Date.now() - started
+          const operational = response.status >= 200 && response.status < 300
+          bootstrapped[monitor.id] = {
+            operational,
+            status: operational ? 'operational' : 'down',
+            lastCheck: checkedAt,
+            responseTime,
+            uptime: operational ? 100 : 0,
+            startDate: checkedAt,
+            recentChecks: [{ t: checkedAt, s: operational ? 'operational' : 'down', rt: responseTime }],
+            dailyHistory: [],
+          }
+        } catch {
+          bootstrapped[monitor.id] = {
+            operational: false,
+            status: 'down',
+            lastCheck: checkedAt,
+            responseTime: Date.now() - started,
+            uptime: 0,
+            startDate: checkedAt,
+            recentChecks: [{ t: checkedAt, s: 'down', rt: Date.now() - started }],
+            dailyHistory: [],
+          }
+        }
+      }))
+
+      monitorsData = bootstrapped
+      lastUpdate = checkedAt
+      await KV_STATUS_PAGE.put('monitors', JSON.stringify(monitorsData))
+      await KV_STATUS_PAGE.put('lastUpdate', checkedAt)
+    }
     const activeMaintenances = maintenances.filter((maintenance) => isMaintenanceActive(maintenance))
 
     return new Response(
