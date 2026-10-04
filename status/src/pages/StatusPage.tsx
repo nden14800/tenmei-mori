@@ -226,17 +226,17 @@ export default function StatusPage() {
             </div>
           </div>
 
-          {incidentHistory.length > 0 && (
-            <section className="mb-8">
-              <div className="mb-5 flex items-end justify-between gap-4">
-                <div>
-                  <h2 className="text-lg font-semibold text-foreground sm:text-xl">{t.incidentHistoryTitle}</h2>
-                  <p className="mt-1 text-sm text-muted-foreground">{t.incidentHistoryDescription}</p>
-                </div>
-                <span className="shrink-0 text-xs text-muted-foreground">
-                  {incidentHistory.length} {t.incidentCountLabel}
-                </span>
+          <section className="mb-8">
+            <div className="mb-5 flex items-end justify-between gap-4">
+              <div>
+                <h2 className="text-lg font-semibold text-foreground">{t.incidentHistoryTitle}</h2>
+                <p className="mt-1 text-sm text-muted-foreground">{t.incidentHistoryDescription}</p>
               </div>
+              <span className="shrink-0 text-xs text-muted-foreground">
+                {incidentHistory.length} {t.incidentCountLabel}
+              </span>
+            </div>
+            {incidentHistory.length > 0 ? (
               <div className="overflow-hidden rounded-lg border border-border bg-card">
                 {incidentHistory.map((incident) => (
                   <article key={incident.id} className="border-b border-border px-4 py-4 last:border-0 sm:px-6">
@@ -248,14 +248,18 @@ export default function StatusPage() {
                     </div>
                     <div className="mt-2 grid gap-1 text-sm text-muted-foreground sm:grid-cols-3">
                       <span>{t.incidentStarted}: {formatIncidentDate(incident.startedAt)}</span>
-                      <span>{incident.resolvedAt ? `${t.incidentResolvedAt}: ${formatIncidentDate(incident.resolvedAt)}` : t.incidentStillDown}</span>
+                      <span>{incident.resolvedAt ? t.incidentResolvedAt + ': ' + formatIncidentDate(incident.resolvedAt) : t.incidentStillDown}</span>
                       <span>{t.incidentDuration}: {formatIncidentDuration(incident.durationSeconds)}</span>
                     </div>
                   </article>
                 ))}
               </div>
-            </section>
-          )}
+            ) : (
+              <div className="rounded-lg border border-border bg-card px-4 py-5 text-sm text-muted-foreground sm:px-6">
+                {language === 'ja' ? '記録されている障害はまだありません。今後発生したダウンはここに保存されます。' : 'No incidents have been recorded yet. Future outages will be saved here.'}
+              </div>
+            )}
+          </section>
 
           <div className="mt-8 border-t border-border pt-6 sm:mt-10">
             <h3 className="mb-2 text-base font-semibold text-foreground">
