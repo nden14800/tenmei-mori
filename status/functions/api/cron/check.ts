@@ -135,7 +135,45 @@ function getMaxRecentChecks(intervalMinutes: number): number {
   return Math.ceil((24 * 60) / intervalMinutes)
 }
 
-export const onRequest = async (context: any) => {
+
+async function sendStatusAlert(
+  webhookUrl: string | undefined,
+  format: string | undefined,
+  monitor: Monitor,
+  previousStatus: MonitorStatus | undefined,
+  currentStatus: MonitorStatus,
+  responseTime: number,
+): Promise<boolean> {
+  if (!webhookUrl || !previousStatus || previousStatus === currentStatus) return false
+
+  const statusLabel: Record<MonitorStatus, string> = {
+    operational: '正常',
+    degraded: '低下',
+    down: '停止',
+  }
+  const title = currentStatus === 'operational'
+    ? '🟢 天命乃杜 Status 回復'
+    : currentStatus === 'degraded'
+      ? '🟡 天命乃杜 Status 低下'
+      : '🔴 天命乃杜 Status 障害'
+  const message = monitor.name + ': ' + statusLabel[previousStatus] + ' → ' + statusLabel[currentStatus] + ' (' + responseTime + 'ms)'
+
+  const payload = format === 'json'
+    ? { event: 'status_change', monitor: { id: monitor.id, name: monitor.name, url: monitor.url }, previousStatus, currentStatus, responseTime, message }
+    : { content: title + '\\n' + message + '\\n' + monitor.url }
+
+  try {
+    const response = await fetch(webhookUrl, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload),
+    })
+    return response.ok
+  } catch {
+    return false
+  }
+}
+\nexport const onRequest = async (context: any) => {
   if (context.request.method !== 'POST') {
     return new Response('Method Not Allowed', {
       status: 405,
@@ -143,7 +181,7 @@ export const onRequest = async (context: any) => {
     })
   }
 
-  const { KV_STATUS_PAGE, CRON_SECRET, CRON_CHECK_INTERVAL, MONITOR_USER_AGENT } = context.env
+  const { KV_STATUS_PAGE, CRON_SECRET, CRON_CHECK_INTERVAL, MONITOR_USER_AGENT, STATUS_ALERT_WEBHOOK_URL, STATUS_ALERT_WEBHOOK_FORMAT } = context.env
   const authHeader = context.request.headers.get('X-Cron-Auth')
 
   if (!CRON_SECRET || !authHeader || !timingSafeEqualStr(authHeader, CRON_SECRET)) {
@@ -179,6 +217,7 @@ export const onRequest = async (context: any) => {
         // 1. Recent checks: store each check with timestamp + response time
         // (rt, ms) pour les filtres 1h/24h et le futur graphique de latence.
         const previousChecks: Array<{ t: string; s: MonitorStatus; rt?: number }> = existing?.recentChecks || []
+        const previousStatus = previousChecks.length > 0 ? previousChecks[previousChecks.length - 1].s : undefined
         const updatedChecks = [...previousChecks, { t: result.lastCheck, s: result.status, rt: result.responseTime }]
           .slice(-maxRecentChecks)
 
@@ -192,13 +231,33 @@ export const onRequest = async (context: any) => {
           { degradedCountsAsDown: monitor.degradedCountsAsDown !== false }
         )
 
+        const alertState = existing?.alertState || {}
+        const lastAlertAt = typeof alertState.lastAttemptAt === 'string' ? Date.parse(alertState.lastAttemptAt) : 0
+        const alertCooldownMs = 15 * 60 * 1000
+        let updatedAlertState = alertState
+        if (STATUS_ALERT_WEBHOOK_URL && previousStatus && previousStatus !== result.status && Date.now() - lastAlertAt >= alertCooldownMs) {
+          const sent = await sendStatusAlert(
+            STATUS_ALERT_WEBHOOK_URL,
+            STATUS_ALERT_WEBHOOK_FORMAT,
+            monitor,
+            previousStatus,
+            result.status,
+            result.responseTime,
+          )
+          updatedAlertState = {
+            lastAttemptAt: new Date().toISOString(),
+            ...(sent ? { lastAlertStatus: result.status, lastSuccessAt: new Date().toISOString() } : {}),
+          }
+        }
+
         return {
           id: monitor.id,
           ...result,
           startDate,
           uptime: uptime === null ? null : Number(uptime.toFixed(3)),
           recentChecks: updatedChecks,
-          dailyHistory: updatedHistory
+          dailyHistory: updatedHistory,
+          alertState: updatedAlertState
         }
       },
     )
