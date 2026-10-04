@@ -37,6 +37,28 @@ const monitors: Monitor[] = monitorsConfig as Monitor[]
 const MAX_CONCURRENT_CHECKS = 5
 let checkRunInProgress = false
 
+interface LongTermSummary {
+  period: string
+  checks: number
+  operational: number
+  degraded: number
+  down: number
+  maintenance: number
+  uptime: number
+}
+
+function updateLongTermSummary(history: LongTermSummary[], timestamp: string, status: MonitorStatus): LongTermSummary[] {
+  const period = timestamp.slice(0, 7)
+  const existing = history.find((item) => item.period === period)
+  const next = existing ? { ...existing } : { period, checks: 0, operational: 0, degraded: 0, down: 0, maintenance: 0, uptime: 100 }
+  next.checks += 1
+  next[status] += 1
+  next.uptime = next.checks > 0 ? ((next.operational + next.maintenance) / next.checks) * 100 : 100
+  return [...history.filter((item) => item.period !== period), next]
+    .sort((a, b) => a.period.localeCompare(b.period))
+    .slice(-60)
+}
+
 interface IncidentHistoryItem {
   id: string
   monitorId: string
@@ -223,6 +245,7 @@ export const onRequest = async (context: any) => {
   try {
     const existingData = await KV_STATUS_PAGE.get('monitors', { type: 'json' }) as Record<string, any> || {}
     let incidentHistory = await KV_STATUS_PAGE.get('incidentHistory', { type: 'json' }) as IncidentHistoryItem[] || []
+    let longTermHistory = await KV_STATUS_PAGE.get('longTermHistory', { type: 'json' }) as LongTermSummary[] || []
 
     const results = await mapWithConcurrency(
       monitors,
@@ -248,6 +271,8 @@ export const onRequest = async (context: any) => {
           updatedHistory,
           { degradedCountsAsDown: monitor.degradedCountsAsDown !== false }
         )
+
+        longTermHistory = updateLongTermSummary(longTermHistory, result.lastCheck, result.status)
 
         const activeIncident = existing?.activeIncident as IncidentHistoryItem | undefined
         const currentIsDown = isDownStatus(result.status)
@@ -330,6 +355,7 @@ export const onRequest = async (context: any) => {
 
     await KV_STATUS_PAGE.put('monitors', JSON.stringify(monitorsData))
     await KV_STATUS_PAGE.put('incidentHistory', JSON.stringify(incidentHistory))
+    await KV_STATUS_PAGE.put('longTermHistory', JSON.stringify(longTermHistory))
     await KV_STATUS_PAGE.put('lastUpdate', new Date().toISOString())
 
     return new Response(JSON.stringify({
