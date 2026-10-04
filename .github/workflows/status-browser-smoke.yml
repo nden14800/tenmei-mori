@@ -122,20 +122,53 @@ jobs:
           if (!ok && uniqueFailures.length === 0) {
             try {
               const stderr = fs.readFileSync("browser-smoke-stderr.log", "utf8").trim();
-              if (stderr) uniqueFailures.push({ check: "browser-smoke", message: stderr.replace(/\\s+/g, " ").slice(0, 2000) });
+              if (stderr) {
+                uniqueFailures.push({
+                  check: "browser-smoke",
+                  message: stderr.replace(/\\s+/g, " ").slice(0, 2000)
+                });
+              }
             } catch {}
+          }
+
+          const checks = {
+            mainSite: "UP",
+            developerView: "UP",
+            internalNavigation: "UP",
+            javascriptErrors: "UP",
+            statusPage: "UP"
+          };
+
+          const checkKeysForFailure = (title) => {
+            if (/main site loads without browser JavaScript errors/i.test(title)) {
+              return ["mainSite", "javascriptErrors"];
+            }
+            if (/internal navigation works, including developer view/i.test(title)) {
+              return ["internalNavigation", "developerView"];
+            }
+            if (/representative navigation controls are wired/i.test(title)) {
+              return ["internalNavigation"];
+            }
+            if (/status page uses local stylesheets/i.test(title)) {
+              return ["statusPage"];
+            }
+            return Object.keys(checks);
+          };
+
+          for (const failure of uniqueFailures) {
+            for (const key of checkKeysForFailure(failure.check)) {
+              checks[key] = "DOWN";
+            }
+          }
+
+          if (!ok && uniqueFailures.length === 0) {
+            for (const key of Object.keys(checks)) checks[key] = "DOWN";
           }
 
           const data = {
             status: ok ? "UP" : "DOWN",
             checkedAt: now,
-            checks: {
-              mainSite: ok ? "UP" : "DOWN",
-              developerView: ok ? "UP" : "DOWN",
-              internalNavigation: ok ? "UP" : "DOWN",
-              javascriptErrors: ok ? "UP" : "DOWN",
-              statusPage: ok ? "UP" : "DOWN"
-            },
+            checks,
             failureDetails: uniqueFailures,
             message: ok
               ? "ブラウザから主要画面・内部遷移・JavaScriptエラー・Status PageのCSS依存を確認しました。"
@@ -164,5 +197,4 @@ jobs:
             exit 0
           fi
           git commit -m "chore(status): update browser smoke health"
-          git pull --rebase origin main
-          git push
+          git push origin HEAD:main
