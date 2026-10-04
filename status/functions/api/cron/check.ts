@@ -135,7 +135,6 @@ function getMaxRecentChecks(intervalMinutes: number): number {
   return Math.ceil((24 * 60) / intervalMinutes)
 }
 
-
 async function sendStatusAlert(
   alertUrl: string | undefined,
   alertSecret: string | undefined,
@@ -167,3 +166,134 @@ async function sendStatusAlert(
   }
 }
 
+export const onRequest = async (context: any) => {
+  if (context.request.method !== 'POST') {
+    return new Response('Method Not Allowed', {
+      status: 405,
+      headers: cronHeaders({ Allow: 'POST' }),
+    })
+  }
+
+  const { KV_STATUS_PAGE, CRON_SECRET, CRON_CHECK_INTERVAL, MONITOR_USER_AGENT, DISCORD_STATUS_ALERT_URL, DISCORD_STATUS_ALERT_SECRET } = context.env
+  const authHeader = context.request.headers.get('X-Cron-Auth')
+
+  if (!CRON_SECRET || !authHeader || !timingSafeEqualStr(authHeader, CRON_SECRET)) {
+    return new Response('Access denied', { status: 401, headers: cronHeaders() })
+  }
+
+  const checkInterval = parseCheckInterval(CRON_CHECK_INTERVAL, 1)
+  if (!checkInterval) {
+    return new Response('Invalid cron configuration', { status: 503, headers: cronHeaders() })
+  }
+  if (checkRunInProgress) {
+    return new Response('Check already running', {
+      status: 409,
+      headers: cronHeaders({ 'Retry-After': '5' }),
+    })
+  }
+
+  const maxRecentChecks = getMaxRecentChecks(checkInterval)
+  const userAgent = MONITOR_USER_AGENT || 'UptimeWorker-Monitor/1.0'
+  checkRunInProgress = true
+
+  try {
+    const existingData = await KV_STATUS_PAGE.get('monitors', { type: 'json' }) as Record<string, any> || {}
+
+    const results = await mapWithConcurrency(
+      monitors,
+      MAX_CONCURRENT_CHECKS,
+      async (monitor) => {
+        const result = await checkMonitor(monitor, userAgent)
+        const existing = existingData[monitor.id]
+        const startDate = existing?.startDate || new Date().toISOString()
+
+        // 1. Recent checks: store each check with timestamp + response time
+        // (rt, ms) pour les filtres 1h/24h et le futur graphique de latence.
+        const previousChecks: Array<{ t: string; s: MonitorStatus; rt?: number }> = existing?.recentChecks || []
+        const previousStatus = previousChecks.length > 0 ? previousChecks[previousChecks.length - 1].s : undefined
+        const updatedChecks = [...previousChecks, { t: result.lastCheck, s: result.status, rt: result.responseTime }]
+          .slice(-maxRecentChecks)
+
+        // 2. Preserve the worst daily status and count actual observations separately.
+        const previousHistory: DailyHistoryPoint[] = existing?.dailyHistory || []
+        const updatedHistory = appendDailyCheck(previousHistory, result.lastCheck, result.status)
+
+        // Calculate uptime from daily history
+        const uptime = calculateDailyUptime(
+          updatedHistory,
+          { degradedCountsAsDown: monitor.degradedCountsAsDown !== false }
+        )
+
+        const alertState = existing?.alertState || {}
+        const lastAlertAt = typeof alertState.lastAttemptAt === 'string' ? Date.parse(alertState.lastAttemptAt) : 0
+        const alertCooldownMs = 15 * 60 * 1000
+        let updatedAlertState = alertState
+
+        if (
+          DISCORD_STATUS_ALERT_URL &&
+          DISCORD_STATUS_ALERT_SECRET &&
+          previousStatus &&
+          previousStatus !== result.status &&
+          Date.now() - lastAlertAt >= alertCooldownMs
+        ) {
+          const sent = await sendStatusAlert(
+            DISCORD_STATUS_ALERT_URL,
+            DISCORD_STATUS_ALERT_SECRET,
+            monitor,
+            previousStatus,
+            result.status,
+            result.responseTime,
+          )
+          const attemptedAt = new Date().toISOString()
+          updatedAlertState = {
+            lastAttemptAt: attemptedAt,
+            ...(sent
+              ? {
+                  lastAlertStatus: result.status,
+                  lastSuccessAt: attemptedAt,
+                }
+              : {}),
+          }
+        }
+
+        return {
+          id: monitor.id,
+          ...result,
+          startDate,
+          uptime: uptime === null ? null : Number(uptime.toFixed(3)),
+          recentChecks: updatedChecks,
+          dailyHistory: updatedHistory,
+          alertState: updatedAlertState
+        }
+      },
+    )
+
+    const monitorsData: Record<string, any> = {}
+    results.forEach(({ id, ...data }) => {
+      monitorsData[id] = data
+    })
+
+    await KV_STATUS_PAGE.put('monitors', JSON.stringify(monitorsData))
+    await KV_STATUS_PAGE.put('lastUpdate', new Date().toISOString())
+
+    return new Response(JSON.stringify({
+      success: true,
+      checked: results.length,
+      timestamp: new Date().toISOString()
+    }), {
+      headers: cronHeaders({ 'Content-Type': 'application/json; charset=utf-8' })
+    })
+
+  } catch (error) {
+    console.error('Cron check error:', error)
+    return new Response(JSON.stringify({
+      success: false,
+      error: 'Internal server error'
+    }), {
+      status: 500,
+      headers: cronHeaders({ 'Content-Type': 'application/json; charset=utf-8' })
+    })
+  } finally {
+    checkRunInProgress = false
+  }
+}
