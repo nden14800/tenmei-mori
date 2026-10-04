@@ -36,15 +36,59 @@ const DEVELOPER_NAV_FIX = `
     return true;
   }
 
+  function forceOpenView(viewName) {
+    var target = document.getElementById("view-" + viewName);
+    if (!target) return false;
+
+    if (typeof window.showView === "function") {
+      try {
+        window.showView(viewName);
+      } catch (error) {}
+    }
+
+    window.setTimeout(function () {
+      var current = document.getElementById("view-" + viewName);
+      if (!current) return;
+
+      var visible = !!(
+        current.offsetWidth ||
+        current.offsetHeight ||
+        current.getClientRects().length
+      );
+
+      if (!visible || !current.classList.contains("active")) {
+        document.querySelectorAll(".view-section").forEach(function (view) {
+          view.classList.remove("active");
+        });
+        current.classList.add("active");
+      }
+
+      window.scrollTo({ top: 0, behavior: "auto" });
+    }, 0);
+
+    return true;
+  }
+
   function bind() {
     var nav = document.getElementById("nav-developer");
-    if (!nav || nav.dataset.tenmeiDeveloperNavigationFixed === "true") return;
+    if (nav && nav.dataset.tenmeiDeveloperNavigationFixed !== "true") {
+      nav.dataset.tenmeiDeveloperNavigationFixed = "true";
+      nav.addEventListener("click", function (event) {
+        event.preventDefault();
+        forceOpenView("developer");
+      });
+    }
 
-    nav.dataset.tenmeiDeveloperNavigationFixed = "true";
-    nav.addEventListener("click", function (event) {
+    document.addEventListener("click", function (event) {
+      var target = event.target && event.target.closest
+        ? event.target.closest('[onclick*="showView(\'history\')"], [onclick*="showView(\"history\")"]')
+        : null;
+
+      if (!target) return;
+
       event.preventDefault();
-      openDeveloper();
-    });
+      forceOpenView("history");
+    }, true);
   }
 
   if (document.readyState === "loading") {
