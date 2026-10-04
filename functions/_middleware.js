@@ -37,17 +37,22 @@ const DEVELOPER_NAV_FIX = `
       var target = event.target;
       if (!target || !target.closest) return;
 
-      var control = target.closest("#nav-developer, [onclick]");
-      if (!control) return;
+      var control = target.closest("#nav-developer");
+      var viewName = control ? "developer" : null;
 
-      var viewName = null;
-      if (control.id === "nav-developer") {
-        viewName = "developer";
-      } else {
-        var onclick = control.getAttribute("onclick") || "";
-        var match = onclick.match(/showView\(\s*['"]([^'"]+)['"]\s*\)/);
-        if (match && (match[1] === "developer" || match[1] === "history")) {
-          viewName = match[1];
+      if (!viewName) {
+        var node = target;
+        while (node && node !== document) {
+          if (node.getAttribute) {
+            var onclick = node.getAttribute("onclick") || "";
+            var match = onclick.match(/showView\(\s*['"]([^'"]+)['"]\s*\)/);
+            if (match && (match[1] === "developer" || match[1] === "history")) {
+              control = node;
+              viewName = match[1];
+              break;
+            }
+          }
+          node = node.parentElement;
         }
       }
 
