@@ -41,6 +41,16 @@ interface KVMonitors {
   [key: string]: MonitorData
 }
 
+interface LongTermSummary {
+  period: string
+  checks: number
+  operational: number
+  degraded: number
+  down: number
+  maintenance: number
+  uptime: number
+}
+
 interface IncidentHistoryItem {
   id: string
   monitorId: string
@@ -56,6 +66,7 @@ export default function StatusPage() {
   const [lastUpdate, setLastUpdate] = useState<string>('')
   const [checkIntervalMinutes, setCheckIntervalMinutes] = useState<number>(1)
   const [incidentHistory, setIncidentHistory] = useState<IncidentHistoryItem[]>([])
+  const [longTermHistory, setLongTermHistory] = useState<LongTermSummary[]>([])
   const [loading, setLoading] = useState(true)
   const [language, setLanguage] = useState<Language>('en')
 
@@ -91,6 +102,7 @@ export default function StatusPage() {
         setLastUpdate(data.lastUpdate || new Date().toISOString())
         setCheckIntervalMinutes(data.checkIntervalMinutes || 1)
         setIncidentHistory(Array.isArray(data.incidentHistory) ? data.incidentHistory : [])
+        setLongTermHistory(Array.isArray(data.longTermHistory) ? data.longTermHistory : [])
       }
     } catch (error) {
       console.error('Failed to fetch monitor status:', error)
@@ -225,6 +237,29 @@ export default function StatusPage() {
               )}
             </div>
           </div>
+
+          <section className="mb-8">
+            <div className="mb-5">
+              <h2 className="text-lg font-semibold text-foreground">{language === 'ja' ? '長期稼働履歴' : 'Long-term uptime history'}</h2>
+              <p className="mt-1 text-sm text-muted-foreground">{language === 'ja' ? '30日を超える期間は月別に集計し、保存された期間を一覧できます。' : 'Periods beyond 30 days are summarized by month so long-term history remains easy to read.'}</p>
+            </div>
+            {longTermHistory.length > 0 ? (
+              <div className="overflow-hidden rounded-lg border border-border bg-card">
+                {[...longTermHistory].reverse().map((item) => (
+                  <div key={item.period} className="grid grid-cols-2 gap-3 border-b border-border px-4 py-3 last:border-0 sm:grid-cols-4 sm:px-6">
+                    <span className="font-medium text-foreground">{item.period}</span>
+                    <span className="text-sm text-muted-foreground">{language === 'ja' ? `${item.checks.toLocaleString()} 回確認` : `${item.checks.toLocaleString()} checks`}</span>
+                    <span className="text-sm text-muted-foreground">{language === 'ja' ? `停止 ${item.down}` : `Down ${item.down}`}</span>
+                    <span className="text-sm font-medium text-foreground">{item.uptime.toFixed(2)}%</span>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div className="rounded-lg border border-border bg-card px-4 py-5 text-sm text-muted-foreground sm:px-6">
+                {language === 'ja' ? '長期履歴はまだありません。今後の監視結果が月別に保存されます。' : 'No long-term history yet. Future checks will be stored by month.'}
+              </div>
+            )}
+          </section>
 
           <section className="mb-8">
             <div className="mb-5 flex items-end justify-between gap-4">
