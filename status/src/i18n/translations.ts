@@ -6,8 +6,9 @@ import { en } from './locales/en'
 import { fr } from './locales/fr'
 import { uk } from './locales/uk'
 import { ja } from './locales/ja'
+import { de, es, id, ko, pt, th, vi, zh } from './locales/additional'
 
-const ALL_LOCALES = { en, fr, uk, ja }
+const ALL_LOCALES = { en, fr, uk, ja, ko, zh, de, es, pt, vi, id, th }
 
 export type Language = keyof typeof ALL_LOCALES
 
@@ -74,11 +75,11 @@ export interface Translations {
 }
 
 const envLangs = import.meta.env.VITE_ALLOWED_LANGS
-const CONFIG_LANGUAGES = (envLangs ? envLangs.split(',') : ['en', 'fr'])
+const CONFIG_LANGUAGES = (envLangs ? envLangs.split(',') : ['ja', 'en', 'ko', 'zh', 'fr', 'de', 'es', 'pt', 'vi', 'id', 'th'])
 .map((l: string) => l.trim())
 .filter((l: string) => l in ALL_LOCALES) as Language[]
 
-export const ENABLED_LANGUAGES: Language[] = CONFIG_LANGUAGES.length > 0 ? CONFIG_LANGUAGES : ['en']
+export const ENABLED_LANGUAGES: Language[] = CONFIG_LANGUAGES.filter((lang) => lang !== 'uk') as Language[]
 
 export const NATIVE_NAMES = ENABLED_LANGUAGES.reduce((acc, lang) => {
   acc[lang as Language] = ALL_LOCALES[lang as Language].nativeName
