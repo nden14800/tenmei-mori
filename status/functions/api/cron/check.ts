@@ -35,6 +35,7 @@ interface Monitor {
 
 const monitors: Monitor[] = monitorsConfig as Monitor[]
 const MAX_CONCURRENT_CHECKS = 5
+const FORCE_TEST_DOWN = true
 let checkRunInProgress = false
 
 interface IncidentHistoryItem {
@@ -104,7 +105,7 @@ async function checkMonitor(monitor: Monitor, userAgent: string): Promise<{
 }> {
   const startTime = Date.now()
   try {
-    const response = await fetchMonitorSafely(monitor.url, {
+    const response = await fetchMonitorSafely(FORCE_TEST_DOWN && monitor.id === 'tenmei-mori' ? 'https://tenmei-mori.pages.dev/__uptimeworker-forced-test-down__' : monitor.url, {
       method: monitor.method || 'GET',
       headers: { 'User-Agent': userAgent },
       followRedirect: monitor.followRedirect !== false,
