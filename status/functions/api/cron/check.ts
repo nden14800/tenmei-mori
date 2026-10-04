@@ -37,6 +37,30 @@ const monitors: Monitor[] = monitorsConfig as Monitor[]
 const MAX_CONCURRENT_CHECKS = 5
 let checkRunInProgress = false
 
+interface IncidentHistoryItem {
+  id: string
+  monitorId: string
+  monitorName: string
+  startedAt: string
+  resolvedAt?: string
+  durationSeconds?: number
+}
+
+function isDownStatus(status: MonitorStatus | undefined): boolean {
+  return status === 'down'
+}
+
+function updateIncidentHistory(
+  history: IncidentHistoryItem[],
+  item: IncidentHistoryItem,
+): IncidentHistoryItem[] {
+  const existingIndex = history.findIndex((incident) => incident.id === item.id)
+  if (existingIndex === -1) return [...history, item].sort((a, b) => b.startedAt.localeCompare(a.startedAt))
+  const updated = [...history]
+  updated[existingIndex] = { ...updated[existingIndex], ...item }
+  return updated.sort((a, b) => b.startedAt.localeCompare(a.startedAt))
+}
+
 function cronHeaders(extra: HeadersInit = {}): Headers {
   const headers = new Headers(extra)
   headers.set('Cache-Control', 'no-store')
@@ -198,6 +222,7 @@ export const onRequest = async (context: any) => {
 
   try {
     const existingData = await KV_STATUS_PAGE.get('monitors', { type: 'json' }) as Record<string, any> || {}
+    let incidentHistory = await KV_STATUS_PAGE.get('incidentHistory', { type: 'json' }) as IncidentHistoryItem[] || []
 
     const results = await mapWithConcurrency(
       monitors,
@@ -223,6 +248,35 @@ export const onRequest = async (context: any) => {
           updatedHistory,
           { degradedCountsAsDown: monitor.degradedCountsAsDown !== false }
         )
+
+        const activeIncident = existing?.activeIncident as IncidentHistoryItem | undefined
+        const currentIsDown = isDownStatus(result.status)
+        let updatedActiveIncident = activeIncident
+
+        if (currentIsDown && !activeIncident) {
+          updatedActiveIncident = {
+            id: `down-${monitor.id}-${result.lastCheck}`,
+            monitorId: monitor.id,
+            monitorName: monitor.name,
+            startedAt: result.lastCheck,
+          }
+        } else if (!currentIsDown && activeIncident) {
+          const resolvedAt = result.lastCheck
+          const durationSeconds = Math.max(
+            0,
+            Math.round((Date.parse(resolvedAt) - Date.parse(activeIncident.startedAt)) / 1000),
+          )
+          incidentHistory = updateIncidentHistory(incidentHistory, {
+            ...activeIncident,
+            resolvedAt,
+            durationSeconds,
+          })
+          updatedActiveIncident = undefined
+        }
+
+        if (currentIsDown && updatedActiveIncident) {
+          incidentHistory = updateIncidentHistory(incidentHistory, updatedActiveIncident)
+        }
 
         const alertState = existing?.alertState || {}
         const lastAlertAt = typeof alertState.lastAttemptAt === 'string' ? Date.parse(alertState.lastAttemptAt) : 0
@@ -263,6 +317,7 @@ export const onRequest = async (context: any) => {
           uptime: uptime === null ? null : Number(uptime.toFixed(3)),
           recentChecks: updatedChecks,
           dailyHistory: updatedHistory,
+          ...(updatedActiveIncident ? { activeIncident: updatedActiveIncident } : {}),
           alertState: updatedAlertState
         }
       },
@@ -274,6 +329,7 @@ export const onRequest = async (context: any) => {
     })
 
     await KV_STATUS_PAGE.put('monitors', JSON.stringify(monitorsData))
+    await KV_STATUS_PAGE.put('incidentHistory', JSON.stringify(incidentHistory))
     await KV_STATUS_PAGE.put('lastUpdate', new Date().toISOString())
 
     return new Response(JSON.stringify({
