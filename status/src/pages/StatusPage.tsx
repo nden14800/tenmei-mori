@@ -138,6 +138,18 @@ export default function StatusPage() {
 
   const monitorsInMaintenance = new Set(activeMaintenances.flatMap((maintenance) => maintenance.affectedServices))
   const fallbackTimestamp = lastUpdate || new Date().toISOString()
+  const yearlyLongTermHistory = Object.values(longTermHistory.reduce<Record<string, { year: string; checks: number; down: number; uptimeWeighted: number }>>((acc, item) => {
+    const year = item.period.slice(0, 4)
+    const current = acc[year] || { year, checks: 0, down: 0, uptimeWeighted: 0 }
+    current.checks += item.checks
+    current.down += item.down
+    current.uptimeWeighted += item.uptime * item.checks
+    acc[year] = current
+    return acc
+  }, {})).map((item) => ({
+    ...item,
+    uptime: item.checks > 0 ? item.uptimeWeighted / item.checks : 100,
+  })).sort((a, b) => b.year.localeCompare(a.year))
 
   const getDisplayMonitorData = (monitorId: string): MonitorData | undefined => {
     const monitorData = kvMonitors[monitorId]
@@ -240,7 +252,30 @@ export default function StatusPage() {
 
           <section className="mb-8">
             <div className="mb-5">
-              <h2 className="text-lg font-semibold text-foreground">{language === 'ja' ? '長期稼働履歴' : 'Long-term uptime history'}</h2>
+              <h2 className="text-lg font-semibold text-foreground">{language === 'ja' ? '年別稼働履歴' : 'Yearly uptime history'}</h2>
+              <p className="mt-1 text-sm text-muted-foreground">{language === 'ja' ? '保存された月別データを年単位でも確認できます。' : 'Stored monthly data is also summarized by year.'}</p>
+            </div>
+            {yearlyLongTermHistory.length > 0 ? (
+              <div className="overflow-hidden rounded-lg border border-border bg-card">
+                {yearlyLongTermHistory.map((item) => (
+                  <div key={item.year} className="grid grid-cols-2 gap-3 border-b border-border px-4 py-3 last:border-0 sm:grid-cols-4 sm:px-6">
+                    <span className="font-medium text-foreground">{item.year}</span>
+                    <span className="text-sm text-muted-foreground">{language === 'ja' ? `${item.checks.toLocaleString()} 回確認` : `${item.checks.toLocaleString()} checks`}</span>
+                    <span className="text-sm text-muted-foreground">{language === 'ja' ? `停止 ${item.down}` : `Down ${item.down}`}</span>
+                    <span className="text-sm font-medium text-foreground">{item.uptime.toFixed(2)}%</span>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div className="rounded-lg border border-border bg-card px-4 py-5 text-sm text-muted-foreground sm:px-6">
+                {language === 'ja' ? '年別履歴はまだありません。' : 'No yearly history yet.'}
+              </div>
+            )}
+          </section>
+
+          <section className="mb-8">
+            <div className="mb-5">
+              <h2 className="text-lg font-semibold text-foreground">{language === 'ja' ? '月別稼働履歴' : 'Monthly uptime history'}</h2>
               <p className="mt-1 text-sm text-muted-foreground">{language === 'ja' ? '30日を超える期間は月別に集計し、保存された期間を一覧できます。' : 'Periods beyond 30 days are summarized by month so long-term history remains easy to read.'}</p>
             </div>
             {longTermHistory.length > 0 ? (
