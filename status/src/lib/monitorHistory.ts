@@ -37,7 +37,7 @@ export function appendDailyCheck(
     ...(counts ? { counts } : {}),
   }
   return [...history.filter((day) => day.date !== date), entry]
-    .sort((a, b) => a.date.localeCompare(b.date)).slice(-30)
+    .sort((a, b) => a.date.localeCompare(b.date)).slice(-365)
 }
 
 export function calculateDailyUptime(history: readonly DailyHistoryPoint[], options: UptimeOptions = {}): number | null {
