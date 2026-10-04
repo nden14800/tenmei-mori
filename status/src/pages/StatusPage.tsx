@@ -41,11 +41,21 @@ interface KVMonitors {
   [key: string]: MonitorData
 }
 
+interface IncidentHistoryItem {
+  id: string
+  monitorId: string
+  monitorName: string
+  startedAt: string
+  resolvedAt?: string
+  durationSeconds?: number
+}
+
 export default function StatusPage() {
   const [kvMonitors, setKvMonitors] = useState<KVMonitors>({})
   const [activeMaintenances, setActiveMaintenances] = useState<MaintenanceData[]>([])
   const [lastUpdate, setLastUpdate] = useState<string>('')
   const [checkIntervalMinutes, setCheckIntervalMinutes] = useState<number>(1)
+  const [incidentHistory, setIncidentHistory] = useState<IncidentHistoryItem[]>([])
   const [loading, setLoading] = useState(true)
   const [language, setLanguage] = useState<Language>('en')
 
@@ -80,6 +90,7 @@ export default function StatusPage() {
         setActiveMaintenances(data.maintenances || [])
         setLastUpdate(data.lastUpdate || new Date().toISOString())
         setCheckIntervalMinutes(data.checkIntervalMinutes || 1)
+        setIncidentHistory(Array.isArray(data.incidentHistory) ? data.incidentHistory : [])
       }
     } catch (error) {
       console.error('Failed to fetch monitor status:', error)
@@ -137,6 +148,21 @@ export default function StatusPage() {
 
   const overallStatus = getOverallStatus(knownStatuses)
   const activeIncidents = getActiveIncidents()
+  const formatIncidentDate = (value: string) => new Date(value).toLocaleString(
+    language === 'ja' ? 'ja-JP' : 'en-US',
+    { year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' }
+  )
+  const formatIncidentDuration = (seconds?: number) => {
+    if (typeof seconds !== 'number') return t.incidentOngoing
+    if (seconds < 60) return language === 'ja' ? `${seconds}秒` : `${seconds}s`
+    const minutes = Math.floor(seconds / 60)
+    if (minutes < 60) return language === 'ja' ? `${minutes}分` : `${minutes} min`
+    const hours = Math.floor(minutes / 60)
+    const remainingMinutes = minutes % 60
+    return language === 'ja'
+      ? `${hours}時間${remainingMinutes ? ` ${remainingMinutes}分` : ''}`
+      : `${hours}h${remainingMinutes ? ` ${remainingMinutes}m` : ''}`
+  }
 
   return (
     <div className="min-h-screen flex flex-col bg-background">
@@ -199,6 +225,37 @@ export default function StatusPage() {
               )}
             </div>
           </div>
+
+          {incidentHistory.length > 0 && (
+            <section className="mb-8">
+              <div className="mb-5 flex items-end justify-between gap-4">
+                <div>
+                  <h2 className="text-lg font-semibold text-foreground sm:text-xl">{t.incidentHistoryTitle}</h2>
+                  <p className="mt-1 text-sm text-muted-foreground">{t.incidentHistoryDescription}</p>
+                </div>
+                <span className="shrink-0 text-xs text-muted-foreground">
+                  {incidentHistory.length} {t.incidentCountLabel}
+                </span>
+              </div>
+              <div className="overflow-hidden rounded-lg border border-border bg-card">
+                {incidentHistory.map((incident) => (
+                  <article key={incident.id} className="border-b border-border px-4 py-4 last:border-0 sm:px-6">
+                    <div className="flex flex-wrap items-center justify-between gap-2">
+                      <h3 className="font-medium text-foreground">{incident.monitorName}</h3>
+                      <span className={incident.resolvedAt ? "text-xs text-muted-foreground" : "text-xs font-medium text-foreground"}>
+                        {incident.resolvedAt ? t.incidentResolved : t.incidentOngoing}
+                      </span>
+                    </div>
+                    <div className="mt-2 grid gap-1 text-sm text-muted-foreground sm:grid-cols-3">
+                      <span>{t.incidentStarted}: {formatIncidentDate(incident.startedAt)}</span>
+                      <span>{incident.resolvedAt ? `${t.incidentResolvedAt}: ${formatIncidentDate(incident.resolvedAt)}` : t.incidentStillDown}</span>
+                      <span>{t.incidentDuration}: {formatIncidentDuration(incident.durationSeconds)}</span>
+                    </div>
+                  </article>
+                ))}
+              </div>
+            </section>
+          )}
 
           <div className="mt-8 border-t border-border pt-6 sm:mt-10">
             <h3 className="mb-2 text-base font-semibold text-foreground">
