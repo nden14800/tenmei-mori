@@ -27,7 +27,7 @@ function getLocalizedText(text: LocalizedText, language: Language): string {
 
 export default function MaintenanceNotice({ maintenance, language }: MaintenanceNoticeProps) {
   const t = getTranslations(language)
-  const locale = language === 'fr' ? 'fr-FR' : language === 'uk' ? 'uk-UA' : 'en-US'
+  const locale = language === 'fr' ? 'fr-FR' : language === 'uk' ? 'uk-UA' : language === 'ja' ? 'ja-JP' : 'en-US'
 
   const start = getMaintenanceDate(maintenance, 'start')
   const end = getMaintenanceDate(maintenance, 'end')
