@@ -87,21 +87,41 @@ export default function Footer({ language }: FooterProps) {
                   target="_blank"
                   rel="noopener noreferrer"
                 >
-                  {language === 'en' ? 'Sponsor' : language === 'ja' ? '支援する' : 'Soutenir'}
+                  {t.sponsor}
                 </a>
               )}
             </div>
 
             <div className="space-y-1.5 pt-1 text-xs text-foreground/45">
               <p>
-                {language === 'en'
-                  ? 'Powered by UptimeWorker — Apache License 2.0'
-                  : language === 'ja'
-                    ? 'UptimeWorkerをベースに構築 — Apache License 2.0'
-                    : 'Basé sur UptimeWorker — Apache License 2.0'}
+                {{
+                  en: 'Powered by UptimeWorker — Apache License 2.0',
+                  ja: 'UptimeWorkerをベースに構築 — Apache License 2.0',
+                  fr: 'Basé sur UptimeWorker — Apache License 2.0',
+                  ko: 'UptimeWorker 기반 — Apache License 2.0',
+                  zh: '基于 UptimeWorker 构建 — Apache License 2.0',
+                  de: 'Basiert auf UptimeWorker — Apache License 2.0',
+                  es: 'Basado en UptimeWorker — Apache License 2.0',
+                  pt: 'Desenvolvido com UptimeWorker — Apache License 2.0',
+                  vi: 'Được xây dựng dựa trên UptimeWorker — Apache License 2.0',
+                  id: 'Didukung oleh UptimeWorker — Apache License 2.0',
+                  th: 'สร้างโดยใช้ UptimeWorker — Apache License 2.0',
+                }[language]}
               </p>
               <p>
-                {language === 'en' ? 'Original project by ' : language === 'ja' ? '原作者: ' : 'Projet original par '}
+                {{
+                  en: 'Original project by ',
+                  ja: '原作者: ',
+                  fr: 'Projet original par ',
+                  ko: '원본 프로젝트: ',
+                  zh: '原项目：',
+                  de: 'Originalprojekt von ',
+                  es: 'Proyecto original de ',
+                  pt: 'Projeto original por ',
+                  vi: 'Dự án gốc của ',
+                  id: 'Proyek asli oleh ',
+                  th: 'โครงการต้นฉบับโดย ',
+                }[language]}
                 <a
                   href="https://github.com/UptimeWorker/UptimeWorker"
                   className="text-foreground/60 hover:text-foreground/90 hover:underline"
