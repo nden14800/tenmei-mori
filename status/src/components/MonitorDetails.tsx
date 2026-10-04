@@ -28,7 +28,7 @@ export default function MonitorDetails({
   dailyHistory,
 }: MonitorDetailsProps) {
   const t = getTranslations(language)
-  const locale = language === 'fr' ? 'fr-FR' : language === 'uk' ? 'uk-UA' : 'en-US'
+  const locale = language === 'fr' ? 'fr-FR' : language === 'uk' ? 'uk-UA' : language === 'ja' ? 'ja-JP' : 'en-US'
   const events = getRecentMonitorEvents({
     period,
     lastCheck,
