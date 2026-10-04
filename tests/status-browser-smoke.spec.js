@@ -53,22 +53,34 @@ test('main site internal navigation works, including developer view', async ({ p
   ];
 
   for (const [label, navSelector, selector, text] of checks) {
-    const nav = page.locator(navSelector);
-    await expect(nav, label + 'のナビゲーションが見つかりません')
-      .toBeVisible({ timeout: 10000 });
+    const checkPage = await page.context().newPage();
+    try {
+      const checkResponse = await checkPage.goto(SITE, {
+        waitUntil: 'domcontentloaded',
+        timeout: 30000
+      });
+      expect(checkResponse && checkResponse.ok()).toBeTruthy();
 
-    await dismissTutorial(page);
-    await nav.click({ force: true });
+      await dismissTutorial(checkPage);
 
-    const target = page.locator(selector);
-    await expect(target, label + 'を押しても対象画面が表示されません')
-      .toBeVisible({ timeout: 10000 });
+      const nav = checkPage.locator(navSelector);
+      await expect(nav, label + 'のナビゲーションが見つかりません')
+        .toBeVisible({ timeout: 10000 });
 
-    const box = await target.boundingBox();
-    expect(box, label + 'の表示領域がありません').not.toBeNull();
+      await nav.click({ force: true });
 
-    if (text) {
-      await expect(target).toContainText(text, { timeout: 10000 });
+      const target = checkPage.locator(selector);
+      await expect(target, label + 'を押しても対象画面が表示されません')
+        .toBeVisible({ timeout: 10000 });
+
+      const box = await target.boundingBox();
+      expect(box, label + 'の表示領域がありません').not.toBeNull();
+
+      if (text) {
+        await expect(target).toContainText(text, { timeout: 10000 });
+      }
+    } finally {
+      await checkPage.close();
     }
   }
 });
