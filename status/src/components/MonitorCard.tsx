@@ -36,6 +36,37 @@ function getBarStatusLabel(barStatus: BarStatus, language: Language): string {
       return t.noData
   }
 }
+const MONITOR_DESCRIPTIONS: Record<string, Partial<Record<Language, string>>> = {
+  'tenmei-mori': {
+    en: 'Tenmei no Mori public website',
+    ko: '천명노모리 공개 사이트',
+    zh: '天命乃杜公开网站',
+    fr: 'Site public de Tenmei no Mori',
+    de: 'Öffentliche Website von Tenmei no Mori',
+    es: 'Sitio web público de Tenmei no Mori',
+    pt: 'Site público do Tenmei no Mori',
+    vi: 'Trang web công khai của Tenmei no Mori',
+    id: 'Situs publik Tenmei no Mori',
+    th: 'เว็บไซต์สาธารณะของ Tenmei no Mori',
+  },
+  'tenmei-mori-worker-api': {
+    en: 'Tenmei no Mori API',
+    ko: '천명노모리 API',
+    zh: '天命乃杜 API',
+    fr: 'API de Tenmei no Mori',
+    de: 'API von Tenmei no Mori',
+    es: 'API de Tenmei no Mori',
+    pt: 'API do Tenmei no Mori',
+    vi: 'API của Tenmei no Mori',
+    id: 'API Tenmei no Mori',
+    th: 'API ของ Tenmei no Mori',
+  },
+}
+
+function getMonitorDescription(monitor: Monitor, language: Language): string | undefined {
+  return MONITOR_DESCRIPTIONS[monitor.id]?.[language] ?? monitor.description
+}
+
 function getSafeExternalUrl(value: string | undefined): string | undefined {
   if (!value) return undefined
 
@@ -287,9 +318,9 @@ export default function MonitorCard({ monitor, data, language, checkIntervalMinu
                   )}
                 />
               </div>
-              {monitor.description && (
+              {getMonitorDescription(monitor, language) && (
                 <p className="text-xs text-muted-foreground mt-0.5">
-                  {monitor.description}
+                  {getMonitorDescription(monitor, language)}
                 </p>
               )}
             </button>
