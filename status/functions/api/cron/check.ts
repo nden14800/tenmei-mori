@@ -137,157 +137,33 @@ function getMaxRecentChecks(intervalMinutes: number): number {
 
 
 async function sendStatusAlert(
-  webhookUrl: string | undefined,
-  format: string | undefined,
+  alertUrl: string | undefined,
+  alertSecret: string | undefined,
   monitor: Monitor,
   previousStatus: MonitorStatus | undefined,
   currentStatus: MonitorStatus,
   responseTime: number,
 ): Promise<boolean> {
-  if (!webhookUrl || !previousStatus || previousStatus === currentStatus) return false
-
-  const statusLabel: Record<MonitorStatus, string> = {
-    operational: '正常',
-    degraded: '低下',
-    down: '停止',
-  }
-  const title = currentStatus === 'operational'
-    ? '🟢 天命乃杜 Status 回復'
-    : currentStatus === 'degraded'
-      ? '🟡 天命乃杜 Status 低下'
-      : '🔴 天命乃杜 Status 障害'
-  const message = monitor.name + ': ' + statusLabel[previousStatus] + ' → ' + statusLabel[currentStatus] + ' (' + responseTime + 'ms)'
-
-  const payload = format === 'json'
-    ? { event: 'status_change', monitor: { id: monitor.id, name: monitor.name, url: monitor.url }, previousStatus, currentStatus, responseTime, message }
-    : { content: title + '\\n' + message + '\\n' + monitor.url }
+  if (!alertUrl || !alertSecret || !previousStatus || previousStatus === currentStatus) return false
 
   try {
-    const response = await fetch(webhookUrl, {
+    const response = await fetch(alertUrl, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(payload),
+      headers: {
+        'Content-Type': 'application/json',
+        'X-Status-Alert-Auth': alertSecret,
+      },
+      body: JSON.stringify({
+        monitor: monitor.name,
+        url: monitor.url,
+        previousStatus,
+        currentStatus,
+        responseTime,
+      }),
     })
     return response.ok
   } catch {
     return false
   }
 }
-\nexport const onRequest = async (context: any) => {
-  if (context.request.method !== 'POST') {
-    return new Response('Method Not Allowed', {
-      status: 405,
-      headers: cronHeaders({ Allow: 'POST' }),
-    })
-  }
 
-  const { KV_STATUS_PAGE, CRON_SECRET, CRON_CHECK_INTERVAL, MONITOR_USER_AGENT, STATUS_ALERT_WEBHOOK_URL, STATUS_ALERT_WEBHOOK_FORMAT } = context.env
-  const authHeader = context.request.headers.get('X-Cron-Auth')
-
-  if (!CRON_SECRET || !authHeader || !timingSafeEqualStr(authHeader, CRON_SECRET)) {
-    return new Response('Access denied', { status: 401, headers: cronHeaders() })
-  }
-
-  const checkInterval = parseCheckInterval(CRON_CHECK_INTERVAL, 1)
-  if (!checkInterval) {
-    return new Response('Invalid cron configuration', { status: 503, headers: cronHeaders() })
-  }
-  if (checkRunInProgress) {
-    return new Response('Check already running', {
-      status: 409,
-      headers: cronHeaders({ 'Retry-After': '5' }),
-    })
-  }
-
-  const maxRecentChecks = getMaxRecentChecks(checkInterval)
-  const userAgent = MONITOR_USER_AGENT || 'UptimeWorker-Monitor/1.0'
-  checkRunInProgress = true
-
-  try {
-    const existingData = await KV_STATUS_PAGE.get('monitors', { type: 'json' }) as Record<string, any> || {}
-
-    const results = await mapWithConcurrency(
-      monitors,
-      MAX_CONCURRENT_CHECKS,
-      async (monitor) => {
-        const result = await checkMonitor(monitor, userAgent)
-        const existing = existingData[monitor.id]
-        const startDate = existing?.startDate || new Date().toISOString()
-
-        // 1. Recent checks: store each check with timestamp + response time
-        // (rt, ms) pour les filtres 1h/24h et le futur graphique de latence.
-        const previousChecks: Array<{ t: string; s: MonitorStatus; rt?: number }> = existing?.recentChecks || []
-        const previousStatus = previousChecks.length > 0 ? previousChecks[previousChecks.length - 1].s : undefined
-        const updatedChecks = [...previousChecks, { t: result.lastCheck, s: result.status, rt: result.responseTime }]
-          .slice(-maxRecentChecks)
-
-        // 2. Preserve the worst daily status and count actual observations separately.
-        const previousHistory: DailyHistoryPoint[] = existing?.dailyHistory || []
-        const updatedHistory = appendDailyCheck(previousHistory, result.lastCheck, result.status)
-
-        // Calculate uptime from daily history
-        const uptime = calculateDailyUptime(
-          updatedHistory,
-          { degradedCountsAsDown: monitor.degradedCountsAsDown !== false }
-        )
-
-        const alertState = existing?.alertState || {}
-        const lastAlertAt = typeof alertState.lastAttemptAt === 'string' ? Date.parse(alertState.lastAttemptAt) : 0
-        const alertCooldownMs = 15 * 60 * 1000
-        let updatedAlertState = alertState
-        if (STATUS_ALERT_WEBHOOK_URL && previousStatus && previousStatus !== result.status && Date.now() - lastAlertAt >= alertCooldownMs) {
-          const sent = await sendStatusAlert(
-            STATUS_ALERT_WEBHOOK_URL,
-            STATUS_ALERT_WEBHOOK_FORMAT,
-            monitor,
-            previousStatus,
-            result.status,
-            result.responseTime,
-          )
-          updatedAlertState = {
-            lastAttemptAt: new Date().toISOString(),
-            ...(sent ? { lastAlertStatus: result.status, lastSuccessAt: new Date().toISOString() } : {}),
-          }
-        }
-
-        return {
-          id: monitor.id,
-          ...result,
-          startDate,
-          uptime: uptime === null ? null : Number(uptime.toFixed(3)),
-          recentChecks: updatedChecks,
-          dailyHistory: updatedHistory,
-          alertState: updatedAlertState
-        }
-      },
-    )
-
-    const monitorsData: Record<string, any> = {}
-    results.forEach(({ id, ...data }) => {
-      monitorsData[id] = data
-    })
-
-    await KV_STATUS_PAGE.put('monitors', JSON.stringify(monitorsData))
-    await KV_STATUS_PAGE.put('lastUpdate', new Date().toISOString())
-
-    return new Response(JSON.stringify({
-      success: true,
-      checked: results.length,
-      timestamp: new Date().toISOString()
-    }), {
-      headers: cronHeaders({ 'Content-Type': 'application/json; charset=utf-8' })
-    })
-
-  } catch (error) {
-    console.error('Cron check error:', error)
-    return new Response(JSON.stringify({
-      success: false,
-      error: 'Internal server error'
-    }), {
-      status: 500,
-      headers: cronHeaders({ 'Content-Type': 'application/json; charset=utf-8' })
-    })
-  } finally {
-    checkRunInProgress = false
-  }
-}
