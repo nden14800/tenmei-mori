@@ -1,3 +1,7 @@
+/*
+ * Modified from UptimeWorker (Apache-2.0).
+ * Changes: added Japanese locale support and enabled locale integration for 天命乃杜.
+ */
 import { en } from './locales/en'
 import { fr } from './locales/fr'
 import { uk } from './locales/uk'
