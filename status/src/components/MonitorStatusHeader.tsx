@@ -15,7 +15,7 @@ export default function MonitorStatusHeader({
   language,
 }: MonitorStatusHeaderProps) {
   const t = getTranslations(language)
-  const locale = language === 'fr' ? 'fr-FR' : language === 'uk' ? 'uk-UA' : 'en-US'
+  const locale = language === 'fr' ? 'fr-FR' : language === 'uk' ? 'uk-UA' : language === 'ja' ? 'ja-JP' : 'en-US'
   const isOperational = overallStatus === 'operational'
   const isMaintenance = overallStatus === 'maintenance'
   const isDegraded = overallStatus === 'degraded'
