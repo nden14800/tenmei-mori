@@ -80,11 +80,14 @@ const DEVELOPER_NAV_FIX = `
     }
 
     document.addEventListener("click", function (event) {
-      var target = event.target && event.target.closest
-        ? event.target.closest('[onclick*="showView(\'history\')"], [onclick*="showView(\"history\")"]')
-        : null;
+      var target = event.target;
+      if (!target || !target.closest) return;
 
-      if (!target) return;
+      var control = target.closest("[onclick]");
+      if (!control) return;
+
+      var onclick = control.getAttribute("onclick") || "";
+      if (!/showView\\(\\s*[\\'"]history[\\'"]\\s*\\)/.test(onclick)) return;
 
       event.preventDefault();
       forceOpenView("history");
