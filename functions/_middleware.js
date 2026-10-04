@@ -3,66 +3,29 @@ const DEVELOPER_NAV_FIX = `
 (function () {
   "use strict";
 
-  function openDeveloper() {
-    var target = document.getElementById("view-developer");
-    if (!target) return false;
-
-    if (typeof window.showView === "function") {
-      try {
-        window.showView("developer");
-      } catch (error) {}
-    }
-
-    window.setTimeout(function () {
-      var current = document.getElementById("view-developer");
-      if (!current) return;
-
-      var visible = !!(
-        current.offsetWidth ||
-        current.offsetHeight ||
-        current.getClientRects().length
-      );
-
-      if (!visible || !current.classList.contains("active")) {
-        document.querySelectorAll(".view-section").forEach(function (view) {
-          view.classList.remove("active");
-        });
-        current.classList.add("active");
-      }
-
-      window.scrollTo({ top: 0, behavior: "auto" });
-    }, 0);
-
-    return true;
-  }
-
   function forceOpenView(viewName) {
     var target = document.getElementById("view-" + viewName);
     if (!target) return false;
 
+    document.querySelectorAll(".view-section").forEach(function (view) {
+      view.classList.remove("active");
+      view.setAttribute("aria-hidden", "true");
+    });
+
+    target.classList.add("active");
+    target.removeAttribute("hidden");
+    target.setAttribute("aria-hidden", "false");
+
     if (typeof window.showView === "function") {
-      try {
-        window.showView(viewName);
-      } catch (error) {}
+      try { window.showView(viewName); } catch (error) {}
     }
 
     window.setTimeout(function () {
       var current = document.getElementById("view-" + viewName);
       if (!current) return;
-
-      var visible = !!(
-        current.offsetWidth ||
-        current.offsetHeight ||
-        current.getClientRects().length
-      );
-
-      if (!visible || !current.classList.contains("active")) {
-        document.querySelectorAll(".view-section").forEach(function (view) {
-          view.classList.remove("active");
-        });
-        current.classList.add("active");
-      }
-
+      current.classList.add("active");
+      current.removeAttribute("hidden");
+      current.setAttribute("aria-hidden", "false");
       window.scrollTo({ top: 0, behavior: "auto" });
     }, 0);
 
@@ -70,27 +33,29 @@ const DEVELOPER_NAV_FIX = `
   }
 
   function bind() {
-    var nav = document.getElementById("nav-developer");
-    if (nav && nav.dataset.tenmeiDeveloperNavigationFixed !== "true") {
-      nav.dataset.tenmeiDeveloperNavigationFixed = "true";
-      nav.addEventListener("click", function (event) {
-        event.preventDefault();
-        forceOpenView("developer");
-      });
-    }
-
     document.addEventListener("click", function (event) {
       var target = event.target;
       if (!target || !target.closest) return;
 
-      var control = target.closest("[onclick]");
+      var control = target.closest("#nav-developer, [onclick]");
       if (!control) return;
 
-      var onclick = control.getAttribute("onclick") || "";
-      if (!/showView\\(\\s*[\\'"]history[\\'"]\\s*\\)/.test(onclick)) return;
+      var viewName = null;
+      if (control.id === "nav-developer") {
+        viewName = "developer";
+      } else {
+        var onclick = control.getAttribute("onclick") || "";
+        var match = onclick.match(/showView\(\s*['"]([^'"]+)['"]\s*\)/);
+        if (match && (match[1] === "developer" || match[1] === "history")) {
+          viewName = match[1];
+        }
+      }
+
+      if (!viewName) return;
 
       event.preventDefault();
-      forceOpenView("history");
+      event.stopImmediatePropagation();
+      forceOpenView(viewName);
     }, true);
   }
 
@@ -108,9 +73,7 @@ export async function onRequestGet(context) {
   const url = new URL(context.request.url);
   const contentType = response.headers.get("content-type") || "";
 
-  if (url.pathname !== "/" || !contentType.includes("text/html")) {
-    return response;
-  }
+  if (url.pathname !== "/" || !contentType.includes("text/html")) return response;
 
   return new HTMLRewriter()
     .on("body", {
