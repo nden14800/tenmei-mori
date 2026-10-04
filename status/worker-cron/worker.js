@@ -14,7 +14,7 @@ export default {
       throw new Error("CRON_SECRET is not configured");
     }
 
-    const target = "https://tenmei-mori.pages.dev/api/cron/check";
+    const target = "https://tenmei-mori.pages.dev/status/api/cron/check";
     const userAgent = env.CRON_USER_AGENT || "tenmei-mori-uptimeworker/1.0";
 
     console.log("Cron started:", new Date(event.scheduledTime).toISOString());
