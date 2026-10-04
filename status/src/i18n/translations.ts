@@ -13,15 +13,10 @@ const ALL_LOCALES = { en, fr, uk, ja, ko, zh, de, es, pt, vi, id, th }
 export type Language = keyof typeof ALL_LOCALES
 
 export interface Translations {
-  // Header
   statusPage: string
-
-  // Status Header
   allOperational: string
   notAllOperational: string
   lastChecked: string
-
-  // Monitor Card
   operational: string
   maintenance: string
   degraded: string
@@ -33,8 +28,6 @@ export interface Translations {
   uptime: string
   daysAgo: string
   today: string
-
-  // Uptime sections
   uptimeTitle: string
   lastHour: string
   last24Hours: string
@@ -42,24 +35,16 @@ export interface Translations {
   last7Days: string
   last30Days: string
   last90Days: string
-
-  // Monitor Details
   overallUptime: string
   responseTime: string
   recentEvents: string
   running: string
   offline: string
   noRecentEvents: string
-
-  // Incidents
   affectedServices: string
-
-  // About section
   aboutTitle: string
   aboutDescription: string
   visitWebsite: string
-
-  // Footer
   allRightsReserved: string
   about: string
   terms: string
@@ -67,17 +52,15 @@ export interface Translations {
   contact: string
   status: string
   sponsor: string
-
-  // Language toggle
   changeLanguageTooltip: string
   languageCode: string
   nativeName: string
 }
 
 const envLangs = import.meta.env.VITE_ALLOWED_LANGS
-const CONFIG_LANGUAGES = (envLangs ? envLangs.split(',') : ['ja', 'en', 'ko', 'zh', 'fr', 'de', 'es', 'pt', 'vi', 'id', 'th'])
-.map((l: string) => l.trim())
-.filter((l: string) => l in ALL_LOCALES) as Language[]
+const CONFIG_LANGUAGES = (envLangs ? envLangs.split(',') : ['ja', 'en'])
+  .map((l: string) => l.trim())
+  .filter((l: string) => l in ALL_LOCALES) as Language[]
 
 export const ENABLED_LANGUAGES: Language[] = CONFIG_LANGUAGES.filter((lang) => lang !== 'uk') as Language[]
 
@@ -112,27 +95,18 @@ export function getTranslations(lang: Language): Translations {
 }
 
 export function detectLanguage(): Language {
-  // Check localStorage first
   const saved = localStorage.getItem('language') as Language | null
+  if (saved && ENABLED_LANGUAGES.includes(saved)) return saved
 
-  if (saved && ENABLED_LANGUAGES.includes(saved)) {
-    return saved
-  }
-
-  // Detect from browser
   const browserLang = navigator.language.split('-')[0]
-  if (ENABLED_LANGUAGES.includes(browserLang as Language)) {
-    return browserLang as Language
-  }
+  if (ENABLED_LANGUAGES.includes(browserLang as Language)) return browserLang as Language
 
-  // Else return first enabled language
   return ENABLED_LANGUAGES[0] as Language
 }
 
 export function getNextLanguage(current: Language): Language {
   const currentIndex = ENABLED_LANGUAGES.indexOf(current)
   if (currentIndex === -1) return ENABLED_LANGUAGES[0] as Language
-
   const nextIndex = (currentIndex + 1) % ENABLED_LANGUAGES.length
   return ENABLED_LANGUAGES[nextIndex] as Language
 }
