@@ -57,10 +57,11 @@ export interface Translations {
   nativeName: string
 }
 
-const envLangs = import.meta.env.VITE_ALLOWED_LANGS
-const CONFIG_LANGUAGES = (envLangs ? envLangs.split(',') : ['ja', 'en'])
-  .map((l: string) => l.trim())
-  .filter((l: string) => l in ALL_LOCALES) as Language[]
+// The status page language selector intentionally follows tenmei-mori's current
+// public language setting: Japanese and English only.
+// Other locale files remain available for translating original tenmei-mori text,
+// but they are not exposed as selectable status-page languages.
+const CONFIG_LANGUAGES: Language[] = ['ja', 'en']
 
 export const ENABLED_LANGUAGES: Language[] = CONFIG_LANGUAGES.filter((lang) => lang !== 'uk') as Language[]
 
