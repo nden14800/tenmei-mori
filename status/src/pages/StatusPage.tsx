@@ -205,11 +205,7 @@ export default function StatusPage() {
               {t.aboutTitle}
             </h3>
             <p className="text-sm text-muted-foreground leading-relaxed">
-              {language === 'en'
-                ? 'This status page is a modified derivative of UptimeWorker, licensed under Apache License 2.0. For documentation and the original project: '
-                : language === 'ja'
-                  ? 'このステータスページは、Apache License 2.0で提供されるUptimeWorkerを天命乃杜向けに変更して使用しています。ドキュメントと原作プロジェクト: '
-                  : 'Cette page de statut est une version modifiée d’UptimeWorker, sous licence Apache License 2.0. Documentation et projet original : '}
+              {t.aboutDescription}
               <a
                 href="https://github.com/UptimeWorker/UptimeWorker"
                 className="text-foreground hover:underline font-medium"
