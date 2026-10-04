@@ -2,7 +2,7 @@ import { Link } from 'react-router-dom'
 import { Language, getTranslations } from '../i18n/translations'
 import { branding } from '../config/branding'
 import packageJson from '../../package.json'
-import { Heart, Coffee, Github } from 'lucide-react'
+import { Coffee, Github } from 'lucide-react'
 
 interface FooterProps {
   language: Language
@@ -57,7 +57,6 @@ export default function Footer({ language }: FooterProps) {
               )}
             </div>
 
-            {/* GitHub & Donation */}
             <div className="flex flex-wrap justify-center items-center gap-2 pt-2">
               {branding.githubUrl && (
                 <a
@@ -88,24 +87,39 @@ export default function Footer({ language }: FooterProps) {
                   target="_blank"
                   rel="noopener noreferrer"
                 >
-                  <Heart className="w-3.5 h-3.5" />
-                  {language === 'en' ? 'Sponsor' : 'Soutenir'}
+                  {language === 'en' ? 'Sponsor' : language === 'ja' ? '支援する' : 'Soutenir'}
                 </a>
               )}
             </div>
 
-            <div className="flex flex-wrap items-center justify-center gap-1.5 pt-1 text-xs text-foreground/45">
-              <span>{language === 'en' ? 'Made with' : 'Créé avec'}</span>
-              <Heart className="h-3.5 w-3.5 text-pink-500" fill="currentColor" />
-              <span>{language === 'en' ? 'in France by' : 'en France par'}</span>
-              <a
-                href="https://github.com/slymb"
-                className="text-foreground/60 hover:text-foreground/90 hover:underline"
-                target="_blank"
-                rel="noopener noreferrer"
-              >
-                github.com/slymb
-              </a>
+            <div className="space-y-1.5 pt-1 text-xs text-foreground/45">
+              <p>
+                {language === 'en'
+                  ? 'Powered by UptimeWorker — Apache License 2.0'
+                  : language === 'ja'
+                    ? 'UptimeWorkerをベースに構築 — Apache License 2.0'
+                    : 'Basé sur UptimeWorker — Apache License 2.0'}
+              </p>
+              <p>
+                {language === 'en' ? 'Original project by ' : language === 'ja' ? '原作者: ' : 'Projet original par '}
+                <a
+                  href="https://github.com/UptimeWorker/UptimeWorker"
+                  className="text-foreground/60 hover:text-foreground/90 hover:underline"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  UptimeWorker
+                </a>
+                {' · '}
+                <a
+                  href="https://github.com/slymb"
+                  className="text-foreground/60 hover:text-foreground/90 hover:underline"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  Slym B.
+                </a>
+              </p>
             </div>
           </div>
         </div>
