@@ -5,15 +5,16 @@ const STATUS = 'https://tenmei-mori-status.pages.dev/';
 
 async function dismissTutorial(page) {
   const overlay = page.locator('#tutorial-overlay.active');
-  if (await overlay.count()) {
-    const close = overlay.getByRole('button', { name: /スキップ|閉じる|次へ/ }).first();
-    if (await close.count()) {
-      await close.click({ force: true });
-    } else {
-      await page.keyboard.press('Escape');
-    }
-    await expect(overlay).toBeHidden({ timeout: 5000 }).catch(() => {});
+  if (!(await overlay.count())) return;
+
+  const close = overlay.getByRole('button', { name: /スキップ|閉じる|次へ/ }).first();
+  if (await close.count()) {
+    await close.click({ force: true });
+  } else {
+    await page.keyboard.press('Escape');
   }
+
+  await expect(overlay).toBeHidden({ timeout: 5000 }).catch(() => {});
 }
 
 test.describe.configure({ mode: 'serial' });
@@ -40,6 +41,8 @@ test('main site internal navigation works, including developer view', async ({ p
     timeout: 30000
   });
   expect(response && response.ok()).toBeTruthy();
+
+  await page.waitForLoadState('domcontentloaded');
   await dismissTutorial(page);
 
   const checks = [
@@ -51,12 +54,19 @@ test('main site internal navigation works, including developer view', async ({ p
 
   for (const [label, navSelector, selector, text] of checks) {
     const nav = page.locator(navSelector);
-    await expect(nav, label + 'のナビゲーションが見つかりません').toBeVisible({ timeout: 10000 });
-    await nav.click();
+    await expect(nav, label + 'のナビゲーションが見つかりません')
+      .toBeVisible({ timeout: 10000 });
+
+    await dismissTutorial(page);
+    await nav.click({ force: true });
+
     const target = page.locator(selector);
-    await expect(target, label + 'を押しても対象画面が表示されません').toBeVisible({ timeout: 10000 });
+    await expect(target, label + 'を押しても対象画面が表示されません')
+      .toBeVisible({ timeout: 10000 });
+
     const box = await target.boundingBox();
     expect(box, label + 'の表示領域がありません').not.toBeNull();
+
     if (text) {
       await expect(target).toContainText(text, { timeout: 10000 });
     }
@@ -80,9 +90,11 @@ test('main site representative navigation controls are wired', async ({ page }) 
     const match = onclick && onclick.match(/showView\(['"]([^'"]+)['"]\)/);
     if (!match) continue;
 
+    await dismissTutorial(page);
     const target = page.locator('#view-' + match[1]);
-    await control.click();
-    await expect(target, "内部ナビゲーション showView('" + match[1] + "') が対象画面を表示しません").toBeVisible({ timeout: 10000 });
+    await control.click({ force: true });
+    await expect(target, "内部ナビゲーション showView('" + match[1] + "') が対象画面を表示しません")
+      .toBeVisible({ timeout: 10000 });
   }
 });
 
