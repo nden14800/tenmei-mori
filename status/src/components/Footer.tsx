@@ -22,7 +22,7 @@ export default function Footer({ language }: FooterProps) {
           <div className="text-center space-y-4">
             <div className="flex flex-col sm:flex-row items-center justify-center gap-1 sm:gap-3">
               <p className="text-sm text-foreground/60">
-                © {currentYear} {branding.companyName}. {t.allRightsReserved}
+                © {currentYear} {branding.companyName}
               </p>
               <div className="flex items-center gap-2 text-xs text-foreground/40">
                 <span className="hidden sm:inline">•</span>
