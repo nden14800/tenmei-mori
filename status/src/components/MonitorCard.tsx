@@ -258,7 +258,7 @@ export default function MonitorCard({ monitor, data, language, checkIntervalMinu
 
   // Chaque tooltip décrit la position temporelle du bucket dans le filtre sélectionné.
   const getBarTooltip = (index: number) => {
-    const locale = language === 'fr' ? 'fr-FR' : language === 'uk' ? 'uk-UA' : 'en-US'
+    const locale = language === 'fr' ? 'fr-FR' : language === 'uk' ? 'uk-UA' : language === 'ja' ? 'ja-JP' : 'en-US'
 
     if (period === '1h') {
       const minutesAgo = getTimelineMinutesAgo(index, period, checkIntervalMinutes)
