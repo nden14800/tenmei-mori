@@ -44,11 +44,11 @@ jobs:
         run: |
           rm -rf test-results
           mkdir -p test-results
-          printf '%s\n' '{"suites":[]}' > test-results/browser-smoke.json
+          printf '%s\n' '{"suites":[]}' > browser-smoke-report.json
           set +e
-          npx playwright test tests/status-browser-smoke.spec.js --workers=1 --reporter=json > test-results/browser-smoke.json
+          npx playwright test tests/status-browser-smoke.spec.js --workers=1 --reporter=json > browser-smoke-report.json
           exit_code=$?
-          echo "$exit_code" > test-results/browser-smoke.exit
+          echo "$exit_code" > browser-smoke.exit
           exit "$exit_code"
 
       - name: Record browser smoke status
@@ -65,7 +65,7 @@ jobs:
           if (!ok) {
             try {
               const report = JSON.parse(
-                fs.readFileSync("test-results/browser-smoke.json", "utf8")
+                fs.readFileSync("browser-smoke-report.json", "utf8")
               );
 
               const collect = (suite) => {
