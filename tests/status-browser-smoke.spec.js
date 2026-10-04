@@ -43,6 +43,70 @@ test('main site internal navigation works, including developer view', async ({ p
   await dismissTutorial(page);
 
   const checks = [
+    ['開発者について', '#nav-developer', '#view-developer', 'nden148'],
+    ['当サイトについて', '#nav-about', '#view-about', null],
+    ['プライバシー', '#nav-privacy', '#view-privacy', null],
+    ['使い方', '#nav-howto', '#view-howto', null]
+  ];
+
+  for (const [label, navSelector, selector, text] of checks) {
+    const nav = page.locator(navSelector);
+    await expect(nav, label + 'のナビゲーションが見つかりません').toBeVisible({ timeout: 10000 });
+    await nav.click();
+    const target = page.locator(selector);
+    await expect(target, label + 'を押しても対象画面が表示されません').toBeVisible({
+      timeout: 10000
+    });
+    const box = await target.boundingBox();
+    expect(box, label + 'の表示領域がありません').not.toBeNull();
+    if (text) {
+      await expect(target).toContainText(text, { timeout: 10000 });
+    }
+  }t { test, expect } = require('@playwright/test');
+
+const SITE = 'https://tenmei-mori.pages.dev/';
+const STATUS = 'https://tenmei-mori-status.pages.dev/';
+
+async function dismissTutorial(page) {
+  const overlay = page.locator('#tutorial-overlay.active');
+  if (await overlay.count()) {
+    const close = overlay.getByRole('button', { name: /スキップ|閉じる|次へ/ }).first();
+    if (await close.count()) {
+      await close.click({ force: true });
+    } else {
+      await page.keyboard.press('Escape');
+    }
+    await expect(overlay).toBeHidden({ timeout: 5000 }).catch(() => {});
+  }
+}
+
+test.describe.configure({ mode: 'serial' });
+
+test('main site loads without browser JavaScript errors', async ({ page }) => {
+  const errors = [];
+  page.on('pageerror', (error) => errors.push(String(error)));
+
+  const response = await page.goto(SITE, {
+    waitUntil: 'domcontentloaded',
+    timeout: 30000
+  });
+
+  expect(response && response.ok()).toBeTruthy();
+  await expect(page.getByText('開発者について', { exact: true }).first())
+    .toBeVisible({ timeout: 10000 });
+
+  expect(errors, 'メインサイトのブラウザ実行中にJavaScriptエラーが発生しています').toEqual([]);
+});
+
+test('main site internal navigation works, including developer view', async ({ page }) => {
+  const response = await page.goto(SITE, {
+    waitUntil: 'domcontentloaded',
+    timeout: 30000
+  });
+  expect(response && response.ok()).toBeTruthy();
+  await dismissTutorial(page);
+
+  const checks = [
     ['開発者について', '#view-developer', 'nden148'],
     ['当サイトについて', '#view-about', null],
     ['プライバシー', '#view-privacy', null],
