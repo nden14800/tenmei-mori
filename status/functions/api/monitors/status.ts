@@ -73,6 +73,7 @@ export const onRequest: PagesFunction<Env> = async (context) => {
   try {
     const { KV_STATUS_PAGE, CRON_CHECK_INTERVAL } = context.env
     const incidentHistory = await KV_STATUS_PAGE.get('incidentHistory', { type: 'json' }) || []
+    const longTermHistory = await KV_STATUS_PAGE.get('longTermHistory', { type: 'json' }) || []
     const checkIntervalMinutes = parseCheckInterval(CRON_CHECK_INTERVAL, 1) ?? 1
 
     let monitorsData = await KV_STATUS_PAGE.get('monitors', { type: 'json' })
@@ -133,6 +134,7 @@ export const onRequest: PagesFunction<Env> = async (context) => {
         lastUpdate: lastUpdate || new Date().toISOString(),
         checkIntervalMinutes,
         incidentHistory,
+        longTermHistory,
       }),
       {
         headers: {
