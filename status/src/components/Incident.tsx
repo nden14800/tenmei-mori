@@ -1,6 +1,6 @@
 import { AlertCircle, Info, CheckCircle, AlertTriangle } from 'lucide-react'
 import { cn } from '@/lib/utils'
-import { Language, getTranslations } from '../i18n/translations'
+import { Language, getIntlLocale, getTranslations } from '../i18n/translations'
 
 export type IncidentType = 'info' | 'warning' | 'error' | 'resolved'
 export type LocalizedIncidentText = string | { en: string; fr?: string; uk?: string }
@@ -57,7 +57,7 @@ export default function Incident({ incident, language }: IncidentProps) {
 
   const formatDate = (timestamp: string) => {
     const date = new Date(timestamp)
-    const locale = language === 'fr' ? 'fr-FR' : language === 'uk' ? 'uk-UA' : language === 'ja' ? 'ja-JP' : 'en-US'
+    const locale = getIntlLocale(language)
     return date.toLocaleString(locale, {
       month: 'short',
       day: 'numeric',
