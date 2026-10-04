@@ -51,15 +51,12 @@ export default function StatusPage() {
 
   const t = getTranslations(language)
 
-  // Ref miroir de lastUpdate pour le check de fraîcheur dans le handler visibilitychange
-  // (évite une closure périmée sans re-attacher le listener à chaque update).
   const lastUpdateRef = useRef('')
   useEffect(() => {
     lastUpdateRef.current = lastUpdate
   }, [lastUpdate])
 
   useEffect(() => {
-    // Detect language on mount
     const detectedLang = detectLanguage()
     setLanguage(detectedLang)
   }, [])
@@ -72,7 +69,6 @@ export default function StatusPage() {
       if (response.ok) {
         const data = await response.json()
 
-        // Minimum loading time to prevent flash (300ms)
         const elapsed = Date.now() - startTime
         const minDelay = 300
 
@@ -94,16 +90,11 @@ export default function StatusPage() {
 
   useEffect(() => {
     fetchStatus()
-    // Refresh interval from env (default: 60 seconds)
     const refreshInterval = getRefreshInterval()
     const interval = setInterval(fetchStatus, refreshInterval)
     return () => clearInterval(interval)
   }, [fetchStatus])
 
-  // Auto-refresh au retour sur l'onglet si la donnée est périmée (> 1 min).
-  // Les onglets en arrière-plan throttlent setInterval : au refocus, la donnée
-  // peut être très ancienne. On refetch immédiatement (SPA-friendly, pas de reload
-  // d'assets) au lieu d'attendre le prochain tick.
   useEffect(() => {
     const STALE_MS = 60 * 1000
     const onVisibilityChange = () => {
@@ -149,13 +140,10 @@ export default function StatusPage() {
 
   return (
     <div className="min-h-screen flex flex-col bg-background">
-      {/* Header */}
       <Header language={language} onLanguageChange={handleLanguageChange} />
 
-      {/* Main Content */}
       <main className="flex-1">
         <div className="mx-auto max-w-4xl px-4 sm:px-6 py-8 sm:py-12">
-          {/* Status Header */}
           <div className="mb-8">
             {loading ? (
               <MonitorStatusHeaderSkeleton />
@@ -168,7 +156,6 @@ export default function StatusPage() {
             )}
           </div>
 
-          {/* Active Incidents */}
           {!loading && activeMaintenances.length > 0 && (
             <div className="mb-8 space-y-4">
               {activeMaintenances.map((maintenance) => (
@@ -185,13 +172,11 @@ export default function StatusPage() {
             </div>
           )}
 
-          {/* Uptime Section */}
           <div className="mb-8">
             <h2 className="mb-5 text-lg font-semibold text-foreground sm:text-xl">
               {t.uptimeTitle}
             </h2>
 
-            {/* Monitors List */}
             <div className="overflow-hidden rounded-lg border border-border bg-card">
               {loading ? (
                 <>
@@ -215,29 +200,29 @@ export default function StatusPage() {
             </div>
           </div>
 
-          {/* Info Section */}
           <div className="mt-8 border-t border-border pt-6 sm:mt-10">
             <h3 className="mb-2 text-base font-semibold text-foreground">
               {t.aboutTitle}
             </h3>
             <p className="text-sm text-muted-foreground leading-relaxed">
               {language === 'en'
-                ? 'For more information, documentation and contributions, visit the public repo: '
-                : 'Pour plus d\'informations, documentation et contributions, visitez le repo public : '}
+                ? 'This status page is a modified derivative of UptimeWorker, licensed under Apache License 2.0. For documentation and the original project: '
+                : language === 'ja'
+                  ? 'このステータスページは、Apache License 2.0で提供されるUptimeWorkerを天命乃杜向けに変更して使用しています。ドキュメントと原作プロジェクト: '
+                  : 'Cette page de statut est une version modifiée d’UptimeWorker, sous licence Apache License 2.0. Documentation et projet original : '}
               <a
                 href="https://github.com/UptimeWorker/UptimeWorker"
                 className="text-foreground hover:underline font-medium"
                 target="_blank"
                 rel="noopener noreferrer"
               >
-                github.com/UptimeWorker/UptimeWorker
+                UptimeWorker
               </a>
             </p>
           </div>
         </div>
       </main>
 
-      {/* Footer */}
       <Footer language={language} />
     </div>
   )
