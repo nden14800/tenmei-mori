@@ -1,0 +1,22 @@
+name: Status cron failsafe
+
+on:
+  schedule:
+    - cron: "2/5 * * * *"
+  workflow_dispatch:
+
+permissions: {}
+
+jobs:
+  failsafe:
+    runs-on: ubuntu-latest
+    timeout-minutes: 2
+    steps:
+      - name: Trigger stale-only status check
+        run: |
+          curl --fail-with-body --silent --show-error \
+            --request POST \
+            --header "X-Failsafe-Cron-Auth: tenmei-mori-github-failsafe-v1" \
+            --header "User-Agent: tenmei-mori-github-failsafe/1.0" \
+            --header "Cache-Control: no-store" \
+            "https://tenmei-mori.pages.dev/status/api/cron/check"
