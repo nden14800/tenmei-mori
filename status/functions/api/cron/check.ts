@@ -220,7 +220,7 @@ export const onRequest = async (context: any) => {
     })
   }
 
-  const { KV_STATUS_PAGE, STATUS_STORE, CRON_SECRET, FAILSAFE_CRON_TOKEN, CRON_CHECK_INTERVAL, MONITOR_USER_AGENT, DISCORD_STATUS_ALERT_URL, DISCORD_STATUS_ALERT_SECRET } = context.env
+  const { KV_STATUS_PAGE, LEGACY_KV_STATUS_PAGE, CRON_SECRET, FAILSAFE_CRON_TOKEN, CRON_CHECK_INTERVAL, MONITOR_USER_AGENT, DISCORD_STATUS_ALERT_URL, DISCORD_STATUS_ALERT_SECRET } = context.env
   const authHeader = context.request.headers.get('X-Cron-Auth')
   const failsafeAuthHeader = context.request.headers.get('X-Failsafe-Cron-Auth')
   const isPrimaryAuthorized = Boolean(CRON_SECRET && authHeader && timingSafeEqualStr(authHeader, CRON_SECRET))
@@ -234,27 +234,10 @@ export const onRequest = async (context: any) => {
     return new Response('Access denied', { status: 401, headers: cronHeaders() })
   }
 
-  const checkInterval = parseCheckInterval(CRON_CHECK_INTERVAL, 1)
-  let storedSnapshot: {
-    monitors: Record<string, any>
-    incidentHistory: IncidentHistoryItem[]
-    longTermHistory: LongTermSummary[]
-    lastUpdate: string
-  } | null = null
-
-  if (STATUS_STORE) {
-    try {
-      const stateResponse = await STATUS_STORE.fetch(new Request('https://status-store/state'))
-      if (stateResponse.ok) {
-        storedSnapshot = await stateResponse.json()
-      }
-    } catch (error) {
-      console.error('Status store read failed:', error)
-    }
-  }
+  const checkInterval = parseCheckInterval(CRON_CHECK_INTERVAL, 6)
 
   if (isFailsafeAuthorized && !isPrimaryAuthorized) {
-    const lastUpdate = storedSnapshot?.lastUpdate || await KV_STATUS_PAGE.get('lastUpdate')
+    const lastUpdate = await KV_STATUS_PAGE.get('lastUpdate') || (LEGACY_KV_STATUS_PAGE ? await LEGACY_KV_STATUS_PAGE.get('lastUpdate') : null)
     const lastTimestamp = lastUpdate ? Date.parse(lastUpdate) : 0
     const staleFor = Date.now() - lastTimestamp
     if (lastTimestamp > 0 && staleFor < 120000) {
@@ -278,12 +261,12 @@ export const onRequest = async (context: any) => {
   checkRunInProgress = true
 
   try {
-    const existingData = storedSnapshot?.monitors ||
-      await KV_STATUS_PAGE.get('monitors', { type: 'json' }) as Record<string, any> || {}
-    let incidentHistory = storedSnapshot?.incidentHistory ||
-      await KV_STATUS_PAGE.get('incidentHistory', { type: 'json' }) as IncidentHistoryItem[] || []
-    let longTermHistory = storedSnapshot?.longTermHistory ||
-      await KV_STATUS_PAGE.get('longTermHistory', { type: 'json' }) as LongTermSummary[] || []
+    const existingData = await KV_STATUS_PAGE.get('monitors', { type: 'json' }) ||
+      (LEGACY_KV_STATUS_PAGE ? await LEGACY_KV_STATUS_PAGE.get('monitors', { type: 'json' }) : null) as Record<string, any> || {}
+    let incidentHistory = await KV_STATUS_PAGE.get('incidentHistory', { type: 'json' }) ||
+      (LEGACY_KV_STATUS_PAGE ? await LEGACY_KV_STATUS_PAGE.get('incidentHistory', { type: 'json' }) : null) as IncidentHistoryItem[] || []
+    let longTermHistory = await KV_STATUS_PAGE.get('longTermHistory', { type: 'json' }) ||
+      (LEGACY_KV_STATUS_PAGE ? await LEGACY_KV_STATUS_PAGE.get('longTermHistory', { type: 'json' }) : null) as LongTermSummary[] || []
 
     const results = await mapWithConcurrency(
       monitors,
