@@ -220,14 +220,31 @@ export const onRequest = async (context: any) => {
     })
   }
 
-  const { KV_STATUS_PAGE, CRON_SECRET, CRON_CHECK_INTERVAL, MONITOR_USER_AGENT, DISCORD_STATUS_ALERT_URL, DISCORD_STATUS_ALERT_SECRET } = context.env
+  const { KV_STATUS_PAGE, CRON_SECRET, FAILSAFE_CRON_TOKEN, CRON_CHECK_INTERVAL, MONITOR_USER_AGENT, DISCORD_STATUS_ALERT_URL, DISCORD_STATUS_ALERT_SECRET } = context.env
   const authHeader = context.request.headers.get('X-Cron-Auth')
+  const failsafeAuthHeader = context.request.headers.get('X-Failsafe-Cron-Auth')
+  const isPrimaryAuthorized = Boolean(CRON_SECRET && authHeader && timingSafeEqualStr(authHeader, CRON_SECRET))
+  const isFailsafeAuthorized = Boolean(
+    FAILSAFE_CRON_TOKEN &&
+    failsafeAuthHeader &&
+    timingSafeEqualStr(failsafeAuthHeader, FAILSAFE_CRON_TOKEN),
+  )
 
-  if (!CRON_SECRET || !authHeader || !timingSafeEqualStr(authHeader, CRON_SECRET)) {
+  if (!isPrimaryAuthorized && !isFailsafeAuthorized) {
     return new Response('Access denied', { status: 401, headers: cronHeaders() })
   }
 
   const checkInterval = parseCheckInterval(CRON_CHECK_INTERVAL, 1)
+  if (isFailsafeAuthorized && !isPrimaryAuthorized) {
+    const lastUpdate = await KV_STATUS_PAGE.get('lastUpdate')
+    const lastTimestamp = lastUpdate ? Date.parse(lastUpdate) : 0
+    const staleFor = Date.now() - lastTimestamp
+    if (lastTimestamp > 0 && staleFor < 120000) {
+      return new Response(JSON.stringify({ success: true, skipped: true, reason: 'primary-cron-healthy', lastUpdate }), {
+        headers: cronHeaders({ 'Content-Type': 'application/json; charset=utf-8' }),
+      })
+    }
+  }
   if (!checkInterval) {
     return new Response('Invalid cron configuration', { status: 503, headers: cronHeaders() })
   }
