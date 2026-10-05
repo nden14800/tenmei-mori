@@ -375,22 +375,10 @@ export const onRequest = async (context: any) => {
     })
 
     const lastUpdate = new Date().toISOString()
-    const snapshot = {
-      monitors: monitorsData,
-      incidentHistory,
-      longTermHistory,
-      lastUpdate,
-    }
-
-    if (STATUS_STORE) {
-      await STATUS_STORE.fetch(new Request('https://status-store/state', {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(snapshot),
-      }))
-    } else {
-      throw new Error('STATUS_STORE binding is not configured')
-    }
+    await KV_STATUS_PAGE.put('monitors', JSON.stringify(monitorsData))
+    await KV_STATUS_PAGE.put('incidentHistory', JSON.stringify(incidentHistory))
+    await KV_STATUS_PAGE.put('longTermHistory', JSON.stringify(longTermHistory))
+    await KV_STATUS_PAGE.put('lastUpdate', lastUpdate)
 
     return new Response(JSON.stringify({
       success: true,
