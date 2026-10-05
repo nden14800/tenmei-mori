@@ -240,7 +240,7 @@ export const onRequest = async (context: any) => {
     const lastUpdate = await KV_STATUS_PAGE.get('lastUpdate') || (LEGACY_KV_STATUS_PAGE ? await LEGACY_KV_STATUS_PAGE.get('lastUpdate') : null)
     const lastTimestamp = lastUpdate ? Date.parse(lastUpdate) : 0
     const staleFor = Date.now() - lastTimestamp
-    if (lastTimestamp > 0 && staleFor < 120000) {
+    if (lastTimestamp > 0 && staleFor < 420000) {
       return new Response(JSON.stringify({ success: true, skipped: true, reason: 'primary-cron-healthy', lastUpdate }), {
         headers: cronHeaders({ 'Content-Type': 'application/json; charset=utf-8' }),
       })
