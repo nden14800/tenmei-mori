@@ -4,14 +4,22 @@ import { normalizeMonitorCollection } from '../../../src/lib/monitorData'
 import { parseCheckInterval } from '../../../src/lib/monitorRequest'
 import monitors from '../../../monitors.json'
 
-interface KVNamespaceLike {
-  get(key: string, options?: { type?: string }): Promise<any>
+interface StatusState {
+  monitors: Record<string, any>
+  incidentHistory: any[]
+  longTermHistory: any[]
+  lastUpdate: string | null
 }
 
-// @ts-ignore - Cloudflare types available in production
-interface Env {
-  KV_STATUS_PAGE: KVNamespaceLike
-  CRON_CHECK_INTERVAL?: string
+const STATUS_API_URL = 'https://tenmei-mori-backend.nden14800.workers.dev/api/status/state'
+
+async function readStatusState(secret: string | undefined): Promise<StatusState> {
+  if (!secret) throw new Error('STATUS_API_SECRET is not configured')
+  const response = await fetch(STATUS_API_URL, {
+    headers: { 'X-Status-Api-Auth': secret, 'Cache-Control': 'no-store' },
+  })
+  if (!response.ok) throw new Error(`Status state read failed: HTTP ${response.status}`)
+  return await response.json() as StatusState
 }
 
 interface MaintenanceRecord extends MaintenanceWindow {
@@ -71,62 +79,15 @@ export const onRequest: PagesFunction<Env> = async (context) => {
   }
 
   try {
-    const { KV_STATUS_PAGE, LEGACY_KV_STATUS_PAGE, CRON_CHECK_INTERVAL } = context.env
-    const incidentHistory = await KV_STATUS_PAGE.get('incidentHistory', { type: 'json' }) ||
-      (LEGACY_KV_STATUS_PAGE ? await LEGACY_KV_STATUS_PAGE.get('incidentHistory', { type: 'json' }) : [])
-    const longTermHistory = await KV_STATUS_PAGE.get('longTermHistory', { type: 'json' }) ||
-      (LEGACY_KV_STATUS_PAGE ? await LEGACY_KV_STATUS_PAGE.get('longTermHistory', { type: 'json' }) : [])
-    const checkIntervalMinutes = parseCheckInterval(CRON_CHECK_INTERVAL, 6) ?? 6
-
-    let monitorsData = await KV_STATUS_PAGE.get('monitors', { type: 'json' }) ||
-      (LEGACY_KV_STATUS_PAGE ? await LEGACY_KV_STATUS_PAGE.get('monitors', { type: 'json' }) : null)
-    let lastUpdate = await KV_STATUS_PAGE.get('lastUpdate') ||
-      (LEGACY_KV_STATUS_PAGE ? await LEGACY_KV_STATUS_PAGE.get('lastUpdate') : null)
-
-    // Bootstrap real monitor data when the KV is empty.
-    if (!monitorsData || typeof monitorsData !== 'object' || Array.isArray(monitorsData) || Object.keys(monitorsData).length === 0) {
-      const checkedAt = new Date().toISOString()
-      const bootstrapped: Record<string, any> = {}
-
-      await Promise.all(monitors.map(async (monitor) => {
-        const started = Date.now()
-        try {
-          const response = await fetch(monitor.url, {
-            method: monitor.method || 'GET',
-            redirect: monitor.followRedirect === false ? 'manual' : 'follow',
-            headers: { 'User-Agent': 'tenmei-mori-uptimeworker-bootstrap/1.0' },
-          })
-          const responseTime = Date.now() - started
-          const operational = response.status >= 200 && response.status < 300
-          bootstrapped[monitor.id] = {
-            operational,
-            status: operational ? 'operational' : 'down',
-            lastCheck: checkedAt,
-            responseTime,
-            uptime: operational ? 100 : 0,
-            startDate: checkedAt,
-            recentChecks: [{ t: checkedAt, s: operational ? 'operational' : 'down', rt: responseTime }],
-            dailyHistory: [],
-          }
-        } catch {
-          bootstrapped[monitor.id] = {
-            operational: false,
-            status: 'down',
-            lastCheck: checkedAt,
-            responseTime: Date.now() - started,
-            uptime: 0,
-            startDate: checkedAt,
-            recentChecks: [{ t: checkedAt, s: 'down', rt: Date.now() - started }],
-            dailyHistory: [],
-          }
-        }
-      }))
-
-      monitorsData = bootstrapped
-      lastUpdate = checkedAt
-      await KV_STATUS_PAGE.put('monitors', JSON.stringify(monitorsData))
-      await KV_STATUS_PAGE.put('lastUpdate', checkedAt)
-    }
+    const { STATUS_API_SECRET, CRON_CHECK_INTERVAL } = context.env
+    const state = await readStatusState(STATUS_API_SECRET)
+    const incidentHistory = Array.isArray(state.incidentHistory) ? state.incidentHistory : []
+    const longTermHistory = Array.isArray(state.longTermHistory) ? state.longTermHistory : []
+    const checkIntervalMinutes = parseCheckInterval(CRON_CHECK_INTERVAL, 1) ?? 1
+    const monitorsData = state.monitors && typeof state.monitors === 'object' && !Array.isArray(state.monitors)
+      ? state.monitors
+      : {}
+    const lastUpdate = state.lastUpdate || null
 
     const activeMaintenances = maintenances.filter((maintenance) => isMaintenanceActive(maintenance))
 
