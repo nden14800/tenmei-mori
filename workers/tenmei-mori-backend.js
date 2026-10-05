@@ -233,6 +233,61 @@ export default {
         };
 
         // ---------------------------------------------------------
+        // Status page state storage (same Turso/libSQL database)
+        // ---------------------------------------------------------
+        const STATUS_API_PATH = "/api/status/state";
+
+        function statusApiAuthorized(request) {
+            const expected = env.STATUS_API_SECRET;
+            const provided = request.headers.get("X-Status-Api-Auth");
+            if (typeof expected !== "string" || expected.length < 32 || typeof provided !== "string") return false;
+            const a = new TextEncoder().encode(expected);
+            const b = new TextEncoder().encode(provided);
+            let diff = a.length ^ b.length;
+            const len = Math.max(a.length, b.length);
+            for (let i = 0; i < len; i++) diff |= (a[i] ?? 0) ^ (b[i] ?? 0);
+            return diff === 0;
+        }
+
+        async function ensureStatusStateTable() {
+            await runSQL(`CREATE TABLE IF NOT EXISTS status_worker_state (id INTEGER PRIMARY KEY CHECK (id = 1), payload TEXT NOT NULL, updated_at TEXT NOT NULL)`);
+        }
+
+        if (url.pathname === STATUS_API_PATH && (method === "GET" || method === "POST")) {
+            if (!statusApiAuthorized(request)) {
+                return new Response(JSON.stringify({ error: "Unauthorized" }), {
+                    status: 401,
+                    headers: { ...corsHeaders, "Content-Type": "application/json", "Cache-Control": "no-store" }
+                });
+            }
+            try {
+                await ensureStatusStateTable();
+                if (method === "GET") {
+                    const rows = await runSQL("SELECT payload, updated_at FROM status_worker_state WHERE id = 1 LIMIT 1");
+                    if (rows.length === 0) return new Response(JSON.stringify({ monitors: {}, incidentHistory: [], longTermHistory: [], lastUpdate: null }), { headers: { ...corsHeaders, "Content-Type": "application/json", "Cache-Control": "no-store" } });
+                    let state;
+                    try { state = JSON.parse(rows[0].payload); } catch (_) { state = {}; }
+                    return new Response(JSON.stringify({
+                        monitors: state.monitors && typeof state.monitors === "object" ? state.monitors : {},
+                        incidentHistory: Array.isArray(state.incidentHistory) ? state.incidentHistory : [],
+                        longTermHistory: Array.isArray(state.longTermHistory) ? state.longTermHistory : [],
+                        lastUpdate: state.lastUpdate || rows[0].updated_at || null
+                    }), { headers: { ...corsHeaders, "Content-Type": "application/json", "Cache-Control": "no-store" } });
+                }
+                const body = await request.json();
+                if (!body || typeof body !== "object" || !body.monitors || typeof body.monitors !== "object") return new Response(JSON.stringify({ error: "Invalid status state" }), { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+                const payload = JSON.stringify({ monitors: body.monitors, incidentHistory: Array.isArray(body.incidentHistory) ? body.incidentHistory : [], longTermHistory: Array.isArray(body.longTermHistory) ? body.longTermHistory : [], lastUpdate: typeof body.lastUpdate === "string" ? body.lastUpdate : new Date().toISOString() });
+                if (payload.length > 4 * 1024 * 1024) return new Response(JSON.stringify({ error: "Status state too large" }), { status: 413, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+                const updatedAt = new Date().toISOString();
+                await runSQL("INSERT INTO status_worker_state (id, payload, updated_at) VALUES (1, ?, ?) ON CONFLICT(id) DO UPDATE SET payload = excluded.payload, updated_at = excluded.updated_at", [payload, updatedAt]);
+                return new Response(JSON.stringify({ success: true, updatedAt }), { headers: { ...corsHeaders, "Content-Type": "application/json", "Cache-Control": "no-store" } });
+            } catch (e) {
+                console.error("Status state error:", e);
+                return new Response(JSON.stringify({ error: "Status state storage failed" }), { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+            }
+        }
+
+        // ---------------------------------------------------------
         // 3. ユーティリティ関数群
         // ---------------------------------------------------------
         
