@@ -80,7 +80,7 @@ interface StatusState {
 async function readStatusState(secret: string | undefined): Promise<StatusState> {
   if (!secret) throw new Error('STATUS_API_SECRET is not configured')
   const response = await fetch(STATUS_API_URL, {
-    headers: { 'X-Status-Api-Auth': secret, 'Cache-Control': 'no-store' },
+    headers: { 'X-Status-Api-Auth': secret, 'Origin': 'https://tenmei-mori.pages.dev', 'Cache-Control': 'no-store' },
   })
   if (!response.ok) throw new Error(`Status state read failed: HTTP ${response.status}`)
   return await response.json() as StatusState
@@ -93,6 +93,7 @@ async function writeStatusState(secret: string | undefined, state: StatusState):
     headers: {
       'Content-Type': 'application/json',
       'X-Status-Api-Auth': secret,
+      'Origin': 'https://tenmei-mori.pages.dev',
       'Cache-Control': 'no-store',
     },
     body: JSON.stringify(state),
