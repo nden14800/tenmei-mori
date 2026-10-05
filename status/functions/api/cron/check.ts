@@ -68,6 +68,41 @@ interface IncidentHistoryItem {
   durationSeconds?: number
 }
 
+const STATUS_API_URL = 'https://tenmei-mori-backend.nden14800.workers.dev/api/status/state'
+
+interface StatusState {
+  monitors: Record<string, any>
+  incidentHistory: IncidentHistoryItem[]
+  longTermHistory: LongTermSummary[]
+  lastUpdate: string | null
+}
+
+async function readStatusState(secret: string | undefined): Promise<StatusState> {
+  if (!secret) throw new Error('STATUS_API_SECRET is not configured')
+  const response = await fetch(STATUS_API_URL, {
+    headers: { 'X-Status-Api-Auth': secret, 'Cache-Control': 'no-store' },
+  })
+  if (!response.ok) throw new Error(`Status state read failed: HTTP ${response.status}`)
+  return await response.json() as StatusState
+}
+
+async function writeStatusState(secret: string | undefined, state: StatusState): Promise<void> {
+  if (!secret) throw new Error('STATUS_API_SECRET is not configured')
+  const response = await fetch(STATUS_API_URL, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'X-Status-Api-Auth': secret,
+      'Cache-Control': 'no-store',
+    },
+    body: JSON.stringify(state),
+  })
+  if (!response.ok) {
+    const body = await response.text()
+    throw new Error(`Status state write failed: HTTP ${response.status} ${body.slice(0, 300)}`)
+  }
+}
+
 function isDownStatus(status: MonitorStatus | undefined): boolean {
   return status === 'down'
 }
@@ -220,7 +255,7 @@ export const onRequest = async (context: any) => {
     })
   }
 
-  const { KV_STATUS_PAGE, LEGACY_KV_STATUS_PAGE, CRON_SECRET, FAILSAFE_CRON_TOKEN, CRON_CHECK_INTERVAL, MONITOR_USER_AGENT, DISCORD_STATUS_ALERT_URL, DISCORD_STATUS_ALERT_SECRET } = context.env
+  const { CRON_SECRET, FAILSAFE_CRON_TOKEN, STATUS_API_SECRET, CRON_CHECK_INTERVAL, MONITOR_USER_AGENT, DISCORD_STATUS_ALERT_URL, DISCORD_STATUS_ALERT_SECRET } = context.env
   const authHeader = context.request.headers.get('X-Cron-Auth')
   const failsafeAuthHeader = context.request.headers.get('X-Failsafe-Cron-Auth')
   const isPrimaryAuthorized = Boolean(CRON_SECRET && authHeader && timingSafeEqualStr(authHeader, CRON_SECRET))
@@ -234,10 +269,11 @@ export const onRequest = async (context: any) => {
     return new Response('Access denied', { status: 401, headers: cronHeaders() })
   }
 
-  const checkInterval = parseCheckInterval(CRON_CHECK_INTERVAL, 6)
+  const checkInterval = parseCheckInterval(CRON_CHECK_INTERVAL, 1)
 
   if (isFailsafeAuthorized && !isPrimaryAuthorized) {
-    const lastUpdate = await KV_STATUS_PAGE.get('lastUpdate') || (LEGACY_KV_STATUS_PAGE ? await LEGACY_KV_STATUS_PAGE.get('lastUpdate') : null)
+    const state = await readStatusState(STATUS_API_SECRET)
+    const lastUpdate = state.lastUpdate || null
     const lastTimestamp = lastUpdate ? Date.parse(lastUpdate) : 0
     const staleFor = Date.now() - lastTimestamp
     if (lastTimestamp > 0 && staleFor < 420000) {
@@ -261,12 +297,10 @@ export const onRequest = async (context: any) => {
   checkRunInProgress = true
 
   try {
-    const existingData = await KV_STATUS_PAGE.get('monitors', { type: 'json' }) ||
-      (LEGACY_KV_STATUS_PAGE ? await LEGACY_KV_STATUS_PAGE.get('monitors', { type: 'json' }) : null) as Record<string, any> || {}
-    let incidentHistory = await KV_STATUS_PAGE.get('incidentHistory', { type: 'json' }) ||
-      (LEGACY_KV_STATUS_PAGE ? await LEGACY_KV_STATUS_PAGE.get('incidentHistory', { type: 'json' }) : null) as IncidentHistoryItem[] || []
-    let longTermHistory = await KV_STATUS_PAGE.get('longTermHistory', { type: 'json' }) ||
-      (LEGACY_KV_STATUS_PAGE ? await LEGACY_KV_STATUS_PAGE.get('longTermHistory', { type: 'json' }) : null) as LongTermSummary[] || []
+    const storedState = await readStatusState(STATUS_API_SECRET)
+    const existingData = (storedState.monitors || {}) as Record<string, any>
+    let incidentHistory = (storedState.incidentHistory || []) as IncidentHistoryItem[]
+    let longTermHistory = (storedState.longTermHistory || []) as LongTermSummary[]
 
     const results = await mapWithConcurrency(
       monitors,
@@ -375,10 +409,12 @@ export const onRequest = async (context: any) => {
     })
 
     const lastUpdate = new Date().toISOString()
-    await KV_STATUS_PAGE.put('monitors', JSON.stringify(monitorsData))
-    await KV_STATUS_PAGE.put('incidentHistory', JSON.stringify(incidentHistory))
-    await KV_STATUS_PAGE.put('longTermHistory', JSON.stringify(longTermHistory))
-    await KV_STATUS_PAGE.put('lastUpdate', lastUpdate)
+    await writeStatusState(STATUS_API_SECRET, {
+      monitors: monitorsData,
+      incidentHistory,
+      longTermHistory,
+      lastUpdate,
+    })
 
     return new Response(JSON.stringify({
       success: true,
