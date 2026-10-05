@@ -385,9 +385,10 @@ export const onRequest = async (context: any) => {
 
   } catch (error) {
     console.error('Cron check error:', error)
+    const errorMessage = error instanceof Error ? error.message : String(error)
     return new Response(JSON.stringify({
       success: false,
-      error: 'Internal server error'
+      error: errorMessage
     }), {
       status: 500,
       headers: cronHeaders({ 'Content-Type': 'application/json; charset=utf-8' })
