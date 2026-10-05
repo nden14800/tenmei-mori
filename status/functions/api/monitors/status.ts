@@ -11,6 +11,7 @@ interface KVNamespaceLike {
 // @ts-ignore - Cloudflare types available in production
 interface Env {
   KV_STATUS_PAGE: KVNamespaceLike
+  STATUS_STORE?: Fetcher
   CRON_CHECK_INTERVAL?: string
 }
 
@@ -71,13 +72,27 @@ export const onRequest: PagesFunction<Env> = async (context) => {
   }
 
   try {
-    const { KV_STATUS_PAGE, CRON_CHECK_INTERVAL } = context.env
-    const incidentHistory = await KV_STATUS_PAGE.get('incidentHistory', { type: 'json' }) || []
-    const longTermHistory = await KV_STATUS_PAGE.get('longTermHistory', { type: 'json' }) || []
+    const { KV_STATUS_PAGE, STATUS_STORE, CRON_CHECK_INTERVAL } = context.env
+    let snapshot: any = null
+    if (STATUS_STORE) {
+      try {
+        const response = await STATUS_STORE.fetch(new Request('https://status-store/state'))
+        if (response.ok) snapshot = await response.json()
+      } catch (error) {
+        console.error('Status store read failed:', error)
+      }
+    }
+
+    const incidentHistory = snapshot?.incidentHistory ||
+      await KV_STATUS_PAGE.get('incidentHistory', { type: 'json' }) || []
+    const longTermHistory = snapshot?.longTermHistory ||
+      await KV_STATUS_PAGE.get('longTermHistory', { type: 'json' }) || []
     const checkIntervalMinutes = parseCheckInterval(CRON_CHECK_INTERVAL, 1) ?? 1
 
-    let monitorsData = await KV_STATUS_PAGE.get('monitors', { type: 'json' })
-    let lastUpdate = await KV_STATUS_PAGE.get('lastUpdate')
+    let monitorsData = snapshot?.monitors ||
+      await KV_STATUS_PAGE.get('monitors', { type: 'json' })
+    let lastUpdate = snapshot?.lastUpdate ||
+      await KV_STATUS_PAGE.get('lastUpdate')
 
     // Bootstrap real monitor data when the KV is empty (for example after a fresh
     // deployment or when the external Cron Worker has not fired yet). This performs
@@ -122,8 +137,18 @@ export const onRequest: PagesFunction<Env> = async (context) => {
 
       monitorsData = bootstrapped
       lastUpdate = checkedAt
-      await KV_STATUS_PAGE.put('monitors', JSON.stringify(monitorsData))
-      await KV_STATUS_PAGE.put('lastUpdate', checkedAt)
+      if (STATUS_STORE) {
+        await STATUS_STORE.fetch(new Request('https://status-store/state', {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            monitors: monitorsData,
+            incidentHistory,
+            longTermHistory,
+            lastUpdate: checkedAt,
+          }),
+        }))
+      }
     }
     const activeMaintenances = maintenances.filter((maintenance) => isMaintenanceActive(maintenance))
 
