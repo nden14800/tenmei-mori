@@ -1,6 +1,6 @@
 import type { MonitorStatus } from './status'
 
-export type TimelinePeriod = '1h' | '24h' | '7d' | '30d' | '90d'
+export type TimelinePeriod = '1h' | '24h' | '7d' | '30d'
 export type TimelineBarStatus = 'operational' | 'maintenance' | 'degraded' | 'incident' | 'unknown'
 
 export const TIMELINE_BUCKET_COUNT = 60
@@ -30,7 +30,6 @@ const PERIOD_MS: Record<TimelinePeriod, number> = {
   '24h': 24 * 60 * 60 * 1000,
   '7d': 7 * 24 * 60 * 60 * 1000,
   '30d': 30 * 24 * 60 * 60 * 1000,
-  '90d': 90 * 24 * 60 * 60 * 1000,
 }
 
 // Pour 1h/24h, une pill par check réel : si l'intervalle est plus large que
@@ -57,7 +56,7 @@ export function getPeriodWindowStartDate(period: TimelinePeriod, now = Date.now(
 // dans la frise et ne doit donc jamais entrer dans le pourcentage d'uptime.
 export function filterDailyHistoryInPeriod<T extends { date: string; status: MonitorStatus }>(
   history: readonly T[],
-  period: Extract<TimelinePeriod, '7d' | '30d' | '90d'>,
+  period: Extract<TimelinePeriod, '7d' | '30d'>,
   now = Date.now(),
 ): T[] {
   const windowStart = getPeriodWindowStartDate(period, now)
