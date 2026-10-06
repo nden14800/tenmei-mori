@@ -19,7 +19,7 @@ export const en: Translations = {
     incompleteHistory: 'Incomplete history',
     incompleteHistoryExplanation: 'Previous statuses are preserved, but successful and failed check counts are missing to calculate availability.',
     uptime: 'uptime',
-    daysAgo: '90 days ago',
+    daysAgo: 'History',
     today: 'Today',
 
     // Uptime sections
@@ -29,7 +29,6 @@ export const en: Translations = {
     last3Days: 'Last 3 days',
     last7Days: 'Last 7 days',
     last30Days: 'Last 30 days',
-    last90Days: 'Last 90 days',
 
     // Monitor Details
     overallUptime: 'Overall Uptime',
