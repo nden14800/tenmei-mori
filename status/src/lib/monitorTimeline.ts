@@ -40,7 +40,8 @@ export function getEffectiveBucketCount(
   period: TimelinePeriod,
   intervalMinutes = 1,
 ): number {
-  if (period !== '1h' && period !== '24h') return TIMELINE_BUCKET_COUNT
+  if (period === '7d') return 7
+  if (period === '30d') return 30
   const periodMinutes = PERIOD_MS[period] / (60 * 1000)
   return Math.max(1, Math.min(TIMELINE_BUCKET_COUNT, Math.floor(periodMinutes / intervalMinutes)))
 }
@@ -139,11 +140,12 @@ export function buildTimelineHistory({
     return bars
   }
 
-  const bucketDuration = periodMs / TIMELINE_BUCKET_COUNT
+  const dayCount = period === '7d' ? 7 : 30
+  const bucketDuration = periodMs / dayCount
 
   if (monitoringStart === undefined) {
     return [
-      ...Array<TimelineBarStatus>(TIMELINE_BUCKET_COUNT - 1).fill('unknown'),
+      ...Array<TimelineBarStatus>(dayCount - 1).fill('unknown'),
       mapStatusToBar(currentStatus),
     ]
   }
@@ -151,9 +153,9 @@ export function buildTimelineHistory({
   const historyMap = new Map(
     dailyHistory.map((day) => [day.date, mapStatusToBar(day.status)] as const),
   )
-  const bars = Array.from<TimelineBarStatus>({ length: TIMELINE_BUCKET_COUNT }).fill('unknown')
+  const bars = Array.from<TimelineBarStatus>({ length: dayCount }).fill('unknown')
 
-  for (let index = 0; index < TIMELINE_BUCKET_COUNT; index++) {
+  for (let index = 0; index < dayCount; index++) {
     const bucketStart = cutoff + index * bucketDuration
     const bucketEnd = bucketStart + bucketDuration
     if (bucketEnd <= monitoringStart) continue
@@ -163,7 +165,7 @@ export function buildTimelineHistory({
     if (dayStatus) bars[index] = dayStatus
   }
 
-  if (currentStatus === 'maintenance') bars[TIMELINE_BUCKET_COUNT - 1] = 'maintenance'
+  if (currentStatus === 'maintenance') bars[dayCount - 1] = 'maintenance'
   return bars
 }
 
