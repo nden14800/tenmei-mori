@@ -77,6 +77,21 @@ interface StatusState {
   lastUpdate: string | null
 }
 
+async function withRetry<T>(operation: () => Promise<T>, attempts = 3): Promise<T> {
+  let lastError: unknown
+  for (let attempt = 0; attempt < attempts; attempt++) {
+    try {
+      return await operation()
+    } catch (error) {
+      lastError = error
+      if (attempt < attempts - 1) {
+        await new Promise((resolve) => setTimeout(resolve, 750 * (attempt + 1)))
+      }
+    }
+  }
+  throw lastError instanceof Error ? lastError : new Error(String(lastError))
+}
+
 async function readStatusState(secret: string | undefined): Promise<StatusState> {
   if (!secret) throw new Error('STATUS_API_SECRET is not configured')
   const response = await fetch(STATUS_API_URL, {
@@ -308,7 +323,7 @@ export const onRequest = async (context: any) => {
   try {
     // One-time clean start: state written after this cutoff is preserved on every later run.
     const STATUS_RESET_CUTOFF = Date.parse('2026-10-06T12:06:00Z')
-    const storedState = await readStatusState(STATUS_API_SECRET)
+    const storedState = await withRetry(() => readStatusState(STATUS_API_SECRET))
     const resetState = !storedState.lastUpdate || Date.parse(storedState.lastUpdate) < STATUS_RESET_CUTOFF
     const stateForCheck = resetState
       ? { monitors: {}, incidentHistory: [], longTermHistory: [], lastUpdate: null }
@@ -424,12 +439,12 @@ export const onRequest = async (context: any) => {
     })
 
     const lastUpdate = new Date().toISOString()
-    await writeStatusState(STATUS_API_SECRET, {
+    await withRetry(() => writeStatusState(STATUS_API_SECRET, {
       monitors: monitorsData,
       incidentHistory,
       longTermHistory,
       lastUpdate,
-    })
+    }))
 
     return new Response(JSON.stringify({
       success: true,
