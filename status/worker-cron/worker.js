@@ -23,6 +23,7 @@ export default {
       method: "POST",
       headers: {
         "X-Cron-Auth": env.CRON_SECRET,
+        "X-Cron-Worker": "tenmei-mori-uptimeworker-cron",
         "User-Agent": userAgent,
         "Cache-Control": "no-store"
       }
