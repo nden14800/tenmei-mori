@@ -447,6 +447,7 @@ export default function MonitorCard({ monitor, data, language, checkIntervalMinu
           </div>
         </div>
       </div>
+      </div>
 
       {/* Expandable details section */}
       {expanded && hasData && (
