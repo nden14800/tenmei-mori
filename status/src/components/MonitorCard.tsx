@@ -287,7 +287,7 @@ export default function MonitorCard({ monitor, data, language, checkIntervalMinu
       return hoursAgo > 0 ? `${hoursAgo}h ago` : `${minutesAgo}m ago`
     } else {
       const daysToShow = period === '7d' ? 7 : 30
-      const msPerBar = (daysToShow * 24 * 60 * 60 * 1000) / BAR_COUNT
+      const msPerBar = (daysToShow * 24 * 60 * 60 * 1000) / Math.max(history.length, 1)
       const barTime = now - (BAR_COUNT - index) * msPerBar
       return new Date(barTime).toLocaleDateString(locale, {
         timeZone: 'UTC',
@@ -421,7 +421,13 @@ export default function MonitorCard({ monitor, data, language, checkIntervalMinu
             </div>
           )}
 
-          <div className="flex gap-1">
+          <div className="mt-2 flex items-center justify-between gap-3">
+            <span className="text-[11px] text-muted-foreground">
+              {language === 'ja'
+                ? `${period === '1h' ? '直近1時間' : period === '24h' ? '直近24時間' : period === '7d' ? '直近7日間' : '直近30日間'}の稼働履歴`
+                : `${period === '1h' ? 'Last hour' : period === '24h' ? 'Last 24 hours' : period === '7d' ? 'Last 7 days' : 'Last 30 days'} uptime history`}
+            </span>
+            <div className="flex gap-1">
             {(['1h', '24h', '7d', '30d'] as TimelinePeriod[]).map((p) => (
               <button
                 key={p}
