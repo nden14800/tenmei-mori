@@ -349,7 +349,7 @@ export const onRequest = async (context: any) => {
 
         // 2. Preserve the worst daily status and count actual observations separately.
         const previousHistory: DailyHistoryPoint[] = existing?.dailyHistory || []
-        const updatedHistory = appendDailyCheck(previousHistory, result.lastCheck, result.status)
+        const updatedHistory = appendDailyCheck(previousHistory, result.lastCheck, result.status, result.responseTime)
 
         // Calculate uptime from daily history
         const uptime = calculateDailyUptime(
