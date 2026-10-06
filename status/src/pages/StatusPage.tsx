@@ -13,6 +13,7 @@ import Header from '../components/Header'
 import { Language, detectLanguage, getTranslations } from '../i18n/translations'
 import { getMonitorStatus, getOverallStatus, type MonitorStatus } from '../lib/status'
 import { normalizeMonitorCollection } from '../lib/monitorData'
+import { cn } from '@/lib/utils'
 
 interface RecentCheck {
   t: string // timestamp ISO
