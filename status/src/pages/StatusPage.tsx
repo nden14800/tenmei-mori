@@ -256,14 +256,21 @@ export default function StatusPage() {
               <p className="mt-1 text-sm text-muted-foreground">{language === 'ja' ? '保存された月別データを年単位でも確認できます。' : 'Stored monthly data is also summarized by year.'}</p>
             </div>
             {yearlyLongTermHistory.length > 0 ? (
-              <div className="overflow-hidden rounded-lg border border-border bg-card">
+              <div className="grid gap-3 sm:grid-cols-2">
                 {yearlyLongTermHistory.map((item) => (
-                  <div key={item.year} className="grid grid-cols-2 gap-3 border-b border-border px-4 py-3 last:border-0 sm:grid-cols-4 sm:px-6">
-                    <span className="font-medium text-foreground">{item.year}</span>
-                    <span className="text-sm text-muted-foreground">{language === 'ja' ? `${item.checks.toLocaleString()} 回確認` : `${item.checks.toLocaleString()} checks`}</span>
-                    <span className="text-sm text-muted-foreground">{language === 'ja' ? `停止 ${item.down}` : `Down ${item.down}`}</span>
-                    <span className="text-sm font-medium text-foreground">{item.uptime.toFixed(2)}%</span>
-                  </div>
+                  <article key={item.year} className="rounded-xl border border-border bg-card p-4 shadow-sm sm:p-5">
+                    <div className="flex items-center justify-between gap-3">
+                      <span className="text-base font-semibold text-foreground">{item.year}</span>
+                      <span className="text-lg font-semibold tabular-nums text-foreground">{item.uptime.toFixed(2)}%</span>
+                    </div>
+                    <div className="mt-3 h-2 overflow-hidden rounded-full bg-muted">
+                      <div className="h-full rounded-full bg-green-500" style={{ width: `${Math.max(0, Math.min(100, item.uptime))}%` }} />
+                    </div>
+                    <div className="mt-3 flex items-center justify-between text-xs text-muted-foreground">
+                      <span>{language === 'ja' ? `${item.checks.toLocaleString()} 回確認` : `${item.checks.toLocaleString()} checks`}</span>
+                      <span>{language === 'ja' ? `停止 ${item.down} 回` : `${item.down} down`}</span>
+                    </div>
+                  </article>
                 ))}
               </div>
             ) : (
@@ -279,14 +286,21 @@ export default function StatusPage() {
               <p className="mt-1 text-sm text-muted-foreground">{language === 'ja' ? '30日を超える期間は月別に集計し、保存された期間を一覧できます。' : 'Periods beyond 30 days are summarized by month so long-term history remains easy to read.'}</p>
             </div>
             {longTermHistory.length > 0 ? (
-              <div className="overflow-hidden rounded-lg border border-border bg-card">
+              <div className="space-y-2">
                 {[...longTermHistory].reverse().map((item) => (
-                  <div key={item.period} className="grid grid-cols-2 gap-3 border-b border-border px-4 py-3 last:border-0 sm:grid-cols-4 sm:px-6">
-                    <span className="font-medium text-foreground">{item.period}</span>
-                    <span className="text-sm text-muted-foreground">{language === 'ja' ? `${item.checks.toLocaleString()} 回確認` : `${item.checks.toLocaleString()} checks`}</span>
-                    <span className="text-sm text-muted-foreground">{language === 'ja' ? `停止 ${item.down}` : `Down ${item.down}`}</span>
-                    <span className="text-sm font-medium text-foreground">{item.uptime.toFixed(2)}%</span>
-                  </div>
+                  <article key={item.period} className="rounded-xl border border-border bg-card px-4 py-3 shadow-sm sm:px-5">
+                    <div className="flex items-center justify-between gap-3">
+                      <span className="font-medium text-foreground">{item.period}</span>
+                      <span className="font-semibold tabular-nums text-foreground">{item.uptime.toFixed(2)}%</span>
+                    </div>
+                    <div className="mt-2 h-1.5 overflow-hidden rounded-full bg-muted">
+                      <div className="h-full rounded-full bg-green-500" style={{ width: `${Math.max(0, Math.min(100, item.uptime))}%` }} />
+                    </div>
+                    <div className="mt-2 flex items-center justify-between text-xs text-muted-foreground">
+                      <span>{language === 'ja' ? `${item.checks.toLocaleString()} 回確認` : `${item.checks.toLocaleString()} checks`}</span>
+                      <span>{language === 'ja' ? `停止 ${item.down} 回` : `${item.down} down`}</span>
+                    </div>
+                  </article>
                 ))}
               </div>
             ) : (
@@ -309,17 +323,23 @@ export default function StatusPage() {
             {incidentHistory.length > 0 ? (
               <div className="overflow-hidden rounded-lg border border-border bg-card">
                 {incidentHistory.map((incident) => (
-                  <article key={incident.id} className="border-b border-border px-4 py-4 last:border-0 sm:px-6">
-                    <div className="flex flex-wrap items-center justify-between gap-2">
-                      <h3 className="font-medium text-foreground">{incident.monitorName}</h3>
-                      <span className={incident.resolvedAt ? "text-xs text-muted-foreground" : "text-xs font-medium text-foreground"}>
-                        {incident.resolvedAt ? t.incidentResolved : t.incidentOngoing}
-                      </span>
-                    </div>
-                    <div className="mt-2 grid gap-1 text-sm text-muted-foreground sm:grid-cols-3">
-                      <span>{t.incidentStarted}: {formatIncidentDate(incident.startedAt)}</span>
-                      <span>{incident.resolvedAt ? t.incidentResolvedAt + ': ' + formatIncidentDate(incident.resolvedAt) : t.incidentStillDown}</span>
-                      <span>{t.incidentDuration}: {formatIncidentDuration(incident.durationSeconds)}</span>
+                  <article key={incident.id} className="relative overflow-hidden border-b border-border px-4 py-4 last:border-0 sm:px-5">
+                    <div className={cn("absolute inset-y-0 left-0 w-1", incident.resolvedAt ? "bg-green-500" : "bg-red-500")} />
+                    <div className="pl-2">
+                      <div className="flex flex-wrap items-center justify-between gap-3">
+                        <div className="flex items-center gap-2">
+                          <span className={cn("h-2.5 w-2.5 rounded-full", incident.resolvedAt ? "bg-green-500" : "bg-red-500")} />
+                          <h3 className="font-semibold text-foreground">{incident.monitorName}</h3>
+                        </div>
+                        <span className={cn("rounded-full px-2.5 py-1 text-xs font-medium", incident.resolvedAt ? "bg-green-500/10 text-green-700 dark:text-green-400" : "bg-red-500/10 text-red-700 dark:text-red-400")}>
+                          {incident.resolvedAt ? t.incidentResolved : t.incidentOngoing}
+                        </span>
+                      </div>
+                      <div className="mt-3 grid gap-2 text-xs text-muted-foreground sm:grid-cols-3">
+                        <span>{t.incidentStarted}: {formatIncidentDate(incident.startedAt)}</span>
+                        <span>{incident.resolvedAt ? t.incidentResolvedAt + ': ' + formatIncidentDate(incident.resolvedAt) : t.incidentStillDown}</span>
+                        <span>{t.incidentDuration}: {formatIncidentDuration(incident.durationSeconds)}</span>
+                      </div>
                     </div>
                   </article>
                 ))}
