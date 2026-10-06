@@ -229,7 +229,7 @@ export default function MonitorCard({ monitor, data, language, checkIntervalMinu
     return calculateUptime(relevantChecks.map((check) => check.s), status, uptimeOptions)
   }
 
-  const calculateUptimeFromHistory = (history: DailyHistoryPoint[], period: '7d' | '30d' | '90d'): number | null => {
+  const calculateUptimeFromHistory = (history: DailyHistoryPoint[], period: '7d' | '30d'): number | null => {
     if (!hasData) return null
 
     const relevantHistory = filterDailyHistoryInPeriod(history, period, now)
@@ -253,8 +253,6 @@ export default function MonitorCard({ monitor, data, language, checkIntervalMinu
         return calculateUptimeFromHistory(dailyHistory, '7d')
       case '30d':
         return calculateUptimeFromHistory(dailyHistory, '30d')
-      case '90d':
-        return calculateUptimeFromHistory(dailyHistory, '90d')
       default:
         return typeof data.uptime === 'number' ? data.uptime : null
     }
@@ -273,7 +271,7 @@ export default function MonitorCard({ monitor, data, language, checkIntervalMinu
     : Array<BarStatus>(getEffectiveBucketCount(period, checkIntervalMinutes)).fill('unknown')
 
   const incompleteHistory = hasData && uptimeForPeriod === null &&
-    (period === '7d' || period === '30d' || period === '90d') &&
+    (period === '7d' || period === '30d') &&
     filterDailyHistoryInPeriod(data.dailyHistory || [], period, now).length > 0
 
   // Chaque tooltip décrit la position temporelle du bucket dans le filtre sélectionné.
@@ -288,7 +286,7 @@ export default function MonitorCard({ monitor, data, language, checkIntervalMinu
       const hoursAgo = Math.floor(minutesAgo / 60)
       return hoursAgo > 0 ? `${hoursAgo}h ago` : `${minutesAgo}m ago`
     } else {
-      const daysToShow = period === '7d' ? 7 : period === '30d' ? 30 : 90
+      const daysToShow = period === '7d' ? 7 : 30
       const msPerBar = (daysToShow * 24 * 60 * 60 * 1000) / BAR_COUNT
       const barTime = now - (BAR_COUNT - index) * msPerBar
       return new Date(barTime).toLocaleDateString(locale, {
@@ -389,7 +387,7 @@ export default function MonitorCard({ monitor, data, language, checkIntervalMinu
           />
 
           <div className="flex gap-1">
-            {(['1h', '24h', '7d', '30d', '90d'] as TimelinePeriod[]).map((p) => (
+            {(['1h', '24h', '7d', '30d'] as TimelinePeriod[]).map((p) => (
               <button
                 key={p}
                 onClick={() => setPeriod(p)}
