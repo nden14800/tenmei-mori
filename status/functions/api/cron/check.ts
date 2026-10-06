@@ -306,10 +306,16 @@ export const onRequest = async (context: any) => {
   checkRunInProgress = true
 
   try {
+    // One-time clean start: state written after this cutoff is preserved on every later run.
+    const STATUS_RESET_CUTOFF = Date.parse('2026-10-06T12:06:00Z')
     const storedState = await readStatusState(STATUS_API_SECRET)
-    const existingData = (storedState.monitors || {}) as Record<string, any>
-    let incidentHistory = (storedState.incidentHistory || []) as IncidentHistoryItem[]
-    let longTermHistory = (storedState.longTermHistory || []) as LongTermSummary[]
+    const resetState = !storedState.lastUpdate || Date.parse(storedState.lastUpdate) < STATUS_RESET_CUTOFF
+    const stateForCheck = resetState
+      ? { monitors: {}, incidentHistory: [], longTermHistory: [], lastUpdate: null }
+      : storedState
+    const existingData = (stateForCheck.monitors || {}) as Record<string, any>
+    let incidentHistory = (stateForCheck.incidentHistory || []) as IncidentHistoryItem[]
+    let longTermHistory = (stateForCheck.longTermHistory || []) as LongTermSummary[]
 
     const results = await mapWithConcurrency(
       monitors,
