@@ -16,7 +16,7 @@ import {
   filterDailyHistoryInPeriod,
   getEffectiveBucketCount,
   getTimelineMinutesAgo,
-  TIMELINE_BUCKET_COUNT as BAR_COUNT,
+  getTimelineDateAtIndex,
   type TimelineBarStatus as BarStatus,
   type TimelinePeriod,
 } from '../lib/monitorTimeline'
@@ -270,6 +270,25 @@ export default function MonitorCard({ monitor, data, language, checkIntervalMinu
       })
     : Array<BarStatus>(getEffectiveBucketCount(period, checkIntervalMinutes)).fill('unknown')
 
+  const responseTimePoints = (() => {
+    if (!hasData) return [] as Array<{ t: string; rt: number; s: MonitorStatus }>
+    if (period === '1h' || period === '24h') {
+      const cutoff = now - (period === '1h' ? 60 : 24 * 60) * 60 * 1000
+      return (data.recentChecks || [])
+        .filter((check) => typeof check.rt === 'number' && new Date(check.t).getTime() >= cutoff)
+        .slice(-60)
+        .map((check) => ({ t: check.t, rt: check.rt!, s: check.s }))
+    }
+    return (data.dailyHistory || [])
+      .filter((day) => day.date >= getTimelineDateAtIndex(period, 0, now) && day.date <= getTimelineDateAtIndex(period, period === '7d' ? 6 : 29, now))
+      .filter((day) => typeof day.responseTimeAvg === 'number')
+      .map((day) => ({
+        t: `${day.date}T00:00:00+09:00`,
+        rt: day.responseTimeAvg!,
+        s: day.status,
+      }))
+  })()
+
   const incompleteHistory = hasData && uptimeForPeriod === null &&
     (period === '7d' || period === '30d') &&
     filterDailyHistoryInPeriod(data.dailyHistory || [], period, now).length > 0
@@ -286,10 +305,9 @@ export default function MonitorCard({ monitor, data, language, checkIntervalMinu
       const hoursAgo = Math.floor(minutesAgo / 60)
       return hoursAgo > 0 ? `${hoursAgo}h ago` : `${minutesAgo}m ago`
     } else {
-      const daysToShow = period === '7d' ? 7 : 30
-      const msPerBar = (daysToShow * 24 * 60 * 60 * 1000) / Math.max(history.length, 1)
-      const barTime = now - (BAR_COUNT - index) * msPerBar
-      return new Date(barTime).toLocaleDateString(locale, {
+      const day = getTimelineDateAtIndex(period, index, now)
+      const [year, month, date] = day.split('-').map(Number)
+      return new Date(Date.UTC(year, month - 1, date)).toLocaleDateString(locale, {
         timeZone: 'UTC',
         month: 'short',
         day: 'numeric',
@@ -396,11 +414,8 @@ export default function MonitorCard({ monitor, data, language, checkIntervalMinu
                   <span className="tabular-nums text-muted-foreground">{data.responseTime}ms</span>
                 )}
               </div>
-              <div className="flex h-8 items-end gap-px overflow-hidden" aria-label={language === 'ja' ? '直近の応答時間' : 'Recent response times'}>
-                {data.recentChecks
-                  .filter((check) => typeof check.rt === 'number')
-                  .slice(-48)
-                  .map((check, index, checks) => {
+              <div className="flex h-8 items-end gap-px overflow-hidden" aria-label={language === 'ja' ? '選択期間の応答時間' : 'Response times for selected period'}>
+                {responseTimePoints.map((check, index, checks) => {
                     const max = Math.max(...checks.map((item) => item.rt || 0), 1)
                     const height = Math.max(10, Math.round(((check.rt || 0) / max) * 100))
                     return (
