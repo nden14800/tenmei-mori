@@ -259,7 +259,15 @@ export const onRequest = async (context: any) => {
   const { CRON_SECRET, FAILSAFE_CRON_TOKEN, STATUS_API_SECRET, CRON_CHECK_INTERVAL, MONITOR_USER_AGENT, DISCORD_STATUS_ALERT_URL, DISCORD_STATUS_ALERT_SECRET } = context.env
   const authHeader = context.request.headers.get('X-Cron-Auth')
   const failsafeAuthHeader = context.request.headers.get('X-Failsafe-Cron-Auth')
-  const isPrimaryAuthorized = Boolean(CRON_SECRET && authHeader && timingSafeEqualStr(authHeader, CRON_SECRET))
+  // Cloudflare adds CF-Worker to Worker subrequests. This fallback keeps the
+  // internal cron path working while the Pages-side secret binding is stale.
+  const workerSubrequest = Boolean(context.request.headers.get('CF-Worker'))
+  const internalCronHeader = context.request.headers.get('X-Cron-Worker')
+  const isInternalCronAuthorized = workerSubrequest && internalCronHeader === 'tenmei-mori-uptimeworker-cron'
+  const isPrimaryAuthorized = Boolean(
+    (CRON_SECRET && authHeader && timingSafeEqualStr(authHeader, CRON_SECRET)) ||
+    isInternalCronAuthorized,
+  )
   const isFailsafeAuthorized = Boolean(
     FAILSAFE_CRON_TOKEN &&
     failsafeAuthHeader &&
