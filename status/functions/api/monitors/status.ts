@@ -103,7 +103,7 @@ export const onRequest: PagesFunction<Env> = async (context) => {
       {
         headers: {
           'Content-Type': 'application/json',
-          'Cache-Control': 'public, max-age=5',
+          'Cache-Control': 'no-store, max-age=0',
           'X-Content-Type-Options': 'nosniff',
           'X-Frame-Options': 'DENY',
           'X-Robots-Tag': 'noindex, nofollow',
