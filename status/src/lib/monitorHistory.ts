@@ -5,6 +5,22 @@ export interface DailyHistoryPoint {
   date: string
   status: MonitorStatus
   counts?: CheckCounts
+  responseTimeTotal?: number
+  responseTimeCount?: number
+  responseTimeAvg?: number
+}
+
+function getTokyoDate(timestamp: string): string {
+  const parts = new Intl.DateTimeFormat('en-CA', {
+    timeZone: 'Asia/Tokyo',
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+  }).formatToParts(new Date(timestamp))
+  const year = parts.find((part) => part.type === 'year')?.value
+  const month = parts.find((part) => part.type === 'month')?.value
+  const day = parts.find((part) => part.type === 'day')?.value
+  return year && month && day ? `${year}-${month}-${day}` : new Date(timestamp).toISOString().slice(0, 10)
 }
 
 const STATUSES: MonitorStatus[] = ['operational', 'maintenance', 'degraded', 'down']
@@ -24,17 +40,34 @@ export function appendDailyCheck(
   history: readonly DailyHistoryPoint[],
   timestamp: string,
   status: MonitorStatus,
+  responseTime?: number,
 ): DailyHistoryPoint[] {
-  const date = new Date(timestamp).toISOString().slice(0, 10)
+  const date = getTokyoDate(timestamp)
   const previous = history.find((day) => day.date === date)
   const counts = previous ? normalizeCheckCounts(previous.counts) : {
     operational: 0, maintenance: 0, degraded: 0, down: 0,
   }
   if (counts) counts[status] += 1
+
+  const previousResponseCount = Number.isSafeInteger(previous?.responseTimeCount) ? previous.responseTimeCount! : 0
+  const previousResponseTotal = typeof previous?.responseTimeTotal === 'number' && Number.isFinite(previous.responseTimeTotal)
+    ? previous.responseTimeTotal
+    : 0
+  const hasResponseTime = typeof responseTime === 'number' && Number.isFinite(responseTime) && responseTime >= 0
+  const responseTimeCount = previousResponseCount + (hasResponseTime ? 1 : 0)
+  const responseTimeTotal = previousResponseTotal + (hasResponseTime ? responseTime : 0)
+
   const entry: DailyHistoryPoint = {
     date,
     status: previous ? getWorstStatus(previous.status, status) : status,
     ...(counts ? { counts } : {}),
+    ...(responseTimeCount > 0
+      ? {
+          responseTimeTotal,
+          responseTimeCount,
+          responseTimeAvg: Number((responseTimeTotal / responseTimeCount).toFixed(2)),
+        }
+      : {}),
   }
   return [...history.filter((day) => day.date !== date), entry]
     .sort((a, b) => a.date.localeCompare(b.date)).slice(-365)
