@@ -179,10 +179,10 @@ export function buildTimelineHistory({
     dailyHistory.map((day) => [day.date, mapStatusToBar(day.status)] as const),
   )
   const bars = Array<TimelineBarStatus>(dayCount).fill('unknown')
-  const startDate = getPeriodWindowStartDate(period, now)
+  const periodStartDate = getPeriodWindowStartDate(period, now)
 
   for (let index = 0; index < dayCount; index++) {
-    const bucketDate = addCalendarDays(startDate, index)
+    const bucketDate = addCalendarDays(periodStartDate, index)
     const bucketDateStart = new Date(`${bucketDate}T00:00:00Z`).getTime()
     if (monitoringStart !== undefined && bucketDateStart + DAY_MS <= monitoringStart) continue
     const dayStatus = historyMap.get(bucketDate)
