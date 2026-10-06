@@ -4,6 +4,8 @@ export type TimelinePeriod = '1h' | '24h' | '7d' | '30d'
 export type TimelineBarStatus = 'operational' | 'maintenance' | 'degraded' | 'incident' | 'unknown'
 
 export const TIMELINE_BUCKET_COUNT = 60
+const TOKYO_TIME_ZONE = 'Asia/Tokyo'
+const DAY_MS = 24 * 60 * 60 * 1000
 
 interface TimelineRecentCheck {
   t: string
@@ -46,10 +48,42 @@ export function getEffectiveBucketCount(
   return Math.max(1, Math.min(TIMELINE_BUCKET_COUNT, Math.floor(periodMinutes / intervalMinutes)))
 }
 
-// Début de la fenêtre calendaire d'une période, au format YYYY-MM-DD (UTC),
-// identique à la date des buckets de buildTimelineHistory (7d/30d).
+function getTokyoDate(timestamp: number): string {
+  const parts = new Intl.DateTimeFormat('en-CA', {
+    timeZone: TOKYO_TIME_ZONE,
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+  }).formatToParts(new Date(timestamp))
+  const year = parts.find((part) => part.type === 'year')?.value
+  const month = parts.find((part) => part.type === 'month')?.value
+  const day = parts.find((part) => part.type === 'day')?.value
+  return year && month && day ? `${year}-${month}-${day}` : new Date(timestamp).toISOString().slice(0, 10)
+}
+
+function addCalendarDays(dateString: string, days: number): string {
+  const date = new Date(`${dateString}T00:00:00Z`)
+  date.setUTCDate(date.getUTCDate() + days)
+  return date.toISOString().slice(0, 10)
+}
+
+// 7d/30d are calendar-day ranges in JST: today plus the previous 6/29 days.
+// This prevents an inclusive 7d/30d millisecond window from accidentally containing
+// 8/31 calendar dates around midnight and keeps the UI aligned with Japanese dates.
 export function getPeriodWindowStartDate(period: TimelinePeriod, now = Date.now()): string {
+  if (period === '7d' || period === '30d') {
+    const endDate = getTokyoDate(now)
+    return addCalendarDays(endDate, -(period === '7d' ? 6 : 29))
+  }
   return new Date(now - PERIOD_MS[period]).toISOString().split('T')[0]
+}
+
+export function getTimelineDateAtIndex(
+  period: Extract<TimelinePeriod, '7d' | '30d'>,
+  index: number,
+  now = Date.now(),
+): string {
+  return addCalendarDays(getPeriodWindowStartDate(period, now), index)
 }
 
 // Jours de dailyHistory réellement représentés par la frise 7d/30d : la fenêtre
@@ -61,7 +95,7 @@ export function filterDailyHistoryInPeriod<T extends { date: string; status: Mon
   now = Date.now(),
 ): T[] {
   const windowStart = getPeriodWindowStartDate(period, now)
-  const windowEnd = new Date(now).toISOString().split('T')[0]
+  const windowEnd = getTokyoDate(now)
   return history.filter((day) => day.date >= windowStart && day.date <= windowEnd)
 }
 
@@ -141,26 +175,16 @@ export function buildTimelineHistory({
   }
 
   const dayCount = period === '7d' ? 7 : 30
-  const bucketDuration = periodMs / dayCount
-
-  if (monitoringStart === undefined) {
-    return [
-      ...Array<TimelineBarStatus>(dayCount - 1).fill('unknown'),
-      mapStatusToBar(currentStatus),
-    ]
-  }
-
   const historyMap = new Map(
     dailyHistory.map((day) => [day.date, mapStatusToBar(day.status)] as const),
   )
-  const bars = Array.from<TimelineBarStatus>({ length: dayCount }).fill('unknown')
+  const bars = Array<TimelineBarStatus>(dayCount).fill('unknown')
+  const startDate = getPeriodWindowStartDate(period, now)
 
   for (let index = 0; index < dayCount; index++) {
-    const bucketStart = cutoff + index * bucketDuration
-    const bucketEnd = bucketStart + bucketDuration
-    if (bucketEnd <= monitoringStart) continue
-
-    const bucketDate = new Date(bucketStart).toISOString().split('T')[0]
+    const bucketDate = addCalendarDays(startDate, index)
+    const bucketDateStart = new Date(`${bucketDate}T00:00:00Z`).getTime()
+    if (monitoringStart !== undefined && bucketDateStart + DAY_MS <= monitoringStart) continue
     const dayStatus = historyMap.get(bucketDate)
     if (dayStatus) bars[index] = dayStatus
   }
