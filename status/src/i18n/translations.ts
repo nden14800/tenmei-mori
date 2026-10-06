@@ -34,7 +34,6 @@ export interface Translations {
   last3Days: string
   last7Days: string
   last30Days: string
-  last90Days: string
   overallUptime: string
   responseTime: string
   recentEvents: string
