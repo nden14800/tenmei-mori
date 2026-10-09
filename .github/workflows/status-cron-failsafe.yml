@@ -10,14 +10,25 @@ on:
 
 permissions: {}
 
+# Prevent overlapping watchdog runs from racing to write the same status snapshot.
+concurrency:
+  group: status-cron-failsafe
+  cancel-in-progress: false
+
 jobs:
   failsafe:
     runs-on: ubuntu-latest
-    timeout-minutes: 2
+    timeout-minutes: 3
     steps:
       - name: Trigger stale-only status check
         run: |
           curl --fail-with-body --silent --show-error \
+            --connect-timeout 10 \
+            --max-time 35 \
+            --retry 3 \
+            --retry-all-errors \
+            --retry-delay 2 \
+            --retry-max-time 100 \
             --request POST \
             --header "X-Failsafe-Cron-Auth: tenmei-mori-github-failsafe-v1" \
             --header "User-Agent: tenmei-mori-github-failsafe/1.0" \
