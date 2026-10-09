@@ -398,7 +398,7 @@ export default function StatusPage() {
                   const totalMaintenance = yearMonths.reduce((sum, month) => sum + month.maintenance, 0)
                   return (
                     <button
-                      key={`${item.monitorId}-${year}`}
+                      key={`${item.monitorId}-${item.year}`}
                       type="button"
                       onClick={() => {
                         if (isSelected) {
