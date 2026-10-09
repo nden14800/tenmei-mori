@@ -211,16 +211,31 @@ export default function StatusPage() {
   const getDisplayMonitorData = (monitorId: string): MonitorData | undefined => {
     const monitorData = kvMonitors[monitorId]
 
-    if (!monitorsInMaintenance.has(monitorId)) {
-      return monitorData
+    if (monitorsInMaintenance.has(monitorId)) {
+      return {
+        ...(monitorData || {}),
+        operational: false,
+        status: 'maintenance',
+        lastCheck: monitorData?.lastCheck || fallbackTimestamp,
+      }
     }
 
-    return {
-      ...(monitorData || {}),
-      operational: false,
-      status: 'maintenance',
-      lastCheck: monitorData?.lastCheck || fallbackTimestamp,
+    // Reflect browser interaction failures in the public-site card; HTTP 200 alone
+    // does not mean the primary omikuji flow is usable.
+    if (monitorId === 'tenmei-mori' && browserHealthStatus) {
+      const httpStatus = getMonitorStatus(monitorData)
+      const status = httpStatus === 'unknown'
+        ? browserHealthStatus
+        : getOverallStatus([httpStatus, browserHealthStatus])
+      return {
+        ...(monitorData || {}),
+        operational: status === 'operational',
+        status: status === 'unknown' ? 'degraded' : status,
+        lastCheck: monitorData?.lastCheck || fallbackTimestamp,
+      }
     }
+
+    return monitorData
   }
 
   const knownStatuses = monitors
