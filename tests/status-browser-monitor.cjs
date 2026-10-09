@@ -3,7 +3,7 @@ const fs = require('node:fs');
 
 const SITE='https://tenmei-mori.pages.dev/';
 const API='https://tenmei-mori-backend.nden14800.workers.dev';
-const OUT='status/health.json';
+const OUT='status/public/health.json';
 
 async function timedFetch(url){
   const started=Date.now();
@@ -12,6 +12,9 @@ async function timedFetch(url){
 }
 
 async function main(){
+  fs.mkdirSync('status/public',{recursive:true});
+  let previousHealth=null;
+  try{previousHealth=JSON.parse(fs.readFileSync(OUT,'utf8'))}catch{}
   const browserErrors=[],consoleErrors=[];
   const browser=await chromium.launch({headless:true});
   const page=await browser.newPage();
@@ -97,13 +100,23 @@ async function main(){
   else if(!probes.http.ok||!probes.api.ok||!probes.browser.ok){state='partial';detail='主要サービスの一部で障害を検知しています。'}
   else if(!probes.interaction.ok){state='degraded';detail='公開サイトは動作していますが、おみくじの重要操作に問題があります。'}
 
-  const payload={schemaVersion:2,checkedAt:new Date().toISOString(),overall:{state,detail},components,probes};
+  const stableProbes=Object.fromEntries(Object.entries(probes).map(([name,probe])=>{
+    const {ms,...stable}=probe;
+    return [name,stable];
+  }));
+  const previousComparable=previousHealth?JSON.stringify({overall:previousHealth.overall,components:previousHealth.components,probes:previousHealth.probes}):'';
+  const currentComparable=JSON.stringify({overall:{state,detail},components,probes:stableProbes});
+  const payload={schemaVersion:2,checkedAt:previousComparable===currentComparable&&previousHealth?.checkedAt?previousHealth.checkedAt:new Date().toISOString(),overall:{state,detail},components,probes:stableProbes};
   fs.writeFileSync(OUT,JSON.stringify(payload,null,2)+'\n');
   if(['outage','partial','degraded'].includes(state))process.exitCode=1;
 }
 main().catch(error=>{
+  fs.mkdirSync('status/public',{recursive:true});
+  let previousHealth=null;
+  try{previousHealth=JSON.parse(fs.readFileSync(OUT,'utf8'))}catch{}
+  const checkedAt=previousHealth?.overall?.state==='unknown'&&previousHealth?.overall?.detail==='監視処理そのものが失敗しました。'&&previousHealth?.checkedAt?previousHealth.checkedAt:new Date().toISOString();
   fs.writeFileSync(OUT,JSON.stringify({
-    schemaVersion:2,checkedAt:new Date().toISOString(),
+    schemaVersion:2,checkedAt,
     overall:{state:'unknown',detail:'監視処理そのものが失敗しました。'},
     components:{site:{state:'unknown',detail:error.message},api:{state:'unknown',detail:'監視処理が完了しませんでした。'},omikuji:{state:'unknown',detail:'監視処理が完了しませんでした。'},ai:{state:'external',detail:'外部AIサービス'}}
   },null,2)+'\n');
