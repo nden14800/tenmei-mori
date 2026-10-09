@@ -57,11 +57,32 @@ function updateLongTermSummary(
   monitorName: string,
 ): LongTermSummary[] {
   const period = timestamp.slice(0, 7)
-  // Old records combined checks from every monitor into one monthly number.
-  // They cannot be split accurately after the fact, so keep only per-monitor records.
-  const perMonitorHistory = history.filter((item) => Boolean((item as LongTermSummary & { monitorId?: string }).monitorId))
+  // Drop legacy combined records and collapse duplicate snapshots by monitor/month.
+  // A summary is cumulative, so duplicate records must never be added together.
+  const perMonitorHistory = Object.values(history
+    .filter((item) => Boolean(item.monitorId && item.monitorName))
+    .reduce<Record<string, LongTermSummary>>((acc, item) => {
+      const key = `${item.monitorId}:${item.period}`
+      const countFor = (entry: LongTermSummary) =>
+        Math.max(0, Number(entry.operational) || 0) +
+        Math.max(0, Number(entry.degraded) || 0) +
+        Math.max(0, Number(entry.down) || 0) +
+        Math.max(0, Number(entry.maintenance) || 0)
+      const current = acc[key]
+      if (!current || countFor(item) >= countFor(current)) {
+        const checks = countFor(item)
+        acc[key] = {
+          ...item,
+          checks,
+          uptime: checks > 0
+            ? ((Math.max(0, Number(item.operational) || 0) + Math.max(0, Number(item.maintenance) || 0)) / checks) * 100
+            : 100,
+        }
+      }
+      return acc
+    }, {}))
   const existing = perMonitorHistory.find((item) =>
-    item.period === period && (item as LongTermSummary & { monitorId?: string }).monitorId === monitorId
+    item.period === period && item.monitorId === monitorId
   )
   const next = existing ? { ...existing } : {
     period, monitorId, monitorName, checks: 0, operational: 0, degraded: 0, down: 0, maintenance: 0, uptime: 100,
@@ -72,7 +93,7 @@ function updateLongTermSummary(
   next[status] += 1
   next.uptime = next.checks > 0 ? ((next.operational + next.maintenance) / next.checks) * 100 : 100
   return [...perMonitorHistory.filter((item) =>
-    !(item.period === period && (item as LongTermSummary & { monitorId?: string }).monitorId === monitorId)
+    !(item.period === period && item.monitorId === monitorId)
   ), next]
     .sort((a, b) => a.period.localeCompare(b.period))
     .slice(-240)
