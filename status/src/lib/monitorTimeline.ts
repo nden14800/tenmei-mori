@@ -1,6 +1,6 @@
 import type { MonitorStatus } from './status'
 
-export type TimelinePeriod = '1h' | '24h' | '3d' | '7d' | '30d'
+export type TimelinePeriod = '1h' | '24h' | '7d' | '30d'
 export type TimelineBarStatus = 'operational' | 'maintenance' | 'degraded' | 'incident' | 'unknown'
 
 export const TIMELINE_BUCKET_COUNT = 60
@@ -30,7 +30,6 @@ interface BuildTimelineHistoryOptions {
 const PERIOD_MS: Record<TimelinePeriod, number> = {
   '1h': 60 * 60 * 1000,
   '24h': 24 * 60 * 60 * 1000,
-  '3d': 3 * 24 * 60 * 60 * 1000,
   '7d': 7 * 24 * 60 * 60 * 1000,
   '30d': 30 * 24 * 60 * 60 * 1000,
 }
@@ -43,7 +42,6 @@ export function getEffectiveBucketCount(
   period: TimelinePeriod,
   intervalMinutes = 1,
 ): number {
-  if (period === '3d') return 3
   if (period === '7d' || period === '30d') return TIMELINE_BUCKET_COUNT
   const periodMinutes = PERIOD_MS[period] / (60 * 1000)
   return Math.max(1, Math.min(TIMELINE_BUCKET_COUNT, Math.floor(periodMinutes / intervalMinutes)))
@@ -72,15 +70,15 @@ function addCalendarDays(dateString: string, days: number): string {
 // This prevents an inclusive 7d/30d millisecond window from accidentally containing
 // 8/31 calendar dates around midnight and keeps the UI aligned with Japanese dates.
 export function getPeriodWindowStartDate(period: TimelinePeriod, now = Date.now()): string {
-  if (period === '3d' || period === '7d' || period === '30d') {
+  if (period === '7d' || period === '30d') {
     const endDate = getTokyoDate(now)
-    return addCalendarDays(endDate, -(period === '3d' ? 2 : period === '7d' ? 6 : 29))
+    return addCalendarDays(endDate, -(period === '7d' ? 6 : 29))
   }
   return new Date(now - PERIOD_MS[period]).toISOString().split('T')[0]
 }
 
 export function getTimelineDateAtIndex(
-  period: Extract<TimelinePeriod, '3d' | '7d' | '30d'>,
+  period: Extract<TimelinePeriod, '7d' | '30d'>,
   index: number,
   now = Date.now(),
 ): string {
@@ -92,7 +90,7 @@ export function getTimelineDateAtIndex(
 // dans la frise et ne doit donc jamais entrer dans le pourcentage d'uptime.
 export function filterDailyHistoryInPeriod<T extends { date: string; status: MonitorStatus }>(
   history: readonly T[],
-  period: Extract<TimelinePeriod, '3d' | '7d' | '30d'>,
+  period: Extract<TimelinePeriod, '7d' | '30d'>,
   now = Date.now(),
 ): T[] {
   const windowStart = getPeriodWindowStartDate(period, now)
@@ -178,22 +176,6 @@ export function buildTimelineHistory({
   const historyMap = new Map(
     dailyHistory.map((day) => [day.date, mapStatusToBar(day.status)] as const),
   )
-
-  // 3d is a custom calendar-day view. Official UptimeWorker uses 60 rolling
-  // buckets for 7d/30d, mapping each bucket to the daily status for its UTC date.
-  if (period === '3d') {
-    const bars = Array<TimelineBarStatus>(3).fill('unknown')
-    const periodStartDate = getPeriodWindowStartDate(period, now)
-    for (let index = 0; index < 3; index++) {
-      const bucketDate = addCalendarDays(periodStartDate, index)
-      const bucketDateStart = new Date(`${bucketDate}T00:00:00Z`).getTime()
-      if (monitoringStart !== undefined && bucketDateStart + DAY_MS <= monitoringStart) continue
-      const dayStatus = historyMap.get(bucketDate)
-      if (dayStatus) bars[index] = dayStatus
-    }
-    if (currentStatus === 'maintenance') bars[2] = 'maintenance'
-    return bars
-  }
 
   const bucketDuration = periodMs / TIMELINE_BUCKET_COUNT
   const bars = Array<TimelineBarStatus>(TIMELINE_BUCKET_COUNT).fill('unknown')
