@@ -404,38 +404,6 @@ export default function MonitorCard({ monitor, data, language, checkIntervalMinu
             language={language}
           />
 
-          {hasData && data.recentChecks && data.recentChecks.some((check) => typeof check.rt === 'number') && (
-            <div className="mt-3 rounded-md border border-border/70 bg-muted/20 px-3 py-2.5">
-              <div className="mb-2 flex items-center justify-between gap-3 text-[11px]">
-                <span className="font-medium text-muted-foreground">
-                  {language === 'ja' ? '応答時間の推移' : 'Response time trend'}
-                </span>
-                {typeof data.responseTime === 'number' && (
-                  <span className="tabular-nums text-muted-foreground">{data.responseTime}ms</span>
-                )}
-              </div>
-              <div className="flex h-8 items-end gap-px overflow-hidden" aria-label={language === 'ja' ? '選択期間の応答時間' : 'Response times for selected period'}>
-                {responseTimePoints.map((check, index, checks) => {
-                    const max = Math.max(...checks.map((item) => item.rt || 0), 1)
-                    const height = Math.max(10, Math.round(((check.rt || 0) / max) * 100))
-                    return (
-                      <div
-                        key={check.t + index}
-                        className={cn(
-                          "min-w-[2px] flex-1 rounded-sm opacity-80",
-                          check.s === 'down' && "bg-red-500",
-                          check.s === 'degraded' && "bg-yellow-500",
-                          (check.s === 'operational' || check.s === 'maintenance') && "bg-green-500",
-                        )}
-                        style={{ height: String(height) + '%' }}
-                        title={String(check.rt) + 'ms'}
-                      />
-                    )
-                  })}
-              </div>
-            </div>
-          )}
-
           <div className="mt-2 flex items-center justify-between gap-3">
             <span className="text-[11px] text-muted-foreground">
               {language === 'ja'
