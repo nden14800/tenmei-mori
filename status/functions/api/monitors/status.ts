@@ -11,6 +11,8 @@ interface StatusState {
   lastUpdate: string | null
 }
 
+// Keep STATUS_API_SECRET synchronized across both Pages projects (tenmei-mori and tenmei-mori-status)
+// and the backend Worker; a mismatch makes this endpoint return 500 and the UI show no data.
 const STATUS_API_URL = 'https://tenmei-mori-backend.nden14800.workers.dev/api/status/state'
 
 async function readStatusState(secret: string | undefined): Promise<StatusState> {
