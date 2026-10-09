@@ -1,26 +1,49 @@
 {
   "schemaVersion": 2,
-  "checkedAt": null,
+  "checkedAt": "2026-10-09T22:58:48.163Z",
   "overall": {
-    "state": "unknown",
-    "detail": "ブラウザ監視の初回実行を待っています。"
+    "state": "degraded",
+    "detail": "公開サイトは動作していますが、おみくじの重要操作に問題があります。"
   },
   "components": {
     "site": {
-      "state": "unknown",
-      "detail": "未確認"
+      "state": "operational",
+      "detail": "HTTP応答と実ブラウザ実行を確認済み。"
     },
     "api": {
-      "state": "unknown",
-      "detail": "未確認"
+      "state": "operational",
+      "detail": "Worker/APIの読み取り経路を確認済み。"
     },
     "omikuji": {
-      "state": "unknown",
-      "detail": "未確認"
+      "state": "partial",
+      "detail": "locator.click: Timeout 10000ms exceeded.\nCall log:\n  - waiting for locator('[onclick=\"startOmikuji()\"]').first()\n    - locator resolved to <button type=\"button\" onclick=\"startOmikuji()\" class=\"home-v4-primary-action\">…</button>\n  - attempting click action\n    2 × waiting for element to be visible, enabled and stable\n      - element is visible, enabled and stable\n      - scrolling into view if needed\n      - done scrolling\n      - <div role=\"dialog\" class=\"active\" aria-modal=\"true\" aria-hidden=\"false\" id=\"tutorial-overlay\" aria-label=\"天命乃杜の簡単な案内\">…</div> intercepts pointer events\n    - retrying click action\n    - waiting 20ms\n    2 × waiting for element to be visible, enabled and stable\n      - element is visible, enabled and stable\n      - scrolling into view if needed\n      - done scrolling\n      - <div role=\"dialog\" class=\"active\" aria-modal=\"true\" aria-hidden=\"false\" id=\"tutorial-overlay\" aria-label=\"天命乃杜の簡単な案内\">…</div> intercepts pointer events\n    - retrying click action\n      - waiting 100ms\n    17 × waiting for element to be visible, enabled and stable\n       - element is visible, enabled and stable\n       - scrolling into view if needed\n       - done scrolling\n       - <div role=\"dialog\" class=\"active\" aria-modal=\"true\" aria-hidden=\"false\" id=\"tutorial-overlay\" aria-label=\"天命乃杜の簡単な案内\">…</div> intercepts pointer events\n     - retrying click action\n       - waiting 500ms\n"
     },
     "ai": {
       "state": "external",
-      "detail": "外部AIサービス"
+      "detail": "外部AIサービスのため、この監視システムでは可用性を判定していません。"
+    }
+  },
+  "probes": {
+    "http": {
+      "ok": true,
+      "reason": ""
+    },
+    "browser": {
+      "ok": true,
+      "reason": "実ブラウザでページ描画・JavaScript実行・主要画面構造を確認しました。"
+    },
+    "interaction": {
+      "ok": false,
+      "reason": "locator.click: Timeout 10000ms exceeded.\nCall log:\n  - waiting for locator('[onclick=\"startOmikuji()\"]').first()\n    - locator resolved to <button type=\"button\" onclick=\"startOmikuji()\" class=\"home-v4-primary-action\">…</button>\n  - attempting click action\n    2 × waiting for element to be visible, enabled and stable\n      - element is visible, enabled and stable\n      - scrolling into view if needed\n      - done scrolling\n      - <div role=\"dialog\" class=\"active\" aria-modal=\"true\" aria-hidden=\"false\" id=\"tutorial-overlay\" aria-label=\"天命乃杜の簡単な案内\">…</div> intercepts pointer events\n    - retrying click action\n    - waiting 20ms\n    2 × waiting for element to be visible, enabled and stable\n      - element is visible, enabled and stable\n      - scrolling into view if needed\n      - done scrolling\n      - <div role=\"dialog\" class=\"active\" aria-modal=\"true\" aria-hidden=\"false\" id=\"tutorial-overlay\" aria-label=\"天命乃杜の簡単な案内\">…</div> intercepts pointer events\n    - retrying click action\n      - waiting 100ms\n    17 × waiting for element to be visible, enabled and stable\n       - element is visible, enabled and stable\n       - scrolling into view if needed\n       - done scrolling\n       - <div role=\"dialog\" class=\"active\" aria-modal=\"true\" aria-hidden=\"false\" id=\"tutorial-overlay\" aria-label=\"天命乃杜の簡単な案内\">…</div> intercepts pointer events\n     - retrying click action\n       - waiting 500ms\n"
+    },
+    "api": {
+      "ok": true,
+      "reason": "メンテナンスAPI・カウンターAPIのHTTP応答とJSON形式を確認しました。"
+    },
+    "maintenance": {
+      "ok": true,
+      "active": false,
+      "reason": "計画メンテナンスは有効ではありません。"
     }
   }
 }
