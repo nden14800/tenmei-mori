@@ -11,7 +11,9 @@ const components=health.components||{};
 const latest=history.samples[history.samples.length-1];
 const fingerprint=value=>JSON.stringify({overall:value?.overall||'unknown',components:Object.fromEntries(Object.entries(value?.components||{}).map(([key,item])=>[key,item?.state||'unknown']).sort((a,b)=>a[0].localeCompare(b[0])))});
 const currentSample={at,overall,components};
-if(!latest||fingerprint(latest)!==fingerprint(currentSample))history.samples.push(currentSample);
+// Keep every scheduled observation so the browser-monitor timeline reflects checks,
+// not only state transitions. The retention window bounds storage to 90 days.
+history.samples.push(currentSample);
 const open=history.incidents.find(x=>x.status==='open');
 const incidentState=['degraded','partial','outage','unknown'].includes(overall)?overall:null;
 if(!incidentState){
