@@ -81,9 +81,13 @@ export default function StatusPage() {
   const [selectedHistoryMonitor, setSelectedHistoryMonitor] = useState<string>('all')
   const [expandedIncidentDetails, setExpandedIncidentDetails] = useState<Record<string, boolean>>({})
   const [loading, setLoading] = useState(true)
+  const [browserHealthStatus, setBrowserHealthStatus] = useState<MonitorStatus | null>(null)
   const [language, setLanguage] = useState<Language>('en')
 
   const t = getTranslations(language)
+  const handleBrowserHealthStatus = useCallback((status: MonitorStatus | null) => {
+    setBrowserHealthStatus(status)
+  }, [])
 
   const lastUpdateRef = useRef('')
   useEffect(() => {
@@ -223,7 +227,7 @@ export default function StatusPage() {
     .map((monitor) => getMonitorStatus(getDisplayMonitorData(monitor.id)))
     .filter((status): status is MonitorStatus => status !== 'unknown')
 
-  const overallStatus = getOverallStatus(knownStatuses)
+  const overallStatus = getOverallStatus(browserHealthStatus ? [...knownStatuses, browserHealthStatus] : knownStatuses)
   const activeIncidents = getActiveIncidents()
   const formatIncidentDate = (value: string) => new Date(value).toLocaleString(
     language === 'ja' ? 'ja-JP' : 'en-US',
@@ -259,7 +263,7 @@ export default function StatusPage() {
             )}
           </div>
 
-          <BrowserHealthNotice language={language} />
+          <BrowserHealthNotice language={language} onStatusChange={handleBrowserHealthStatus} />
 
           {!loading && activeMaintenances.length > 0 && (
             <div className="mb-8 space-y-4">
