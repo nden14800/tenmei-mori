@@ -1,4 +1,4 @@
-import { useRef, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
 import { Monitor } from '../data/monitors'
 import { cn } from '@/lib/utils'
@@ -91,6 +91,26 @@ function StatusTimeline({ history, getDateLabel, language }: StatusTimelineProps
   // Position en coordonnées viewport (fixed) pour échapper au clipping des parents
   // (overflow:hidden sur les cards). Tooltip rendu via portal dans document.body.
   const [hovered, setHovered] = useState<{ index: number; viewportX: number; viewportY: number } | null>(null)
+
+  // Standard tooltip behavior: dismiss on outside tap/click or Escape. Keep the
+  // tooltip pinned while interacting with the timeline itself.
+  useEffect(() => {
+    if (!hovered) return
+    const handleOutsidePointerDown = (event: PointerEvent) => {
+      const target = event.target
+      if (target instanceof Node && containerRef.current?.contains(target)) return
+      setHovered(null)
+    }
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') setHovered(null)
+    }
+    document.addEventListener('pointerdown', handleOutsidePointerDown, true)
+    document.addEventListener('keydown', handleKeyDown)
+    return () => {
+      document.removeEventListener('pointerdown', handleOutsidePointerDown, true)
+      document.removeEventListener('keydown', handleKeyDown)
+    }
+  }, [hovered])
 
   const handleEnter = (e: React.PointerEvent<HTMLDivElement>, index: number) => {
     const barRect = e.currentTarget.getBoundingClientRect()
