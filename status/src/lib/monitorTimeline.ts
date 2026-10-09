@@ -169,7 +169,7 @@ export function buildTimelineHistory({
       if (lastKnownStatus !== undefined) bars[index] = lastKnownStatus
     }
 
-    if (currentStatus === 'maintenance') bars[bucketCount - 1] = 'maintenance'
+    bars[bucketCount - 1] = mapStatusToBar(currentStatus)
     return bars
   }
 
@@ -188,7 +188,7 @@ export function buildTimelineHistory({
     if (dayStatus) bars[index] = dayStatus
   }
 
-  if (currentStatus === 'maintenance') bars[TIMELINE_BUCKET_COUNT - 1] = 'maintenance'
+  bars[TIMELINE_BUCKET_COUNT - 1] = mapStatusToBar(currentStatus)
   return bars
 }
 
