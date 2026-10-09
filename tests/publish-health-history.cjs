@@ -1,5 +1,5 @@
 const fs=require('node:fs');
-const HEALTH='status/public/health.json',HISTORY='status/health-history.json';
+const HEALTH='status/public/health.json',HISTORY='status/health-history.json',PUBLIC_HISTORY='status/public/health-history.json';
 const retentionMs=90*24*60*60*1000;
 const health=JSON.parse(fs.readFileSync(HEALTH,'utf8'));
 let history=JSON.parse(fs.readFileSync(HISTORY,'utf8'));
@@ -28,4 +28,6 @@ if(!incidentState){
 const cutoff=Date.now()-retentionMs;
 history.samples=history.samples.filter(x=>Date.parse(x.at)>=cutoff);
 history.incidents=history.incidents.filter(x=>Date.parse(x.start)>=cutoff);
-fs.writeFileSync(HISTORY,JSON.stringify(history,null,2)+'\n');
+const serialized=JSON.stringify(history,null,2)+'\n';
+fs.writeFileSync(HISTORY,serialized);
+fs.writeFileSync(PUBLIC_HISTORY,serialized);
