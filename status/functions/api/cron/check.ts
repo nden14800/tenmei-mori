@@ -39,6 +39,8 @@ let checkRunInProgress = false
 
 interface LongTermSummary {
   period: string
+  monitorId?: string
+  monitorName?: string
   checks: number
   operational: number
   degraded: number
@@ -47,16 +49,33 @@ interface LongTermSummary {
   uptime: number
 }
 
-function updateLongTermSummary(history: LongTermSummary[], timestamp: string, status: MonitorStatus): LongTermSummary[] {
+function updateLongTermSummary(
+  history: LongTermSummary[],
+  timestamp: string,
+  status: MonitorStatus,
+  monitorId: string,
+  monitorName: string,
+): LongTermSummary[] {
   const period = timestamp.slice(0, 7)
-  const existing = history.find((item) => item.period === period)
-  const next = existing ? { ...existing } : { period, checks: 0, operational: 0, degraded: 0, down: 0, maintenance: 0, uptime: 100 }
+  // Old records combined checks from every monitor into one monthly number.
+  // They cannot be split accurately after the fact, so keep only per-monitor records.
+  const perMonitorHistory = history.filter((item) => Boolean((item as LongTermSummary & { monitorId?: string }).monitorId))
+  const existing = perMonitorHistory.find((item) =>
+    item.period === period && (item as LongTermSummary & { monitorId?: string }).monitorId === monitorId
+  )
+  const next = existing ? { ...existing } : {
+    period, monitorId, monitorName, checks: 0, operational: 0, degraded: 0, down: 0, maintenance: 0, uptime: 100,
+  }
+  ;(next as LongTermSummary & { monitorId: string; monitorName: string }).monitorId = monitorId
+  ;(next as LongTermSummary & { monitorId: string; monitorName: string }).monitorName = monitorName
   next.checks += 1
   next[status] += 1
   next.uptime = next.checks > 0 ? ((next.operational + next.maintenance) / next.checks) * 100 : 100
-  return [...history.filter((item) => item.period !== period), next]
+  return [...perMonitorHistory.filter((item) =>
+    !(item.period === period && (item as LongTermSummary & { monitorId?: string }).monitorId === monitorId)
+  ), next]
     .sort((a, b) => a.period.localeCompare(b.period))
-    .slice(-60)
+    .slice(-240)
 }
 
 interface IncidentHistoryItem {
@@ -401,7 +420,7 @@ export const onRequest = async (context: any) => {
           { degradedCountsAsDown: monitor.degradedCountsAsDown !== false }
         )
 
-        longTermHistory = updateLongTermSummary(longTermHistory, result.lastCheck, result.status)
+        longTermHistory = updateLongTermSummary(longTermHistory, result.lastCheck, result.status, monitor.id, monitor.name)
 
         const activeIncident = existing?.activeIncident as IncidentHistoryItem | undefined
         const currentIsDown = isDownStatus(result.status)
