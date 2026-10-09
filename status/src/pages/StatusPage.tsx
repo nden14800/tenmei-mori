@@ -259,7 +259,7 @@ export default function StatusPage() {
             )}
           </div>
 
-          <BrowserHealthNotice />
+          <BrowserHealthNotice language={language} />
 
           {!loading && activeMaintenances.length > 0 && (
             <div className="mb-8 space-y-4">
