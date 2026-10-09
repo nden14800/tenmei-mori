@@ -68,6 +68,7 @@ export default function StatusPage() {
   const [checkIntervalMinutes, setCheckIntervalMinutes] = useState<number>(1)
   const [incidentHistory, setIncidentHistory] = useState<IncidentHistoryItem[]>([])
   const [longTermHistory, setLongTermHistory] = useState<LongTermSummary[]>([])
+  const [selectedHistoryYear, setSelectedHistoryYear] = useState<string>('all')
   const [loading, setLoading] = useState(true)
   const [language, setLanguage] = useState<Language>('en')
 
@@ -252,61 +253,136 @@ export default function StatusPage() {
           </div>
 
           <section className="mb-8">
-            <div className="mb-5">
-              <h2 className="text-lg font-semibold text-foreground">{language === 'ja' ? '年別稼働履歴' : 'Yearly uptime history'}</h2>
-              <p className="mt-1 text-sm text-muted-foreground">{language === 'ja' ? '保存された月別データを年単位でも確認できます。' : 'Stored monthly data is also summarized by year.'}</p>
+            <div className="mb-5 flex flex-wrap items-end justify-between gap-3">
+              <div>
+                <h2 className="text-lg font-semibold text-foreground">{language === 'ja' ? '年別稼働履歴' : 'Yearly uptime history'}</h2>
+                <p className="mt-1 text-sm text-muted-foreground">{language === 'ja' ? '年を選ぶと、その年の月別履歴に絞り込めます。' : 'Select a year to filter the monthly history below.'}</p>
+              </div>
+              <span className="text-xs text-muted-foreground">{yearlyLongTermHistory.length} {language === 'ja' ? '年分' : 'years'}</span>
             </div>
             {yearlyLongTermHistory.length > 0 ? (
               <div className="grid gap-3 sm:grid-cols-2">
-                {yearlyLongTermHistory.map((item) => (
-                  <article key={item.year} className="rounded-xl border border-border bg-card p-4 shadow-sm sm:p-5">
-                    <div className="flex items-center justify-between gap-3">
-                      <span className="text-base font-semibold text-foreground">{item.year}</span>
-                      <span className="text-lg font-semibold tabular-nums text-foreground">{item.uptime.toFixed(2)}%</span>
-                    </div>
-                    <div className="mt-3 h-2 overflow-hidden rounded-full bg-muted">
-                      <div className="h-full rounded-full bg-green-500" style={{ width: `${Math.max(0, Math.min(100, item.uptime))}%` }} />
-                    </div>
-                    <div className="mt-3 flex items-center justify-between text-xs text-muted-foreground">
-                      <span>{language === 'ja' ? `${item.checks.toLocaleString()} 回確認` : `${item.checks.toLocaleString()} checks`}</span>
-                      <span>{language === 'ja' ? `停止 ${item.down} 回` : `${item.down} down`}</span>
-                    </div>
-                  </article>
-                ))}
+                {yearlyLongTermHistory.map((item) => {
+                  const isSelected = selectedHistoryYear === item.year
+                  const yearMonths = longTermHistory.filter((month) => month.period.startsWith(item.year))
+                  const totalDown = yearMonths.reduce((sum, month) => sum + month.down, 0)
+                  const totalOperational = yearMonths.reduce((sum, month) => sum + month.operational, 0)
+                  const totalDegraded = yearMonths.reduce((sum, month) => sum + month.degraded, 0)
+                  const totalMaintenance = yearMonths.reduce((sum, month) => sum + month.maintenance, 0)
+                  return (
+                    <button
+                      key={item.year}
+                      type="button"
+                      onClick={() => setSelectedHistoryYear(isSelected ? 'all' : item.year)}
+                      aria-pressed={isSelected}
+                      className={cn(
+                        "rounded-xl border bg-card p-4 text-left shadow-sm transition-colors sm:p-5",
+                        isSelected ? "border-foreground/50 ring-1 ring-foreground/20" : "border-border hover:border-foreground/30"
+                      )}
+                    >
+                      <div className="flex items-start justify-between gap-3">
+                        <div>
+                          <span className="text-base font-semibold text-foreground">{item.year}</span>
+                          <p className="mt-1 text-xs text-muted-foreground">{yearMonths.length} {language === 'ja' ? 'か月の記録' : 'months recorded'}</p>
+                        </div>
+                        <span className="text-lg font-semibold tabular-nums text-foreground">{item.uptime.toFixed(2)}%</span>
+                      </div>
+                      <div className="mt-3 h-2 overflow-hidden rounded-full bg-muted" aria-label={language === 'ja' ? '年別稼働率' : 'Yearly uptime'}>
+                        <div className="h-full rounded-full bg-green-500 transition-[width]" style={{ width: `${Math.max(0, Math.min(100, item.uptime))}%` }} />
+                      </div>
+                      <div className="mt-3 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-muted-foreground">
+                        <span>{language === 'ja' ? `${item.checks.toLocaleString()} 回確認` : `${item.checks.toLocaleString()} checks`}</span>
+                        <span className="text-green-700 dark:text-green-400">{language === 'ja' ? `正常 ${totalOperational}` : `Up ${totalOperational}`}</span>
+                        {totalDegraded > 0 && <span className="text-yellow-700 dark:text-yellow-400">{language === 'ja' ? `低下 ${totalDegraded}` : `Degraded ${totalDegraded}`}</span>}
+                        {totalMaintenance > 0 && <span className="text-blue-700 dark:text-blue-400">{language === 'ja' ? `保守 ${totalMaintenance}` : `Maintenance ${totalMaintenance}`}</span>}
+                        <span className="text-red-700 dark:text-red-400">{language === 'ja' ? `停止 ${totalDown}` : `Down ${totalDown}`}</span>
+                      </div>
+                      <div className="mt-3 flex items-center justify-between border-t border-border pt-3 text-xs font-medium">
+                        <span className="text-muted-foreground">{isSelected ? (language === 'ja' ? '選択中' : 'Selected') : (language === 'ja' ? '月別履歴を表示' : 'View monthly history')}</span>
+                        <span className="text-foreground">{isSelected ? '✓' : '→'}</span>
+                      </div>
+                    </button>
+                  )
+                })}
               </div>
             ) : (
-              <div className="rounded-lg border border-border bg-card px-4 py-5 text-sm text-muted-foreground sm:px-6">
-                {language === 'ja' ? '年別履歴はまだありません。' : 'No yearly history yet.'}
+              <div className="rounded-xl border border-border bg-card px-4 py-5 text-sm text-muted-foreground sm:px-6">
+                {language === 'ja' ? '年別履歴はまだありません。監視結果が保存されると、ここに集計されます。' : 'No yearly history yet. Saved monitoring results will be summarized here.'}
               </div>
             )}
           </section>
 
           <section className="mb-8">
-            <div className="mb-5">
-              <h2 className="text-lg font-semibold text-foreground">{language === 'ja' ? '月別稼働履歴' : 'Monthly uptime history'}</h2>
-              <p className="mt-1 text-sm text-muted-foreground">{language === 'ja' ? '30日を超える期間は月別に集計し、保存された期間を一覧できます。' : 'Periods beyond 30 days are summarized by month so long-term history remains easy to read.'}</p>
+            <div className="mb-5 flex flex-wrap items-end justify-between gap-3">
+              <div>
+                <h2 className="text-lg font-semibold text-foreground">{language === 'ja' ? '月別稼働履歴' : 'Monthly uptime history'}</h2>
+                <p className="mt-1 text-sm text-muted-foreground">{language === 'ja' ? '月ごとの稼働率・確認回数・状態別の確認数を確認できます。' : 'Review uptime, check volume, and status breakdown for each month.'}</p>
+              </div>
+              <div className="flex flex-wrap items-center gap-2">
+                <label htmlFor="history-year-filter" className="text-xs text-muted-foreground">{language === 'ja' ? '表示する年' : 'Year'}</label>
+                <select
+                  id="history-year-filter"
+                  value={selectedHistoryYear}
+                  onChange={(event) => setSelectedHistoryYear(event.target.value)}
+                  className="rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground"
+                >
+                  <option value="all">{language === 'ja' ? 'すべて' : 'All years'}</option>
+                  {yearlyLongTermHistory.map((item) => <option key={item.year} value={item.year}>{item.year}</option>)}
+                </select>
+              </div>
             </div>
             {longTermHistory.length > 0 ? (
-              <div className="space-y-2">
-                {[...longTermHistory].reverse().map((item) => (
-                  <article key={item.period} className="rounded-xl border border-border bg-card px-4 py-3 shadow-sm sm:px-5">
-                    <div className="flex items-center justify-between gap-3">
-                      <span className="font-medium text-foreground">{item.period}</span>
-                      <span className="font-semibold tabular-nums text-foreground">{item.uptime.toFixed(2)}%</span>
-                    </div>
-                    <div className="mt-2 h-1.5 overflow-hidden rounded-full bg-muted">
-                      <div className="h-full rounded-full bg-green-500" style={{ width: `${Math.max(0, Math.min(100, item.uptime))}%` }} />
-                    </div>
-                    <div className="mt-2 flex items-center justify-between text-xs text-muted-foreground">
-                      <span>{language === 'ja' ? `${item.checks.toLocaleString()} 回確認` : `${item.checks.toLocaleString()} checks`}</span>
-                      <span>{language === 'ja' ? `停止 ${item.down} 回` : `${item.down} down`}</span>
-                    </div>
-                  </article>
-                ))}
+              <div className="space-y-3">
+                {longTermHistory
+                  .filter((item) => selectedHistoryYear === 'all' || item.period.startsWith(selectedHistoryYear))
+                  .slice()
+                  .sort((a, b) => b.period.localeCompare(a.period))
+                  .map((item) => {
+                    const total = Math.max(0, item.checks)
+                    const segments = [
+                      { key: 'operational', label: language === 'ja' ? '正常' : 'Operational', value: item.operational, color: 'bg-green-500', text: 'text-green-700 dark:text-green-400' },
+                      { key: 'degraded', label: language === 'ja' ? '低下' : 'Degraded', value: item.degraded, color: 'bg-yellow-500', text: 'text-yellow-700 dark:text-yellow-400' },
+                      { key: 'down', label: language === 'ja' ? '停止' : 'Down', value: item.down, color: 'bg-red-500', text: 'text-red-700 dark:text-red-400' },
+                      { key: 'maintenance', label: language === 'ja' ? '保守' : 'Maintenance', value: item.maintenance, color: 'bg-blue-500', text: 'text-blue-700 dark:text-blue-400' },
+                    ]
+                    return (
+                      <article key={item.period} className="rounded-xl border border-border bg-card p-4 shadow-sm sm:p-5">
+                        <div className="flex flex-wrap items-start justify-between gap-3">
+                          <div>
+                            <h3 className="font-semibold text-foreground">{item.period}</h3>
+                            <p className="mt-1 text-xs text-muted-foreground">{item.checks.toLocaleString()} {language === 'ja' ? '回の監視チェック' : 'monitoring checks'}</p>
+                          </div>
+                          <div className="text-right">
+                            <div className="text-xl font-semibold tabular-nums text-foreground">{item.uptime.toFixed(2)}%</div>
+                            <div className="text-xs text-muted-foreground">{language === 'ja' ? '稼働率' : 'Uptime'}</div>
+                          </div>
+                        </div>
+                        <div className="mt-4 flex h-2 overflow-hidden rounded-full bg-muted" role="img" aria-label={segments.map((segment) => `${segment.label}: ${segment.value}`).join(', ')}>
+                          {segments.map((segment) => segment.value > 0 && (
+                            <div key={segment.key} className={cn(segment.color, "h-full")} style={{ width: `${total > 0 ? segment.value / total * 100 : 0}%` }} title={`${segment.label}: ${segment.value}`} />
+                          ))}
+                        </div>
+                        <div className="mt-3 grid grid-cols-2 gap-2 sm:grid-cols-4">
+                          {segments.map((segment) => (
+                            <div key={segment.key} className="rounded-lg bg-muted/50 px-3 py-2">
+                              <div className={cn("text-xs", segment.text)}>{segment.label}</div>
+                              <div className="mt-1 font-semibold tabular-nums text-foreground">{segment.value.toLocaleString()}</div>
+                              <div className="text-[11px] text-muted-foreground">{total > 0 ? `${(segment.value / total * 100).toFixed(2)}%` : '—'}</div>
+                            </div>
+                          ))}
+                        </div>
+                      </article>
+                    )
+                  })}
+                {longTermHistory.filter((item) => selectedHistoryYear === 'all' || item.period.startsWith(selectedHistoryYear)).length === 0 && (
+                  <div className="rounded-xl border border-border bg-card px-4 py-5 text-sm text-muted-foreground">
+                    {language === 'ja' ? 'この年の月別履歴はありません。' : 'No monthly history is available for this year.'}
+                  </div>
+                )}
               </div>
             ) : (
-              <div className="rounded-lg border border-border bg-card px-4 py-5 text-sm text-muted-foreground sm:px-6">
-                {language === 'ja' ? '長期履歴はまだありません。今後の監視結果が月別に保存されます。' : 'No long-term history yet. Future checks will be stored by month.'}
+              <div className="rounded-xl border border-border bg-card px-4 py-5 text-sm text-muted-foreground sm:px-6">
+                {language === 'ja' ? '月別履歴はまだありません。今後の監視結果が月別に保存されます。' : 'No monthly history yet. Future monitoring results will be saved by month.'}
               </div>
             )}
           </section>
