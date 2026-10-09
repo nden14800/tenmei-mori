@@ -16,7 +16,7 @@ permissions:
 
 concurrency:
   group: service-browser-monitor
-  cancel-in-progress: true
+  cancel-in-progress: false
 
 jobs:
   monitor:
@@ -48,4 +48,7 @@ jobs:
             exit 0
           fi
           git commit -m "chore(status): update browser health snapshot"
+          # A maintainer commit may land while this scheduled job is running.
+          # Rebase the generated snapshot commit onto the newest main before pushing.
+          git pull --rebase origin main
           git push
