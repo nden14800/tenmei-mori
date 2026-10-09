@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { AlertTriangle, CheckCircle2, Info, XCircle } from 'lucide-react'
+import { AlertTriangle, Info, XCircle } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { Language } from '../i18n/translations'
 
@@ -57,7 +57,7 @@ export default function BrowserHealthNotice({ language }: { language: Language }
           ? 'メンテナンス中'
           : 'ブラウザ監視の状態を確認できません'
   const Icon = isOutage ? XCircle : isMaintenance ? Info : AlertTriangle
-  const locale = document.documentElement.lang === 'ja' ? 'ja-JP' : 'en-US'
+  const locale = language === 'ja' ? 'ja-JP' : 'en-US'
   const timestamp = health.checkedAt ? new Date(health.checkedAt).toLocaleString(locale) : null
   const components = Object.entries(health.components || {}).filter(([key, value]) => key !== 'ai' && value?.state && value.state !== 'operational')
   const names: Record<string, { ja: string; en: string }> = {
