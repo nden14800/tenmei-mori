@@ -229,7 +229,7 @@ export default function MonitorCard({ monitor, data, language, checkIntervalMinu
     return calculateUptime(relevantChecks.map((check) => check.s), status, uptimeOptions)
   }
 
-  const calculateUptimeFromHistory = (history: DailyHistoryPoint[], period: '7d' | '30d'): number | null => {
+  const calculateUptimeFromHistory = (history: DailyHistoryPoint[], period: '3d' | '7d' | '30d'): number | null => {
     if (!hasData) return null
 
     const relevantHistory = filterDailyHistoryInPeriod(history, period, now)
@@ -249,6 +249,8 @@ export default function MonitorCard({ monitor, data, language, checkIntervalMinu
         return calculateUptimeFromChecks(recentChecks, 1)
       case '24h':
         return calculateUptimeFromChecks(recentChecks, 24)
+      case '3d':
+        return calculateUptimeFromHistory(dailyHistory, '3d')
       case '7d':
         return calculateUptimeFromHistory(dailyHistory, '7d')
       case '30d':
@@ -280,7 +282,7 @@ export default function MonitorCard({ monitor, data, language, checkIntervalMinu
         .map((check) => ({ t: check.t, rt: check.rt!, s: check.s }))
     }
     return (data.dailyHistory || [])
-      .filter((day) => day.date >= getTimelineDateAtIndex(period, 0, now) && day.date <= getTimelineDateAtIndex(period, period === '7d' ? 6 : 29, now))
+      .filter((day) => day.date >= getTimelineDateAtIndex(period, 0, now) && day.date <= getTimelineDateAtIndex(period, period === '3d' ? 2 : period === '7d' ? 6 : 29, now))
       .filter((day) => typeof day.responseTimeAvg === 'number')
       .map((day) => ({
         t: `${day.date}T00:00:00+09:00`,
@@ -290,7 +292,7 @@ export default function MonitorCard({ monitor, data, language, checkIntervalMinu
   })()
 
   const incompleteHistory = hasData && uptimeForPeriod === null &&
-    (period === '7d' || period === '30d') &&
+    (period === '3d' || period === '7d' || period === '30d') &&
     filterDailyHistoryInPeriod(data.dailyHistory || [], period, now).length > 0
 
   // Chaque tooltip décrit la position temporelle du bucket dans le filtre sélectionné.
@@ -407,11 +409,11 @@ export default function MonitorCard({ monitor, data, language, checkIntervalMinu
           <div className="mt-2 flex items-center justify-between gap-3">
             <span className="text-[11px] text-muted-foreground">
               {language === 'ja'
-                ? `${period === '1h' ? '直近1時間' : period === '24h' ? '直近24時間' : period === '7d' ? '直近7日間' : '直近30日間'}の稼働履歴`
-                : `${period === '1h' ? 'Last hour' : period === '24h' ? 'Last 24 hours' : period === '7d' ? 'Last 7 days' : 'Last 30 days'} uptime history`}
+                ? `${period === '1h' ? '直近1時間' : period === '24h' ? '直近24時間' : period === '3d' ? '直近3日間' : period === '7d' ? '直近7日間' : '直近30日間'}の稼働履歴`
+                : `${period === '1h' ? 'Last hour' : period === '24h' ? 'Last 24 hours' : period === '3d' ? 'Last 3 days' : period === '7d' ? 'Last 7 days' : 'Last 30 days'} uptime history`}
             </span>
             <div className="flex gap-1">
-            {(['1h', '24h', '7d', '30d'] as TimelinePeriod[]).map((p) => (
+            {(['1h', '24h', '3d', '7d', '30d'] as TimelinePeriod[]).map((p) => (
               <button
                 key={p}
                 onClick={() => setPeriod(p)}
