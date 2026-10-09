@@ -77,6 +77,7 @@ export default function StatusPage() {
   const [checkIntervalMinutes, setCheckIntervalMinutes] = useState<number>(1)
   const [incidentHistory, setIncidentHistory] = useState<IncidentHistoryItem[]>([])
   const [longTermHistory, setLongTermHistory] = useState<LongTermSummary[]>([])
+  const [browserHealthSamples, setBrowserHealthSamples] = useState<Array<{ at: string; overall?: string }>>([])
   const [selectedHistoryYear, setSelectedHistoryYear] = useState<string>('all')
   const [selectedHistoryMonitor, setSelectedHistoryMonitor] = useState<string>('all')
   const [expandedIncidentDetails, setExpandedIncidentDetails] = useState<Record<string, boolean>>({})
@@ -134,6 +135,24 @@ export default function StatusPage() {
     const interval = setInterval(fetchStatus, refreshInterval)
     return () => clearInterval(interval)
   }, [fetchStatus])
+
+  useEffect(() => {
+    let active = true
+    const base = window.location.pathname.startsWith('/status') ? '/status/health-history.json' : '/health-history.json'
+    const loadBrowserHistory = async () => {
+      try {
+        const response = await fetch(base, { cache: 'no-store' })
+        if (!response.ok) return
+        const data = await response.json() as { samples?: Array<{ at?: string; overall?: string }> }
+        if (active) setBrowserHealthSamples(Array.isArray(data.samples) ? data.samples.filter((sample) => typeof sample.at === 'string' && Number.isFinite(Date.parse(sample.at))).map((sample) => ({ at: sample.at!, overall: sample.overall })) : [])
+      } catch {
+        // Keep the normal uptime history available if browser history cannot be loaded.
+      }
+    }
+    loadBrowserHistory()
+    const interval = window.setInterval(loadBrowserHistory, 60_000)
+    return () => { active = false; window.clearInterval(interval) }
+  }, [])
 
   useEffect(() => {
     const STALE_MS = 60 * 1000
@@ -206,7 +225,40 @@ export default function StatusPage() {
     ...item,
     uptime: item.checks > 0 ? item.uptimeWeighted / item.checks : 100,
   })).sort((a, b) => b.year.localeCompare(a.year) || a.monitorName.localeCompare(b.monitorName))
-  const availableHistoryYears = [...new Set(yearlyLongTermHistory.map((item) => item.year))].sort((a, b) => b.localeCompare(a))
+  // Browser interaction checks are a separate measurement source from HTTP uptime.
+  // Keep them as their own monitor so they appear in monthly/yearly history without
+  // silently changing the historical HTTP check counts or uptime percentages.
+  const browserHistorySummaries: LongTermSummary[] = Object.values(browserHealthSamples.reduce<Record<string, LongTermSummary>>((acc, sample) => {
+    const date = new Date(sample.at)
+    const period = `${date.getUTCFullYear()}-${String(date.getUTCMonth() + 1).padStart(2, '0')}`
+    const key = period
+    const item = acc[key] || { period, monitorId: 'tenmei-mori-browser-omikuji', monitorName: language === 'ja' ? 'おみくじ操作（ブラウザ監視）' : 'Omikuji interaction (browser monitor)', checks: 0, operational: 0, degraded: 0, down: 0, maintenance: 0, uptime: 100 }
+    const state = sample.overall || 'unknown'
+    item.checks += 1
+    if (state === 'operational') item.operational += 1
+    else if (state === 'maintenance') item.maintenance += 1
+    else if (state === 'outage' || state === 'unknown') item.down += 1
+    else item.degraded += 1
+    const available = item.operational + item.maintenance
+    item.uptime = item.checks > 0 ? available / item.checks * 100 : 100
+    acc[key] = item
+    return acc
+  }, {}))
+  const historyForDisplay = [...perMonitorLongTermHistory, ...browserHistorySummaries]
+  const yearlyHistoryForDisplay = [...yearlyLongTermHistory, ...Object.values(browserHistorySummaries.reduce<Record<string, LongTermSummary>>((acc, month) => {
+    const year = month.period.slice(0, 4)
+    const key = year
+    const item = acc[key] || { period: year, monitorId: 'tenmei-mori-browser-omikuji', monitorName: month.monitorName || 'Omikuji interaction (browser monitor)', checks: 0, operational: 0, degraded: 0, down: 0, maintenance: 0, uptime: 100 }
+    item.checks += month.checks
+    item.operational += month.operational
+    item.degraded += month.degraded
+    item.down += month.down
+    item.maintenance += month.maintenance
+    item.uptime = item.checks > 0 ? (item.operational + item.maintenance) / item.checks * 100 : 100
+    acc[key] = item
+    return acc
+  }, {})).map((item) => ({ ...item, period: item.period }))]
+  const availableHistoryYears = [...new Set([...yearlyLongTermHistory.map((item) => item.year), ...browserHistorySummaries.map((item) => item.period.slice(0, 4))])].sort((a, b) => b.localeCompare(a))
 
   const getDisplayMonitorData = (monitorId: string): MonitorData | undefined => {
     const monitorData = kvMonitors[monitorId]
@@ -343,7 +395,7 @@ export default function StatusPage() {
                   const totalMaintenance = yearMonths.reduce((sum, month) => sum + month.maintenance, 0)
                   return (
                     <button
-                      key={`${item.monitorId}-${item.year}`}
+                      key={`${item.monitorId}-${year}`}
                       type="button"
                       onClick={() => {
                         if (isSelected) {
