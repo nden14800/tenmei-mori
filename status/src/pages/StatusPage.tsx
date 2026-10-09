@@ -59,6 +59,12 @@ interface IncidentHistoryItem {
   startedAt: string
   resolvedAt?: string
   durationSeconds?: number
+  httpStatus?: number
+  responseTime?: number
+  failureReason?: string
+  lastCheckedAt?: string
+  recoveredHttpStatus?: number
+  recoveredResponseTime?: number
 }
 
 export default function StatusPage() {
@@ -69,6 +75,7 @@ export default function StatusPage() {
   const [incidentHistory, setIncidentHistory] = useState<IncidentHistoryItem[]>([])
   const [longTermHistory, setLongTermHistory] = useState<LongTermSummary[]>([])
   const [selectedHistoryYear, setSelectedHistoryYear] = useState<string>('all')
+  const [expandedIncidentDetails, setExpandedIncidentDetails] = useState<Record<string, boolean>>({})
   const [loading, setLoading] = useState(true)
   const [language, setLanguage] = useState<Language>('en')
 
@@ -416,6 +423,54 @@ export default function StatusPage() {
                         <span>{t.incidentStarted}: {formatIncidentDate(incident.startedAt)}</span>
                         <span>{incident.resolvedAt ? t.incidentResolvedAt + ': ' + formatIncidentDate(incident.resolvedAt) : t.incidentStillDown}</span>
                         <span>{t.incidentDuration}: {formatIncidentDuration(incident.durationSeconds)}</span>
+                      </div>
+                      <div className="mt-4">
+                        <button
+                          type="button"
+                          aria-expanded={Boolean(expandedIncidentDetails[incident.id])}
+                          onClick={() => setExpandedIncidentDetails((current) => ({ ...current, [incident.id]: !current[incident.id] }))}
+                          className="inline-flex items-center gap-2 rounded-lg border border-border px-3 py-2 text-xs font-medium text-foreground transition-colors hover:bg-muted"
+                        >
+                          {expandedIncidentDetails[incident.id]
+                            ? (language === 'ja' ? '詳細を閉じる' : 'Hide details')
+                            : (language === 'ja' ? '障害の詳細を表示' : 'Show incident details')}
+                          <span aria-hidden="true">{expandedIncidentDetails[incident.id] ? '−' : '+'}</span>
+                        </button>
+                        {expandedIncidentDetails[incident.id] && (
+                          <div className="mt-3 rounded-xl border border-border bg-muted/30 p-3 sm:p-4">
+                            <h4 className="text-sm font-semibold text-foreground">{language === 'ja' ? '監視診断情報' : 'Monitoring diagnostics'}</h4>
+                            <dl className="mt-3 grid gap-3 sm:grid-cols-2">
+                              <div>
+                                <dt className="text-xs text-muted-foreground">{language === 'ja' ? '障害の原因・応答内容' : 'Failure reason'}</dt>
+                                <dd className="mt-1 break-words text-sm text-foreground">{incident.failureReason || (language === 'ja' ? 'この障害は詳細情報の記録開始前に発生したため、原因は保存されていません。' : 'Diagnostic details were not recorded for this older incident.')}</dd>
+                              </div>
+                              <div>
+                                <dt className="text-xs text-muted-foreground">{language === 'ja' ? '障害発生時の HTTP ステータス' : 'HTTP status at outage'}</dt>
+                                <dd className="mt-1 text-sm font-medium tabular-nums text-foreground">{typeof incident.httpStatus === 'number' ? incident.httpStatus : '—'}</dd>
+                              </div>
+                              <div>
+                                <dt className="text-xs text-muted-foreground">{language === 'ja' ? '障害時の応答時間' : 'Response time during outage'}</dt>
+                                <dd className="mt-1 text-sm font-medium tabular-nums text-foreground">{typeof incident.responseTime === 'number' ? `${incident.responseTime} ms` : '—'}</dd>
+                              </div>
+                              <div>
+                                <dt className="text-xs text-muted-foreground">{language === 'ja' ? '最終確認時刻' : 'Last check'}</dt>
+                                <dd className="mt-1 text-sm text-foreground">{incident.lastCheckedAt ? formatIncidentDate(incident.lastCheckedAt) : '—'}</dd>
+                              </div>
+                              {incident.resolvedAt && (
+                                <>
+                                  <div>
+                                    <dt className="text-xs text-muted-foreground">{language === 'ja' ? '復旧確認時の HTTP ステータス' : 'HTTP status on recovery'}</dt>
+                                    <dd className="mt-1 text-sm font-medium tabular-nums text-foreground">{typeof incident.recoveredHttpStatus === 'number' ? incident.recoveredHttpStatus : '—'}</dd>
+                                  </div>
+                                  <div>
+                                    <dt className="text-xs text-muted-foreground">{language === 'ja' ? '復旧確認時の応答時間' : 'Response time on recovery'}</dt>
+                                    <dd className="mt-1 text-sm font-medium tabular-nums text-foreground">{typeof incident.recoveredResponseTime === 'number' ? `${incident.recoveredResponseTime} ms` : '—'}</dd>
+                                  </div>
+                                </>
+                              )}
+                            </dl>
+                          </div>
+                        )}
                       </div>
                     </div>
                   </article>
