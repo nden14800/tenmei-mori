@@ -287,10 +287,19 @@ export default function MonitorCard({ monitor, data, language, checkIntervalMinu
       const minutesAgo = getTimelineMinutesAgo(index, period, checkIntervalMinutes)
       const hoursAgo = Math.floor(minutesAgo / 60)
       return hoursAgo > 0 ? `${hoursAgo}h ago` : `${minutesAgo}m ago`
-    } else {
+    } else if (period === '3d') {
       const day = getTimelineDateAtIndex(period, index, now)
       const [year, month, date] = day.split('-').map(Number)
       return new Date(Date.UTC(year, month - 1, date)).toLocaleDateString(locale, {
+        timeZone: 'UTC',
+        month: 'short',
+        day: 'numeric',
+      })
+    } else {
+      const daysToShow = period === '7d' ? 7 : 30
+      const msPerBar = (daysToShow * 24 * 60 * 60 * 1000) / BAR_COUNT
+      const barTime = now - (BAR_COUNT - index) * msPerBar
+      return new Date(barTime).toLocaleDateString(locale, {
         timeZone: 'UTC',
         month: 'short',
         day: 'numeric',
