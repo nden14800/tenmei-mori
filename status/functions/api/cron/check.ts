@@ -325,12 +325,20 @@ export const onRequest = async (context: any) => {
   checkRunInProgress = true
 
   try {
-    // One-time clean start: state written after this cutoff is preserved on every later run.
-    const STATUS_RESET_CUTOFF = Date.parse('2026-10-06T12:06:00Z')
+    // Durable one-time reset marker lives inside monitors so the existing state API
+    // preserves it without requiring a separate database migration. The UI ignores this
+    // metadata entry because it is not a monitor record.
+    const STATUS_RESET_GENERATION = '2026-10-09-full-history-reset-v1'
     const storedState = await withRetry(() => readStatusState(STATUS_API_SECRET))
-    const resetState = !storedState.lastUpdate || Date.parse(storedState.lastUpdate) < STATUS_RESET_CUTOFF
+    const storedMonitors = (storedState.monitors || {}) as Record<string, any>
+    const resetState = storedMonitors.__statusMeta?.resetGeneration !== STATUS_RESET_GENERATION
     const stateForCheck = resetState
-      ? { monitors: {}, incidentHistory: [], longTermHistory: [], lastUpdate: null }
+      ? {
+          monitors: { __statusMeta: { resetGeneration: STATUS_RESET_GENERATION } },
+          incidentHistory: [],
+          longTermHistory: [],
+          lastUpdate: null,
+        }
       : storedState
     const existingData = (stateForCheck.monitors || {}) as Record<string, any>
     let incidentHistory = (stateForCheck.incidentHistory || []) as IncidentHistoryItem[]
@@ -441,6 +449,8 @@ export const onRequest = async (context: any) => {
     results.forEach(({ id, ...data }) => {
       monitorsData[id] = data
     })
+    // Preserve the reset generation marker across future checks.
+    monitorsData.__statusMeta = { resetGeneration: STATUS_RESET_GENERATION }
 
     const lastUpdate = new Date().toISOString()
     await withRetry(() => writeStatusState(STATUS_API_SECRET, {
