@@ -347,6 +347,7 @@ export const onRequest = async (context: any) => {
     const storedState = await withRetry(() => readStatusState(STATUS_API_SECRET))
     const storedMonitors = (storedState.monitors || {}) as Record<string, any>
     const resetState = storedMonitors.__statusMeta?.resetGeneration !== STATUS_RESET_GENERATION
+    console.log('Status reset generation:', STATUS_RESET_GENERATION, 'reset required:', resetState)
     const stateForCheck = resetState
       ? {
           monitors: { __statusMeta: { resetGeneration: STATUS_RESET_GENERATION } },
