@@ -20,6 +20,8 @@ const state = {
     currentLanguage: 'ja',
     originalNodes: [],
     originalText: new WeakMap(),
+    originalAttributeTargets: [],
+    originalAttributes: new WeakMap(),
     translatedTextCache: new Map(),
     translator: null,
     translatorLanguage: null,
@@ -91,19 +93,30 @@ function renderLanguageGrid() {
     });
 }
 
+const EXCLUDED_TRANSLATION_SELECTOR = [
+    'script', 'style', 'noscript', 'template', 'svg', 'math',
+    '[contenteditable="true"]', '[data-translation-exclude]', '.notranslate', '#translation-dialog',
+    '#document-history-dialog', '#site-language-access', '#tutorial-overlay', '#ch-plugin', '.channel-plugin',
+    '[aria-live]'
+].join(',');
+
+const TRANSLATABLE_ATTRIBUTES = ['title', 'placeholder', 'aria-label', 'alt'];
+
+function isExcludedElement(element) {
+    return !element || Boolean(element.closest(EXCLUDED_TRANSLATION_SELECTOR));
+}
+
 function isExcludedTextNode(node) {
     const parent = node.parentElement;
     if (!parent || !normalizeText(node.nodeValue)) return true;
-    return Boolean(parent.closest([
-        'script', 'style', 'noscript', 'template', 'svg', 'math', 'textarea', 'input', 'select', 'option', 'button', '[role="button"]',
-        '[contenteditable="true"]', '[data-translation-exclude]', '.notranslate', '#sidebar', '#translation-dialog',
-        '#document-history-dialog', '#site-language-access', '#tutorial-overlay', '#ch-plugin', '.channel-plugin',
-        '[aria-live]'
-    ].join(',')));
+    if (parent.closest('textarea')) return true;
+    return isExcludedElement(parent);
 }
 
 function collectTextNodes() {
-    const root = document.querySelector('.view-section.active') || document.getElementById('main-content') || document.body;
+    // 翻訳対象は表示中のパネルだけでなく、サイト本文全体。
+    // SPAで後から開く「当サイトについて」「プライバシーポリシー」「使い方」も対象にする。
+    const root = document.body;
     if (!root) return [];
     const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT, {
         acceptNode(node) {
@@ -122,11 +135,37 @@ function collectTextNodes() {
     return nodes;
 }
 
+function collectAttributeTargets() {
+    const targets = [];
+    document.body?.querySelectorAll(TRANSLATABLE_ATTRIBUTES.map((name) => '[' + name + ']').join(',')).forEach((element) => {
+        if (isExcludedElement(element)) return;
+        TRANSLATABLE_ATTRIBUTES.forEach((name) => {
+            if (!element.hasAttribute(name)) return;
+            let originals = state.originalAttributes.get(element);
+            if (!originals) {
+                originals = new Map();
+                state.originalAttributes.set(element, originals);
+            }
+            if (!originals.has(name)) {
+                const original = element.getAttribute(name);
+                originals.set(name, original);
+                state.originalAttributeTargets.push({ element, name, original });
+            }
+            const original = originals.get(name);
+            if (normalizeText(original)) targets.push({ element, name, original });
+        });
+    });
+    return targets;
+}
+
 function restoreJapanese() {
     state.originalNodes.forEach((node) => {
         if (node?.isConnected && state.originalText.has(node)) {
             node.nodeValue = state.originalText.get(node);
         }
+    });
+    state.originalAttributeTargets.forEach(({ element, name, original }) => {
+        if (element?.isConnected) element.setAttribute(name, original);
     });
     document.documentElement.lang = 'ja';
 }
@@ -206,19 +245,31 @@ async function translateUniqueTexts(language, texts, runId) {
     return runId === state.translationRun;
 }
 
-function applyBergamotTranslations(language, nodes) {
+function applyBergamotTranslations(language, nodes, attributeTargets) {
     let translatedCount = 0;
+    let total = 0;
     for (const node of nodes) {
         const original = state.originalText.get(node);
         const normalized = normalizeText(original);
         if (!normalized) continue;
+        total += 1;
         const translated = state.translatedTextCache.get(`${language}\u0000${normalized}`);
         if (typeof translated === 'string' && translated.trim()) {
             node.nodeValue = restoreWhitespace(original, translated);
             translatedCount += 1;
         }
     }
-    return { total: nodes.length, translated: translatedCount };
+    for (const target of attributeTargets) {
+        const normalized = normalizeText(target.original);
+        if (!normalized) continue;
+        total += 1;
+        const translated = state.translatedTextCache.get(`${language}\u0000${normalized}`);
+        if (typeof translated === 'string' && translated.trim()) {
+            target.element.setAttribute(target.name, translated);
+            translatedCount += 1;
+        }
+    }
+    return { total, translated: translatedCount };
 }
 
 async function selectLanguage(language, { force = false } = {}) {
@@ -243,17 +294,22 @@ async function selectLanguage(language, { force = false } = {}) {
         }
 
         const nodes = collectTextNodes();
-        const uniqueCount = new Set(nodes.map((node) => normalizeText(state.originalText.get(node))).filter(Boolean)).size;
+        const attributeTargets = collectAttributeTargets();
+        const sourceTexts = [
+            ...nodes.map((node) => state.originalText.get(node)),
+            ...attributeTargets.map((target) => target.original),
+        ];
+        const uniqueCount = new Set(sourceTexts.map(normalizeText).filter(Boolean)).size;
         setStatus({
             title: `${option.japanese}の翻訳モデルを準備しています`,
-            detail: `Firefox Translationsで使われているBergamot系のローカル翻訳エンジンを初期化しています（対象 ${uniqueCount} 件）。`,
+            detail: `Bergamotの端末内翻訳でサイト全体の文章・ボタン・補助ラベルを処理しています（対象 ${uniqueCount} 種類）。初回のみ翻訳モデルをダウンロードします。`,
             loading: true,
             progress: 10,
         });
-        await translateUniqueTexts(option.code, nodes.map((node) => state.originalText.get(node)), runId);
+        await translateUniqueTexts(option.code, sourceTexts, runId);
         if (runId !== state.translationRun) return;
 
-        const result = applyBergamotTranslations(option.code, nodes);
+        const result = applyBergamotTranslations(option.code, nodes, attributeTargets);
         state.currentLanguage = option.code;
         document.documentElement.lang = option.locale;
         setStatus({
@@ -283,14 +339,29 @@ async function selectLanguage(language, { force = false } = {}) {
 function observeViewChanges() {
     if (state.observed || !document.body) return;
     const observer = new MutationObserver((mutations) => {
-        const activeViewChanged = mutations.some((mutation) => mutation.target instanceof Element && mutation.target.matches('.view-section'));
-        if (!activeViewChanged || state.currentLanguage === 'ja' || state.translating) return;
+        if (state.currentLanguage === 'ja' || state.translating) return;
+        const shouldRefresh = mutations.some((mutation) => {
+            const target = mutation.target instanceof Element ? mutation.target : mutation.target.parentElement;
+            if (!target || isExcludedElement(target)) return false;
+            if (mutation.type === 'attributes') return target.matches('.view-section');
+            return [...mutation.addedNodes].some((node) => {
+                if (node.nodeType === Node.TEXT_NODE) return Boolean(normalizeText(node.nodeValue));
+                if (node.nodeType !== Node.ELEMENT_NODE) return false;
+                return !isExcludedElement(node);
+            });
+        });
+        if (!shouldRefresh) return;
         window.clearTimeout(state.mutationTimer);
         state.mutationTimer = window.setTimeout(() => {
             if (!state.translating && state.currentLanguage !== 'ja') void selectLanguage(state.currentLanguage, { force: true });
-        }, 220);
+        }, 300);
     });
-    observer.observe(document.body, { attributes: true, subtree: true, attributeFilter: ['class'] });
+    observer.observe(document.body, {
+        attributes: true,
+        childList: true,
+        subtree: true,
+        attributeFilter: ['class'],
+    });
     state.observed = true;
 }
 
