@@ -1,5 +1,5 @@
 const fs=require('node:fs');
-const HEALTH='status/health.json',HISTORY='status/health-history.json';
+const HEALTH='status/public/health.json',HISTORY='status/health-history.json';
 const retentionMs=90*24*60*60*1000;
 const health=JSON.parse(fs.readFileSync(HEALTH,'utf8'));
 let history=JSON.parse(fs.readFileSync(HISTORY,'utf8'));
@@ -7,7 +7,11 @@ if(!Array.isArray(history.samples))history.samples=[];
 if(!Array.isArray(history.incidents))history.incidents=[];
 const at=new Date(health.checkedAt).toISOString();
 const overall=health.overall?.state||'unknown';
-history.samples.push({at,overall,components:health.components||{}});
+const components=health.components||{};
+const latest=history.samples[history.samples.length-1];
+const fingerprint=value=>JSON.stringify({overall:value?.overall||'unknown',components:Object.fromEntries(Object.entries(value?.components||{}).map(([key,item])=>[key,item?.state||'unknown']).sort((a,b)=>a[0].localeCompare(b[0])))});
+const currentSample={at,overall,components};
+if(!latest||fingerprint(latest)!==fingerprint(currentSample))history.samples.push(currentSample);
 const open=history.incidents.find(x=>x.status==='open');
 const incidentState=['degraded','partial','outage','unknown'].includes(overall)?overall:null;
 if(!incidentState){
