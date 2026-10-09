@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { AlertTriangle, CheckCircle2, Info, XCircle } from 'lucide-react'
 import { cn } from '@/lib/utils'
+import { Language } from '../i18n/translations'
 
 type HealthState = 'operational' | 'maintenance' | 'degraded' | 'partial' | 'outage' | 'unknown' | 'external'
 
@@ -16,7 +17,7 @@ interface BrowserHealth {
   components?: Record<string, HealthComponent>
 }
 
-export default function BrowserHealthNotice() {
+export default function BrowserHealthNotice({ language }: { language: Language }) {
   const [health, setHealth] = useState<BrowserHealth | null>(null)
 
   useEffect(() => {
@@ -64,7 +65,7 @@ export default function BrowserHealthNotice() {
     api: { ja: 'Worker API', en: 'Worker API' },
     omikuji: { ja: 'おみくじ操作', en: 'Omikuji interaction' },
   }
-  const ja = locale === 'ja-JP'
+  const ja = language === 'ja'
 
   return (
     <section
