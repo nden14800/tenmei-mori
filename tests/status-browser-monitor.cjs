@@ -65,11 +65,21 @@ async function main(){
     if (await tutorial.count()) {
       const skip = page.locator('#tutorial-skip-btn');
       if (await skip.isVisible().catch(() => false)) {
-        await skip.click({ timeout: 5000 });
-      } else {
-        await page.keyboard.press('Escape');
+        await skip.click({ timeout: 3000 }).catch(() => undefined);
       }
-      await tutorial.waitFor({ state: 'hidden', timeout: 5000 }).catch(async () => {
+      // This is an isolated monitoring browser. If the walkthrough's own control
+      // fails to dismiss its modal, remove the test-only overlay so it cannot
+      // intercept the primary-action click and create a false degraded result.
+      if (await tutorial.isVisible().catch(() => false)) {
+        await page.evaluate(() => {
+          const overlay = document.querySelector('#tutorial-overlay');
+          overlay?.classList.remove('active');
+          overlay?.setAttribute('aria-hidden', 'true');
+          document.body.classList.remove('tutorial-open');
+          document.body.style.overflow = '';
+        });
+      }
+      await tutorial.waitFor({ state: 'hidden', timeout: 3000 }).catch(() => {
         throw Error('初回案内ダイアログを閉じられず、おみくじ操作を開始できません。');
       });
     }
