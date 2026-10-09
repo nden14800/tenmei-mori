@@ -59,6 +59,20 @@ async function main(){
     probes.browser.ok=true;
     probes.browser.reason='実ブラウザでページ描画・JavaScript実行・主要画面構造を確認しました。';
 
+    // The first-visit walkthrough is a legitimate modal and intercepts pointer events.
+    // Dismiss it through its own Skip control before testing the primary action.
+    const tutorial = page.locator('#tutorial-overlay.active');
+    if (await tutorial.count()) {
+      const skip = page.locator('#tutorial-skip-btn');
+      if (await skip.isVisible().catch(() => false)) {
+        await skip.click({ timeout: 5000 });
+      } else {
+        await page.keyboard.press('Escape');
+      }
+      await tutorial.waitFor({ state: 'hidden', timeout: 5000 }).catch(async () => {
+        throw Error('初回案内ダイアログを閉じられず、おみくじ操作を開始できません。');
+      });
+    }
     await page.locator('[onclick="startOmikuji()"]').first().click({timeout:10000});
     await page.waitForTimeout(1500);
     const active=await page.evaluate(()=>[...document.querySelectorAll('.view-section')].find(el=>{const s=getComputedStyle(el);return s.display!=='none'&&!el.classList.contains('hidden')})?.id||'');
@@ -106,7 +120,11 @@ async function main(){
   }));
   const previousComparable=previousHealth?JSON.stringify({overall:previousHealth.overall,components:previousHealth.components,probes:previousHealth.probes}):'';
   const currentComparable=JSON.stringify({overall:{state,detail},components,probes:stableProbes});
-  const payload={schemaVersion:2,checkedAt:previousComparable===currentComparable&&previousHealth?.checkedAt?previousHealth.checkedAt:new Date().toISOString(),overall:{state,detail},components,probes:stableProbes};
+  const now = new Date().toISOString();
+  const stateChangedAt = previousComparable === currentComparable
+    ? (previousHealth?.stateChangedAt || previousHealth?.checkedAt || now)
+    : now;
+  const payload={schemaVersion:2,checkedAt:now,stateChangedAt,overall:{state,detail},components,probes:stableProbes};
   fs.writeFileSync(OUT,JSON.stringify(payload,null,2)+'\n');
   if(['outage','partial','degraded'].includes(state))process.exitCode=1;
 }
