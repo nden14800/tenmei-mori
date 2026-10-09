@@ -44,6 +44,8 @@ interface KVMonitors {
 
 interface LongTermSummary {
   period: string
+  monitorId?: string
+  monitorName?: string
   checks: number
   operational: number
   degraded: number
@@ -75,6 +77,7 @@ export default function StatusPage() {
   const [incidentHistory, setIncidentHistory] = useState<IncidentHistoryItem[]>([])
   const [longTermHistory, setLongTermHistory] = useState<LongTermSummary[]>([])
   const [selectedHistoryYear, setSelectedHistoryYear] = useState<string>('all')
+  const [selectedHistoryMonitor, setSelectedHistoryMonitor] = useState<string>('all')
   const [expandedIncidentDetails, setExpandedIncidentDetails] = useState<Record<string, boolean>>({})
   const [loading, setLoading] = useState(true)
   const [language, setLanguage] = useState<Language>('en')
@@ -147,18 +150,36 @@ export default function StatusPage() {
 
   const monitorsInMaintenance = new Set(activeMaintenances.flatMap((maintenance) => maintenance.affectedServices))
   const fallbackTimestamp = lastUpdate || new Date().toISOString()
-  const yearlyLongTermHistory = Object.values(longTermHistory.reduce<Record<string, { year: string; checks: number; down: number; uptimeWeighted: number }>>((acc, item) => {
+  // Per-monitor summaries only. Legacy records had combined every service into one
+  // count, so they are excluded rather than presented as a misleading "100 checks".
+  const perMonitorLongTermHistory = longTermHistory.filter(
+    (item) => typeof item.monitorId === 'string' && typeof item.monitorName === 'string'
+  )
+  const yearlyLongTermHistory = Object.values(perMonitorLongTermHistory.reduce<Record<string, {
+    year: string; monitorId: string; monitorName: string; checks: number; operational: number;
+    degraded: number; down: number; maintenance: number; uptimeWeighted: number
+  }>>((acc, item) => {
     const year = item.period.slice(0, 4)
-    const current = acc[year] || { year, checks: 0, down: 0, uptimeWeighted: 0 }
+    const monitorId = item.monitorId!
+    const key = `${monitorId}:${year}`
+    const current = acc[key] || {
+      year, monitorId, monitorName: item.monitorName!, checks: 0, operational: 0,
+      degraded: 0, down: 0, maintenance: 0, uptimeWeighted: 0
+    }
+    current.monitorName = item.monitorName || current.monitorName
     current.checks += item.checks
+    current.operational += item.operational
+    current.degraded += item.degraded
     current.down += item.down
+    current.maintenance += item.maintenance
     current.uptimeWeighted += item.uptime * item.checks
-    acc[year] = current
+    acc[key] = current
     return acc
   }, {})).map((item) => ({
     ...item,
     uptime: item.checks > 0 ? item.uptimeWeighted / item.checks : 100,
-  })).sort((a, b) => b.year.localeCompare(a.year))
+  })).sort((a, b) => b.year.localeCompare(a.year) || a.monitorName.localeCompare(b.monitorName))
+  const availableHistoryYears = [...new Set(yearlyLongTermHistory.map((item) => item.year))].sort((a, b) => b.localeCompare(a))
 
   const getDisplayMonitorData = (monitorId: string): MonitorData | undefined => {
     const monitorData = kvMonitors[monitorId]
@@ -265,20 +286,20 @@ export default function StatusPage() {
                 <h2 className="text-lg font-semibold text-foreground">{language === 'ja' ? '年別稼働履歴' : 'Yearly uptime history'}</h2>
                 <p className="mt-1 text-sm text-muted-foreground">{language === 'ja' ? '年を選ぶと、その年の月別履歴に絞り込めます。' : 'Select a year to filter the monthly history below.'}</p>
               </div>
-              <span className="text-xs text-muted-foreground">{yearlyLongTermHistory.length} {language === 'ja' ? '年分' : 'years'}</span>
+              <span className="text-xs text-muted-foreground">{availableHistoryYears.length} {language === 'ja' ? '年分' : 'years'}</span>
             </div>
             {yearlyLongTermHistory.length > 0 ? (
               <div className="grid gap-3 sm:grid-cols-2">
                 {yearlyLongTermHistory.map((item) => {
                   const isSelected = selectedHistoryYear === item.year
-                  const yearMonths = longTermHistory.filter((month) => month.period.startsWith(item.year))
+                  const yearMonths = perMonitorLongTermHistory.filter((month) => month.monitorId === item.monitorId && month.period.startsWith(item.year))
                   const totalDown = yearMonths.reduce((sum, month) => sum + month.down, 0)
                   const totalOperational = yearMonths.reduce((sum, month) => sum + month.operational, 0)
                   const totalDegraded = yearMonths.reduce((sum, month) => sum + month.degraded, 0)
                   const totalMaintenance = yearMonths.reduce((sum, month) => sum + month.maintenance, 0)
                   return (
                     <button
-                      key={item.year}
+                      key={`${item.monitorId}-${item.year}`}
                       type="button"
                       onClick={() => setSelectedHistoryYear(isSelected ? 'all' : item.year)}
                       aria-pressed={isSelected}
@@ -290,6 +311,7 @@ export default function StatusPage() {
                       <div className="flex items-start justify-between gap-3">
                         <div>
                           <span className="text-base font-semibold text-foreground">{item.year}</span>
+                          <p className="mt-1 text-sm font-medium text-muted-foreground">{item.monitorName}</p>
                           <p className="mt-1 text-xs text-muted-foreground">{yearMonths.length} {language === 'ja' ? 'か月の記録' : 'months recorded'}</p>
                         </div>
                         <span className="text-lg font-semibold tabular-nums text-foreground">{item.uptime.toFixed(2)}%</span>
@@ -326,6 +348,16 @@ export default function StatusPage() {
                 <p className="mt-1 text-sm text-muted-foreground">{language === 'ja' ? '月ごとの稼働率・確認回数・状態別の確認数を確認できます。' : 'Review uptime, check volume, and status breakdown for each month.'}</p>
               </div>
               <div className="flex flex-wrap items-center gap-2">
+                <label htmlFor="history-monitor-filter" className="text-xs text-muted-foreground">{language === 'ja' ? '監視対象' : 'Monitor'}</label>
+                <select
+                  id="history-monitor-filter"
+                  value={selectedHistoryMonitor}
+                  onChange={(event) => setSelectedHistoryMonitor(event.target.value)}
+                  className="rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground"
+                >
+                  <option value="all">{language === 'ja' ? 'すべての監視対象' : 'All monitors'}</option>
+                  {monitors.map((monitor) => <option key={monitor.id} value={monitor.id}>{monitor.name}</option>)}
+                </select>
                 <label htmlFor="history-year-filter" className="text-xs text-muted-foreground">{language === 'ja' ? '表示する年' : 'Year'}</label>
                 <select
                   id="history-year-filter"
@@ -334,14 +366,14 @@ export default function StatusPage() {
                   className="rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground"
                 >
                   <option value="all">{language === 'ja' ? 'すべて' : 'All years'}</option>
-                  {yearlyLongTermHistory.map((item) => <option key={item.year} value={item.year}>{item.year}</option>)}
+                  {availableHistoryYears.map((year) => <option key={year} value={year}>{year}</option>)}
                 </select>
               </div>
             </div>
-            {longTermHistory.length > 0 ? (
+            {
               <div className="space-y-3">
-                {longTermHistory
-                  .filter((item) => selectedHistoryYear === 'all' || item.period.startsWith(selectedHistoryYear))
+                {perMonitorLongTermHistory
+                  .filter((item) => (selectedHistoryYear === 'all' || item.period.startsWith(selectedHistoryYear)) && (selectedHistoryMonitor === 'all' || item.monitorId === selectedHistoryMonitor))
                   .slice()
                   .sort((a, b) => b.period.localeCompare(a.period))
                   .map((item) => {
@@ -357,6 +389,7 @@ export default function StatusPage() {
                         <div className="flex flex-wrap items-start justify-between gap-3">
                           <div>
                             <h3 className="font-semibold text-foreground">{item.period}</h3>
+                            <p className="mt-1 text-sm text-muted-foreground">{item.monitorName}</p>
                             <p className="mt-1 text-xs text-muted-foreground">{item.checks.toLocaleString()} {language === 'ja' ? '回の監視チェック' : 'monitoring checks'}</p>
                           </div>
                           <div className="text-right">
@@ -381,7 +414,7 @@ export default function StatusPage() {
                       </article>
                     )
                   })}
-                {longTermHistory.filter((item) => selectedHistoryYear === 'all' || item.period.startsWith(selectedHistoryYear)).length === 0 && (
+                {perMonitorLongTermHistory.filter((item) => (selectedHistoryYear === 'all' || item.period.startsWith(selectedHistoryYear)) && (selectedHistoryMonitor === 'all' || item.monitorId === selectedHistoryMonitor)).length === 0 && (
                   <div className="rounded-xl border border-border bg-card px-4 py-5 text-sm text-muted-foreground">
                     {language === 'ja' ? 'この年の月別履歴はありません。' : 'No monthly history is available for this year.'}
                   </div>
@@ -389,7 +422,7 @@ export default function StatusPage() {
               </div>
             ) : (
               <div className="rounded-xl border border-border bg-card px-4 py-5 text-sm text-muted-foreground sm:px-6">
-                {language === 'ja' ? '月別履歴はまだありません。今後の監視結果が月別に保存されます。' : 'No monthly history yet. Future monitoring results will be saved by month.'}
+                {language === 'ja' ? '監視対象ごとの月別履歴は、修正後のチェック結果が蓄積されると表示されます。過去の合算データは正確に分割できないため、誤解を招かないよう除外しています。' : 'Per-monitor monthly history will appear as new checks are collected. Older combined totals are excluded because they cannot be accurately split by monitor.'}
               </div>
             )}
           </section>
