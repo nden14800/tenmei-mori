@@ -418,7 +418,7 @@ export const onRequest = async (context: any) => {
     // Durable one-time reset marker lives inside monitors so the existing state API
     // preserves it without requiring a separate database migration. The UI ignores this
     // metadata entry because it is not a monitor record.
-    const STATUS_RESET_GENERATION = '2026-10-09-full-history-reset-v1'
+    const STATUS_RESET_GENERATION = '2026-10-09-full-history-reset-v2'
     const storedState = await withRetry(() => readStatusState(STATUS_API_SECRET))
     const storedMonitors = (storedState.monitors || {}) as Record<string, any>
     const resetState = storedMonitors.__statusMeta?.resetGeneration !== STATUS_RESET_GENERATION
