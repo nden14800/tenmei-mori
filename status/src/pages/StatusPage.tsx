@@ -286,7 +286,7 @@ export default function StatusPage() {
       // recent observations into this card's timeline so a browser-detected issue
       // remains visible for the full affected interval instead of only the final bar.
       const browserChecks: RecentCheck[] = browserHealthSamples
-        .filter((sample) => Date.parse(sample.at) >= now - 24 * 60 * 60 * 1000)
+        .filter((sample) => Date.parse(sample.at) >= Date.now() - 24 * 60 * 60 * 1000)
         .map((sample) => ({
           t: sample.at,
           s: sample.overall === 'operational'
