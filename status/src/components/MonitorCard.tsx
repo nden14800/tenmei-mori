@@ -134,6 +134,10 @@ function StatusTimeline({ history, getDateLabel, language }: StatusTimelineProps
           )}
           onMouseEnter={(e) => handleEnter(e, index)}
           onMouseLeave={() => setHovered(null)}
+          onClick={(e) => {
+            e.stopPropagation()
+            setHovered(null)
+          }}
         />
       ))}
       {hovered && typeof document !== 'undefined' && createPortal(
@@ -389,7 +393,10 @@ export default function MonitorCard({ monitor, data, language, checkIntervalMinu
             {(['1h', '24h', '7d', '30d'] as TimelinePeriod[]).map((p) => (
               <button
                 key={p}
-                onClick={() => setPeriod(p)}
+                onClick={(e) => {
+                  e.stopPropagation()
+                  setPeriod(p)
+                }}
                 data-period={p}
                 aria-pressed={period === p}
                 className={cn(
