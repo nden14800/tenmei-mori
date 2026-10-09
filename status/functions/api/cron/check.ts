@@ -47,11 +47,15 @@ interface LongTermSummary {
   down: number
   maintenance: number
   uptime: number
+  lastCheckSlot?: number
+  lastCheckStatus?: MonitorStatus
 }
 
 function updateLongTermSummary(
   history: LongTermSummary[],
   timestamp: string,
+  slotTimestamp: string,
+  intervalMinutes: number,
   status: MonitorStatus,
   monitorId: string,
   monitorName: string,
@@ -87,10 +91,25 @@ function updateLongTermSummary(
   const next = existing ? { ...existing } : {
     period, monitorId, monitorName, checks: 0, operational: 0, degraded: 0, down: 0, maintenance: 0, uptime: 100,
   }
-  ;(next as LongTermSummary & { monitorId: string; monitorName: string }).monitorId = monitorId
-  ;(next as LongTermSummary & { monitorId: string; monitorName: string }).monitorName = monitorName
-  next.checks += 1
-  next[status] += 1
+  next.monitorId = monitorId
+  next.monitorName = monitorName
+
+  // Count at most one observation per configured interval slot and monitor.
+  // Cron + failsafe can overlap; a second result in the same slot replaces the
+  // previous status instead of inflating the monthly/yearly check count.
+  const intervalMs = Math.max(1, intervalMinutes) * 60 * 1000
+  const currentSlot = Math.floor(Date.parse(slotTimestamp) / intervalMs)
+  const sameSlot = next.lastCheckSlot === currentSlot && !!next.lastCheckStatus
+  if (sameSlot) {
+    const previousSlotStatus = next.lastCheckStatus!
+    next[previousSlotStatus] = Math.max(0, next[previousSlotStatus] - 1)
+    next[status] += 1
+  } else {
+    next[status] += 1
+  }
+  next.lastCheckSlot = currentSlot
+  next.lastCheckStatus = status
+  next.checks = Math.max(0, next.operational) + Math.max(0, next.degraded) + Math.max(0, next.down) + Math.max(0, next.maintenance)
   next.uptime = next.checks > 0 ? ((next.operational + next.maintenance) / next.checks) * 100 : 100
   return [...perMonitorHistory.filter((item) =>
     !(item.period === period && item.monitorId === monitorId)
@@ -416,6 +435,7 @@ export const onRequest = async (context: any) => {
     let incidentHistory = (stateForCheck.incidentHistory || []) as IncidentHistoryItem[]
     let longTermHistory = (stateForCheck.longTermHistory || []) as LongTermSummary[]
 
+    const checkRunStartedAt = new Date().toISOString()
     const results = await mapWithConcurrency(
       monitors,
       MAX_CONCURRENT_CHECKS,
@@ -441,7 +461,15 @@ export const onRequest = async (context: any) => {
           { degradedCountsAsDown: monitor.degradedCountsAsDown !== false }
         )
 
-        longTermHistory = updateLongTermSummary(longTermHistory, result.lastCheck, result.status, monitor.id, monitor.name)
+        longTermHistory = updateLongTermSummary(
+          longTermHistory,
+          result.lastCheck,
+          checkRunStartedAt,
+          checkInterval,
+          result.status,
+          monitor.id,
+          monitor.name,
+        )
 
         const activeIncident = existing?.activeIncident as IncidentHistoryItem | undefined
         const currentIsDown = isDownStatus(result.status)
