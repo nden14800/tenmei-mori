@@ -282,8 +282,28 @@ export default function StatusPage() {
       const status = httpStatus === 'unknown'
         ? browserHealthStatus
         : getOverallStatus([httpStatus, browserHealthStatus])
+      // Browser checks are a separate source from the HTTP monitor. Merge their
+      // recent observations into this card's timeline so a browser-detected issue
+      // remains visible for the full affected interval instead of only the final bar.
+      const browserChecks: RecentCheck[] = browserHealthSamples
+        .filter((sample) => Date.parse(sample.at) >= now - 24 * 60 * 60 * 1000)
+        .map((sample) => ({
+          t: sample.at,
+          s: sample.overall === 'operational'
+            ? 'operational'
+            : sample.overall === 'maintenance'
+              ? 'maintenance'
+              : sample.overall === 'outage'
+                ? 'down'
+                : 'degraded',
+        }))
+      const recentChecks = [
+        ...(monitorData?.recentChecks || []),
+        ...browserChecks,
+      ].sort((a, b) => Date.parse(a.t) - Date.parse(b.t))
       return {
         ...(monitorData || {}),
+        recentChecks,
         operational: status === 'operational',
         status: status === 'unknown' ? 'degraded' : status,
         lastCheck: monitorData?.lastCheck || fallbackTimestamp,
