@@ -528,7 +528,7 @@ export const onRequest = async (context: any) => {
 
         const alertState = existing?.alertState || {}
         const lastAlertAt = typeof alertState.lastAttemptAt === 'string' ? Date.parse(alertState.lastAttemptAt) : 0
-        const alertCooldownMs = 15 * 60 * 1000
+        const alertCooldownMs = monitor.id === 'discord-alert-test-20261009' ? 0 : 15 * 60 * 1000
         let updatedAlertState = alertState
 
         if (
