@@ -423,9 +423,24 @@ export const onRequest = async (context: any) => {
     const storedMonitors = (storedState.monitors || {}) as Record<string, any>
     const resetState = storedMonitors.__statusMeta?.resetGeneration !== STATUS_RESET_GENERATION
     console.log('Status reset generation:', STATUS_RESET_GENERATION, 'reset required:', resetState)
+
+    const checkRunStartedAt = new Date().toISOString()
+    // Use one shared baseline for every monitor so the displayed monitoring age
+    // cannot predate the period for which check counts are actually being collected.
+    const priorTrackingStartedAt = storedMonitors.__statusMeta?.trackingStartedAt
+    const earliestMonitorStart = monitors
+      .map((monitor) => storedMonitors[monitor.id]?.startDate)
+      .filter((value): value is string => typeof value === 'string' && Number.isFinite(Date.parse(value)))
+      .sort()[0]
+    const trackingStartedAt = resetState
+      ? checkRunStartedAt
+      : (typeof priorTrackingStartedAt === 'string' && Number.isFinite(Date.parse(priorTrackingStartedAt))
+          ? priorTrackingStartedAt
+          : earliestMonitorStart || checkRunStartedAt)
+
     const stateForCheck = resetState
       ? {
-          monitors: { __statusMeta: { resetGeneration: STATUS_RESET_GENERATION } },
+          monitors: { __statusMeta: { resetGeneration: STATUS_RESET_GENERATION, trackingStartedAt } },
           incidentHistory: [],
           longTermHistory: [],
           lastUpdate: null,
@@ -434,15 +449,13 @@ export const onRequest = async (context: any) => {
     const existingData = (stateForCheck.monitors || {}) as Record<string, any>
     let incidentHistory = (stateForCheck.incidentHistory || []) as IncidentHistoryItem[]
     let longTermHistory = (stateForCheck.longTermHistory || []) as LongTermSummary[]
-
-    const checkRunStartedAt = new Date().toISOString()
     const results = await mapWithConcurrency(
       monitors,
       MAX_CONCURRENT_CHECKS,
       async (monitor) => {
         const result = await checkMonitor(monitor, userAgent)
         const existing = existingData[monitor.id]
-        const startDate = existing?.startDate || new Date().toISOString()
+        const startDate = trackingStartedAt
 
         // 1. Recent checks: store each check with timestamp + response time
         // (rt, ms) pour les filtres 1h/24h et le futur graphique de latence.
@@ -564,7 +577,7 @@ export const onRequest = async (context: any) => {
       monitorsData[id] = data
     })
     // Preserve the reset generation marker across future checks.
-    monitorsData.__statusMeta = { resetGeneration: STATUS_RESET_GENERATION }
+    monitorsData.__statusMeta = { resetGeneration: STATUS_RESET_GENERATION, trackingStartedAt }
 
     const lastUpdate = new Date().toISOString()
     await withRetry(() => writeStatusState(STATUS_API_SECRET, {
