@@ -370,7 +370,7 @@ export default function StatusPage() {
                 </select>
               </div>
             </div>
-            {
+            {perMonitorLongTermHistory.length > 0 ? (
               <div className="space-y-3">
                 {perMonitorLongTermHistory
                   .filter((item) => (selectedHistoryYear === 'all' || item.period.startsWith(selectedHistoryYear)) && (selectedHistoryMonitor === 'all' || item.monitorId === selectedHistoryMonitor))
@@ -385,7 +385,7 @@ export default function StatusPage() {
                       { key: 'maintenance', label: language === 'ja' ? '保守' : 'Maintenance', value: item.maintenance, color: 'bg-blue-500', text: 'text-blue-700 dark:text-blue-400' },
                     ]
                     return (
-                      <article key={item.period} className="rounded-xl border border-border bg-card p-4 shadow-sm sm:p-5">
+                      <article key={`${item.monitorId}-${item.period}`} className="rounded-xl border border-border bg-card p-4 shadow-sm sm:p-5">
                         <div className="flex flex-wrap items-start justify-between gap-3">
                           <div>
                             <h3 className="font-semibold text-foreground">{item.period}</h3>
