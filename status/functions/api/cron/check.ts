@@ -300,7 +300,22 @@ export const onRequest = async (context: any) => {
   const checkInterval = parseCheckInterval(CRON_CHECK_INTERVAL, 1)
 
   if (isFailsafeAuthorized && !isPrimaryAuthorized) {
-    const state = await readStatusState(STATUS_API_SECRET)
+    let state: StatusState
+    try {
+      // Retry transient storage/network errors instead of letting the Pages Function
+      // throw an unhandled exception (Cloudflare 1101) before the main error handler.
+      state = await withRetry(() => readStatusState(STATUS_API_SECRET))
+    } catch (error) {
+      console.error('Failsafe status-state read failed:', error)
+      return new Response(JSON.stringify({
+        success: false,
+        error: 'Failsafe could not read monitoring state',
+        detail: error instanceof Error ? error.message : String(error),
+      }), {
+        status: 503,
+        headers: cronHeaders({ 'Content-Type': 'application/json; charset=utf-8', 'Retry-After': '15' }),
+      })
+    }
     const lastUpdate = state.lastUpdate || null
     const lastTimestamp = lastUpdate ? Date.parse(lastUpdate) : 0
     const staleFor = Date.now() - lastTimestamp
