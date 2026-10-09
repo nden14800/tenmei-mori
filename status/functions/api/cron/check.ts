@@ -446,8 +446,8 @@ export const onRequest = async (context: any) => {
         }
       : storedState
     const existingData = (stateForCheck.monitors || {}) as Record<string, any>
-    let incidentHistory = (stateForCheck.incidentHistory || []) as IncidentHistoryItem[]
-    let longTermHistory = (stateForCheck.longTermHistory || []) as LongTermSummary[]
+    let incidentHistory = ((stateForCheck.incidentHistory || []) as IncidentHistoryItem[]).filter((incident) => incident.monitorId !== 'discord-alert-test-20261009')
+    let longTermHistory = ((stateForCheck.longTermHistory || []) as LongTermSummary[]).filter((item) => item.monitorId !== 'discord-alert-test-20261009')
     const results = await mapWithConcurrency(
       monitors,
       MAX_CONCURRENT_CHECKS,
@@ -528,7 +528,7 @@ export const onRequest = async (context: any) => {
 
         const alertState = existing?.alertState || {}
         const lastAlertAt = typeof alertState.lastAttemptAt === 'string' ? Date.parse(alertState.lastAttemptAt) : 0
-        const alertCooldownMs = monitor.id === 'discord-alert-test-20261009' ? 0 : 15 * 60 * 1000
+        const alertCooldownMs = 15 * 60 * 1000
         let updatedAlertState = alertState
 
         if (
