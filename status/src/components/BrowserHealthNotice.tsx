@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { AlertTriangle, Info, XCircle } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { Language } from '../i18n/translations'
+import type { MonitorStatus } from '../lib/status'
 
 type HealthState = 'operational' | 'maintenance' | 'degraded' | 'partial' | 'outage' | 'unknown' | 'external'
 
@@ -17,7 +18,7 @@ interface BrowserHealth {
   components?: Record<string, HealthComponent>
 }
 
-export default function BrowserHealthNotice({ language }: { language: Language }) {
+export default function BrowserHealthNotice({ language, onStatusChange }: { language: Language; onStatusChange: (status: MonitorStatus | null) => void }) {
   const [health, setHealth] = useState<BrowserHealth | null>(null)
 
   useEffect(() => {
@@ -28,9 +29,25 @@ export default function BrowserHealthNotice({ language }: { language: Language }
         const response = await fetch(base, { cache: 'no-store' })
         if (!response.ok) throw new Error(`Health snapshot HTTP ${response.status}`)
         const data = await response.json() as BrowserHealth
-        if (active) setHealth(data)
+        if (active) {
+          setHealth(data)
+          const state = data.overall?.state || 'unknown'
+          const mapped: MonitorStatus | null = state === 'operational'
+            ? 'operational'
+            : state === 'maintenance'
+              ? 'maintenance'
+              : state === 'outage'
+                ? 'down'
+                : state === 'external'
+                  ? null
+                  : 'degraded'
+          onStatusChange(mapped)
+        }
       } catch {
-        if (active) setHealth({ overall: { state: 'unknown', detail: 'ブラウザ監視結果を読み込めません。' } })
+        if (active) {
+          setHealth({ overall: { state: 'unknown', detail: 'ブラウザ監視結果を読み込めません。' } })
+          onStatusChange('degraded')
+        }
       }
     }
     load()
@@ -39,7 +56,7 @@ export default function BrowserHealthNotice({ language }: { language: Language }
       active = false
       window.clearInterval(timer)
     }
-  }, [])
+  }, [onStatusChange])
 
   if (!health) return null
   const state = health.overall?.state || 'unknown'
