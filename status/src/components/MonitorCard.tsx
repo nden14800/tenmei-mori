@@ -16,8 +16,7 @@ import {
   filterDailyHistoryInPeriod,
   getEffectiveBucketCount,
   getTimelineMinutesAgo,
-  getTimelineDateAtIndex,
-  type TimelineBarStatus as BarStatus,
+    type TimelineBarStatus as BarStatus,
   type TimelinePeriod,
 } from '../lib/monitorTimeline'
 
@@ -229,7 +228,7 @@ export default function MonitorCard({ monitor, data, language, checkIntervalMinu
     return calculateUptime(relevantChecks.map((check) => check.s), status, uptimeOptions)
   }
 
-  const calculateUptimeFromHistory = (history: DailyHistoryPoint[], period: '3d' | '7d' | '30d'): number | null => {
+  const calculateUptimeFromHistory = (history: DailyHistoryPoint[], period: '7d' | '30d'): number | null => {
     if (!hasData) return null
 
     const relevantHistory = filterDailyHistoryInPeriod(history, period, now)
@@ -249,8 +248,6 @@ export default function MonitorCard({ monitor, data, language, checkIntervalMinu
         return calculateUptimeFromChecks(recentChecks, 1)
       case '24h':
         return calculateUptimeFromChecks(recentChecks, 24)
-      case '3d':
-        return calculateUptimeFromHistory(dailyHistory, '3d')
       case '7d':
         return calculateUptimeFromHistory(dailyHistory, '7d')
       case '30d':
@@ -273,7 +270,7 @@ export default function MonitorCard({ monitor, data, language, checkIntervalMinu
     : Array<BarStatus>(getEffectiveBucketCount(period, checkIntervalMinutes)).fill('unknown')
 
   const incompleteHistory = hasData && uptimeForPeriod === null &&
-    (period === '3d' || period === '7d' || period === '30d') &&
+    (period === '7d' || period === '30d') &&
     filterDailyHistoryInPeriod(data.dailyHistory || [], period, now).length > 0
 
   // Chaque tooltip décrit la position temporelle du bucket dans le filtre sélectionné.
@@ -287,14 +284,6 @@ export default function MonitorCard({ monitor, data, language, checkIntervalMinu
       const minutesAgo = getTimelineMinutesAgo(index, period, checkIntervalMinutes)
       const hoursAgo = Math.floor(minutesAgo / 60)
       return hoursAgo > 0 ? `${hoursAgo}h ago` : `${minutesAgo}m ago`
-    } else if (period === '3d') {
-      const day = getTimelineDateAtIndex(period, index, now)
-      const [year, month, date] = day.split('-').map(Number)
-      return new Date(Date.UTC(year, month - 1, date)).toLocaleDateString(locale, {
-        timeZone: 'UTC',
-        month: 'short',
-        day: 'numeric',
-      })
     } else {
       const daysToShow = period === '7d' ? 7 : 30
       const msPerBar = (daysToShow * 24 * 60 * 60 * 1000) / BAR_COUNT
@@ -397,7 +386,7 @@ export default function MonitorCard({ monitor, data, language, checkIntervalMinu
           />
 
           <div className="flex gap-1">
-            {(['1h', '24h', '3d', '7d', '30d'] as TimelinePeriod[]).map((p) => (
+            {(['1h', '24h', '7d', '30d'] as TimelinePeriod[]).map((p) => (
               <button
                 key={p}
                 onClick={() => setPeriod(p)}
