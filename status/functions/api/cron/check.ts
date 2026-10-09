@@ -66,6 +66,12 @@ interface IncidentHistoryItem {
   startedAt: string
   resolvedAt?: string
   durationSeconds?: number
+  httpStatus?: number
+  responseTime?: number
+  failureReason?: string
+  lastCheckedAt?: string
+  recoveredHttpStatus?: number
+  recoveredResponseTime?: number
 }
 
 const STATUS_API_URL = 'https://tenmei-mori-backend.nden14800.workers.dev/api/status/state'
@@ -174,6 +180,8 @@ async function checkMonitor(monitor: Monitor, userAgent: string): Promise<{
   status: MonitorStatus
   lastCheck: string
   responseTime: number
+  httpStatus?: number
+  failureReason?: string
 }> {
   const startTime = Date.now()
   try {
@@ -216,13 +224,21 @@ async function checkMonitor(monitor: Monitor, userAgent: string): Promise<{
       status,
       lastCheck: new Date().toISOString(),
       responseTime,
+      httpStatus: response.status,
+      failureReason: status === 'down' && !operational
+        ? `HTTP ${response.status}${response.statusText ? ` ${response.statusText}` : ''}`
+        : status === 'down'
+          ? 'The response did not pass the monitor status checks.'
+          : undefined,
     }
-  } catch {
+  } catch (error) {
+    const message = error instanceof Error ? error.message : String(error)
     return {
       operational: false,
       status: 'down',
       lastCheck: new Date().toISOString(),
       responseTime: Date.now() - startTime,
+      failureReason: message.slice(0, 240) || 'Network request failed',
     }
   }
 }
@@ -397,6 +413,10 @@ export const onRequest = async (context: any) => {
             monitorId: monitor.id,
             monitorName: monitor.name,
             startedAt: result.lastCheck,
+            lastCheckedAt: result.lastCheck,
+            httpStatus: result.httpStatus,
+            responseTime: result.responseTime,
+            failureReason: result.failureReason,
           }
         } else if (!currentIsDown && activeIncident) {
           const resolvedAt = result.lastCheck
@@ -408,11 +428,21 @@ export const onRequest = async (context: any) => {
             ...activeIncident,
             resolvedAt,
             durationSeconds,
+            lastCheckedAt: result.lastCheck,
+            recoveredHttpStatus: result.httpStatus,
+            recoveredResponseTime: result.responseTime,
           })
           updatedActiveIncident = undefined
         }
 
         if (currentIsDown && updatedActiveIncident) {
+          updatedActiveIncident = {
+            ...updatedActiveIncident,
+            lastCheckedAt: result.lastCheck,
+            httpStatus: result.httpStatus,
+            responseTime: result.responseTime,
+            failureReason: result.failureReason,
+          }
           incidentHistory = updateIncidentHistory(incidentHistory, updatedActiveIncident)
         }
 
