@@ -272,25 +272,6 @@ export default function MonitorCard({ monitor, data, language, checkIntervalMinu
       })
     : Array<BarStatus>(getEffectiveBucketCount(period, checkIntervalMinutes)).fill('unknown')
 
-  const responseTimePoints = (() => {
-    if (!hasData) return [] as Array<{ t: string; rt: number; s: MonitorStatus }>
-    if (period === '1h' || period === '24h') {
-      const cutoff = now - (period === '1h' ? 60 : 24 * 60) * 60 * 1000
-      return (data.recentChecks || [])
-        .filter((check) => typeof check.rt === 'number' && new Date(check.t).getTime() >= cutoff)
-        .slice(-60)
-        .map((check) => ({ t: check.t, rt: check.rt!, s: check.s }))
-    }
-    return (data.dailyHistory || [])
-      .filter((day) => day.date >= getTimelineDateAtIndex(period, 0, now) && day.date <= getTimelineDateAtIndex(period, period === '3d' ? 2 : period === '7d' ? 6 : 29, now))
-      .filter((day) => typeof day.responseTimeAvg === 'number')
-      .map((day) => ({
-        t: `${day.date}T00:00:00+09:00`,
-        rt: day.responseTimeAvg!,
-        s: day.status,
-      }))
-  })()
-
   const incompleteHistory = hasData && uptimeForPeriod === null &&
     (period === '3d' || period === '7d' || period === '30d') &&
     filterDailyHistoryInPeriod(data.dailyHistory || [], period, now).length > 0
