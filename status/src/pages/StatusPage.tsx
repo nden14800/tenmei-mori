@@ -8,6 +8,7 @@ import MonitorCard from '../components/MonitorCard'
 import MonitorCardSkeleton from '../components/MonitorCardSkeleton'
 import Incident from '../components/Incident'
 import MaintenanceNotice, { MaintenanceData } from '../components/MaintenanceNotice'
+import BrowserHealthNotice from '../components/BrowserHealthNotice'
 import Footer from '../components/Footer'
 import Header from '../components/Header'
 import { Language, detectLanguage, getTranslations } from '../i18n/translations'
@@ -257,6 +258,8 @@ export default function StatusPage() {
               />
             )}
           </div>
+
+          <BrowserHealthNotice />
 
           {!loading && activeMaintenances.length > 0 && (
             <div className="mb-8 space-y-4">
