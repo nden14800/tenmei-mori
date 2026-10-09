@@ -428,15 +428,14 @@ export const onRequest = async (context: any) => {
     // Use one shared baseline for every monitor so the displayed monitoring age
     // cannot predate the period for which check counts are actually being collected.
     const priorTrackingStartedAt = storedMonitors.__statusMeta?.trackingStartedAt
-    const earliestMonitorStart = monitors
-      .map((monitor) => storedMonitors[monitor.id]?.startDate)
-      .filter((value): value is string => typeof value === 'string' && Number.isFinite(Date.parse(value)))
-      .sort()[0]
+    // Older monitor startDate values predate reliable long-term check counting.
+    // If no shared baseline exists yet, start it now rather than inheriting an
+    // earlier date that would make the green uptime period contradict the counts.
     const trackingStartedAt = resetState
       ? checkRunStartedAt
       : (typeof priorTrackingStartedAt === 'string' && Number.isFinite(Date.parse(priorTrackingStartedAt))
           ? priorTrackingStartedAt
-          : earliestMonitorStart || checkRunStartedAt)
+          : checkRunStartedAt)
 
     const stateForCheck = resetState
       ? {
