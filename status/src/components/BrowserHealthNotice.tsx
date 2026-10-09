@@ -14,6 +14,7 @@ interface HealthComponent {
 interface BrowserHealth {
   schemaVersion?: number
   checkedAt?: string | null
+  stateChangedAt?: string | null
   overall?: { state?: HealthState; detail?: string }
   components?: Record<string, HealthComponent>
 }
@@ -118,7 +119,8 @@ export default function BrowserHealthNotice({ language, onStatusChange }: { lang
               ))}
             </ul>
           )}
-          {timestamp && <p className="mt-2 text-xs opacity-75">{ja ? '状態を最後に更新した時刻：' : 'Status last changed: '}{timestamp}</p>}
+          {health.checkedAt && <p className="mt-2 text-xs opacity-75">{ja ? '監視チェック日時：' : 'Last monitor check: '}{new Date(health.checkedAt).toLocaleString(locale)}</p>}
+          {(health.stateChangedAt || timestamp) && <p className="mt-1 text-xs opacity-75">{ja ? '状態が最後に変化した時刻：' : 'Status last changed: '}{new Date(health.stateChangedAt || health.checkedAt!).toLocaleString(locale)}</p>}
         </div>
       </div>
     </section>
