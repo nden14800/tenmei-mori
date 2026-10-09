@@ -92,7 +92,7 @@ function StatusTimeline({ history, getDateLabel, language }: StatusTimelineProps
   // (overflow:hidden sur les cards). Tooltip rendu via portal dans document.body.
   const [hovered, setHovered] = useState<{ index: number; viewportX: number; viewportY: number } | null>(null)
 
-  const handleEnter = (e: React.MouseEvent<HTMLDivElement>, index: number) => {
+  const handleEnter = (e: React.PointerEvent<HTMLDivElement>, index: number) => {
     const barRect = e.currentTarget.getBoundingClientRect()
     setHovered({
       index,
@@ -133,8 +133,12 @@ function StatusTimeline({ history, getDateLabel, language }: StatusTimelineProps
             barStatus === 'incident' && "status-timeline-day-incident",
             barStatus === 'unknown' && "status-timeline-day-unknown"
           )}
-          onMouseEnter={(e) => handleEnter(e, index)}
-          onMouseLeave={() => setHovered(null)}
+          onPointerEnter={(e) => handleEnter(e, index)}
+          onPointerLeave={(e) => {
+            // Touch pointers leave the bar immediately after a tap on some browsers.
+            // Keep the tapped tooltip open; mouse/pen hover still closes normally.
+            if (e.pointerType !== 'touch') setHovered(null)
+          }}
           onClick={(e) => {
             e.stopPropagation()
             // A tap may synthesize mouseenter followed by click. Do not clear the
