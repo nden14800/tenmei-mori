@@ -126,15 +126,17 @@ export function buildTimelineHistory({
   now = Date.now(),
   intervalMinutes = 1,
 }: BuildTimelineHistoryOptions): TimelineBarStatus[] {
-  const periodMs = PERIOD_MS[period]
-  const cutoff = now - periodMs
+  const cutoff = period === '7d' || period === '30d'
+    ? new Date(`${getPeriodWindowStartDate(period, now)}T00:00:00+09:00`).getTime()
+    : now - PERIOD_MS[period]
+  const periodMs = now - cutoff
   const validChecks = recentChecks.filter((check) => toTimestamp(check.t) !== undefined)
   const validStartDate = toTimestamp(startDate)
   const firstCheck = validChecks.length > 0
     ? Math.min(...validChecks.map((check) => toTimestamp(check.t)!))
     : undefined
   const firstDailyPoint = dailyHistory.length > 0
-    ? toTimestamp([...dailyHistory].sort((a, b) => a.date.localeCompare(b.date))[0].date)
+    ? new Date(`${[...dailyHistory].sort((a, b) => a.date.localeCompare(b.date))[0].date}T00:00:00+09:00`).getTime()
     : undefined
   const monitoringStart = validStartDate ?? firstCheck ?? firstDailyPoint
 
@@ -155,6 +157,8 @@ export function buildTimelineHistory({
     })
     const bars = Array.from<TimelineBarStatus>({ length: bucketCount }).fill('unknown')
     let lastKnownStatus: TimelineBarStatus | undefined
+    let lastKnownTimestamp: number | undefined
+    const staleAfterMs = Math.max(1, intervalMinutes) * 2 * 60 * 1000
 
     for (let index = 0; index < bucketCount; index++) {
       const bucketStart = cutoff + index * bucketDuration
@@ -165,8 +169,19 @@ export function buildTimelineHistory({
         const checkTime = toTimestamp(check.t)!
         return checkTime >= bucketStart && (checkTime < bucketEnd || (index === bucketCount - 1 && checkTime === now))
       })
-      if (bucketChecks.length > 0) lastKnownStatus = aggregateChecks(bucketChecks)
-      if (lastKnownStatus !== undefined) bars[index] = lastKnownStatus
+      if (bucketChecks.length > 0) {
+        lastKnownStatus = aggregateChecks(bucketChecks)
+        lastKnownTimestamp = Math.max(...bucketChecks.map((check) => toTimestamp(check.t)!))
+        bars[index] = lastKnownStatus
+      } else if (
+        lastKnownStatus !== undefined &&
+        lastKnownTimestamp !== undefined &&
+        bucketEnd - lastKnownTimestamp <= staleAfterMs
+      ) {
+        // Carry forward only briefly. Long gaps must be shown as unknown, not
+        // painted with a stale status as if checks continued.
+        bars[index] = lastKnownStatus
+      }
     }
 
     bars[bucketCount - 1] = mapStatusToBar(currentStatus)
@@ -183,7 +198,7 @@ export function buildTimelineHistory({
     const bucketStart = cutoff + index * bucketDuration
     const bucketEnd = bucketStart + bucketDuration
     if (monitoringStart !== undefined && bucketEnd <= monitoringStart) continue
-    const bucketDate = new Date(bucketStart).toISOString().split('T')[0]
+    const bucketDate = getTokyoDate(bucketStart)
     const dayStatus = historyMap.get(bucketDate)
     if (dayStatus) bars[index] = dayStatus
   }

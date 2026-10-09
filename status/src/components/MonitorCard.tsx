@@ -15,6 +15,7 @@ import {
   buildTimelineHistory,
   filterDailyHistoryInPeriod,
   getEffectiveBucketCount,
+  getPeriodWindowStartDate,
   getTimelineMinutesAgo,
   TIMELINE_BUCKET_COUNT,
   type TimelineBarStatus as BarStatus,
@@ -321,11 +322,11 @@ export default function MonitorCard({ monitor, data, language, checkIntervalMinu
       const hoursAgo = Math.floor(minutesAgo / 60)
       return hoursAgo > 0 ? `${hoursAgo}h ago` : `${minutesAgo}m ago`
     } else {
-      const daysToShow = period === '7d' ? 7 : 30
-      const msPerBar = (daysToShow * 24 * 60 * 60 * 1000) / TIMELINE_BUCKET_COUNT
-      const barTime = now - (TIMELINE_BUCKET_COUNT - index) * msPerBar
+      const windowStart = new Date(`${getPeriodWindowStartDate(period, now)}T00:00:00+09:00`).getTime()
+      const msPerBar = (now - windowStart) / TIMELINE_BUCKET_COUNT
+      const barTime = windowStart + index * msPerBar
       return new Date(barTime).toLocaleDateString(locale, {
-        timeZone: 'UTC',
+        timeZone: 'Asia/Tokyo',
         month: 'short',
         day: 'numeric',
       })
