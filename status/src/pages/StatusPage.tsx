@@ -229,10 +229,13 @@ export default function StatusPage() {
   // Keep them as their own monitor so they appear in monthly/yearly history without
   // silently changing the historical HTTP check counts or uptime percentages.
   const browserHistorySummaries: LongTermSummary[] = Object.values(browserHealthSamples.reduce<Record<string, LongTermSummary>>((acc, sample) => {
-    const date = new Date(sample.at)
-    const period = `${date.getUTCFullYear()}-${String(date.getUTCMonth() + 1).padStart(2, '0')}`
+    const dateParts = new Intl.DateTimeFormat('en-CA', { timeZone: 'Asia/Tokyo', year: 'numeric', month: '2-digit' }).formatToParts(new Date(sample.at))
+    const yearPart = dateParts.find((part) => part.type === 'year')?.value
+    const monthPart = dateParts.find((part) => part.type === 'month')?.value
+    if (!yearPart || !monthPart) return acc
+    const period = `${yearPart}-${monthPart}`
     const key = period
-    const item = acc[key] || { period, monitorId: 'tenmei-mori-browser-omikuji', monitorName: language === 'ja' ? 'おみくじ操作（ブラウザ監視）' : 'Omikuji interaction (browser monitor)', checks: 0, operational: 0, degraded: 0, down: 0, maintenance: 0, uptime: 100 }
+    const item = acc[key] || { period, monitorId: 'tenmei-mori-browser-omikuji', monitorName: language === 'ja' ? 'おみくじ操作（ブラウザ監視・直近90日）' : 'Omikuji interaction (browser monitor, last 90 days)', checks: 0, operational: 0, degraded: 0, down: 0, maintenance: 0, uptime: 100 }
     const state = sample.overall || 'unknown'
     item.checks += 1
     if (state === 'operational') item.operational += 1
@@ -248,7 +251,7 @@ export default function StatusPage() {
   const yearlyHistoryForDisplay = [...yearlyLongTermHistory, ...Object.values(browserHistorySummaries.reduce<Record<string, LongTermSummary>>((acc, month) => {
     const year = month.period.slice(0, 4)
     const key = year
-    const item = acc[key] || { period: year, monitorId: 'tenmei-mori-browser-omikuji', monitorName: month.monitorName || 'Omikuji interaction (browser monitor)', checks: 0, operational: 0, degraded: 0, down: 0, maintenance: 0, uptime: 100 }
+    const item = acc[key] || { period: year, monitorId: 'tenmei-mori-browser-omikuji', monitorName: month.monitorName || (language === 'ja' ? 'おみくじ操作（ブラウザ監視・直近90日）' : 'Omikuji interaction (browser monitor, last 90 days)'), checks: 0, operational: 0, degraded: 0, down: 0, maintenance: 0, uptime: 100 }
     item.checks += month.checks
     item.operational += month.operational
     item.degraded += month.degraded
