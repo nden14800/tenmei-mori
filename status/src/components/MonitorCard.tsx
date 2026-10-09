@@ -292,7 +292,7 @@ export default function MonitorCard({ monitor, data, language, checkIntervalMinu
     } else {
       const daysToShow = period === '7d' ? 7 : 30
       const msPerBar = (daysToShow * 24 * 60 * 60 * 1000) / TIMELINE_BUCKET_COUNT
-      const barTime = now - (BAR_COUNT - index) * msPerBar
+      const barTime = now - (TIMELINE_BUCKET_COUNT - index) * msPerBar
       return new Date(barTime).toLocaleDateString(locale, {
         timeZone: 'UTC',
         month: 'short',
