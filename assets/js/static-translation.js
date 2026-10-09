@@ -96,8 +96,7 @@ function renderLanguageGrid() {
 const EXCLUDED_TRANSLATION_SELECTOR = [
     'script', 'style', 'noscript', 'template', 'svg', 'math',
     '[contenteditable="true"]', '[data-translation-exclude]', '.notranslate', '#translation-dialog',
-    '#document-history-dialog', '#site-language-access', '#tutorial-overlay', '#ch-plugin', '.channel-plugin',
-    '[aria-live]'
+    '#document-history-dialog', '#site-language-access', '#tutorial-overlay', '#ch-plugin', '.channel-plugin'
 ].join(',');
 
 const TRANSLATABLE_ATTRIBUTES = ['title', 'placeholder', 'aria-label', 'alt'];
