@@ -137,7 +137,14 @@ function StatusTimeline({ history, getDateLabel, language }: StatusTimelineProps
           onMouseLeave={() => setHovered(null)}
           onClick={(e) => {
             e.stopPropagation()
-            setHovered(null)
+            // A tap may synthesize mouseenter followed by click. Do not clear the
+            // tooltip here; pin it to the tapped bar so touch users can read it.
+            const barRect = e.currentTarget.getBoundingClientRect()
+            setHovered({
+              index,
+              viewportX: barRect.left + barRect.width / 2,
+              viewportY: barRect.top,
+            })
           }}
         />
       ))}
