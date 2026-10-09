@@ -152,9 +152,31 @@ export default function StatusPage() {
   const fallbackTimestamp = lastUpdate || new Date().toISOString()
   // Per-monitor summaries only. Legacy records had combined every service into one
   // count, so they are excluded rather than presented as a misleading "100 checks".
-  const perMonitorLongTermHistory = longTermHistory.filter(
-    (item) => typeof item.monitorId === 'string' && typeof item.monitorName === 'string'
-  )
+  // Collapse duplicate snapshots for the same monitor/month. These are cumulative
+  // monthly summaries, so adding duplicates would inflate counts; keep the most complete
+  // snapshot and derive the check total from the mutually exclusive status buckets.
+  const perMonitorLongTermHistory = Object.values(longTermHistory
+    .filter((item) => typeof item.monitorId === 'string' && typeof item.monitorName === 'string')
+    .reduce<Record<string, LongTermSummary>>((acc, item) => {
+      const key = `${item.monitorId}:${item.period}`
+      const countFor = (entry: LongTermSummary) =>
+        Math.max(0, Number(entry.operational) || 0) +
+        Math.max(0, Number(entry.degraded) || 0) +
+        Math.max(0, Number(entry.down) || 0) +
+        Math.max(0, Number(entry.maintenance) || 0)
+      const current = acc[key]
+      if (!current || countFor(item) >= countFor(current)) {
+        const checks = countFor(item)
+        acc[key] = {
+          ...item,
+          checks,
+          uptime: checks > 0
+            ? ((Math.max(0, Number(item.operational) || 0) + Math.max(0, Number(item.maintenance) || 0)) / checks) * 100
+            : 100,
+        }
+      }
+      return acc
+    }, {}))
   const yearlyLongTermHistory = Object.values(perMonitorLongTermHistory.reduce<Record<string, {
     year: string; monitorId: string; monitorName: string; checks: number; operational: number;
     degraded: number; down: number; maintenance: number; uptimeWeighted: number
@@ -284,14 +306,14 @@ export default function StatusPage() {
             <div className="mb-5 flex flex-wrap items-end justify-between gap-3">
               <div>
                 <h2 className="text-lg font-semibold text-foreground">{language === 'ja' ? '年別稼働履歴' : 'Yearly uptime history'}</h2>
-                <p className="mt-1 text-sm text-muted-foreground">{language === 'ja' ? '年を選ぶと、その年の月別履歴に絞り込めます。' : 'Select a year to filter the monthly history below.'}</p>
+                <p className="mt-1 text-sm text-muted-foreground">{language === 'ja' ? 'カードを押すと、対象サービス・年で月別履歴を絞り込んで移動します。' : 'Select a card to filter monthly history by monitor and year.'}</p>
               </div>
               <span className="text-xs text-muted-foreground">{availableHistoryYears.length} {language === 'ja' ? '年分' : 'years'}</span>
             </div>
             {yearlyLongTermHistory.length > 0 ? (
               <div className="grid gap-3 sm:grid-cols-2">
                 {yearlyLongTermHistory.map((item) => {
-                  const isSelected = selectedHistoryYear === item.year
+                  const isSelected = selectedHistoryYear === item.year && selectedHistoryMonitor === item.monitorId
                   const yearMonths = perMonitorLongTermHistory.filter((month) => month.monitorId === item.monitorId && month.period.startsWith(item.year))
                   const totalDown = yearMonths.reduce((sum, month) => sum + month.down, 0)
                   const totalOperational = yearMonths.reduce((sum, month) => sum + month.operational, 0)
@@ -301,7 +323,16 @@ export default function StatusPage() {
                     <button
                       key={`${item.monitorId}-${item.year}`}
                       type="button"
-                      onClick={() => setSelectedHistoryYear(isSelected ? 'all' : item.year)}
+                      onClick={() => {
+                        if (isSelected) {
+                          setSelectedHistoryYear('all')
+                          setSelectedHistoryMonitor('all')
+                        } else {
+                          setSelectedHistoryYear(item.year)
+                          setSelectedHistoryMonitor(item.monitorId)
+                          document.getElementById('monthly-uptime-history')?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+                        }
+                      }}
                       aria-pressed={isSelected}
                       className={cn(
                         "rounded-xl border bg-card p-4 text-left shadow-sm transition-colors sm:p-5",
@@ -327,7 +358,7 @@ export default function StatusPage() {
                         <span className="text-red-700 dark:text-red-400">{language === 'ja' ? `停止 ${totalDown}` : `Down ${totalDown}`}</span>
                       </div>
                       <div className="mt-3 flex items-center justify-between border-t border-border pt-3 text-xs font-medium">
-                        <span className="text-muted-foreground">{isSelected ? (language === 'ja' ? '選択中' : 'Selected') : (language === 'ja' ? '月別履歴を表示' : 'View monthly history')}</span>
+                        <span className="text-muted-foreground">{isSelected ? (language === 'ja' ? 'この条件で絞り込み中' : 'Filter active') : (language === 'ja' ? 'この対象・年で絞り込む' : 'Filter by this monitor and year')}</span>
                         <span className="text-foreground">{isSelected ? '✓' : '→'}</span>
                       </div>
                     </button>
@@ -341,7 +372,7 @@ export default function StatusPage() {
             )}
           </section>
 
-          <section className="mb-8">
+          <section id="monthly-uptime-history" className="mb-8 scroll-mt-6">
             <div className="mb-5 flex flex-wrap items-end justify-between gap-3">
               <div>
                 <h2 className="text-lg font-semibold text-foreground">{language === 'ja' ? '月別稼働履歴' : 'Monthly uptime history'}</h2>
