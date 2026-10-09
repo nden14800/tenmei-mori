@@ -44,8 +44,7 @@ export function getEffectiveBucketCount(
   intervalMinutes = 1,
 ): number {
   if (period === '3d') return 3
-  if (period === '7d') return 7
-  if (period === '30d') return 30
+  if (period === '7d' || period === '30d') return TIMELINE_BUCKET_COUNT
   const periodMinutes = PERIOD_MS[period] / (60 * 1000)
   return Math.max(1, Math.min(TIMELINE_BUCKET_COUNT, Math.floor(periodMinutes / intervalMinutes)))
 }
@@ -176,22 +175,38 @@ export function buildTimelineHistory({
     return bars
   }
 
-  const dayCount = period === '3d' ? 3 : period === '7d' ? 7 : 30
   const historyMap = new Map(
     dailyHistory.map((day) => [day.date, mapStatusToBar(day.status)] as const),
   )
-  const bars = Array<TimelineBarStatus>(dayCount).fill('unknown')
-  const periodStartDate = getPeriodWindowStartDate(period, now)
 
-  for (let index = 0; index < dayCount; index++) {
-    const bucketDate = addCalendarDays(periodStartDate, index)
-    const bucketDateStart = new Date(`${bucketDate}T00:00:00Z`).getTime()
-    if (monitoringStart !== undefined && bucketDateStart + DAY_MS <= monitoringStart) continue
+  // 3d is a custom calendar-day view. Official UptimeWorker uses 60 rolling
+  // buckets for 7d/30d, mapping each bucket to the daily status for its UTC date.
+  if (period === '3d') {
+    const bars = Array<TimelineBarStatus>(3).fill('unknown')
+    const periodStartDate = getPeriodWindowStartDate(period, now)
+    for (let index = 0; index < 3; index++) {
+      const bucketDate = addCalendarDays(periodStartDate, index)
+      const bucketDateStart = new Date(`${bucketDate}T00:00:00Z`).getTime()
+      if (monitoringStart !== undefined && bucketDateStart + DAY_MS <= monitoringStart) continue
+      const dayStatus = historyMap.get(bucketDate)
+      if (dayStatus) bars[index] = dayStatus
+    }
+    if (currentStatus === 'maintenance') bars[2] = 'maintenance'
+    return bars
+  }
+
+  const bucketDuration = periodMs / TIMELINE_BUCKET_COUNT
+  const bars = Array<TimelineBarStatus>(TIMELINE_BUCKET_COUNT).fill('unknown')
+  for (let index = 0; index < TIMELINE_BUCKET_COUNT; index++) {
+    const bucketStart = cutoff + index * bucketDuration
+    const bucketEnd = bucketStart + bucketDuration
+    if (monitoringStart !== undefined && bucketEnd <= monitoringStart) continue
+    const bucketDate = new Date(bucketStart).toISOString().split('T')[0]
     const dayStatus = historyMap.get(bucketDate)
     if (dayStatus) bars[index] = dayStatus
   }
 
-  if (currentStatus === 'maintenance') bars[dayCount - 1] = 'maintenance'
+  if (currentStatus === 'maintenance') bars[TIMELINE_BUCKET_COUNT - 1] = 'maintenance'
   return bars
 }
 
