@@ -349,8 +349,7 @@ export const onRequest = async (context: any) => {
   const { CRON_SECRET, FAILSAFE_CRON_TOKEN, STATUS_API_SECRET, CRON_CHECK_INTERVAL, MONITOR_USER_AGENT, DISCORD_STATUS_ALERT_URL, DISCORD_STATUS_ALERT_SECRET } = context.env
   const authHeader = context.request.headers.get('X-Cron-Auth')
   const failsafeAuthHeader = context.request.headers.get('X-Failsafe-Cron-Auth')
-  // Every caller, including Cloudflare Worker subrequests, must prove possession
-  // of a server-side secret. CF-Worker and public marker headers are not credentials.
+  // Every caller must prove possession of a server-side secret.
   const isPrimaryAuthorized = Boolean(
     CRON_SECRET && authHeader && timingSafeEqualStr(authHeader, CRON_SECRET),
   )

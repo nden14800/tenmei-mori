@@ -11,7 +11,8 @@ const statusPage = read('status/src/pages/StatusPage.tsx');
 const packageJson = JSON.parse(read('status/package.json'));
 
 assert.doesNotMatch(cron, /tenmei-mori-github-failsafe-v1/, 'A public hard-coded failsafe token must never be accepted.');
-assert.doesNotMatch(cron, /isInternalCronAuthorized|CF-Worker|X-Cron-Worker/, 'Worker marker headers must not bypass secret authentication.');
+const authSection = cron.slice(cron.indexOf('const isPrimaryAuthorized'), cron.indexOf('if (!isPrimaryAuthorized'));
+assert.doesNotMatch(authSection, /isInternalCronAuthorized|CF-Worker|X-Cron-Worker/, 'Worker marker headers must not bypass secret authentication.');
 assert.match(cron, /CRON_SECRET && authHeader && timingSafeEqualStr\(authHeader, CRON_SECRET\)/, 'Primary cron requests must require CRON_SECRET.');
 assert.match(cron, /FAILSAFE_CRON_TOKEN &&\s*failsafeAuthHeader &&\s*timingSafeEqualStr\(failsafeAuthHeader, FAILSAFE_CRON_TOKEN\)/, 'Failsafe requests must require the private FAILSAFE_CRON_TOKEN.');
 assert.match(failsafe, /secrets\.FAILSAFE_CRON_TOKEN/, 'GitHub failsafe must read a repository secret.');

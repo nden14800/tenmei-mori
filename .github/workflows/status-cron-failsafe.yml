@@ -19,15 +19,19 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 3
     steps:
-      - name: Require the private failsafe credential
+      - name: Check whether the private failsafe credential is configured
+        id: credential
         env:
           FAILSAFE_CRON_TOKEN: ${{ secrets.FAILSAFE_CRON_TOKEN }}
         run: |
           if [ -z "$FAILSAFE_CRON_TOKEN" ]; then
-            echo "::error::Add the FAILSAFE_CRON_TOKEN repository secret before enabling the status failsafe."
-            exit 1
+            echo "::warning::FAILSAFE_CRON_TOKEN is not configured in GitHub repository secrets; the backup check was skipped."
+            echo "configured=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "configured=true" >> "$GITHUB_OUTPUT"
           fi
       - name: Trigger stale-only status check
+        if: steps.credential.outputs.configured == 'true'
         env:
           FAILSAFE_CRON_TOKEN: ${{ secrets.FAILSAFE_CRON_TOKEN }}
         run: |
