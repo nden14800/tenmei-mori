@@ -28,9 +28,9 @@ for (const expected of [
   'id="result-v4-discover-title"',
   '次は、気になるところをひとつだけ',
   '会員登録をしなくても楽しめます。',
-  'onclick="showView(\'settings\')"',
-  'onclick="showView(\'zodiac\')"',
-  'onclick="showView(\'howto\')"',
+  "trackFeatureDiscovery('settings','result_next_actions')",
+  "trackFeatureDiscovery('zodiac','result_next_actions')",
+  "trackFeatureDiscovery('howto','result_next_actions')",
 ]) {
   assert.ok(resultSection.includes(expected), `結果画面の次の行動導線がありません: ${expected}`);
 }
@@ -48,5 +48,14 @@ for (const expected of [
 for (const prohibited of ['worry-input', 'currentState.user.email', 'currentState.user.username']) {
   assert.ok(!html.includes(`window.tenmeiTrackUXEvent('${prohibited}'`), `UX計測に個人情報や相談本文を含めてはいけません: ${prohibited}`);
 }
+
+
+const homeStart = html.indexOf('<section id="view-home"');
+const homeEnd = html.indexOf('<section id="view-omikuji-mindset"', homeStart);
+const homeSection = homeStart >= 0 && homeEnd > homeStart ? html.slice(homeStart, homeEnd) : '';
+assert.ok(homeSection, 'ホーム画面が見つかりません。');
+assert.equal((homeSection.match(/class="home-v4-shortcut home-v4-shortcut--/g) || []).length, 6, 'ホームの機能ショートカットは6件必要です。');
+assert.ok(homeSection.indexOf('id="home-shortcuts-title"') < homeSection.indexOf('class="home-v4-counter-grid"'), '機能ショートカットはホームヒーロー直後に配置してください。');
+assert.ok(html.includes("'feature_discovery_click'"), '機能発見イベントが許可リストにありません。');
 
 console.log('オンボーディング・機能発見・同意制御付き計測の回帰テストに合格しました。');
