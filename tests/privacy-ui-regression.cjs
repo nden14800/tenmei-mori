@@ -54,6 +54,11 @@ requireSectionText(
   'プライバシーポリシー画面のPDF保存ボタンの既存処理接続が失われています。'
 );
 assert.equal(
+  privacySection.includes('現行版（第32版）の本文です。'),
+  false,
+  '現行の第33版本文に古い第32版ラベルが残っています。'
+);
+assert.equal(
   privacySection.includes('privacy-hero-card'),
   false,
   'プライバシーポリシー画面に置換前のprivacy-hero-card構造が残っています。'
@@ -79,6 +84,7 @@ assert.equal(
   'AI要約への評価・コメント記録（summary_feedback）',
   'サービス運営上必要な確認・対応を行うため（個別の問い合わせ対応・返信を保証するものではありません）',
   '現行版：第33版（最終改定日：2026年9月27日）',
+  '現行版（第33版）の本文です。',
   '4. 下の選択欄から版を選ぶと、その版について確認できた実際の改定内容を表示します。本文スナップショットを確認できない版については、推測で内容を補いません。',
   'アカウント削除後のデータ復旧は一切できません。',
 ].forEach((text) => {
@@ -167,6 +173,10 @@ for (const documentKey of ['about', 'privacy']) {
   assert(currentVersion, documentKey + 'の現行版アーカイブがありません。');
   assert(currentVersion.availability === 'full', documentKey + 'の現行版がfullとして記録されていません。');
   assert(currentVersion.html && currentVersion.html.trim(), documentKey + 'の現行版本文スナップショットがありません。');
+  if (documentKey === 'privacy') {
+    assert(currentVersion.html.includes('現行版（第33版）の本文です。'), 'プライバシーポリシー第33版の本文ラベルが現行版と一致しません。');
+    assert(!currentVersion.html.includes('現行版（第32版）の本文です。'), 'プライバシーポリシー第33版のアーカイブに古い第32版ラベルが残っています。');
+  }
   assert(currentVersion.changeDescription && currentVersion.changeDescription.trim(), documentKey + 'の現行版改定内容がありません。');
   document.versions.forEach((version) => {
     if (version.availability === 'missing' || version.availability === 'metadata-only') {
