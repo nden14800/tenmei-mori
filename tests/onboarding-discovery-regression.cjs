@@ -26,14 +26,20 @@ const resultSection = html.match(/<section id="view-result"[\s\S]*?<\/section>\s
 assert.ok(resultSection, 'おみくじ結果画面が見つかりません。');
 for (const expected of [
   'id="result-v4-discover-title"',
-  '次は、気になるところをひとつだけ',
-  '会員登録をしなくても楽しめます。',
+  'おみくじの次に、もうひとつ',
+  'どれも会員登録なしで試せます。',
   "trackFeatureDiscovery('settings','result_next_actions')",
   "trackFeatureDiscovery('zodiac','result_next_actions')",
-  "trackFeatureDiscovery('howto','result_next_actions')",
+  "trackFeatureDiscovery('prefecture','result_next_actions')",
+  "trackFeatureDiscovery('omamori','result_next_actions')",
+  "trackFeatureDiscovery('column','result_next_actions')",
 ]) {
   assert.ok(resultSection.includes(expected), `結果画面の次の行動導線がありません: ${expected}`);
 }
+assert.ok(resultSection.indexOf('result-v4-action-group--discover') < resultSection.indexOf('id="result-ai-consult"'), '機能発見カードは結果画面の上部に配置してください。');
+assert.ok(!resultSection.includes('aria-label="使い方 guide tracking>'), '機能発見カードのアクセシビリティラベルが壊れています。');
+assert.ok(html.includes('UI刷新: 2026年8月17日'), 'おみくじの轍の古い日付が更新日と誤認されないようUI刷新日として表示してください。');
+assert.ok(!html.includes('更新: 2026年8月17日'), '古い更新日表記が残っています。');
 
 for (const expected of [
   'window.tenmeiTrackUXEvent = function (eventName, parameters)',
