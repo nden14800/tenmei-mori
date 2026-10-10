@@ -31,7 +31,10 @@ requireSectionText(
   'id="howto-toc-container" class="howto-guide-toc hidden" aria-labelledby="howto-toc-heading"',
   '使い方画面の動的目次コンテナが新テンプレートに保持されていません。'
 );
-requireSectionText('id="howto-toc-list"', '使い方画面の動的目次リストIDが保持されていません。');
+requireSectionText('id="howto-toc-container"', '使い方画面の動的目次コンテナが保持されていません。');
+requireText("function buildHowtoArticleTOC()", '使い方画面の見出しから目次を生成する処理がありません。');
+requireText("details.className='article-toc-details'", '使い方画面の目次に開閉可能なナビゲーションがありません。');
+requireText("list.className='article-toc-unified__list'", '使い方画面の目次一覧が統一コンポーネントとして生成されていません。');
 requireSectionText(
   'id="howto-content-area" class="howto-guide-content" aria-labelledby="howto-content-heading"',
   '使い方画面の本文コンテナIDが新テンプレートに保持されていません。'
