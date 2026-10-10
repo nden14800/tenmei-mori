@@ -135,6 +135,12 @@ requireCount(/showView\('/g, 15, '既存の内部画面遷移導線が不足し�
   '#view-history .history-control-bar > .control-group-row:nth-of-type(2) > .tenmei-date { grid-column: 1 / -1; }',
   'const choicePointerMoveTolerance = 10;',
   "listbox.addEventListener('pointerdown', (event) => {",
+  'optionNode.setPointerCapture?.(event.pointerId)',
+  'const captureTarget = pending.captureTarget || listbox;',
+  'if (captureTarget.hasPointerCapture?.(pointerId)) captureTarget.releasePointerCapture(pointerId);',
+  'const pending = clearPendingPointer(event.pointerId);',
+  'selectChoice(state, pending.optionIndex);',
+  "if (state) root.dataset.tenmeiControlReady = 'true';',
   "listbox.addEventListener('pointermove', (event) => {",
   'const movedDistance = Math.hypot(event.clientX - pending.startX, event.clientY - pending.startY);',
   'if (movedDistance <= choicePointerMoveTolerance) return;',
@@ -152,6 +158,8 @@ requireCount(/showView\('/g, 15, '既存の内部画面遷移導線が不足し�
 const choicePointerDownHandler = html.match(/listbox\.addEventListener\('pointerdown', \(event\) => \{[\s\S]*?\n\s*}\);/);
 assert(choicePointerDownHandler, '選択欄のpointerdown処理を抽出できません。');
 assert.equal(choicePointerDownHandler[0].includes('selectChoice'), false, 'pointerdown時に選択を確定しており、スクロール操作が誤選択になります。');
+assert(choicePointerDownHandler[0].includes('optionNode.setPointerCapture?.(event.pointerId)'), 'ポインターキャプチャが選択肢ボタンではなくリスト全体に設定されています。');
+assert.equal(choicePointerDownHandler[0].includes('listbox.setPointerCapture?.(event.pointerId)'), false, 'リスト全体へのポインターキャプチャでクリック対象を失う実装が残っています。');
 
 assert.equal(html.includes('<select'), false, 'OS標準のselect要素が残っています。');
 assert.equal(/<input[^>]+type=["']date["']/gi.test(html), false, 'OS標準の日付入力が残っています。');
