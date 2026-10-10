@@ -25,7 +25,7 @@ assert.ok(fs.existsSync(path.join(root, 'functions/status/api/monitors/status.ts
 assert.ok(fs.existsSync(path.join(root, 'status/public/logo-192.png')), 'The status app must publish its favicon/logo from Vite public assets.');
 assert.ok(fs.existsSync(path.join(root, 'status/public/logo-512.png')), 'The status app must publish its large PWA icon from Vite public assets.');
 assert.ok(fs.existsSync(path.join(root, 'status/public/manifest.json')), 'The status app must publish its manifest from Vite public assets.');
-assert.match(read('status/index.html'), /%BASE_URL%manifest\\.json/, 'The manifest link must respect standalone and nested base paths.');
+assert.ok(read('status/index.html').includes('%BASE_URL%manifest.json'), 'The manifest link must respect standalone and nested base paths.');
 assert.ok(!fs.existsSync(path.join(root, 'functions/_middleware.js')), 'The obsolete developer navigation injection must be removed.');
 assert.equal(packageLock.lockfileVersion, 3, 'The status app must keep an npm v3 lockfile.');
 assert.deepEqual(packageLock.packages[''].dependencies, packageJson.dependencies, 'Lockfile runtime dependencies must match package.json.');
