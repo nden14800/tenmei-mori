@@ -22,6 +22,7 @@ assert.match(vite, /base: mainSiteBuild \? '\/status\/' : '\/'/, 'The nested and
 assert.match(vite, /outDir: mainSiteBuild \? 'dist-main' : 'dist'/, 'The main-site build must not overwrite the standalone build.');
 assert.match(statusPage, /import\.meta\.env\.BASE_URL\}api\/monitors\/status/, 'Status API URL must respect Vite base path.');
 assert.match(statusPage, /case 'degraded':[\s\S]*?return 'degraded'/, 'Degraded browser observations must be retained for timeline history instead of being discarded as unknown.');
+assert.match(statusPage, /httpFresh[\s\S]*?Math\.max\(5, checkIntervalMinutes \* 3\)/, 'A stale HTTP result must not pin the current row to degraded while fresh browser observations are available.');
 assert.ok(fs.existsSync(path.join(root, 'functions/status/api/monitors/status.ts')), 'The main site needs a /status/api/monitors/status route.');
 assert.ok(fs.existsSync(path.join(root, 'status/public/logo-192.png')), 'The status app must publish its favicon/logo from Vite public assets.');
 assert.ok(fs.existsSync(path.join(root, 'status/public/logo-512.png')), 'The status app must publish its large PWA icon from Vite public assets.');
