@@ -9,6 +9,7 @@ const failsafe = read('.github/workflows/status-cron-failsafe.yml');
 const vite = read('status/vite.config.ts');
 const statusPage = read('status/src/pages/StatusPage.tsx');
 const packageJson = JSON.parse(read('status/package.json'));
+const packageLock = JSON.parse(read('status/package-lock.json'));
 
 assert.doesNotMatch(cron, /tenmei-mori-github-failsafe-v1/, 'A public hard-coded failsafe token must never be accepted.');
 const authSection = cron.slice(cron.indexOf('const isPrimaryAuthorized'), cron.indexOf('if (!isPrimaryAuthorized'));
@@ -22,6 +23,9 @@ assert.match(vite, /outDir: mainSiteBuild \? 'dist-main' : 'dist'/, 'The main-si
 assert.match(statusPage, /import\.meta\.env\.BASE_URL\}api\/monitors\/status/, 'Status API URL must respect Vite base path.');
 assert.ok(fs.existsSync(path.join(root, 'functions/status/api/monitors/status.ts')), 'The main site needs a /status/api/monitors/status route.');
 assert.ok(!fs.existsSync(path.join(root, 'functions/_middleware.js')), 'The obsolete developer navigation injection must be removed.');
+assert.equal(packageLock.lockfileVersion, 3, 'The status app must keep an npm v3 lockfile.');
+assert.deepEqual(packageLock.packages[''].dependencies, packageJson.dependencies, 'Lockfile runtime dependencies must match package.json.');
+assert.deepEqual(packageLock.packages[''].devDependencies, packageJson.devDependencies, 'Lockfile development dependencies must match package.json.');
 for (const name of ['test', 'build:main', 'typecheck:functions']) {
   assert.equal(typeof packageJson.scripts[name], 'string', `Missing status npm script: ${name}`);
 }
