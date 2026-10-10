@@ -34,10 +34,7 @@ requireSectionText(
   'id="about-toc-container" class="about-codex-toc hidden" aria-labelledby="about-toc-heading"',
   '当サイトについて画面の動的目次コンテナが新テンプレートに保持されていません。'
 );
-requireSectionText(
-  'id="about-toc-list"',
-  '当サイトについて画面の動的目次リストIDが保持されていません。'
-);
+requireText("list.className='article-toc-unified__list'", '当サイトについて画面の動的目次リスト生成処理がありません。');
 requireSectionText(
   'id="about-content-area" class="about-codex-content"',
   '当サイトについて画面のPDF対象本文IDが新テンプレートに保持されていません。'
