@@ -22,6 +22,10 @@ assert.match(vite, /base: mainSiteBuild \? '\/status\/' : '\/'/, 'The nested and
 assert.match(vite, /outDir: mainSiteBuild \? 'dist-main' : 'dist'/, 'The main-site build must not overwrite the standalone build.');
 assert.match(statusPage, /import\.meta\.env\.BASE_URL\}api\/monitors\/status/, 'Status API URL must respect Vite base path.');
 assert.ok(fs.existsSync(path.join(root, 'functions/status/api/monitors/status.ts')), 'The main site needs a /status/api/monitors/status route.');
+assert.ok(fs.existsSync(path.join(root, 'status/public/logo-192.png')), 'The status app must publish its favicon/logo from Vite public assets.');
+assert.ok(fs.existsSync(path.join(root, 'status/public/logo-512.png')), 'The status app must publish its large PWA icon from Vite public assets.');
+assert.ok(fs.existsSync(path.join(root, 'status/public/manifest.json')), 'The status app must publish its manifest from Vite public assets.');
+assert.match(read('status/index.html'), /%BASE_URL%manifest\\.json/, 'The manifest link must respect standalone and nested base paths.');
 assert.ok(!fs.existsSync(path.join(root, 'functions/_middleware.js')), 'The obsolete developer navigation injection must be removed.');
 assert.equal(packageLock.lockfileVersion, 3, 'The status app must keep an npm v3 lockfile.');
 assert.deepEqual(packageLock.packages[''].dependencies, packageJson.dependencies, 'Lockfile runtime dependencies must match package.json.');
