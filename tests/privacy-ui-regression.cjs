@@ -202,7 +202,7 @@ assert(!html.includes('第24版の本文スナップショットは保存され�
 assert(!html.includes('第32版の本文スナップショットを読み込みます。'), '初期表示に旧版のスナップショット読み込み表示が残っています。');
 // 改定履歴スナップショット内の旧カスタム選択欄が本体側コントロールを壊さないことを保証する。
 assert(html.includes("const CURRENT={about:{edition:'26',date:'2026/10/10'}"), '当サイトについてのフォールバック版番号が現行の第26版と一致しません。');
-assert(html.includes('snapshot.querySelectorAll') && html.includes('[data-control-kind="choice"], [data-control-kind="date"]'), '過去版スナップショット内のカスタム選択欄を静的表示へ変換していません。');
+assert(html.includes('snapshot.querySelectorAll') && html.includes('[data-control-id], [data-control-kind="choice"], [data-control-kind="date"], .tenmei-choice'), '過去版スナップショット内の新旧カスタム選択欄を静的表示へ変換していません。');
 assert(html.includes('document-revision-static-control'), '過去版の選択欄を表示専用にするスタイルがありません。');
 assert(html.includes("if(/^on/i.test(attribute.name))element.removeAttribute(attribute.name);"), '過去版スナップショットのインライン操作を無効化していません。');
 const homeStart = html.indexOf('<section id="view-home"');

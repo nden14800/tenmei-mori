@@ -10815,6 +10815,41 @@ body.sidebar-collapsed.sidebar-pinned #sidebar .nav-group-title {
         font-size: 0.92rem;
         line-height: 1.8;
     }
+    .tutorial-feature-actions {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 8px;
+        max-width: 440px;
+        margin: 16px auto 0;
+    }
+    .tutorial-feature-action {
+        display: inline-flex;
+        min-width: 0;
+        min-height: 42px;
+        align-items: center;
+        justify-content: center;
+        gap: 7px;
+        padding: 9px 11px;
+        border: 1px solid var(--card-border);
+        border-radius: 12px;
+        background: var(--input-bg);
+        color: var(--text-main);
+        font-family: 'Zen Kaku Gothic New', sans-serif;
+        font-size: .8rem;
+        font-weight: 800;
+        line-height: 1.4;
+        cursor: pointer;
+    }
+    .tutorial-feature-action:hover {
+        border-color: color-mix(in srgb, var(--tutorial-accent) 48%, var(--card-border));
+        background: color-mix(in srgb, var(--tutorial-accent) 6%, var(--input-bg));
+    }
+    .tutorial-feature-action i { color: var(--tutorial-accent); }
+    .tutorial-feature-actions .tutorial-feature-action:only-child { grid-column: 1 / -1; }
+    @media (max-width: 560px) {
+        .tutorial-feature-actions { grid-template-columns: 1fr; }
+    }
+
     .tutorial-dots {
         display: flex;
         justify-content: center;
@@ -35235,10 +35270,14 @@ window.applyTheme = function() {
             <p class="tutorial-gold-label"><i class="bi bi-sun" aria-hidden="true"></i> YOUR SETTINGS</p>
             <h2 class="tutorial-title">設定はいつでも変更できます</h2>
             <p class="tutorial-desc">
-                テーマや文字の大きさ、履歴に残すかどうかは<br>「環境・表示設定」で変更できます。<br>
+                テーマ・文字サイズ・おみくじを履歴に残すかどうかを変更できます。<br>
                 ホームの「今日の道しるべ」から開けます。<br>
+                「環境・表示設定」を押せば、いつでも変更できます。<br>
                 <strong>設定の変更に会員登録は不要です。</strong>
             </p>
+            <div class="tutorial-feature-actions">
+                <button type="button" class="tutorial-feature-action" onclick="window.__tenmeiTutorialCloseReason='dismiss'; closeTutorial(); trackFeatureDiscovery('settings','tutorial_settings_cta'); showView('settings')"><i class="bi bi-sliders2" aria-hidden="true"></i>今すぐ設定を開く</button>
+            </div>
         </section>
         
 
@@ -35248,8 +35287,9 @@ window.applyTheme = function() {
             <p class="tutorial-gold-label"><i class="bi bi-chat-square-heart" aria-hidden="true"></i> YOUR RESULT</p>
             <h2 class="tutorial-title">結果を残す・相談する</h2>
             <p class="tutorial-desc">
-                結果画面では画像やPDFで保存したり、<br>誰かと共有したり、AIに一言相談したりできます。<br>
-                <strong>使いたい機能だけ、自由に選べます。</strong>
+                おみくじを引いた後、結果の下に「おみくじの次に、もうひとつ」が表示されます。<br>
+                そこから「12星座占い」「全国の運気」「環境・表示設定」を直接開けます。<br>
+                <strong>どれも会員登録なしで試せます。</strong>
             </p>
         </section>
         
@@ -35260,10 +35300,17 @@ window.applyTheme = function() {
             <p class="tutorial-gold-label"><i class="bi bi-compass" aria-hidden="true"></i> EXPLORE</p>
             <h2 class="tutorial-title">気になる機能を試してみよう</h2>
             <p class="tutorial-desc">
-                12星座占い、デジタル御守、読み物など<br>気になる機能をひとつ試してみてください。<br>
+                迷ったら、まずは下の機能をひとつ押してみてください。<br>
+                12星座占いは今日の別の運勢、デジタル御守は願いに合わせた御守、<br>
+                神籤草子では占いにまつわる読み物を楽しめます。<br>
                 記録を長く残したい方は参拝証も選べますが、<br>
-                <strong>登録は必須ではありません。</strong>
+                <strong>登録は必須ではありません。ほかの機能も気軽に試せます。</strong>
             </p>
+            <div class="tutorial-feature-actions">
+                <button type="button" class="tutorial-feature-action" onclick="window.__tenmeiTutorialCloseReason='dismiss'; closeTutorial(); trackFeatureDiscovery('zodiac','tutorial_explore_cta'); showView('zodiac')"><i class="bi bi-stars" aria-hidden="true"></i>12星座占い</button>
+                <button type="button" class="tutorial-feature-action" onclick="window.__tenmeiTutorialCloseReason='dismiss'; closeTutorial(); trackFeatureDiscovery('omamori','tutorial_explore_cta'); showView('omamori')"><i class="bi bi-gem" aria-hidden="true"></i>デジタル御守</button>
+                <button type="button" class="tutorial-feature-action" onclick="window.__tenmeiTutorialCloseReason='dismiss'; closeTutorial(); trackFeatureDiscovery('column','tutorial_explore_cta'); showView('column')"><i class="bi bi-book-half" aria-hidden="true"></i>神籤草子</button>
+            </div>
         </section>
         
 
@@ -37300,7 +37347,7 @@ function render(documentKey,edition,archive){
     // 保存HTMLは過去版の画面そのものなので、操作UIは表示専用の静的表示へ変換する。
     // 過去版内の同じ data-control-id が本体側の TenmeiCustomControls の状態を上書きし、
     // REVISION HISTORY / EDITION の選択欄まで壊すのを防ぐ。
-    snapshot.querySelectorAll('[data-control-kind="choice"], [data-control-kind="date"]').forEach((root)=>{
+    snapshot.querySelectorAll('[data-control-id], [data-control-kind="choice"], [data-control-kind="date"], .tenmei-choice').forEach((root)=>{
       let options=[];
       try{options=JSON.parse(root.dataset.options||'[]');}catch(_){}
       const input=root.querySelector('input');
