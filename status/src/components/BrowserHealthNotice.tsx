@@ -9,6 +9,7 @@ interface HealthComponent { state?: HealthState; detail?: string }
 interface BrowserHealth {
   schemaVersion?: number
   checkedAt?: string | null
+  lastBrowserCheckAt?: string | null
   stateChangedAt?: string | null
   overall?: { state?: HealthState; detail?: string }
   components?: Record<string, HealthComponent>
@@ -71,7 +72,8 @@ export default function BrowserHealthNotice({
   if (!health && !loadFailed) return null
 
   const state = health?.overall?.state || 'unknown'
-  const timestamp = Number.isFinite(checkedAt) ? new Date(checkedAt).toLocaleString(locale) : null
+  const browserCheckedAt = health?.lastBrowserCheckAt ? Date.parse(health.lastBrowserCheckAt) : checkedAt
+  const timestamp = Number.isFinite(browserCheckedAt) ? new Date(browserCheckedAt).toLocaleString(locale) : null
   const components = Object.entries(health?.components || {}).filter(
     ([key, value]) => key !== 'ai' && value?.state && value.state !== 'operational' && value.state !== 'external',
   )
