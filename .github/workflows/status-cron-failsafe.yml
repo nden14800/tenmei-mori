@@ -54,6 +54,24 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
+          # A push can trigger the browser monitor at the same time this failsafe
+          # runs. Dispatching a second monitor concurrently makes both jobs edit
+          # the same generated JSON history files and causes a rebase conflict.
+          recent_or_active=$(gh run list \
+            --repo nden14800/tenmei-mori \
+            --workflow service-browser-monitor.yml \
+            --limit 20 \
+            --json status,createdAt \
+            --jq '[.[] | select(
+              .status == "queued" or .status == "in_progress" or
+              .status == "requested" or .status == "waiting" or
+              .status == "pending" or
+              ((now - (.createdAt | fromdateiso8601)) < 120)
+            )] | length')
+          if [ "${recent_or_active}" -gt 0 ]; then
+            echo "A browser-monitor run is already queued, running, or was created within the last two minutes; skipping duplicate dispatch."
+            exit 0
+          fi
           gh workflow run service-browser-monitor.yml --repo nden14800/tenmei-mori --ref main
           echo "Requested a fresh Playwright browser-monitor run because the health snapshot was stale."
       - name: Check whether the private failsafe credential is configured
