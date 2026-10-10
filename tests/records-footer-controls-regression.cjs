@@ -127,7 +127,7 @@ requireCount(/showView\('/g, 15, '既存の内部画面遷移導線が不足し�
   '.tenmei-choice__popover,',
   '.tenmei-date__popover {',
   '#view-history .history-control-bar.is-control-expanded { z-index: 160; }',
-  'datetime="2026-08-17">更新: 2026年8月17日</time>',
+  'datetime="2026-08-17">UI刷新: 2026年8月17日</time>',
   "root.closest('.history-control-bar, .zodiac-ranking-panel')?.classList.add('is-control-expanded');",
   "root.closest('.history-control-bar, .zodiac-ranking-panel')?.classList.remove('is-control-expanded');",
   'html body:not(.sidebar-pinned) #main-content {',
