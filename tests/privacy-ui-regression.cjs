@@ -196,6 +196,10 @@ assert(html.includes('class="document-revision-snapshot__summary"'), '本文ス�
 assert(html.includes('bi bi-chevron-down document-revision-snapshot__chevron'), '本文スナップショットの開閉アイコンがサイト共通のBootstrap Iconsになっていません。');
 assert(html.includes('.document-revision-snapshot__details[open] .document-revision-snapshot__chevron'), '本文スナップショットの開閉状態とアイコン表示が連動していません。');
 assert(!html.includes('<details class="document-revision-snapshot__details" open>'), '本文スナップショットは初期状態で開いてはいけません。');
+assert(html.includes('第26版の本文スナップショットを読み込みます。'), '当サイトについての初期スナップショット表示が現行第26版と一致しません。');
+assert(html.includes('第33版の本文スナップショットを読み込みます。'), 'プライバシーポリシーの初期スナップショット表示が現行第33版と一致しません。');
+assert(!html.includes('第24版の本文スナップショットは保存されていません。'), '初期表示に別版のスナップショット状態が残っています。');
+assert(!html.includes('第32版の本文スナップショットを読み込みます。'), '初期表示に旧版のスナップショット読み込み表示が残っています。');
 // 改定履歴スナップショット内の旧カスタム選択欄が本体側コントロールを壊さないことを保証する。
 assert(html.includes("const CURRENT={about:{edition:'26',date:'2026/10/10'}"), '当サイトについてのフォールバック版番号が現行の第26版と一致しません。');
 assert(html.includes('snapshot.querySelectorAll') && html.includes('[data-control-kind="choice"], [data-control-kind="date"]'), '過去版スナップショット内のカスタム選択欄を静的表示へ変換していません。');
