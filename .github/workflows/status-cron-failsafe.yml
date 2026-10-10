@@ -8,7 +8,9 @@ on:
     - cron: "1-56/5 * * * *"
   workflow_dispatch:
 
-permissions: {}
+permissions:
+  actions: write
+  contents: read
 
 concurrency:
   group: status-cron-failsafe
@@ -19,18 +21,53 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 3
     steps:
+      - name: Check whether browser health snapshot is stale
+        id: stale
+        run: |
+          node <<'NODE'
+          const fs = require('node:fs');
+          const https = require('node:https');
+          const url = 'https://raw.githubusercontent.com/nden14800/tenmei-mori/main/status/public/health.json';
+          https.get(url, { headers: { 'Cache-Control': 'no-cache', 'User-Agent': 'tenmei-mori-status-failsafe/1.0' } }, (res) => {
+            let body = '';
+            res.setEncoding('utf8');
+            res.on('data', chunk => body += chunk);
+            res.on('end', () => {
+              try {
+                const data = JSON.parse(body);
+                const age = Date.now() - Date.parse(data.checkedAt || '');
+                const stale = !Number.isFinite(age) || age < -60000 || age > 8 * 60 * 1000;
+                fs.appendFileSync(process.env.GITHUB_OUTPUT, 'stale=' + stale + '\\n');
+                console.log(JSON.stringify({ stale, ageMinutes: Number.isFinite(age) ? Math.round(age / 6000) / 10 : null }));
+              } catch (error) {
+                fs.appendFileSync(process.env.GITHUB_OUTPUT, 'stale=true\\n');
+                console.log('Health snapshot could not be parsed; treating it as stale.');
+              }
+            });
+          }).on('error', () => {
+            fs.appendFileSync(process.env.GITHUB_OUTPUT, 'stale=true\\n');
+            console.log('Health snapshot could not be fetched; treating it as stale.');
+          });
+          NODE
+      - name: Trigger browser monitor when its snapshot is stale
+        if: steps.stale.outputs.stale == 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh workflow run service-browser-monitor.yml --repo nden14800/tenmei-mori --ref main
+          echo "Requested a fresh Playwright browser-monitor run because the health snapshot was stale."
       - name: Check whether the private failsafe credential is configured
         id: credential
         env:
           FAILSAFE_CRON_TOKEN: ${{ secrets.FAILSAFE_CRON_TOKEN }}
         run: |
           if [ -z "$FAILSAFE_CRON_TOKEN" ]; then
-            echo "::warning::FAILSAFE_CRON_TOKEN is not configured in GitHub repository secrets; the backup check was skipped."
+            echo "::warning::FAILSAFE_CRON_TOKEN is not configured in GitHub repository secrets; the legacy HTTP backup check was skipped."
             echo "configured=false" >> "$GITHUB_OUTPUT"
           else
             echo "configured=true" >> "$GITHUB_OUTPUT"
           fi
-      - name: Trigger stale-only status check
+      - name: Trigger legacy stale-only status check
         if: steps.credential.outputs.configured == 'true'
         env:
           FAILSAFE_CRON_TOKEN: ${{ secrets.FAILSAFE_CRON_TOKEN }}
