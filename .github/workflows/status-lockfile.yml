@@ -1,0 +1,41 @@
+name: Generate status dependency lockfile
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'status/package.json'
+      - '.github/workflows/status-lockfile.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: status-lockfile
+  cancel-in-progress: false
+
+jobs:
+  lockfile:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Check out main
+        uses: actions/checkout@v4
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Generate npm lockfile
+        run: npm --prefix status install --package-lock-only --ignore-scripts --no-audit --no-fund
+      - name: Commit lockfile if changed
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add status/package-lock.json
+          if git diff --cached --quiet; then
+            echo "Status lockfile is already current."
+            exit 0
+          fi
+          git commit -m "chore(status): add reproducible npm lockfile"
+          git push origin main
