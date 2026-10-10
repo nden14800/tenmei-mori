@@ -101,6 +101,28 @@ async function main(){
 
     let active = await page.evaluate(() => document.querySelector('.view-section.active')?.id || '');
     if (active === 'view-omikuji-mindset') {
+      // The walkthrough can appear again after entering the mindset screen in a fresh
+      // browser context. Dismiss it before clicking the next-step control, otherwise
+      // the modal intercepts the click and creates a false degraded status.
+      const mindsetTutorial = page.locator('#tutorial-overlay.active');
+      if (await mindsetTutorial.count()) {
+        const skipMindset = page.locator('#tutorial-skip-btn');
+        if (await skipMindset.isVisible().catch(() => false)) {
+          await skipMindset.click({ timeout: 3000 }).catch(() => undefined);
+        }
+        if (await mindsetTutorial.isVisible().catch(() => false)) {
+          await page.evaluate(() => {
+            const overlay = document.querySelector('#tutorial-overlay');
+            overlay?.classList.remove('active');
+            overlay?.setAttribute('aria-hidden', 'true');
+            document.body.classList.remove('tutorial-open');
+            document.body.style.overflow = '';
+          });
+        }
+        await mindsetTutorial.waitFor({ state: 'hidden', timeout: 3000 }).catch(() => {
+          throw Error('おみくじ画面の案内ダイアログを閉じられません。');
+        });
+      }
       await page.locator('#view-omikuji-mindset [onclick="proceedToDraw()"]').click({ timeout: 10000 });
       await page.locator('#view-draw.active').waitFor({ state: 'visible', timeout: 10000 });
       active = await page.evaluate(() => document.querySelector('.view-section.active')?.id || '');
