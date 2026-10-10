@@ -159,6 +159,27 @@
             return normalized;
         }
 
+        // UX計測は「利用状況の解析」を許可した場合のみ送信し、個人情報や入力本文は送らない。
+        const UX_EVENT_ALLOWLIST = new Set([
+            'tutorial_begin', 'tutorial_complete', 'tutorial_skip', 'tutorial_dismiss',
+            'view_open', 'omikuji_result_view', 'settings_open', 'auth_screen_view'
+        ]);
+        const UX_PARAM_ALLOWLIST = new Set(['view_name', 'account_state']);
+        window.tenmeiTrackUXEvent = function (eventName, parameters) {
+            try {
+                const preferences = readPreferences();
+                if (!preferences || preferences.analytics !== true || !UX_EVENT_ALLOWLIST.has(eventName)) return;
+                ensureAnalyticsConsentDefault();
+                const safeParameters = {};
+                Object.keys(parameters || {}).forEach((key) => {
+                    if (!UX_PARAM_ALLOWLIST.has(key)) return;
+                    const value = parameters[key];
+                    if (typeof value === 'string' && /^[a-z0-9_-]{1,40}$/i.test(value)) safeParameters[key] = value;
+                });
+                window.gtag('event', eventName, safeParameters);
+            } catch (error) {}
+        };
+
         window.TenmeiCookieConsent = {
             key: COOKIE_PREFERENCES_KEY,
             get: readPreferences,
@@ -16218,6 +16239,25 @@ body.sidebar-collapsed.sidebar-pinned #sidebar .nav-group-title {
                             <button onclick="shareToDiscord()" id="discord-share-btn" class="action-card-btn btn-discord grid-span-full"><i class="bi bi-discord" style="font-size:28px; margin-bottom:8px;"></i><span>参拝記録チャンネルへ</span><small>Discordで分かち合う</small></button>
                         </div>
                     </section>
+
+                    <section class="result-v4-action-group result-v4-action-group--discover" aria-labelledby="result-v4-discover-title">
+                        <header>
+                            <p class="result-v4-action-group-label"><i class="bi bi-compass" aria-hidden="true"></i> DISCOVER TENMEI</p>
+                            <h3 id="result-v4-discover-title">次は、気になるところをひとつだけ</h3>
+                            <p>会員登録をしなくても楽しめます。設定を整えたり、別の占いを試したりしてみてください。</p>
+                        </header>
+                        <div class="unified-result-grid result-v4-next-grid">
+                            <button type="button" onclick="showView('settings')" class="action-card-btn" aria-label="環境・表示設定を開く">
+                                <i class="bi bi-sliders2" aria-hidden="true"></i><span>環境・表示設定</span><small>テーマ・文字・履歴保存を調整</small>
+                            </button>
+                            <button type="button" onclick="showView('zodiac')" class="action-card-btn" aria-label="12星座占いを開く">
+                                <i class="bi bi-stars" aria-hidden="true"></i><span>12星座占い</span><small>今日の別の運勢を見てみる</small>
+                            </button>
+                            <button type="button" onclick="showView('howto')" class="action-card-btn" aria-label="使い方ガイドを開く">
+                                <i class="bi bi-question-circle" aria-hidden="true"></i><span>使い方ガイド</span><small>ほかの機能をあとから確認</small>
+                            </button>
+                        </div>
+                    </section>
                 </section>
         </section>
 
@@ -27489,6 +27529,16 @@ function showLoading(show) {
                 target.classList.add('active');
             }
             currentState.view = viewId;
+            if (typeof window.tenmeiTrackUXEvent === 'function') {
+                window.tenmeiTrackUXEvent('view_open', { view_name: viewId });
+                if (viewId === 'settings') window.tenmeiTrackUXEvent('settings_open', { view_name: 'settings' });
+                if (viewId === 'auth') window.tenmeiTrackUXEvent('auth_screen_view', { view_name: 'auth' });
+                if (viewId === 'result') {
+                    window.tenmeiTrackUXEvent('omikuji_result_view', {
+                        account_state: currentState.user ? 'signed_in' : 'guest'
+                    });
+                }
+            }
             // ChatlingにはSPAの画面ID、ページURL、ログイン情報その他の個別データを渡さない。
             // ウィジェットはCookie設定で許可された場合だけ独立して動作させる。
 
@@ -35117,10 +35167,11 @@ window.applyTheme = function() {
             <p class="tutorial-gold-label"><i class="bi bi-bookmark-star" aria-hidden="true"></i> WELCOME</p>
             <h2 class="tutorial-title">天命乃杜へようこそ</h2>
             <p class="tutorial-desc">
-                天命乃杜は、毎日おみくじを引いて<br>今日の天命を授かる占いサイトです。<br>
-                サイドバーからさまざまな機能へアクセスできます。
+                天命乃杜は、無料でおみくじを引ける占いサイトです。<br>
+                <strong>会員登録をしなくても、すぐに利用できます。</strong><br>
+                まずは気軽に一度、今日の運勢を受け取ってみてください。
             </p>
-        </section>
+        
 
         <!-- スライド 2: おみくじ -->
         <section id="tutorial-slide-1" class="tutorial-slide" role="tabpanel" aria-labelledby="tutorial-dot-1" data-tutorial-slide="1" aria-hidden="true">
@@ -35128,54 +35179,56 @@ window.applyTheme = function() {
             <p class="tutorial-gold-label"><i class="bi bi-stars" aria-hidden="true"></i> FORTUNE</p>
             <h2 class="tutorial-title">おみくじを引く</h2>
             <p class="tutorial-desc">
-                ホーム画面の「おみくじを引く」ボタンで<br>今日の運勢を占えます。<br>
-                大吉・吉・凶など12段階の結果と<br>神託の言葉が授かれます。
+                ホーム画面から「おみくじを引く」を選び、<br>並んでいる札を1枚タップします。<br>
+                大吉から大凶まで12段階の結果と、<br>今日の歩みのヒントを受け取れます。
             </p>
-        </section>
+        
 
         <!-- スライド 3: 12星座 -->
         <section id="tutorial-slide-2" class="tutorial-slide" role="tabpanel" aria-labelledby="tutorial-dot-2" data-tutorial-slide="2" aria-hidden="true">
-            <div class="tutorial-icon" aria-hidden="true"><i class="bi bi-stars"></i></div>
-            <p class="tutorial-gold-label"><i class="bi bi-sun" aria-hidden="true"></i> ZODIAC</p>
-            <h2 class="tutorial-title">12星座占い</h2>
+            <div class="tutorial-icon" aria-hidden="true"><i class="bi bi-sliders2"></i></div>
+            <p class="tutorial-gold-label"><i class="bi bi-sun" aria-hidden="true"></i> YOUR SETTINGS</p>
+            <h2 class="tutorial-title">設定はいつでも変更できます</h2>
             <p class="tutorial-desc">
-                毎日更新される星座占いでは<br>恋愛・仕事・金運など<br>各分野の運勢とラッキーアイテムが<br>日替わりで確認できます。
+                表示テーマや文字の読みやすさ、<br>おみくじを履歴に保存するかどうかは<br>「環境・表示設定」で変更できます。<br>
+                <strong>設定を変えるための会員登録も不要です。</strong>
             </p>
-        </section>
+        
 
         <!-- スライド 4: コミュニティ -->
         <section id="tutorial-slide-3" class="tutorial-slide" role="tabpanel" aria-labelledby="tutorial-dot-3" data-tutorial-slide="3" aria-hidden="true">
-            <div class="tutorial-icon" aria-hidden="true"><i class="bi bi-people"></i></div>
-            <p class="tutorial-gold-label"><i class="bi bi-chat-square-heart" aria-hidden="true"></i> COMMUNITY</p>
-            <h2 class="tutorial-title">公式Discordサーバー</h2>
+            <div class="tutorial-icon" aria-hidden="true"><i class="bi bi-bookmark-heart"></i></div>
+            <p class="tutorial-gold-label"><i class="bi bi-chat-square-heart" aria-hidden="true"></i> YOUR RESULT</p>
+            <h2 class="tutorial-title">結果を残す・相談する</h2>
             <p class="tutorial-desc">
-                おみくじ結果の共有や参拝者同士の交流は<br>公式Discordサーバーへ。<br>
-                ホーム画面のボタンから参拝所に入れます。
+                結果画面では画像やPDFで保存したり、<br>誰かと共有したり、AIに一言相談したりできます。<br>
+                <strong>使いたい機能だけ、自由に選べます。</strong>
             </p>
-        </section>
+        
 
         <!-- スライド 5: その他機能 -->
         <section id="tutorial-slide-4" class="tutorial-slide" role="tabpanel" aria-labelledby="tutorial-dot-4" data-tutorial-slide="4" aria-hidden="true">
-            <div class="tutorial-icon" aria-hidden="true"><i class="bi bi-grid-3x3-gap"></i></div>
-            <p class="tutorial-gold-label"><i class="bi bi-compass" aria-hidden="true"></i> FEATURES</p>
-            <h2 class="tutorial-title">その他の機能</h2>
+            <div class="tutorial-icon" aria-hidden="true"><i class="bi bi-compass"></i></div>
+            <p class="tutorial-gold-label"><i class="bi bi-compass" aria-hidden="true"></i> EXPLORE</p>
+            <h2 class="tutorial-title">気になる機能を試してみよう</h2>
             <p class="tutorial-desc">
-                全国の運気ランキング・御守生成・<br>社務所だより・神籤草子（コラム）など<br>たくさんの機能が揃っています。<br>
-                サイドバーを探索してみてください。
+                12星座占い、デジタル御守、読み物など<br>気になる機能をひとつ試してみてください。<br>
+                記録を長く残したい方は参拝証も選べますが、<br>
+                <strong>登録は必須ではありません。</strong>
             </p>
-        </section>
+        
 
         <div class="tutorial-dots" id="tutorial-dots" role="tablist" aria-label="ウォークスルーのステップ">
             <button type="button" id="tutorial-dot-0" class="tutorial-dot active" role="tab" aria-controls="tutorial-slide-0" aria-selected="true" tabindex="0" onclick="goTutorialSlide(0)"><span class="tutorial-visually-hidden">ステップ1: 天命乃杜へようこそ</span></button>
             <button type="button" id="tutorial-dot-1" class="tutorial-dot" role="tab" aria-controls="tutorial-slide-1" aria-selected="false" tabindex="-1" onclick="goTutorialSlide(1)"><span class="tutorial-visually-hidden">ステップ2: おみくじを引く</span></button>
-            <button type="button" id="tutorial-dot-2" class="tutorial-dot" role="tab" aria-controls="tutorial-slide-2" aria-selected="false" tabindex="-1" onclick="goTutorialSlide(2)"><span class="tutorial-visually-hidden">ステップ3: 12星座占い</span></button>
-            <button type="button" id="tutorial-dot-3" class="tutorial-dot" role="tab" aria-controls="tutorial-slide-3" aria-selected="false" tabindex="-1" onclick="goTutorialSlide(3)"><span class="tutorial-visually-hidden">ステップ4: 公式Discordサーバー</span></button>
-            <button type="button" id="tutorial-dot-4" class="tutorial-dot" role="tab" aria-controls="tutorial-slide-4" aria-selected="false" tabindex="-1" onclick="goTutorialSlide(4)"><span class="tutorial-visually-hidden">ステップ5: その他の機能</span></button>
+            <button type="button" id="tutorial-dot-2" class="tutorial-dot" role="tab" aria-controls="tutorial-slide-2" aria-selected="false" tabindex="-1" onclick="goTutorialSlide(2)"><span class="tutorial-visually-hidden">ステップ3: 環境・表示設定</span></button>
+            <button type="button" id="tutorial-dot-3" class="tutorial-dot" role="tab" aria-controls="tutorial-slide-3" aria-selected="false" tabindex="-1" onclick="goTutorialSlide(3)"><span class="tutorial-visually-hidden">ステップ4: 結果を残す・相談する</span></button>
+            <button type="button" id="tutorial-dot-4" class="tutorial-dot" role="tab" aria-controls="tutorial-slide-4" aria-selected="false" tabindex="-1" onclick="goTutorialSlide(4)"><span class="tutorial-visually-hidden">ステップ5: 気になる機能を試す</span></button>
         </div>
 
         <div class="tutorial-btn-row">
             <button type="button" class="tutorial-btn-previous" id="tutorial-prev-btn" onclick="previousTutorialSlide()" aria-label="前のステップへ" disabled><i class="bi bi-arrow-left" aria-hidden="true"></i><span>戻る</span></button>
-            <button type="button" class="tutorial-btn-skip" id="tutorial-skip-btn" onclick="closeTutorial()">スキップ</button>
+            <button type="button" class="tutorial-btn-skip" id="tutorial-skip-btn" onclick="window.__tenmeiTutorialCloseReason='skip'; closeTutorial()">スキップ</button>
             <button type="button" class="tutorial-btn-next" id="tutorial-next-btn" onclick="nextTutorialSlide()"><span id="tutorial-next-label">次へ</span><i id="tutorial-next-icon" class="bi bi-arrow-right" aria-hidden="true"></i></button>
         </div>
     </section>
@@ -35204,6 +35257,7 @@ window.applyTheme = function() {
         updateTutorialUI();
         overlay.setAttribute('aria-hidden', 'false');
         overlay.classList.add('active');
+        if (typeof window.tenmeiTrackUXEvent === 'function') window.tenmeiTrackUXEvent('tutorial_begin');
         window.setTimeout(function() {
             var nextButton = document.getElementById('tutorial-next-btn');
             if (nextButton) nextButton.focus();
@@ -35216,6 +35270,13 @@ window.applyTheme = function() {
     };
 
     window.closeTutorial = function() {
+        var closeReason = window.__tenmeiTutorialCloseReason || 'dismiss';
+        window.__tenmeiTutorialCloseReason = '';
+        if (closeReason === 'skip' && typeof window.tenmeiTrackUXEvent === 'function') {
+            window.tenmeiTrackUXEvent('tutorial_skip');
+        } else if (closeReason === 'dismiss' && typeof window.tenmeiTrackUXEvent === 'function') {
+            window.tenmeiTrackUXEvent('tutorial_dismiss');
+        }
         var overlay = getOverlay();
         if (overlay) {
             // クラスを外すことで、再表示時にinline styleが残る既存不具合を防ぐ。
@@ -35247,6 +35308,8 @@ window.applyTheme = function() {
             current++;
             updateTutorialUI();
         } else {
+            if (typeof window.tenmeiTrackUXEvent === 'function') window.tenmeiTrackUXEvent('tutorial_complete');
+            window.__tenmeiTutorialCloseReason = 'complete';
             closeTutorial();
         }
     };
@@ -35287,6 +35350,7 @@ window.applyTheme = function() {
         if (translationDialog && translationDialog.open) return;
         if (event.key === 'Escape') {
             event.preventDefault();
+            window.__tenmeiTutorialCloseReason = 'dismiss';
             closeTutorial();
         } else if (event.key === 'ArrowRight') {
             event.preventDefault();
