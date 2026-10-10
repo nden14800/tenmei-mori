@@ -1,0 +1,50 @@
+name: Onboarding and public-document regression
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - "index.html"
+      - "tests/**"
+      - ".github/workflows/onboarding-regression.yml"
+      - "assets/data/public-document-history.json"
+      - "assets/js/static-translation.js"
+  pull_request:
+    paths:
+      - "index.html"
+      - "tests/**"
+      - ".github/workflows/onboarding-regression.yml"
+      - "assets/data/public-document-history.json"
+      - "assets/js/static-translation.js"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  regression:
+    name: Public UI regression tests
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out source
+        uses: actions/checkout@v4
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Test walkthrough and guest-first discovery
+        run: |
+          node tests/tutorial-ui-regression.cjs
+          node tests/onboarding-discovery-regression.cjs
+      - name: Test how-to, About, and privacy documents
+        run: |
+          node tests/howto-ui-regression.cjs
+          node tests/about-ui-regression.cjs
+          node tests/privacy-ui-regression.cjs
+          node tests/public-document-regression.cjs
+          node tests/public-document-reading-regression.cjs
+      - name: Test release archive and static asset contracts
+        run: |
+          node tests/recovered-release-regression.cjs
+          node tests/static-asset-paths-regression.cjs
