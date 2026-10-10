@@ -316,9 +316,15 @@ export default function StatusPage() {
     }
     if (monitorId !== 'tenmei-mori') return monitorData
 
-    const httpStatus = getMonitorStatus(monitorData)
-    // If the browser snapshot is stale, the full user journey is unconfirmed. The existing
-    // public-site row becomes gray, rather than showing an old green/yellow state as current.
+    // Do not let an old HTTP check pin the current row to "degraded" forever.
+    // The browser monitor is independently refreshed; an HTTP status is combined with it
+    // only while that HTTP observation is still recent.
+    const httpCheckAt = monitorData?.lastCheck ? Date.parse(monitorData.lastCheck) : Number.NaN
+    const httpFresh = Number.isFinite(httpCheckAt) &&
+      Date.now() - httpCheckAt >= -60_000 &&
+      Date.now() - httpCheckAt <= Math.max(5, checkIntervalMinutes * 3) * 60 * 1000
+    const httpStatus = httpFresh ? getMonitorStatus(monitorData) : 'unknown'
+    // If the browser snapshot is stale, the full user journey is unconfirmed.
     let status: MonitorStatus | 'unknown' = 'unknown'
     if (browserHealthFresh && browserHealthStatus) {
       status = httpStatus === 'unknown' ? browserHealthStatus : getWorstStatus(httpStatus, browserHealthStatus)
