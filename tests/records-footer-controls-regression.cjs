@@ -149,8 +149,8 @@ requireCount(/showView\('/g, 15, '既存の内部画面遷移導線が不足し�
   "listbox.addEventListener('pointercancel', (event) => {",
   'if (performance.now() < state.ignoreClickUntil) {',
   'state.ignoreClickUntil = performance.now() + 700;',
-  "document.addEventListener('click', (event) => {",
-  'event.stopImmediatePropagation();',
+  "listbox.addEventListener('click', (event) => {",
+  'event.stopPropagation();',
   '.dark .tenmei-choice__popover,',
   '@media (prefers-reduced-motion: reduce) {',
 ].forEach((text) => requireText(text, `カスタム選択欄・日付選択のUIまたはアクセシビリティ契約が不足しています: ${text}`));
