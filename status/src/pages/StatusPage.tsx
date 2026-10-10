@@ -347,8 +347,10 @@ export default function StatusPage() {
     .map((monitor) => getMonitorStatus(getDisplayMonitorData(monitor.id)))
     .filter((status): status is MonitorStatus => status !== 'unknown')
   const configuredStatus = getOverallStatus(knownStatuses)
+  // When the browser snapshot is stale, valid HTTP/API checks still exist.
+  // Show degraded rather than "no data"; the separate stale notice explains what's unconfirmed.
   const overallStatus = (!browserHealthFresh || !browserHealthStatus) && configuredStatus === 'operational'
-    ? 'unknown'
+    ? 'degraded'
     : configuredStatus
   const activeIncidents = getActiveIncidents()
   const formatIncidentDate = (value: string) => new Date(value).toLocaleString(
