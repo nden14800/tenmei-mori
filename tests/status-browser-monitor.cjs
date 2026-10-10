@@ -83,6 +83,21 @@ async function main(){
         throw Error('初回案内ダイアログを閉じられず、おみくじ操作を開始できません。');
       });
     }
+    // Re-check and neutralize the walkthrough immediately before the real pointer click.
+    // It can become active asynchronously after the earlier first-visit check.
+    await page.evaluate(() => {
+      const overlay = document.querySelector('#tutorial-overlay');
+      if (overlay) {
+        overlay.classList.remove('active');
+        overlay.setAttribute('aria-hidden', 'true');
+        overlay.style.pointerEvents = 'none';
+      }
+      document.body.classList.remove('tutorial-open');
+      document.body.style.overflow = '';
+    });
+    await page.locator('#tutorial-overlay.active').waitFor({state:'hidden', timeout:3000}).catch(() => {
+      throw Error('おみくじ開始直前の案内ダイアログを閉じられません。');
+    });
     await page.locator('[onclick="startOmikuji()"]').first().click({timeout:10000});
 
     // A clean monitor browser has no guest identity. Complete the first-visit
