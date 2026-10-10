@@ -162,9 +162,10 @@
         // UX計測は「利用状況の解析」を許可した場合のみ送信し、個人情報や入力本文は送らない。
         const UX_EVENT_ALLOWLIST = new Set([
             'tutorial_begin', 'tutorial_complete', 'tutorial_skip', 'tutorial_dismiss',
-            'view_open', 'omikuji_result_view', 'settings_open', 'auth_screen_view'
+            'view_open', 'omikuji_result_view', 'settings_open', 'auth_screen_view',
+            'feature_discovery_click'
         ]);
-        const UX_PARAM_ALLOWLIST = new Set(['view_name', 'account_state']);
+        const UX_PARAM_ALLOWLIST = new Set(['view_name', 'account_state', 'entry_point']);
         window.tenmeiTrackUXEvent = function (eventName, parameters) {
             try {
                 const preferences = readPreferences();
@@ -178,6 +179,13 @@
                 });
                 window.gtag('event', eventName, safeParameters);
             } catch (error) {}
+        };
+        window.trackFeatureDiscovery = function (viewName, entryPoint) {
+            if (typeof window.tenmeiTrackUXEvent !== 'function') return;
+            window.tenmeiTrackUXEvent('feature_discovery_click', {
+                view_name: viewName,
+                entry_point: entryPoint
+            });
         };
 
         window.TenmeiCookieConsent = {
@@ -12829,6 +12837,9 @@ body.sidebar-collapsed.sidebar-pinned #sidebar .nav-group-title {
         #view-home .home-v4-shortcut--gold { --home-shortcut-accent: var(--home-gold); }
         #view-home .home-v4-shortcut--green { --home-shortcut-accent: var(--home-green); }
         #view-home .home-v4-shortcut--blue { --home-shortcut-accent: var(--home-blue); }
+        .home-v4-shortcut--purple { --home-shortcut-accent: #8060a8; }
+        .home-v4-shortcut--rose { --home-shortcut-accent: #b45b68; }
+        .home-v4-shortcut--slate { --home-shortcut-accent: #64748b; }
         #view-home .home-v4-shortcut-icon { display: grid; width: 46px; height: 46px; place-items: center; border-radius: 50%; color: #fff; background: var(--home-shortcut-accent); font-size: 1.1rem; }
         #view-home .home-v4-shortcut strong { display: block; color: var(--home-ink); font-family: 'Zen Old Mincho', 'Shippori Mincho', serif; font-size: 0.98rem; font-weight: 700; line-height: 1.4; }
         #view-home .home-v4-shortcut small { display: block; margin-top: 0.14rem; color: var(--home-muted); font-family: 'Zen Kaku Gothic New', sans-serif; font-size: 0.65rem; font-weight: 600; line-height: 1.45; }
@@ -13545,6 +13556,8 @@ body.sidebar-collapsed.sidebar-pinned #sidebar .nav-group-title {
 .document-revision-snapshot__body{padding:1rem;border-top:1px solid rgba(159,29,37,.10);overflow:visible}
 .document-revision-snapshot__body>section{max-width:none!important;margin:0!important}
 .document-revision-snapshot__missing{padding:1rem;color:#6b5d57;line-height:1.8}
+.document-revision-static-control{display:inline-flex;align-items:center;max-width:100%;padding:.55rem .75rem;border:1px solid rgba(159,29,37,.16);border-radius:10px;background:rgba(159,29,37,.04);color:inherit;font-size:.85rem;line-height:1.5}
+.dark .document-revision-static-control{border-color:rgba(210,170,105,.22);background:rgba(210,170,105,.07)}
 .dark .document-revision-snapshot{border-color:rgba(210,170,105,.24);background:rgba(24,20,19,.8)}
 .dark .document-revision-snapshot__summary{color:#c9bdb6}
 .dark .document-revision-snapshot__body{border-color:rgba(210,170,105,.16)}
@@ -15966,6 +15979,21 @@ body.sidebar-collapsed.sidebar-pinned #sidebar .nav-group-title {
                     </div>
                 </header>
 
+                <section class="home-v4-section-card" aria-labelledby="home-shortcuts-title">
+                    <div class="home-v4-section-head">
+                        <div><p class="home-v4-section-kicker"><i class="bi bi-compass" aria-hidden="true"></i> QUICK ACCESS</p><h2 id="home-shortcuts-title">今日の道しるべ</h2></div>
+                        <p class="home-v4-section-note">気になる巡りから、お入りください。</p>
+                    </div>
+                    <div class="home-v4-shortcuts">
+                        <button type="button" onclick="trackFeatureDiscovery('zodiac','home_quick_access'); showView('zodiac')" class="home-v4-shortcut home-v4-shortcut--gold"><span class="home-v4-shortcut-icon"><i class="bi bi-stars" aria-hidden="true"></i></span><span><strong>12星座占い</strong><small>本日の最強運勢ランキング</small></span><i class="bi bi-chevron-right" aria-hidden="true"></i></button>
+                        <button type="button" onclick="trackFeatureDiscovery('prefecture','home_quick_access'); showView('prefecture')" class="home-v4-shortcut home-v4-shortcut--green"><span class="home-v4-shortcut-icon"><i class="bi bi-map" aria-hidden="true"></i></span><span><strong>全国の運気</strong><small>47都道府県の土地のパワー</small></span><i class="bi bi-chevron-right" aria-hidden="true"></i></button>
+                        <button type="button" onclick="trackFeatureDiscovery('history','home_quick_access'); showView('history')" class="home-v4-shortcut home-v4-shortcut--blue"><span class="home-v4-shortcut-icon"><i class="bi bi-clock-history" aria-hidden="true"></i></span><span><strong>おみくじの轍</strong><small>過去の参拝履歴と全体の傾向</small></span><i class="bi bi-chevron-right" aria-hidden="true"></i></button>
+                        <button type="button" onclick="trackFeatureDiscovery('omamori','home_quick_access'); showView('omamori')" class="home-v4-shortcut home-v4-shortcut--purple"><span class="home-v4-shortcut-icon"><i class="bi bi-gem" aria-hidden="true"></i></span><span><strong>デジタル御守</strong><small>願いに合わせて御守を作る</small></span><i class="bi bi-chevron-right" aria-hidden="true"></i></button>
+                        <button type="button" onclick="trackFeatureDiscovery('column','home_quick_access'); showView('column')" class="home-v4-shortcut home-v4-shortcut--rose"><span class="home-v4-shortcut-icon"><i class="bi bi-book-half" aria-hidden="true"></i></span><span><strong>神籤草子</strong><small>占いにまつわる読み物を読む</small></span><i class="bi bi-chevron-right" aria-hidden="true"></i></button>
+                        <button type="button" onclick="trackFeatureDiscovery('settings','home_quick_access'); showView('settings')" class="home-v4-shortcut home-v4-shortcut--slate"><span class="home-v4-shortcut-icon"><i class="bi bi-sliders2" aria-hidden="true"></i></span><span><strong>環境・表示設定</strong><small>テーマ・文字・履歴保存を調整</small></span><i class="bi bi-chevron-right" aria-hidden="true"></i></button>
+                    </div>
+                </section>
+
                 <section class="home-v4-counter-grid" aria-label="参拝の記録">
                     <article class="home-v4-counter home-v4-counter--worshippers">
                         <div class="home-v4-counter-icon"><i class="bi bi-people-fill" aria-hidden="true"></i></div>
@@ -15988,17 +16016,7 @@ body.sidebar-collapsed.sidebar-pinned #sidebar .nav-group-title {
                     <p class="home-v4-source"><a href="https://api.whatistoday.cyou/index.cgi/" target="_blank" rel="noopener">powered by whatistodayAPI</a></p>
                 </section>
 
-                <section class="home-v4-section-card" aria-labelledby="home-shortcuts-title">
-                    <div class="home-v4-section-head">
-                        <div><p class="home-v4-section-kicker"><i class="bi bi-compass" aria-hidden="true"></i> QUICK ACCESS</p><h2 id="home-shortcuts-title">今日の道しるべ</h2></div>
-                        <p class="home-v4-section-note">気になる巡りから、お入りください。</p>
-                    </div>
-                    <div class="home-v4-shortcuts">
-                        <button type="button" onclick="showView('zodiac')" class="home-v4-shortcut home-v4-shortcut--gold"><span class="home-v4-shortcut-icon"><i class="bi bi-stars" aria-hidden="true"></i></span><span><strong>12星座占い</strong><small>本日の最強運勢ランキング</small></span><i class="bi bi-chevron-right" aria-hidden="true"></i></button>
-                        <button type="button" onclick="showView('prefecture')" class="home-v4-shortcut home-v4-shortcut--green"><span class="home-v4-shortcut-icon"><i class="bi bi-map" aria-hidden="true"></i></span><span><strong>全国の運気</strong><small>47都道府県の土地のパワー</small></span><i class="bi bi-chevron-right" aria-hidden="true"></i></button>
-                        <button type="button" onclick="showView('history')" class="home-v4-shortcut home-v4-shortcut--blue"><span class="home-v4-shortcut-icon"><i class="bi bi-clock-history" aria-hidden="true"></i></span><span><strong>おみくじの轍</strong><small>過去の参拝履歴と全体の傾向</small></span><i class="bi bi-chevron-right" aria-hidden="true"></i></button>
-                    </div>
-                </section>
+                
 
                 <section class="home-v4-section-card home-v4-letter-card" aria-labelledby="home-letter-title">
                     <div class="home-v4-section-head">
@@ -16247,13 +16265,13 @@ body.sidebar-collapsed.sidebar-pinned #sidebar .nav-group-title {
                             <p>会員登録をしなくても楽しめます。設定を整えたり、別の占いを試したりしてみてください。</p>
                         </header>
                         <div class="unified-result-grid result-v4-next-grid">
-                            <button type="button" onclick="showView('settings')" class="action-card-btn" aria-label="環境・表示設定を開く">
+                            <button type="button" onclick="trackFeatureDiscovery('settings','result_next_actions'); showView('settings')" class="action-card-btn" aria-label="環境・表示設定を開く">
                                 <i class="bi bi-sliders2" aria-hidden="true"></i><span>環境・表示設定</span><small>テーマ・文字・履歴保存を調整</small>
                             </button>
-                            <button type="button" onclick="showView('zodiac')" class="action-card-btn" aria-label="12星座占いを開く">
+                            <button type="button" onclick="trackFeatureDiscovery('zodiac','result_next_actions'); showView('zodiac')" class="action-card-btn" aria-label="12星座占いを開く">
                                 <i class="bi bi-stars" aria-hidden="true"></i><span>12星座占い</span><small>今日の別の運勢を見てみる</small>
                             </button>
-                            <button type="button" onclick="showView('howto')" class="action-card-btn" aria-label="使い方ガイドを開く">
+                            <button type="button" onclick="trackFeatureDiscovery('howto','result_next_actions'); showView('howto')" class="action-card-btn" aria-label="使い方 guide tracking>
                                 <i class="bi bi-question-circle" aria-hidden="true"></i><span>使い方ガイド</span><small>ほかの機能をあとから確認</small>
                             </button>
                         </div>
@@ -37245,7 +37263,7 @@ html.public-document-reading-body-font-custom:not(.public-document-reading-disab
 (function(){
 'use strict';
 const ARCHIVE_URL='/assets/data/public-document-history.json';
-const CURRENT={about:{edition:'25',date:'2026/08/27'},privacy:{edition:'33',date:'2026/09/27'}};
+const CURRENT={about:{edition:'26',date:'2026/10/10'},privacy:{edition:'33',date:'2026/09/27'}};
 function escapeHtml(value){return String(value ?? '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
 function render(documentKey,edition,archive){
   const node=document.getElementById(documentKey+'-revision-description');
@@ -37269,6 +37287,35 @@ function render(documentKey,edition,archive){
     snapshot.querySelectorAll('.view-section').forEach((element)=>{
       element.classList.remove('view-section');
       element.setAttribute('data-document-history-source-view','');
+    });
+    // 保存HTMLは過去版の画面そのものなので、操作UIは表示専用の静的表示へ変換する。
+    // 過去版内の同じ data-control-id が本体側の TenmeiCustomControls の状態を上書きし、
+    // REVISION HISTORY / EDITION の選択欄まで壊すのを防ぐ。
+    snapshot.querySelectorAll('[data-control-kind="choice"], [data-control-kind="date"]').forEach((root)=>{
+      let options=[];
+      try{options=JSON.parse(root.dataset.options||'[]');}catch(_){}
+      const input=root.querySelector('input');
+      const selected=options.find(option=>String(option.value)===String(input?.value))||options[0];
+      const staticControl=document.createElement('div');
+      staticControl.className='document-revision-static-control';
+      staticControl.textContent=(selected?.label||root.dataset.controlLabel||'選択項目')+'（過去版）';
+      root.replaceWith(staticControl);
+    });
+    // 過去版のインラインイベントが現在のSPAを操作しないようにする。
+    snapshot.querySelectorAll('*').forEach((element)=>{
+      Array.from(element.attributes).forEach((attribute)=>{
+        if(/^on/i.test(attribute.name))element.removeAttribute(attribute.name);
+      });
+    });
+    snapshot.querySelectorAll('button').forEach((button)=>{
+      button.type='button';
+      button.setAttribute('tabindex','-1');
+      button.setAttribute('aria-disabled','true');
+    });
+    snapshot.querySelectorAll('form').forEach((form)=>{
+      form.removeAttribute('action');
+      form.removeAttribute('method');
+      form.setAttribute('novalidate','');
     });
     // 保存HTMLは過去のサイト全体を含むため、現在のページと同じIDが重複することがある。
     // 特に #view-developer が重複すると showView() がスナップショット内の要素を取得し、
