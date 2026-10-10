@@ -9,7 +9,7 @@ const html = fs.readFileSync(path.resolve(__dirname, '..', 'index.html'), 'utf8'
   "AppConfig.toggle('publicDocumentReading', true)",
   "AppConfig.toggle('publicDocumentReading', false)",
   'tenmei-public-document-reading-complete-fix',
-  'html:not(.public-document-reading-disabled)',
+  'html.public-document-reading-content-width-custom:not(.public-document-reading-disabled)',
   ':is(#view-about, #view-privacy, #view-howto)',
   'data-reading-settings-inline',
   'window.AppConfig.__tenmeiPublicReadingHook',
