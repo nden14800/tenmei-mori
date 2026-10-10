@@ -85,7 +85,7 @@ assert.equal(
 });
 
 assert.equal(
-  countText('target="_blank" rel="noopener noreferrer" class="developer-study-'),
+  (developerSection.split('target="_blank" rel="noopener noreferrer" class="developer-study-').length - 1),
   5,
   '開発者について画面の外部リンク5件に安全な新規タブ属性が揃っていません。'
 );
