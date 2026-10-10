@@ -53,6 +53,35 @@ jobs:
         run: node tests/status-browser-monitor.cjs
         continue-on-error: true
         timeout-minutes: 4
+      - name: Prevent stale snapshot from masquerading as a current check
+        if: always()
+        run: |
+          node <<'NODE'
+          const fs = require('node:fs');
+          const path = 'status/public/health.json';
+          let data = null;
+          try { data = JSON.parse(fs.readFileSync(path, 'utf8')); } catch {}
+          const checkedAt = Date.parse(data?.checkedAt || '');
+          const fresh = Number.isFinite(checkedAt) && Date.now() - checkedAt >= -60000 && Date.now() - checkedAt <= 10 * 60 * 1000;
+          if (!fresh) {
+            const now = new Date().toISOString();
+            fs.mkdirSync('status/public', { recursive: true });
+            fs.writeFileSync(path, JSON.stringify({
+              schemaVersion: 2,
+              checkedAt: now,
+              stateChangedAt: now,
+              overall: { state: 'unknown', detail: '監視処理が完了せず、最新の実ブラウザ確認結果を取得できませんでした。' },
+              components: {
+                site: { state: 'unknown', detail: '実ブラウザ監視の完了を確認できません。' },
+                api: { state: 'unknown', detail: '監視処理が完了しませんでした。' },
+                omikuji: { state: 'unknown', detail: 'おみくじ操作の最新結果は未確認です。' },
+                ai: { state: 'external', detail: '外部AIサービスのため、この監視システムでは可用性を判定していません。' }
+              },
+              probes: {}
+            }, null, 2) + '\\n');
+            console.error('Published an explicit unknown state instead of leaving a stale health snapshot.');
+          }
+          NODE
       - name: Update uptime history and incidents
         if: always()
         run: node tests/publish-health-history.cjs
