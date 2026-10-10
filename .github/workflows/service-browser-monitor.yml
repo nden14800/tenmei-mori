@@ -14,7 +14,7 @@ on:
       - 'status/src/lib/monitorTimeline.ts'
   schedule:
     # Keep away from minute 0 (GitHub documents elevated schedule delays at hour boundaries).
-    # A cron-expression change also reactivates a schedule if GitHub has disabled it.
+    # GitHub may delay or drop scheduled events; the stale-snapshot failsafe can dispatch this workflow.
     - cron: '4-59/5 * * * *'
   workflow_dispatch:
 
