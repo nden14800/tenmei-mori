@@ -137,7 +137,7 @@ export default function StatusPage() {
     const startTime = Date.now()
 
     try {
-      const response = await fetch('/api/monitors/status')
+      const response = await fetch(`${import.meta.env.BASE_URL}api/monitors/status`)
       if (response.ok) {
         const data = await response.json()
 

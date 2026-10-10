@@ -1,0 +1,48 @@
+name: Status app regression
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'status/**'
+      - 'functions/status/**'
+      - 'tests/status-source-regression.cjs'
+      - 'tests/cloudflare-pages-deploy-regression.cjs'
+      - '.github/workflows/status-regression.yml'
+  pull_request:
+    paths:
+      - 'status/**'
+      - 'functions/status/**'
+      - 'tests/status-source-regression.cjs'
+      - 'tests/cloudflare-pages-deploy-regression.cjs'
+      - '.github/workflows/status-regression.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: status-regression-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  status:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Check out source
+        uses: actions/checkout@v4
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Install status app dependencies
+        run: npm --prefix status install --no-audit --no-fund
+      - name: Run status source and deployment-contract checks
+        run: |
+          node tests/status-source-regression.cjs
+          node tests/cloudflare-pages-deploy-regression.cjs
+      - name: Type-check Pages Functions
+        run: npm --prefix status run typecheck:functions
+      - name: Build standalone and nested status apps
+        run: npm --prefix status run test

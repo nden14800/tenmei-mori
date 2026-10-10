@@ -7,7 +7,10 @@ const workflow = fs.readFileSync(
   'utf8',
 );
 
-assert.match(workflow, /push:\s*\n\s+branches:\s*\n\s+- main/);
+// Cloudflare Pages Git integration deploys main automatically. This separate
+// workflow is intentionally manual to avoid a second concurrent production deploy.
+assert.match(workflow, /workflow_dispatch:/);
+assert.doesNotMatch(workflow, /push:\s*\n\s+branches:/);
 assert.match(workflow, /uses: cloudflare\/wrangler-action@v3/);
 assert.match(workflow, /apiToken: \$\{\{ secrets\.CLOUDFLARE_API_TOKEN \}\}/);
 assert.match(workflow, /accountId: \$\{\{ secrets\.CLOUDFLARE_ACCOUNT_ID \}\}/);

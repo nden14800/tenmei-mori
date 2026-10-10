@@ -10,7 +10,6 @@ on:
 
 permissions: {}
 
-# Prevent overlapping watchdog runs from racing to write the same status snapshot.
 concurrency:
   group: status-cron-failsafe
   cancel-in-progress: false
@@ -20,7 +19,17 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 3
     steps:
+      - name: Require the private failsafe credential
+        env:
+          FAILSAFE_CRON_TOKEN: ${{ secrets.FAILSAFE_CRON_TOKEN }}
+        run: |
+          if [ -z "$FAILSAFE_CRON_TOKEN" ]; then
+            echo "::error::Add the FAILSAFE_CRON_TOKEN repository secret before enabling the status failsafe."
+            exit 1
+          fi
       - name: Trigger stale-only status check
+        env:
+          FAILSAFE_CRON_TOKEN: ${{ secrets.FAILSAFE_CRON_TOKEN }}
         run: |
           curl --fail-with-body --silent --show-error \
             --connect-timeout 10 \
@@ -30,7 +39,7 @@ jobs:
             --retry-delay 2 \
             --retry-max-time 100 \
             --request POST \
-            --header "X-Failsafe-Cron-Auth: tenmei-mori-github-failsafe-v1" \
+            --header "X-Failsafe-Cron-Auth: ${FAILSAFE_CRON_TOKEN}" \
             --header "User-Agent: tenmei-mori-github-failsafe/1.0" \
             --header "Cache-Control: no-store" \
             "https://tenmei-mori.pages.dev/status/api/cron/check"

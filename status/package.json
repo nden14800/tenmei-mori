@@ -9,12 +9,9 @@
     "dev:api": "node dev-server.js",
     "dev:full": "concurrently \"npm run dev\" \"npm run dev:api\"",
     "build": "vite build",
+    "build:main": "TENMEI_MAIN_SITE_BUILD=1 vite build --outDir dist-main",
     "preview": "vite preview",
-    "test": "npm run test:kv && npm run test:events && npm run test:security && npm run test:timeline",
-    "test:kv": "node scripts/test-kv-accumulation.mjs",
-    "test:events": "tsx --test tests/monitorEvents.test.ts",
-    "test:security": "tsx --test tests/monitorSecurity.test.ts",
-    "test:timeline": "tsx --test tests/monitorTimeline.test.ts",
+    "test": "node ../tests/status-source-regression.cjs && npm run build && npm run build:main",
     "typecheck:functions": "tsc -p tsconfig.functions.json"
   },
   "dependencies": {

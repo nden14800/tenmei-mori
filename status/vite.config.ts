@@ -3,10 +3,7 @@ import { defineConfig, loadEnv } from 'vite';
 import react from '@vitejs/plugin-react';
 import { existsSync, readFileSync } from 'fs';
 
-// Lit le port API effectif depuis .dev-api-port (écrit par dev-server.js après fallback).
-// Priorité : fichier > env API_PORT > défaut 4001.
-// Ports dev dédiés UptimeWorker : 4000 (frontend) / 4001 (API), pour ne pas entrer
-// en collision avec d'autres projets locaux qui utilisent souvent 3000/3001.
+// Read the effective local API port from .dev-api-port (written by dev-server.js).
 function resolveApiPort(envApiPort?: string): number {
   try {
     const filePath = path.resolve(process.cwd(), '.dev-api-port');
@@ -22,8 +19,12 @@ export default defineConfig(({ mode }) => {
   const env = loadEnv(mode, process.cwd(), '');
   const isDev = mode === 'development';
   const apiPort = resolveApiPort(env.API_PORT);
+  const mainSiteBuild = process.env.TENMEI_MAIN_SITE_BUILD === '1';
 
   return {
+    // The same app is published at / on its dedicated Pages project and at
+    // /status/ inside the main site. Build each variant with the correct base.
+    base: mainSiteBuild ? '/status/' : '/',
     esbuild: {
       drop: mode === 'production' ? ['console', 'debugger'] : [],
       legalComments: 'none',
@@ -31,8 +32,6 @@ export default defineConfig(({ mode }) => {
     server: {
       port: parseInt(env.PORT || '4000'),
       host: env.HOST || '0.0.0.0',
-      // strictPort: false (défaut Vite) -> essaie automatiquement le port suivant si occupé.
-      // hmr.port non hardcodé -> Vite l'aligne automatiquement sur le port HTTP effectif.
       proxy: {
         '/api': {
           target: `http://localhost:${apiPort}`,
@@ -42,13 +41,10 @@ export default defineConfig(({ mode }) => {
     },
     plugins: [
       react(),
-      // Fix Cloudflare Pages build hang with Vite 6.x
       !isDev ? {
         name: 'cloudflare-pages-exit-fix',
         closeBundle() {
-          if (process.env.CF_PAGES) {
-            setTimeout(() => process.exit(0), 1000);
-          }
+          if (process.env.CF_PAGES) setTimeout(() => process.exit(0), 1000);
         }
       } : null,
     ].filter(Boolean),
@@ -60,7 +56,7 @@ export default defineConfig(({ mode }) => {
       }
     },
     build: {
-      outDir: 'dist',
+      outDir: mainSiteBuild ? 'dist-main' : 'dist',
       sourcemap: false,
       minify: 'esbuild',
       chunkSizeWarningLimit: 1000
