@@ -26,9 +26,8 @@ concurrency:
 jobs:
   monitor:
     runs-on: ubuntu-latest
-    # Installing Chromium and its system dependencies can exceed five minutes;
-    # allow the scheduled health snapshot to finish and publish instead of timing out.
-    timeout-minutes: 15
+    # Keep a single slow/hung run from blocking many subsequent five-minute checks.
+    timeout-minutes: 8
     steps:
       - name: Check out main
         uses: actions/checkout@v4
@@ -38,11 +37,19 @@ jobs:
           node-version: 22
       - name: Install Playwright
         run: npm install --no-save --no-package-lock playwright@1.55.0
-      - name: Install Chromium
+      - name: Restore Playwright browser cache
+        id: playwright-cache
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/ms-playwright
+          key: ${{ runner.os }}-playwright-chromium-1.55.0-v1
+      - name: Install Chromium and system dependencies
+        if: steps.playwright-cache.outputs.cache-hit != 'true'
         run: npx playwright install --with-deps chromium
       - name: Run browser and API checks
         run: node tests/status-browser-monitor.cjs
         continue-on-error: true
+        timeout-minutes: 4
       - name: Update uptime history and incidents
         run: node tests/publish-health-history.cjs
       - name: Publish health snapshot
