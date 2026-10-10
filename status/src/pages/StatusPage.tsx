@@ -70,7 +70,10 @@ interface IncidentHistoryItem {
   recoveredResponseTime?: number
 }
 
-function mapBrowserOverallStatus(overall?: string): MonitorStatus | undefined {
+function mapBrowserOverallStatus(
+  overall?: string,
+  components?: Record<string, { state?: string }>,
+): MonitorStatus | undefined {
   switch (overall) {
     case 'operational':
       return 'operational'
@@ -80,7 +83,15 @@ function mapBrowserOverallStatus(overall?: string): MonitorStatus | undefined {
       // Degraded is a real observed status, not missing data. Keeping it in the
       // history lets yellow timeline bars advance beyond the current 0 min bar.
       return 'degraded'
-    case 'partial':
+    case 'partial': {
+      // "partial" is a real failed/degraded observation, not missing history.
+      // Preserve the severity from component checks so red outages and
+      // yellow partial interactions appear in timeline and uptime history.
+      const states = Object.values(components || {}).map((component) => component?.state)
+      if (states.some((state) => state === 'outage' || state === 'down')) return 'down'
+      if (states.some((state) => state === 'partial' || state === 'degraded')) return 'degraded'
+      return 'degraded'
+    }
     case 'unknown':
       return undefined
     case 'outage':
@@ -111,7 +122,7 @@ export default function StatusPage() {
   const [checkIntervalMinutes, setCheckIntervalMinutes] = useState<number>(1)
   const [incidentHistory, setIncidentHistory] = useState<IncidentHistoryItem[]>([])
   const [longTermHistory, setLongTermHistory] = useState<LongTermSummary[]>([])
-  const [browserHealthSamples, setBrowserHealthSamples] = useState<Array<{ at: string; overall?: string }>>([])
+  const [browserHealthSamples, setBrowserHealthSamples] = useState<Array<{ at: string; overall?: string; components?: Record<string, { state?: string }> }>>([])
   const [selectedHistoryYear, setSelectedHistoryYear] = useState<string>('all')
   const [selectedHistoryMonitor, setSelectedHistoryMonitor] = useState<string>('all')
   const [expandedIncidentDetails, setExpandedIncidentDetails] = useState<Record<string, boolean>>({})
@@ -179,8 +190,8 @@ export default function StatusPage() {
       try {
         const response = await fetch(base, { cache: 'no-store' })
         if (!response.ok) return
-        const data = await response.json() as { samples?: Array<{ at?: string; overall?: string }> }
-        if (active) setBrowserHealthSamples(Array.isArray(data.samples) ? data.samples.filter((sample) => typeof sample.at === 'string' && Number.isFinite(Date.parse(sample.at))).map((sample) => ({ at: sample.at!, overall: sample.overall })) : [])
+        const data = await response.json() as { samples?: Array<{ at?: string; overall?: string; components?: Record<string, { state?: string }> }> }
+        if (active) setBrowserHealthSamples(Array.isArray(data.samples) ? data.samples.filter((sample) => typeof sample.at === 'string' && Number.isFinite(Date.parse(sample.at))).map((sample) => ({ at: sample.at!, overall: sample.overall, components: sample.components })) : [])
       } catch {
         // Keep the normal uptime history available if browser history cannot be loaded.
       }
@@ -211,8 +222,8 @@ export default function StatusPage() {
   const monitorsInMaintenance = new Set(activeMaintenances.flatMap((maintenance) => maintenance.affectedServices))
   const fallbackTimestamp = lastUpdate || new Date().toISOString()
   const orderedBrowserSamples = [...browserHealthSamples].sort((a, b) => Date.parse(a.at) - Date.parse(b.at))
-  const recognizedBrowserSamples: Array<{ at: string; overall?: string; status: MonitorStatus }> = orderedBrowserSamples.flatMap((sample) => {
-    const status = mapBrowserOverallStatus(sample.overall)
+  const recognizedBrowserSamples: Array<{ at: string; overall?: string; components?: Record<string, { state?: string }>; status: MonitorStatus }> = orderedBrowserSamples.flatMap((sample) => {
+    const status = mapBrowserOverallStatus(sample.overall, sample.components)
     return status ? [{ ...sample, status }] : []
   })
   const latestBrowserSample = recognizedBrowserSamples[recognizedBrowserSamples.length - 1]
