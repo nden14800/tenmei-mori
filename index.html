@@ -17734,7 +17734,7 @@ body.sidebar-collapsed.sidebar-pinned #sidebar .nav-group-title {
                     <div>
                         <p class="howto-guide-section-kicker"><i class="bi bi-stars" aria-hidden="true"></i> WALKTHROUGH</p>
                         <h3 id="howto-revisit-heading">もう一度、簡単な案内を見る</h3>
-                        <p>初回訪問時に表示された5枚のスライド形式の簡単な案内を、もう一度見ることができます。</p>
+                        <p>初回訪問時に表示された5枚のスライド形式の案内を、いつでも見直せます。ここでは基本操作を短く紹介します。各機能の詳しい手順や保存・プライバシー上の注意点は、このページ上部の14項目の案内を確認してください。</p>
                     </div>
                     <button type="button" onclick="openTutorial()" class="howto-guide-revisit-button"><i class="bi bi-play-circle" aria-hidden="true"></i><span>ウォークスルーを見る</span></button>
                 </section>
@@ -18299,7 +18299,7 @@ body.sidebar-collapsed.sidebar-pinned #sidebar .nav-group-title {
                     <div class="privacy-ledger-article-heading">
                         <p class="privacy-ledger-section-kicker"><i class="bi bi-journal-text" aria-hidden="true"></i> POLICY TEXT</p>
                         <h2 id="privacy-articles-heading">規程本文</h2>
-                        <p>現行版（第32版）の本文です。</p>
+                        <p>現行版（第33版）の本文です。</p>
                     </div>
                     <div class="pl-4 border-l-4 border-gray-200 dark:border-gray-700">
                             <h3 class="font-bold text-lg mb-4 text-gray-900 dark:text-white flex items-center gap-2">
@@ -28868,7 +28868,8 @@ function resetSearch() {
                     if (!state.pendingPointer || state.pendingPointer.id !== pointerId) return null;
                     const pending = state.pendingPointer;
                     state.pendingPointer = null;
-                    if (listbox.hasPointerCapture?.(pointerId)) listbox.releasePointerCapture(pointerId);
+                    const captureTarget = pending.captureTarget || listbox;
+                    if (captureTarget.hasPointerCapture?.(pointerId)) captureTarget.releasePointerCapture(pointerId);
                     return pending;
                 };
                 listbox.addEventListener('pointerdown', (event) => {
@@ -28878,11 +28879,14 @@ function resetSearch() {
                     state.pendingPointer = {
                         id: event.pointerId,
                         optionIndex: Number(optionNode.dataset.optionIndex),
+                        captureTarget: optionNode,
                         startX: event.clientX,
                         startY: event.clientY,
                         moved: false,
                     };
-                    listbox.setPointerCapture?.(event.pointerId);
+                    // Capture on the actual option, not its listbox ancestor. Capturing the
+                    // ancestor can retarget click to the listbox and make the option unclickable.
+                    optionNode.setPointerCapture?.(event.pointerId);
                 });
                 listbox.addEventListener('pointermove', (event) => {
                     const pending = state.pendingPointer;
@@ -28894,9 +28898,18 @@ function resetSearch() {
                     state.ignoreClickUntil = performance.now() + 500;
                 });
                 listbox.addEventListener('pointerup', (event) => {
-                    // 選択の確定はclick側で行う。pointerupでpopoverを閉じないことで、
-                    // iOSの後続clickをdocument全体で抑止する必要がなくなり、下層UIを巻き込まない。
-                    clearPendingPointer(event.pointerId);
+                    const pending = clearPendingPointer(event.pointerId);
+                    if (!pending || pending.moved) return;
+                    const optionNode = pending.captureTarget;
+                    if (!optionNode?.isConnected) return;
+                    const rect = optionNode.getBoundingClientRect();
+                    if (event.clientX < rect.left || event.clientX > rect.right ||
+                        event.clientY < rect.top || event.clientY > rect.bottom) return;
+                    // Pointer capture and browser-generated click targeting differ by browser.
+                    // Commit a tap here, then ignore its synthetic click; keyboard clicks still
+                    // use the click handler below.
+                    state.ignoreClickUntil = performance.now() + 700;
+                    selectChoice(state, pending.optionIndex);
                 });
                 listbox.addEventListener('pointercancel', (event) => {
                     clearPendingPointer(event.pointerId);
@@ -28931,6 +28944,7 @@ function resetSearch() {
                     }
                 });
                 input.addEventListener('change', () => syncChoice(state));
+                return state;
             };
 
             const clampDay = (date, year, month) => new Date(year, month, Math.min(date.getDate(), new Date(year, month + 1, 0).getDate()));
@@ -29036,6 +29050,7 @@ function resetSearch() {
                     focusDate(state, next);
                 });
                 input.addEventListener('change', () => syncDate(state));
+                return state;
             };
             document.addEventListener('keydown', (event) => {
                 if (event.key === 'Escape' && activeRoot) closeActive(true);
@@ -29054,9 +29069,11 @@ function resetSearch() {
             };
             const buildRoot = (root) => {
                 if (!root || root.dataset.tenmeiControlReady === 'true') return;
-                if (root.dataset.controlKind === 'choice') buildChoice(root);
-                else if (root.dataset.controlKind === 'date') buildDate(root);
-                root.dataset.tenmeiControlReady = 'true';
+                let state = null;
+                if (root.dataset.controlKind === 'choice') state = buildChoice(root);
+                else if (root.dataset.controlKind === 'date') state = buildDate(root);
+                // Do not permanently mark a control initialized if required DOM is not ready yet.
+                if (state) root.dataset.tenmeiControlReady = 'true';
             };
             const isInActiveView = (root) => {
                 const view = root.closest('.view-section');
