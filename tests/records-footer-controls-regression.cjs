@@ -73,7 +73,7 @@ assert.equal(
 ].forEach((text) => requireText(text, `参拝の記録の共通意匠・テーマ・レスポンシブ規則が不足しています: ${text}`));
 
 [
-  '<footer id="site-footer" class="footer-v4">',
+  '<footer id="site-footer" class="footer-v4" role="contentinfo">',
   'class="footer-v5-line"',
   'class="footer-v5-shell"',
   'class="footer-v5-intro"',
