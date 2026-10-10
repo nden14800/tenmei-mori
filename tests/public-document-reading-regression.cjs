@@ -17,7 +17,7 @@ const html = fs.readFileSync(path.resolve(__dirname, '..', 'index.html'), 'utf8'
   'refreshPublicDocumentReading',
 ].forEach((text) => assert(html.includes(text), `公開文書の読書設定契約がありません: ${text}`));
 
-assert.equal((html.match(/data-setting="publicDocumentReading"/g) || []).length, 2);
+assert.equal((html.match(/data-setting="publicDocumentReading"/g) || []).length, 4);
 assert.equal((html.match(/data-value="true" onclick="AppConfig.toggle\('publicDocumentReading', true\)"/g) || []).length, 2);
 assert.equal((html.match(/data-value="false" onclick="AppConfig.toggle\('publicDocumentReading', false\)"/g) || []).length, 2);
 assert(html.includes("group.dataset.value = String(enabled)"), '公開文書の適用状態がセグメントコントロールへ同期されません。');
