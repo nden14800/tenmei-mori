@@ -1,0 +1,85 @@
+name: Status schedule watchdog
+
+on:
+  # This deliberately runs at a different minute offset from the primary
+  # failsafe and browser monitor schedules. It is still subject to GitHub's
+  # scheduler, but provides a second independent scheduled workflow without
+  # external services, credentials, or server management.
+  schedule:
+    - cron: "2-57/5 * * * *"
+  workflow_dispatch:
+
+permissions:
+  actions: write
+  contents: read
+
+concurrency:
+  group: status-schedule-watchdog
+  cancel-in-progress: false
+
+jobs:
+  watchdog:
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+    steps:
+      - name: Check whether browser health snapshot is stale
+        id: stale
+        run: |
+          node <<'NODE'
+          const fs = require('node:fs');
+          const https = require('node:https');
+          const url = 'https://raw.githubusercontent.com/nden14800/tenmei-mori/main/status/public/health.json';
+          const req = https.get(url, {
+            headers: {
+              'Cache-Control': 'no-cache',
+              'User-Agent': 'tenmei-mori-status-schedule-watchdog/1.0'
+            }
+          }, (res) => {
+            let body = '';
+            res.setEncoding('utf8');
+            res.on('data', chunk => body += chunk);
+            res.on('end', () => {
+              try {
+                if (res.statusCode !== 200) throw new Error('HTTP ' + res.statusCode);
+                const data = JSON.parse(body);
+                const age = Date.now() - Date.parse(data.checkedAt || '');
+                const stale = !Number.isFinite(age) || age < -60000 || age > 8 * 60 * 1000;
+                fs.appendFileSync(process.env.GITHUB_OUTPUT, 'stale=' + stale + '\n');
+                console.log(JSON.stringify({
+                  stale,
+                  ageMinutes: Number.isFinite(age) ? Math.round(age / 6000) / 10 : null
+                }));
+              } catch (error) {
+                fs.appendFileSync(process.env.GITHUB_OUTPUT, 'stale=true\n');
+                console.log('Health snapshot unavailable or invalid; treating it as stale:', error.message);
+              }
+            });
+          });
+          req.setTimeout(15000, () => req.destroy(new Error('Health snapshot request timed out')));
+          req.on('error', (error) => {
+            fs.appendFileSync(process.env.GITHUB_OUTPUT, 'stale=true\n');
+            console.log('Health snapshot fetch failed; treating it as stale:', error.message);
+          });
+          NODE
+      - name: Dispatch browser monitor only when stale and no recent run exists
+        if: steps.stale.outputs.stale == 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          recent_or_active=$(gh run list \
+            --repo nden14800/tenmei-mori \
+            --workflow service-browser-monitor.yml \
+            --limit 20 \
+            --json status,createdAt \
+            --jq '[.[] | select(
+              .status == "queued" or .status == "in_progress" or
+              .status == "requested" or .status == "waiting" or
+              .status == "pending" or
+              ((now - (.createdAt | fromdateiso8601)) < 120)
+            )] | length')
+          if [ "${recent_or_active}" -gt 0 ]; then
+            echo "A browser-monitor run is queued, running, or was created within the last two minutes; skipping duplicate dispatch."
+            exit 0
+          fi
+          gh workflow run service-browser-monitor.yml --repo nden14800/tenmei-mori --ref main
+          echo "Dispatched the browser monitor because the health snapshot was stale."
