@@ -148,7 +148,7 @@ requireCount(/showView\('/g, 15, '既存の内部画面遷移導線が不足し�
   'if (!pending || pending.moved) return;',
   "listbox.addEventListener('pointercancel', (event) => {",
   'if (performance.now() < state.ignoreClickUntil) {',
-  'suppressSyntheticTapUntil = performance.now() + 700;',
+  'state.ignoreClickUntil = performance.now() + 700;',
   "document.addEventListener('click', (event) => {",
   'event.stopImmediatePropagation();',
   '.dark .tenmei-choice__popover,',
