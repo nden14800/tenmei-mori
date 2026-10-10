@@ -15,6 +15,7 @@ interface BrowserHealth {
 }
 
 const MAX_HEALTH_AGE_MS = 15 * 60 * 1000
+const CLOUDFLARE_BROWSER_HEALTH_URL = 'https://tenmei-mori-browser-monitor.nden14800.workers.dev/api/health'
 
 function toMonitorStatus(state?: HealthState): MonitorStatus | null {
   switch (state) {
@@ -38,11 +39,10 @@ export default function BrowserHealthNotice({
 
   useEffect(() => {
     let active = true
-    const base = window.location.pathname.startsWith('/status') ? '/status/health.json' : '/health.json'
     const load = async () => {
       try {
-        const response = await fetch(base, { cache: 'no-store' })
-        if (!response.ok) throw new Error(`Health snapshot HTTP ${response.status}`)
+        const response = await fetch(CLOUDFLARE_BROWSER_HEALTH_URL, { cache: 'no-store' })
+        if (!response.ok) throw new Error(`Cloudflare browser health HTTP ${response.status}`)
         const data = await response.json() as BrowserHealth
         const checkedAt = data.checkedAt ? Date.parse(data.checkedAt) : Number.NaN
         const age = Date.now() - checkedAt
