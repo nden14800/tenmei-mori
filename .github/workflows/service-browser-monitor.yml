@@ -7,6 +7,11 @@ on:
       - '.github/workflows/service-browser-monitor.yml'
       - 'tests/status-browser-monitor.cjs'
       - 'tests/publish-health-history.cjs'
+      - 'status/src/pages/StatusPage.tsx'
+      - 'status/src/components/BrowserHealthNotice.tsx'
+      - 'status/src/components/MonitorCard.tsx'
+      - 'status/src/components/MonitorDetails.tsx'
+      - 'status/src/lib/monitorTimeline.ts'
   schedule:
     - cron: '*/5 * * * *'
   workflow_dispatch:
@@ -50,5 +55,5 @@ jobs:
           git commit -m "chore(status): update browser health snapshot"
           # A maintainer commit may land while this scheduled job is running.
           # Rebase the generated snapshot commit onto the newest main before pushing.
-          git pull --rebase origin main
+          git pull --rebase --autostash origin main
           git push

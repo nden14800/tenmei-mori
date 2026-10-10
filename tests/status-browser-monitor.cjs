@@ -84,9 +84,30 @@ async function main(){
       });
     }
     await page.locator('[onclick="startOmikuji()"]').first().click({timeout:10000});
-    await page.waitForTimeout(1500);
-    const active=await page.evaluate(()=>[...document.querySelectorAll('.view-section')].find(el=>{const s=getComputedStyle(el);return s.display!=='none'&&!el.classList.contains('hidden')})?.id||'');
-    if(!['view-draw','view-result'].includes(active))throw Error(`おみくじ開始後の画面遷移を確認できません（active: ${active||'none'}）`);
+
+    // A clean monitor browser has no guest identity. Complete the first-visit
+    // dialog so startOmikuji can reach the mindset view instead of remaining on home.
+    const guestModal = page.locator('#guest-name-modal');
+    const guestModalOpen = await guestModal.evaluate((el) => el instanceof HTMLDialogElement && el.open).catch(() => false);
+    if (guestModalOpen) {
+      await page.locator('#guest-name-input').fill('監視テスト');
+      await page.locator('#guest-name-modal [onclick="submitGuestName()"]').click({ timeout: 10000 });
+    }
+
+    await page.waitForFunction(() => {
+      const active = document.querySelector('.view-section.active');
+      return active && ['view-omikuji-mindset', 'view-draw', 'view-result'].includes(active.id);
+    }, null, { timeout: 10000 });
+
+    let active = await page.evaluate(() => document.querySelector('.view-section.active')?.id || '');
+    if (active === 'view-omikuji-mindset') {
+      await page.locator('#view-omikuji-mindset [onclick="proceedToDraw()"]').click({ timeout: 10000 });
+      await page.locator('#view-draw.active').waitFor({ state: 'visible', timeout: 10000 });
+      active = await page.evaluate(() => document.querySelector('.view-section.active')?.id || '');
+    }
+    if (!['view-draw', 'view-result'].includes(active)) {
+      throw Error('おみくじ開始後の画面遷移を確認できません（active: ' + (active || 'none') + '）');
+    }
     if(browserErrors.length)throw Error(`操作後JavaScript実行時エラー: ${browserErrors[0]}`);
     if(consoleErrors.length)throw Error(`操作後console.error: ${consoleErrors[0]}`);
     probes.interaction.ok=true;

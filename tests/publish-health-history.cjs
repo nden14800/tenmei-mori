@@ -2,10 +2,22 @@ const fs=require('node:fs');
 const HEALTH='status/public/health.json',HISTORY='status/health-history.json',PUBLIC_HISTORY='status/public/health-history.json';
 const retentionMs=90*24*60*60*1000;
 const health=JSON.parse(fs.readFileSync(HEALTH,'utf8'));
-let history=JSON.parse(fs.readFileSync(HISTORY,'utf8'));
+let history;
+try {
+  history = JSON.parse(fs.readFileSync(HISTORY, 'utf8'));
+} catch (error) {
+  if (error && error.code === 'ENOENT') {
+    console.warn('History file is missing; initializing an empty 90-day history.');
+    history = { samples: [], incidents: [] };
+  } else {
+    throw error;
+  }
+}
 if(!Array.isArray(history.samples))history.samples=[];
 if(!Array.isArray(history.incidents))history.incidents=[];
-const at=new Date(health.checkedAt).toISOString();
+const checkedAtMs = Date.parse(health.checkedAt);
+if (!Number.isFinite(checkedAtMs)) throw new Error('health.json has an invalid checkedAt timestamp');
+const at = new Date(checkedAtMs).toISOString();
 const overall=health.overall?.state||'unknown';
 const components=health.components||{};
 const latest=history.samples[history.samples.length-1];
@@ -13,6 +25,7 @@ const fingerprint=value=>JSON.stringify({overall:value?.overall||'unknown',compo
 const currentSample={at,overall,components};
 // Keep every scheduled observation so the browser-monitor timeline reflects checks,
 // not only state transitions. The retention window bounds storage to 90 days.
+history.samples = history.samples.filter(sample => sample.at !== at);
 history.samples.push(currentSample);
 const open=history.incidents.find(x=>x.status==='open');
 const incidentState=['degraded','partial','outage','unknown'].includes(overall)?overall:null;
