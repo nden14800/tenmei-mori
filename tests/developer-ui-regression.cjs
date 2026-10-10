@@ -17,7 +17,7 @@ const mainContentBeforeDeveloper = mainContentStart >= 0 && developerStart > mai
   : '';
 assert(mainContentBeforeDeveloper, '開発者画面より前に本体のmainコンテナがありません。');
 assert.equal(
-  (mainContentBeforeDeveloper.match(/<main\\b/g) || []).length,
+  (mainContentBeforeDeveloper.match(/<main\b/g) || []).length,
   1,
   'main-content内に入れ子のmain要素があり、ブラウザーが本体コンテナを自動終了する可能性があります。'
 );
