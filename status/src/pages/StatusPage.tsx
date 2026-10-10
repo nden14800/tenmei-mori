@@ -150,7 +150,7 @@ export default function StatusPage() {
 
         setKvMonitors(normalizeMonitorCollection(data.monitors))
         setActiveMaintenances(data.maintenances || [])
-        setLastUpdate(data.lastUpdate || new Date().toISOString())
+        setLastUpdate(typeof data.lastUpdate === 'string' && Number.isFinite(Date.parse(data.lastUpdate)) ? data.lastUpdate : '')
         setCheckIntervalMinutes(data.checkIntervalMinutes || 1)
         setIncidentHistory(Array.isArray(data.incidentHistory) ? data.incidentHistory : [])
         setLongTermHistory(Array.isArray(data.longTermHistory) ? data.longTermHistory : [])

@@ -394,10 +394,28 @@ export const onRequest = async (context: any) => {
     const lastUpdate = state.lastUpdate || null
     const lastTimestamp = lastUpdate ? Date.parse(lastUpdate) : 0
     const staleFor = Date.now() - lastTimestamp
-    if (lastTimestamp > 0 && staleFor < 420000) {
+    const storedMonitors = state.monitors && typeof state.monitors === 'object' && !Array.isArray(state.monitors)
+      ? state.monitors as Record<string, any>
+      : {}
+    // A recent top-level timestamp alone does not prove the monitor data is usable.
+    // The old guard could skip forever when lastUpdate advanced but monitor records were
+    // missing/invalid, leaving the public page stuck on "データなし".
+    const hasUsableRecentMonitorData = monitors.length > 0 && monitors.every((monitor) => {
+      const entry = storedMonitors[monitor.id]
+      const checkedAt = typeof entry?.lastCheck === 'string' ? Date.parse(entry.lastCheck) : Number.NaN
+      const age = Date.now() - checkedAt
+      return Number.isFinite(checkedAt) &&
+        age >= -60_000 &&
+        age < 420_000 &&
+        ['operational', 'maintenance', 'degraded', 'down'].includes(entry?.status)
+    })
+    if (lastTimestamp > 0 && staleFor >= 0 && staleFor < 420000 && hasUsableRecentMonitorData) {
       return new Response(JSON.stringify({ success: true, skipped: true, reason: 'primary-cron-healthy', lastUpdate }), {
         headers: cronHeaders({ 'Content-Type': 'application/json; charset=utf-8' }),
       })
+    }
+    if (!hasUsableRecentMonitorData) {
+      console.warn('Failsafe found fresh top-level timestamp but missing/stale monitor records; forcing a full check.')
     }
   }
   if (!checkInterval) {

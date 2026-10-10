@@ -97,7 +97,7 @@ export const onRequest: PagesFunction<Env> = async (context) => {
       JSON.stringify({
         monitors: normalizeMonitorCollection(monitorsData),
         maintenances: activeMaintenances,
-        lastUpdate: lastUpdate || new Date().toISOString(),
+        lastUpdate,
         checkIntervalMinutes,
         incidentHistory,
         longTermHistory,
@@ -118,7 +118,7 @@ export const onRequest: PagesFunction<Env> = async (context) => {
       JSON.stringify({
         monitors: {},
         maintenances: [],
-        lastUpdate: new Date().toISOString(),
+        lastUpdate: null,
         error: 'Failed to fetch monitor status',
       }),
       {
