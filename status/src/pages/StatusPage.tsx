@@ -77,6 +77,9 @@ function mapBrowserOverallStatus(overall?: string): MonitorStatus | undefined {
     case 'maintenance':
       return 'maintenance'
     case 'degraded':
+      // Degraded is a real observed status, not missing data. Keeping it in the
+      // history lets yellow timeline bars advance beyond the current 0 min bar.
+      return 'degraded'
     case 'partial':
     case 'unknown':
       return undefined
