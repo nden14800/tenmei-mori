@@ -82,8 +82,10 @@ assert.ok(
   '使い方画面から正本の環境・表示設定へ移動できません。'
 );
 assert.ok(
-  html.includes('id="settings-public-documents-toggle"') && html.includes("AppConfig.toggle('publicDocumentReading', this.checked)"),
-  '公開文書の読書設定を切り替える正本の操作がありません。'
+  html.includes('data-setting="publicDocumentReading"') &&
+    html.includes("onclick="AppConfig.toggle('publicDocumentReading', true)"") &&
+    html.includes("onclick="AppConfig.toggle('publicDocumentReading', false)""),
+  '公開文書の読書設定を切り替える現在の選択UIがありません。'
 );
 assert.ok(
   html.includes('id="settings-draw-history-toggle"') && html.includes("AppConfig.toggle('saveDrawHistory', this.checked)"),
