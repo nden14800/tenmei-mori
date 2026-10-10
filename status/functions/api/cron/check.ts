@@ -355,6 +355,7 @@ export const onRequest = async (context: any) => {
   )
   const isFailsafeAuthorized = Boolean(
     FAILSAFE_CRON_TOKEN &&
+    FAILSAFE_CRON_TOKEN.length >= 32 &&
     failsafeAuthHeader &&
     timingSafeEqualStr(failsafeAuthHeader, FAILSAFE_CRON_TOKEN),
   )

@@ -15,7 +15,7 @@ assert.doesNotMatch(cron, /tenmei-mori-github-failsafe-v1/, 'A public hard-coded
 const authSection = cron.slice(cron.indexOf('const isPrimaryAuthorized'), cron.indexOf('if (!isPrimaryAuthorized'));
 assert.doesNotMatch(authSection, /isInternalCronAuthorized|CF-Worker|X-Cron-Worker/, 'Worker marker headers must not bypass secret authentication.');
 assert.match(cron, /CRON_SECRET && authHeader && timingSafeEqualStr\(authHeader, CRON_SECRET\)/, 'Primary cron requests must require CRON_SECRET.');
-assert.match(cron, /FAILSAFE_CRON_TOKEN &&\s*failsafeAuthHeader &&\s*timingSafeEqualStr\(failsafeAuthHeader, FAILSAFE_CRON_TOKEN\)/, 'Failsafe requests must require the private FAILSAFE_CRON_TOKEN.');
+assert.match(cron, /FAILSAFE_CRON_TOKEN &&\s*FAILSAFE_CRON_TOKEN\.length >= 32 &&\s*failsafeAuthHeader &&\s*timingSafeEqualStr\(failsafeAuthHeader, FAILSAFE_CRON_TOKEN\)/, 'Failsafe requests must require a long private FAILSAFE_CRON_TOKEN.');
 assert.match(failsafe, /secrets\.FAILSAFE_CRON_TOKEN/, 'GitHub failsafe must read a repository secret.');
 assert.doesNotMatch(failsafe, /X-Failsafe-Cron-Auth: tenmei-mori-github-failsafe-v1/, 'GitHub workflow must not send a public token.');
 assert.match(vite, /base: mainSiteBuild \? '\/status\/' : '\/'/, 'The nested and standalone status builds need separate public base paths.');
