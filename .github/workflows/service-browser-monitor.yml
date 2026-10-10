@@ -26,7 +26,9 @@ concurrency:
 jobs:
   monitor:
     runs-on: ubuntu-latest
-    timeout-minutes: 5
+    # Installing Chromium and its system dependencies can exceed five minutes;
+    # allow the scheduled health snapshot to finish and publish instead of timing out.
+    timeout-minutes: 15
     steps:
       - name: Check out main
         uses: actions/checkout@v4
