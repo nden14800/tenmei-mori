@@ -13,7 +13,9 @@ on:
       - 'status/src/components/MonitorDetails.tsx'
       - 'status/src/lib/monitorTimeline.ts'
   schedule:
-    - cron: '2-57/5 * * * *'
+    # Keep away from minute 0 (GitHub documents elevated schedule delays at hour boundaries).
+    # A cron-expression change also reactivates a schedule if GitHub has disabled it.
+    - cron: '3-58/5 * * * *'
   workflow_dispatch:
 
 permissions:
@@ -47,12 +49,15 @@ jobs:
         if: steps.playwright-cache.outputs.cache-hit != 'true'
         run: npx playwright install --with-deps chromium
       - name: Run browser and API checks
+        if: always()
         run: node tests/status-browser-monitor.cjs
         continue-on-error: true
         timeout-minutes: 4
       - name: Update uptime history and incidents
+        if: always()
         run: node tests/publish-health-history.cjs
       - name: Publish health snapshot
+        if: always()
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
