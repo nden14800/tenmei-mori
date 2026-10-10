@@ -86,13 +86,13 @@ assert.equal(
 
 assert.equal(
   (developerSection.split('target="_blank" rel="noopener noreferrer" class="developer-study-').length - 1),
-  5,
-  '開発者について画面の外部リンク5件に安全な新規タブ属性が揃っていません。'
+  6,
+  '開発者について画面の外部リンク6件に安全な新規タブ属性が揃っていません。'
 );
 assert.equal(
   (developerSection.match(/aria-label="/g) || []).length,
-  6,
-  '開発者について画面の活動要点と外部リンク5件にアクセシブルな名称が揃っていません。'
+  7,
+  '開発者について画面の活動要点と外部リンク6件にアクセシブルな名称が揃っていません。'
 );
 requireText(
   'class="bi bi-person-fill" aria-hidden="true"',
