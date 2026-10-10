@@ -196,4 +196,17 @@ assert(html.includes('class="document-revision-snapshot__summary"'), '本文ス�
 assert(html.includes('bi bi-chevron-down document-revision-snapshot__chevron'), '本文スナップショットの開閉アイコンがサイト共通のBootstrap Iconsになっていません。');
 assert(html.includes('.document-revision-snapshot__details[open] .document-revision-snapshot__chevron'), '本文スナップショットの開閉状態とアイコン表示が連動していません。');
 assert(!html.includes('<details class="document-revision-snapshot__details" open>'), '本文スナップショットは初期状態で開いてはいけません。');
+// 改定履歴スナップショット内の旧カスタム選択欄が本体側コントロールを壊さないことを保証する。
+assert(html.includes("const CURRENT={about:{edition:'26',date:'2026/10/10'}"), '当サイトについてのフォールバック版番号が現行の第26版と一致しません。');
+assert(html.includes("snapshot.querySelectorAll('[data-control-kind=\\\"choice\\\"], [data-control-kind=\\\"date\\\"]')"), '過去版スナップショット内のカスタム選択欄を静的表示へ変換していません。');
+assert(html.includes('document-revision-static-control'), '過去版の選択欄を表示専用にするスタイルがありません。');
+assert(html.includes("if(/^on/i.test(attribute.name))element.removeAttribute(attribute.name);"), '過去版スナップショットのインライン操作を無効化していません。');
+const homeSection = html.match(/<section id="view-home"[\\s\\S]*?<section id="view-omikuji-mindset"/)?.[0] || '';
+assert(homeSection, 'ホーム画面を抽出できません。');
+assert((homeSection.match(/class="home-v4-shortcut home-v4-shortcut--/g) || []).length === 6, 'ホーム画面の機能ショートカットが6件ではありません。');
+assert(homeSection.indexOf('id="home-shortcuts-title"') < homeSection.indexOf('class="home-v4-counter-grid"'), '機能ショートカットがホームヒーロー直後にありません。');
+['omamori','column','settings'].forEach((view) => assert(homeSection.includes("trackFeatureDiscovery('" + view + "','home_quick_access')"), view + 'のホーム機能発見計測がありません。'));
+assert(html.includes("'feature_discovery_click'"), '機能発見のアクセス解析イベントが許可リストにありません。');
+assert(html.includes("['view_name', 'account_state', 'entry_point']"), '機能発見イベントの安全なentry_pointパラメータが許可されていません。');
+
 console.log('公開文書手動アーカイブの回帰テストに合格しました。')
