@@ -140,7 +140,7 @@ requireCount(/showView\('/g, 15, '既存の内部画面遷移導線が不足し�
   'if (captureTarget.hasPointerCapture?.(pointerId)) captureTarget.releasePointerCapture(pointerId);',
   'const pending = clearPendingPointer(event.pointerId);',
   'selectChoice(state, pending.optionIndex);',
-  "if (state) root.dataset.tenmeiControlReady = 'true';',
+  "if (state) root.dataset.tenmeiControlReady = 'true';",
   "listbox.addEventListener('pointermove', (event) => {",
   'const movedDistance = Math.hypot(event.clientX - pending.startX, event.clientY - pending.startY);',
   'if (movedDistance <= choicePointerMoveTolerance) return;',
