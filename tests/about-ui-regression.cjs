@@ -71,7 +71,7 @@ assert.equal(
   '第1条（サービスの性質）',
   '第2条（アカウント管理）',
   '第3条（禁止事項）',
-  'Cloudflare Workers AI（Llama 3.1系）',
+  'Cloudflare Workers AI（GLM-4.7-Flash）',
   '公式Discord参拝所',
 ].forEach((text) => {
   requireSectionText(text, `当サイトについて画面の既存本文または表記が失われています: ${text}`);
