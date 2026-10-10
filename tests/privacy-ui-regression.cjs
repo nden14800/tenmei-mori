@@ -107,8 +107,8 @@ assert.equal(
 );
 assert.equal(
   (externalServicesSection.match(/target="_blank" rel="noopener noreferrer"/g) || []).length,
-  14,
-  '外部サービス開示の安全な新規タブリンク14件が保持されていません。'
+  17,
+  '外部サービス開示の安全な新規タブリンク17件が保持されていません。'
 );
 
 [
