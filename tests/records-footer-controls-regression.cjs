@@ -123,7 +123,7 @@ requireCount(/showView\('/g, 15, '既存の内部画面遷移導線が不足し�
   'class="tenmei-date__trigger"',
   'const TenmeiCustomControls = (() => {',
   'window.TenmeiCustomControls = TenmeiCustomControls;',
-  'window.TenmeiCustomControls?.syncAll();',
+  'return { syncAll, closeActive };',
   '.tenmei-choice__popover,',
   '.tenmei-date__popover {',
   '#view-history .history-control-bar.is-control-expanded { z-index: 160; }',
