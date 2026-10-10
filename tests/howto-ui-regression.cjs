@@ -83,8 +83,8 @@ assert.ok(
 );
 assert.ok(
   html.includes('data-setting="publicDocumentReading"') &&
-    html.includes("onclick="AppConfig.toggle('publicDocumentReading', true)"") &&
-    html.includes("onclick="AppConfig.toggle('publicDocumentReading', false)""),
+    html.includes('onclick="AppConfig.toggle(\\'publicDocumentReading\\', true)"') &&
+    html.includes('onclick="AppConfig.toggle(\\'publicDocumentReading\\', false)"'),
   '公開文書の読書設定を切り替える現在の選択UIがありません。'
 );
 assert.ok(
