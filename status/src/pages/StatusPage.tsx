@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback, useRef } from 'react'
-import { monitors, type Monitor } from '../data/monitors'
+import { monitors } from '../data/monitors'
 import { getActiveIncidents } from '../data/incidents'
 import { getRefreshInterval } from '../config/env'
 import MonitorStatusHeader from '../components/MonitorStatusHeader'
@@ -29,7 +29,7 @@ interface DailyHistoryPoint {
 
 interface MonitorData {
   operational: boolean
-  status?: MonitorStatus
+  status?: MonitorStatus | 'unknown'
   degraded?: boolean
   lastCheck: string
   responseTime?: number
@@ -70,8 +70,6 @@ interface IncidentHistoryItem {
   recoveredResponseTime?: number
 }
 
-const BROWSER_MONITOR_ID = 'tenmei-mori-browser-omikuji'
-
 function mapBrowserOverallStatus(overall?: string): MonitorStatus | undefined {
   switch (overall) {
     case 'operational':
@@ -81,7 +79,7 @@ function mapBrowserOverallStatus(overall?: string): MonitorStatus | undefined {
     case 'degraded':
     case 'partial':
     case 'unknown':
-      return 'degraded'
+      return undefined
     case 'outage':
       return 'down'
     default:
@@ -116,11 +114,13 @@ export default function StatusPage() {
   const [expandedIncidentDetails, setExpandedIncidentDetails] = useState<Record<string, boolean>>({})
   const [loading, setLoading] = useState(true)
   const [browserHealthStatus, setBrowserHealthStatus] = useState<MonitorStatus | null>(null)
+  const [browserHealthFresh, setBrowserHealthFresh] = useState(false)
   const [language, setLanguage] = useState<Language>('en')
 
   const t = getTranslations(language)
-  const handleBrowserHealthStatus = useCallback((status: MonitorStatus | null) => {
+  const handleBrowserHealthStatus = useCallback((status: MonitorStatus | null, fresh: boolean) => {
     setBrowserHealthStatus(status)
+    setBrowserHealthFresh(fresh)
   }, [])
 
   const lastUpdateRef = useRef('')
@@ -226,30 +226,9 @@ export default function StatusPage() {
     acc[date] = previous ? { date, status: getWorstStatus(previous.status, sample.status) } : { date, status: sample.status }
     return acc
   }, {})).sort((a, b) => a.date.localeCompare(b.date))
-  // Keep browser interaction telemetry independent from HTTP uptime. Its status,
-  // timeline and monthly counts must all be derived from the browser checks alone.
-  const browserMonitorStatus = browserHealthStatus ?? latestBrowserSample?.status
-  const browserMonitorData: MonitorData | undefined = browserMonitorStatus ? {
-    operational: browserMonitorStatus === 'operational',
-    status: browserMonitorStatus,
-    lastCheck: latestBrowserSample?.at || fallbackTimestamp,
-    startDate: recognizedBrowserSamples[0]?.at,
-    recentChecks: browserRecentChecks,
-    dailyHistory: browserDailyHistory,
-  } : undefined
-  const browserMonitor: Monitor = {
-    id: BROWSER_MONITOR_ID,
-    name: language === 'ja' ? 'おみくじ操作（ブラウザ監視）' : 'Omikuji interaction (browser monitor)',
-    description: language === 'ja' ? '実ブラウザでおみくじ開始後の画面遷移を確認' : 'Checks the omikuji flow in a real browser',
-    url: 'https://tenmei-mori.pages.dev/',
-    linkable: false,
-  }
-  const displayMonitors: Monitor[] = [...monitors, browserMonitor]
-  // Per-monitor summaries only. Legacy records had combined every service into one
-  // count, so they are excluded rather than presented as a misleading "100 checks".
-  // Collapse duplicate snapshots for the same monitor/month. These are cumulative
-  // monthly summaries, so adding duplicates would inflate counts; keep the most complete
-  // snapshot and derive the check total from the mutually exclusive status buckets.
+
+  // Ignore legacy combined totals: their checks cannot be attributed to a monitor.
+  // Keep only the most complete cumulative snapshot for each monitor/month.
   const perMonitorLongTermHistory = Object.values(longTermHistory
     .filter((item) => typeof item.monitorId === 'string' && typeof item.monitorName === 'string')
     .reduce<Record<string, LongTermSummary>>((acc, item) => {
@@ -262,43 +241,17 @@ export default function StatusPage() {
       const current = acc[key]
       if (!current || countFor(item) >= countFor(current)) {
         const checks = countFor(item)
-        acc[key] = {
-          ...item,
-          checks,
-          uptime: checks > 0
-            ? ((Math.max(0, Number(item.operational) || 0) + Math.max(0, Number(item.maintenance) || 0)) / checks) * 100
-            : 100,
-        }
+        const operational = Math.max(0, Number(item.operational) || 0)
+        const degraded = Math.max(0, Number(item.degraded) || 0)
+        const down = Math.max(0, Number(item.down) || 0)
+        const maintenance = Math.max(0, Number(item.maintenance) || 0)
+        acc[key] = { ...item, checks, operational, degraded, down, maintenance,
+          uptime: checks > 0 ? ((operational + maintenance) / checks) * 100 : 100 }
       }
       return acc
     }, {}))
-  const yearlyLongTermHistory = Object.values(perMonitorLongTermHistory.reduce<Record<string, {
-    year: string; monitorId: string; monitorName: string; checks: number; operational: number;
-    degraded: number; down: number; maintenance: number; uptimeWeighted: number
-  }>>((acc, item) => {
-    const year = item.period.slice(0, 4)
-    const monitorId = item.monitorId!
-    const key = `${monitorId}:${year}`
-    const current = acc[key] || {
-      year, monitorId, monitorName: item.monitorName!, checks: 0, operational: 0,
-      degraded: 0, down: 0, maintenance: 0, uptimeWeighted: 0
-    }
-    current.monitorName = item.monitorName || current.monitorName
-    current.checks += item.checks
-    current.operational += item.operational
-    current.degraded += item.degraded
-    current.down += item.down
-    current.maintenance += item.maintenance
-    current.uptimeWeighted += item.uptime * item.checks
-    acc[key] = current
-    return acc
-  }, {})).map((item) => ({
-    ...item,
-    uptime: item.checks > 0 ? item.uptimeWeighted / item.checks : 100,
-  })).sort((a, b) => b.year.localeCompare(a.year) || a.monitorName.localeCompare(b.monitorName))
-  // Browser interaction checks are a separate measurement source from HTTP uptime.
-  // Keep them as their own monitor so they appear in monthly/yearly history without
-  // silently changing the historical HTTP check counts or uptime percentages.
+
+  // Browser observations belong to the existing public-site monitor, not a new row.
   const browserHistorySummaries: LongTermSummary[] = Object.values(recognizedBrowserSamples.reduce<Record<string, LongTermSummary>>((acc, sample) => {
     const dateParts = new Intl.DateTimeFormat('en-CA', { timeZone: 'Asia/Tokyo', year: 'numeric', month: '2-digit' }).formatToParts(new Date(sample.at))
     const yearPart = dateParts.find((part) => part.type === 'year')?.value
@@ -306,9 +259,8 @@ export default function StatusPage() {
     if (!yearPart || !monthPart) return acc
     const period = `${yearPart}-${monthPart}`
     const item = acc[period] || {
-      period,
-      monitorId: BROWSER_MONITOR_ID,
-      monitorName: language === 'ja' ? 'おみくじ操作（ブラウザ監視・直近90日）' : 'Omikuji interaction (browser monitor, last 90 days)',
+      period, monitorId: 'tenmei-mori',
+      monitorName: language === 'ja' ? '運勢・天命乃杜' : 'Tenmei no Mori public website',
       checks: 0, operational: 0, degraded: 0, down: 0, maintenance: 0, uptime: 100,
     }
     item.checks += 1
@@ -317,51 +269,87 @@ export default function StatusPage() {
     acc[period] = item
     return acc
   }, {}))
-  const historyForDisplay = [...perMonitorLongTermHistory, ...browserHistorySummaries]
-  const browserYearlySummaries = Object.values(browserHistorySummaries.reduce<Record<string, LongTermSummary & { monitorId: string; monitorName: string }>>((acc, month) => {
-    const year = month.period.slice(0, 4)
-    const item = acc[year] || {
-      period: year,
-      monitorId: BROWSER_MONITOR_ID,
-      monitorName: month.monitorName || (language === 'ja' ? 'おみくじ操作（ブラウザ監視・直近90日）' : 'Omikuji interaction (browser monitor, last 90 days)'),
-      checks: 0, operational: 0, degraded: 0, down: 0, maintenance: 0, uptime: 100,
-    }
-    item.checks += month.checks
-    item.operational += month.operational
-    item.degraded += month.degraded
-    item.down += month.down
-    item.maintenance += month.maintenance
-    item.uptime = item.checks > 0 ? (item.operational + item.maintenance) / item.checks * 100 : 100
-    acc[year] = item
-    return acc
-  }, {}))
-  const yearlyHistoryForDisplay: Array<LongTermSummary & { year: string; monitorId: string; monitorName: string }> = [
-    ...yearlyLongTermHistory.map((item) => ({ ...item, period: item.year, year: item.year })),
-    ...browserYearlySummaries.map((item) => ({ ...item, year: item.period })),
-  ].sort((a, b) => b.year.localeCompare(a.year) || a.monitorName.localeCompare(b.monitorName))
+
+  const historyForDisplay = Object.values(
+    [...perMonitorLongTermHistory, ...browserHistorySummaries].reduce<Record<string, LongTermSummary>>((acc, item) => {
+      if (!item.monitorId || !item.monitorName) return acc
+      const key = `${item.monitorId}:${item.period}`
+      const current = acc[key]
+      if (!current) { acc[key] = { ...item }; return acc }
+      const checks = current.checks + item.checks
+      const operational = current.operational + item.operational
+      const degraded = current.degraded + item.degraded
+      const down = current.down + item.down
+      const maintenance = current.maintenance + item.maintenance
+      acc[key] = { ...current, checks, operational, degraded, down, maintenance,
+        uptime: checks > 0 ? ((operational + maintenance) / checks) * 100 : 100 }
+      return acc
+    }, {})
+  ).sort((a, b) => b.period.localeCompare(a.period) || (a.monitorName || '').localeCompare(b.monitorName || ''))
+
+  const yearlyHistoryForDisplay: Array<LongTermSummary & { year: string; monitorId: string; monitorName: string }> = Object.values(
+    historyForDisplay.reduce<Record<string, LongTermSummary & { year: string; monitorId: string; monitorName: string }>>((acc, item) => {
+      if (!item.monitorId || !item.monitorName) return acc
+      const year = item.period.slice(0, 4)
+      const key = `${item.monitorId}:${year}`
+      const current = acc[key] || { period: year, year, monitorId: item.monitorId, monitorName: item.monitorName,
+        checks: 0, operational: 0, degraded: 0, down: 0, maintenance: 0, uptime: 100 }
+      const checks = current.checks + item.checks
+      const operational = current.operational + item.operational
+      const degraded = current.degraded + item.degraded
+      const down = current.down + item.down
+      const maintenance = current.maintenance + item.maintenance
+      acc[key] = { ...current, checks, operational, degraded, down, maintenance,
+        uptime: checks > 0 ? ((operational + maintenance) / checks) * 100 : 100 }
+      return acc
+    }, {})
+  ).sort((a, b) => b.year.localeCompare(a.year) || a.monitorName.localeCompare(b.monitorName))
   const availableHistoryYears = [...new Set(yearlyHistoryForDisplay.map((item) => item.year))].sort((a, b) => b.localeCompare(a))
 
   const getDisplayMonitorData = (monitorId: string): MonitorData | undefined => {
-    if (monitorId === BROWSER_MONITOR_ID) return browserMonitorData
     const monitorData = kvMonitors[monitorId]
-
     if (monitorsInMaintenance.has(monitorId)) {
-      return {
-        ...(monitorData || {}),
-        operational: false,
-        status: 'maintenance',
-        lastCheck: monitorData?.lastCheck || fallbackTimestamp,
-      }
+      return { ...(monitorData || {}), operational: false, status: 'maintenance', lastCheck: monitorData?.lastCheck || fallbackTimestamp }
+    }
+    if (monitorId !== 'tenmei-mori') return monitorData
+
+    const httpStatus = getMonitorStatus(monitorData)
+    // If the browser snapshot is stale, the full user journey is unconfirmed. The existing
+    // public-site row becomes gray, rather than showing an old green/yellow state as current.
+    let status: MonitorStatus | 'unknown' = 'unknown'
+    if (browserHealthFresh && browserHealthStatus) {
+      status = httpStatus === 'unknown' ? browserHealthStatus : getWorstStatus(httpStatus, browserHealthStatus)
     }
 
-    return monitorData
+    const recentCheckMap = new Map<string, RecentCheck>()
+    for (const check of [...(monitorData?.recentChecks || []), ...browserRecentChecks]) {
+      if (Number.isFinite(Date.parse(check.t))) recentCheckMap.set(`${check.t}:${check.s}`, check)
+    }
+    const recentChecks = [...recentCheckMap.values()].sort((a, b) => Date.parse(a.t) - Date.parse(b.t))
+    const dailyMap = new Map<string, DailyHistoryPoint>()
+    for (const day of monitorData?.dailyHistory || []) dailyMap.set(day.date, day)
+    for (const day of browserDailyHistory) {
+      const previous = dailyMap.get(day.date)
+      dailyMap.set(day.date, previous ? { date: day.date, status: getWorstStatus(previous.status, day.status) } : day)
+    }
+    const dailyHistory = [...dailyMap.values()].sort((a, b) => a.date.localeCompare(b.date))
+    if (!monitorData && status === 'unknown') return undefined
+    return {
+      ...(monitorData || {}),
+      operational: status === 'operational', status,
+      lastCheck: monitorData?.lastCheck || (browserHealthFresh ? latestBrowserSample?.at : undefined) || fallbackTimestamp,
+      recentChecks, dailyHistory,
+      startDate: monitorData?.startDate || recognizedBrowserSamples[0]?.at,
+    }
   }
 
   const knownStatuses = monitors
     .map((monitor) => getMonitorStatus(getDisplayMonitorData(monitor.id)))
     .filter((status): status is MonitorStatus => status !== 'unknown')
-
-  const overallStatus = getOverallStatus(browserHealthStatus ? [...knownStatuses, browserHealthStatus] : knownStatuses)
+  const configuredStatus = getOverallStatus(knownStatuses)
+  const overallStatus = (!browserHealthFresh || !browserHealthStatus) && configuredStatus === 'operational'
+    ? 'unknown'
+    : configuredStatus
   const activeIncidents = getActiveIncidents()
   const formatIncidentDate = (value: string) => new Date(value).toLocaleString(
     language === 'ja' ? 'ja-JP' : 'en-US',
@@ -423,13 +411,13 @@ export default function StatusPage() {
             <div className="overflow-hidden rounded-lg border border-border bg-card">
               {loading ? (
                 <>
-                  {displayMonitors.map((monitor) => (
+                  {monitors.map((monitor) => (
                     <MonitorCardSkeleton key={monitor.id} />
                   ))}
                 </>
               ) : (
                 <>
-                  {displayMonitors.map((monitor) => (
+                  {monitors.map((monitor) => (
                     <MonitorCard
                       key={monitor.id}
                       monitor={monitor}
@@ -517,7 +505,7 @@ export default function StatusPage() {
             <div className="mb-5 flex flex-wrap items-end justify-between gap-3">
               <div>
                 <h2 className="text-lg font-semibold text-foreground">{language === 'ja' ? '月別稼働履歴' : 'Monthly uptime history'}</h2>
-                <p className="mt-1 text-sm text-muted-foreground">{language === 'ja' ? '月ごとの稼働率・確認回数・状態別の確認数を確認できます。' : 'Review uptime, check volume, and status breakdown for each month.'}</p>
+                <p className="mt-1 text-sm text-muted-foreground">{language === 'ja' ? 'HTTP応答と実ブラウザでの操作確認を、実際の確認回数ベースで集計します。未確認の時間を推定で補完しません。' : 'HTTP responses and real-browser interaction checks are counted as observed checks; periods without data are not inferred.'}</p>
               </div>
               <div className="flex flex-wrap items-center gap-2">
                 <label htmlFor="history-monitor-filter" className="text-xs text-muted-foreground">{language === 'ja' ? '監視対象' : 'Monitor'}</label>
@@ -528,7 +516,7 @@ export default function StatusPage() {
                   className="rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground"
                 >
                   <option value="all">{language === 'ja' ? 'すべての監視対象' : 'All monitors'}</option>
-                  {displayMonitors.map((monitor) => <option key={monitor.id} value={monitor.id}>{monitor.name}</option>)}
+                  {monitors.map((monitor) => <option key={monitor.id} value={monitor.id}>{monitor.name}</option>)}
                 </select>
                 <label htmlFor="history-year-filter" className="text-xs text-muted-foreground">{language === 'ja' ? '表示する年' : 'Year'}</label>
                 <select

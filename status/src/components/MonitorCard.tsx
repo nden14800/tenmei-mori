@@ -10,6 +10,7 @@ import {
   calculateUptime,
   getMonitorStatus,
   type MonitorStatus,
+  type StatusLike,
 } from '../lib/status'
 import {
   buildTimelineHistory,
@@ -207,7 +208,7 @@ interface RecentCheck {
 
 interface MonitorData {
   operational: boolean
-  status?: MonitorStatus
+  status?: StatusLike
   degraded?: boolean
   lastCheck: string
   responseTime?: number
@@ -297,7 +298,7 @@ export default function MonitorCard({ monitor, data, language, checkIntervalMinu
   const historyStatuses = hasData
     ? buildTimelineHistory({
         period,
-        currentStatus: status === 'unknown' ? 'down' : status,
+        currentStatus: status,
         startDate: data.startDate,
         recentChecks: data.recentChecks,
         dailyHistory: data.dailyHistory,
@@ -451,7 +452,7 @@ export default function MonitorCard({ monitor, data, language, checkIntervalMinu
         <MonitorDetails
           responseTime={data.responseTime}
           lastCheck={data.lastCheck}
-          status={status === 'unknown' ? 'down' : status}
+          status={status}
           language={language}
           period={period}
           recentChecks={data.recentChecks}

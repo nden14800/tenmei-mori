@@ -1,4 +1,4 @@
-import type { MonitorStatus } from './status'
+import type { MonitorStatus, StatusLike } from './status'
 
 export type TimelinePeriod = '1h' | '24h' | '7d' | '30d'
 export type TimelineBarStatus = 'operational' | 'maintenance' | 'degraded' | 'incident' | 'unknown'
@@ -19,7 +19,7 @@ interface TimelineDailyHistoryPoint {
 
 interface BuildTimelineHistoryOptions {
   period: TimelinePeriod
-  currentStatus: MonitorStatus
+  currentStatus: StatusLike
   startDate?: string
   recentChecks?: TimelineRecentCheck[]
   dailyHistory?: TimelineDailyHistoryPoint[]
@@ -98,7 +98,8 @@ export function filterDailyHistoryInPeriod<T extends { date: string; status: Mon
   return history.filter((day) => day.date >= windowStart && day.date <= windowEnd)
 }
 
-function mapStatusToBar(status: MonitorStatus): TimelineBarStatus {
+function mapStatusToBar(status: StatusLike): TimelineBarStatus {
+  if (status === 'unknown') return 'unknown'
   if (status === 'down') return 'incident'
   return status
 }

@@ -1,6 +1,6 @@
 import { cn } from '@/lib/utils'
 import { Language, getTranslations } from '../i18n/translations'
-import { type MonitorStatus } from '../lib/status'
+import { type MonitorStatus, type StatusLike } from '../lib/status'
 import {
   getRecentMonitorEvents,
   type EventDailyHistoryPoint,
@@ -11,7 +11,7 @@ import {
 interface MonitorDetailsProps {
   responseTime?: number
   lastCheck: string
-  status: MonitorStatus
+  status: StatusLike
   language: Language
   period: EventPeriod
   recentChecks?: EventRecentCheck[]
@@ -29,7 +29,7 @@ export default function MonitorDetails({
 }: MonitorDetailsProps) {
   const t = getTranslations(language)
   const locale = language === 'fr' ? 'fr-FR' : language === 'uk' ? 'uk-UA' : language === 'ja' ? 'ja-JP' : 'en-US'
-  const events = getRecentMonitorEvents({
+  const events = status === 'unknown' ? [] : getRecentMonitorEvents({
     period,
     lastCheck,
     currentStatus: status,

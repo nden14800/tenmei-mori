@@ -14,7 +14,7 @@ const STATUS_PRIORITY: Record<MonitorStatus, number> = {
 const DEFAULT_DEGRADED_RESPONSE_TIME_MS = 4000
 
 export function getMonitorStatus(data?: {
-  status?: MonitorStatus
+  status?: StatusLike
   operational?: boolean
 }): StatusLike {
   if (!data) {
