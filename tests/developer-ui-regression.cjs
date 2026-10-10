@@ -10,6 +10,19 @@ const developerSection = developerStart >= 0 && privacyStart > developerStart
   ? html.slice(developerStart, privacyStart)
   : '';
 
+const mainContentStart = html.indexOf('<main id="main-content"');
+const mainContentEnd = html.indexOf('</main>', mainContentStart);
+const mainContentBeforeDeveloper = mainContentStart >= 0 && developerStart > mainContentStart
+  ? html.slice(mainContentStart, developerStart)
+  : '';
+assert(mainContentBeforeDeveloper, '開発者画面より前に本体のmainコンテナがありません。');
+assert.equal(
+  (mainContentBeforeDeveloper.match(/<main\\b/g) || []).length,
+  1,
+  'main-content内に入れ子のmain要素があり、ブラウザーが本体コンテナを自動終了する可能性があります。'
+);
+assert(mainContentEnd > developerStart, '本体のmainコンテナが開発者画面より前に閉じています。');
+
 assert(developerSection, '開発者について画面のセクションを抽出できません。');
 
 function requireText(text, message) {
