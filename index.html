@@ -38178,16 +38178,23 @@ window.addEventListener('hashchange',function(){setTimeout(buildAboutArticleTOC,
 
 
 <style id="about-document-card-polish">
-/* 当サイトについて：プライバシーポリシーの「本文全体が一枚の文書カード」構成に合わせる */
+/* The document surface must be fully opaque: do not inherit translucent theme tokens. */
 #view-about #about-content-area > .about-codex-document {
-    display: block;
+    display: block !important;
+    position: relative;
+    isolation: isolate;
     margin: 1.25rem 0 0 !important;
     overflow: hidden;
-    border: 1px solid var(--about-line);
+    border: 1px solid #e4d7cc !important;
     border-radius: 22px;
-    background: var(--about-paper);
-    color: var(--about-ink);
-    box-shadow: 0 10px 25px rgba(68, 34, 28, 0.05);
+    background: #fffdf9 !important;
+    background-color: #fffdf9 !important;
+    background-image: none !important;
+    color: #292321 !important;
+    opacity: 1 !important;
+    box-shadow: 0 8px 24px rgba(55, 34, 25, 0.09) !important;
+    -webkit-backdrop-filter: none !important;
+    backdrop-filter: none !important;
 }
 #view-about #about-content-area > .about-codex-document > .about-codex-chapter {
     display: block;
@@ -38195,20 +38202,22 @@ window.addEventListener('hashchange',function(){setTimeout(buildAboutArticleTOC,
     padding: 0 !important;
     overflow: hidden !important;
     border: 0 !important;
-    border-top: 1px solid var(--about-line) !important;
+    border-top: 1px solid #e9ded5 !important;
     border-radius: 0 !important;
-    background: transparent !important;
-    color: var(--about-ink) !important;
+    background: #fffdf9 !important;
+    background-color: #fffdf9 !important;
+    background-image: none !important;
+    color: #292321 !important;
+    opacity: 1 !important;
     box-shadow: none !important;
     transform: none !important;
 }
-#view-about #about-content-area > .about-codex-document > .about-codex-chapter:first-child {
-    border-top: 0 !important;
-}
+#view-about #about-content-area > .about-codex-document > .about-codex-chapter:first-child { border-top: 0 !important; }
 #view-about #about-content-area > .about-codex-document > .about-codex-chapter:hover,
 #view-about #about-content-area > .about-codex-document > .about-codex-chapter.bento-card:hover {
     border-radius: 0 !important;
-    background: transparent !important;
+    background: #fffdf9 !important;
+    background-color: #fffdf9 !important;
     box-shadow: none !important;
     transform: none !important;
 }
@@ -38218,44 +38227,69 @@ window.addEventListener('hashchange',function(){setTimeout(buildAboutArticleTOC,
     gap: 0.85rem;
     padding: clamp(1.1rem, 2.7vw, 1.55rem) clamp(1.2rem, 3vw, 2rem) !important;
     border: 0 !important;
-    border-bottom: 1px solid var(--about-line) !important;
+    border-bottom: 1px solid #e9ded5 !important;
     border-radius: 0 !important;
-    background: linear-gradient(90deg, rgba(159, 29, 37, 0.055), rgba(185, 144, 71, 0.045)) !important;
-    color: var(--about-ink) !important;
+    background: linear-gradient(90deg, #f8eeeb 0%, #f8f2e7 100%) !important;
+    color: #292321 !important;
 }
-#view-about #about-content-area .about-codex-chapter-head h3 {
-    color: var(--about-ink) !important;
-}
+#view-about #about-content-area .about-codex-chapter-head h3 { color: #292321 !important; }
 #view-about #about-content-area .about-codex-chapter--notice .about-codex-chapter-head {
-    border-bottom-color: rgba(159, 29, 37, 0.2) !important;
-    background: linear-gradient(90deg, rgba(159, 29, 37, 0.10), rgba(185, 144, 71, 0.035)) !important;
+    border-bottom-color: #e7c9c5 !important;
+    background: linear-gradient(90deg, #f6e4e2 0%, #f8f1e7 100%) !important;
 }
 #view-about #about-content-area .about-codex-chapter > div {
     margin: 0 !important;
     border-radius: 0 !important;
-    background: transparent !important;
-    color: var(--about-ink) !important;
+    background: #fffdf9 !important;
+    background-color: #fffdf9 !important;
+    color: #292321 !important;
 }
-.dark #view-about #about-content-area > .about-codex-document {
-    background: #181414;
-    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+.dark #view-about #about-content-area > .about-codex-document,
+html:not(.light).dark #view-about #about-content-area > .about-codex-document {
+    border-color: #413532 !important;
+    background: #1c1918 !important;
+    background-color: #1c1918 !important;
+    color: #f1e9e3 !important;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.28) !important;
+}
+.dark #view-about #about-content-area > .about-codex-document > .about-codex-chapter,
+.dark #view-about #about-content-area > .about-codex-document > .about-codex-chapter:hover {
+    border-top-color: #413532 !important;
+    background: #1c1918 !important;
+    background-color: #1c1918 !important;
+    color: #f1e9e3 !important;
 }
 .dark #view-about #about-content-area .about-codex-chapter-head {
-    background: linear-gradient(90deg, rgba(224, 107, 99, 0.12), rgba(213, 179, 106, 0.055)) !important;
+    border-bottom-color: #413532 !important;
+    background: linear-gradient(90deg, #302321 0%, #2b271f 100%) !important;
+    color: #f1e9e3 !important;
 }
+.dark #view-about #about-content-area .about-codex-chapter-head h3 { color: #f1e9e3 !important; }
 .dark #view-about #about-content-area .about-codex-chapter--notice .about-codex-chapter-head {
-    background: linear-gradient(90deg, rgba(224, 107, 99, 0.17), rgba(213, 179, 106, 0.055)) !important;
+    border-bottom-color: #63403d !important;
+    background: linear-gradient(90deg, #3b2524 0%, #2b271f 100%) !important;
+}
+.dark #view-about #about-content-area .about-codex-chapter > div {
+    background: #1c1918 !important;
+    background-color: #1c1918 !important;
+    color: #f1e9e3 !important;
 }
 @media (prefers-color-scheme: dark) {
-    html:not(.light) #view-about #about-content-area > .about-codex-document {
-        background: #181414;
-        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+    html:not(.light):not(.dark) #view-about #about-content-area > .about-codex-document {
+        border-color: #413532 !important; background: #1c1918 !important; background-color: #1c1918 !important;
+        color: #f1e9e3 !important; box-shadow: 0 8px 24px rgba(0,0,0,.28) !important;
     }
-    html:not(.light) #view-about #about-content-area .about-codex-chapter-head {
-        background: linear-gradient(90deg, rgba(224, 107, 99, 0.12), rgba(213, 179, 106, 0.055)) !important;
+    html:not(.light):not(.dark) #view-about #about-content-area > .about-codex-document > .about-codex-chapter,
+    html:not(.light):not(.dark) #view-about #about-content-area > .about-codex-document > .about-codex-chapter:hover,
+    html:not(.light):not(.dark) #view-about #about-content-area .about-codex-chapter > div {
+        border-top-color: #413532 !important; background: #1c1918 !important; background-color: #1c1918 !important; color: #f1e9e3 !important;
     }
-    html:not(.light) #view-about #about-content-area .about-codex-chapter--notice .about-codex-chapter-head {
-        background: linear-gradient(90deg, rgba(224, 107, 99, 0.17), rgba(213, 179, 106, 0.055)) !important;
+    html:not(.light):not(.dark) #view-about #about-content-area .about-codex-chapter-head {
+        border-bottom-color: #413532 !important; background: linear-gradient(90deg, #302321 0%, #2b271f 100%) !important; color: #f1e9e3 !important;
+    }
+    html:not(.light):not(.dark) #view-about #about-content-area .about-codex-chapter-head h3 { color: #f1e9e3 !important; }
+    html:not(.light):not(.dark) #view-about #about-content-area .about-codex-chapter--notice .about-codex-chapter-head {
+        border-bottom-color: #63403d !important; background: linear-gradient(90deg, #3b2524 0%, #2b271f 100%) !important;
     }
 }
 @media (max-width: 700px) {
