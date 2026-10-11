@@ -2607,6 +2607,40 @@
 #view-about #about-content-area > * + * { margin-top: 20px !important; }
 /* 改定履歴ブロックの末尾だけは余計な下余白を持たせない。 */
 #view-about #about-content-area > .about-codex-revision-history { margin-bottom: 0 !important; }
+/* プライバシーポリシーと同様、章ごとの独立カードをやめ、本文全体を一枚の文書カードにまとめる。 */
+#view-about #about-content-area > .about-codex-document {
+    overflow: hidden;
+    border: 1px solid var(--about-line);
+    border-radius: 22px;
+    background: var(--about-paper);
+    box-shadow: 0 10px 25px rgba(68, 34, 28, 0.05);
+}
+#view-about #about-content-area .about-codex-chapter {
+    overflow: visible;
+    margin: 0 !important;
+    border: 0 !important;
+    border-radius: 0 !important;
+    background: transparent !important;
+    box-shadow: none !important;
+    color: var(--about-ink);
+    transform: none !important;
+}
+#view-about #about-content-area .about-codex-chapter + .about-codex-chapter {
+    border-top: 1px solid var(--about-line) !important;
+}
+#view-about #about-content-area .about-codex-chapter.bento-card:hover {
+    transform: none !important;
+    box-shadow: none !important;
+}
+#view-about #about-content-area .about-codex-chapter-head {
+    border-bottom: 1px solid var(--about-line) !important;
+}
+#view-about #about-content-area .about-codex-chapter--notice .about-codex-chapter-head {
+    border-bottom-color: rgba(159, 29, 37, 0.2) !important;
+}
+@media (max-width: 700px) {
+    #view-about #about-content-area > .about-codex-document { border-radius: 18px; }
+}
 /* 章カードは共通Bentoのscale hoverで縦方向の余白が視覚的に潰れるため、当サイトについてでは拡大を使わず軽いリフトだけにする。 */
 #view-about #about-content-area > .about-codex-chapter.bento-card:hover {
     transform: translateY(-2px) scale(1) !important;
@@ -17906,6 +17940,7 @@ body.sidebar-collapsed.sidebar-pinned #sidebar .nav-group-title {
                                             </div>
                                             <div id="about-revision-description" class="document-revision-description" aria-live="polite"><strong>第26版 ・ 2026/10/10 ・ 現行版</strong><span>現行AIモデル表記をGLM-4.7-Flashに更新し、ゲスト参拝記録のサーバー保存と保存期間・復旧保証の説明を明確化。</span></div><div id="about-revision-snapshot" class="document-revision-snapshot" aria-live="polite"><div class="document-revision-snapshot__loading">第26版の本文スナップショットを読み込みます。</div></div>
                 </div>
+                <article class="about-codex-document" aria-label="当サイトについての本文">
                 <section class="about-codex-chapter about-codex-chapter--features bento-card p-0 overflow-hidden">
                     <header class="about-codex-chapter-head p-6 border-b border-gray-100 dark:border-gray-800 bg-gray-50 dark:bg-zinc-900/50"><p class="about-codex-chapter-label">CHAPTER 01</p>
                         <h3 class="text-xl font-black flex items-center gap-3">
@@ -18119,6 +18154,7 @@ body.sidebar-collapsed.sidebar-pinned #sidebar .nav-group-title {
                         </p>
                     </div>
                 </section>
+                </article>
             </div>
         </section>
 
