@@ -102,6 +102,30 @@ assert.equal(
   requireText(text, `当サイトについて画面のテーマ・フォーカス・PDF出力契約が失われています: ${text}`);
 });
 
+const selectorStylesStart = html.indexOf('<style id="document-revision-selector-styles">');
+const aboutRevisionStylesStart = html.indexOf('<style id="about-document-revision-layout">');
+assert(selectorStylesStart >= 0 && aboutRevisionStylesStart > selectorStylesStart, '版選択CSSとAbout改定履歴CSSの順序が不正です。');
+assert(
+  html.slice(selectorStylesStart, aboutRevisionStylesStart).includes('</style>'),
+  '版選択CSSの閉じタグがなく、後続のAboutスタイルを壊しています。'
+);
+const revisionWrapperStart = aboutSection.indexOf('<div class="about-codex-revision-history"');
+const chapterDocumentStart = aboutSection.indexOf('<article class="about-codex-document"', revisionWrapperStart);
+assert(revisionWrapperStart >= 0 && chapterDocumentStart > revisionWrapperStart, 'Aboutの改定履歴または章文書が見つかりません。');
+assert(
+  /<\/div>\s*<\/div>\s*<article class="about-codex-document"/.test(aboutSection.slice(revisionWrapperStart, chapterDocumentStart + 80)),
+  '改定履歴のラッパーが閉じられておらず、章文書が履歴パネルの内側に入っています。'
+);
+[
+  'gap: clamp(18px, 2.4vw, 28px) !important;',
+  '#view-about #about-content-area > .about-codex-prologue',
+  '#view-about #about-content-area > .about-codex-revision-history',
+  'writing-mode: horizontal-tb !important;',
+  'h3 > span { display: none !important; }',
+].forEach((text) => {
+  requireText(text, `プライバシーポリシーに揃えたAbout画面の余白・章見出しスタイルがありません: ${text}`);
+});
+
 console.log('当サイトについて画面の回帰テストに合格しました。');
 console.log(JSON.stringify({
   aboutCodexTemplate: true,

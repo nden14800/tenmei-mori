@@ -13608,7 +13608,8 @@ body.sidebar-collapsed.sidebar-pinned #sidebar .nav-group-title {
 .dark .document-revision-selector{border-color:rgba(210,170,105,.28);background:rgba(24,20,19,.88);box-shadow:0 10px 28px rgba(0,0,0,.18)}
 .dark .document-revision-selector__label{color:#c9bdb6}
 .dark .document-revision-description{border-left-color:#d2aa69;background:rgba(210,170,105,.10);color:#e6ddd7}
-.dark .document-revision-description strong{color:#fff8f2}<style id="about-document-revision-layout">
+.dark .document-revision-description strong{color:#fff8f2}</style>
+<style id="about-document-revision-layout">
 #view-about .about-codex-content { overflow: visible; }
 #view-about .about-codex-revision-history { margin: 0 0 24px; position: relative; z-index: 20; }
 #view-about .about-codex-revision-history .document-revision-selector { position: relative; z-index: 30; }
@@ -13634,129 +13635,205 @@ body.sidebar-collapsed.sidebar-pinned #sidebar .nav-group-title {
 @media(prefers-reduced-motion:reduce){.document-revision-snapshot__chevron{transition:none}}
 </style>
 <style id="about-document-card-polish">
-/* Keep the About article an opaque, clearly bounded document surface. */
-#view-about #about-content-area > article.about-codex-document {
-  display:block !important;
-  position:relative !important;
-  isolation:isolate !important;
-  overflow:hidden !important;
-  margin:1.25rem 0 0 !important;
-  padding:0 !important;
-  border:1px solid #d9c9bd !important;
-  border-radius:22px !important;
-  background:#fffdf9 !important;
-  background-color:#fffdf9 !important;
-  background-image:none !important;
-  opacity:1 !important;
-  box-shadow:0 8px 28px rgba(48,30,22,.14) !important;
-  -webkit-backdrop-filter:none !important;
-  backdrop-filter:none !important;
+/* Aboutはプライバシーポリシーと同じ「静かな文書」基調で統一する。 */
+#view-about #about-content-area {
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: stretch !important;
+  gap: clamp(18px, 2.4vw, 28px) !important;
+  margin-top: 1.35rem !important;
+  overflow: visible !important;
 }
-#view-about #about-content-area > article.about-codex-document::before {
-  content:"" !important;
-  position:absolute !important;
-  inset:0 !important;
-  z-index:-1 !important;
-  display:block !important;
-  background:#fffdf9 !important;
-  opacity:1 !important;
-  pointer-events:none !important;
+#view-about #about-content-area > * {
+  flex: 0 0 auto !important;
+  min-width: 0 !important;
+  margin: 0 !important;
+}
+/* SITE PHILOSOPHY、版情報、本文はそれぞれ独立した面として明確に区切る。 */
+#view-about #about-content-area > .about-codex-prologue {
+  box-sizing: border-box !important;
+  padding: clamp(24px, 4vw, 40px) !important;
+  border: 1px solid var(--about-line) !important;
+  border-radius: 20px !important;
+  background: var(--about-paper) !important;
+  background-image: none !important;
+  box-shadow: 0 4px 16px rgba(45, 32, 29, .045) !important;
+  color: var(--about-ink) !important;
+  line-height: 1.9 !important;
+}
+#view-about #about-content-area > .about-codex-prologue::before { content: none !important; }
+#view-about #about-content-area > .about-codex-prologue .about-codex-prologue-label {
+  margin: 0 0 .65rem !important;
+  color: var(--about-red) !important;
+  font-family: 'Zen Kaku Gothic New', sans-serif !important;
+  font-size: .66rem !important;
+  font-weight: 800 !important;
+  letter-spacing: .16em !important;
+}
+html body #view-about.about-codex-layout #about-content-area > .about-codex-revision-history:has(#about-revision-description):not(:has(> #about-revision-description)) {
+  box-sizing: border-box !important;
+  position: relative !important;
+  z-index: 20 !important;
+  padding: clamp(18px, 2.8vw, 26px) !important;
+  border: 1px solid var(--about-line) !important;
+  border-radius: 20px !important;
+  background: var(--about-paper) !important;
+  background-image: none !important;
+  box-shadow: 0 4px 16px rgba(45, 32, 29, .045) !important;
+}
+html body #view-about.about-codex-layout #about-content-area > .about-codex-revision-history .document-revision-selector:has(> #about-revision-description) {
+  position: relative !important;
+  z-index: 30 !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+}
+#view-about .about-codex-revision-history .document-revision-selector__label {
+  margin: 0 0 .75rem !important;
+  color: var(--about-muted) !important;
+  font-family: 'Zen Kaku Gothic New', sans-serif !important;
+  font-size: .66rem !important;
+  font-weight: 800 !important;
+  letter-spacing: .14em !important;
+}
+#view-about .about-codex-revision-history .document-revision-description {
+  border-left-color: var(--about-red) !important;
+  background: var(--about-paper-soft) !important;
+  color: var(--about-ink) !important;
+}
+#view-about .about-codex-revision-history .document-revision-description strong { color: var(--about-ink) !important; }
+#view-about .about-codex-revision-history .document-revision-snapshot {
+  border-color: var(--about-line) !important;
+  background: var(--about-paper) !important;
+}
+#view-about .about-codex-revision-history .document-revision-snapshot__summary { color: var(--about-muted) !important; }
+#view-about .about-codex-revision-history .document-revision-snapshot__body { border-top-color: var(--about-line) !important; }
+#view-about .about-codex-revision-history .tenmei-choice__popover { z-index: 1000 !important; }
+/* 章ごとのカードを廃止し、プライバシーポリシー同様ひと続きの文書面＋細い罫線にする。 */
+#view-about #about-content-area > article.about-codex-document {
+  display: block !important;
+  box-sizing: border-box !important;
+  width: 100% !important;
+  position: relative !important;
+  isolation: isolate !important;
+  overflow: hidden !important;
+  padding: 0 clamp(18px, 3vw, 30px) !important;
+  border: 1px solid var(--about-line) !important;
+  border-radius: 20px !important;
+  background: var(--about-paper) !important;
+  background-image: none !important;
+  box-shadow: 0 4px 16px rgba(45, 32, 29, .045) !important;
+  color: var(--about-ink) !important;
+  opacity: 1 !important;
+  -webkit-backdrop-filter: none !important;
+  backdrop-filter: none !important;
 }
 #view-about #about-content-area > article.about-codex-document > section.about-codex-chapter,
 #view-about #about-content-area > article.about-codex-document > section.about-codex-chapter:hover {
-  display:block !important;
-  margin:0 !important;
-  padding:0 !important;
-  border:0 !important;
-  border-top:1px solid #e6d9cf !important;
-  border-radius:0 !important;
-  background:#fffdf9 !important;
-  background-color:#fffdf9 !important;
-  background-image:none !important;
-  opacity:1 !important;
-  box-shadow:none !important;
-  transform:none !important;
+  display: block !important;
+  margin: 0 !important;
+  padding: 24px 0 !important;
+  border: 0 !important;
+  border-top: 1px solid var(--about-line) !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+  background-image: none !important;
+  box-shadow: none !important;
+  transform: none !important;
+  color: var(--about-ink) !important;
+  opacity: 1 !important;
 }
-#view-about #about-content-area > article.about-codex-document > section.about-codex-chapter:first-child { border-top:0 !important; }
+#view-about #about-content-area > article.about-codex-document > section.about-codex-chapter:first-child { border-top: 0 !important; }
 #view-about #about-content-area > article.about-codex-document > section.about-codex-chapter > header.about-codex-chapter-head {
-  display:flex !important;
-  align-items:center !important;
-  gap:.85rem !important;
-  padding:clamp(1.1rem,2.7vw,1.55rem) clamp(1.2rem,3vw,2rem) !important;
-  border:0 !important;
-  border-bottom:1px solid #e6d9cf !important;
-  border-radius:0 !important;
-  background:#f7eeea !important;
-  background-image:linear-gradient(90deg,#f7eeea 0%,#f8f1e6 100%) !important;
-  color:#292321 !important;
-  opacity:1 !important;
+  display: flex !important;
+  align-items: flex-start !important;
+  flex-direction: column !important;
+  gap: .38rem !important;
+  margin: 0 0 16px !important;
+  padding: 0 0 14px !important;
+  border: 0 !important;
+  border-bottom: 1px solid var(--about-line) !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+  background-image: none !important;
+  color: var(--about-ink) !important;
 }
-#view-about #about-content-area > article.about-codex-document > section.about-codex-chapter.about-codex-chapter--notice > header.about-codex-chapter-head {
-  background:#f5e4e1 !important;
-  background-image:linear-gradient(90deg,#f5e4e1 0%,#f8f0e5 100%) !important;
+#view-about .about-codex-chapter-label {
+  color: var(--about-muted) !important;
+  font-size: .62rem !important;
+  font-weight: 800 !important;
+  letter-spacing: .16em !important;
+  line-height: 1.4 !important;
+  writing-mode: horizontal-tb !important;
 }
-#view-about #about-content-area > article.about-codex-document > section.about-codex-chapter > header h3 { color:#292321 !important; }
+#view-about #about-content-area > article.about-codex-document > section.about-codex-chapter > header h3 {
+  display: flex !important;
+  align-items: baseline !important;
+  gap: .55rem !important;
+  margin: 0 !important;
+  color: var(--about-ink) !important;
+  font-family: 'Zen Old Mincho', 'Shippori Mincho', serif !important;
+  font-size: clamp(1.08rem, 2.1vw, 1.35rem) !important;
+  font-weight: 700 !important;
+  letter-spacing: .025em !important;
+  line-height: 1.55 !important;
+}
+/* CHAPTER番号は小見出し側に一度だけ表示し、赤い丸バッジの重複をなくす。 */
+#view-about #about-content-area > article.about-codex-document > section.about-codex-chapter > header h3 > span { display: none !important; }
 #view-about #about-content-area > article.about-codex-document > section.about-codex-chapter > div {
-  margin:0 !important;
-  border-radius:0 !important;
-  background:#fffdf9 !important;
-  background-color:#fffdf9 !important;
-  background-image:none !important;
-  color:#292321 !important;
-  opacity:1 !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+  background-image: none !important;
+  color: var(--about-ink) !important;
+  font-family: 'Zen Kaku Gothic New', sans-serif !important;
+  line-height: 1.9 !important;
+  opacity: 1 !important;
 }
-html.dark #view-about #about-content-area > article.about-codex-document,
-.dark #view-about #about-content-area > article.about-codex-document {
-  border-color:#51413b !important;
-  background:#211c1a !important;
-  background-color:#211c1a !important;
-  color:#f2eae4 !important;
-  box-shadow:0 8px 28px rgba(0,0,0,.32) !important;
+#view-about #about-content-area > article.about-codex-document .about-codex-chapter h4 {
+  margin: 1.45rem 0 .5rem !important;
+  padding: 0 !important;
+  border: 0 !important;
+  color: var(--about-ink) !important;
+  font-family: 'Zen Old Mincho', 'Shippori Mincho', serif !important;
+  font-size: 1rem !important;
+  letter-spacing: .02em !important;
 }
-html.dark #view-about #about-content-area > article.about-codex-document::before,
-.dark #view-about #about-content-area > article.about-codex-document::before { background:#211c1a !important; }
-html.dark #view-about #about-content-area > article.about-codex-document > section.about-codex-chapter,
-.dark #view-about #about-content-area > article.about-codex-document > section.about-codex-chapter,
-html.dark #view-about #about-content-area > article.about-codex-document > section.about-codex-chapter:hover,
-.dark #view-about #about-content-area > article.about-codex-document > section.about-codex-chapter:hover,
-html.dark #view-about #about-content-area > article.about-codex-document > section.about-codex-chapter > div,
-.dark #view-about #about-content-area > article.about-codex-document > section.about-codex-chapter > div {
-  border-top-color:#51413b !important;
-  background:#211c1a !important;
-  background-color:#211c1a !important;
-  background-image:none !important;
-  color:#f2eae4 !important;
+#view-about #about-content-area > article.about-codex-document .about-codex-chapter h4:first-child { margin-top: 0 !important; }
+#view-about #about-content-area > article.about-codex-document .about-codex-chapter h4 i { color: var(--about-muted) !important; }
+#view-about #about-content-area > article.about-codex-document .about-codex-chapter .grid > div { border-color: var(--about-line) !important; }
+#view-about #about-content-area > article.about-codex-document .about-codex-chapter .grid > div > span:first-child { color: var(--about-muted) !important; }
+#view-about #about-content-area > article.about-codex-document .about-codex-chapter .space-y-6 > div {
+  padding: .1rem 0 .1rem .9rem !important;
+  border-left-color: color-mix(in srgb, var(--about-muted) 35%, transparent) !important;
 }
-html.dark #view-about #about-content-area > article.about-codex-document > section.about-codex-chapter > header.about-codex-chapter-head,
-.dark #view-about #about-content-area > article.about-codex-document > section.about-codex-chapter > header.about-codex-chapter-head {
-  border-bottom-color:#51413b !important;
-  background:#302522 !important;
-  background-image:linear-gradient(90deg,#302522 0%,#2b281f 100%) !important;
-  color:#f2eae4 !important;
+#view-about #about-content-area > article.about-codex-document .about-codex-chapter--notice > header.about-codex-chapter-head {
+  border-bottom-color: color-mix(in srgb, var(--about-red) 22%, var(--about-line)) !important;
 }
-html.dark #view-about #about-content-area > article.about-codex-document > section.about-codex-chapter > header h3,
-.dark #view-about #about-content-area > article.about-codex-document > section.about-codex-chapter > header h3 { color:#f2eae4 !important; }
-html.dark #view-about #about-content-area > article.about-codex-document > section.about-codex-chapter.about-codex-chapter--notice > header.about-codex-chapter-head,
-.dark #view-about #about-content-area > article.about-codex-document > section.about-codex-chapter.about-codex-chapter--notice > header.about-codex-chapter-head {
-  background:#3b2725 !important;
-  background-image:linear-gradient(90deg,#3b2725 0%,#2b281f 100%) !important;
+#view-about #about-content-area > article.about-codex-document .about-codex-chapter--notice p.text-red-600 {
+  border-color: var(--about-line) !important;
+  background: var(--about-paper-soft) !important;
+  color: var(--about-red) !important;
 }
-@media (prefers-color-scheme:dark) {
-  html:not(.light):not(.dark) #view-about #about-content-area > article.about-codex-document {
-    border-color:#51413b !important;background:#211c1a !important;background-color:#211c1a !important;color:#f2eae4 !important;
-  }
-  html:not(.light):not(.dark) #view-about #about-content-area > article.about-codex-document::before { background:#211c1a !important; }
-  html:not(.light):not(.dark) #view-about #about-content-area > article.about-codex-document > section.about-codex-chapter,
-  html:not(.light):not(.dark) #view-about #about-content-area > article.about-codex-document > section.about-codex-chapter > div {
-    border-top-color:#51413b !important;background:#211c1a !important;background-color:#211c1a !important;color:#f2eae4 !important;
-  }
-  html:not(.light):not(.dark) #view-about #about-content-area > article.about-codex-document > section.about-codex-chapter > header.about-codex-chapter-head {
-    border-bottom-color:#51413b !important;background:#302522 !important;background-image:linear-gradient(90deg,#302522 0%,#2b281f 100%) !important;color:#f2eae4 !important;
-  }
-  html:not(.light):not(.dark) #view-about #about-content-area > article.about-codex-document > section.about-codex-chapter > header h3 { color:#f2eae4 !important; }
+#view-about #about-pdf-btn:focus-visible,
+#view-about #about-content-area a:focus-visible,
+#view-about .about-codex-revision-history :is(button, summary):focus-visible {
+  outline: 3px solid var(--about-gold) !important;
+  outline-offset: 3px !important;
 }
-@media(max-width:700px) {
-  #view-about #about-content-area > article.about-codex-document { border-radius:18px !important; }
+@media (max-width: 700px) {
+  #view-about #about-content-area { gap: 18px !important; }
+  #view-about #about-content-area > .about-codex-prologue { border-radius: 17px !important; }
+  #view-about #about-content-area > .about-codex-revision-history { padding: 16px !important; border-radius: 17px !important; }
+  #view-about #about-content-area > article.about-codex-document { padding: 0 18px !important; border-radius: 17px !important; }
+  #view-about #about-content-area > article.about-codex-document > section.about-codex-chapter { padding: 20px 0 !important; }
+}
+@media (prefers-reduced-motion: reduce) {
+  #view-about #about-content-area *, #view-about #about-content-area *::before, #view-about #about-content-area *::after { scroll-behavior: auto !important; transition-duration: .01ms !important; }
 }
 </style>
 </head>
@@ -18065,6 +18142,7 @@ html.dark #view-about #about-content-area > article.about-codex-document > secti
                                                 <div class="tenmei-choice__popover" id="about-revision-select-popover" hidden><div class="tenmei-choice__options" id="about-revision-select-options" role="listbox" aria-label="当サイトについての版を選ぶ"></div></div>
                                             </div>
                                             <div id="about-revision-description" class="document-revision-description" aria-live="polite"><strong>第26版 ・ 2026/10/10 ・ 現行版</strong><span>現行AIモデル表記をGLM-4.7-Flashに更新し、ゲスト参拝記録のサーバー保存と保存期間・復旧保証の説明を明確化。</span></div><div id="about-revision-snapshot" class="document-revision-snapshot" aria-live="polite"><div class="document-revision-snapshot__loading">第26版の本文スナップショットを読み込みます。</div></div>
+                </div>
                 </div>
                 <article class="about-codex-document" aria-label="当サイトについての本文">
                 <section class="about-codex-chapter about-codex-chapter--features bento-card p-0 overflow-hidden">
