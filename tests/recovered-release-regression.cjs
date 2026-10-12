@@ -68,7 +68,7 @@ for (const expected of [
   '当サイトはAI案内の会話履歴をデータベース、アカウント、ブラウザー内ストレージへ保存しません',
   'AI案内はアカウント操作、データ変更、有人対応、運営者への転送を行いません',
 ]) {
-  assert.ok(html.includes(expected), `Chatlingの公開説明が不足しています: ${expected}`);
+  assert.ok(html.includes(expected), `独自AIの公開説明が不足しています: ${expected}`);
 }
 
 const archive = JSON.parse(read('assets/data/public-document-history.json'));
