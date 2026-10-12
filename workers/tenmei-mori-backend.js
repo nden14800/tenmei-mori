@@ -2091,7 +2091,8 @@ if (url.pathname === "/api/today-anniv" && method === "GET") {
 
         // 天命乃杜独自AI案内：公開サイトの使い方だけを案内し、会話を保存しない。
         if (url.pathname === "/api/ai-guide" && method === "POST") {
-            tr                const parsed = await readBoundedJson(request, 36000);
+            try {
+                const parsed = await readBoundedJson(request, 36000);
                 if (!parsed.ok) return new Response(JSON.stringify({ error: parsed.status === 413 ? "送信内容が長すぎます。会話を短くしてお試しください。" : "送信内容を読み取れませんでした。入力を確認してください。" }), { status: parsed.status, headers: { ...corsHeaders, "Content-Type": "application/json; charset=utf-8", "Cache-Control": "no-store" } });
                 const body = parsed.body;
                 const rawQuestion = typeof body?.question === "string" ? body.question : "";
@@ -2149,7 +2150,8 @@ if (url.pathname === "/api/today-anniv" && method === "GET") {
         }
 
         if (url.pathname === "/api/worry-consult" && method === "POST") {
-            tr                const parsed = await readBoundedJson(request, 8192);
+            try {
+                const parsed = await readBoundedJson(request, 8192);
                 if (!parsed.ok) return new Response(JSON.stringify({ error: parsed.status === 413 ? "送信内容が大きすぎます。" : "送信内容を読み取れませんでした。" }), { status: parsed.status, headers: { ...corsHeaders, "Content-Type": "application/json; charset=utf-8", "Cache-Control": "no-store" } });
                 const { worry, omikujiType } = parsed.body || {};
                 if (typeof worry !== "string" || !worry.trim() || worry.length > 300) return new Response(JSON.stringify({ error: "入力内容をご確認ください（1〜300文字以内）" }), { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json; charset=utf-8", "Cache-Control": "no-store" } });
@@ -2172,7 +2174,8 @@ if (url.pathname === "/api/today-anniv" && method === "GET") {
 
         // ② AI夢占い（ログイン必須・履歴をTursoに保存）
         if (url.pathname === "/api/dream-fortune" && method === "POST") {
-            tr                const session = await verifySession(request);
+            try {
+                const session = await verifySession(request);
                 if (!session) return new Response(JSON.stringify({ error: "Unauthorized" }), { status: 401, headers: corsHeaders });
                 const parsed = await readBoundedJson(request, 8192);
                 if (!parsed.ok) return new Response(JSON.stringify({ error: parsed.status === 413 ? "送信内容が大きすぎます。" : "送信内容を読み取れませんでした。" }), { status: parsed.status, headers: { ...corsHeaders, "Content-Type": "application/json; charset=utf-8", "Cache-Control": "no-store" } });
@@ -2230,7 +2233,8 @@ if (url.pathname === "/api/today-anniv" && method === "GET") {
 
         // 記事要約（キャッシュ済みは即JSON、未キャッシュはストリーミング配信）
         if (url.pathname === "/api/summarize" && method === "POST") {
-            tr                const parsed = await readBoundedJson(request, 32768);
+            try {
+                const parsed = await readBoundedJson(request, 32768);
                 if (!parsed.ok) return new Response(JSON.stringify({ error: parsed.status === 413 ? "記事の送信内容が大きすぎます。" : "送信内容を読み取れませんでした。" }), { status: parsed.status, headers: { ...corsHeaders, "Content-Type": "application/json; charset=utf-8", "Cache-Control": "no-store" } });
                 const { articleType, articleId, articleText, articleTitle, originalCharCount: clientOriginalCharCount } = parsed.body || {};
                 if (typeof articleType !== "string" || !articleType.trim() || articleType.length > 80 ||
