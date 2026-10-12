@@ -17,7 +17,7 @@ for (const expected of [
   "script.id = 'tenmei-ai-agent-script'",
   "script.src = '/assets/js/tenmei-ai-agent.js'",
   "天命乃杜独自のAI案内（Cloudflare Workers AI）",
-  "個人情報入力フォーム、有人対応、運営者への転送は使いません",
+  "質問文と直近の会話だけを回答生成のためCloudflare Workers AIへ送信",
 ]) assert.ok(html.includes(expected), '独自AIへの移行実装が不足しています: ' + expected);
 for (const prohibited of ["CHATLING_CHATBOT_ID","window.chtlConfig","chatling.ai","Chatling AI Agent","Chatlingの標準ウィジェット","chtl-script","chtl-chat-iframe"]) {
   assert.ok(!html.toLowerCase().includes(prohibited.toLowerCase()), '旧外部AI実装がHTMLに残っています: ' + prohibited);
