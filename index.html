@@ -163,7 +163,13 @@
         }
         function loadOptionalSupportChat() {
             const preferences = readPreferences();
-            if (!preferences || preferences.supportChat !== true || aiGuideState.scriptRequested) return;
+            if (!preferences || preferences.supportChat !== true) {
+                ensureConsentLauncher();
+                return;
+            }
+            if (aiGuideState.scriptRequested) return;
+            const consentLauncher = document.getElementById('tenmei-ai-consent-launcher');
+            if (consentLauncher) consentLauncher.remove();
             aiGuideState.scriptRequested = true;
             const generation = ++aiGuideState.generation;
             const mount = function () {
@@ -186,6 +192,32 @@
             if (window.TenmeiAIAgent) window.TenmeiAIAgent.unmount();
             removeRetiredChannelTalkStorage();
             aiGuideState.loaded = false; aiGuideState.scriptRequested = false;
+            ensureConsentLauncher();
+        }
+
+        // Keep the guide entry point visible without loading AI code before explicit consent.
+        function ensureConsentLauncher() {
+            const preferences = readPreferences();
+            if (preferences && preferences.supportChat === true) return;
+            if (document.getElementById('tenmei-ai-consent-launcher') || document.querySelector('.tenmei-ai-agent .tenmei-ai-launcher')) return;
+            const button = document.createElement('button');
+            button.id = 'tenmei-ai-consent-launcher';
+            button.type = 'button';
+            button.className = 'tenmei-ai-launcher';
+            button.title = 'AI案内';
+            button.setAttribute('aria-label', '天命乃杜 AI案内を開く（利用設定）');
+            button.setAttribute('aria-haspopup', 'dialog');
+            button.style.zIndex = '10000';
+            const glyph = document.createElement('i');
+            glyph.className = 'bi bi-stars';
+            glyph.setAttribute('aria-hidden', 'true');
+            button.appendChild(glyph);
+            button.addEventListener('click', function () {
+                if (typeof window.openCookiePreferences === 'function') window.openCookiePreferences();
+                else window.dispatchEvent(new CustomEvent('tenmei:open-cookie-preferences'));
+                if (typeof window.showToast === 'function') window.showToast('AI案内を利用するには、Cookie設定で「サポートチャット」を許可してください。', 'info');
+            });
+            document.body.appendChild(button);
         }
 
         function savePreferences(nextPreferences) {
@@ -248,6 +280,8 @@
         const storedPreferences = readPreferences();
         if (storedPreferences && storedPreferences.analytics === true) loadOptionalAnalytics();
         if (storedPreferences && storedPreferences.supportChat === true) loadOptionalSupportChat();
+        if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', ensureConsentLauncher, { once: true });
+        else ensureConsentLauncher();
     }());
     </script>
 
