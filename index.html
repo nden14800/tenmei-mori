@@ -29584,6 +29584,21 @@ ${luckyInfo}
 ${getShareUrl()}`;
         }
 
+        let unifiedAiInfoPanelSequence = 0;
+        function bindAiInfoToggle(infoBtn, panel) {
+            if (!infoBtn || !panel) return;
+            panel.id = panel.id || `tenmei-ai-info-panel-${++unifiedAiInfoPanelSequence}`;
+            panel.hidden = true;
+            panel.classList.add('hidden');
+            infoBtn.setAttribute('aria-controls', panel.id);
+            infoBtn.setAttribute('aria-expanded', 'false');
+            infoBtn.addEventListener('click', () => {
+                const opening = panel.hidden;
+                panel.hidden = !opening;
+                panel.classList.toggle('hidden', !opening);
+                infoBtn.setAttribute('aria-expanded', String(opening));
+            });
+        }
         function setupUnifiedAiResponseControls(responseArea, options = {}) {
             if (!responseArea) return;
             responseArea.classList.add('tenmei-ai-response');
@@ -29596,14 +29611,13 @@ ${getShareUrl()}`;
                     </button>
                 </div>
                 <p data-ai-response-text class="tenmei-ai-response-text"></p>
-                <div class="tenmei-ai-info-panel hidden" data-ai-info-panel>
+                <div class="tenmei-ai-info-panel hidden" data-ai-info-panel hidden>
                     <p><strong>${options.infoTitle || 'AIによる回答'}</strong></p>
                     <div class="tenmei-ai-info-content">${options.infoText || 'AIが入力内容をもとに生成した回答です。内容の正確性を保証するものではありません。'}</div>
                 </div>`;
-            const textEl=responseArea.querySelector('[data-ai-response-text]');
-            if(options.text)textEl.textContent=options.text;
-            const infoBtn=responseArea.querySelector('[data-ai-info-toggle]'), panel=responseArea.querySelector('[data-ai-info-panel]');
-            infoBtn?.addEventListener('click',()=>{const open=!panel.classList.contains('hidden');panel.classList.toggle('hidden',open);infoBtn.setAttribute('aria-expanded',String(!open));});
+            const textEl = responseArea.querySelector('[data-ai-response-text]');
+            if (options.text) textEl.textContent = options.text;
+            bindAiInfoToggle(responseArea.querySelector('[data-ai-info-toggle]'), responseArea.querySelector('[data-ai-info-panel]'));
             return textEl;
         }
         async function consumeUnifiedAiStream(response,responseArea){
@@ -29819,20 +29833,19 @@ ${getShareUrl()}`;
                         <button type="button" data-vote="dislike" class="tenmei-ai-rate-btn summary-vote-btn" aria-pressed="false"><i class="bi bi-hand-thumbs-down" aria-hidden="true"></i><span>改善してほしい</span></button>
                     </div>
                     <div class="summary-vote-detail hidden"></div>
-                    <div class="tenmei-ai-info-panel summary-info hidden" data-ai-info-panel>
-                        <p><strong>AIによる回答</strong></p>
-                        <p>使用モデル：${escapeHtml(data.model_used || '不明')}</p>
-                        <p>文字数：${originalCount}文字 → ${summaryCount}文字${ratio !== null ? `（約${ratio}%に要約）` : ''}</p>
-                        ${responseTime !== null ? `<p>応答時間：約${responseTime}秒</p>` : ''}
-                        <p>AIが入力内容をもとに生成した回答です。内容の正確性を保証するものではありません。</p>
+                    <div class="tenmei-ai-info-panel summary-info hidden" data-ai-info-panel hidden>
+                        <p><strong>AI要約について</strong></p>
+                        <dl class="tenmei-ai-info-list">
+                            <div><dt>使用モデル</dt><dd>${escapeHtml(data.model_used || '不明')}</dd></div>
+                            <div><dt>入力</dt><dd>対象記事の本文（${originalCount}文字）</dd></div>
+                            <div><dt>出力</dt><dd>${summaryCount}文字${ratio !== null ? `（元の文章の約${ratio}%）` : ''}</dd></div>
+                            ${responseTime !== null ? `<div><dt>応答時間</dt><dd>約${responseTime}秒</dd></div>` : ''}
+                            <div><dt>保存</dt><dd>生成した要約は保存され、次回以降の表示で再利用される場合があります。</dd></div>
+                            <div><dt>注意</dt><dd>AIによる要約のため、重要な情報は元の記事本文でも確認してください。</dd></div>
+                        </dl>
                     </div>
-            `;            const infoBtn = resultArea.querySelector('[data-ai-info-toggle]');
-            const infoPanel = resultArea.querySelector('[data-ai-info-panel]');
-            infoBtn?.addEventListener('click', () => {
-                const opening = infoPanel.classList.contains('hidden');
-                infoPanel.classList.toggle('hidden', !opening);
-                infoBtn.setAttribute('aria-expanded', String(opening));
-            });
+            `;
+            bindAiInfoToggle(resultArea.querySelector('[data-ai-info-toggle]'), resultArea.querySelector('[data-ai-info-panel]'));
 
             resultArea.querySelectorAll('[data-vote]').forEach(btn => {
                 btn.addEventListener('click', () => {
