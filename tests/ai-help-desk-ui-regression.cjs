@@ -9,7 +9,7 @@ const js = fs.readFileSync(path.join(root, 'assets', 'js', 'tenmei-ai-agent.js')
 const headers = fs.readFileSync(path.join(root, '_headers'), 'utf8');
 for (const text of ['assets/css/tenmei-ai-agent.css',"const aiGuideState = { loaded: false, scriptRequested: false, generation: 0 }","script.src = '/assets/js/tenmei-ai-agent.js'",'天命乃杜 AI案内','天命乃杜独自のAI案内（Cloudflare Workers AI）','会話履歴を保存しません']) assert.ok(html.includes(text),'サイト統合が不足しています: '+text);
 for (const text of ['tenmei-ai-launcher','tenmei-ai-panel','TENMEI GUIDE','個人情報・パスワードなどは入力しないでください','/api/ai-guide']) assert.ok(js.includes(text),'独自AI UIの要件が不足しています: '+text);
-for (const text of ['if (url.pathname === "/api/ai-guide" && method === "POST")','const systemPrompt = [','Cloudflare Workers AI','checkRateLimit(ip, "ai_guide", 15, 3600)','sensitivePattern','runNonStreamingAI(messages, 640)','Cache-Control']) assert.ok(worker.includes(text),'バックエンドの安全策または指示文が不足しています: '+text);
+for (const text of ['if (url.pathname === "/api/ai-guide" && method === "POST")','const systemPrompt = [','@cf/zai-org/glm-4.7-flash','runNonStreamingAI(messages, 640)','checkRateLimit(ip, "ai_guide", 15, 3600)','sensitivePattern','runNonStreamingAI(messages, 640)','Cache-Control']) assert.ok(worker.includes(text),'バックエンドの安全策または指示文が不足しています: '+text);
 assert.ok(css.includes('@media(max-width:640px)'),'モバイルレイアウトが不足しています');
 assert.ok(css.includes('prefers-reduced-motion:reduce'),'軽減モーション対応が不足しています');
 assert.ok(!/chatling|chtl-/i.test(html+js+css+worker+headers),'旧外部AIの実装参照が残っています');
