@@ -4,7 +4,7 @@ const LINK_HEADER = '</.well-known/api-catalog>; rel="api-catalog", </openapi.js
 export async function onRequest({ request, next }) {
   const url = new URL(request.url);
   const accept = request.headers.get("Accept") || "";
-  const isDocumentPath = !/\\.[^/]+$/.test(url.pathname)
+  const isDocumentPath = !/\.[^/]+$/.test(url.pathname)
     && !url.pathname.startsWith("/.well-known/")
     && !url.pathname.startsWith("/status/api/");
 
