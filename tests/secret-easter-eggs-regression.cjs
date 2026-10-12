@@ -14,7 +14,7 @@ const eggs = html.slice(start, end);
   'function createSecretMatcher(words, onMatch, delayMs)',
   'createSecretMatcher(keyboardWords',
   'window._trySecretWord=function(word)',
-  "event.keyCode===229",
+  "e.keyCode===229",
   'prefers-reduced-motion:reduce',
   'tenmei-egg-theme-star',
   'tenmei_visit_count',
