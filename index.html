@@ -37420,24 +37420,40 @@ html.public-document-reading-body-font-custom:not(.public-document-reading-disab
         const customBodyFont = enabled && root.classList.contains('public-document-reading-body-font-custom');
         const customContentWidth = enabled && root.classList.contains('public-document-reading-content-width-custom');
 
-        document.querySelectorAll(':is(#view-about, #view-privacy, #view-howto) :is(p, li, td, th, blockquote, dt, dd, figcaption)').forEach((element) => {
+        // About本文は通常の公開文書と異なり、章内にspan/divで組まれた文章もある。
+        // p等だけでなく実際の章本文内のテキスト要素にも設定を直接反映する。
+        const textSelector = [
+            ':is(#view-about, #view-privacy, #view-howto) :is(p, li, td, th, blockquote, dt, dd, figcaption, span, strong, em)',
+            '#view-about .about-codex-chapter>div:not(.about-codex-chapter-head)',
+            '#view-privacy .privacy-ledger-article>div:not(.privacy-ledger-article-heading)',
+            '#view-howto .howto-guide-entry>div:not(.howto-guide-entry-heading)'
+        ].join(', ');
+        document.querySelectorAll(textSelector).forEach((element) => {
             element.toggleAttribute('data-reading-settings-inline', enabled && (customFontSize || customLineHeight || customBodyFont));
-            if (customFontSize && fontSize) element.style.setProperty('font-size', fontSize);
+            if (customFontSize && fontSize) element.style.setProperty('font-size', fontSize, 'important');
             else element.style.removeProperty('font-size');
-            if (customLineHeight && lineHeight) element.style.setProperty('line-height', lineHeight);
+            if (customLineHeight && lineHeight) element.style.setProperty('line-height', lineHeight, 'important');
             else element.style.removeProperty('line-height');
-            if (customBodyFont && fontFamily) element.style.setProperty('font-family', fontFamily);
+            if (customBodyFont && fontFamily) element.style.setProperty('font-family', fontFamily, 'important');
             else element.style.removeProperty('font-family');
         });
 
-        document.querySelectorAll(':is(#view-about, #view-privacy, #view-howto) :is(.about-codex-prologue p, .privacy-ledger-prologue p, .howto-guide-prologue>p:last-child, .about-codex-chapter>div:not(.about-codex-chapter-head), .privacy-ledger-article>div:not(.privacy-ledger-article-heading), .howto-guide-entry>div:not(.howto-guide-entry-heading))').forEach((element) => {
+        const contentSelector = [
+            ':is(#view-about, #view-privacy, #view-howto) :is(.about-codex-prologue p, .privacy-ledger-prologue p, .howto-guide-prologue>p:last-child)',
+            '#view-about .about-codex-chapter>div:not(.about-codex-chapter-head)',
+            '#view-privacy .privacy-ledger-article>div:not(.privacy-ledger-article-heading)',
+            '#view-howto .howto-guide-entry>div:not(.howto-guide-entry-heading)'
+        ].join(', ');
+        document.querySelectorAll(contentSelector).forEach((element) => {
             if (!customContentWidth) {
+                element.style.removeProperty('width');
                 element.style.removeProperty('max-width');
                 element.style.removeProperty('margin-left');
                 element.style.removeProperty('margin-right');
                 return;
             }
-            if (maxWidth) element.style.setProperty('max-width', maxWidth);
+            element.style.setProperty('width', '100%', 'important');
+            if (maxWidth) element.style.setProperty('max-width', maxWidth, 'important');
             element.style.setProperty('margin-left', 'auto');
             element.style.setProperty('margin-right', 'auto');
         });
