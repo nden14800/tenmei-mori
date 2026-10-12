@@ -1,13 +1,13 @@
 /*
- * Tenmei Mori — cross-device responsive safety layer
- * Keep this layer conservative: preserve existing page-specific layouts and interactions.
- * Target test widths: 320, 360, 375, 390, 430, 600, 760, 768, 820, 1024, 1180, 1366, 1440.
+ * Tenmei Mori — cross-device responsive safety layer.
+ * Conservative shared rules; page-specific layouts remain responsible for composition.
+ * Viewport regression targets: 320, 360, 375, 390, 430, 600, 760, 768, 820, 1024, 1180, 1366, 1440 CSS px.
  */
 
 html {
   -webkit-text-size-adjust: 100%;
   text-size-adjust: 100%;
-  min-width: 0;
+  min-width: 0 !important;
 }
 
 *, *::before, *::after {
@@ -37,8 +37,8 @@ input, select, textarea {
 main,
 main > *,
 [role="main"] {
-  min-width: 0;
-  max-width: 100%;
+  min-width: 0 !important;
+  max-width: 100% !important;
 }
 
 #main-content {
@@ -68,26 +68,26 @@ table {
 
 @media (max-width: 1366px) {
   html, body {
-    min-width: 0;
+    min-width: 0 !important;
   }
 
   #main-content,
   body #main-content {
-    min-width: 0;
-    max-width: 100%;
+    min-width: 0 !important;
+    max-width: 100% !important;
   }
 
   #main-content > *,
   .view-section > *,
   .view-section .container,
   .view-section .container-fluid {
-    min-width: 0;
-    max-width: 100%;
+    min-width: 0 !important;
+    max-width: 100% !important;
   }
 
   .view-section [class*="grid"],
   .view-section [class*="flex"] {
-    min-width: 0;
+    min-width: 0 !important;
   }
 
   .view-section .row {
@@ -97,19 +97,19 @@ table {
 
 @media (max-width: 1024px) {
   .view-section :is(.modal, .modal-dialog, dialog, [role="dialog"]) {
-    max-width: calc(100vw - 1.5rem);
+    max-width: calc(100vw - 1.5rem) !important;
   }
 
   .view-section :is(input, select, textarea) {
-    max-width: 100%;
+    max-width: 100% !important;
   }
 
   .view-section :is(img, video, iframe, canvas) {
-    max-width: 100%;
+    max-width: 100% !important;
   }
 
   .view-section :is(.table-responsive, [data-table-scroll]) {
-    max-width: 100%;
+    max-width: 100% !important;
     overflow-x: auto;
     -webkit-overflow-scrolling: touch;
   }
@@ -117,44 +117,40 @@ table {
 
 @media (max-width: 760px) {
   body {
-    min-width: 0;
-    width: 100%;
+    min-width: 0 !important;
+    width: 100% !important;
   }
 
   #main-content,
   body #main-content {
-    min-width: 0;
-    width: 100%;
-    max-width: 100%;
+    min-width: 0 !important;
+    width: 100% !important;
+    max-width: 100% !important;
   }
 
   #main-content > *,
   .view-section,
   .view-section.active,
   .view-section > * {
-    min-width: 0;
-    max-width: 100%;
+    min-width: 0 !important;
+    max-width: 100% !important;
   }
 
   .view-section :is(.container, .container-fluid) {
-    width: 100%;
-    max-width: 100%;
+    max-width: 100% !important;
   }
 
   .view-section :is(.row, .d-flex, [class*="grid"]) {
-    min-width: 0;
+    min-width: 0 !important;
   }
 
   .view-section :is(.card, .modal-content, .dropdown-menu, .popover, .tooltip) {
-    max-width: calc(100vw - 1.25rem);
+    max-width: calc(100vw - 1.25rem) !important;
   }
 
-  .view-section :is(input, select, textarea, button) {
-    min-height: 2.75rem;
-  }
-
-  .view-section :is(input, select, textarea) {
-    width: 100%;
+  .view-section :is(input:not([type="checkbox"]):not([type="radio"]):not([type="range"]), select, textarea) {
+    min-width: 0 !important;
+    max-width: 100% !important;
   }
 
   .view-section :is(button, [role="button"], a.btn) {
@@ -162,24 +158,25 @@ table {
   }
 
   .view-section :is(.modal, dialog, [role="dialog"]) {
-    max-width: calc(100vw - 1rem);
-    max-height: calc(100dvh - 1rem);
+    max-width: calc(100vw - 1rem) !important;
+    max-height: calc(100dvh - 1rem) !important;
     overflow: auto;
     overscroll-behavior: contain;
   }
 
   .view-section :is(.modal-dialog, .modal-content) {
-    min-width: 0;
+    min-width: 0 !important;
   }
 
   .view-section :is(.table-responsive, [data-table-scroll]) {
-    width: 100%;
+    width: 100% !important;
+    max-width: 100% !important;
     overflow-x: auto;
     -webkit-overflow-scrolling: touch;
   }
 
   .view-section :is(.text-nowrap, [data-no-wrap]) {
-    max-width: 100%;
+    max-width: 100% !important;
   }
 }
 
@@ -192,14 +189,14 @@ table {
     overflow-wrap: anywhere;
   }
 
-  .view-section :is(input, select, textarea) {
-    font-size: 16px;
+  .view-section :is(input[type="text"], input[type="email"], input[type="password"], input[type="search"], input[type="tel"], input[type="url"], input[type="number"], input[type="date"], select, textarea) {
+    font-size: 16px !important;
   }
 }
 
 @media (max-width: 360px) {
   .view-section :is(.row, .d-flex, [class*="grid"]) {
-    min-width: 0;
+    min-width: 0 !important;
   }
 
   .view-section :is(.card, .modal-content) {
@@ -209,14 +206,14 @@ table {
 
 @media (orientation: landscape) and (max-height: 500px) {
   .view-section :is(.modal, dialog, [role="dialog"]) {
-    max-height: calc(100dvh - 0.75rem);
+    max-height: calc(100dvh - 0.75rem) !important;
     overflow-y: auto;
   }
 }
 
 @media (prefers-reduced-motion: reduce) {
   html:focus-within {
-    scroll-behavior: auto;
+    scroll-behavior: auto !important;
   }
 
   *, *::before, *::after {
