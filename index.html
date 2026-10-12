@@ -66,19 +66,73 @@
             ensureAnalyticsConsentDefault();
             const preferences = readPreferences();
             if (!preferences || preferences.analytics !== true) {
-                window.gtag('consent', 'update', { analytics_storage: 'denied' });
+                window.gtag('consent', 'update', {
+                    analytics_storage: 'denied',
+                    ad_storage: 'denied',
+                    ad_user_data: 'denied',
+                    ad_personalization: 'denied'
+                });
+                sendClarityConsent(false);
                 return;
             }
-            window.gtag('consent', 'update', { analytics_storage: 'granted' });
+            window.gtag('consent', 'update', {
+                analytics_storage: 'granted',
+                ad_storage: 'denied',
+                ad_user_data: 'denied',
+                ad_personalization: 'denied'
+            });
+            sendClarityConsent(true);
             window.gtag('js', new Date());
             window.gtag('config', 'G-LMJV6EK1DD', { anonymize_ip: true, send_page_view: false });
             appendScript('tenmei-google-analytics', 'https://www.googletagmanager.com/gtag/js?id=G-LMJV6EK1DD', () => {
+                window.__tenmeiGoogleAnalyticsLoaded = true;
+                if (!readPreferences() || readPreferences().analytics !== true) {
+                    window.gtag('consent', 'update', { analytics_storage: 'denied' });
+                    return;
+                }
                 window.gtag('event', 'page_view', {
                     page_location: window.location.href,
                     page_title: document.title
                 });
             });
-            appendScript('tenmei-microsoft-clarity', 'https://www.clarity.ms/tag/wo73lcg3xc');
+            appendScript('tenmei-microsoft-clarity', 'https://www.clarity.ms/tag/wo73lcg3xc', () => {
+                window.__tenmeiClarityLoaded = true;
+                if (!readPreferences() || readPreferences().analytics !== true) sendClarityConsent(false);
+            });
+        }
+
+        function sendClarityConsent(granted) {
+            if (typeof window.clarity !== 'function') {
+                const clarityQueue = function () {
+                    (clarityQueue.q = clarityQueue.q || []).push(arguments);
+                };
+                window.clarity = clarityQueue;
+            }
+            window.clarity('consentv2', {
+                ad_Storage: granted ? 'granted' : 'denied',
+                analytics_Storage: granted ? 'granted' : 'denied'
+            });
+        }
+
+        function stopOptionalAnalytics() {
+            ensureAnalyticsConsentDefault();
+            window.gtag('consent', 'update', {
+                analytics_storage: 'denied',
+                ad_storage: 'denied',
+                ad_user_data: 'denied',
+                ad_personalization: 'denied'
+            });
+            sendClarityConsent(false);
+
+            // Remove scripts that are still loading; already-loaded SDKs receive an explicit denied signal.
+            ['tenmei-google-analytics', 'tenmei-microsoft-clarity'].forEach((id) => {
+                const script = document.getElementById(id);
+                const loaded = id === 'tenmei-google-analytics'
+                    ? window.__tenmeiGoogleAnalyticsLoaded === true
+                    : window.__tenmeiClarityLoaded === true;
+                if (script && !loaded) script.remove();
+            });
+            removeAnalyticsCookies();
         }
 
         function removeStorageKeys(matcher) {
@@ -152,7 +206,7 @@
             };
             try { localStorage.setItem(COOKIE_PREFERENCES_KEY, JSON.stringify(normalized)); } catch (error) {}
             if (normalized.analytics) loadOptionalAnalytics();
-            else removeAnalyticsCookies();
+            else stopOptionalAnalytics();
             if (normalized.supportChat) loadOptionalSupportChat();
             else stopOptionalSupportChat();
             window.dispatchEvent(new CustomEvent('tenmei:cookie-preferences-changed', { detail: normalized }));
@@ -194,6 +248,7 @@
             save: savePreferences,
             removeAnalyticsCookies,
             loadOptionalAnalytics,
+            stopOptionalAnalytics,
             loadOptionalSupportChat,
             stopOptionalSupportChat,
             open: () => window.dispatchEvent(new CustomEvent('tenmei:open-cookie-preferences'))

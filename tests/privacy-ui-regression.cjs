@@ -146,6 +146,22 @@ assert.equal(
   requireText(text, `プライバシーポリシー画面のテーマ・フォーカス・PDF出力契約が失われています: ${text}`);
 });
 
+// Consent revocation must stop further analytics collection after a user changes the setting to OFF.
+const analyticsRuntimeStart = html.indexOf('function loadOptionalAnalytics()');
+const analyticsRuntimeEnd = html.indexOf('function removeStorageKeys', analyticsRuntimeStart);
+assert(analyticsRuntimeStart >= 0 && analyticsRuntimeEnd > analyticsRuntimeStart, '解析同意処理のソース範囲を確認できません。');
+const analyticsRuntime = html.slice(analyticsRuntimeStart, analyticsRuntimeEnd);
+assert.match(analyticsRuntime, /function sendClarityConsent\(granted\)/, 'Clarity consent signal helper is missing.');
+assert.match(analyticsRuntime, /consentv2[\\s\\S]*?ad_Storage:[\\s\\S]*?analytics_Storage:/, 'Clarity must receive an explicit Consent V2 signal.');
+assert.match(analyticsRuntime, /function stopOptionalAnalytics\(\)/, 'Analytics revocation handler is missing.');
+assert.match(analyticsRuntime, /analytics_storage: 'denied'[\\s\\S]*?sendClarityConsent\(false\)/, 'Revoking analytics must deny Google and Clarity consent.');
+assert.match(analyticsRuntime, /__tenmeiGoogleAnalyticsLoaded[\\s\\S]*?__tenmeiClarityLoaded/, 'Analytics scripts must distinguish pending scripts from loaded SDKs.');
+const savePreferencesStart = html.indexOf('function savePreferences(');
+const savePreferencesEnd = html.indexOf('// UX計測は', savePreferencesStart);
+const savePreferencesSource = html.slice(savePreferencesStart, savePreferencesEnd);
+assert.match(savePreferencesSource, /if \(normalized\.analytics\) loadOptionalAnalytics\(\);[\\s\\S]*?else stopOptionalAnalytics\(\);/, 'Turning analytics OFF must call stopOptionalAnalytics.');
+assert.match(html, /stopOptionalAnalytics,\\s*loadOptionalSupportChat/, 'The cookie consent controller must expose the stop handler for consistent settings behavior.');
+
 console.log('プライバシーポリシー画面の回帰テストに合格しました。');
 console.log(JSON.stringify({
   privacyLedgerTemplate: true,
