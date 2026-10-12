@@ -37422,13 +37422,18 @@ html.public-document-reading-body-font-custom:not(.public-document-reading-disab
 
         // About本文は通常の公開文書と異なり、章内にspan/divで組まれた文章もある。
         // p等だけでなく実際の章本文内のテキスト要素にも設定を直接反映する。
+        // 各公開文書の「本文ルート」を同じ扱いにする。Aboutだけ別の非同期フックに依存させず、
+        // 読書設定の反映処理から毎回この共通関数を呼び、本文内の装飾要素にも同じ値を適用する。
         const textSelector = [
             '#view-about .about-codex-prologue',
-            '#view-about .about-codex-document .about-codex-chapter>div:not(.about-codex-chapter-head)',
-            '#view-about .about-codex-document .about-codex-chapter>div:not(.about-codex-chapter-head) :is(p, h1, h2, h3, h4, h5, h6, li, td, th, blockquote, dt, dd, figcaption, span, strong, em, small, a, code)',
-            '#view-privacy :is(.privacy-ledger-prologue, .privacy-ledger-article>div:not(.privacy-ledger-article-heading))',
-            '#view-howto :is(.howto-guide-prologue>p:last-child, .howto-guide-entry>div:not(.howto-guide-entry-heading))',
-            ':is(#view-privacy, #view-howto) :is(p, h1, h2, h3, h4, h5, h6, li, td, th, blockquote, dt, dd, figcaption, span, strong, em, small, a, code)'
+            '#view-about #about-content-area .about-codex-document .about-codex-chapter > div:not(.about-codex-chapter-head)',
+            '#view-about #about-content-area .about-codex-document .about-codex-chapter > div:not(.about-codex-chapter-head) *',
+            '#view-privacy #privacy-content-area .privacy-ledger-prologue',
+            '#view-privacy #privacy-content-area .privacy-ledger-article',
+            '#view-privacy #privacy-content-area .privacy-ledger-article *',
+            '#view-howto #howto-content-area .howto-guide-prologue > p:last-child',
+            '#view-howto #howto-content-area .howto-guide-entry > div:not(.howto-guide-entry-heading)',
+            '#view-howto #howto-content-area .howto-guide-entry > div:not(.howto-guide-entry-heading) *'
         ].join(', ');
         document.querySelectorAll(textSelector).forEach((element) => {
             element.toggleAttribute('data-reading-settings-inline', enabled && (customFontSize || customLineHeight || customBodyFont));
