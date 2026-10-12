@@ -7,7 +7,8 @@
     { id: "home", name: "Homepage", url: "https://tenmei-mori.pages.dev/", description: "Official website." },
     { id: "status", name: "Service status", url: "https://tenmei-mori.pages.dev/status/", description: "Public service status." },
     { id: "api-guide", name: "API guide", url: "https://tenmei-mori.pages.dev/docs/agents/api.md", description: "Read-only API documentation." },
-    { id: "api-catalog", name: "API catalog", url: "https://tenmei-mori.pages.dev/.well-known/api-catalog", description: "Machine-readable API links." }
+    { id: "api-catalog", name: "API catalog", url: "https://tenmei-mori.pages.dev/.well-known/api-catalog", description: "Machine-readable API links." },
+    { id: "mcp-card", name: "MCP Server Card", url: "https://tenmei-mori.pages.dev/.well-known/mcp/server-card.json", description: "Read-only MCP server metadata." }
   ];
   const definitions = [
     {
@@ -33,7 +34,7 @@
       execute: async ({ category = "all" } = {}) => ({
         resources: resources.filter((r) => category === "all"
           || (category === "status" && r.id === "status")
-          || (category === "api" && ["api-guide", "api-catalog"].includes(r.id))
+          || (category === "api" && ["api-guide", "api-catalog", "mcp-card"].includes(r.id))
           || (category === "site" && r.id === "home"))
       })
     },
