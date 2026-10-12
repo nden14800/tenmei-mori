@@ -19,6 +19,13 @@ assert(!unified.includes('data-ai-rate'), '要約以外のAI共通レスポン�
 assert(!unified.includes('summary-vote'), '要約以外のAI共通レスポンスに要約専用フィードバックUIが混入しています。');
 requireText(unified, 'data-ai-info-toggle', 'AI共通レスポンスの情報ボタンがありません。');
 requireText(unified, 'data-ai-info-panel', 'AI共通レスポンスの情報パネルがありません。');
+requireText(unified, 'bindAiInfoToggle', 'AI共通の情報パネル開閉処理がありません。');
+requireText(unified, 'panel.hidden = true', '情報パネルが初期状態で確実に閉じていません。');
+requireText(unified, 'panel.hidden = !opening', '情報ボタンでパネルを確実に開閉できません。');
+requireText(unified, "infoBtn.setAttribute('aria-controls', panel.id)", '情報ボタンとパネルの関連付けがありません。');
+requireText(html, 'tenmei-ai-info-panel summary-info hidden" data-ai-info-panel hidden', 'AI要約の情報パネルが初期状態で閉じていません。');
+requireText(html, '<dt>入力</dt><dd>対象記事の本文', 'AI要約の情報欄に入力内容がありません。');
+requireText(html, '<dt>保存</dt><dd>生成した要約は保存され', 'AI要約の情報欄に保存仕様がありません。');
 
 requireText(html, 'consumeUnifiedAiStream(res, responseArea)', '悩み相談・夢占いが共通ストリーミング処理を利用していません。');
 requireText(html, "infoTitle: 'AI悩み相談について'", 'AI悩み相談の詳細情報がありません。');
