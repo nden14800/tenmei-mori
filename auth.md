@@ -10,7 +10,9 @@ The site's Google sign-in and email verification/magic-link sign-in are for huma
 
 Machine-readable resource metadata is published at:
 - Protected Resource Metadata: https://tenmei-mori.pages.dev/.well-known/oauth-protected-resource
-- The metadata explicitly advertises no authorization server because none is operated by this site.
+- Authorization-server capability status: https://tenmei-mori.pages.dev/.well-known/oauth-authorization-server
+
+**Important:** the OAuth authorization-server URL above is a capability-status declaration only, not valid RFC 8414 authorization-server metadata. It explicitly marks OAuth as unavailable; do not use it for OAuth discovery or send tokens to this site.
 
 ## Instructions for agents
 
@@ -18,7 +20,11 @@ Machine-readable resource metadata is published at:
 2. Never ask visitors to disclose passwords, magic-link URLs, session cookies, or verification codes to an agent.
 3. Do not treat a browser's signed-in session as authorization to call private APIs outside the website.
 4. If an operation requires a signed-in visitor, direct the visitor to use the official website UI.
-5. Do not attempt OAuth discovery against this site as if it were an authorization server. No OAuth/OIDC issuer, token endpoint, JWKS endpoint, or revocation endpoint is currently provided by this site.
+5. Do not attempt OAuth discovery against this site as if it were an authorization server. No OAuth/OIDC issuer, authorization endpoint, token endpoint, JWKS endpoint, or revocation endpoint is currently provided by this site.
+
+## DNS-based agent discovery
+
+DNS-AID ServiceMode SVCB/HTTPS records and DNSSEC validation are **not yet published** for this site. The current deployment uses the Cloudflare Pages hostname `tenmei-mori.pages.dev`; the site's deployment configuration does not include a DNS zone that can be configured here. Do not infer that DNS-AID or DNSSEC is active from the HTTP metadata files. Publishing authenticated DNS records requires a domain with an accessible authoritative DNS zone and DNSSEC enabled.
 
 ## Public agent resources
 
