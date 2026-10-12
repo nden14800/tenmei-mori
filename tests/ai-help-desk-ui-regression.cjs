@@ -4,6 +4,8 @@ const path = require('node:path');
 const root = path.resolve(__dirname, '..');
 const html = fs.readFileSync(path.join(root, 'index.html'), 'utf8');
 const worker = fs.readFileSync(path.join(root, 'workers', 'tenmei-mori-backend.js'), 'utf8');
+for (const text of ['function ensureConsentLauncher()', "tenmei-ai-consent-launcher", 'Cookie設定で「サポートチャット」を許可してください', "document.addEventListener('DOMContentLoaded', ensureConsentLauncher"]) assert.ok(html.includes(text), '同意前もAI案内の入口を表示する実装が不足しています: ' + text);
+
 const css = fs.readFileSync(path.join(root, 'assets', 'css', 'tenmei-ai-agent.css'), 'utf8');
 const js = fs.readFileSync(path.join(root, 'assets', 'js', 'tenmei-ai-agent.js'), 'utf8');
 const headers = fs.readFileSync(path.join(root, '_headers'), 'utf8');
