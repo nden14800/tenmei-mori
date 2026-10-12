@@ -1,0 +1,104 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "Tenmei Mori Public Read-only API",
+    "version": "1.0.0",
+    "description": "Only existing public read-only endpoints are listed. Account, write, and AI-generation operations are intentionally excluded."
+  },
+  "servers": [
+    {
+      "url": "https://tenmei-mori-backend.nden14800.workers.dev",
+      "description": "Cloudflare Worker backend"
+    }
+  ],
+  "paths": {
+    "/api/system/maintenance": {
+      "get": {
+        "operationId": "getMaintenanceStatus",
+        "summary": "Get configured maintenance state",
+        "description": "Read-only. This reports the maintenance gate, not full dependency health.",
+        "responses": {
+          "200": {
+            "description": "Maintenance state",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "active": {
+                      "type": "boolean"
+                    },
+                    "title": {
+                      "type": "string"
+                    },
+                    "message": {
+                      "type": "string"
+                    },
+                    "scheduleLabel": {
+                      "type": "string"
+                    },
+                    "retryAfterSeconds": {
+                      "type": "integer"
+                    }
+                  },
+                  "required": [
+                    "active",
+                    "title",
+                    "message",
+                    "scheduleLabel",
+                    "retryAfterSeconds"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/counter": {
+      "get": {
+        "operationId": "getPublicCounter",
+        "summary": "Get public counter totals",
+        "description": "Read-only public aggregate counters. No visitor session is required.",
+        "responses": {
+          "200": {
+            "description": "Public counters",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "count": {
+                      "oneOf": [
+                        {
+                          "type": "integer"
+                        },
+                        {
+                          "type": "string"
+                        }
+                      ]
+                    },
+                    "user_count": {
+                      "oneOf": [
+                        {
+                          "type": "integer"
+                        },
+                        {
+                          "type": "string"
+                        }
+                      ]
+                    }
+                  },
+                  "required": [
+                    "count",
+                    "user_count"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}
