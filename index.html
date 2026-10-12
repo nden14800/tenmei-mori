@@ -37427,7 +37427,7 @@ html.public-document-reading-body-font-custom:not(.public-document-reading-disab
         const textSelector = [
             '#view-about .about-codex-prologue',
             '#view-about #about-content-area .about-codex-document .about-codex-chapter > div:not(.about-codex-chapter-head)',
-            '#view-about #about-content-area .about-codex-document .about-codex-chapter > div:not(.about-codex-chapter-head) :is(p, h1, h2, h3, h4, h5, h6, li, td, th, blockquote, dt, dd, figcaption, span, strong, em, small, a, code)',
+            '#view-about #about-content-area .about-codex-document .about-codex-chapter > div:not(.about-codex-chapter-head) :is(div, p, h1, h2, h3, h4, h5, h6, li, td, th, blockquote, dt, dd, figcaption, span, strong, em, small, a, code)',
             '#view-privacy #privacy-content-area .privacy-ledger-prologue',
             '#view-privacy #privacy-content-area .privacy-ledger-article',
             '#view-privacy #privacy-content-area .privacy-ledger-article :is(p, h1, h2, h3, h4, h5, h6, li, td, th, blockquote, dt, dd, figcaption, span, strong, em, small, a, code)',
@@ -37467,10 +37467,13 @@ html.public-document-reading-body-font-custom:not(.public-document-reading-disab
     }
 
     function hookAppConfig() {
-        if (!window.AppConfig || typeof window.AppConfig.toggle !== 'function') return false;
-        if (window.AppConfig.__tenmeiPublicReadingHook) return true;
-        const original = window.AppConfig.toggle.bind(window.AppConfig);
-        window.AppConfig.toggle = function (key, value) {
+        // AppConfig はトップレベルの const であり window のプロパティではない。
+        // window.AppConfig を参照するとフックが一度も登録されず、当サイト本文への
+        // インライン適用が設定変更後に更新されない。
+        if (typeof AppConfig === 'undefined' || !AppConfig || typeof AppConfig.toggle !== 'function') return false;
+        if (AppConfig.__tenmeiPublicReadingHook) return true;
+        const original = AppConfig.toggle.bind(AppConfig);
+        AppConfig.toggle = function (key, value) {
             const result = original(key, value);
             if (key === 'publicDocumentReading') {
                 queueMicrotask(refreshPublicDocumentReading);
@@ -37479,7 +37482,7 @@ html.public-document-reading-body-font-custom:not(.public-document-reading-disab
             }
             return result;
         };
-        window.AppConfig.__tenmeiPublicReadingHook = true;
+        AppConfig.__tenmeiPublicReadingHook = true;
         return true;
     }
 

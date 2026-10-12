@@ -12,9 +12,10 @@ const html = fs.readFileSync(path.resolve(__dirname, '..', 'index.html'), 'utf8'
   'html.public-document-reading-content-width-custom:not(.public-document-reading-disabled)',
   ':is(#view-about, #view-privacy, #view-howto)',
   'data-reading-settings-inline',
-  'window.AppConfig.__tenmeiPublicReadingHook',
+  'AppConfig.__tenmeiPublicReadingHook',
   "key === 'publicDocumentReading'",
   'refreshPublicDocumentReading',
+  "typeof AppConfig === 'undefined' || !AppConfig || typeof AppConfig.toggle !== 'function'",
 ].forEach((text) => assert(html.includes(text), `公開文書の読書設定契約がありません: ${text}`));
 
 assert.equal((html.match(/data-setting="publicDocumentReading"/g) || []).length, 4);
@@ -31,3 +32,5 @@ assert(html.includes('public-document-reading-font-size-custom:not(.public-docum
 assert(html.includes('public-document-reading-line-height-custom:not(.public-document-reading-disabled) #view-about .about-codex-chapter>div:not(.about-codex-chapter-head)'), '当サイトについての章本文に行間設定が適用されません。');
 assert(html.includes('public-document-reading-body-font-custom:not(.public-document-reading-disabled) #view-about .about-codex-chapter>div:not(.about-codex-chapter-head)'), '当サイトについての章本文に書体設定が適用されません。');
 assert(html.includes('公開文書への読書設定') && html.includes('profile-v4-section-heading--reading'), 'アカウント設定側の公開文書読書設定がありません。');
+
+assert(!html.includes("if (!window.AppConfig || typeof window.AppConfig.toggle !== 'function')"), 'AppConfig は window プロパティではないため、読書設定フックはトップレベルの AppConfig を参照する必要があります。');
