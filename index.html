@@ -35739,8 +35739,13 @@ try {
     function showToast(message, type, icon) { try { if (typeof window.showToast === 'function') window.showToast(message, type || 'info', icon || '🔎'); } catch (_) {} }
 
     function closeEggScene(stage) {
+        var isCurrent = !!(stage && stage.id === 'tenmei-secret-scene' && document.getElementById('tenmei-secret-scene') === stage);
+        if (stage && stage.__tenmeiEggTimer) { window.clearTimeout(stage.__tenmeiEggTimer); stage.__tenmeiEggTimer = null; }
         if (stage && stage.parentNode) stage.parentNode.removeChild(stage);
-        if (window.__tenmeiEggEscapeHandler) { document.removeEventListener('keydown', window.__tenmeiEggEscapeHandler, false); window.__tenmeiEggEscapeHandler = null; }
+        if (isCurrent && window.__tenmeiEggEscapeHandler) {
+            document.removeEventListener('keydown', window.__tenmeiEggEscapeHandler, false);
+            window.__tenmeiEggEscapeHandler = null;
+        }
     }
     function showEggScene(key) {
         var data = eggs[key]; if (!data || !document.body) return;
@@ -35758,7 +35763,7 @@ try {
             card.appendChild(close); card.appendChild(icon); card.appendChild(title); card.appendChild(message); card.appendChild(ornament); stage.appendChild(card);
             data[4].forEach(function (symbol, i) {
                 var particle = document.createElement('span'); particle.className = 'tenmei-egg-particle egg-particle-' + (i % 3);
-                particle.textContent = symbol; particle.setAttribute('aria-hidden','true'); particle.style.setProperty('--egg-index',String(i)); stage.appendChild(particle);
+                particle.textContent = symbol; particle.setAttribute('aria-hidden','true'); particle.style.setProperty('--egg-index',String(i)); particle.style.left=(10+i*24)+'%'; particle.style.top=(16+i*17)+'%'; particle.style.animationDelay=(-i*0.31)+'s'; if(i===1){particle.style.left='auto';particle.style.right='14%';} if(i===2){particle.style.left='50%';particle.style.top='auto';particle.style.bottom='12%';} stage.appendChild(particle);
             });
             document.body.appendChild(stage);
             var dismiss = function () { closeEggScene(stage); };
@@ -35766,7 +35771,7 @@ try {
             stage.addEventListener('click',function (event) { if (event.target === stage) dismiss(); });
             window.__tenmeiEggEscapeHandler = function (event) { if (event.key === 'Escape') dismiss(); };
             document.addEventListener('keydown',window.__tenmeiEggEscapeHandler,false);
-            window.setTimeout(dismiss,8500);
+            stage.__tenmeiEggTimer=window.setTimeout(dismiss,8500);
         } catch (_) { showToast(data[2],'info',data[0]); }
     }
     function installEggStyles() {
@@ -35780,8 +35785,8 @@ try {
           '.tenmei-egg-title{margin:0 0 12px;font-size:20px;letter-spacing:.06em;font-weight:750}',
           '.tenmei-egg-message{margin:0 auto;max-width:34em;font-size:14px;line-height:1.95}',
           '.tenmei-egg-ornament{margin-top:20px;font-size:12px;letter-spacing:.24em;opacity:.7}',
-          '.tenmei-egg-particle{position:absolute;z-index:1;left:calc(10% + var(--egg-index)*13%);top:calc(15% + (var(--egg-index)%3)*24%);font-size:clamp(20px,4vw,38px);pointer-events:none;animation:eggParticle 3.8s ease-in-out infinite;animation-delay:calc(var(--egg-index)*-.31s)}',
-          '.egg-particle-1{left:auto;right:calc(8% + var(--egg-index)*3%);top:calc(22% + (var(--egg-index)%3)*18%)}.egg-particle-2{top:auto;bottom:calc(10% + (var(--egg-index)%3)*16%)}',
+          '.tenmei-egg-particle{position:absolute;z-index:1;left:10%;top:15%;font-size:clamp(20px,4vw,38px);pointer-events:none;animation:eggParticle 3.8s ease-in-out infinite}',
+          '.egg-particle-1{left:auto;right:14%;top:33%}.egg-particle-2{left:50%;top:auto;bottom:12%}',
           '.tenmei-egg-theme-star,.tenmei-egg-theme-moon{background:radial-gradient(ellipse at 50% 45%,rgba(43,54,105,.7),rgba(8,10,28,.94))}.tenmei-egg-theme-star .tenmei-egg-card,.tenmei-egg-theme-moon .tenmei-egg-card{background:linear-gradient(145deg,#171c3a,#29315a);color:#f7f2ff;border-color:rgba(200,195,255,.35)}',
           '.tenmei-egg-theme-fox{background:radial-gradient(ellipse at 50% 45%,rgba(139,71,27,.65),rgba(26,18,15,.94))}.tenmei-egg-theme-fox .tenmei-egg-card{background:linear-gradient(145deg,#fff8ed,#f4dfc7)}',
           '.tenmei-egg-theme-forest{background:radial-gradient(ellipse at 50% 45%,rgba(44,104,70,.65),rgba(9,25,18,.94))}.tenmei-egg-theme-forest .tenmei-egg-card{background:linear-gradient(145deg,#f7fff7,#deeedc)}',
