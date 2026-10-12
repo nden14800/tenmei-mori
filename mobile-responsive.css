@@ -1,0 +1,228 @@
+/*
+ * Tenmei Mori — cross-device responsive safety layer
+ * Keep this layer conservative: preserve existing page-specific layouts and interactions.
+ * Target test widths: 320, 360, 375, 390, 430, 600, 760, 768, 820, 1024, 1180, 1366, 1440.
+ */
+
+html {
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+  min-width: 0;
+}
+
+*, *::before, *::after {
+  box-sizing: border-box;
+}
+
+img, picture, video, canvas, iframe, svg {
+  max-width: 100%;
+}
+
+img, video, canvas {
+  height: auto;
+}
+
+button, input, select, textarea {
+  max-width: 100%;
+  font: inherit;
+}
+
+input, select, textarea {
+  min-width: 0;
+}
+
+#main-content,
+.view-section,
+.view-section.active,
+main,
+main > *,
+[role="main"] {
+  min-width: 0;
+  max-width: 100%;
+}
+
+#main-content {
+  overflow-wrap: anywhere;
+}
+
+.view-section img,
+.view-section video,
+.view-section iframe {
+  max-width: 100%;
+}
+
+pre, code, kbd, samp {
+  overflow-wrap: anywhere;
+  white-space: pre-wrap;
+}
+
+pre {
+  max-width: 100%;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+table {
+  max-width: 100%;
+}
+
+@media (max-width: 1366px) {
+  html, body {
+    min-width: 0;
+  }
+
+  #main-content,
+  body #main-content {
+    min-width: 0;
+    max-width: 100%;
+  }
+
+  #main-content > *,
+  .view-section > *,
+  .view-section .container,
+  .view-section .container-fluid {
+    min-width: 0;
+    max-width: 100%;
+  }
+
+  .view-section [class*="grid"],
+  .view-section [class*="flex"] {
+    min-width: 0;
+  }
+
+  .view-section .row {
+    --bs-gutter-x: clamp(0.75rem, 2.5vw, 1.5rem);
+  }
+}
+
+@media (max-width: 1024px) {
+  .view-section :is(.modal, .modal-dialog, dialog, [role="dialog"]) {
+    max-width: calc(100vw - 1.5rem);
+  }
+
+  .view-section :is(input, select, textarea) {
+    max-width: 100%;
+  }
+
+  .view-section :is(img, video, iframe, canvas) {
+    max-width: 100%;
+  }
+
+  .view-section :is(.table-responsive, [data-table-scroll]) {
+    max-width: 100%;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+}
+
+@media (max-width: 760px) {
+  body {
+    min-width: 0;
+    width: 100%;
+  }
+
+  #main-content,
+  body #main-content {
+    min-width: 0;
+    width: 100%;
+    max-width: 100%;
+  }
+
+  #main-content > *,
+  .view-section,
+  .view-section.active,
+  .view-section > * {
+    min-width: 0;
+    max-width: 100%;
+  }
+
+  .view-section :is(.container, .container-fluid) {
+    width: 100%;
+    max-width: 100%;
+  }
+
+  .view-section :is(.row, .d-flex, [class*="grid"]) {
+    min-width: 0;
+  }
+
+  .view-section :is(.card, .modal-content, .dropdown-menu, .popover, .tooltip) {
+    max-width: calc(100vw - 1.25rem);
+  }
+
+  .view-section :is(input, select, textarea, button) {
+    min-height: 2.75rem;
+  }
+
+  .view-section :is(input, select, textarea) {
+    width: 100%;
+  }
+
+  .view-section :is(button, [role="button"], a.btn) {
+    touch-action: manipulation;
+  }
+
+  .view-section :is(.modal, dialog, [role="dialog"]) {
+    max-width: calc(100vw - 1rem);
+    max-height: calc(100dvh - 1rem);
+    overflow: auto;
+    overscroll-behavior: contain;
+  }
+
+  .view-section :is(.modal-dialog, .modal-content) {
+    min-width: 0;
+  }
+
+  .view-section :is(.table-responsive, [data-table-scroll]) {
+    width: 100%;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .view-section :is(.text-nowrap, [data-no-wrap]) {
+    max-width: 100%;
+  }
+}
+
+@media (max-width: 430px) {
+  .view-section :is(.card, .modal-content, .dropdown-menu) {
+    overflow-wrap: anywhere;
+  }
+
+  .view-section :is(h1, h2, h3, h4, h5, h6) {
+    overflow-wrap: anywhere;
+  }
+
+  .view-section :is(input, select, textarea) {
+    font-size: 16px;
+  }
+}
+
+@media (max-width: 360px) {
+  .view-section :is(.row, .d-flex, [class*="grid"]) {
+    min-width: 0;
+  }
+
+  .view-section :is(.card, .modal-content) {
+    padding-inline: min(1rem, 4vw);
+  }
+}
+
+@media (orientation: landscape) and (max-height: 500px) {
+  .view-section :is(.modal, dialog, [role="dialog"]) {
+    max-height: calc(100dvh - 0.75rem);
+    overflow-y: auto;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html:focus-within {
+    scroll-behavior: auto;
+  }
+
+  *, *::before, *::after {
+    scroll-behavior: auto !important;
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
