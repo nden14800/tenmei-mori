@@ -1,148 +1,18 @@
 const assert = require('node:assert/strict');
 const fs = require('node:fs');
 const path = require('node:path');
-
 const root = path.resolve(__dirname, '..');
-const htmlPath = path.join(root, 'index.html');
-const html = fs.readFileSync(htmlPath, 'utf8');
-const headersPath = path.join(root, '_headers');
-const headers = fs.existsSync(headersPath) ? fs.readFileSync(headersPath, 'utf8') : '';
-const failures = [];
-
-function expect(condition, message) {
-  if (!condition) failures.push(message);
-}
-
-function between(source, startMarker, endMarker) {
-  const start = source.indexOf(startMarker);
-  const end = source.indexOf(endMarker, start + startMarker.length);
-  if (start === -1 || end === -1) return '';
-  return source.slice(start, end);
-}
-
-const guideMarkup = between(
-  html,
-  '<!-- ================================================================\n         案内センター',
-  '<!-- プロフィール編集モーダル'
-);
-const script = between(
-  html,
-  '//  天命乃杜 案内センター',
-  '// --- XSS対策用エスケープ関数 ---'
-);
-
-expect(guideMarkup.length > 0, '案内センターのマークアップを検出できません。');
-expect(script.length > 0, '案内センターの初期化スクリプトを検出できません。');
-expect(html.includes('assets/vendor/pagefind/pagefind-component-ui.css'), 'PagefindのローカルCSSを読み込んでいません。');
-expect(html.includes('assets/vendor/pagefind/pagefind-component-ui.js'), 'PagefindのローカルWeb Componentを読み込んでいません。');
-expect(headers.includes("'wasm-unsafe-eval'"), 'PagefindのWebAssembly実行に必要な最小限のCSP許可がありません。');
-expect(!headers.includes("'unsafe-eval'"), 'CSPが不要に一般的なunsafe-evalを許可しています。');
-
-[
-  'id="guide-center-trigger"',
-  'id="guide-center"',
-  'id="guide-screen-home"',
-  'id="guide-screen-help"',
-  'id="guide-screen-ai"',
-  '<pagefind-searchbox',
-  '<pagefind-results',
-  'bundle-path="/assets/vendor/pagefind/"',
-  'data-guide-view="howto"',
-  'data-guide-view="auth"',
-  'data-guide-view="omamori"',
-  'id="guide-ai-form"',
-  'id="guide-ai-input"',
-  'id="guide-ai-reset"',
-  '個人情報、パスワード、認証コード、住所、電話番号、メールアドレス',
-  '運営者への転送・個別返信はありません。',
-].forEach((text) => expect(guideMarkup.includes(text), `案内センターの必須UIまたは注意文が不足しています: ${text}`));
-
-[
-  '@media (max-width: 640px)',
-  '@media (prefers-reduced-motion: reduce)',
-  '.guide-center { width: 100vw; border-left: 0; }',
-].forEach((text) => expect(html.includes(text), `案内センターのレスポンシブまたは軽減モーション規則が不足しています: ${text}`));
-
-[
-  "const AI_GUIDE_ENDPOINT = '/api/v1/prediction/tenmei-ai-guide';",
-  'fetch(API_BASE + AI_GUIDE_ENDPOINT',
-  'history: guideCenterState.messages.slice(-12)',
-  'question.length > 800',
-  'guideCenterContainsSensitiveText(question)',
-  'guideCenterState.messages = []',
-  'window.openArticle(match[1], Number(match[2]))',
-  "url.searchParams.get('guide_article')",
-  'document.createElement(\'p\')',
-  'content.textContent = String(text || \'\')',
-].forEach((text) => expect(script.includes(text), `案内センターの安全なAI案内または記事遷移実装が不足しています: ${text}`));
-
-[
-  'window.Chatbot',
-  'initFlowiseAiGuide',
-  'FLOWISE_AI_GUIDE_ID',
-  'flowise-embed',
-  'assets/vendor/quikchat',
-  'new window.quikchat',
-  'chatbase.co',
-  'chatbase.com',
-  'intercom',
-  'mailto:',
-  'discord.gg',
-  'zendesk',
-  'authFetch(',
-  'innerHTML =',
-  'localStorage',
-  'sessionStorage',
-].forEach((text) => expect(!script.includes(text), `案内センターのAIスクリプトに禁止された依存または永続保存が残っています: ${text}`));
-
-const vendorFiles = [
-  'pagefind.js',
-  'pagefind-ui.js',
-  'pagefind-component-ui.js',
-  'pagefind-component-ui.css',
-  'wasm.unknown.pagefind',
-  'pagefind-entry.json',
-  'NOTICE.txt',
-].map((file) => path.join(root, 'assets', 'vendor', 'pagefind', file));
-vendorFiles.forEach((file) => expect(fs.existsSync(file), `Pagefindのローカル同梱資産が不足しています: ${path.relative(root, file)}`));
-
-const noticePath = path.join(root, 'assets', 'vendor', 'pagefind', 'NOTICE.txt');
-const notice = fs.existsSync(noticePath) ? fs.readFileSync(noticePath, 'utf8') : '';
-expect(/Pagefind 1\.5\.0/.test(notice) && /MIT License/.test(notice), 'PagefindのバージョンまたはMITライセンス表示が不足しています。');
-
-const buildScriptPath = path.join(root, 'scripts', 'build-guide-search-index.cjs');
-const buildScript = fs.existsSync(buildScriptPath) ? fs.readFileSync(buildScriptPath, 'utf8') : '';
-[
-  'pagefind@1.5.0',
-  'assets',
-  'vendor',
-  'pagefind',
-  'newsData',
-  'columnData',
-  'guide_article',
-  'data-pagefind-meta="guide_url:${guideUrl}"',
-  'data-pagefind-meta="type:${label}"',
-  'data-pagefind-meta="category:${category}"',
-  'data-pagefind-meta="date:${item.date}"',
-].forEach((text) => expect(buildScript.includes(text), `静的検索索引の再生成スクリプトが不足しています: ${text}`));
-
-expect(!html.includes('flowise-embed-3.1.6.umd.js'), '置換済みのFlowise Embed資産をHTMLがまだ読み込んでいます。');
-expect(!html.includes('id="ai-guide-launcher"'), '旧AI案内の起動ボタンが残っています。');
-expect(!html.includes('id="ai-guide-panel"'), '旧AI案内パネルが残っています。');
-
-if (failures.length > 0) {
-  console.error('AI案内センターの回帰テストに失敗しました。');
-  failures.forEach((failure) => console.error(`- ${failure}`));
-  process.exit(1);
-}
-
-console.log('AI案内センターの回帰テストに合格しました。');
-console.log(JSON.stringify({
-  guideCenter: true,
-  homeHelpAiTabs: true,
-  pagefindLocalStaticSearch: true,
-  noExternalChatSaaS: true,
-  noConversationPersistence: true,
-  aiOnlyNoOperatorHandoff: true,
-  safeWorkerBackedAiGuide: true,
-}, null, 2));
+const html = fs.readFileSync(path.join(root, 'index.html'), 'utf8');
+const worker = fs.readFileSync(path.join(root, 'workers', 'tenmei-mori-backend.js'), 'utf8');
+const css = fs.readFileSync(path.join(root, 'assets', 'css', 'tenmei-ai-agent.css'), 'utf8');
+const js = fs.readFileSync(path.join(root, 'assets', 'js', 'tenmei-ai-agent.js'), 'utf8');
+const headers = fs.readFileSync(path.join(root, '_headers'), 'utf8');
+for (const text of ['assets/css/tenmei-ai-agent.css',"const aiGuideState = { loaded: false, scriptRequested: false, generation: 0 }","script.src = '/assets/js/tenmei-ai-agent.js'",'天命乃杜 AI案内','天命乃杜独自のAI案内（Cloudflare Workers AI）','会話履歴を保存しません']) assert.ok(html.includes(text),'サイト統合が不足しています: '+text);
+for (const text of ['tenmei-ai-launcher','tenmei-ai-panel','TENMEI GUIDE','個人情報・パスワードなどは入力しないでください','/api/ai-guide']) assert.ok(js.includes(text),'独自AI UIの要件が不足しています: '+text);
+for (const text of ['if (url.pathname === "/api/ai-guide" && method === "POST")','const systemPrompt = [','@cf/zai-org/glm-4.7-flash','runNonStreamingAI(messages, 640)','checkRateLimit(ip, "ai_guide", 15, 3600)','sensitivePattern','runNonStreamingAI(messages, 640)','Cache-Control']) assert.ok(worker.includes(text),'バックエンドの安全策または指示文が不足しています: '+text);
+assert.ok(css.includes('@media(max-width:640px)'),'モバイルレイアウトが不足しています');
+assert.ok(css.includes('prefers-reduced-motion:reduce'),'軽減モーション対応が不足しています');
+assert.ok(!/chatling|chtl-/i.test(html+js+css+worker+headers),'旧外部AIの実装参照が残っています');
+assert.ok(!/localStorage\.setItem|sessionStorage/.test(js),'会話履歴をブラウザーへ保存してはいけません');
+assert.ok(!/innerHTML/.test(js),'AI応答はinnerHTMLで描画してはいけません');
+console.log('天命乃杜独自AIエージェントの回帰テストに合格しました。');
