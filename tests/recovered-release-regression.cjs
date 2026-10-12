@@ -64,12 +64,9 @@ for (const expectedLabel of ['Tenmei no Mori', 'Omikuji History', 'Pilgrimage Ce
 
 for (const expected of [
   '12. 天命乃杜独自のAI案内（Cloudflare Workers AI）',
-  '質問文と直近の会話だけを回答生成のためCloudflare Workers AIへ送信',
+  '送信される情報：利用者が入力した質問と、その会話で直近に送信する会話文。',
   '当サイトはAI案内の会話履歴をデータベース、アカウント、ブラウザー内ストレージへ保存しません',
-  'AI案内は有人対応・運営者への転送・個別データ操作・個人情報入力フォームを行いません',
-  '現行版：第28版（最終改定日：2026年8月28日）',
-  '第28版の主な変更：天命乃杜独自のAI案内へ移行しました。',
-  'AI案内の会話内容は翻訳APIその他の第三者へ送信しません',
+  'AI案内はアカウント操作、データ変更、有人対応、運営者への転送を行いません',
 ]) {
   assert.ok(html.includes(expected), `Chatlingの公開説明が不足しています: ${expected}`);
 }
