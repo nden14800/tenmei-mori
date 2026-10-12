@@ -11,16 +11,15 @@
     (function () {
         'use strict';
         const COOKIE_PREFERENCES_KEY = 'tenmei_cookie_preferences_v2';
-        const COOKIE_PREFERENCES_VERSION = 3;
-        const CHATLING_CHATBOT_ID = '1188176418';
-        const chatlingState = { loaded: false, scriptRequested: false, generation: 0 };
+        const COOKIE_PREFERENCES_VERSION = 4;
+        const aiGuideState = { loaded: false, scriptRequested: false, generation: 0 };
         const ANALYTICS_COOKIE_NAMES = ['_ga', '_gid', '_gat', '_ga_LMJV6EK1DD', '_clck', '_clsk', 'CLID', 'ANONCHK', 'MUID', 'SM'];
 
         function readPreferences() {
             try {
                 const raw = localStorage.getItem(COOKIE_PREFERENCES_KEY);
                 const value = raw ? JSON.parse(raw) : null;
-                // AI案内の提供者を変更したため、AI案内には改めて明示同意が必要です。
+                // AI案内の実装を変更したため、AI案内には改めて明示同意が必要です。
                 return value && typeof value === 'object' && value.version === COOKIE_PREFERENCES_VERSION ? value : null;
             } catch (error) {
                 return null;
@@ -159,58 +158,34 @@
             });
         }
 
-        function removeChatlingWidget() {
-            try {
-                if (window.Chatling && typeof window.Chatling.destroy === 'function') window.Chatling.destroy();
-            } catch (error) {}
-            document.querySelectorAll('#chtl-chat-icon-container, #chtl-chat-iframe, #chtl-script').forEach((element) => element.remove());
-            document.querySelectorAll('[id^="chtl-"], [class^="chtl-"], [class*=" chtl-"], iframe[src*="chatling"]').forEach((element) => element.remove());
-            removeStorageKeys(/^chtl_/i);
-            try { delete window.Chatling; } catch (error) { window.Chatling = undefined; }
-            try { delete window.chtlConfig; } catch (error) { window.chtlConfig = undefined; }
-        }
-
         function removeRetiredChannelTalkStorage() {
             removeStorageKeys(/^(?:ch[-_]|channelio|channel[-_])/i);
         }
-
         function loadOptionalSupportChat() {
             const preferences = readPreferences();
-            if (!preferences || preferences.supportChat !== true || chatlingState.scriptRequested) return;
-            chatlingState.scriptRequested = true;
-            const generation = ++chatlingState.generation;
-            // identify・variablesその他の個別情報を一切渡さない匿名の公式Widget初期化です。
-            window.chtlConfig = { chatbotId: CHATLING_CHATBOT_ID };
-            const script = document.createElement('script');
-            script.id = 'chtl-script';
-            script.type = 'text/javascript';
-            script.async = true;
-            script.dataset.id = CHATLING_CHATBOT_ID;
-            script.src = 'https://chatling.ai/js/embed.js';
-            script.onload = function () {
-                const currentPreferences = readPreferences();
-                if (generation !== chatlingState.generation || !currentPreferences || currentPreferences.supportChat !== true) {
-                    removeChatlingWidget();
-                    chatlingState.loaded = false;
-                    chatlingState.scriptRequested = false;
-                    return;
+            if (!preferences || preferences.supportChat !== true || aiGuideState.scriptRequested) return;
+            aiGuideState.scriptRequested = true;
+            const generation = ++aiGuideState.generation;
+            const mount = function () {
+                const current = readPreferences();
+                if (generation !== aiGuideState.generation || !current || current.supportChat !== true) {
+                    if (window.TenmeiAIAgent) window.TenmeiAIAgent.unmount();
+                    aiGuideState.loaded = false; aiGuideState.scriptRequested = false; return;
                 }
-                chatlingState.loaded = true;
+                if (window.TenmeiAIAgent) { window.TenmeiAIAgent.mount(); aiGuideState.loaded = true; }
             };
-            script.onerror = function () {
-                removeChatlingWidget();
-                chatlingState.loaded = false;
-                chatlingState.scriptRequested = false;
-            };
+            if (window.TenmeiAIAgent) { mount(); return; }
+            const script = document.createElement('script');
+            script.id = 'tenmei-ai-agent-script'; script.src = '/assets/js/tenmei-ai-agent.js'; script.async = true;
+            script.onload = mount;
+            script.onerror = function () { aiGuideState.loaded = false; aiGuideState.scriptRequested = false; };
             document.head.appendChild(script);
         }
-
         function stopOptionalSupportChat() {
-            ++chatlingState.generation;
-            removeChatlingWidget();
+            ++aiGuideState.generation;
+            if (window.TenmeiAIAgent) window.TenmeiAIAgent.unmount();
             removeRetiredChannelTalkStorage();
-            chatlingState.loaded = false;
-            chatlingState.scriptRequested = false;
+            aiGuideState.loaded = false; aiGuideState.scriptRequested = false;
         }
 
         function savePreferences(nextPreferences) {
@@ -13852,6 +13827,7 @@ body.sidebar-collapsed.sidebar-pinned #sidebar .nav-group-title {
   #view-about #about-content-area *, #view-about #about-content-area *::before, #view-about #about-content-area *::after { scroll-behavior: auto !important; transition-duration: 0.01ms !important; }
 }
 </style>
+    <link rel="stylesheet" href="/assets/css/tenmei-ai-agent.css">
 </head>
 
     <!-- ▼▼▼ 修正: 既定のサイドバー方式をPCホバーモードに設定 ▼▼▼ -->
@@ -18025,12 +18001,12 @@ body.sidebar-collapsed.sidebar-pinned #sidebar .nav-group-title {
                 <section class="howto-guide-entry">
                     <header class="howto-guide-entry-heading">
                         <span class="howto-guide-entry-number">13</span>
-                        <div><p>CHATLING AI AGENT</p><h3>天命乃杜 AI案内</h3></div>
+                        <div><p>TENMEI AI GUIDE</p><h3>天命乃杜 AI案内</h3></div>
                     </header>
                     <div class="howto-guide-entry-body">
-                        <p>Cookie設定で「AI案内（Chatling）」を許可すると、画面右下にChatlingの標準ボタンが表示されます。開くとAI Agentへ、天命乃杜の機能や使い方を質問できます。おみくじの轍、参拝証、御守、記事、全国・土地の運気、多言語表示、環境・表示設定などの一般的な案内に対応します。</p>
+                        <p>Cookie設定で「天命乃杜 AI案内」を許可すると、画面右下に天命乃杜独自のチャットが表示されます。サイト内で使用しているCloudflare Workers AI（GLM-4.7-Flash）を使い、おみくじ、参拝証、御守、記事、運勢、多言語表示、環境・表示設定などの使い方を案内します。</p>
                         <p>AI案内は自動応答であり、個別の問い合わせ対応、運営者への転送、アカウント・参拝記録・設定の変更、パスワードや認証コードの確認・再発行は行いません。回答には誤りが含まれる場合があるため、重要な内容は本ページや各画面の案内をご確認ください。</p>
-                        <p class="howto-guide-muted">氏名、住所、電話番号、メールアドレス、パスワード、認証コード、決済情報などは入力しないでください。AI案内は匿名で接続し、当サイトからログインID、参拝者名、参拝履歴、御守、環境設定、AI夢占い・悩み相談の内容を渡しません。入力した会話内容、Cookie、IPアドレス、ブラウザ・端末情報はChatlingで処理されます。</p>
+                        <p class="howto-guide-muted">氏名、住所、電話番号、メールアドレス、パスワード、認証コード、決済情報などは入力しないでください。AI案内はログイン情報・参拝記録・御守・環境設定・AI夢占い・悩み相談の履歴を読み取りません。質問文と直近の会話だけを回答生成のためCloudflare Workers AIへ送信し、当サイトは会話履歴を保存しません。</p>
                     </div>
                 </section>
 
@@ -18230,8 +18206,8 @@ body.sidebar-collapsed.sidebar-pinned #sidebar .nav-group-title {
                             <div class="flex justify-between border-b border-gray-100 dark:border-gray-800 py-1.5"><span class="text-gray-500 dark:text-gray-500">記事要約</span><span class="font-bold">社務所だより・神籤草子で利用可</span></div>
                             <div class="flex justify-between border-b border-gray-100 dark:border-gray-800 py-1.5"><span class="text-gray-500 dark:text-gray-500">AI悩み相談</span><span class="font-bold">おみくじ結果画面で利用可（ログイン不要）</span></div>
                             <div class="flex justify-between border-b border-gray-100 dark:border-gray-800 py-1.5"><span class="text-gray-500 dark:text-gray-500">AI夢占い</span><span class="font-bold">会員限定・夢の記録も保存</span></div>
-                            <div class="flex justify-between border-b border-gray-100 dark:border-gray-800 py-1.5"><span class="text-gray-500 dark:text-gray-500">天命乃杜 AI案内</span><span class="font-bold">右下のChatling標準ウィジェットで質問可能（匿名・有人転送・データ操作なし）</span></div>
-                            <div class="flex justify-between border-b border-gray-100 dark:border-gray-800 py-1.5"><span class="text-gray-500 dark:text-gray-500">AI案内の提供</span><span class="font-bold">Chatling AI Agent</span></div>
+                            <div class="flex justify-between border-b border-gray-100 dark:border-gray-800 py-1.5"><span class="text-gray-500 dark:text-gray-500">天命乃杜 AI案内</span><span class="font-bold">右下の独自AIチャットで質問可能（会話保存・有人転送・データ操作なし）</span></div>
+                            <div class="flex justify-between border-b border-gray-100 dark:border-gray-800 py-1.5"><span class="text-gray-500 dark:text-gray-500">AI案内の提供</span><span class="font-bold">天命乃杜独自AIエージェント</span></div>
                             <div class="flex justify-between border-b border-gray-100 dark:border-gray-800 py-1.5"><span class="text-gray-500 dark:text-gray-500">サイト内AIモデル</span><span class="font-bold">Cloudflare Workers AI（GLM-4.7-Flash）</span></div>
                         </div>
 
@@ -18318,7 +18294,7 @@ body.sidebar-collapsed.sidebar-pinned #sidebar .nav-group-title {
                         <div class="space-y-6">
                             <div class="pl-4 border-l-2 border-gray-200 dark:border-gray-700">
                                 <h4 class="font-bold text-base mb-2 text-gray-900 dark:text-white">第1条（サービスの性質）</h4>
-                                <p>本サービスは娯楽目的で提供されるものであり、その結果の正確性や効果を保証するものではありません。結果に基づく行動はユーザーの自己責任となります。特に「全国・土地の運気ランキング」は、独自のアルゴリズムに基づくエンターテインメントコンテンツであり、実際の気象情報や地質学的データとは無関係です。また、「社務所だより」「神籤草子」の記事要約表示、おみくじ結果画面の「AI悩み相談」、会員限定機能「AI夢占い」、右下のChatling標準ウィジェットによる「天命乃杜 AI案内」など、AI（人工知能）により自動生成される文章についても、その内容の正確性・完全性を保証するものではなく、実際の記事内容と異なる要約や、事実と異なる助言・解釈が含まれる可能性があります。AI案内はサイト機能に関する一般的な案内を目的とし、個別の問い合わせ対応、データの確認・変更、アカウント復旧または運営者への取次ぎを行うものではありません。いずれもあくまで内容把握や娯楽の補助としてご利用いただき、正確な情報や重大な判断については、記事本文や専門家への確認をお願いいたします。</p>
+                                <p>本サービスは娯楽目的で提供されるものであり、その結果の正確性や効果を保証するものではありません。結果に基づく行動はユーザーの自己責任となります。特に「全国・土地の運気ランキング」は、独自のアルゴリズムに基づくエンターテインメントコンテンツであり、実際の気象情報や地質学的データとは無関係です。また、「社務所だより」「神籤草子」の記事要約表示、おみくじ結果画面の「AI悩み相談」、会員限定機能「AI夢占い」、天命乃杜独自の「AI案内」など、AI（人工知能）により自動生成される文章についても、その内容の正確性・完全性を保証するものではなく、実際の記事内容と異なる要約や、事実と異なる助言・解釈が含まれる可能性があります。AI案内はサイト機能に関する一般的な案内を目的とし、個別の問い合わせ対応、データの確認・変更、アカウント復旧または運営者への取次ぎを行うものではありません。いずれもあくまで内容把握や娯楽の補助としてご利用いただき、正確な情報や重大な判断については、記事本文や専門家への確認をお願いいたします。</p>
                             </div>
 
                             <div class="pl-4 border-l-2 border-gray-200 dark:border-gray-700">
@@ -18370,7 +18346,7 @@ body.sidebar-collapsed.sidebar-pinned #sidebar .nav-group-title {
                             5. 公式Discord参拝所に投稿された内容について、個別返信、調査、修正、データ復旧、開示請求等への対応は行いません。緊急性の高い内容、個人情報を含む内容、第三者に見られて困る内容は投稿しないでください。<br>
                             6. 万が一、本サービスの利用により何らかの問題が生じた場合、または個人情報の取扱いに関して懸念が生じた場合は、直ちに本サービスの利用を中止し、「アカウント削除」機能を用いてご自身のデータを完全に消去する措置をとってください。Discord上でご連絡いただいた場合であっても、個別対応をお約束するものではありません。<br>
                             7. 当サイトは、コード・文章・画像等の制作過程においてAI（人工知能）を活用して開発されています。また「記事分析ダッシュボード」等、AIによる自動分析・生成結果を表示する機能を含みます。AIによる出力は高い性能を持つ場合であっても、その正確性・完全性・最新性を保証するものではなく、誤った情報や解釈のずれを含む可能性があります。AIが出力した内容を利用者ご自身の重要な判断材料とすることは避け、参考情報としてご活用ください。<br>
-                            8. 右下のChatling標準ウィジェットによる「天命乃杜 AI案内」は、サイト内の機能・使い方を案内するためのAI Agentによる自動応答です。個別のサポート窓口、運営者への転送、アカウント・データベース・設定の変更、パスワードや認証コードの確認・再発行を行うことはできません。氏名、住所、電話番号、メールアドレス、パスワード、認証コード、決済情報その他の個人情報・機微な情報は入力しないでください。
+                            8. 右下の天命乃杜独自AI標準ウィジェットによる「天命乃杜 AI案内」は、サイト内の機能・使い方を案内するためのAI Agentによる自動応答です。個別のサポート窓口、運営者への転送、アカウント・データベース・設定の変更、パスワードや認証コードの確認・再発行を行うことはできません。氏名、住所、電話番号、メールアドレス、パスワード、認証コード、決済情報その他の個人情報・機微な情報は入力しないでください。
                         </p>
                     </div>
                 </section>
@@ -18769,11 +18745,11 @@ body.sidebar-collapsed.sidebar-pinned #sidebar .nav-group-title {
 
                                 </div>
                                 <div class="bg-white dark:bg-black/20 p-3 rounded border border-gray-200 dark:border-gray-700 text-xs">
-                                    <p class="font-bold text-sm">12. Chatling AI Agent (Envision Labs Inc.)</p>
-                                    <p class="text-gray-500">利用目的：Cookie設定で許可した場合に限り、画面右下のChatling標準ウィジェットを通じて、AI Agentによる天命乃杜の一般的な機能案内を提供するため</p>
-                                    <p class="text-gray-500">送信される情報：ウィジェットに入力した会話内容、会話のために必要なCookie、IPアドレス、接続時刻、ブラウザ・端末情報。Chatlingはサービス運用・セキュリティ・利用状況分析のため、端末・ブラウザ特性、言語設定、参照元URL、接続情報等を自動的に処理する場合があります。</p>
-                                    <p class="mt-1">特記事項：当サイトはWidgetへidentify・variables・プロフィールその他の個別情報を渡さず、ログインID、参拝者名、参拝履歴、御守、環境・表示設定、AI夢占い・AI悩み相談の内容をChatlingへ渡しません。Chatling側の会話・Cookie等の保存、処理および利用者の権利行使は <a href="https://chatling.ai/privacy-policy" target="_blank" rel="noopener noreferrer" class="underline text-blue-500">Chatling サービスプライバシーポリシー</a> に従います。AI案内は有人対応・運営者への転送・個別データ操作・個人情報入力フォームを行いません。設定を拒否または後から停止した場合、当サイトはChatling Widgetを停止し、当サイト内に残るChatlingの保存キーを削除します。</p>
-                                </div>
+<p class="font-bold text-sm">12. 天命乃杜独自のAI案内（Cloudflare Workers AI）</p>
+<p class="text-gray-500">利用目的：Cookie設定で明示的に許可した場合に限り、画面右下の独自チャットを通じて、天命乃杜の公開機能・使い方を案内するため</p>
+<p class="text-gray-500">送信される情報：利用者が入力した質問と、その会話で直近に送信する会話文。回答生成のため、当サイトのCloudflare Workerを経由してCloudflare Workers AI（GLM-4.7-Flash）へ送信します。</p>
+<p class="mt-1">特記事項：当サイトはAI案内の会話履歴をデータベース、アカウント、ブラウザー内ストレージへ保存しません。会話内容を個人情報・アカウント情報と照合せず、ログインID、参拝記録、御守、環境設定、AI夢占い・悩み相談の履歴もAI案内へ渡しません。AI案内はアカウント操作、データ変更、有人対応、運営者への転送を行いません。Cloudflareによる通信処理については <a href="https://www.cloudflare.com/privacypolicy/" target="_blank" rel="noopener noreferrer" class="underline text-blue-500">Cloudflare プライバシーポリシー</a> をご確認ください。AI案内を拒否または停止すると、独自チャットは非表示となり、AI生成リクエストは行われません。</p>
+</div>
                                 <div class="bg-white dark:bg-black/20 p-3 rounded border border-gray-200 dark:border-gray-700 text-xs">
                                     <p class="font-bold text-sm">13. AI夢占い機能におけるCloudflare Workers AI (Cloudflare, Inc.)</p>
                                     <p class="text-gray-500">利用目的：会員限定機能「AI夢占い」において、ユーザーが入力した夢の内容をもとに、Cloudflare Workers AIによる夢占い的な解釈を生成するため</p>
@@ -18783,7 +18759,7 @@ body.sidebar-collapsed.sidebar-pinned #sidebar .nav-group-title {
                                 <div class="bg-white dark:bg-black/20 p-3 rounded border border-gray-200 dark:border-gray-700 text-xs">
                                     <p class="font-bold text-sm">14. 軽量な自己配信多言語表示（更新時のローカル自動生成）</p>
                                     <p class="text-gray-500">利用目的：利用者が言語メニューから日本語以外の表示言語を選択した場合に、公開ページ用にあらかじめ自動生成した翻訳データで表示するため</p>
-                                    <p class="text-gray-500">送信される情報：選択した言語の自己配信翻訳データを当サイトから取得する際の、当サイト配信基盤への通信に伴うIPアドレス、ブラウザ情報およびリクエスト情報。公開ページ本文、ページURL、入力内容、Chatling内の会話内容は翻訳APIその他の第三者へ送信しません</p>
+                                    <p class="text-gray-500">送信される情報：選択した言語の自己配信翻訳データを当サイトから取得する際の、当サイト配信基盤への通信に伴うIPアドレス、ブラウザ情報およびリクエスト情報。公開ページ本文、ページURL、入力内容、AI案内の会話内容は翻訳APIその他の第三者へ送信しません</p>
                                     <p class="mt-1">特記事項：翻訳データは、更新時に当サイト管理環境でオープンソースの<a href="https://github.com/argosopentech/argos-translate" target="_blank" rel="noopener noreferrer" class="underline text-blue-500">Argos Translate</a>と<a href="https://github.com/BYVoid/OpenCC" target="_blank" rel="noopener noreferrer" class="underline text-blue-500">OpenCC</a>を用いて自動生成します。閲覧時にはニューラル翻訳モデルではなく、選択言語用の軽量な静的翻訳データだけを同一オリジンから取得します。翻訳文をコードへ手入力して保守する運用は行いません。翻訳内容の正確性・完全性を保証するものではありませんが、公開本文は当サイトのWorker、翻訳APIその他の第三者へ送信されません。</p>
                                 </div>
                             </div>
@@ -27857,7 +27833,7 @@ function showLoading(show) {
                     });
                 }
             }
-            // ChatlingにはSPAの画面ID、ページURL、ログイン情報その他の個別データを渡さない。
+            // 独自AI案内にはSPAの画面ID、ページURL、ログイン情報その他の個別データを自動送信しない。
             // ウィジェットはCookie設定で許可された場合だけ独立して動作させる。
 
             // --- 各ビューごとの初期化ロジック ---
@@ -36582,7 +36558,7 @@ try {
 </style>
 
     <style id="site-localization-and-document-history-styles">
-        /* 固定要素は役割を分ける。Chatling標準ランチャーは右下、上へ戻るはその上段、言語は通常ナビゲーションに集約する。 */
+        /* 固定要素は役割を分ける。独自AIランチャーと上へ戻るボタンは重ならないようにし、言語は通常ナビゲーションに集約する。 */
         #back-to-top-btn {
             right: max(20px, calc(20px + env(safe-area-inset-right, 0px)));
             bottom: calc(96px + env(safe-area-inset-bottom, 0px));
@@ -36818,7 +36794,7 @@ try {
             <div class="translation-panel">
                 <p>言語を選ぶと、表示中の公開ページを軽量な自己配信翻訳データで表示します。日本語へ戻すと、いつでも原文表示に復帰できます。</p>
                 <p class="translation-panel__mode"><i class="bi bi-shield-check" aria-hidden="true"></i><span>本文は翻訳APIへ送信しません</span></p>
-                <p class="translation-panel__notice"><i class="bi bi-info-circle" aria-hidden="true"></i> 翻訳データは更新時にオープンソースのローカル翻訳ツールで自動生成し、このサイトから軽量な静的データとして配信します。閲覧時に大容量の翻訳モデルは取得せず、公開本文を翻訳APIへ送信しません。機械翻訳の正確性・完全性は保証されません。ログイン情報、入力フォーム、Chatling内の会話内容、ボタン操作は翻訳対象に含めません。</p>
+                <p class="translation-panel__notice"><i class="bi bi-info-circle" aria-hidden="true"></i> 翻訳データは更新時にオープンソースのローカル翻訳ツールで自動生成し、このサイトから軽量な静的データとして配信します。閲覧時に大容量の翻訳モデルは取得せず、公開本文を翻訳APIへ送信しません。機械翻訳の正確性・完全性は保証されません。ログイン情報、入力フォーム、AI案内の会話内容、ボタン操作は翻訳対象に含めません。</p>
                 <section id="static-translation-picker" class="translation-language-picker" aria-labelledby="static-translation-picker-label">
                     <p id="static-translation-picker-label" class="translation-language-picker__label">表示言語</p>
                     <p class="translation-language-picker__hint">一度に一つの言語を選べます。言語別の軽量な表示データを読み込んでから切り替えます。</p>
@@ -36891,10 +36867,10 @@ try {
                 <button class="site-utility-dialog__close" type="button" onclick="closeCookiePreferences()" aria-label="クッキー設定を閉じる"><i class="bi bi-x-lg" aria-hidden="true"></i></button>
             </header>
             <div class="preference-dialog-panel">
-                <p class="preference-dialog-lead">当サイトは、ログイン、セキュリティ、選択した表示設定などに必要な端末内データを使用します。アクセス解析と、外部サービスによるAI案内は任意です。選択するまでGoogle Analytics、Microsoft Clarity、Chatlingを読み込みません。</p>
+                <p class="preference-dialog-lead">当サイトは、ログイン、セキュリティ、選択した表示設定などに必要な端末内データを使用します。アクセス解析と、独自AIによる案内は任意です。選択するまでGoogle Analytics、Microsoft Clarity、AI案内を読み込みません。</p>
                 <section class="cookie-preference-essential" aria-labelledby="cookie-essential-heading"><div class="cookie-preference-row"><strong id="cookie-essential-heading">必須のサイト機能</strong><span class="cookie-preference-status">常に有効</span></div><p>ログイン、セキュリティ対策、環境・表示設定、参拝記録の識別に必要です。サイトを安全に動作させるため無効にはできません。</p></section>
                 <section class="cookie-preference-analytics" aria-labelledby="cookie-analytics-heading"><div class="cookie-preference-row"><strong id="cookie-analytics-heading">利用状況の解析</strong><span id="cookie-analytics-status" class="cookie-preference-status">未選択</span></div><p>匿名化された利用状況を確認し、読みやすさと使いやすさを改善するために使用します。許可後も、この画面からいつでも撤回できます。</p><label class="toggle-switch howto-guide-switch cookie-preference-toggle"><input id="cookie-analytics-toggle" type="checkbox" aria-label="利用状況の解析Cookieを許可する"><span class="slider" aria-hidden="true"></span><span class="howto-guide-switch-state" aria-hidden="true"></span></label></section>
-                <section class="cookie-preference-analytics" aria-labelledby="cookie-support-chat-heading"><div class="cookie-preference-row"><strong id="cookie-support-chat-heading">AI案内（Chatling）</strong><span id="cookie-support-chat-status" class="cookie-preference-status">未選択</span></div><p>Chatlingの標準ウィジェットを匿名で読み込み、AI Agentによる公開情報・サイト機能の案内を表示します。Widgetへ入力した会話内容、Cookie、IPアドレス、ブラウザ・端末情報はChatlingで処理されます。当サイトからログインID、参拝者名、参拝履歴、御守、環境設定、AI夢占い・悩み相談の内容は送信しません。個人情報入力フォーム、有人対応、運営者への転送は使いません。許可後も、この画面からいつでも停止できます。</p><label class="toggle-switch howto-guide-switch cookie-preference-toggle"><input id="cookie-support-chat-toggle" type="checkbox" aria-label="ChatlingによるAI案内を許可する"><span class="slider" aria-hidden="true"></span><span class="howto-guide-switch-state" aria-hidden="true"></span></label></section>
+                <section class="cookie-preference-analytics" aria-labelledby="cookie-support-chat-heading"><div class="cookie-preference-row"><strong id="cookie-support-chat-heading">天命乃杜 AI案内</strong><span id="cookie-support-chat-status" class="cookie-preference-status">未選択</span></div><p>天命乃杜独自のAIチャットを読み込み、Cloudflare Workers AI（GLM-4.7-Flash）による公開情報・サイト機能の案内を表示します。質問と直近の会話は回答生成のためCloudflareへ送信されますが、当サイトでは会話履歴を保存しません。ログイン情報や参拝記録の参照、有人対応、運営者への転送、個別データ操作は行いません。許可後も、この画面からいつでも停止できます。</p><label class="toggle-switch howto-guide-switch cookie-preference-toggle"><input id="cookie-support-chat-toggle" type="checkbox" aria-label="天命乃杜独自AI案内を許可する"><span class="slider" aria-hidden="true"></span><span class="howto-guide-switch-state" aria-hidden="true"></span></label></section>
                 <div class="preference-dialog-actions"><button class="preference-dialog-actions__secondary" type="button" onclick="saveCookiePreferences(false, false)">任意機能を拒否</button><button class="preference-dialog-actions__primary" type="button" onclick="saveCookiePreferencesFromDialog()">選択を保存</button></div>
             </div>
         </div>
@@ -36904,7 +36880,7 @@ try {
         <div class="cookie-banner__inner">
             <p class="cookie-banner__eyebrow"><i class="bi bi-shield-check" aria-hidden="true"></i> PRIVACY CHOICE</p>
             <h2 id="cookie-banner-title">クッキー設定の確認</h2>
-            <p>必須のサイト機能に加えて、任意の利用状況解析とAI案内（Chatling）を使うか選べます。Chatlingへの提供者変更に伴い、AI案内は改めて許可が必要です。選択するまで、これらの外部サービスは読み込みません。</p>
+            <p>必須のサイト機能に加えて、任意の利用状況解析と天命乃杜独自のAI案内を使うか選べます。AI案内の実装変更に伴い、改めて許可が必要です。選択するまで、任意のAI機能は読み込みません。</p>
             <div class="cookie-banner__actions"><button class="cookie-banner__secondary" type="button" onclick="saveCookiePreferences(false, false)">拒否する</button><button class="cookie-banner__primary" type="button" onclick="saveCookiePreferences(true, true)">任意機能を許可する</button><button class="cookie-banner__text" type="button" onclick="openCookiePreferences()">設定を確認する</button></div>
         </div>
     </aside>
@@ -37239,7 +37215,7 @@ try {
             const analytics = !!(preferences && preferences.analytics);
             const supportChat = !!(preferences && preferences.supportChat);
             document.querySelectorAll('[data-cookie-setting-label]').forEach((element) => { element.textContent = !selected ? '選択を確認してください' : `解析Cookie：${analytics ? '許可中' : '拒否中'}／AI案内：${supportChat ? '許可中' : '拒否中'}`; });
-            document.querySelectorAll('[data-cookie-setting-detail]').forEach((element) => { element.textContent = !selected ? '任意の解析とAI案内は許可するまで読み込みません' : `${analytics ? 'Google Analytics・Microsoft Clarityを利用します。' : '解析サービスは読み込みません。'} ${supportChat ? 'ChatlingのAI案内を利用します。' : 'ChatlingのAI案内は読み込みません。'}`; });
+            document.querySelectorAll('[data-cookie-setting-detail]').forEach((element) => { element.textContent = !selected ? '任意の解析とAI案内は許可するまで読み込みません' : `${analytics ? 'Google Analytics・Microsoft Clarityを利用します。' : '解析サービスは読み込みません。'} ${supportChat ? '天命乃杜独自のAI案内を利用します。' : 'AI案内は読み込みません。'}`; });
             const toggle = document.getElementById('cookie-analytics-toggle');
             if (toggle) toggle.checked = analytics;
             const supportChatToggle = document.getElementById('cookie-support-chat-toggle');
@@ -37409,10 +37385,7 @@ try {
     </script>
     <script type="module" src="assets/js/static-translation.js"></script>
 
-    <!--
-      Chatling公式Web Widgetは、Cookie設定でAI案内を許可した場合だけ、head内の同意制御が匿名で読み込みます。
-      独自のランチャーや独自チャットUIは実装せず、提供元の標準UIをそのまま使用します。
-    -->
+    <!-- 天命乃杜独自AIのUIは、Cookie設定で明示的に許可した場合だけ読み込みます。 -->
 
 
 <style id="tenmei-public-document-reading-complete-fix">
