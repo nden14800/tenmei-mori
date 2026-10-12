@@ -1,4 +1,4 @@
-# auth.md
+# Auth.md
 
 Agent authentication and registration for 運勢・天命乃杜
 
