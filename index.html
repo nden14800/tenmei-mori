@@ -35886,7 +35886,7 @@ try {
 
     // 一元化した入力。INPUT等では暴発させず、Labs欄の送信は _trySecretWord で処理。
     var keyboardWords=Object.keys(aliases).filter(function(w){return /^[a-z0-9]+$/.test(w);});
-    var matcher=createSecretMatcher(keyboardWords,function(word){var key=resolveSecretWord(word);if(key)triggerSecretWord(key);},1600);
+    var matcher=createSecretMatcher(keyboardWords,function(word){var key=resolveSecretWord(word);if(key)triggerSecretWord(key);},900);
     try {
         document.addEventListener('keydown',function(e){
             try {
@@ -35945,9 +35945,10 @@ try {
         if(!localStorage.getItem(fridayKey)){var n=new Date();if(n.getDate()===13&&n.getDay()===5)window.addEventListener('load',function(){window.setTimeout(function(){showToast('今日は13日の金曜日。普段より少しだけ、足元にお気をつけて。','info','🔮');},1500);try{localStorage.setItem(fridayKey,'1');}catch(_){}},{once:true});}
     } catch (_) {}
     try {
-        var idleShown=false,idleTimer=null,idleMessages=['迷っているなら、まずはおみくじを一枚。','ゆっくりでも構いません。天命は、待ってくれています。','少し休憩がてら、今日の運勢を覗いてみませんか。'];
+        var idleShown=false,idleTimer=null,lastActivityAt=0,idleMessages=['迷っているなら、まずはおみくじを一枚。','ゆっくりでも構いません。天命は、待ってくれています。','少し休憩がてら、今日の運勢を覗いてみませんか。'];
         function resetIdleTimer(){if(idleTimer)window.clearTimeout(idleTimer);if(idleShown)return;idleTimer=window.setTimeout(function(){if(!idleShown&&!document.hidden){idleShown=true;showToast(idleMessages[Math.floor(Math.random()*idleMessages.length)],'info','🕯️');}},4*60*1000);}
-        ['mousemove','keydown','touchstart','scroll'].forEach(function(name){document.addEventListener(name,resetIdleTimer,{passive:true});});resetIdleTimer();
+        function onIdleActivity(){var now=Date.now();if(now-lastActivityAt<750)return;lastActivityAt=now;resetIdleTimer();}
+        ['mousemove','keydown','touchstart','scroll'].forEach(function(name){document.addEventListener(name,onIdleActivity,{passive:true});});resetIdleTimer();
     } catch (_) {}
 } catch (error) {
     // 隠し要素のエラーが通常のサイト機能へ波及しないよう隔離。
