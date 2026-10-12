@@ -36004,6 +36004,93 @@ try {
         };
     } catch(e) {}
 
+
+    // TENMEI EXTRA EASTER EGGS v1
+    // ---------- ⑩ 追加の隠し言葉（既存の合言葉・演出とは独立） ----------
+    // 既存のナビゲーションやおみくじ判定には触れず、表示だけの小さな遊び心を追加。
+    try {
+        var extraEggBuffer = '';
+        var extraEggWords = {
+            omamori: function() {
+                try {
+                    var old = document.getElementById('tenmei-secret-omamori');
+                    if (old && old.parentNode) old.parentNode.removeChild(old);
+                    var card = document.createElement('div');
+                    card.id = 'tenmei-secret-omamori';
+                    card.setAttribute('role', 'status');
+                    card.setAttribute('aria-live', 'polite');
+                    card.style.cssText = 'position:fixed;z-index:100000;left:50%;bottom:24px;transform:translateX(-50%);width:min(330px,calc(100vw - 32px));box-sizing:border-box;padding:18px 20px 16px;border:1px solid rgba(197,160,89,.7);border-radius:18px;background:linear-gradient(145deg,#fffaf0,#f4e7c9);color:#49351d;box-shadow:0 16px 48px rgba(34,24,10,.24);text-align:center;font-family:inherit;opacity:0;transition:opacity .25s ease,transform .25s ease;';
+                    var close = document.createElement('button');
+                    close.type = 'button';
+                    close.textContent = '閉じる';
+                    close.setAttribute('aria-label', '御守りのメッセージを閉じる');
+                    close.style.cssText = 'position:absolute;right:10px;top:8px;border:0;background:transparent;color:inherit;font:inherit;font-size:12px;cursor:pointer;padding:5px;';
+                    var icon = document.createElement('div');
+                    icon.textContent = '⛩️';
+                    icon.setAttribute('aria-hidden', 'true');
+                    icon.style.cssText = 'font-size:25px;margin-bottom:5px;';
+                    var title = document.createElement('div');
+                    title.textContent = '小さな御守り';
+                    title.style.cssText = 'font-weight:700;letter-spacing:.08em;font-size:15px;margin-bottom:6px;';
+                    var message = document.createElement('p');
+                    message.textContent = '焦らず、一歩ずつ。今日のあなたにも、よいご縁がありますように。';
+                    message.style.cssText = 'margin:0;font-size:13px;line-height:1.8;';
+                    card.appendChild(close);
+                    card.appendChild(icon);
+                    card.appendChild(title);
+                    card.appendChild(message);
+                    document.body.appendChild(card);
+                    var dismiss = function() {
+                        if (card.parentNode) card.parentNode.removeChild(card);
+                    };
+                    close.addEventListener('click', dismiss);
+                    requestAnimationFrame(function() {
+                        card.style.opacity = '1';
+                        card.style.transform = 'translateX(-50%) translateY(0)';
+                    });
+                    window.setTimeout(dismiss, 7000);
+                } catch (eOmamori) {}
+            },
+            kitsune: function() {
+                try {
+                    if (typeof window.showToast === 'function') window.showToast('境内のすみで、白い狐がこちらを見ていた気がします……。', 'info', '🦊');
+                } catch (eKitsune) {}
+            },
+            inari: function() {
+                try {
+                    if (typeof window.showToast === 'function') window.showToast('稲荷の使いより、小さな吉兆をお届けします。', 'success', '🦊');
+                } catch (eInari) {}
+            }
+        };
+        var extraEggWordsList = Object.keys(extraEggWords);
+        document.addEventListener('keydown', function(e) {
+            try {
+                var target = e.target;
+                var tag = (target && target.tagName || '').toUpperCase();
+                if (e.isComposing || e.ctrlKey || e.metaKey || e.altKey ||
+                    tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT' ||
+                    (target && target.isContentEditable) || !e.key || e.key.length !== 1) {
+                    extraEggBuffer = '';
+                    return;
+                }
+                extraEggBuffer = (extraEggBuffer + e.key.toLowerCase()).slice(-7);
+                for (var i = 0; i < extraEggWordsList.length; i++) {
+                    var word = extraEggWordsList[i];
+                    if (extraEggBuffer.slice(-word.length) === word) {
+                        extraEggBuffer = '';
+                        extraEggWords[word]();
+                        break;
+                    }
+                }
+            } catch (eExtraEggKey) {}
+        }, false);
+        try {
+            var extraEggStyle = document.createElement('style');
+            extraEggStyle.textContent = '@media (prefers-reduced-motion: reduce) { #tenmei-secret-omamori { transition: none !important; } } @media (max-width: 480px) { #tenmei-secret-omamori { bottom: 14px !important; } }';
+            document.head.appendChild(extraEggStyle);
+        } catch (eExtraEggStyle) {}
+    } catch (eExtraEggSetup) {}
+
 } catch(eOuter) {
     // 全体が失敗しても、サイトの他機能には一切影響しない
 }
