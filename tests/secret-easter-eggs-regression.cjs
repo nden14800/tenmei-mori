@@ -58,4 +58,35 @@ assert.deepEqual(run('hoshi', ['hoshi','hoshizora'], true), ['hoshi'], 'hoshi �
 assert.deepEqual(run('arigatou', ['arigato','arigatou']), ['arigatou'], 'arigatou が arigato として誤判定されます。');
 assert.deepEqual(run('tenmei', ['tenmei']), ['tenmei'], '通常の合言葉が即時発火しません。');
 assert.equal(api.normalizeSecretWord(' Ｈｏｓｈｉ　Ｚｏｒａ '), 'hoshizora', '全角・空白の正規化に失敗しました。');
+
+// 未完成の入力を放置した後、別の入力を足して合言葉が誤発火しないことを確認。
+function createTimedMatcher(words) {
+  let id = 0;
+  const localTimers = new Map();
+  const matches = [];
+  const make = new Function('setTimeout', 'clearTimeout', matcherSource + '\\nreturn createSecretMatcher;');
+  const create = make((fn) => { const next = ++id; localTimers.set(next, fn); return next; }, (timerId) => localTimers.delete(timerId));
+  return {
+    matches,
+    matcher: create(words, (word) => matches.push(word), 1200),
+    advance() {
+      const due = Array.from(localTimers.entries());
+      localTimers.clear();
+      due.forEach(([, fn]) => fn());
+    }
+  };
+}
+const stale = createTimedMatcher(['hoshi','hoshizora']);
+stale.matcher.push('h'); stale.matcher.push('o'); stale.matcher.push('s');
+stale.advance();
+stale.matcher.push('h'); stale.matcher.push('i');
+stale.advance();
+assert.deepEqual(stale.matches, [], '時間を空けた未完成入力が後続入力と結合しています。');
+
+// 最長一致の保留中に続きを入力した場合は、短い合言葉を誤発火させない。
+const continued = createTimedMatcher(['hoshi','hoshizora']);
+for (const char of 'hoshi') continued.matcher.push(char);
+continued.matcher.push('z');
+for (const char of 'ora') continued.matcher.push(char);
+assert.deepEqual(continued.matches, ['hoshizora'], '接頭辞の保留が続きの入力で正しく解除されません。');
 console.log('Secret Easter eggs regression checks passed.');
