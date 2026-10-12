@@ -84,6 +84,12 @@
             sendClarityConsent(true);
             window.gtag('js', new Date());
             window.gtag('config', 'G-LMJV6EK1DD', { anonymize_ip: true, send_page_view: false });
+            if (window.__tenmeiGoogleAnalyticsLoaded === true) {
+                window.gtag('event', 'page_view', {
+                    page_location: window.location.href,
+                    page_title: document.title
+                });
+            }
             appendScript('tenmei-google-analytics', 'https://www.googletagmanager.com/gtag/js?id=G-LMJV6EK1DD', () => {
                 window.__tenmeiGoogleAnalyticsLoaded = true;
                 if (!readPreferences() || readPreferences().analytics !== true) {
