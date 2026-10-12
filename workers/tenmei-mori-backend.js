@@ -576,9 +576,35 @@ export default {
             }
         }
 
-        // レート制限 (Turso依存 - リスク許容版)
-        // ※攻撃時にはDBのWriteを消費しますが、インフラ一本化のため許容します
-        async function checkRateLimit(ip, type, limit, windowSeconds) {
+        // JSON本文はContent-Lengthだけでなく、実際に読み取ったバイト数でも制限する。
+        async function readBoundedJson(request, maxBytes) {
+            const contentLength = Number(request.headers.get("Content-Length") || 0);
+            if (Number.isFinite(contentLength) && contentLength > maxBytes) return { ok: false, status: 413 };
+            if (!request.body || typeof request.body.getReader !== "function") return { ok: false, status: 400 };
+            const reader = request.body.getReader();
+            const chunks = [];
+            let totalBytes = 0;
+            try {
+                while (true) {
+                    const { done, value } = await reader.read();
+                    if (done) break;
+                    totalBytes += value.byteLength;
+                    if (totalBytes > maxBytes) {
+                        try { await reader.cancel(); } catch (_) {}
+                        return { ok: false, status: 413 };
+                    }
+                    chunks.push(value);
+                }
+                const bodyBytes = new Uint8Array(totalBytes);
+                let offset = 0;
+                for (const chunk of chunks) { bodyBytes.set(chunk, offset); offset += chunk.byteLength; }
+                try { return { ok: true, body: JSON.parse(new TextDecoder().decode(bodyBytes)) }; }
+                catch (_) { return { ok: false, status: 400 }; }
+            } catch (_) { return { ok: false, status: 400 }; }
+        }
+
+        // AI APIはDB障害時にレート制限を迂回させず、その他のAPIは従来動作を維持する。
+        async function checkRateLimit(ip, type, limit, windowSeconds, failClosed = false) {
             const now = Math.floor(Date.now() / 1000);
             const keyName = `${type}:${ip}`;
             const newExpire = now + windowSeconds;
@@ -614,8 +640,8 @@ export default {
 
             } catch (e) {
                 console.error("RateLimit Error:", e);
-                // DBエラー時はユーザーをブロックしない（フェイルオープン）
-                return { allowed: true, resetTime: newExpire };
+                console.error("RateLimit Error:", e);
+                return { allowed: !failClosed, unavailable: failClosed, resetTime: newExpire };
             }
         }
 
@@ -1857,7 +1883,7 @@ if (url.pathname === "/api/today-anniv" && method === "GET") {
             const aiStream = await env.AI.run("@cf/zai-org/glm-4.7-flash", {
                 messages,
                 stream: true,
-                max_completion_tokens: Math.max(512, maxCompletionTokens),
+                max_completion_tokens: Math.max(64, Math.min(640, Math.floor(Number(maxCompletionTokens) || 512))),
                 temperature: 0.4,
                 chat_template_kwargs: {
                     enable_thinking: false
@@ -1962,7 +1988,7 @@ if (url.pathname === "/api/today-anniv" && method === "GET") {
 
         async function runNonStreamingAI(messages, maxCompletionTokens) {
             const result = await env.AI.run("@cf/zai-org/glm-4.7-flash", {
-                messages, stream: false, max_completion_tokens: Math.max(512, maxCompletionTokens),
+                messages, stream: false, max_completion_tokens: Math.max(64, Math.min(640, Math.floor(Number(maxCompletionTokens) || 512))),
                 temperature: 0.4, chat_template_kwargs: { enable_thinking: false }
             });
             const answer = extractAIText(result).trim();
@@ -1970,7 +1996,7 @@ if (url.pathname === "/api/today-anniv" && method === "GET") {
             return answer;
         }
 
-        async function streamUnifiedAIResponse(prompt, systemPrompt, maxCompletionTokens, onComplete, conversationHistory = []) {
+        async function streamUnifiedAIResponse(prompt, systemPrompt, maxCompletionTokens, onComplete, conversationHistory = [], maxOutputChars = 0) {
             const modelUsed = "@cf/zai-org/glm-4.7-flash";
             const messages = [];
             if (systemPrompt) messages.push({ role: "system", content: systemPrompt });
@@ -1991,8 +2017,10 @@ if (url.pathname === "/api/today-anniv" && method === "GET") {
             ctx.waitUntil((async () => {
                 let fullText = "";
                 try {
+                    const safeTokenLimit = Math.max(64, Math.min(640, Math.floor(Number(maxCompletionTokens) || 512)));
+                    const outputLimit = Number.isFinite(maxOutputChars) && maxOutputChars > 0 ? Math.floor(maxOutputChars) : 0;
                     const aiStream = await env.AI.run(modelUsed, {
-                        messages, stream: true, max_completion_tokens: Math.max(512, maxCompletionTokens),
+                        messages, stream: true, max_completion_tokens: safeTokenLimit,
                         temperature: 0.4, chat_template_kwargs: { enable_thinking: false }
                     });
                     if (!aiStream || typeof aiStream.getReader !== "function") {
@@ -2007,8 +2035,11 @@ if (url.pathname === "/api/today-anniv" && method === "GET") {
                             const json = JSON.parse(payload);
                             const delta = extractAIText(json);
                             if (delta) {
-                                fullText += delta;
-                                await writer.write(encoder.encode("data: " + JSON.stringify({delta}) + "\n\n"));
+                                const safeDelta = outputLimit ? delta.slice(0, Math.max(0, outputLimit - fullText.length)) : delta;
+                                if (safeDelta) {
+                                    fullText += safeDelta;
+                                    await writer.write(encoder.encode("data: " + JSON.stringify({delta: safeDelta}) + "\n\n"));
+                                }
                             }
                         } catch (_) {}
                     };
@@ -2036,7 +2067,8 @@ if (url.pathname === "/api/today-anniv" && method === "GET") {
                     }
 
                     if (!fullText.trim()) {
-                        fullText = await runNonStreamingAI(messages, maxCompletionTokens);
+                        fullText = await runNonStreamingAI(messages, safeTokenLimit);
+                        if (outputLimit) fullText = fullText.slice(0, outputLimit);
                         await writer.write(encoder.encode("data: " + JSON.stringify({delta: fullText}) + "\n\n"));
                     }
 
@@ -2059,21 +2091,21 @@ if (url.pathname === "/api/today-anniv" && method === "GET") {
 
         // 天命乃杜独自AI案内：公開サイトの使い方だけを案内し、会話を保存しない。
         if (url.pathname === "/api/ai-guide" && method === "POST") {
-            try {
-                const contentLength = Number(request.headers.get("Content-Length") || 0);
-                if (contentLength > 18000) return new Response(JSON.stringify({ error: "送信内容が長すぎます。会話を短くしてお試しください。" }), { status: 413, headers: { ...corsHeaders, "Content-Type": "application/json; charset=utf-8", "Cache-Control": "no-store" } });
-                const ip = request.headers.get("CF-Connecting-IP") || "unknown";
-                const rate = await checkRateLimit(ip, "ai_guide", 15, 3600);
-                if (!rate.allowed) {
-                    const waitSec = rate.resetTime - Math.floor(Date.now() / 1000);
-                    return new Response(JSON.stringify({ error: "利用回数の上限に達しました。約" + Math.max(1, waitSec) + "秒後にもう一度お試しください。" }), { status: 429, headers: { ...corsHeaders, "Content-Type": "application/json; charset=utf-8", "Cache-Control": "no-store" } });
-                }
-                const body = await request.json();
+            tr                const parsed = await readBoundedJson(request, 36000);
+                if (!parsed.ok) return new Response(JSON.stringify({ error: parsed.status === 413 ? "送信内容が長すぎます。会話を短くしてお試しください。" : "送信内容を読み取れませんでした。入力を確認してください。" }), { status: parsed.status, headers: { ...corsHeaders, "Content-Type": "application/json; charset=utf-8", "Cache-Control": "no-store" } });
+                const body = parsed.body;
                 const rawQuestion = typeof body?.question === "string" ? body.question : "";
                 const question = rawQuestion.trim();
                 if (!question || rawQuestion.length > 800 || question.length > 800) return new Response(JSON.stringify({ error: "質問は1〜800文字で入力してください。" }), { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json; charset=utf-8", "Cache-Control": "no-store" } });
                 const sensitivePattern = /(?:[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}|(?:\+?81[-\s]?)?0\d{1,4}[-\s]?\d{1,4}[-\s]?\d{3,4}|〒?\d{3}-?\d{4}|(?:住所|電話番号|メールアドレス|パスワード|認証コード|クレジットカード番号)\s*[:：])/i;
                 if (sensitivePattern.test(question)) return new Response(JSON.stringify({ error: "個人情報や認証情報は送らず、内容を取り除いて質問してください。" }), { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json; charset=utf-8", "Cache-Control": "no-store" } });
+                const ip = request.headers.get("CF-Connecting-IP") || "unknown";
+                const rate = await checkRateLimit(ip, "ai_guide", 15, 3600, true);
+                if (rate.unavailable) return new Response(JSON.stringify({ error: "利用制限を確認できませんでした。時間をおいて再試行してください。" }), { status: 503, headers: { ...corsHeaders, "Content-Type": "application/json; charset=utf-8", "Cache-Control": "no-store", "Retry-After": "60" } });
+                if (!rate.allowed) {
+                    const waitSec = rate.resetTime - Math.floor(Date.now() / 1000);
+                    return new Response(JSON.stringify({ error: "利用回数の上限に達しました。約" + Math.max(1, waitSec) + "秒後にもう一度お試しください。" }), { status: 429, headers: { ...corsHeaders, "Content-Type": "application/json; charset=utf-8", "Cache-Control": "no-store" } });
+                }
                 const incomingHistory = Array.isArray(body?.history) ? body.history.slice(-10) : [];
                 const history = [];
                 for (const item of incomingHistory) {
@@ -2117,21 +2149,22 @@ if (url.pathname === "/api/today-anniv" && method === "GET") {
         }
 
         if (url.pathname === "/api/worry-consult" && method === "POST") {
-            try {
+            tr                const parsed = await readBoundedJson(request, 8192);
+                if (!parsed.ok) return new Response(JSON.stringify({ error: parsed.status === 413 ? "送信内容が大きすぎます。" : "送信内容を読み取れませんでした。" }), { status: parsed.status, headers: { ...corsHeaders, "Content-Type": "application/json; charset=utf-8", "Cache-Control": "no-store" } });
+                const { worry, omikujiType } = parsed.body || {};
+                if (typeof worry !== "string" || !worry.trim() || worry.length > 300) return new Response(JSON.stringify({ error: "入力内容をご確認ください（1〜300文字以内）" }), { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json; charset=utf-8", "Cache-Control": "no-store" } });
                 const ip = request.headers.get("CF-Connecting-IP") || "unknown";
-                const rate = await checkRateLimit(ip, "worry_consult", 10, 3600);
+                const rate = await checkRateLimit(ip, "worry_consult", 10, 3600, true);
+                if (rate.unavailable) return new Response(JSON.stringify({ error: "利用制限を確認できませんでした。時間をおいて再試行してください。" }), { status: 503, headers: { ...corsHeaders, "Content-Type": "application/json; charset=utf-8", "Cache-Control": "no-store", "Retry-After": "60" } });
                 if (!rate.allowed) {
                     const waitSec = rate.resetTime - Math.floor(Date.now() / 1000);
                     const msg = `しばらく経ってからもう一度お試しください（あと約${Math.max(1, waitSec)}秒）`;
-                    return new Response(JSON.stringify({ error: msg, message: msg }), { status: 429, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+                    return new Response(JSON.stringify({ error: msg, message: msg }), { status: 429, headers: { ...corsHeaders, "Content-Type": "application/json; charset=utf-8", "Cache-Control": "no-store" } });
                 }
-                const { worry, omikujiType } = await request.json();
-                if (!worry || typeof worry !== "string" || worry.length > 300) {
-                    return new Response(JSON.stringify({ error: "入力内容をご確認ください（300文字以内）" }), { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } });
-                }
+                const safeOmikujiType = typeof omikujiType === "string" ? omikujiType.slice(0, 40) : "不明";
                 const systemPrompt = "あなたは日本の神社のおみくじに添える、やさしく穏やかな助言者です。断定的な予言や医療・法律・金融の専門的助言は行わず、120文字以内の短い日本語で、前向きで具体的な一言アドバイスのみを返してください。";
-                const prompt = `今日引いたおみくじの結果は「${omikujiType || "不明"}」でした。参拝者の悩み・気になっていることは次の通りです：「${worry}」\\n\\nこの内容を踏まえた、短い一言アドバイスをください。`;
-                return await streamUnifiedAIResponse(prompt, systemPrompt, 192, async () => ({}));
+                const prompt = `今日引いたおみくじの結果は「${safeOmikujiType}」でした。参拝者の悩み・気になっていることは次の通りです：「${worry.trim()}」\\n\\nこの内容を踏まえた、短い一言アドバイスをください。`;
+                return await streamUnifiedAIResponse(prompt, systemPrompt, 192, async () => ({}), [], 120);
             } catch (e) {
                 return new Response(JSON.stringify({ error: e.message }), { status: 500, headers: corsHeaders });
             }
@@ -2139,27 +2172,27 @@ if (url.pathname === "/api/today-anniv" && method === "GET") {
 
         // ② AI夢占い（ログイン必須・履歴をTursoに保存）
         if (url.pathname === "/api/dream-fortune" && method === "POST") {
-            try {
-                const session = await verifySession(request);
+            tr                const session = await verifySession(request);
                 if (!session) return new Response(JSON.stringify({ error: "Unauthorized" }), { status: 401, headers: corsHeaders });
+                const parsed = await readBoundedJson(request, 8192);
+                if (!parsed.ok) return new Response(JSON.stringify({ error: parsed.status === 413 ? "送信内容が大きすぎます。" : "送信内容を読み取れませんでした。" }), { status: parsed.status, headers: { ...corsHeaders, "Content-Type": "application/json; charset=utf-8", "Cache-Control": "no-store" } });
+                const { dream } = parsed.body || {};
+                if (typeof dream !== "string" || !dream.trim() || dream.length > 400) return new Response(JSON.stringify({ error: "入力内容をご確認ください（1〜400文字以内）" }), { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json; charset=utf-8", "Cache-Control": "no-store" } });
                 const ip = request.headers.get("CF-Connecting-IP") || "unknown";
-                const rate = await checkRateLimit(ip, "dream_fortune", 10, 3600);
+                const rate = await checkRateLimit(ip, "dream_fortune", 10, 3600, true);
+                if (rate.unavailable) return new Response(JSON.stringify({ error: "利用制限を確認できませんでした。時間をおいて再試行してください。" }), { status: 503, headers: { ...corsHeaders, "Content-Type": "application/json; charset=utf-8", "Cache-Control": "no-store", "Retry-After": "60" } });
                 if (!rate.allowed) {
                     const waitSec = rate.resetTime - Math.floor(Date.now() / 1000);
                     const msg = `しばらく経ってからもう一度お試しください（あと約${Math.max(1, waitSec)}秒）`;
-                    return new Response(JSON.stringify({ error: msg, message: msg }), { status: 429, headers: { ...corsHeaders, "Content-Type": "application/json" } });
-                }
-                const { dream } = await request.json();
-                if (!dream || typeof dream !== "string" || dream.length > 400) {
-                    return new Response(JSON.stringify({ error: "入力内容をご確認ください（400文字以内）" }), { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+                    return new Response(JSON.stringify({ error: msg, message: msg }), { status: 429, headers: { ...corsHeaders, "Content-Type": "application/json; charset=utf-8", "Cache-Control": "no-store" } });
                 }
                 const systemPrompt = "あなたは日本の夢占いに詳しい、やさしい語り口の鑑定人です。断定的な予言は避け、150文字以内の日本語で、夢に込められた意味を前向きに解釈してください。";
                 const prompt = `次のような夢を見ました：「${dream}」\\n\\nこの夢の夢占い的な意味を教えてください。`;
                 return await streamUnifiedAIResponse(prompt, systemPrompt, 256, async (interpretation) => {
                     const jstNow = new Date(new Date().toLocaleString("en-US", { timeZone: "Asia/Tokyo" }));
-                    await runSQL("INSERT INTO dream_history (user_email, dream_text, interpretation, created_at) VALUES (?, ?, ?, ?)", [session.email, dream, interpretation, jstNow.toISOString()]);
+                    await runSQL("INSERT INTO dream_history (user_email, dream_text, interpretation, created_at) VALUES (?, ?, ?, ?)", [session.email, dream.trim(), interpretation, jstNow.toISOString()]);
                     return { interpretation };
-                });
+                }, [], 150);
             } catch (e) {
                 return new Response(JSON.stringify({ error: e.message }), { status: 500, headers: corsHeaders });
             }
@@ -2197,10 +2230,17 @@ if (url.pathname === "/api/today-anniv" && method === "GET") {
 
         // 記事要約（キャッシュ済みは即JSON、未キャッシュはストリーミング配信）
         if (url.pathname === "/api/summarize" && method === "POST") {
-            try {
-                const { articleType, articleId, articleText, articleTitle, originalCharCount: clientOriginalCharCount } = await request.json();
-                if (!articleType || !articleId) {
-                    return new Response(JSON.stringify({ error: "invalid params" }), { status: 400, headers: corsHeaders });
+            tr                const parsed = await readBoundedJson(request, 32768);
+                if (!parsed.ok) return new Response(JSON.stringify({ error: parsed.status === 413 ? "記事の送信内容が大きすぎます。" : "送信内容を読み取れませんでした。" }), { status: parsed.status, headers: { ...corsHeaders, "Content-Type": "application/json; charset=utf-8", "Cache-Control": "no-store" } });
+                const { articleType, articleId, articleText, articleTitle, originalCharCount: clientOriginalCharCount } = parsed.body || {};
+                if (typeof articleType !== "string" || !articleType.trim() || articleType.length > 80 ||
+                    (typeof articleId !== "string" && typeof articleId !== "number") ||
+                    String(articleId).length > 120 ||
+                    (articleTitle != null && (typeof articleTitle !== "string" || articleTitle.length > 200))) {
+                    return new Response(JSON.stringify({ error: "記事情報が正しくありません。" }), { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json; charset=utf-8", "Cache-Control": "no-store" } });
+                }
+                if (typeof articleText === "string" && articleText.length > 6000) {
+                    return new Response(JSON.stringify({ error: "要約対象の記事本文は6000文字以内です。" }), { status: 413, headers: { ...corsHeaders, "Content-Type": "application/json; charset=utf-8", "Cache-Control": "no-store" } });
                 }
                 const cached = await runSQL(
                     "SELECT summary_text, model_used, original_char_count, summary_char_count, response_time_ms FROM article_summaries WHERE article_type = ? AND article_id = ? LIMIT 1",
@@ -2217,7 +2257,8 @@ if (url.pathname === "/api/today-anniv" && method === "GET") {
                 // 【Fix②】ここから先は実際にAI推論を新規に走らせる場合のみ通る経路。
                 // キャッシュ済みの記事を要約する分にはレート制限を消費しない一方、
                 // 存在しないarticleIdを送りつけて無制限にAIを呼び出すような直叩きを防ぐ。
-                const summarizeRate = await checkRateLimit(clientIP, "summarize", 20, 3600); // 1時間20回まで
+                const summarizeRate = await checkRateLimit(clientIP, "summarize", 20, 3600, true); // 1時間20回まで
+                if (summarizeRate.unavailable) return new Response(JSON.stringify({ error: "利用制限を確認できませんでした。時間をおいて再試行してください。" }), { status: 503, headers: { ...corsHeaders, "Content-Type": "application/json; charset=utf-8", "Cache-Control": "no-store", "Retry-After": "60" } });
                 if (!summarizeRate.allowed) {
                     const waitSec = summarizeRate.resetTime - Math.floor(Date.now() / 1000);
                     const msg = `しばらく経ってからもう一度お試しください（あと約${Math.max(1, waitSec)}秒）`;
@@ -2282,12 +2323,11 @@ const aiStream = await env.AI.run(modelUsed, {
             : "";
 
 if (delta) {
-    fullText += delta;
-    await writer.write(
-        encoder.encode(
-            `data: ${JSON.stringify({ delta })}\n\n`
-        )
-    );
+    const safeDelta = delta.slice(0, Math.max(0, 150 - fullText.length));
+    if (safeDelta) {
+        fullText += safeDelta;
+        await writer.write(encoder.encode(`data: ${JSON.stringify({ delta: safeDelta })}\n\n`));
+    }
 }
                                 } catch (_) { /* パース失敗した行は無視 */ }
                             }
