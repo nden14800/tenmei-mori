@@ -48,10 +48,24 @@
 - **バックエンド**: Cloudflare Workers
 - **データベース**: Turso(LibSQL / SQLite 互換のエッジデータベース)
 - **AI 機能基盤**: Cloudflare Workers AI
-- **AI 案内**: Chatling（Cookie 設定で明示的に許可した場合のみ読み込み。OFF にすると読み込み済みウィジェットも停止・除去）
+- **AI 案内**: 独自実装（Cloudflare Workers AI の GLM-4.7-Flash）。Cookie 設定でサポートチャットを許可した場合のみ読み込み、会話履歴はサイトのデータベース・アカウント・ブラウザー内ストレージに保存しません。
 - **翻訳**: `@browsermt/bergamot-translator` 0.4.9 + Firefox Translations 系モデル。モデルをブラウザ側へ取得してローカル処理する方式
 - **アクセス解析**: Google Analytics / Microsoft Clarity（Cookie 設定で「利用状況の解析」を許可した場合のみ）
 - **メール送信**: Maileroo
+
+## 🤖 独自 AI 案内
+
+サイトの使い方・機能案内には、独自の AI 案内を使用しています。
+
+- **実装**: `assets/js/tenmei-ai-agent.js` と `assets/css/tenmei-ai-agent.css`
+- **バックエンド**: `workers/tenmei-mori-backend.js` の `/api/ai-guide`
+- **モデル**: Cloudflare Workers AI `@cf/zai-org/glm-4.7-flash`
+- **指示文**: バックエンドの `/api/ai-guide` にある `systemPrompt`。サイト機能、保存仕様、回答手順、プライバシー、安全性、分からない仕様を捏造しないルールを定義しています。
+- **会話履歴**: 現在の質問と直近の会話（最大10件）を回答生成に使用します。独自 AI 案内の会話履歴はデータベース・アカウント・ブラウザー内ストレージへ保存しません。
+- **利用条件**: Cookie 設定でサポートチャットを許可した場合のみ読み込みます。
+- **制限**: AI 案内はサイトを直接操作したり、利用者のアカウントや履歴を閲覧したり、サイトの最新状態をリアルタイム検索したりできません。確認していない画面配置・仕様・障害状況を断言しないよう指示しています。
+
+AI の指示文やサイト仕様を更新した場合は、`tests/ai-help-desk-ui-regression.cjs` の回帰チェックも更新してください。
 
 ## ⚖️ ライセンスと第三者コンポーネント
 
