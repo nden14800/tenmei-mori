@@ -35984,6 +35984,11 @@ try {
             try {
                 if (!word) return;
                 var w = word.trim();
+                var extraWordKey = w.toLowerCase();
+                if (typeof extraEggWords !== 'undefined' && extraEggWords[extraWordKey]) {
+                    extraEggWords[extraWordKey]();
+                    return;
+                }
                 if (w === SAKURA_WORD) {
                     spawnSakura();
                     if (typeof window.showToast === 'function') {
@@ -36060,7 +36065,31 @@ try {
                 try {
                     if (typeof window.showToast === 'function') window.showToast('稲荷の使いより、小さな吉兆をお届けします。', 'success', '🦊');
                 } catch (eInari) {}
-            }
+            },
+            torii: function() { try { window.showToast('鳥居の向こうに、まだ見ぬ小さな発見が待っているかもしれません。', 'info', '⛩️'); } catch(e) {} },
+            hoshi: function() { try { window.showToast('ひとつ星を見つけました。願いごとは、心の中にそっと。', 'success', '⭐'); } catch(e) {} },
+            komorebi: function() { try { window.showToast('木漏れ日のような、ささやかな幸運が訪れますように。', 'success', '🌿'); } catch(e) {} },
+            yokai: function() { try { window.showToast('あれ？ いま、何かが境内を横切ったような……。', 'info', '👻'); } catch(e) {} },
+            miko: function() { try { window.showToast('巫女からひとこと。急がず、今日できることをひとつずつ。', 'info', '🎐'); } catch(e) {} },
+            shimenawa: function() { try { window.showToast('しめ縄の向こうは、いつもより少しだけ不思議な空気。', 'info', '〰️'); } catch(e) {} },
+            shukufuku: function() { try { window.showToast('ささやかな祝福を。あなたの今日に良いご縁がありますように。', 'success', '✨'); } catch(e) {} },
+            enishi: function() { try { window.showToast('この小さな発見も、ひとつの縁かもしれません。', 'success', '🧵'); } catch(e) {} },
+            kagura: function() { try { window.showToast('遠くから神楽の鈴の音が聞こえた気がします。', 'info', '🔔'); } catch(e) {} },
+            tsukuyomi: function() { try { window.showToast('月読の夜。静かな時間も、明日への大切な準備です。', 'info', '🌙'); } catch(e) {} },
+            himitsu: function() { try { if (typeof revealSecretOverlay === 'function') revealSecretOverlay(); else window.showToast('秘密の気配を感じます……。', 'info', '🔍'); } catch(e) {} },
+            kotodama: function() { try { window.showToast('言葉には、小さな一歩を後押しする力があります。', 'success', '💬'); } catch(e) {} },
+            omikuji: function() { try { window.showToast('これは隠し演出です。実際のおみくじ結果や履歴は変わりません。', 'info', '🎴'); } catch(e) {} },
+            tanuki: function() { try { window.showToast('たぬきが葉っぱを置いていきました。……気のせい？', 'info', '🍃'); } catch(e) {} },
+            hoshizora: function() { try { window.showToast('見上げれば、境内の空にはまだ知らない星がたくさん。', 'info', '🌌'); } catch(e) {} },
+            nagomi: function() { try { window.showToast('ひと息ついて、肩の力を抜いて。', 'success', '🍵'); } catch(e) {} },
+            yuzu: function() { try { window.showToast('柚子の香りがふわり。気分を切り替えて、もう一歩。', 'success', '🍋'); } catch(e) {} },
+            komainu: function() { try { window.showToast('狛犬が、見つけてくれたあなたを静かに見守っています。', 'success', '🦁'); } catch(e) {} },
+            kagami: function() { try { window.showToast('鏡の向こうの自分にも、やさしい言葉を。', 'info', '🪞'); } catch(e) {} },
+            akari: function() { try { window.showToast('小さな灯りをひとつ。今日はそれだけでも十分です。', 'success', '🕯️'); } catch(e) {} },
+            koyomi: function() { try { window.showToast('暦をめくるように、気持ちも新しくしてみましょう。', 'info', '📅'); } catch(e) {} },
+            tsubaki: function() { try { window.showToast('椿の花をひとつ見つけました。静かな美しさに気づく日。', 'success', '🌺'); } catch(e) {} },
+            matsuri: function() { try { window.showToast('境内に祭り囃子が響いたような気がします。', 'info', '🏮'); } catch(e) {} },
+            suzune: function() { try { window.showToast('鈴の音がひとつ。小さな幸運に気づけますように。', 'success', '🔔'); } catch(e) {} }
         };
         var extraEggWordsList = Object.keys(extraEggWords);
         document.addEventListener('keydown', function(e) {
@@ -36073,12 +36102,13 @@ try {
                     extraEggBuffer = '';
                     return;
                 }
-                extraEggBuffer = (extraEggBuffer + e.key.toLowerCase()).slice(-7);
+                extraEggBuffer = (extraEggBuffer + e.key.toLowerCase()).slice(-10);
                 for (var i = 0; i < extraEggWordsList.length; i++) {
                     var word = extraEggWordsList[i];
                     if (extraEggBuffer.slice(-word.length) === word) {
                         extraEggBuffer = '';
-                        extraEggWords[word]();
+                        if (typeof window._trySecretWord === 'function') window._trySecretWord(word);
+                        else extraEggWords[word]();
                         break;
                     }
                 }
