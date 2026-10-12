@@ -34,7 +34,8 @@ const eggs = html.slice(start, end);
 ].forEach((needle) => assert(eggs.includes(needle), '不足: ' + needle));
 assert(!eggs.includes('preventDefault('), '通常のキー操作を妨げています。');
 assert(!eggs.includes('stopPropagation('), '既存イベントを遮断しています。');
-assert(eggs.includes('createSecretMatcher(keyboardWords,function(word){var key=resolveSecretWord(word);if(key)triggerSecretWord(key);},1600)'), '接頭辞が重なる合言葉の待機時間が想定と異なります。');
+assert(eggs.includes('createSecretMatcher(keyboardWords,function(word){var key=resolveSecretWord(word);if(key)triggerSecretWord(key);},900)'), '接頭辞が重なる合言葉の待機時間が想定と異なります。');
+assert(eggs.includes('function onIdleActivity(){var now=Date.now();if(now-lastActivityAt<750)return;lastActivityAt=now;resetIdleTimer();}'), 'アイドル監視のマウス移動処理が間引かれていません。');
 assert(eggs.includes("showEggScene(key); return true;"), '手動の合言葉が共通の中央カード演出を使用していません。');
 assert(eggs.includes("if (!overlay) { showEggScene('himitsu'); return; }"), 'コナミコマンドのフォールバックが壊れています。');
 
