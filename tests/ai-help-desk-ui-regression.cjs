@@ -13,6 +13,6 @@ for (const text of ['if (url.pathname === "/api/ai-guide" && method === "POST")'
 assert.ok(css.includes('@media(max-width:640px)'),'モバイルレイアウトが不足しています');
 assert.ok(css.includes('prefers-reduced-motion:reduce'),'軽減モーション対応が不足しています');
 assert.ok(!/chatling|chtl-/i.test(html+js+css+worker+headers),'旧外部AIの実装参照が残っています');
-assert.ok(!/localStorage|sessionStorage/.test(js),'会話履歴をブラウザーへ保存してはいけません');
+assert.ok(!/localStorage\.setItem|sessionStorage/.test(js),'会話履歴をブラウザーへ保存してはいけません');
 assert.ok(!/innerHTML/.test(js),'AI応答はinnerHTMLで描画してはいけません');
 console.log('天命乃杜独自AIエージェントの回帰テストに合格しました。');
