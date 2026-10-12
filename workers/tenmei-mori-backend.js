@@ -640,7 +640,6 @@ export default {
 
             } catch (e) {
                 console.error("RateLimit Error:", e);
-                console.error("RateLimit Error:", e);
                 return { allowed: !failClosed, unavailable: failClosed, resetTime: newExpire };
             }
         }
@@ -1883,7 +1882,7 @@ if (url.pathname === "/api/today-anniv" && method === "GET") {
             const aiStream = await env.AI.run("@cf/zai-org/glm-4.7-flash", {
                 messages,
                 stream: true,
-                max_completion_tokens: Math.max(64, Math.min(640, Math.floor(Number(maxCompletionTokens) || 512))),
+                max_completion_tokens: Math.max(512, maxCompletionTokens),
                 temperature: 0.4,
                 chat_template_kwargs: {
                     enable_thinking: false
