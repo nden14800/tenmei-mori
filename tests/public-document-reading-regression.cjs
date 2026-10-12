@@ -27,4 +27,7 @@ assert(html.includes('public-document-reading-font-size-custom'), '文字サイ�
 assert(html.includes('public-document-reading-line-height-custom'), '行間の公開文書向け適用クラスがありません。');
 assert(html.includes('public-document-reading-body-font-custom'), '書体の公開文書向け適用クラスがありません。');
 assert(html.includes('public-document-reading-content-width-custom'), '本文幅の公開文書向け適用クラスがありません。');
+assert(html.includes('public-document-reading-font-size-custom:not(.public-document-reading-disabled) #view-about .about-codex-chapter>div:not(.about-codex-chapter-head)'), '当サイトについての章本文に文字サイズ設定が適用されません。');
+assert(html.includes('public-document-reading-line-height-custom:not(.public-document-reading-disabled) #view-about .about-codex-chapter>div:not(.about-codex-chapter-head)'), '当サイトについての章本文に行間設定が適用されません。');
+assert(html.includes('public-document-reading-body-font-custom:not(.public-document-reading-disabled) #view-about .about-codex-chapter>div:not(.about-codex-chapter-head)'), '当サイトについての章本文に書体設定が適用されません。');
 assert(html.includes('公開文書への読書設定') && html.includes('profile-v4-section-heading--reading'), 'アカウント設定側の公開文書読書設定がありません。');
