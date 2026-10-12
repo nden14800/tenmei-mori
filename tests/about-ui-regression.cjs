@@ -116,15 +116,25 @@ assert(
   /<\/div>\s*<\/div>\s*<article class="about-codex-document"/.test(aboutSection.slice(revisionWrapperStart, chapterDocumentStart + 80)),
   '改定履歴のラッパーが閉じられておらず、章文書が履歴パネルの内側に入っています。'
 );
+requireSectionText('id="about-revision-select-trigger"', '改定版を選ぶ操作が保持されていません。');
+requireSectionText('id="about-revision-snapshot"', '過去版本文スナップショットの表示領域が保持されていません。');
+requireSectionText('onclick="openDocumentHistory(\'about\')"', '以前の版を開く操作が保持されていません。');
 [
-  'gap: clamp(18px, 2.4vw, 28px) !important;',
-  '#view-about #about-content-area > .about-codex-prologue',
-  '#view-about #about-content-area > .about-codex-revision-history',
-  'writing-mode: horizontal-tb !important;',
-  'h3 > span { display: none !important; }',
+  '<style id="about-v40-card-system">',
+  '.about-codex-content { display: grid; gap: 1.25rem;',
+  'gap: 1.25rem !important;',
+  'border-radius: 22px !important;',
+  'writing-mode: vertical-rl !important;',
+  'background: var(--about-red) !important;',
+  'outline: 3px solid var(--about-gold) !important;',
 ].forEach((text) => {
-  requireText(text, `プライバシーポリシーに揃えたAbout画面の余白・章見出しスタイルがありません: ${text}`);
+  requireText(text, `v4.0のAboutカードスタイルまたは操作性が保持されていません: ${text}`);
 });
+assert.equal(
+  html.includes('<style id="about-document-card-polish">'),
+  false,
+  '章カードをひと続きの本文へ変える旧上書きスタイルが残っています。'
+);
 
 console.log('当サイトについて画面の回帰テストに合格しました。');
 console.log(JSON.stringify({
