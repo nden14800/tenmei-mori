@@ -35705,6 +35705,8 @@ try {
     }
 
     var eggs = {
+        tenmei:    ['🌸','天命の花びら','合言葉を見つけました。桜の花びらが舞い、今日の境内に小さな春が訪れます。','flower',['🌸','🍃','✦']],
+        maintenance:['🛠️','メンテナンス確認','メンテナンス表示の確認を実行しました。通常のサイト操作に戻るときは、画面を閉じてください。','ink',['🛠️','⚙️','✦']],
         omamori:   ['🧿','小さな御守り','焦らず、一歩ずつ。今日のあなたにも、よいご縁がありますように。','gold',['🧿','✨','✦']],
         arigatou:  ['🙏','ありがとう','こちらこそ、天命乃杜を見つけてくれてありがとう。あなたの好奇心が、この小さな仕掛けを動かしました。','gold',['🙏','🌸','✦']],
         kitsune:   ['🦊','白狐の気配','鳥居の向こう、白い狐がこちらを見ていた気がします。足元に小さな足跡が残っています。','fox',['🦊','✧','🍃']],
@@ -35829,8 +35831,8 @@ try {
     function triggerSecretWord(value) {
         var key=resolveSecretWord(value);
         if (!key) { showToast('その合言葉には反応がありません。サイト各所に手がかりが…','info','🔍'); return false; }
-        if (key==='tenmei') { spawnSakura(); showToast('花びらが舞いました。今日も良き天命を。','success','🌸'); return true; }
-        if (key==='maintenance') { try { if(typeof checkMaintenance==='function')checkMaintenance(true); } catch (_) {} showToast('メンテナンス画面の表示テストを実行しました。','info','🛠️'); return true; }
+        if (key==='tenmei') { spawnSakura(); showEggScene('tenmei'); return true; }
+        if (key==='maintenance') { try { if(typeof checkMaintenance==='function')checkMaintenance(true); } catch (_) {} showEggScene('maintenance'); return true; }
         if (key==='arigatou') { showEggScene('arigatou'); return true; }
         showEggScene(key); return true;
     }
