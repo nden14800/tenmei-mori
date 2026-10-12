@@ -36,12 +36,12 @@ assert(!eggs.includes('preventDefault('), '通常のキー操作を妨げてい�
 assert(!eggs.includes('stopPropagation('), '既存イベントを遮断しています。');
 
 const matcherStart = eggs.indexOf('function normalizeSecretWord(');
-const matcherEnd = eggs.indexOf('\\n\\n    var eggs =', matcherStart);
+const matcherEnd = eggs.indexOf('\n\n    var eggs =', matcherStart);
 assert(matcherStart >= 0 && matcherEnd > matcherStart, '共通マッチャーを切り出せません。');
 const matcherSource = eggs.slice(matcherStart, matcherEnd);
 let nextTimer = 0;
 const timers = new Map();
-const factory = new Function('setTimeout', 'clearTimeout', matcherSource + '\\nreturn {createSecretMatcher,normalizeSecretWord};');
+const factory = new Function('setTimeout', 'clearTimeout', matcherSource + '\nreturn {createSecretMatcher,normalizeSecretWord};');
 const api = factory((fn) => { const id = ++nextTimer; timers.set(id, fn); return id; }, (id) => timers.delete(id));
 function run(input, words, shouldFlush) {
   const found = [];
