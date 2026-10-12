@@ -35679,7 +35679,7 @@ try {
     function createSecretMatcher(words, onMatch, delayMs) {
         var entries = Array.from(new Set((words || []).map(normalizeSecretWord).filter(Boolean)));
         var maxLength = entries.reduce(function (n, w) { return Math.max(n, w.length); }, 0);
-        var buffer = '', pendingWord = '', pendingTimer = null, delay = typeof delayMs === 'number' ? delayMs : 1200;
+        var buffer = '', pendingWord = '', pendingTimer = null, delay = typeof delayMs === 'number' ? delayMs : 2200;
         function clearPending() { if (pendingTimer !== null) clearTimeout(pendingTimer); pendingTimer = null; pendingWord = ''; }
         function fire(word) { clearPending(); buffer = ''; if (word && typeof onMatch === 'function') onMatch(word); }
         function flush() { if (pendingWord) fire(pendingWord); }
@@ -35719,7 +35719,7 @@ try {
         enishi:    ['🧵','赤い糸のご縁','一本の赤い糸が、画面の端から端へとつながりました。この小さな発見も、ひとつの縁。','thread',['🧵','❤️','✧']],
         kagura:    ['🔔','神楽の鈴','遠くから、澄んだ鈴の音が三度。見えない舞が、そっと始まったようです。','bell',['🔔','🎐','✦']],
         tsukuyomi: ['🌙','月読の夜','淡い月明かりが境内を照らしています。静かな時間も、明日への大切な準備です。','moon',['🌙','⭐','·']],
-        himitsu:   ['封','封印された文書','秘密を見つけた人へ。ここまで探してくれた好奇心に、ありがとう。これはコナミコマンドとは別の、小さな秘密の手紙です。','secret',['封','🔒','✦']],
+        himitsu:   ['🔓','封印解除','このサイトには、合言葉だけでなく、日付や訪問回数で変わる小さな仕掛けもあります。次はページの変化にも目を向けてみてください。','secret',['🔓','📜','✦']],
         kotodama:  ['言','ことだま','入力した言葉が、小さな光になって消えていきました。言葉には、一歩を後押しする力があります。','ink',['言','✧','💬']],
         omikuji:   ['🎴','もう一枚のおみくじ','これは秘密の演出です。実際のおみくじ結果や履歴は変わりません。今日の運勢は、あなた自身の一歩で育ちます。','shrine',['🎴','🌸','✦']],
         tanuki:    ['🍃','たぬきの置き土産','小さな葉っぱが一枚、ころんと置かれていました。……たぬきが置いていったのでしょうか。','forest',['🍃','🍂','✧']],
@@ -35855,7 +35855,7 @@ try {
 
     // 一元化した入力。INPUT等では暴発させず、Labs欄の送信は _trySecretWord で処理。
     var keyboardWords=Object.keys(aliases).filter(function(w){return /^[a-z0-9]+$/.test(w);});
-    var matcher=createSecretMatcher(keyboardWords,function(word){var key=resolveSecretWord(word);if(key)triggerSecretWord(key);},1200);
+    var matcher=createSecretMatcher(keyboardWords,function(word){var key=resolveSecretWord(word);if(key)triggerSecretWord(key);},2200);
     try {
         document.addEventListener('keydown',function(e){
             try {
