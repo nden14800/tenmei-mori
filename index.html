@@ -35665,467 +35665,255 @@ window.applyTheme = function() {
 
 <script>
 // ==========================================================
-// 隠しコマンド（イースターエッグ）集
-// ──────────────────────────────────────────────
-// 過去にこの種の遊び心の実装が、クリックイベントの監視処理で
-// サイト全体の描画と競合し、長時間の障害を起こした反省を踏まえ、
-// 以下の方針で実装している。
-//   ・本ブロック全体を1つのIIFE + try/catchで完全に隔離する
-//   ・既存のonclick/showView等のナビゲーション処理には一切触れない
-//   ・preventDefault/stopPropagation・capture:trueは使わない
-//   ・既存のクリック対象要素（ロゴ・サイドバーアイコン等）の
-//     クリック回数を監視するような実装は行わない
-//   ・window.onload は上書きせず、addEventListener('load', ...) のみ使う
-//     （既存のwindow.onload = async function(){...}を破壊しないため）
-//   ・生成するDOM要素は新規追加分のみで、既存要素のclass/styleを
-//     書き換えない
-//   ・各機能を個別のtry/catchで包み、1つが失敗しても他に影響しない
 // ==========================================================
-(function() {
+// 隠しコマンド（イースターエッグ）集 — 統合入力・演出エンジン
+// ==========================================================
+(function () {
+'use strict';
 try {
-
-    // ---------- ① コンソールメッセージ ----------
-    try {
-        console.log('%c⛩️ 運勢・天命乃杜', 'color:#c5a059;font-size:20px;font-weight:bold;');
-        console.log('%cようこそ、開発者の方。気になるコードがあれば、サイドバーの「開発者について」からGitHubのソースをご覧いただけます。', 'color:#888;font-size:12px;');
-        console.log('%cヒント：このページにはいくつかの隠しコマンドが眠っています…', 'color:#b91c1c;font-size:12px;');
-    } catch(e) {}
-
-    // ---------- ② コナミコマンド（↑↑↓↓←→←→BA） ----------
-    try {
-        var KONAMI = ['ArrowUp','ArrowUp','ArrowDown','ArrowDown','ArrowLeft','ArrowRight','ArrowLeft','ArrowRight','b','a'];
-        var konamiPos = 0;
-        var secretMessages = [
-            "ようこそ、隠し部屋へ。\n\nここまでコードを覗き込んでくださり、\nありがとうございます。\n\nこのサイトは、ひとりの開発者が\nAIと対話しながら、こつこつと\n作り上げているものです。\n\n見つけてくれて、嬉しいです。",
-            "おみくじの結果は、あなたの行動までは\n決められません。\n\nここまで隠しコマンドを探してくれた\nその探究心こそが、きっと吉兆です。"
-        ];
-        function revealSecretOverlay() {
-            try {
-                var overlay = document.getElementById('secret-overlay');
-                if (!overlay) return;
-                var msg = secretMessages[Math.floor(Math.random() * secretMessages.length)];
-                var textEl = overlay.querySelector('.secret-text');
-                if (textEl) {
-                    textEl.textContent = msg;
-                    textEl.classList.add('secret-cursor');
+    function normalizeSecretWord(value) {
+        try { return String(value == null ? '' : value).normalize('NFKC').toLowerCase().trim().replace(/[\s\-_]+/g, ''); }
+        catch (_) { return String(value == null ? '' : value).toLowerCase().trim().replace(/[\s\-_]+/g, ''); }
+    }
+    // 接頭辞が重なる合言葉は即時確定せず、続きが来るか1200ms待つ。
+    function createSecretMatcher(words, onMatch, delayMs) {
+        var entries = Array.from(new Set((words || []).map(normalizeSecretWord).filter(Boolean)));
+        var maxLength = entries.reduce(function (n, w) { return Math.max(n, w.length); }, 0);
+        var buffer = '', pendingWord = '', pendingTimer = null, delay = typeof delayMs === 'number' ? delayMs : 1200;
+        function clearPending() { if (pendingTimer !== null) clearTimeout(pendingTimer); pendingTimer = null; pendingWord = ''; }
+        function fire(word) { clearPending(); buffer = ''; if (word && typeof onMatch === 'function') onMatch(word); }
+        function flush() { if (pendingWord) fire(pendingWord); }
+        function reset() { clearPending(); buffer = ''; }
+        function push(character) {
+            var chars = normalizeSecretWord(character);
+            Array.from(chars).forEach(function (part) {
+                if (pendingWord) {
+                    var canContinue = entries.some(function (w) { return w.length > pendingWord.length && w.indexOf(pendingWord + part) === 0; });
+                    if (canContinue) clearPending();
+                    else { var previous = pendingWord; fire(previous); buffer = ''; }
                 }
-                overlay.classList.add('active');
-                var closeFn = function() {
-                    overlay.classList.remove('active');
-                    overlay.removeEventListener('click', closeFn);
-                    document.removeEventListener('keydown', escFn);
-                };
-                var escFn = function(ev) {
-                    if (ev.key === 'Escape') closeFn();
-                };
-                overlay.addEventListener('click', closeFn);
-                document.addEventListener('keydown', escFn);
-                setTimeout(closeFn, 8000);
-            } catch(e2) {}
+                buffer += part;
+                if (buffer.length > maxLength) buffer = buffer.slice(-maxLength);
+                var match = entries.filter(function (w) { return buffer.slice(-w.length) === w; }).sort(function (a,b) { return b.length-a.length; })[0];
+                if (!match) return;
+                var hasLonger = entries.some(function (w) { return w.length > match.length && w.indexOf(match) === 0; });
+                if (hasLonger) { pendingWord = match; pendingTimer = setTimeout(function () { fire(match); }, delay); }
+                else fire(match);
+            });
         }
-        function handleKonamiKey(e) {
-            try {
-                var tag = (e.target && e.target.tagName) || '';
-                if (tag === 'INPUT' || tag === 'TEXTAREA') return;
-                var key = e.key;
-                if (key === KONAMI[konamiPos]) {
-                    konamiPos++;
-                    if (konamiPos === KONAMI.length) {
-                        konamiPos = 0;
-                        revealSecretOverlay();
-                    }
-                } else {
-                    konamiPos = (key === KONAMI[0]) ? 1 : 0;
-                }
-            } catch(e3) {}
-        }
-        document.addEventListener('keydown', handleKonamiKey, false);
-    } catch(e) {}
+        return { push: push, flush: flush, reset: reset };
+    }
 
-    // ---------- ③ 合言葉「tenmei」で桜吹雪 ----------
-    try {
-        var typedBuffer = '';
-        var SAKURA_WORD = 'tenmei';
-        // 通常時にメンテナンス画面の見た目だけを確認するためのテスト用合言葉。
-        // maintenanceConfigや期間判定を変更せず、force=trueで既存の安全な表示関数だけを呼ぶ。
-        var MAINTENANCE_TEST_WORD = 'maintenance';
-        function spawnSakura() {
-            try {
-                var count = 24;
-                for (var i = 0; i < count; i++) {
-                    var petal = document.createElement('div');
-                    petal.textContent = '🌸';
-                    petal.style.position = 'fixed';
-                    petal.style.top = '-30px';
-                    petal.style.left = (Math.random() * 100) + 'vw';
-                    petal.style.fontSize = (14 + Math.random() * 12) + 'px';
-                    petal.style.opacity = '0.9';
-                    petal.style.pointerEvents = 'none';
-                    petal.style.zIndex = '99998';
-                    petal.style.transition = 'transform 3.5s linear, opacity 3.5s linear';
-                    document.body.appendChild(petal);
-                    (function(p) {
-                        requestAnimationFrame(function() {
-                            p.style.transform = 'translateY(' + (window.innerHeight + 60) + 'px) translateX(' + (Math.random() * 80 - 40) + 'px) rotate(' + (Math.random()*360) + 'deg)';
-                            p.style.opacity = '0';
-                        });
-                        setTimeout(function() {
-                            if (p && p.parentNode) p.parentNode.removeChild(p);
-                        }, 4000);
-                    })(petal);
-                }
-            } catch(e4) {}
-        }
-        function handleTypedWord(e) {
-            try {
-                var tag = (e.target && e.target.tagName) || '';
-                if (tag === 'INPUT' || tag === 'TEXTAREA') return;
-                if (!e.key || e.key.length !== 1) return;
-                typedBuffer += e.key.toLowerCase();
-                if (typedBuffer.length > SAKURA_WORD.length) {
-                    typedBuffer = typedBuffer.slice(-SAKURA_WORD.length);
-                }
-                if (typedBuffer === SAKURA_WORD) {
-                    typedBuffer = '';
-                    spawnSakura();
-                    try {
-                        if (typeof window.showToast === 'function') {
-                            window.showToast('花びらが舞いました。今日も良き天命を。', 'success', '🌸');
-                        }
-                    } catch(e5) {}
-                }
-            } catch(e6) {}
-        }
-        document.addEventListener('keydown', handleTypedWord, false);
-    } catch(e) {}
+    var eggs = {
+        omamori:   ['🧿','小さな御守り','焦らず、一歩ずつ。今日のあなたにも、よいご縁がありますように。','gold',['🧿','✨','✦']],
+        kitsune:   ['🦊','白狐の気配','鳥居の向こう、白い狐がこちらを見ていた気がします。足元に小さな足跡が残っています。','fox',['🦊','✧','🍃']],
+        inari:     ['🌾','稲荷の吉兆','稲穂がさらりと揺れました。小さな吉兆が、静かに届いたようです。','gold',['🌾','✨','🦊']],
+        torii:     ['⛩️','鳥居の向こう','朱色の鳥居が、いつもより奥まで続いているように見えます。もう一歩だけ、先へ。','shrine',['⛩️','🟥','✦']],
+        hoshi:     ['⭐','ひとつ星','夜空に星がひとつ灯りました。願いごとは、心の中にそっと。','star',['⭐','✦','·']],
+        komorebi:  ['🌿','木漏れ日','葉のすき間から光がこぼれ、境内に小さな光の粒が踊っています。','forest',['🍃','🌿','✧']],
+        yokai:     ['👻','境内の影','石灯籠の向こうを、何かがすっと横切りました。振り返ると、もう誰もいません。','moon',['👻','🌫️','✧']],
+        miko:      ['🎐','巫女のひとこと','「急がなくても大丈夫。今日できることを、ひとつずつ。」小さな鈴の音が響きました。','shrine',['🎐','🌸','✦']],
+        shimenawa: ['〰️','しめ縄の結界','しめ縄の向こうだけ、空気が澄んだようです。ここから先は、静かな気持ちで。','forest',['〰️','✨','🍃']],
+        shukufuku: ['✨','ささやかな祝福','金色の光がふわりと広がりました。あなたの今日に、よいご縁がありますように。','gold',['✨','✦','🌟']],
+        enishi:    ['🧵','赤い糸のご縁','一本の赤い糸が、画面の端から端へとつながりました。この小さな発見も、ひとつの縁。','thread',['🧵','❤️','✧']],
+        kagura:    ['🔔','神楽の鈴','遠くから、澄んだ鈴の音が三度。見えない舞が、そっと始まったようです。','bell',['🔔','🎐','✦']],
+        tsukuyomi: ['🌙','月読の夜','淡い月明かりが境内を照らしています。静かな時間も、明日への大切な準備です。','moon',['🌙','⭐','·']],
+        himitsu:   ['封','封印された文書','秘密を見つけた人へ。ここまで探してくれた好奇心に、ありがとう。これはコナミコマンドとは別の、小さな秘密の手紙です。','secret',['封','🔒','✦']],
+        kotodama:  ['言','ことだま','入力した言葉が、小さな光になって消えていきました。言葉には、一歩を後押しする力があります。','ink',['言','✧','💬']],
+        omikuji:   ['🎴','もう一枚のおみくじ','これは秘密の演出です。実際のおみくじ結果や履歴は変わりません。今日の運勢は、あなた自身の一歩で育ちます。','shrine',['🎴','🌸','✦']],
+        tanuki:    ['🍃','たぬきの置き土産','小さな葉っぱが一枚、ころんと置かれていました。……たぬきが置いていったのでしょうか。','forest',['🍃','🍂','✧']],
+        hoshizora: ['🌌','星空の回廊','夜空がひらけ、星がゆっくりと瞬き始めました。まだ知らない星は、きっとたくさんあります。','star',['🌌','⭐','🌠']],
+        nagomi:    ['🍵','ひと息の時間','湯気がゆっくり立ちのぼります。ひと息ついて、肩の力を抜いて。','tea',['🍵','☁️','✧']],
+        yuzu:      ['🍋','柚子の香り','柚子の香りがふわり。気分を切り替えて、もう一歩。','gold',['🍋','✨','🍃']],
+        komainu:   ['🦁','狛犬の見守り','狛犬が静かに目を開き、あなたを見守るようにうなずきました。','shrine',['🦁','⛩️','✦']],
+        kagami:    ['🪞','鏡の向こう','鏡の表面に柔らかな光が走りました。鏡の向こうの自分にも、やさしい言葉を。','mirror',['🪞','✧','✨']],
+        akari:     ['🕯️','小さな灯り','暗がりに灯りがひとつ。今日はそれだけでも、十分です。','gold',['🕯️','✨','·']],
+        koyomi:    ['📅','暦のひとめくり','暦が一枚、静かにめくられました。ここから気持ちも新しく。','ink',['📅','🍃','✦']],
+        tsubaki:   ['🌺','椿の花','深い緑の中に、椿の花がひとつ。静かな美しさに気づく日です。','flower',['🌺','🌸','✧']],
+        matsuri:   ['🏮','小さなお祭り','境内に祭り囃子が響き、提灯の灯りがひとつずつともりました。','festival',['🏮','🎆','✨']],
+        suzune:    ['🔔','鈴音','鈴の音がひとつ、澄んで響きました。小さな幸運に気づけますように。','bell',['🔔','🎐','✦']]
+    };
+    var aliases = { tenmei:'tenmei', maintenance:'maintenance', arigatou:'arigatou', arigato:'arigatou', 'ありがとう':'arigatou' };
+    Object.keys(eggs).forEach(function (word) { aliases[word] = word; });
+    function resolveSecretWord(value) { var key = normalizeSecretWord(value); return aliases[key] || null; }
+    function showToast(message, type, icon) { try { if (typeof window.showToast === 'function') window.showToast(message, type || 'info', icon || '🔎'); } catch (_) {} }
 
-    // ---------- ③-2 合言葉「maintenance」でメンテナンス画面のテスト表示 ----------
-    try {
-        var maintenanceBuffer = '';
-        function handleMaintenanceTestWord(e) {
-            try {
-                var tag = (e.target && e.target.tagName) || '';
-                if (tag === 'INPUT' || tag === 'TEXTAREA' || e.ctrlKey || e.metaKey || e.altKey) return;
-                if (!e.key || e.key.length !== 1) return;
-                maintenanceBuffer += e.key.toLowerCase();
-                if (maintenanceBuffer.length > MAINTENANCE_TEST_WORD.length) {
-                    maintenanceBuffer = maintenanceBuffer.slice(-MAINTENANCE_TEST_WORD.length);
-                }
-                if (maintenanceBuffer === MAINTENANCE_TEST_WORD) {
-                    maintenanceBuffer = '';
-                    if (typeof checkMaintenance === 'function') checkMaintenance(true);
-                }
-            } catch(eMaintenance) {}
-        }
-        document.addEventListener('keydown', handleMaintenanceTestWord, false);
-    } catch(e) {}
-
-    // ---------- ④ 季節の日のささやかな挨拶（1日1回まで） ----------
-    try {
-        var todayKey = window.TenmeiTime && typeof window.TenmeiTime.getDateKey === 'function' ? window.TenmeiTime.getDateKey() : new Intl.DateTimeFormat('en-CA', { year: 'numeric', month: '2-digit', day: '2-digit' }).format(new Date()).replaceAll('/', '-');
-        var seasonalShownKey = 'tenmei_seasonal_egg_' + todayKey;
-        if (!localStorage.getItem(seasonalShownKey)) {
-            var now = new Date();
-            var md = (now.getMonth()+1) + '/' + now.getDate();
-            var seasonalMsg = null;
-            if (md === '1/1') seasonalMsg = '新年あけましておめでとうございます。今年も天命乃杜をよろしくお願いいたします。';
-            else if (md === '2/3') seasonalMsg = '今日は節分です。心の中の鬼を払い、良き運を招き入れましょう。';
-            else if (md === '3/20') seasonalMsg = '昼と夜が等しくなる春分の日。心と身体のバランスを整える日です。';
-            else if (md === '4/8') seasonalMsg = '花まつりの日です。身近な誰かへの感謝を、改めて思い出してみませんか。';
-            else if (md === '5/5') seasonalMsg = '端午の節句です。自分らしく、たくましく在ることを思う日です。';
-            else if (md === '6/21') seasonalMsg = '一年で最も昼が長い夏至の日。新たな挑戦の種をまく好機です。';
-            else if (md === '7/7') seasonalMsg = '七夕の夜です。願いを一文だけ、心の中で書いてみましょう。';
-            else if (md === '8/15') seasonalMsg = 'お盆の時期です。縁あって今ここにいることへの感謝を忘れずに。';
-            else if (md === '9/23') seasonalMsg = '昼と夜が等しくなる秋分の日。今年ここまでの歩みを振り返ってみては。';
-            else if (md === '12/22') seasonalMsg = '一年で最も夜が長い冬至の日です。この日を境に、光は戻ってきます。';
-            else if (md === '12/31') seasonalMsg = '今年も一年、ありがとうございました。良いお年をお迎えください。';
-            if (seasonalMsg) {
-                window.addEventListener('load', function() {
-                    try {
-                        setTimeout(function() {
-                            if (typeof window.showToast === 'function') {
-                                window.showToast(seasonalMsg, 'info', '🎍');
-                            }
-                        }, 1500);
-                        localStorage.setItem(seasonalShownKey, '1');
-                    } catch(e7) {}
-                });
-            }
-        }
-    } catch(e) {}
-
-    // ---------- ⑤ 訪問回数の節目 ----------
-    try {
-        window.addEventListener('load', function() {
-            try {
-                var VISIT_KEY = 'tenmei_visit_count';
-                var count = parseInt(localStorage.getItem(VISIT_KEY) || '0', 10) + 1;
-                localStorage.setItem(VISIT_KEY, String(count));
-                var milestones = {
-                    7: 'これで7回目の参拝です。続けることも、立派なご縁です。',
-                    30: '30回目の参拝、おめでとうございます。日々の積み重ねに天命も応えていることでしょう。',
-                    100: '100回目の参拝です。長くお付き合いいただき、ありがとうございます。'
-                };
-                if (milestones[count]) {
-                    setTimeout(function() {
-                        if (typeof window.showToast === 'function') {
-                            window.showToast(milestones[count], 'success', '⛩️');
-                        }
-                    }, 2200);
-                }
-            } catch(e8) {}
-        });
-    } catch(e) {}
-
-    // ---------- ⑥ タブを離れている間のタイトル演出 ----------
-    try {
-        var originalTitle = document.title;
-        var titleMessages = [
-            'おかえりをお待ちしております…',
-            '今日のおみくじ、まだですか？',
-            '天命乃杜が、ここにあります'
-        ];
-        document.addEventListener('visibilitychange', function() {
-            try {
-                var tabTitleOn = true;
-                if (typeof AppConfig !== 'undefined' && typeof AppConfig.getCurrent === 'function') {
-                    tabTitleOn = AppConfig.getCurrent().tabTitle !== false;
-                }
-                if (!tabTitleOn) return;
-                if (document.hidden) {
-                    document.title = titleMessages[Math.floor(Math.random() * titleMessages.length)];
-                } else {
-                    document.title = originalTitle;
-                }
-            } catch(e9) {}
-        }, false);
-    } catch(e) {}
-
-    // ---------- ⑦ 13日の金曜日 ----------
-    try {
-        var fridayKey = 'tenmei_friday13_' + (window.TenmeiTime && typeof window.TenmeiTime.getDateKey === 'function' ? window.TenmeiTime.getDateKey() : new Intl.DateTimeFormat('en-CA', { year: 'numeric', month: '2-digit', day: '2-digit' }).format(new Date()).replaceAll('/', '-'));
-        if (!localStorage.getItem(fridayKey)) {
-            var nowF = new Date();
-            if (nowF.getDate() === 13 && nowF.getDay() === 5) {
-                window.addEventListener('load', function() {
-                    try {
-                        setTimeout(function() {
-                            if (typeof window.showToast === 'function') {
-                                window.showToast('今日は13日の金曜日。普段より少しだけ、足元にお気をつけて。', 'info', '🔮');
-                            }
-                        }, 1500);
-                        localStorage.setItem(fridayKey, '1');
-                    } catch(e10) {}
-                });
-            }
-        }
-    } catch(e) {}
-
-    // ---------- ⑧ 合言葉「ありがとう」 ----------
-    try {
-        var thanksBuffer = '';
-        // キーボード入力はIME変換前のローマ字で検知（日本語は入力不可のため）
-        var THANKS_WORD = 'arigatou';
-        function handleThanksWord(e) {
-            try {
-                var tag = (e.target && e.target.tagName) || '';
-                if (tag === 'INPUT' || tag === 'TEXTAREA') return;
-                if (!e.key || e.key.length !== 1) return;
-                thanksBuffer += e.key.toLowerCase();
-                if (thanksBuffer.length > THANKS_WORD.length) {
-                    thanksBuffer = thanksBuffer.slice(-THANKS_WORD.length);
-                }
-                if (thanksBuffer === THANKS_WORD) {
-                    thanksBuffer = '';
-                    if (typeof window.showToast === 'function') {
-                        window.showToast('こちらこそ、参拝いただきありがとうございます。', 'success', '🙏');
-                    }
-                }
-            } catch(e11) {}
-        }
-        document.addEventListener('keydown', handleThanksWord, false);
-    } catch(e) {}
-
-    // ---------- ⑨ 放置時のささやき（1セッションに1回まで） ----------
-    try {
-        var idleShown = false;
-        var idleTimer = null;
-        var IDLE_MS = 4 * 60 * 1000;
-        var idleMessages = [
-            '迷っているなら、まずはおみくじを一枚。',
-            'ゆっくりでも構いません。天命は、待ってくれています。',
-            '少し休憩がてら、今日の運勢を覗いてみませんか。'
-        ];
-        function resetIdleTimer() {
-            try {
-                if (idleTimer) clearTimeout(idleTimer);
-                if (idleShown) return;
-                idleTimer = setTimeout(function() {
-                    try {
-                        if (!idleShown && typeof window.showToast === 'function' && !document.hidden) {
-                            idleShown = true;
-                            window.showToast(idleMessages[Math.floor(Math.random() * idleMessages.length)], 'info', '🕯️');
-                        }
-                    } catch(e12) {}
-                }, IDLE_MS);
-            } catch(e13) {}
-        }
-        ['mousemove', 'keydown', 'touchstart', 'scroll'].forEach(function(evt) {
-            document.addEventListener(evt, resetIdleTimer, { passive: true });
-        });
-        resetIdleTimer();
-    } catch(e) {}
-
-
-    // ---------- 合言葉入力UIからの呼び出し口 ----------
-    // LabsカードのInputから window._trySecretWord('tenmei') のように呼べる
-    try {
-        window._trySecretWord = function(word) {
-            try {
-                if (!word) return;
-                var w = word.trim();
-                var extraWordKey = w.toLowerCase();
-                if (typeof extraEggWords !== 'undefined' && extraEggWords[extraWordKey]) {
-                    extraEggWords[extraWordKey]();
-                    return;
-                }
-                if (w === SAKURA_WORD) {
-                    spawnSakura();
-                    if (typeof window.showToast === 'function') {
-                        window.showToast('花びらが舞いました。今日も良き天命を。', 'success', '🌸');
-                    }
-                } else if (w === THANKS_WORD || w === 'ありがとう' || w === 'arigatou') {
-                    if (typeof window.showToast === 'function') {
-                        window.showToast('こちらこそ、参拝いただきありがとうございます。', 'success', '🙏');
-                    }
-                } else if (w.toLowerCase() === MAINTENANCE_TEST_WORD) {
-                    if (typeof checkMaintenance === 'function') checkMaintenance(true);
-                } else {
-                    if (typeof window.showToast === 'function') {
-                        window.showToast('その合言葉には反応がありません。サイト各所に手がかりが…', 'info', '🔍');
-                    }
-                }
-            } catch(ew) {}
-        };
-    } catch(e) {}
-
-
-    // TENMEI EXTRA EASTER EGGS v1
-    // ---------- ⑩ 追加の隠し言葉（既存の合言葉・演出とは独立） ----------
-    // 既存のナビゲーションやおみくじ判定には触れず、表示だけの小さな遊び心を追加。
-    try {
-        var extraEggBuffer = '';
-        var extraEggWords = {
-            omamori: function() {
-                try {
-                    var old = document.getElementById('tenmei-secret-omamori');
-                    if (old && old.parentNode) old.parentNode.removeChild(old);
-                    var card = document.createElement('div');
-                    card.id = 'tenmei-secret-omamori';
-                    card.setAttribute('role', 'status');
-                    card.setAttribute('aria-live', 'polite');
-                    card.style.cssText = 'position:fixed;z-index:100000;left:50%;bottom:24px;transform:translateX(-50%);width:min(330px,calc(100vw - 32px));box-sizing:border-box;padding:18px 20px 16px;border:1px solid rgba(197,160,89,.7);border-radius:18px;background:linear-gradient(145deg,#fffaf0,#f4e7c9);color:#49351d;box-shadow:0 16px 48px rgba(34,24,10,.24);text-align:center;font-family:inherit;opacity:0;transition:opacity .25s ease,transform .25s ease;';
-                    var close = document.createElement('button');
-                    close.type = 'button';
-                    close.textContent = '閉じる';
-                    close.setAttribute('aria-label', '御守りのメッセージを閉じる');
-                    close.style.cssText = 'position:absolute;right:10px;top:8px;border:0;background:transparent;color:inherit;font:inherit;font-size:12px;cursor:pointer;padding:5px;';
-                    var icon = document.createElement('div');
-                    icon.textContent = '⛩️';
-                    icon.setAttribute('aria-hidden', 'true');
-                    icon.style.cssText = 'font-size:25px;margin-bottom:5px;';
-                    var title = document.createElement('div');
-                    title.textContent = '小さな御守り';
-                    title.style.cssText = 'font-weight:700;letter-spacing:.08em;font-size:15px;margin-bottom:6px;';
-                    var message = document.createElement('p');
-                    message.textContent = '焦らず、一歩ずつ。今日のあなたにも、よいご縁がありますように。';
-                    message.style.cssText = 'margin:0;font-size:13px;line-height:1.8;';
-                    card.appendChild(close);
-                    card.appendChild(icon);
-                    card.appendChild(title);
-                    card.appendChild(message);
-                    document.body.appendChild(card);
-                    var dismiss = function() {
-                        if (card.parentNode) card.parentNode.removeChild(card);
-                    };
-                    close.addEventListener('click', dismiss);
-                    requestAnimationFrame(function() {
-                        card.style.opacity = '1';
-                        card.style.transform = 'translateX(-50%) translateY(0)';
-                    });
-                    window.setTimeout(dismiss, 7000);
-                } catch (eOmamori) {}
-            },
-            kitsune: function() {
-                try {
-                    if (typeof window.showToast === 'function') window.showToast('境内のすみで、白い狐がこちらを見ていた気がします……。', 'info', '🦊');
-                } catch (eKitsune) {}
-            },
-            inari: function() {
-                try {
-                    if (typeof window.showToast === 'function') window.showToast('稲荷の使いより、小さな吉兆をお届けします。', 'success', '🦊');
-                } catch (eInari) {}
-            },
-            torii: function() { try { window.showToast('鳥居の向こうに、まだ見ぬ小さな発見が待っているかもしれません。', 'info', '⛩️'); } catch(e) {} },
-            hoshi: function() { try { window.showToast('ひとつ星を見つけました。願いごとは、心の中にそっと。', 'success', '⭐'); } catch(e) {} },
-            komorebi: function() { try { window.showToast('木漏れ日のような、ささやかな幸運が訪れますように。', 'success', '🌿'); } catch(e) {} },
-            yokai: function() { try { window.showToast('あれ？ いま、何かが境内を横切ったような……。', 'info', '👻'); } catch(e) {} },
-            miko: function() { try { window.showToast('巫女からひとこと。急がず、今日できることをひとつずつ。', 'info', '🎐'); } catch(e) {} },
-            shimenawa: function() { try { window.showToast('しめ縄の向こうは、いつもより少しだけ不思議な空気。', 'info', '〰️'); } catch(e) {} },
-            shukufuku: function() { try { window.showToast('ささやかな祝福を。あなたの今日に良いご縁がありますように。', 'success', '✨'); } catch(e) {} },
-            enishi: function() { try { window.showToast('この小さな発見も、ひとつの縁かもしれません。', 'success', '🧵'); } catch(e) {} },
-            kagura: function() { try { window.showToast('遠くから神楽の鈴の音が聞こえた気がします。', 'info', '🔔'); } catch(e) {} },
-            tsukuyomi: function() { try { window.showToast('月読の夜。静かな時間も、明日への大切な準備です。', 'info', '🌙'); } catch(e) {} },
-            himitsu: function() { try { if (typeof revealSecretOverlay === 'function') revealSecretOverlay(); else window.showToast('秘密の気配を感じます……。', 'info', '🔍'); } catch(e) {} },
-            kotodama: function() { try { window.showToast('言葉には、小さな一歩を後押しする力があります。', 'success', '💬'); } catch(e) {} },
-            omikuji: function() { try { window.showToast('これは隠し演出です。実際のおみくじ結果や履歴は変わりません。', 'info', '🎴'); } catch(e) {} },
-            tanuki: function() { try { window.showToast('たぬきが葉っぱを置いていきました。……気のせい？', 'info', '🍃'); } catch(e) {} },
-            hoshizora: function() { try { window.showToast('見上げれば、境内の空にはまだ知らない星がたくさん。', 'info', '🌌'); } catch(e) {} },
-            nagomi: function() { try { window.showToast('ひと息ついて、肩の力を抜いて。', 'success', '🍵'); } catch(e) {} },
-            yuzu: function() { try { window.showToast('柚子の香りがふわり。気分を切り替えて、もう一歩。', 'success', '🍋'); } catch(e) {} },
-            komainu: function() { try { window.showToast('狛犬が、見つけてくれたあなたを静かに見守っています。', 'success', '🦁'); } catch(e) {} },
-            kagami: function() { try { window.showToast('鏡の向こうの自分にも、やさしい言葉を。', 'info', '🪞'); } catch(e) {} },
-            akari: function() { try { window.showToast('小さな灯りをひとつ。今日はそれだけでも十分です。', 'success', '🕯️'); } catch(e) {} },
-            koyomi: function() { try { window.showToast('暦をめくるように、気持ちも新しくしてみましょう。', 'info', '📅'); } catch(e) {} },
-            tsubaki: function() { try { window.showToast('椿の花をひとつ見つけました。静かな美しさに気づく日。', 'success', '🌺'); } catch(e) {} },
-            matsuri: function() { try { window.showToast('境内に祭り囃子が響いたような気がします。', 'info', '🏮'); } catch(e) {} },
-            suzune: function() { try { window.showToast('鈴の音がひとつ。小さな幸運に気づけますように。', 'success', '🔔'); } catch(e) {} }
-        };
-        var extraEggWordsList = Object.keys(extraEggWords);
-        document.addEventListener('keydown', function(e) {
-            try {
-                var target = e.target;
-                var tag = (target && target.tagName || '').toUpperCase();
-                if (e.isComposing || e.ctrlKey || e.metaKey || e.altKey ||
-                    tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT' ||
-                    (target && target.isContentEditable) || !e.key || e.key.length !== 1) {
-                    extraEggBuffer = '';
-                    return;
-                }
-                extraEggBuffer = (extraEggBuffer + e.key.toLowerCase()).slice(-10);
-                for (var i = 0; i < extraEggWordsList.length; i++) {
-                    var word = extraEggWordsList[i];
-                    if (extraEggBuffer.slice(-word.length) === word) {
-                        extraEggBuffer = '';
-                        if (typeof window._trySecretWord === 'function') window._trySecretWord(word);
-                        else extraEggWords[word]();
-                        break;
-                    }
-                }
-            } catch (eExtraEggKey) {}
-        }, false);
+    function closeEggScene(stage) {
+        if (stage && stage.parentNode) stage.parentNode.removeChild(stage);
+        if (window.__tenmeiEggEscapeHandler) { document.removeEventListener('keydown', window.__tenmeiEggEscapeHandler, false); window.__tenmeiEggEscapeHandler = null; }
+    }
+    function showEggScene(key) {
+        var data = eggs[key]; if (!data || !document.body) return;
         try {
-            var extraEggStyle = document.createElement('style');
-            extraEggStyle.textContent = '@media (prefers-reduced-motion: reduce) { #tenmei-secret-omamori { transition: none !important; } } @media (max-width: 480px) { #tenmei-secret-omamori { bottom: 14px !important; } }';
-            document.head.appendChild(extraEggStyle);
-        } catch (eExtraEggStyle) {}
-    } catch (eExtraEggSetup) {}
+            var old = document.getElementById('tenmei-secret-scene'); if (old) closeEggScene(old);
+            var stage = document.createElement('div');
+            stage.id = 'tenmei-secret-scene'; stage.className = 'tenmei-egg-stage tenmei-egg-theme-' + data[3];
+            stage.setAttribute('role','status'); stage.setAttribute('aria-live','polite');
+            var card = document.createElement('div'); card.className = 'tenmei-egg-card';
+            var close = document.createElement('button'); close.type = 'button'; close.className = 'tenmei-egg-close'; close.textContent = '閉じる'; close.setAttribute('aria-label','隠し演出を閉じる');
+            var icon = document.createElement('div'); icon.className = 'tenmei-egg-icon'; icon.textContent = data[0]; icon.setAttribute('aria-hidden','true');
+            var title = document.createElement('h2'); title.className = 'tenmei-egg-title'; title.textContent = data[1];
+            var message = document.createElement('p'); message.className = 'tenmei-egg-message'; message.textContent = data[2];
+            var ornament = document.createElement('div'); ornament.className = 'tenmei-egg-ornament'; ornament.textContent = '✦  ·  ✧  ·  ✦'; ornament.setAttribute('aria-hidden','true');
+            card.appendChild(close); card.appendChild(icon); card.appendChild(title); card.appendChild(message); card.appendChild(ornament); stage.appendChild(card);
+            data[4].forEach(function (symbol, i) {
+                var particle = document.createElement('span'); particle.className = 'tenmei-egg-particle egg-particle-' + (i % 3);
+                particle.textContent = symbol; particle.setAttribute('aria-hidden','true'); particle.style.setProperty('--egg-index',String(i)); stage.appendChild(particle);
+            });
+            document.body.appendChild(stage);
+            var dismiss = function () { closeEggScene(stage); };
+            close.addEventListener('click',dismiss);
+            stage.addEventListener('click',function (event) { if (event.target === stage) dismiss(); });
+            window.__tenmeiEggEscapeHandler = function (event) { if (event.key === 'Escape') dismiss(); };
+            document.addEventListener('keydown',window.__tenmeiEggEscapeHandler,false);
+            window.setTimeout(dismiss,8500);
+        } catch (_) { showToast(data[2],'info',data[0]); }
+    }
+    function installEggStyles() {
+        if (document.getElementById('tenmei-egg-style')) return;
+        var style = document.createElement('style'); style.id = 'tenmei-egg-style';
+        style.textContent = [
+          '.tenmei-egg-stage{position:fixed;inset:0;z-index:100001;display:grid;place-items:center;padding:20px;box-sizing:border-box;background:rgba(10,12,18,.68);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);animation:eggFade .25s ease both;overflow:hidden}',
+          '.tenmei-egg-card{position:relative;z-index:2;width:min(420px,100%);box-sizing:border-box;padding:30px 28px 22px;border:1px solid rgba(255,255,255,.58);border-radius:24px;text-align:center;box-shadow:0 28px 90px rgba(0,0,0,.3);background:linear-gradient(145deg,#fffdf8,#f5ead5);color:#382d25;animation:eggCard .4s cubic-bezier(.2,.8,.2,1) both}',
+          '.tenmei-egg-close{position:absolute;right:12px;top:12px;border:0;border-radius:999px;padding:7px 10px;background:rgba(80,60,40,.08);color:inherit;font:inherit;font-size:12px;cursor:pointer}',
+          '.tenmei-egg-icon{font-size:42px;line-height:1.25;margin:6px auto 12px;animation:eggFloat 2.8s ease-in-out infinite}',
+          '.tenmei-egg-title{margin:0 0 12px;font-size:20px;letter-spacing:.06em;font-weight:750}',
+          '.tenmei-egg-message{margin:0 auto;max-width:34em;font-size:14px;line-height:1.95}',
+          '.tenmei-egg-ornament{margin-top:20px;font-size:12px;letter-spacing:.24em;opacity:.7}',
+          '.tenmei-egg-particle{position:absolute;z-index:1;left:calc(10% + var(--egg-index)*13%);top:calc(15% + (var(--egg-index)%3)*24%);font-size:clamp(20px,4vw,38px);pointer-events:none;animation:eggParticle 3.8s ease-in-out infinite;animation-delay:calc(var(--egg-index)*-.31s)}',
+          '.egg-particle-1{left:auto;right:calc(8% + var(--egg-index)*3%);top:calc(22% + (var(--egg-index)%3)*18%)}.egg-particle-2{top:auto;bottom:calc(10% + (var(--egg-index)%3)*16%)}',
+          '.tenmei-egg-theme-star,.tenmei-egg-theme-moon{background:radial-gradient(ellipse at 50% 45%,rgba(43,54,105,.7),rgba(8,10,28,.94))}.tenmei-egg-theme-star .tenmei-egg-card,.tenmei-egg-theme-moon .tenmei-egg-card{background:linear-gradient(145deg,#171c3a,#29315a);color:#f7f2ff;border-color:rgba(200,195,255,.35)}',
+          '.tenmei-egg-theme-fox{background:radial-gradient(ellipse at 50% 45%,rgba(139,71,27,.65),rgba(26,18,15,.94))}.tenmei-egg-theme-fox .tenmei-egg-card{background:linear-gradient(145deg,#fff8ed,#f4dfc7)}',
+          '.tenmei-egg-theme-forest{background:radial-gradient(ellipse at 50% 45%,rgba(44,104,70,.65),rgba(9,25,18,.94))}.tenmei-egg-theme-forest .tenmei-egg-card{background:linear-gradient(145deg,#f7fff7,#deeedc)}',
+          '.tenmei-egg-theme-shrine,.tenmei-egg-theme-festival{background:radial-gradient(ellipse at 50% 45%,rgba(157,55,48,.65),rgba(34,15,18,.94))}.tenmei-egg-theme-shrine .tenmei-egg-card,.tenmei-egg-theme-festival .tenmei-egg-card{background:linear-gradient(145deg,#fffaf3,#f4e3d5)}',
+          '.tenmei-egg-theme-thread .tenmei-egg-card{background:linear-gradient(145deg,#fff5f4,#f5dada);border-color:#d8a3a3}.tenmei-egg-theme-secret{background:radial-gradient(ellipse at 50% 45%,rgba(81,55,91,.75),rgba(13,9,18,.96))}.tenmei-egg-theme-secret .tenmei-egg-card{background:linear-gradient(145deg,#241a2e,#3a2946);color:#f7edff;border-color:rgba(215,175,255,.55)}',
+          '.tenmei-egg-theme-ink .tenmei-egg-card,.tenmei-egg-theme-mirror .tenmei-egg-card{background:linear-gradient(145deg,#f9fbff,#e1e8f2)}.tenmei-egg-theme-tea .tenmei-egg-card{background:linear-gradient(145deg,#fffdf3,#e9dfc8)}.tenmei-egg-theme-flower .tenmei-egg-card{background:linear-gradient(145deg,#fff8fb,#f2dce8)}',
+          '.tenmei-egg-theme-bell .tenmei-egg-icon{animation:eggBell .8s ease-in-out 3}.tenmei-egg-theme-gold .tenmei-egg-icon{animation:eggGlow 1.5s ease-in-out infinite}',
+          '@keyframes eggFade{from{opacity:0}to{opacity:1}}@keyframes eggCard{from{opacity:0;transform:translateY(18px) scale(.96)}to{opacity:1;transform:translateY(0) scale(1)}}@keyframes eggFloat{0%,100%{transform:translateY(0)}50%{transform:translateY(-8px)}}@keyframes eggParticle{0%,100%{transform:translate3d(0,12px,0) rotate(-8deg);opacity:.25}50%{transform:translate3d(8px,-18px,0) rotate(10deg);opacity:1}}@keyframes eggBell{0%,100%{transform:rotate(0)}25%{transform:rotate(12deg)}75%{transform:rotate(-12deg)}}@keyframes eggGlow{0%,100%{filter:drop-shadow(0 0 0 rgba(255,200,70,0))}50%{filter:drop-shadow(0 0 18px rgba(255,200,70,.8))}}',
+          '@media(max-width:480px){.tenmei-egg-stage{padding:14px}.tenmei-egg-card{padding:28px 20px 20px;border-radius:20px}.tenmei-egg-title{font-size:18px}.tenmei-egg-message{font-size:13px}.tenmei-egg-particle{font-size:24px}}@media(prefers-reduced-motion:reduce){.tenmei-egg-stage,.tenmei-egg-card,.tenmei-egg-icon,.tenmei-egg-particle{animation:none!important;transition:none!important}}'
+        ].join('');
+        document.head.appendChild(style);
+    }
+    function spawnSakura() {
+        try {
+            var reduced = false; try { reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches; } catch (_) {}
+            for (var i=0;i<(reduced?8:24);i++) {
+                var p=document.createElement('div'); p.textContent='🌸'; p.setAttribute('aria-hidden','true');
+                p.style.cssText='position:fixed;top:-30px;left:'+(Math.random()*100)+'vw;font-size:'+(14+Math.random()*12)+'px;opacity:.9;pointer-events:none;z-index:100000;transition:transform '+(reduced?'.4s':'3.5s')+' linear,opacity 3.5s linear;';
+                document.body.appendChild(p);
+                (function(petal){requestAnimationFrame(function(){petal.style.transform='translateY('+(window.innerHeight+60)+'px) translateX('+(Math.random()*80-40)+'px) rotate('+(Math.random()*360)+'deg)';petal.style.opacity='0';});window.setTimeout(function(){if(petal.parentNode)petal.parentNode.removeChild(petal);},reduced?500:4000);})(p);
+            }
+        } catch (_) {}
+    }
+    function revealKonamiOverlay() {
+        try {
+            var overlay=document.getElementById('secret-overlay');
+            if (!overlay) { showEggScene('himitsu'); return; }
+            var messages=[
+              'ようこそ、隠し部屋へ。\n\nここまでコードを覗き込んでくださり、ありがとうございます。\n\nこのサイトは、ひとりの開発者がAIと対話しながら、こつこつと作り上げているものです。\n\n見つけてくれて、嬉しいです。',
+              'おみくじの結果は、あなたの行動までは決められません。\n\nここまで隠しコマンドを探してくれたその探究心こそが、きっと吉兆です。'
+            ];
+            var text=overlay.querySelector('.secret-text'); if(text){text.textContent=messages[Math.floor(Math.random()*messages.length)];text.classList.add('secret-cursor');}
+            overlay.classList.add('active');
+            var close=function(){overlay.classList.remove('active');overlay.removeEventListener('click',close);document.removeEventListener('keydown',escapeHandler,false);};
+            var escapeHandler=function(e){if(e.key==='Escape')close();};
+            overlay.addEventListener('click',close);document.addEventListener('keydown',escapeHandler,false);window.setTimeout(close,8000);
+        } catch (_) {}
+    }
+    function triggerSecretWord(value) {
+        var key=resolveSecretWord(value);
+        if (!key) { showToast('その合言葉には反応がありません。サイト各所に手がかりが…','info','🔍'); return false; }
+        if (key==='tenmei') { spawnSakura(); showToast('花びらが舞いました。今日も良き天命を。','success','🌸'); return true; }
+        if (key==='maintenance') { try { if(typeof checkMaintenance==='function')checkMaintenance(true); } catch (_) {} showToast('メンテナンス画面の表示テストを実行しました。','info','🛠️'); return true; }
+        if (key==='arigatou') { showEggScene('kotodama'); return true; }
+        showEggScene(key); return true;
+    }
+    // TENMEI Labsの入力欄・キーボード入力の共通入口
+    try { window._trySecretWord=function(word){try{return triggerSecretWord(word);}catch(_){return false;}}; } catch (_) {}
+    try { installEggStyles(); } catch (_) {}
 
-} catch(eOuter) {
-    // 全体が失敗しても、サイトの他機能には一切影響しない
+    // コナミコマンドは従来の隠し部屋を維持し、himitsuとは別の体験にする。
+    try {
+        var konami=['ArrowUp','ArrowUp','ArrowDown','ArrowDown','ArrowLeft','ArrowRight','ArrowLeft','ArrowRight','b','a'], konamiPos=0;
+        document.addEventListener('keydown',function(e){
+            try {
+                var t=e.target,tag=String(t&&t.tagName||'').toUpperCase();
+                if(e.isComposing||e.keyCode===229||e.ctrlKey||e.metaKey||e.altKey||tag==='INPUT'||tag==='TEXTAREA'||tag==='SELECT'||(t&&(t.isContentEditable||(t.closest&&t.closest('[role="textbox"]')))))return;
+                var k=String(e.key||'');
+                if(k===konami[konamiPos]||(konami[konamiPos]==='b'&&k.toLowerCase()==='b')||(konami[konamiPos]==='a'&&k.toLowerCase()==='a')){
+                    if(++konamiPos===konami.length){konamiPos=0;revealKonamiOverlay();}
+                }else konamiPos=k===konami[0]?1:0;
+            }catch(_){}
+        },false);
+    } catch (_) {}
+
+    // 一元化した入力。INPUT等では暴発させず、Labs欄の送信は _trySecretWord で処理。
+    var keyboardWords=Object.keys(aliases).filter(function(w){return /^[a-z0-9]+$/.test(w);});
+    var matcher=createSecretMatcher(keyboardWords,function(word){var key=resolveSecretWord(word);if(key)triggerSecretWord(key);},1200);
+    try {
+        document.addEventListener('keydown',function(e){
+            try {
+                var t=e.target,tag=String(t&&t.tagName||'').toUpperCase();
+                if(e.isComposing||e.keyCode===229||e.ctrlKey||e.metaKey||e.altKey||tag==='INPUT'||tag==='TEXTAREA'||tag==='SELECT'||(t&&(t.isContentEditable||(t.closest&&t.closest('[role="textbox"]'))))){matcher.reset();return;}
+                var k=String(e.key||''); if(k.length!==1)return;
+                var normalized=k.normalize('NFKC').toLowerCase();
+                if(/^[a-z0-9]$/.test(normalized))matcher.push(normalized);
+                // 区切り文字は捨てる。hoshi zoraもhoshizoraとして入力できる。
+            }catch(_){}
+        },false);
+    } catch (_) {}
+
+    // 既存の自動発火型要素を維持
+    var dateKey;
+    try {
+        dateKey=window.TenmeiTime&&typeof window.TenmeiTime.getDateKey==='function'?window.TenmeiTime.getDateKey():new Intl.DateTimeFormat('en-CA',{year:'numeric',month:'2-digit',day:'2-digit'}).format(new Date()).replace(/\//g,'-');
+        var seasonalKey='tenmei_seasonal_egg_'+dateKey;
+        if(!localStorage.getItem(seasonalKey)){
+            var now=new Date(),md=(now.getMonth()+1)+'/'+now.getDate();
+            var seasonal={
+                '1/1':'新年あけましておめでとうございます。今年も天命乃杜をよろしくお願いいたします。',
+                '2/3':'今日は節分です。心の中の鬼を払い、良き運を招き入れましょう。',
+                '3/20':'昼と夜が等しくなる春分の日。心と身体のバランスを整える日です。',
+                '4/8':'花まつりの日です。身近な誰かへの感謝を、改めて思い出してみませんか。',
+                '5/5':'端午の節句です。自分らしく、たくましく在ることを思う日です。',
+                '6/21':'一年で最も昼が長い夏至の日。新たな挑戦の種をまく好機です。',
+                '7/7':'七夕の夜です。願いを一文だけ、心の中で書いてみましょう。',
+                '8/15':'お盆の時期です。縁あって今ここにいることへの感謝を忘れずに。',
+                '9/23':'昼と夜が等しくなる秋分の日。今年ここまでの歩みを振り返ってみては。',
+                '12/22':'一年で最も夜が長い冬至の日です。この日を境に、光は戻ってきます。',
+                '12/31':'今年も一年、ありがとうございました。良いお年をお迎えください。'
+            };
+            if(seasonal[md])window.addEventListener('load',function(){window.setTimeout(function(){showToast(seasonal[md],'info','🎍');},1500);try{localStorage.setItem(seasonalKey,'1');}catch(_){}},{once:true});
+        }
+    } catch (_) {}
+    try {
+        window.addEventListener('load',function(){
+            try{
+                var visitKey='tenmei_visit_count',count=parseInt(localStorage.getItem(visitKey)||'0',10)+1;localStorage.setItem(visitKey,String(count));
+                var milestones={7:'これで7回目の参拝です。続けることも、立派なご縁です。',30:'30回目の参拝、おめでとうございます。日々の積み重ねに天命も応えていることでしょう。',100:'100回目の参拝です。長くお付き合いいただき、ありがとうございます。'};
+                if(milestones[count])window.setTimeout(function(){showToast(milestones[count],'success','⛩️');},2200);
+            }catch(_){}
+        },{once:true});
+    } catch (_) {}
+    try {
+        var originalTitle=document.title,titleMessages=['おかえりをお待ちしております…','今日のおみくじ、まだですか？','天命乃杜が、ここにあります'];
+        document.addEventListener('visibilitychange',function(){
+            try{var enabled=true;if(typeof AppConfig!=='undefined'&&typeof AppConfig.getCurrent==='function')enabled=AppConfig.getCurrent().tabTitle!==false;if(enabled)document.title=document.hidden?titleMessages[Math.floor(Math.random()*titleMessages.length)]:originalTitle;}catch(_){}
+        },false);
+    } catch (_) {}
+    try {
+        var fridayKey='tenmei_friday13_'+dateKey;
+        if(!localStorage.getItem(fridayKey)){var n=new Date();if(n.getDate()===13&&n.getDay()===5)window.addEventListener('load',function(){window.setTimeout(function(){showToast('今日は13日の金曜日。普段より少しだけ、足元にお気をつけて。','info','🔮');},1500);try{localStorage.setItem(fridayKey,'1');}catch(_){}},{once:true});}
+    } catch (_) {}
+    try {
+        var idleShown=false,idleTimer=null,idleMessages=['迷っているなら、まずはおみくじを一枚。','ゆっくりでも構いません。天命は、待ってくれています。','少し休憩がてら、今日の運勢を覗いてみませんか。'];
+        function resetIdleTimer(){if(idleTimer)window.clearTimeout(idleTimer);if(idleShown)return;idleTimer=window.setTimeout(function(){if(!idleShown&&!document.hidden){idleShown=true;showToast(idleMessages[Math.floor(Math.random()*idleMessages.length)],'info','🕯️');}},4*60*1000);}
+        ['mousemove','keydown','touchstart','scroll'].forEach(function(name){document.addEventListener(name,resetIdleTimer,{passive:true});});resetIdleTimer();
+    } catch (_) {}
+} catch (error) {
+    // 隠し要素のエラーが通常のサイト機能へ波及しないよう隔離。
 }
-})();
-</script>
+})();</script>
 
 <script>
 // ==========================================================
