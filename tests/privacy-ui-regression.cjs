@@ -196,8 +196,10 @@ for (const documentKey of ['about', 'privacy']) {
   assert(currentVersion.availability === 'full', documentKey + 'の現行版がfullとして記録されていません。');
   assert(currentVersion.html && currentVersion.html.trim(), documentKey + 'の現行版本文スナップショットがありません。');
   if (documentKey === 'privacy') {
-    assert(currentVersion.html.includes('現行版（第34版）の本文です。'), 'プライバシーポリシー第33版の本文ラベルが現行版と一致しません。');
-    assert(!currentVersion.html.includes('現行版（第32版）の本文です。'), 'プライバシーポリシー第33版のアーカイブに古い第32版ラベルが残っています。');
+    assert.equal(document.current.edition, 34, 'プライバシーポリシーの現行版メタデータが第34版ではありません。');
+    assert.equal(document.current.revisedLabel, '2026/10/12 (第34版)', 'プライバシーポリシーの現行改定日が一致しません。');
+    assert(currentVersion.html.includes('現行版（第34版）の本文です。'), 'プライバシーポリシー第34版の本文ラベルが現行版と一致しません。');
+    assert(!currentVersion.html.includes('現行版（第32版）の本文です。'), 'プライバシーポリシー第34版のアーカイブに古い第32版ラベルが残っています。');
   }
   assert(currentVersion.changeDescription && currentVersion.changeDescription.trim(), documentKey + 'の現行版改定内容がありません。');
   document.versions.forEach((version) => {
