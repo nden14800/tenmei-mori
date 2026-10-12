@@ -35679,26 +35679,55 @@ try {
     function createSecretMatcher(words, onMatch, delayMs) {
         var entries = Array.from(new Set((words || []).map(normalizeSecretWord).filter(Boolean)));
         var maxLength = entries.reduce(function (n, w) { return Math.max(n, w.length); }, 0);
-        var buffer = '', pendingWord = '', pendingTimer = null, delay = typeof delayMs === 'number' ? delayMs : 2200;
-        function clearPending() { if (pendingTimer !== null) clearTimeout(pendingTimer); pendingTimer = null; pendingWord = ''; }
-        function fire(word) { clearPending(); buffer = ''; if (word && typeof onMatch === 'function') onMatch(word); }
+        var buffer = '', pendingWord = '', pendingTimer = null, bufferTimer = null;
+        var delay = typeof delayMs === 'number' ? delayMs : 1600;
+        function clearPending() {
+            if (pendingTimer !== null) clearTimeout(pendingTimer);
+            pendingTimer = null;
+            pendingWord = '';
+        }
+        function clearBufferTimer() {
+            if (bufferTimer !== null) clearTimeout(bufferTimer);
+            bufferTimer = null;
+        }
+        function fire(word) {
+            clearPending();
+            clearBufferTimer();
+            buffer = '';
+            if (word && typeof onMatch === 'function') onMatch(word);
+        }
         function flush() { if (pendingWord) fire(pendingWord); }
-        function reset() { clearPending(); buffer = ''; }
+        function reset() { clearPending(); clearBufferTimer(); buffer = ''; }
+        function scheduleBufferExpiry() {
+            clearBufferTimer();
+            bufferTimer = setTimeout(function () {
+                bufferTimer = null;
+                // 接頭辞の合言葉は別タイマーで確定させ、未完成の入力だけを破棄する。
+                if (!pendingWord) buffer = '';
+            }, delay);
+        }
         function push(character) {
             var chars = normalizeSecretWord(character);
             Array.from(chars).forEach(function (part) {
                 if (pendingWord) {
                     var canContinue = entries.some(function (w) { return w.length > pendingWord.length && w.indexOf(pendingWord + part) === 0; });
                     if (canContinue) clearPending();
-                    else { var previous = pendingWord; fire(previous); buffer = ''; }
+                    else { var previous = pendingWord; fire(previous); }
                 }
                 buffer += part;
                 if (buffer.length > maxLength) buffer = buffer.slice(-maxLength);
-                var match = entries.filter(function (w) { return buffer.slice(-w.length) === w; }).sort(function (a,b) { return b.length-a.length; })[0];
-                if (!match) return;
-                var hasLonger = entries.some(function (w) { return w.length > match.length && w.indexOf(match) === 0; });
-                if (hasLonger) { pendingWord = match; pendingTimer = setTimeout(function () { fire(match); }, delay); }
-                else fire(match);
+                var matches = entries.filter(function (w) { return buffer.slice(-w.length) === w; });
+                matches.sort(function (a, b) { return b.length - a.length; });
+                var match = matches[0];
+                if (match) {
+                    var hasLonger = entries.some(function (w) { return w.length > match.length && w.indexOf(match) === 0; });
+                    if (hasLonger) {
+                        clearPending();
+                        pendingWord = match;
+                        pendingTimer = setTimeout(function () { if (pendingWord === match) fire(match); }, delay);
+                    } else { fire(match); return; }
+                }
+                scheduleBufferExpiry();
             });
         }
         return { push: push, flush: flush, reset: reset };
@@ -35863,10 +35892,12 @@ try {
             try {
                 var t=e.target,tag=String(t&&t.tagName||'').toUpperCase();
                 if(e.isComposing||e.keyCode===229||e.ctrlKey||e.metaKey||e.altKey||tag==='INPUT'||tag==='TEXTAREA'||tag==='SELECT'||(t&&(t.isContentEditable||(t.closest&&t.closest('[role="textbox"]'))))){matcher.reset();return;}
-                var k=String(e.key||''); if(k.length!==1)return;
+                var k=String(e.key||'');
+                if(k.length!==1) { matcher.reset(); return; }
                 var normalized=k.normalize('NFKC').toLowerCase();
-                if(/^[a-z0-9]$/.test(normalized))matcher.push(normalized);
-                // 区切り文字は捨てる。hoshi zoraもhoshizoraとして入力できる。
+                if(/^[a-z0-9]$/.test(normalized)) matcher.push(normalized);
+                else if(!/^[\s\-_]$/.test(normalized)) matcher.reset();
+                // 空白・ハイフン・アンダースコアは区切りとして許容。未完成入力は一定時間で破棄。
             }catch(_){}
         },false);
     } catch (_) {}
