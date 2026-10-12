@@ -1,5 +1,6 @@
 const SITE = "https://tenmei-mori.pages.dev";
 const STATUS_URL = SITE + "/status/api/monitors/status";
+const SERVER_CARD = {"$schema":"https://static.modelcontextprotocol.io/schemas/mcp-server-card/v1.json","version":"1.0","protocolVersion":"2025-06-18","serverInfo":{"name":"tenmei-mori-mcp","title":"運勢・天命乃杜 — Public MCP","version":"1.0.0"},"description":"Read-only discovery tools for the public Tenmei Mori website. No visitor account, OAuth token, personal data, write operation, or AI-generation endpoint is exposed.","documentationUrl":"https://tenmei-mori.pages.dev/docs/agents/api.md","transport":{"type":"streamable-http","endpoint":"https://tenmei-mori-mcp.nden14800.workers.dev/mcp"},"capabilities":{"tools":{"listChanged":false}},"authentication":{"required":false,"schemes":[]},"tools":"dynamic"};
 const RESOURCE_LIST = [
   { id: "home", name: "Homepage", url: SITE + "/", description: "Official Tenmei Mori website." },
   { id: "status", name: "Service status", url: SITE + "/status/", description: "Public service status page." },
@@ -43,7 +44,15 @@ export default {
       }});
     }
     const origin = request.headers.get("Origin");
-    if (origin && origin !== SITE) return new Response("Forbidden origin", { status: 403 });
+    if (origin && origin !== SITE && url.pathname !== "/.well-known/mcp/server-card.json") return new Response("Forbidden origin", { status: 403 });
+    if (url.pathname === "/.well-known/mcp/server-card.json" && request.method === "GET") {
+      return new Response(JSON.stringify(SERVER_CARD, null, 2), { status: 200, headers: {
+        "Content-Type": "application/json; charset=utf-8",
+        "Access-Control-Allow-Origin": "*",
+        "Cache-Control": "public, max-age=300",
+        "X-Content-Type-Options": "nosniff"
+      }});
+    }
     if (url.pathname === "/health" && request.method === "GET") {
       return response(JSON.stringify({ status: "ok", server: "tenmei-mori-mcp", version: "1.0.0" }));
     }
@@ -58,7 +67,7 @@ export default {
     const id = body.id;
     if (body.method === "initialize") {
       const requested = body.params?.protocolVersion;
-      const version = ["2025-03-26", "2025-11-25"].includes(requested) ? requested : "2025-03-26";
+      const version = ["2025-03-26", "2025-06-18", "2025-11-25"].includes(requested) ? requested : "2025-03-26";
       return rpcResult(id, {
         protocolVersion: version,
         capabilities: { tools: { listChanged: false } },
