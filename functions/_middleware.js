@@ -15,8 +15,6 @@ export async function onRequest({ request, next }) {
       "Content-Type": "text/markdown; charset=utf-8",
       "Cache-Control": "no-store",
       "Vary": "Accept",
-      "x-markdown-tokens": String(Math.ceil(SITE_OVERVIEW.length / 4)),
-      "x-original-tokens": "1200",
       "Link": LINK_HEADER
     });
     return new Response(SITE_OVERVIEW, { status: 200, headers });
