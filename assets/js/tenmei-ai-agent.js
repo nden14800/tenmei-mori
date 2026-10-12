@@ -39,7 +39,8 @@ function updateComposer(){const length=state.input.value.length;state.hint.textC
 function setBusy(value){state.busy=value;updateComposer();}
 async function submit(value){
 const rawQuestion=String(value??"");const question=rawQuestion.trim();
-if(!question||state.busy||!consentGranted())return;
+if(!question||state.busy)return;
+if(!consentGranted()){state.hint.textContent="AI案内を使うには、Cookie設定でサポートチャットを許可してください。";return;}
 if(rawQuestion.length>800||question.length>800){state.hint.textContent="質問は800文字以内で入力してください";state.input.focus();return;}
 state.input.value="";state.input.style.height="auto";state.messages.push({role:"user",content:question});addMessage("user",question);
 const generation=state.generation,history=state.messages.slice(0,-1).slice(-10);setBusy(true);state.loadingItem=addLoading();state.controller=new AbortController();
@@ -86,7 +87,7 @@ state.list.setAttribute("aria-busy","false");addMessage("assistant",error&&error
 if(generation===state.generation&&state.mounted){state.controller=null;setBusy(false);state.input.focus();}
 }
 }
-function mount(){if(state.mounted||!consentGranted())return;state.mounted=true;state.generation++;const root=el("div","tenmei-ai-agent"),button=el("button","tenmei-ai-launcher"),panel=el("section","tenmei-ai-panel");button.type="button";button.title="AI案内";button.setAttribute("aria-label","天命乃杜 AI案内を開く");button.setAttribute("aria-expanded","false");button.append(icon("bi-stars"));panel.hidden=true;panel.setAttribute("role","dialog");panel.setAttribute("aria-label","天命乃杜 AI案内");panel.setAttribute("aria-modal","false");
+function mount(){if(state.mounted)return;state.mounted=true;state.generation++;const root=el("div","tenmei-ai-agent"),button=el("button","tenmei-ai-launcher"),panel=el("section","tenmei-ai-panel");button.type="button";button.title="AI案内";button.setAttribute("aria-label","天命乃杜 AI案内を開く");button.setAttribute("aria-expanded","false");button.append(icon("bi-stars"));panel.hidden=true;panel.setAttribute("role","dialog");panel.setAttribute("aria-label","天命乃杜 AI案内");panel.setAttribute("aria-modal","false");
 const header=el("header","tenmei-ai-panel__header"),brand=el("div","tenmei-ai-panel__brand"),brandIcon=el("span","tenmei-ai-panel__brand-icon"),copy=el("div","tenmei-ai-panel__brand-copy"),actions=el("div","tenmei-ai-panel__header-actions"),reset=el("button","tenmei-ai-panel__icon-button"),close=el("button","tenmei-ai-panel__icon-button");brandIcon.append(icon("bi-stars"));copy.append(el("strong","","天命乃杜 AI案内"),el("span","","サイトの使い方をお手伝いします"));brand.append(brandIcon,copy);reset.type=close.type="button";reset.setAttribute("aria-label","会話をリセット");reset.title="新しい会話";reset.append(icon("bi-arrow-counterclockwise"));close.setAttribute("aria-label","AI案内を閉じる");close.title="閉じる";close.append(icon("bi-x-lg"));actions.append(reset,close);header.append(brand,actions);
 const intro=el("div","tenmei-ai-panel__intro");intro.append(el("p","tenmei-ai-panel__eyebrow","TENMEI GUIDE"),el("h2","","何をお探しですか？"),el("p","","天命乃杜の機能や操作方法について質問できます。"));
 const suggestions=el("div","tenmei-ai-panel__suggestions");["おみくじの引き方","参拝証・ログイン","便利な機能"].forEach(function(t){const c=el("button","tenmei-ai-suggestion",t);c.type="button";c.addEventListener("click",function(){const prompt={"おみくじの引き方":"おみくじの引き方を教えて","参拝証・ログイン":"参拝証とログインについて教えて","便利な機能":"サイトの便利な機能を知りたい"}[t];submit(prompt);});suggestions.appendChild(c);});
