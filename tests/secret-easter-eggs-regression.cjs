@@ -23,7 +23,7 @@ const eggs = html.slice(start, end);
   'visibilitychange',
   "maintenance:'maintenance'",
   "arigato:'arigatou'",
-  "himitsu:   ['封'",
+  "himitsu:   ['🔓'",
   "hoshi:     ['⭐'",
   "hoshizora: ['🌌'",
   "kitsune:   ['🦊'",
