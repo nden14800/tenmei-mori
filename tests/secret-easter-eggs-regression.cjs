@@ -64,7 +64,7 @@ function createTimedMatcher(words) {
   let id = 0;
   const localTimers = new Map();
   const matches = [];
-  const make = new Function('setTimeout', 'clearTimeout', matcherSource + '\\nreturn createSecretMatcher;');
+  const make = new Function('setTimeout', 'clearTimeout', matcherSource + '\nreturn createSecretMatcher;');
   const create = make((fn) => { const next = ++id; localTimers.set(next, fn); return next; }, (timerId) => localTimers.delete(timerId));
   return {
     matches,
