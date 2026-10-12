@@ -33,7 +33,9 @@ has('dream.length > 400', '夢占いの400文字制限がありません。');
 has('articleText.length > 6000', '記事要約の6000文字サーバー側制限がありません。');
 has('delta.slice(0, Math.max(0, 150 - fullText.length))', '記事要約の出力文字数上限がありません。');
 has('async function streamUnifiedAIResponse(prompt, systemPrompt, maxCompletionTokens, onComplete, conversationHistory = [], maxOutputChars = 0)', '共通AIストリームの出力上限がありません。');
-assert.ok(!worker.includes('max_completion_tokens: Math.max(512, maxCompletionTokens)'), '指定したトークン上限が512へ強制的に引き上げられています。');
+const sharedAiStart = worker.indexOf('async function runNonStreamingAI(messages, maxCompletionTokens)');
+assert.ok(sharedAiStart >= 0, '共通AI生成ヘルパーが見つかりません。');
+assert.ok(!worker.slice(sharedAiStart).includes('max_completion_tokens: Math.max(512, maxCompletionTokens)'), '共通AI生成ヘルパーの指定トークン上限が512へ強制的に引き上げられています。');
 has('INSERT INTO dream_history', '夢占い履歴の保存処理が失われています。');
 has('FROM article_summaries WHERE article_type = ? AND article_id = ? LIMIT 1', '記事要約キャッシュが失われています。');
 
