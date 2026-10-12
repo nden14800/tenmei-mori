@@ -12,52 +12,19 @@ const headers = read('_headers');
 const translationModule = read('assets/js/static-translation.js');
 
 for (const expected of [
-  "const CHATLING_CHATBOT_ID = '1188176418'",
-  "window.chtlConfig = { chatbotId: CHATLING_CHATBOT_ID }",
-  "script.id = 'chtl-script'",
-  "script.src = 'https://chatling.ai/js/embed.js'",
-  "script.dataset.id = CHATLING_CHATBOT_ID",
-  "window.Chatling && typeof window.Chatling.destroy === 'function'",
-  "document.querySelectorAll('#chtl-chat-icon-container, #chtl-chat-iframe, #chtl-script')",
-  'removeStorageKeys(/^chtl_/i)',
-  'removeRetiredChannelTalkStorage()',
-  "const COOKIE_PREFERENCES_VERSION = 3",
-  'value.version === COOKIE_PREFERENCES_VERSION',
-  'supportChat: nextPreferences && nextPreferences.supportChat === true',
-  'id="cookie-support-chat-toggle"',
-  'AI案内（Chatling）',
-  'Chatling AI Agent',
-  'Chatlingの標準ウィジェット',
-  '個人情報入力フォーム、有人対応、運営者への転送は使いません',
-]) {
-  assert.ok(html.includes(expected), `Chatling移行の実装が不足しています: ${expected}`);
+  "const COOKIE_PREFERENCES_VERSION = 4",
+  "const aiGuideState = { loaded: false, scriptRequested: false, generation: 0 }",
+  "script.id = 'tenmei-ai-agent-script'",
+  "script.src = '/assets/js/tenmei-ai-agent.js'",
+  "天命乃杜独自のAI案内（Cloudflare Workers AI）",
+  "個人情報入力フォーム、有人対応、運営者への転送は使いません",
+]) assert.ok(html.includes(expected), '独自AIへの移行実装が不足しています: ' + expected);
+for (const prohibited of ["CHATLING_CHATBOT_ID","window.chtlConfig","chatling.ai","Chatling AI Agent","Chatlingの標準ウィジェット","chtl-script","chtl-chat-iframe"]) {
+  assert.ok(!html.toLowerCase().includes(prohibited.toLowerCase()), '旧外部AI実装がHTMLに残っています: ' + prohibited);
+  assert.ok(!headers.toLowerCase().includes(prohibited.toLowerCase()), '旧外部AIのCSP許可が残っています: ' + prohibited);
 }
-
-for (const prohibited of [
-  'UniversalChatWidget',
-  'universal-chat-widget',
-  'floating-chat.js',
-  'tenmei-ai-guide',
-  'ai-guide-open',
-  'chat-0_tenmei-ai-guide-btn',
-  'Channel Talk',
-  'ChannelIO',
-  'channel.io',
-  'Customer ALF',
-  'TenmeiChannelTalk',
-]) {
-  assert.ok(!html.includes(prohibited), `廃止済みAI案内またはChannel Talkの参照がHTMLに残っています: ${prohibited}`);
-  assert.ok(!translationModule.includes(prohibited), `廃止済みAI案内またはChannel Talkの参照が翻訳モジュールに残っています: ${prohibited}`);
-  assert.ok(!headers.includes(prohibited), `廃止済みAI案内またはChannel Talkの参照がCSPに残っています: ${prohibited}`);
-}
-
-for (const expected of [
-  'https://chatling.ai',
-  'https://embed.chatling.ai',
-  'https://*.cdninstagram.com',
-]) {
-  assert.ok(headers.includes(expected), `Chatling用CSP許可が不足しています: ${expected}`);
-}
+assert.ok(!headers.includes('https://chatling.ai') && !headers.includes('https://embed.chatling.ai'), '旧外部AIのCSP許可が残っています');
+assert.ok(headers.includes('https://*.cdninstagram.com'), '既存のInstagram画像許可が失われています');
 
 for (const prohibited of [
   'https://*.channel.io',
@@ -96,13 +63,13 @@ for (const expectedLabel of ['Tenmei no Mori', 'Omikuji History', 'Pilgrimage Ce
 }
 
 for (const expected of [
-  'Chatling AI Agent (Envision Labs Inc.)',
-  'Chatling サービスプライバシーポリシー',
-  'Widgetへidentify・variables・プロフィールその他の個別情報を渡さず',
+  '12. 天命乃杜独自のAI案内（Cloudflare Workers AI）',
+  '質問文と直近の会話だけを回答生成のためCloudflare Workers AIへ送信',
+  '当サイトはAI案内の会話履歴をデータベース、アカウント、ブラウザー内ストレージへ保存しません',
   'AI案内は有人対応・運営者への転送・個別データ操作・個人情報入力フォームを行いません',
   '現行版：第28版（最終改定日：2026年8月28日）',
-  '第28版の主な変更：Chatlingの標準ウィジェットによる匿名のAI案内へ移行しました。',
-  'Chatling内の会話内容は翻訳APIその他の第三者へ送信しません',
+  '第28版の主な変更：天命乃杜独自のAI案内へ移行しました。',
+  'AI案内の会話内容は翻訳APIその他の第三者へ送信しません',
 ]) {
   assert.ok(html.includes(expected), `Chatlingの公開説明が不足しています: ${expected}`);
 }
