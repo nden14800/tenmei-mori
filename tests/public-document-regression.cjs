@@ -18,7 +18,7 @@ function forbidText(text, message) {
 }
 
 requireText(
-  '制定: 2026/01/02 ・ 改定: 2026/09/27 (第33版) ・ 運営: nden148',
+  '制定: 2026/01/02 ・ 改定: 2026/10/12 (第34版) ・ 運営: nden148',
   'プライバシーポリシーの現行版と最終改定日がありません。'
 );
 requireText(
@@ -47,10 +47,11 @@ requireText(
 );
 requireText(
   'AI夢占いの夢の本文および生成解釈を含む夢の記録（dream_history）',
+  'Cookie設定で「天命乃杜 AI案内」を許可した場合、利用者の質問と直近の会話をもとに公開機能・使い方の回答を生成するため',
   '退会時のdream_history削除が第8条に明示されていません。'
 );
 requireText(
-  '現行版：第33版（最終改定日：2026年9月27日）',
+  '現行版：第34版（最終改定日：2026年10月12日）',
   '第9条に現行版・最終改定日がありません。'
 );
 requireText(
@@ -96,7 +97,7 @@ forbidText(
 
 console.log('公開文書の整合性回帰テストに合格しました。');
 console.log(JSON.stringify({
-  privacyVersion: '第33版',
+  privacyVersion: '第34版',
   guestServerStorageDisclosed: true,
   googleDisplayNameDisclosed: true,
   claritySessionTrackingDisclosed: true,

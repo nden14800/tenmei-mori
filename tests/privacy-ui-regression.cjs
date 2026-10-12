@@ -39,7 +39,7 @@ requireSectionText('id="privacy-toc-list"', 'プライバシーポリシー画�
 const revisionOptionsMatch = privacySection.match(/data-control-id="privacy-revision-select"[^>]*data-options='([^']+)'/);
 assert(revisionOptionsMatch, 'プライバシー第9条の版選択肢が定義されていません。');
 const revisionEditions = JSON.parse(revisionOptionsMatch[1]).map((option) => Number(option.value));
-[33,32,31,30,29,28,27,26,25,24,23,22,21,20,19,18,17,16,15,14,13,12,11,10,9,8,7,6,5,4,3].forEach((edition) => assert(revisionEditions.includes(edition), `プライバシー第${edition}版の選択肢がありません。`));
+[34,33,32,31,30,29,28,27,26,25,24,23,22,21,20,19,18,17,16,15,14,13,12,11,10,9,8,7,6,5,4,3].forEach((edition) => assert(revisionEditions.includes(edition), `プライバシー第${edition}版の選択肢がありません。`));
 assert(revisionEditions.includes(15), 'プライバシー第15版の欠番・記録なし表示が選択肢にありません。');
 assert(privacySection.includes('第15版</span>') || privacySection.includes('第15版'), 'プライバシー第15版の明示がHTMLにありません。');
 assert(html.includes('.dark .document-revision-selector{'), 'REVISION HISTORYのダークモードCSSがありません。');
@@ -65,7 +65,7 @@ assert.equal(
 );
 
 [
-  '制定: 2026/01/02 ・ 改定: 2026/09/27 (第33版) ・ 運営: nden148',
+  '制定: 2026/01/02 ・ 改定: 2026/10/12 (第34版) ・ 運営: nden148',
   '第1条（定義）',
   '第2条（収集する個人情報および収集方法）',
   '第3条（個人情報の利用目的）',
@@ -83,8 +83,8 @@ assert.equal(
   'AI夢占いの夢の本文および生成解釈を含む夢の記録（dream_history）',
   'AI要約への評価・コメント記録（summary_feedback）',
   'サービス運営上必要な確認・対応を行うため（個別の問い合わせ対応・返信を保証するものではありません）',
-  '現行版：第33版（最終改定日：2026年9月27日）',
-  '現行版（第33版）の本文です。',
+  '現行版：第34版（最終改定日：2026年10月12日）',
+  '現行版（第34版）の本文です。',
   '4. 下の選択欄から版を選ぶと、その版について確認できた実際の改定内容を表示します。本文スナップショットを確認できない版については、推測で内容を補いません。',
   'アカウント削除後のデータ復旧は一切できません。',
 ].forEach((text) => {
@@ -196,7 +196,7 @@ for (const documentKey of ['about', 'privacy']) {
   assert(currentVersion.availability === 'full', documentKey + 'の現行版がfullとして記録されていません。');
   assert(currentVersion.html && currentVersion.html.trim(), documentKey + 'の現行版本文スナップショットがありません。');
   if (documentKey === 'privacy') {
-    assert(currentVersion.html.includes('現行版（第33版）の本文です。'), 'プライバシーポリシー第33版の本文ラベルが現行版と一致しません。');
+    assert(currentVersion.html.includes('現行版（第34版）の本文です。'), 'プライバシーポリシー第33版の本文ラベルが現行版と一致しません。');
     assert(!currentVersion.html.includes('現行版（第32版）の本文です。'), 'プライバシーポリシー第33版のアーカイブに古い第32版ラベルが残っています。');
   }
   assert(currentVersion.changeDescription && currentVersion.changeDescription.trim(), documentKey + 'の現行版改定内容がありません。');
@@ -212,6 +212,12 @@ for (const documentKey of ['about', 'privacy']) {
 }
 assert.equal(archive.documents.about.versions.find((version) => version.edition === 24).html, '', '当サイトについて第24版の未記録本文をHTMLで擬似再現してはいけません。');
 assert.equal(archive.documents.privacy.versions.find((version) => version.edition === 15).availability, 'missing', 'プライバシー第15版は欠番・記録なしとして保持します。');
+assert.equal(archive.documents.privacy.versions[0].edition, 34, 'プライバシーポリシーの現行版がアーカイブ先頭にありません。');
+assert.match(archive.documents.privacy.versions[0].changeDescription, /独自AI案内/);
+assert.ok(archive.documents.privacy.versions[0].html.includes('12. 天命乃杜独自のAI案内'), '第34版アーカイブにAI案内の開示がありません。');
+assert.ok(privacySection.includes('<input type="hidden" id="privacy-revision-select" value="34">'), '改定履歴の初期選択が現行版34になっていません。');
+assert.ok(privacySection.includes('<strong>第34版 ・ 2026/10/12 ・ 現行版</strong>'), '改定履歴の初期説明が現行版34になっていません。');
+assert.ok(privacySection.includes('第34版の本文スナップショットを読み込みます。'), '改定履歴の初期スナップショット表示が現行版34になっていません。');
 assert(fs.readFileSync(path.resolve(__dirname, '..', 'index.html'), 'utf8').includes('本文スナップショット未記録'), '未記録版の正直なスナップショット表示がありません。');
 assert(html.includes('class="document-revision-snapshot__details"'), '本文スナップショットが開閉可能なdetailsになっていません。');
 assert(html.includes('class="document-revision-snapshot__summary"'), '本文スナップショットの開閉見出しがありません。');
