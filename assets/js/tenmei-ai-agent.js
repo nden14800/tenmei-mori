@@ -138,7 +138,7 @@ const data=block.split("\n").filter(function(line){return line.startsWith("data:
 if(!data)return;
 let payload;try{payload=JSON.parse(data);}catch(_){return;}
 if(payload.error)throw new Error(payload.error);
-if(typeof payload.delta==="string"){streamedText+=payload.delta;responseText.textContent=streamedText;state.list.scrollTop=state.list.scrollHeight;}
+if(typeof payload.delta==="string"){streamedText+=payload.delta;renderMarkdown(responseText,streamedText);state.list.scrollTop=state.list.scrollHeight;}
 if(payload.done===true&&typeof payload.text==="string")finalText=payload.text;
 }
 const reader=response.body.getReader(),decoder=new TextDecoder();
