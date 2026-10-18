@@ -56,9 +56,11 @@ assert.ok(!/localStorage\.setItem|sessionStorage/.test(js),'会話履歴をブ�
 assert.ok(!/innerHTML/.test(js),'AI応答はinnerHTMLで描画してはいけません');
 console.log('天命乃杜独自AIエージェントのUI統一・回帰テストに合格しました。');
 
-for (const text of ['AI_GUIDE_KNOWLEDGE_URL','loadAIGuideKnowledge(question)','管理された公式案内ナレッジ','/api/ai-guide-feedback','CREATE TABLE IF NOT EXISTS ai_guide_feedback','checkRateLimit(ip, "ai_guide_feedback", 20, 3600, true)']) assert.ok(worker.includes(text),'AI案内の根拠ナレッジ・匿名評価APIが不足しています: '+text);
-for (const text of ['役に立った','改善が必要','回答評価は匿名の集計として保存されます。','会話本文は保存しません。','/api/ai-guide-feedback']) assert.ok(js.includes(text),'AI案内の評価UIまたはプライバシー説明が不足しています: '+text);
-for (const text of ['.tenmei-ai-feedback','.tenmei-ai-feedback__button','focus-visible']) assert.ok(css.includes(text),'AI案内の評価UIスタイルが不足しています: '+text);
+for (const text of ['AI_GUIDE_KNOWLEDGE_URL','loadAIGuideKnowledge(question)','管理された公式案内ナレッジ']) assert.ok(worker.includes(text),'AI案内の根拠ナレッジが不足しています: '+text);
+assert.ok(!worker.includes('/api/ai-guide-feedback') && !worker.includes('CREATE TABLE IF NOT EXISTS ai_guide_feedback'), 'AI案内の評価保存APIや専用テーブルを追加してはいけません。');
+assert.ok(!js.includes('/api/ai-guide-feedback') && !js.includes('tenmei-ai-feedback'), 'AI案内にデータベース保存を前提とする評価UIを追加してはいけません。');
+assert.ok(js.includes('回答評価の送信・保存機能はありません。'), 'AI案内の保存仕様を正確に説明していません。');
+assert.ok(!css.includes('.tenmei-ai-feedback'), '未使用の評価UIスタイルが残っています。');
 const knowledge = JSON.parse(fs.readFileSync(path.join(root, 'assets', 'data', 'ai-guide-knowledge.json'), 'utf8'));
 assert.ok(Array.isArray(knowledge.entries) && knowledge.entries.length >= 8, '管理された公式FAQが不足しています');
 for (const source of knowledge.sources) assert.ok(['https://tenmei-mori.pages.dev/','https://tenmei-mori-status.pages.dev/'].includes(source.url), '未確認の深いURLがナレッジに含まれています');
