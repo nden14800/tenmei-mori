@@ -44,7 +44,7 @@ if(!line.trim()){i++;continue;}
 const fence=line.match(/^ {0,3}(\`{3,}|~{3,})\s*([A-Za-z0-9_+.-]*)\s*$/);
 if(fence){
 const marker=fence[1],language=fence[2]||"";i++;const codeLines=[];
-while(i<lines.length&&!new RegExp("^ {0,3}"+marker[0]+"{"+marker.length+",}\\\\s*$").test(lines[i]))codeLines.push(lines[i++]);
+while(i<lines.length&&!new RegExp("^ {0,3}"+marker[0]+"{"+marker.length+",}\\s*$").test(lines[i]))codeLines.push(lines[i++]);
 if(i<lines.length)i++;
 const wrap=document.createElement("div");wrap.className="tenmei-ai-code-block";
 const toolbar=document.createElement("div");toolbar.className="tenmei-ai-code-toolbar";
