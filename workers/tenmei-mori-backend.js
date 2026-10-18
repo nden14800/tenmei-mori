@@ -2209,24 +2209,6 @@ if (url.pathname === "/api/today-anniv" && method === "GET") {
         }
 
 
-        if (url.pathname === "/api/ai-guide-feedback" && method === "POST") {
-            try {
-                const parsed = await readBoundedJson(request, 2048);
-                if (!parsed.ok) return new Response(JSON.stringify({ error: "評価を読み取れませんでした。" }), { status: parsed.status, headers: { ...corsHeaders, "Content-Type": "application/json; charset=utf-8", "Cache-Control": "no-store" } });
-                const vote = parsed.body?.vote;
-                if (vote !== "helpful" && vote !== "unhelpful") return new Response(JSON.stringify({ error: "評価を選択してください。" }), { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json; charset=utf-8", "Cache-Control": "no-store" } });
-                const ip = request.headers.get("CF-Connecting-IP") || "unknown";
-                const rate = await checkRateLimit(ip, "ai_guide_feedback", 20, 3600, true);
-                if (rate.unavailable) return new Response(JSON.stringify({ error: "評価を受け付けられません。時間をおいて再試行してください。" }), { status: 503, headers: { ...corsHeaders, "Content-Type": "application/json; charset=utf-8", "Cache-Control": "no-store" } });
-                if (!rate.allowed) return new Response(JSON.stringify({ error: "評価の送信上限に達しました。時間をおいてお試しください。" }), { status: 429, headers: { ...corsHeaders, "Content-Type": "application/json; charset=utf-8", "Cache-Control": "no-store" } });
-                await runSQL("CREATE TABLE IF NOT EXISTS ai_guide_feedback (id INTEGER PRIMARY KEY AUTOINCREMENT, vote TEXT NOT NULL CHECK(vote IN ('helpful','unhelpful')), created_at TEXT NOT NULL)");
-                await runSQL("INSERT INTO ai_guide_feedback (vote, created_at) VALUES (?, ?)", [vote, new Date().toISOString()]);
-                return new Response(JSON.stringify({ success: true }), { headers: { ...corsHeaders, "Content-Type": "application/json; charset=utf-8", "Cache-Control": "no-store" } });
-            } catch (_) {
-                return new Response(JSON.stringify({ error: "評価を保存できませんでした。会話内容は送信されていません。" }), { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json; charset=utf-8", "Cache-Control": "no-store" } });
-            }
-        }
-
         if (url.pathname === "/api/worry-consult" && method === "POST") {
             try {
                 const parsed = await readBoundedJson(request, 8192);
