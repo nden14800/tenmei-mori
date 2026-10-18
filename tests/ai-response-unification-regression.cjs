@@ -28,6 +28,17 @@ requireText(html, '<dt>入力</dt><dd>対象記事の本文', 'AI要約の情報
 requireText(html, '<dt>保存</dt><dd>生成した要約は保存され', 'AI要約の情報欄に保存仕様がありません。');
 
 requireText(html, 'consumeUnifiedAiStream(res, responseArea)', '悩み相談・夢占いが共通ストリーミング処理を利用していません。');
+
+requireText(html, 'function renderUnifiedAiMarkdown(container, source)', 'AI共通Markdownレンダラーがありません。');
+requireText(html, 'function renderUnifiedAiInline(parent, source)', 'AI回答の安全なインラインMarkdown処理がありません。');
+requireText(html, 'renderUnifiedAiMarkdown(area.querySelector(\'[data-ai-response-text]\'),finalData.advice', 'AI悩み相談の最終回答がMarkdown描画を通りません。');
+requireText(html, 'renderUnifiedAiMarkdown(area.querySelector(\'[data-ai-response-text]\'),finalData.interpretation', 'AI夢占いの最終回答がMarkdown描画を通りません。');
+requireText(html, "renderUnifiedAiMarkdown(resultArea.querySelector('[data-ai-response-text]'), data.summary_text || '')", 'AI要約の最終回答がMarkdown描画を通りません。');
+requireText(html, 'id="tenmei-ai-markdown-styles"', 'AI Markdownの表・コード表示用スタイルがありません。');
+requireText(html, '.tenmei-ai-md-table', 'AI Markdown表のスタイルがありません。');
+requireText(html, '.tenmei-ai-code-block pre', 'AIコードブロックのスタイルがありません。');
+requireText(html, 'navigator.clipboard.writeText(code.textContent)', 'AIコードブロックのコピー機能がありません。');
+
 requireText(html, "infoTitle: 'AI悩み相談について'", 'AI悩み相談の詳細情報がありません。');
 requireText(html, "infoTitle: 'AI夢占いについて'", 'AI夢占いの詳細情報がありません。');
 requireText(html, '相談内容・AI回答はデータベースに保存されません。', 'AI悩み相談の保存仕様が情報パネルにありません。');
