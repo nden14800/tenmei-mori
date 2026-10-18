@@ -2174,7 +2174,7 @@ if (url.pathname === "/api/today-anniv" && method === "GET") {
                     return new Response(JSON.stringify({ error: msg, message: msg }), { status: 429, headers: { ...corsHeaders, "Content-Type": "application/json; charset=utf-8", "Cache-Control": "no-store" } });
                 }
                 const safeOmikujiType = typeof omikujiType === "string" ? omikujiType.slice(0, 40) : "不明";
-                const systemPrompt = "あなたは日本のおみくじに添える、やさしく穏やかな助言者です。入力された悩みとおみくじの結果だけを根拠に、120文字以内の自然な日本語で具体的な一言を返してください。入力にない事実・相手の気持ち・未来の出来事を作らず、断定的な予言や医療・法律・金融の専門的助言をしないでください。入力内容を言い換えて繰り返すだけで終わらず、実行しやすい小さな行動を提案してください。";
+                const systemPrompt = "あなたは日本のおみくじに添える、やさしく穏やかな助言者です。入力された悩みとおみくじの結果だけを根拠に、120文字以内の自然な日本語で具体的な一言を返してください。入力にない事実・相手の気持ち・未来の出来事を作らず、断定的な予言や医療・法律・金融の専門的助言をしないでください。入力内容を言い換えて繰り返すだけで終わらず、実行しやすい小さな行動を提案してください。回答はプレーンテキストのみとし、Markdown記号（**など）、表、コードブロックを使わないでください。";
                 const prompt = `今日引いたおみくじの結果は「${safeOmikujiType}」でした。参拝者の悩み・気になっていることは次の通りです：「${worry.trim()}」\\n\\nこの内容を踏まえた、短い一言アドバイスをください。`;
                 return await streamUnifiedAIResponse(prompt, systemPrompt, 192, async () => ({}), [], 120);
             } catch (e) {
@@ -2199,7 +2199,7 @@ if (url.pathname === "/api/today-anniv" && method === "GET") {
                     const msg = `しばらく経ってからもう一度お試しください（あと約${Math.max(1, waitSec)}秒）`;
                     return new Response(JSON.stringify({ error: msg, message: msg }), { status: 429, headers: { ...corsHeaders, "Content-Type": "application/json; charset=utf-8", "Cache-Control": "no-store" } });
                 }
-                const systemPrompt = "あなたは夢占い的な内省を助ける、やさしい語り口の鑑定人です。150文字以内の自然な日本語で、入力された夢の具体的な要素に触れながら、考えられる象徴的な解釈を控えめに示してください。夢の意味を科学的事実・診断・確定的な予言として扱わず、夢の内容にない人物・場所・出来事を創作しないでください。夢を見た人の心理状態を断定せず、「〜を表している可能性があります」のように解釈として伝えてください。";
+                const systemPrompt = "あなたは夢占い的な内省を助ける、やさしい語り口の鑑定人です。150文字以内の自然な日本語で、入力された夢の具体的な要素に触れながら、考えられる象徴的な解釈を控えめに示してください。夢の意味を科学的事実・診断・確定的な予言として扱わず、夢の内容にない人物・場所・出来事を創作しないでください。夢を見た人の心理状態を断定せず、「〜を表している可能性があります」のように解釈として伝えてください。回答はプレーンテキストのみとし、Markdown記号（**など）、表、コードブロックを使わないでください。";
                 const prompt = `次のような夢を見ました：「${dream}」\\n\\nこの夢の夢占い的な意味を教えてください。`;
                 return await streamUnifiedAIResponse(prompt, systemPrompt, 256, async (interpretation) => {
                     const jstNow = new Date(new Date().toLocaleString("en-US", { timeZone: "Asia/Tokyo" }));
@@ -2288,7 +2288,7 @@ if (url.pathname === "/api/today-anniv" && method === "GET") {
                     ? clientOriginalCharCount
                     : articleText.length;
                 const startTime = Date.now();
-                const systemPrompt = "あなたは日本語の記事要約アシスタントです。提供された記事本文だけを根拠に、150文字以内で主要な事実・主張・結論を簡潔にまとめてください。本文にない情報、日付、数値、人物の発言、因果関係を追加しないでください。本文に情報がない点は推測で補わず、記事の意見や予測は事実と区別してください。";
+                const systemPrompt = "あなたは日本語の記事要約アシスタントです。提供された記事本文だけを根拠に、150文字以内で主要な事実・主張・結論を簡潔にまとめてください。本文にない情報、日付、数値、人物の発言、因果関係を追加しないでください。本文に情報がない点は推測で補わず、記事の意見や予測は事実と区別してください。回答はプレーンテキストのみとし、Markdown記号（**など）、表、コードブロックを使わないでください。";
                 const prompt = `以下は「${articleTitle || "記事"}」という記事の本文です。\n\n${articleText}\n\nこの記事を150文字以内で要約してください。`;
                 const modelUsed = "@cf/zai-org/glm-4.7-flash";
 const messages = [{ role: "system", content: systemPrompt }, { role: "user", content: prompt }];
