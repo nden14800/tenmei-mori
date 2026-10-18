@@ -11,12 +11,11 @@ function addWelcome(){const welcome=el("div","tenmei-ai-welcome");welcome.append
 
 function getVisibleUiContext(){
 const isVisible=function(node){const r=node.getBoundingClientRect(),style=window.getComputedStyle(node);return r.width>0&&r.height>0&&r.bottom>0&&r.top<window.innerHeight&&style.display!=="none"&&style.visibility!=="hidden"&&style.opacity!=="0";};
-const clean=function(value){const text=String(value||"").replace(/\\s+/g," ").trim();if(!text||text.length>90||/[A-Z0-9._%+-]+@[A-Z0-9.-]+\\.[A-Z]{2,}/i.test(text)||/(?:\\+?81[-\\s]?)?0\\d{1,4}[-\\s]?\\d{1,4}[-\\s]?\\d{3,4}/.test(text))return "";return text;};
+const clean=function(value){const text=String(value||"").replace(/\s+/g," ").trim();if(!text||text.length>90||/[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}/i.test(text)||/(?:\+?81[-\s]?)?0\d{1,4}[-\s]?\d{1,4}[-\s]?\d{3,4}/.test(text))return "";return text;};
 const headings=Array.from(document.querySelectorAll("h1,h2,h3")).filter(isVisible).map(function(node){return clean(node.innerText||node.textContent);}).filter(Boolean).slice(0,8);
 const controls=Array.from(document.querySelectorAll("button,[role=button],a[href]")).filter(isVisible).map(function(node){const r=node.getBoundingClientRect();const label=clean(node.getAttribute("aria-label")||node.getAttribute("title")||node.innerText||node.textContent);if(!label)return null;const zone=r.top<window.innerHeight/3?"上部":r.top<window.innerHeight*2/3?"中央":"下部";return {label:label,zone:zone};}).filter(Boolean).slice(0,12);
 return {pageTitle:clean(document.title)||"",headings:headings,controls:controls};
 }
-
 function renderInlineMarkdown(parent,source){
 const tokenPattern=/(\*\*[^*\n]+?\*\*|__[^_\n]+?__|\`[^\`]+?\`|\*[^*\n]+?\*|_[^_\n]+?_|!\[[^\]]*\]\([^)]+\)|\[[^\]]+\]\([^)]+\))/g;
 let cursor=0,match;
