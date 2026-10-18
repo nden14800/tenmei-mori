@@ -8,6 +8,81 @@ function el(tag,cls,text){const n=document.createElement(tag);if(cls)n.className
 function icon(name){const n=el("i","bi "+name);n.setAttribute("aria-hidden","true");return n;}
 function siteSpinner(){const svg=document.createElementNS("http://www.w3.org/2000/svg","svg");svg.setAttribute("class","loader-svg");svg.setAttribute("viewBox","0 0 50 50");svg.setAttribute("aria-hidden","true");const circle=document.createElementNS("http://www.w3.org/2000/svg","circle");circle.setAttribute("class","loader-path");circle.setAttribute("cx","25");circle.setAttribute("cy","25");circle.setAttribute("r","20");circle.setAttribute("fill","none");circle.setAttribute("stroke-width","1.5");svg.appendChild(circle);return svg;}
 function addWelcome(){const welcome=el("div","tenmei-ai-welcome");welcome.append(icon("bi-chat-square-text"),el("p","","サイト内の機能や操作方法について、気軽に聞いてください。"));state.list.appendChild(welcome);}
+
+function renderInlineMarkdown(parent,source){
+const tokenPattern=/(\*\*[^*\n]+?\*\*|__[^_\n]+?__|\`[^\`]+?\`|\*[^*\n]+?\*|_[^_\n]+?_|!\[[^\]]*\]\([^)]+\)|\[[^\]]+\]\([^)]+\))/g;
+let cursor=0,match;
+while((match=tokenPattern.exec(source))){
+if(match.index>cursor)parent.appendChild(document.createTextNode(source.slice(cursor,match.index)));
+const token=match[0];let node=null;
+if(token.startsWith("**")||token.startsWith("__")){node=document.createElement("strong");node.textContent=token.slice(2,-2);}
+else if(token.startsWith("*")||token.startsWith("_")){node=document.createElement("em");node.textContent=token.slice(1,-1);}
+else if(token.startsWith("\`")){node=document.createElement("code");node.className="tenmei-ai-inline-code";node.textContent=token.slice(1,-1);}
+else{
+const imageMatch=token.match(/^!\[([^\]]*)\]\(([^)]+)\)$/);
+const linkMatch=token.match(/^\[([^\]]+)\]\(([^)]+)\)$/);
+if(imageMatch){node=document.createTextNode(imageMatch[1]||"画像");}
+else if(linkMatch){
+try{const url=new URL(linkMatch[2],window.location.origin);if(url.protocol==="https:"||url.protocol==="http:"){node=document.createElement("a");node.href=url.href;node.textContent=linkMatch[1];node.rel="noopener noreferrer";node.target="_blank";}}
+catch(_){}
+if(!node)node=document.createTextNode(linkMatch[1]);
+}
+}
+parent.appendChild(node||document.createTextNode(token));cursor=tokenPattern.lastIndex;
+}
+if(cursor<source.length)parent.appendChild(document.createTextNode(source.slice(cursor)));
+}
+function markdownCells(line){return line.trim().replace(/^\|/,"").replace(/\|$/,"").split("|").map(function(cell){return cell.trim().replace(/\\\|/g,"|");});}
+function renderMarkdown(container,source){
+container.replaceChildren();
+const lines=String(source??"").replace(/\r\n?/g,"\n").split("\n");let i=0;
+function isTableAt(index){return index+1<lines.length&&lines[index].includes("|")&&/^\s*\|?\s*:?-{3,}:?\s*(\|\s*:?-{3,}:?\s*)+\|?\s*$/.test(lines[index+1]);}
+function isBlockStart(index){const line=lines[index]||"";return !line.trim()||/^ {0,3}(\`{3,}|~{3,}|#{1,6}\s|>\s?|[-*+]\s|\d+[.)]\s)/.test(line)||isTableAt(index);}
+while(i<lines.length){
+const line=lines[i];
+if(!line.trim()){i++;continue;}
+const fence=line.match(/^ {0,3}(\`{3,}|~{3,})\s*([A-Za-z0-9_+.-]*)\s*$/);
+if(fence){
+const marker=fence[1],language=fence[2]||"";i++;const codeLines=[];
+while(i<lines.length&&!new RegExp("^ {0,3}"+marker[0]+"{"+marker.length+",}\\\\s*$").test(lines[i]))codeLines.push(lines[i++]);
+if(i<lines.length)i++;
+const wrap=document.createElement("div");wrap.className="tenmei-ai-code-block";
+const toolbar=document.createElement("div");toolbar.className="tenmei-ai-code-toolbar";
+const lang=document.createElement("span");lang.className="tenmei-ai-code-language";lang.textContent=language||"コード";
+const copy=document.createElement("button");copy.type="button";copy.className="tenmei-ai-code-copy";copy.textContent="コードをコピー";
+const pre=document.createElement("pre"),code=document.createElement("code");if(language)code.className="language-"+language;code.textContent=codeLines.join("\n");pre.appendChild(code);
+copy.addEventListener("click",async function(){try{await navigator.clipboard.writeText(code.textContent);copy.textContent="コピーしました";}catch(_){copy.textContent="コピーできません";}window.setTimeout(function(){copy.textContent="コードをコピー";},1600);});
+toolbar.append(lang,copy);wrap.append(toolbar,pre);container.appendChild(wrap);continue;
+}
+const heading=line.match(/^ {0,3}(#{1,6})\s+(.+?)\s*#*\s*$/);
+if(heading){const h=document.createElement("h"+heading[1].length);h.className="tenmei-ai-md-heading";renderInlineMarkdown(h,heading[2]);container.appendChild(h);i++;continue;}
+if(/^ {0,3}>\s?/.test(line)){
+const quote=document.createElement("blockquote");quote.className="tenmei-ai-md-quote";
+while(i<lines.length&&/^ {0,3}>\s?/.test(lines[i])){const p=document.createElement("p");renderInlineMarkdown(p,lines[i++].replace(/^ {0,3}>\s?/,""));quote.appendChild(p);}
+container.appendChild(quote);continue;
+}
+if(isTableAt(i)){
+const headers=markdownCells(lines[i]),rows=[];i+=2;
+while(i<lines.length&&lines[i].trim()&&lines[i].includes("|")){rows.push(markdownCells(lines[i]));i++;}
+const tableWrap=document.createElement("div");tableWrap.className="tenmei-ai-table-wrap";
+const table=document.createElement("table");table.className="tenmei-ai-md-table";
+const thead=document.createElement("thead"),tr=document.createElement("tr");
+headers.forEach(function(value){const th=document.createElement("th");renderInlineMarkdown(th,value);tr.appendChild(th);});thead.appendChild(tr);table.appendChild(thead);
+const tbody=document.createElement("tbody");rows.forEach(function(row){const rowEl=document.createElement("tr");headers.forEach(function(_,index){const td=document.createElement("td");renderInlineMarkdown(td,row[index]||"");rowEl.appendChild(td);});tbody.appendChild(rowEl);});table.appendChild(tbody);tableWrap.appendChild(table);container.appendChild(tableWrap);continue;
+}
+const listMatch=line.match(/^ {0,3}([-*+]|\d+[.)])\s+(.+)$/);
+if(listMatch){
+const ordered=/^\d/.test(listMatch[1]),list=document.createElement(ordered?"ol":"ul");list.className="tenmei-ai-md-list";
+while(i<lines.length){const m=lines[i].match(/^ {0,3}([-*+]|\d+[.)])\s+(.+)$/);if(!m||/^\d/.test(m[1])!==ordered)break;const li=document.createElement("li");renderInlineMarkdown(li,m[2]);list.appendChild(li);i++;}
+container.appendChild(list);continue;
+}
+const paragraph=document.createElement("p");paragraph.className="tenmei-ai-md-paragraph";const parts=[];
+while(i<lines.length&&lines[i].trim()&&!isBlockStart(i)){parts.push(lines[i].trim());i++;}
+if(!parts.length){parts.push(lines[i++]);}
+renderInlineMarkdown(paragraph,parts.join(" "));container.appendChild(paragraph);
+}
+}
+
 function addMessage(role,content){
 const item=el("article","tenmei-ai-message tenmei-ai-message--"+role);
 item.appendChild(el("div","tenmei-ai-message__label",role==="user"?"あなた":""));
@@ -30,7 +105,7 @@ const infoList=el("dl","tenmei-ai-info-list");
 ].forEach(function(entry){const row=el("div",""),term=el("dt","",entry[0]),description=el("dd","",entry[1]);row.append(term,description);infoList.appendChild(row);});
 details.append(infoTitle,infoList);
 info.addEventListener("click",function(){const opening=details.hidden;details.hidden=!opening;info.setAttribute("aria-expanded",String(opening));const label=info.querySelector("span");if(label)label.textContent=opening?"閉じる":"情報";});
-head.appendChild(info);card.append(head,el("p","tenmei-ai-response-text",content),details);item.appendChild(card);
+head.appendChild(info);const responseBody=el("div","tenmei-ai-response-text");renderMarkdown(responseBody,content);card.append(head,responseBody,details);item.appendChild(card);
 }
 state.list.appendChild(item);state.list.scrollTop=state.list.scrollHeight;return item;
 }
@@ -75,7 +150,7 @@ let boundary;while((boundary=buffer.indexOf("\n\n"))>=0){const block=buffer.slic
 buffer+=decoder.decode().replace(/\r\n/g,"\n");if(buffer.trim())consumeEvent(buffer);
 if(generation!==state.generation||!state.mounted)return;
 const answer=String(finalText||streamedText).trim();if(!answer)throw new Error("回答を最後まで受信できませんでした。もう一度お試しください。");
-responseText.textContent=answer;state.messages.push({role:"assistant",content:answer});state.list.setAttribute("aria-busy","false");state.list.scrollTop=state.list.scrollHeight;
+renderMarkdown(responseText,answer);state.messages.push({role:"assistant",content:answer});state.list.setAttribute("aria-busy","false");state.list.scrollTop=state.list.scrollHeight;
 }catch(error){
 if(error&&error.name==="AbortError")return;
 if(generation===state.generation&&state.mounted){
