@@ -39,6 +39,16 @@ requireText(html, '.tenmei-ai-md-table', 'AI Markdown表のスタイルがあり
 requireText(html, '.tenmei-ai-code-block pre', 'AIコードブロックのスタイルがありません。');
 requireText(html, 'navigator.clipboard.writeText(code.textContent)', 'AIコードブロックのコピー機能がありません。');
 
+const markdownStart = html.indexOf('function renderUnifiedAiInline(parent, source)');
+const markdownEnd = html.indexOf('function setupUnifiedAiResponseControls(responseArea, options = {})', markdownStart);
+assert(markdownStart >= 0 && markdownEnd > markdownStart, '共通Markdown描画処理の範囲を取得できません。');
+const markdownRenderer = html.slice(markdownStart, markdownEnd);
+assert(!markdownRenderer.includes('innerHTML'), 'AI Markdown描画でinnerHTMLを使用してはいけません。');
+requireText(markdownRenderer, 'document.createTextNode', 'Markdown本文を安全なDOMテキストとして描画していません。');
+requireText(markdownRenderer, 'code.textContent = codeLines.join', 'コード本文を安全なテキストとして描画していません。');
+requireText(markdownRenderer, "url.protocol === 'https:' || url.protocol === 'http:'", 'Markdownリンクのプロトコル制限がありません。');
+
+
 requireText(html, "infoTitle: 'AI悩み相談について'", 'AI悩み相談の詳細情報がありません。');
 requireText(html, "infoTitle: 'AI夢占いについて'", 'AI夢占いの詳細情報がありません。');
 requireText(html, '相談内容・AI回答はデータベースに保存されません。', 'AI悩み相談の保存仕様が情報パネルにありません。');
