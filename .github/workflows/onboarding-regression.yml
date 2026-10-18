@@ -61,8 +61,10 @@ jobs:
         run: |
           node tests/records-footer-controls-regression.cjs
           node tests/zodiac-crossscreen-regression.cjs
-      - name: Test native Tenmei AI guide
-        run: node tests/ai-help-desk-ui-regression.cjs
+      - name: Test native Tenmei AI guide and renderer syntax
+        run: |
+          node --check assets/js/tenmei-ai-agent.js
+          node tests/ai-help-desk-ui-regression.cjs
       - name: Test AI API limits and Worker syntax
         run: |
           node --input-type=module --check < workers/tenmei-mori-backend.js
