@@ -55,3 +55,11 @@ assert.ok(!/chatling|chtl-/i.test(html+js+css+worker+headers),'旧外部AIの実
 assert.ok(!/localStorage\.setItem|sessionStorage/.test(js),'会話履歴をブラウザーへ保存してはいけません');
 assert.ok(!/innerHTML/.test(js),'AI応答はinnerHTMLで描画してはいけません');
 console.log('天命乃杜独自AIエージェントのUI統一・回帰テストに合格しました。');
+
+for (const text of ['AI_GUIDE_KNOWLEDGE_URL','loadAIGuideKnowledge(question)','管理された公式案内ナレッジ','/api/ai-guide-feedback','CREATE TABLE IF NOT EXISTS ai_guide_feedback','checkRateLimit(ip, "ai_guide_feedback", 20, 3600, true)']) assert.ok(worker.includes(text),'AI案内の根拠ナレッジ・匿名評価APIが不足しています: '+text);
+for (const text of ['役に立った','改善が必要','回答評価は匿名の集計として保存されます。','会話本文は保存しません。','/api/ai-guide-feedback']) assert.ok(js.includes(text),'AI案内の評価UIまたはプライバシー説明が不足しています: '+text);
+for (const text of ['.tenmei-ai-feedback','.tenmei-ai-feedback__button','focus-visible']) assert.ok(css.includes(text),'AI案内の評価UIスタイルが不足しています: '+text);
+const knowledge = JSON.parse(fs.readFileSync(path.join(root, 'assets', 'data', 'ai-guide-knowledge.json'), 'utf8'));
+assert.ok(Array.isArray(knowledge.entries) && knowledge.entries.length >= 8, '管理された公式FAQが不足しています');
+for (const source of knowledge.sources) assert.ok(['https://tenmei-mori.pages.dev/','https://tenmei-mori-status.pages.dev/'].includes(source.url), '未確認の深いURLがナレッジに含まれています');
+for (const entry of knowledge.entries) assert.ok(knowledge.sources.some(source => source.url === entry.source), 'FAQの根拠URLが登録済みソースにありません: ' + entry.id);
