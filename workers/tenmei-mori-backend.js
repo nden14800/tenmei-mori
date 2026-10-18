@@ -2100,8 +2100,8 @@ if (url.pathname === "/api/today-anniv" && method === "GET") {
                 const rawUiContext = body?.uiContext && typeof body.uiContext === "object" && !Array.isArray(body.uiContext) ? body.uiContext : null;
                 const cleanUiLabel = (value) => {
                     if (typeof value !== "string") return "";
-                    const label = value.replace(/\\s+/g, " ").trim().slice(0, 90);
-                    if (!label || /[A-Z0-9._%+-]+@[A-Z0-9.-]+\\.[A-Z]{2,}/i.test(label) || /(?:\\+?81[-\\s]?)?0\\d{1,4}[-\\s]?\\d{1,4}[-\\s]?\\d{3,4}/.test(label)) return "";
+                    const label = value.replace(/\s+/g, " ").trim().slice(0, 90);
+                    if (!label || /[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}/i.test(label) || /(?:\+?81[-\s]?)?0\d{1,4}[-\s]?\d{1,4}[-\s]?\d{3,4}/.test(label)) return "";
                     return label;
                 };
                 const uiContext = rawUiContext ? {
