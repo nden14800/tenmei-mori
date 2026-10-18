@@ -9,6 +9,14 @@ function icon(name){const n=el("i","bi "+name);n.setAttribute("aria-hidden","tru
 function siteSpinner(){const svg=document.createElementNS("http://www.w3.org/2000/svg","svg");svg.setAttribute("class","loader-svg");svg.setAttribute("viewBox","0 0 50 50");svg.setAttribute("aria-hidden","true");const circle=document.createElementNS("http://www.w3.org/2000/svg","circle");circle.setAttribute("class","loader-path");circle.setAttribute("cx","25");circle.setAttribute("cy","25");circle.setAttribute("r","20");circle.setAttribute("fill","none");circle.setAttribute("stroke-width","1.5");svg.appendChild(circle);return svg;}
 function addWelcome(){const welcome=el("div","tenmei-ai-welcome");welcome.append(icon("bi-chat-square-text"),el("p","","サイト内の機能や操作方法について、気軽に聞いてください。"));state.list.appendChild(welcome);}
 
+function getVisibleUiContext(){
+const isVisible=function(node){const r=node.getBoundingClientRect(),style=window.getComputedStyle(node);return r.width>0&&r.height>0&&r.bottom>0&&r.top<window.innerHeight&&style.display!=="none"&&style.visibility!=="hidden"&&style.opacity!=="0";};
+const clean=function(value){const text=String(value||"").replace(/\\s+/g," ").trim();if(!text||text.length>90||/[A-Z0-9._%+-]+@[A-Z0-9.-]+\\.[A-Z]{2,}/i.test(text)||/(?:\\+?81[-\\s]?)?0\\d{1,4}[-\\s]?\\d{1,4}[-\\s]?\\d{3,4}/.test(text))return "";return text;};
+const headings=Array.from(document.querySelectorAll("h1,h2,h3")).filter(isVisible).map(function(node){return clean(node.innerText||node.textContent);}).filter(Boolean).slice(0,8);
+const controls=Array.from(document.querySelectorAll("button,[role=button],a[href]")).filter(isVisible).map(function(node){const r=node.getBoundingClientRect();const label=clean(node.getAttribute("aria-label")||node.getAttribute("title")||node.innerText||node.textContent);if(!label)return null;const zone=r.top<window.innerHeight/3?"上部":r.top<window.innerHeight*2/3?"中央":"下部";return {label:label,zone:zone};}).filter(Boolean).slice(0,12);
+return {pageTitle:clean(document.title)||"",headings:headings,controls:controls};
+}
+
 function renderInlineMarkdown(parent,source){
 const tokenPattern=/(\*\*[^*\n]+?\*\*|__[^_\n]+?__|\`[^\`]+?\`|\*[^*\n]+?\*|_[^_\n]+?_|!\[[^\]]*\]\([^)]+\)|\[[^\]]+\]\([^)]+\))/g;
 let cursor=0,match;
@@ -121,7 +129,7 @@ state.input.value="";state.input.style.height="auto";state.messages.push({role:"
 const generation=state.generation,history=state.messages.slice(0,-1).slice(-10);setBusy(true);state.loadingItem=addLoading();state.controller=new AbortController();
 let streamingItem=null;
 try{
-const response=await fetch(API_URL,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({question:question,history:history}),signal:state.controller.signal,credentials:"omit",cache:"no-store"});
+const response=await fetch(API_URL,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({question:question,history:history,uiContext:getVisibleUiContext()}),signal:state.controller.signal,credentials:"omit",cache:"no-store"});
 if(generation!==state.generation||!state.mounted)return;
 const contentType=response.headers.get("Content-Type")||"";
 if(!response.ok){const body=await response.json().catch(function(){return {};});throw new Error(body&&body.error?body.error:"回答を取得できませんでした。");}
