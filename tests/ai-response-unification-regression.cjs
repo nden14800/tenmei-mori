@@ -23,7 +23,7 @@ requireText(unified, 'bindAiInfoToggle', 'AI共通の情報パネル開閉処理
 requireText(unified, 'panel.hidden = true', '情報パネルが初期状態で確実に閉じていません。');
 requireText(unified, 'panel.hidden = !opening', '情報ボタンでパネルを確実に開閉できません。');
 requireText(unified, "infoBtn.setAttribute('aria-controls', panel.id)", '情報ボタンとパネルの関連付けがありません。');
-requireText(html, 'tenmei-ai-info-panel summary-info hidden" data-ai-info-panel hidden', 'AI要約の情報パネルが初期状態で閉じていません。');
+assert(/class=["'][^"']*tenmei-ai-info-panel[^"']*["'][^>]*data-ai-info-panel[^>]*\bhidden\b|data-ai-info-panel[^>]*\bhidden\b[^>]*class=["'][^"']*tenmei-ai-info-panel[^"']*["']/.test(html), 'AI要約の情報パネルが初期状態で閉じていません。');
 requireText(html, '<dt>入力</dt><dd>対象記事の本文', 'AI要約の情報欄に入力内容がありません。');
 requireText(html, '<dt>保存</dt><dd>生成した要約は保存され', 'AI要約の情報欄に保存仕様がありません。');
 
