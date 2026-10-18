@@ -310,14 +310,18 @@ export default function MonitorCard({ monitor, data, language, checkIntervalMinu
   const relevantDailyHistory = hasData && (period === '7d' || period === '30d')
     ? filterDailyHistoryInPeriod(data.dailyHistory || [], period, now)
     : []
-  // Warn only when calendar days are missing. Legacy history rows without check
-  // counts cannot produce an uptime percentage, but that does not mean monitoring
-  // started recently or that the date range itself is incomplete.
-  const expectedHistoryDays = period === '7d' ? 7 : period === '30d' ? 30 : 0
+  // "Incomplete history" means monitoring actually began inside the selected
+  // calendar window. A sparse/legacy history or missing check-count metadata is
+  // not enough evidence to claim that the monitored period is incomplete.
+  const periodWindowStart = period === '7d' || period === '30d'
+    ? new Date(`${getPeriodWindowStartDate(period, now)}T00:00:00+09:00`).getTime()
+    : 0
+  const monitoringStartTime = data?.startDate ? new Date(data.startDate).getTime() : Number.NaN
   const incompleteHistory = hasData && uptimeForPeriod === null &&
-    expectedHistoryDays > 0 &&
+    (period === '7d' || period === '30d') &&
     relevantDailyHistory.length > 0 &&
-    relevantDailyHistory.length < expectedHistoryDays
+    Number.isFinite(monitoringStartTime) &&
+    monitoringStartTime > periodWindowStart
 
   // Chaque tooltip décrit la position temporelle du bucket dans le filtre sélectionné.
   const getBarTooltip = (index: number) => {
