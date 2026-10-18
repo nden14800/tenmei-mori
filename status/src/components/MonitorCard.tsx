@@ -307,9 +307,17 @@ export default function MonitorCard({ monitor, data, language, checkIntervalMinu
       })
     : Array<BarStatus>(getEffectiveBucketCount(period, checkIntervalMinutes)).fill('unknown')
 
+  const relevantDailyHistory = hasData && (period === '7d' || period === '30d')
+    ? filterDailyHistoryInPeriod(data.dailyHistory || [], period, now)
+    : []
+  // Warn only when calendar days are missing. Legacy history rows without check
+  // counts cannot produce an uptime percentage, but that does not mean monitoring
+  // started recently or that the date range itself is incomplete.
+  const expectedHistoryDays = period === '7d' ? 7 : period === '30d' ? 30 : 0
   const incompleteHistory = hasData && uptimeForPeriod === null &&
-    (period === '7d' || period === '30d') &&
-    filterDailyHistoryInPeriod(data.dailyHistory || [], period, now).length > 0
+    expectedHistoryDays > 0 &&
+    relevantDailyHistory.length > 0 &&
+    relevantDailyHistory.length < expectedHistoryDays
 
   // Chaque tooltip décrit la position temporelle du bucket dans le filtre sélectionné.
   const getBarTooltip = (index: number) => {
