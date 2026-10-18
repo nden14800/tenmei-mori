@@ -22,6 +22,13 @@ for (const text of [
   '【問題解決の流れ】',
   '【正確性と根拠】',
   '【最終チェック】',
+  '【質問への回答責任】',
+  '【回答の深さと具体性】',
+  '【意図と会話文脈】',
+  '【一般質問への対応】',
+  '【不明点を扱う方法】',
+  '【複数条件の比較と提案】',
+  '単に短くすることより、質問に十分答えることを優先します。',
   '【利用制限と入力エラー】',
   '【よくある質問の判断】',
   '【不具合の聞き取り】',
@@ -33,7 +40,7 @@ for (const text of [
   '最新情報を直接確認する機能は持っていない',
   'すでに試した手順を無意味に繰り返さない'
 ]) assert.ok(worker.includes(text),'独自AI案内の知識・回答方針が不足しています: '+text);
-for (const text of ['if (url.pathname === "/api/ai-guide" && method === "POST")','const systemPrompt = [','@cf/zai-org/glm-4.7-flash','streamUnifiedAIResponse(question, systemPrompt, 640, async () => ({}), history)','const rawQuestion = typeof body?.question === "string" ? body.question : "";','checkRateLimit(ip, "ai_guide", 15, 3600, true)','sensitivePattern','Cache-Control']) assert.ok(worker.includes(text),'バックエンドの安全策または指示文が不足しています: '+text);
+for (const text of ['if (url.pathname === "/api/ai-guide" && method === "POST")','const systemPrompt = [','@cf/zai-org/glm-4.7-flash','Math.min(1200, Math.floor(Number(maxCompletionTokens) || 512))','streamUnifiedAIResponse(question, systemPrompt, 1200, async () => ({}), history)','const rawQuestion = typeof body?.question === "string" ? body.question : "";','checkRateLimit(ip, "ai_guide", 15, 3600, true)','sensitivePattern','Cache-Control']) assert.ok(worker.includes(text),'バックエンドの安全策または指示文が不足しています: '+text);
 for (const text of ['var(--card-border)','var(--accent-red)','transition:all .2s!important','.tenmei-ai-composer__input:focus','@media(max-width:640px)','prefers-reduced-motion:reduce','tenmei-ai-panel-enter','tenmei-ai-panel-exit','.tenmei-ai-info-panel[hidden]']) assert.ok(css.includes(text),'サイト共通UIとの統一が不足しています: '+text);
 assert.ok(js.includes('createElementNS("http://www.w3.org/2000/svg","svg")'),'サイト共通SVGローダーを使用していません');
 assert.ok(!/chatling|chtl-/i.test(html+js+css+worker+headers),'旧外部AIの実装参照が残っています');
