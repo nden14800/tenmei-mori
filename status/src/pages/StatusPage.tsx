@@ -350,7 +350,7 @@ export default function StatusPage() {
     for (const day of monitorData?.dailyHistory || []) dailyMap.set(day.date, day)
     for (const day of browserDailyHistory) {
       const previous = dailyMap.get(day.date)
-      dailyMap.set(day.date, previous ? { date: day.date, status: getWorstStatus(previous.status, day.status) } : day)
+      dailyMap.set(day.date, previous ? { ...previous, status: getWorstStatus(previous.status, day.status) } : day)
     }
     const dailyHistory = [...dailyMap.values()].sort((a, b) => a.date.localeCompare(b.date))
     if (!monitorData && status === 'unknown') return undefined
