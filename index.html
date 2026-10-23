@@ -173,39 +173,63 @@
             aiGuideState.scriptRequested = true;
             const generation = ++aiGuideState.generation;
             const mount = function () {
+                // 古い読み込み要求の完了通知が、新しい有効な要求を終了させないようにする。
+                if (generation !== aiGuideState.generation) return;
                 const current = readPreferences();
-                if (generation !== aiGuideState.generation || !current || current.supportChat !== true) {
+                if (!current || current.supportChat !== true) {
                     if (window.TenmeiAIAgent) window.TenmeiAIAgent.unmount();
-                    aiGuideState.loaded = false; aiGuideState.scriptRequested = false; return;
+                    aiGuideState.loaded = false;
+                    aiGuideState.scriptRequested = false;
+                    ensureConsentLauncher();
+                    return;
                 }
-                if (window.TenmeiAIAgent) { window.TenmeiAIAgent.mount(); aiGuideState.loaded = true; }
+                if (window.TenmeiAIAgent && typeof window.TenmeiAIAgent.mount === 'function') {
+                    window.TenmeiAIAgent.mount();
+                    aiGuideState.loaded = true;
+                    return;
+                }
+                aiGuideState.loaded = false;
+                aiGuideState.scriptRequested = false;
+                const failedScript = document.getElementById('tenmei-ai-agent-script');
+                if (failedScript) failedScript.remove();
+                ensureConsentLauncher(true);
+                if (typeof window.showToast === 'function') window.showToast('AI案内を読み込めませんでした。通信を確認して、右下のボタンから再試行できます。', 'error');
             };
             if (window.TenmeiAIAgent) { mount(); return; }
             const script = document.createElement('script');
             script.id = 'tenmei-ai-agent-script'; script.src = '/assets/js/tenmei-ai-agent.js'; script.async = true;
             script.onload = mount;
-            script.onerror = function () { aiGuideState.loaded = false; aiGuideState.scriptRequested = false; };
+            script.onerror = function () {
+                if (generation !== aiGuideState.generation) return;
+                aiGuideState.loaded = false;
+                aiGuideState.scriptRequested = false;
+                script.remove();
+                ensureConsentLauncher(true);
+                if (typeof window.showToast === 'function') window.showToast('AI案内を読み込めませんでした。通信を確認して、右下のボタンから再試行できます。', 'error');
+            };
             document.head.appendChild(script);
         }
         function stopOptionalSupportChat() {
             ++aiGuideState.generation;
             if (window.TenmeiAIAgent) window.TenmeiAIAgent.unmount();
+            const pendingScript = document.getElementById('tenmei-ai-agent-script');
+            if (pendingScript && !aiGuideState.loaded) pendingScript.remove();
             removeRetiredChannelTalkStorage();
             aiGuideState.loaded = false; aiGuideState.scriptRequested = false;
             ensureConsentLauncher();
         }
 
         // Keep the guide entry point visible without loading AI code before explicit consent.
-        function ensureConsentLauncher() {
+        function ensureConsentLauncher(retryWhenAllowed) {
             const preferences = readPreferences();
-            if (preferences && preferences.supportChat === true) return;
+            if (preferences && preferences.supportChat === true && !retryWhenAllowed) return;
             if (document.getElementById('tenmei-ai-consent-launcher') || document.querySelector('.tenmei-ai-agent .tenmei-ai-launcher')) return;
             const button = document.createElement('button');
             button.id = 'tenmei-ai-consent-launcher';
             button.type = 'button';
             button.className = 'tenmei-ai-launcher';
-            button.title = 'AI案内';
-            button.setAttribute('aria-label', '天命乃杜 AI案内を開く（利用設定）');
+            button.title = preferences && preferences.supportChat === true ? 'AI案内を再読み込み' : 'AI案内';
+            button.setAttribute('aria-label', preferences && preferences.supportChat === true ? '天命乃杜 AI案内を再読み込み' : '天命乃杜 AI案内を開く（利用設定）');
             button.setAttribute('aria-haspopup', 'dialog');
             button.style.zIndex = '10000';
             const glyph = document.createElement('i');
@@ -213,6 +237,12 @@
             glyph.setAttribute('aria-hidden', 'true');
             button.appendChild(glyph);
             button.addEventListener('click', function () {
+                const current = readPreferences();
+                if (current && current.supportChat === true) {
+                    button.remove();
+                    loadOptionalSupportChat();
+                    return;
+                }
                 if (typeof window.openCookiePreferences === 'function') window.openCookiePreferences();
                 else window.dispatchEvent(new CustomEvent('tenmei:open-cookie-preferences'));
                 if (typeof window.showToast === 'function') window.showToast('AI案内を利用するには、Cookie設定で「サポートチャット」を許可してください。', 'info');
@@ -16349,7 +16379,7 @@ body.sidebar-collapsed.sidebar-pinned #sidebar .nav-group-title {
                 </section>
 
                 <footer class="home-v4-release" aria-label="現在のバージョン情報">
-                    <span>運勢・天命乃杜 <strong>Ver. 4.2</strong></span><span aria-hidden="true">・</span><span>2026年10月2日リリース</span><span class="home-v4-release-status"><i class="bi bi-patch-check-fill" aria-hidden="true"></i>最新版</span>
+                    <span>運勢・天命乃杜 <strong>Ver. 4.3</strong></span><span aria-hidden="true">・</span><span>2026年10月23日リリース</span><span class="home-v4-release-status"><i class="bi bi-patch-check-fill" aria-hidden="true"></i>最新版</span>
                     <button type="button" onclick="openVerHistory()"><i class="bi bi-clock-history" aria-hidden="true"></i>更新の軌跡</button>
                 </footer>
             </div>
@@ -19697,6 +19727,48 @@ function escapeHtml(str) {
     
 // ■ 社務所だより（ニュース）データ
     const newsData = [
+
+{
+    id: 90,
+    title: "【Ver.4.3】AI案内の起動安定化と回答表示の改善 — 日々の使いやすさを整えました",
+    date: "2026/10/23",
+    time: "20:00",
+    tag: "AI・安定化",
+    tagColor: "text-indigo-700",
+    borderColor: "border-indigo-600",
+    desc: "クッキー設定でAI案内を許可しても表示されないことがある問題を修正し、AI機能の回答表示や案内体験を整えました。Ver.5.0の刷新は、品質を優先して改めて進めます。",
+    content: `
+        <div class="article-content">
+            <p>いつも「運勢・天命乃杜」をご利用いただき、誠にありがとうございます。運営者のnden148です。</p>
+            <p>Ver.4.2の公開後も、AI案内を含む機能を実際に使いながら、動作や表示を少しずつ見直してきました。今回は、画面を大きく作り替えるというより、日常的に使う機能がきちんと動き、回答を読みやすく受け取れることを大切にした更新です。</p>
+
+            <h3>1. クッキー設定からAI案内を有効にしたときの動作を修正</h3>
+            <p>クッキー設定で「天命乃杜 AI案内」をONにして保存しても、AI案内が表示されないことがありました。その場合、いったんOFFにしてから再びONにすると表示されることがあり、設定を一度で反映できない不安定さが残っていました。</p>
+            <p>原因の一つとして、AI案内の読み込みが複数回発生した際、先に始まった古い読み込み処理の完了通知が、あとから始まった有効な処理まで終了させてしまう競合を確認しました。古い処理は現在の表示状態を変更しないようにし、読み込みに失敗した場合も再試行できる入口を残すように修正しています。</p>
+            <p>これにより、許可設定を保存したあとにAI案内が表示されない場合の原因を減らし、読み込みに失敗したときにも再試行しやすい形を目指しました。通信状況やAIサービス側の状態によって応答できない場合まで、必ず解消するという意味ではありません。</p>
+
+            <h3>2. AIの回答を読みやすく表示するための調整</h3>
+            <p>AI案内だけでなく、夢占い・悩み相談・記事要約など、複数のAI機能で回答の表示方法を共通化しました。Markdown形式の文章について、特にコードブロックの区切りや、表・見出し・箇条書きなどが意図した形で読めるよう、表示処理を見直しています。</p>
+            <p>AIが文章を返すだけでは、内容がよくても画面上で読みづらくなることがあります。機能ごとに表示の差が大きくならないよう、共通の描画処理を使い、回答を追いやすくするための改善を進めました。</p>
+
+            <h3>3. 天命乃杜に合わせたAI案内と利用上の配慮</h3>
+            <p>AI案内は、外部の汎用チャットをそのまま埋め込むのではなく、天命乃杜の公開情報やサイト内機能を案内する独自の仕組みとして運用しています。サイト固有の質問に対応しやすいよう案内内容を調整し、利用前にはクッキー設定で明示的に許可を選べる形を維持しています。</p>
+            <p>また、AI機能にはリクエストサイズや利用回数などのサーバー側の制限を設け、回答生成が際限なく呼び出されないようにしています。AI案内は便利な補助機能ですが、ログイン情報や個人の参拝記録を読み取る機能ではなく、回答が常に正しいことを保証するものでもありません。</p>
+
+            <h3>4. 今回の更新について</h3>
+            <p>今回のVer.4.3では、派手な新機能を並べるよりも、設定が一度で反映されること、回答が読みやすいこと、失敗したときに状態を立て直しやすいことを重視しました。これからも、実際に確認できた変更を中心に、既存機能を壊さないよう改善を重ねていきます。</p>
+
+            <h3>5. そして、Ver.5.0は……少々、難航中です</h3>
+            <p>本当は今日か明日にはVer.5.0をお披露目する予定でした。ところが、いざ大規模刷新に取りかかると、AIの調子がどうにも安定せず、こちらの指示をうまく形にできない場面が続出。刷新作業も、前進したと思ったら別の場所でつまずく、なかなか手ごわい展開になりました。</p>
+            <p>そこで、無理に公開してサイトを不安定にするより、AIに刷新前の状態へ戻してもらい、いったん足元を整える判断をしました。言うなれば、Ver.5.0は現在「改装中のため、のれんを出せません」の状態です。大工道具ならぬAIの機嫌が整うまで、もう少しお時間をください。</p>
+            <p>そのため、当初予定していたVer.5.0の公開を急きょ見送り、今回まずVer.4.3を公開することにしました。Ver.5.0は、今日・明日という予定にこだわるのではなく、きちんと動作を確認できる状態に整えてから改めてお届けします。</p>
+
+            <p>今後とも「運勢・天命乃杜」をよろしくお願いいたします。</p>
+        </div>
+    `
+},
+
+
 
 
 {
@@ -33843,6 +33915,31 @@ window.applyTheme = function() {
 
         // ===== 更新の軌跡パネル =====
     const verDetailData = {
+        v43: {
+            ver: 'Ver. 4.3',
+            name: '「AI案内の起動安定化と回答表示の改善」',
+            date: '2026年10月23日',
+            sections: [
+                {
+                    icon: 'bi-chat-square-text', title: 'クッキー設定とAI案内の起動を安定化',
+                    changes: [
+                        { type: 'fix', text: '古いAIスクリプトの読み込み完了処理が、新しい有効な読み込みを終了させる競合を修正。読み込み失敗時には再試行ボタンを表示し、設定をOFF/ONし直さなくても再試行できるようにしました。', sourceIds: [90] }
+                    ]
+                },
+                {
+                    icon: 'bi-file-earmark-richtext', title: 'AI回答の表示処理を共通化',
+                    changes: [
+                        { type: 'change', text: '夢占い・悩み相談・AI案内・記事要約などでMarkdownの表示処理を共通化し、コードブロックや表などの表示差を減らす改善を行いました。', sourceIds: [90] }
+                    ]
+                },
+                {
+                    icon: 'bi-shield-check', title: '利用条件と安全性を維持',
+                    changes: [
+                        { type: 'fix', text: 'AI案内は明示的な許可後に読み込み、サーバー側の入力サイズ・利用回数制限を維持。Ver.5.0の刷新作業は今回のリリース対象に含めず、現行の安定した画面を基準にしました。', sourceIds: [90] }
+                    ]
+                }
+            ]
+        },
         v42: {
             ver: 'Ver. 4.2',
             name: '「運用基盤と安全性の強化」履歴・監視・ナビゲーション・認証の安定化',
@@ -35115,11 +35212,29 @@ window.applyTheme = function() {
         <!-- バージョンリスト -->
         <div class="ver-panel-scroll">
             <div class="ver-timeline">
-                <div class="ver-timeline-item is-current" onclick="openVerDetail('v42')">
+                <div class="ver-timeline-item is-current" onclick="openVerDetail('v43')">
+                    <div class="ver-item-card">
+                        <div class="ver-item-top">
+                            <span class="ver-item-ver">Ver. 4.3</span>
+                            <span class="ver-item-badge ver-badge-current"><i class="bi bi-patch-check-fill"></i>最新版</span>
+                        </div>
+                        <div class="ver-item-date">2026年10月23日リリース</div>
+                        <div class="ver-item-name">「AI案内の起動安定化と回答表示の改善」</div>
+                        <div class="ver-item-desc">クッキー設定からAI案内を有効にした際の読み込み競合を修正し、AI回答の表示と失敗時の再試行を整えました。</div>
+                        <div class="ver-item-tags">
+                            <span class="ver-item-tag">AI案内安定化</span>
+                            <span class="ver-item-tag">回答表示改善</span>
+                            <span class="ver-item-tag">読み込み再試行</span>
+                        </div>
+                        <div class="ver-item-more"><i class="bi bi-chevron-right"></i>詳細を見る</div>
+                    </div>
+                </div>
+
+                <div class="ver-timeline-item" onclick="openVerDetail('v42')">
                     <div class="ver-item-card">
                         <div class="ver-item-top">
                             <span class="ver-item-ver">Ver. 4.2</span>
-                            <span class="ver-item-badge ver-badge-current"><i class="bi bi-patch-check-fill"></i>最新版</span>
+                            <span class="ver-item-badge ver-badge-stable"><i class="bi bi-patch-check-fill"></i>機能改善</span>
                         </div>
                         <div class="ver-item-date">2026年10月2日リリース</div>
                         <div class="ver-item-name">「運用基盤と安全性の強化」履歴・監視・ナビゲーション・認証の安定化</div>
@@ -35135,7 +35250,7 @@ window.applyTheme = function() {
                     </div>
                 </div>
 
-<div class="ver-timeline-item" onclick="openVerDetail('v41')">
+                <div class="ver-timeline-item" onclick="openVerDetail('v41')">
                     <div class="ver-item-card">
                         <div class="ver-item-top">
                             <span class="ver-item-ver">Ver. 4.1</span>
