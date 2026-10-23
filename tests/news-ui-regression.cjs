@@ -45,6 +45,15 @@ requireNewsSectionText('id="news-search-input"', '社務所だより一覧の検
 requireNewsSectionText("oninput=\"handleSearch('news', this.value)\"", '社務所だより一覧の検索接続が失われています。');
 requireNewsSectionText('id="view-news-list" class="news-bulletin-list"', '社務所だより一覧の動的リストIDが失われています。');
 requireNewsSectionText('id="news-pagination" class="news-bulletin-pagination"', '社務所だより一覧のページングIDが失われています。');
+requireNewsSectionText('data-control-kind="choice" data-control-id="news-category-filter"', 'カテゴリ絞り込みに杜の共通カスタム選択欄が使われていません。');
+requireNewsSectionText('data-control-kind="choice" data-control-id="news-sort-order"', '表示順に杜の共通カスタム選択欄が使われていません。');
+requireNewsSectionText('id="news-category-filter-trigger" aria-haspopup="listbox"', 'カテゴリ選択のカスタムトリガーがありません。');
+requireNewsSectionText('id="news-sort-order-trigger" aria-haspopup="listbox"', '表示順選択のカスタムトリガーがありません。');
+requireNewsSectionText('id="news-category-filter-options" role="listbox"', 'カテゴリ選択肢リストがありません。');
+requireNewsSectionText('id="news-sort-order-options" role="listbox"', '表示順選択肢リストがありません。');
+assert.equal(newsSection.includes('<select id="news-category-filter"'), false, 'カテゴリ絞り込みにOS標準selectが残っています。');
+assert.equal(newsSection.includes('<select id="news-sort-order"'), false, '表示順にOS標準selectが残っています。');
+requireText('updateChoiceOptions', '既存カスタム選択欄の動的選択肢更新APIがありません。');
 
 requireText(
   '<section id="view-article-detail" class="view-section news-chronicle-layout" aria-label="社務所だより記事詳細">',
@@ -141,4 +150,6 @@ console.log(JSON.stringify({
   searchLabelVisuallyHidden: true,
   searchFocusSingleIndicator: true,
   responsiveLayoutPresent: true,
+  tenmeiCustomFilterControls: true,
+  nativeSelectsRemoved: true,
 }, null, 2));
