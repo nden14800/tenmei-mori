@@ -62,7 +62,7 @@ requireDetailSectionText('id="article-detail-content"', '記事詳細の動的�
   'id="summary-result"',
   'class="article-content prose dark:prose-invert max-w-none leading-loose text-justify"',
   'buildArticleTOC();',
-  'startReadingProgress(readingMeta);',
+  'startReadingProgress();',
 ].forEach((text) => {
   requireText(text, `社務所だよりの既存機能接続が失われています: ${text}`);
 });
