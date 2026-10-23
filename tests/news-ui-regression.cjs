@@ -55,6 +55,31 @@ assert.equal(newsSection.includes('<select id="news-category-filter"'), false, '
 assert.equal(newsSection.includes('<select id="news-sort-order"'), false, '表示順にOS標準selectが残っています。');
 requireText('updateChoiceOptions', '既存カスタム選択欄の動的選択肢更新APIがありません。');
 
+requireNewsSectionText('window.TenmeiCustomControls?.updateChoiceOptions?.(\'news-category-filter\'', 'カテゴリ候補の同期が一覧描画を止めない安全な呼び出しになっていません。');
+requireNewsSectionText('container.innerHTML = data.map(item => {', '社務所だよりの記事カード描画が失われています。');
+requireNewsSectionText('社務所だよりの絞り込み欄を同期できませんでした。記事一覧の表示は継続します。', '絞り込み欄の同期失敗時に一覧描画を継続する保護がありません。');
+
+const columnSection = html.match(/<section id="view-column"[\\s\\S]*?<section id="view-article-detail"/)?.[0] || '';
+assert(columnSection, '神籤草子一覧画面のセクションを抽出できません。');
+[
+  'data-control-kind="choice" data-control-id="column-category-filter"',
+  'data-control-kind="choice" data-control-id="column-sort-order"',
+  'id="column-category-filter-trigger" aria-haspopup="listbox"',
+  'id="column-sort-order-trigger" aria-haspopup="listbox"',
+  'id="column-category-filter-options" role="listbox"',
+  'id="column-sort-order-options" role="listbox"',
+].forEach((text) => assert(columnSection.includes(text), `神籤草子のカスタム絞り込みUIが不足しています: ${text}`));
+assert.equal(columnSection.includes('<select id="column-category-filter"'), false, '神籤草子の分類絞り込みにOS標準selectが残っています。');
+assert.equal(columnSection.includes('<select id="column-sort-order"'), false, '神籤草子の表示順にOS標準selectが残っています。');
+[
+  "window.changeColumnCategory = function(value)",
+  "window.changeColumnSort = function(value)",
+  "type === 'news' ? (item.tag || '未分類') : (item.category || '未分類')",
+  "window.TenmeiCustomControls?.updateChoiceOptions?.('column-category-filter'",
+  '神籤草子の絞り込み欄を同期できませんでした。読み物一覧の表示は継続します。',
+].forEach((text) => requireText(text, `神籤草子の絞り込み・表示順の接続が不足しています: ${text}`));
+
+
 requireText(
   '<section id="view-article-detail" class="view-section news-chronicle-layout" aria-label="社務所だより記事詳細">',
   '記事詳細画面がnews-chronicle-layoutテンプレートとして定義されていません。'
