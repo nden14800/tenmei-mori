@@ -25,7 +25,11 @@ assert(historyHtml, '更新の軌跡のパネルHTMLを抽出できません。'
 ].forEach((text) => requireText(text, `更新の軌跡のVer.4.0構造が失われています: ${text}`));
 
 [
-  '運勢・天命乃杜 <strong>Ver. 4.2</strong>',
+  '運勢・天命乃杜 <strong>Ver. 4.3</strong>',
+  '2026年10月23日リリース',
+  "openVerDetail('v43')",
+  "v43: {",
+  "ver: 'Ver. 4.3'",
   '2026年10月2日リリース',
   "openVerDetail('v42')",
   "v42: {",
@@ -42,6 +46,8 @@ assert(historyHtml, '更新の軌跡のパネルHTMLを抽出できません。'
   "openVerDetail('v42')",
   '2026年10月2日リリース',
   'Ver. 4.2',
+  'id: 90,',
+  'date: "2026/10/23"',
   'id: 89,',
   'date: "2026/10/02"',
 ].forEach((text) => requireText(text, `Ver.4.2の現在版・記事契約が不足しています: ${text}`));
@@ -56,7 +62,7 @@ assert(historyHtml.includes("openVerDetail('v40')"), 'Ver.4.0が以前の版と�
 assert(historyHtml.includes("openVerDetail('beta')"), '最古のalpha 0.1履歴が復元されていません。');
 
 const historyItems = (historyHtml.match(/class="ver-timeline-item/g) || []).length;
-assert.equal(historyItems, 22, `更新の軌跡の履歴件数が変わっています（期待値: 22、実際: ${historyItems}）。`);
+assert.equal(historyItems, 23, `更新の軌跡の履歴件数が変わっています（期待値: 23、実際: ${historyItems}）。`);
 
 [
   "openVerDetail('v40')",
@@ -109,8 +115,9 @@ assert.equal(historyItems, 22, `更新の軌跡の履歴件数が変わってい
 console.log('更新の軌跡Ver.4.2 UI回帰テストに合格しました。');
 console.log(JSON.stringify({
   archiveHeroContract: true,
-  twentyTwoHistoryItemsPreserved: true,
-  ver42LatestReleasePresent: true,
+  twentyThreeHistoryItemsPreserved: true,
+  ver43LatestReleasePresent: true,
+  ver42ArchivedReleasePresent: true,
   ver40ArchivedReleasePresent: true,
   homeVersionLabelUpdatedTo42: true,
   customChoiceAndDateControlsDocumented: true,
