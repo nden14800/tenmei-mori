@@ -3,7 +3,9 @@ const fs = require('node:fs');
 const path = require('node:path');
 
 const html = fs.readFileSync(path.resolve(__dirname, '..', 'index.html'), 'utf8');
-const newsSection = html.match(/<section id="view-news"[\\s\\S]*?<section id="view-column"/)?.[0] || '';
+const newsStart = html.indexOf('<section id="view-news"');
+const newsEnd = html.indexOf('<section id="view-column"', newsStart);
+const newsSection = newsStart >= 0 && newsEnd > newsStart ? html.slice(newsStart, newsEnd) : '';
 const listLogic = html.slice(html.indexOf('const listState ='), html.indexOf('// 共通: ページネーションボタン'));
 const renderLogic = html.slice(html.indexOf('window.renderFullNewsView = function()'), html.indexOf('// 3. 「神籤草子」描画関数'));
 
