@@ -18,6 +18,13 @@ function requireText(text, message) {
   assert(html.includes(text), message);
 }
 
+requireText('【機能改善・安定化】Ver.4.3「AI案内の起動安定化」— クッキー設定と回答表示を整えました', 'Ver.4.3の記事タイトルが既存の社務所だよりの表記形式に統一されていません。');
+requireText('tag: "新機能・改善"', 'Ver.4.3の記事カテゴリが既存カテゴリを再利用していません。');
+requireText('tagColor: "text-blue-600"', 'Ver.4.3の記事カテゴリ色が既存の配色規則に従っていません。');
+requireText('GPT-6 Luna', 'Ver.5.0延期の説明に今回使用したモデルが記載されていません。');
+requireText('Claude Haiku 5.5', 'Ver.5.0延期の説明に次回候補モデルが記載されていません。');
+requireText('Claude Sonnet 5.5', 'Ver.5.0延期の説明に次回候補モデルが記載されていません。');
+
 function requireNewsSectionText(text, message) {
   assert(newsSection.includes(text), message);
 }
