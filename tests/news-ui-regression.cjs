@@ -59,7 +59,7 @@ requireText("window.TenmeiCustomControls?.updateChoiceOptions?.('news-category-f
 requireText('container.innerHTML = data.map(item => {', '社務所だよりの記事カード描画が失われています。');
 requireText('社務所だよりの絞り込み欄を同期できませんでした。記事一覧の表示は継続します。', '絞り込み欄の同期失敗時に一覧描画を継続する保護がありません。');
 
-const columnSection = html.match(/<section id="view-column"[\\s\\S]*?<section id="view-article-detail"/)?.[0] || '';
+const columnSection = html.match(/<section id="view-column"[\s\S]*?<section id="view-article-detail"/)?.[0] || '';
 assert(columnSection, '神籤草子一覧画面のセクションを抽出できません。');
 [
   'data-control-kind="choice" data-control-id="column-category-filter"',
