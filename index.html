@@ -33936,19 +33936,35 @@ window.applyTheme = function() {
                 {
                     icon: 'bi-chat-square-text', title: 'クッキー設定とAI案内の起動を安定化',
                     changes: [
-                        { type: 'fix', text: '古いAIスクリプトの読み込み完了処理が、新しい有効な読み込みを終了させる競合を修正。読み込み失敗時には再試行ボタンを表示し、設定をOFF/ONし直さなくても再試行できるようにしました。', sourceIds: [90] }
+                        { type: 'fix', text: 'クッキー設定で「天命乃杜 AI案内」をONにしても表示されない場合がある問題を修正。古いAIスクリプトの読み込み完了処理が、新しい有効な読み込みを終了させる競合を防ぎ、読み込み失敗時には再試行ボタンから再度読み込めるようにしました。', sourceIds: [90] },
+                        { type: 'change', text: '設定をいったんOFFにしてからONにし直すことを前提にせず、許可設定を保存したあとに表示されない場合でも、状態を立て直しやすい構成へ調整しました。通信状況やAIサービス側の問題まで必ず解消するものではありません。', sourceIds: [90] }
                     ]
                 },
                 {
                     icon: 'bi-file-earmark-richtext', title: 'AI回答の表示処理を共通化',
                     changes: [
-                        { type: 'change', text: '夢占い・悩み相談・AI案内・記事要約などでMarkdownの表示処理を共通化し、コードブロックや表などの表示差を減らす改善を行いました。', sourceIds: [90] }
+                        { type: 'change', text: '夢占い・悩み相談・AI案内・記事要約など複数のAI機能でMarkdownの表示処理を共通化し、コードブロック、見出し、表、箇条書きなどが機能ごとに異なる見た目になりにくいよう整えました。', sourceIds: [90] },
+                        { type: 'fix', text: 'コードブロックの終端判定などを見直し、コードの後の文章までコード表示に巻き込まれたり、区切り記号がそのまま残ったりする表示上のずれを抑える改善を行いました。これは表示処理の変更であり、AIモデル自体の知識や推論能力を更新するものではありません。', sourceIds: [90] }
                     ]
                 },
                 {
-                    icon: 'bi-shield-check', title: '利用条件と安全性を維持',
+                    icon: 'bi-info-circle', title: 'AI案内の役割と利用上の注意を明確化',
                     changes: [
-                        { type: 'fix', text: 'AI案内は明示的な許可後に読み込み、サーバー側の入力サイズ・利用回数制限を維持。Ver.5.0の刷新作業は今回のリリース対象に含めず、現行の安定した画面を基準にしました。', sourceIds: [90] }
+                        { type: 'change', text: 'AI案内はサイトの公開情報や機能の使い方を案内する補助機能として位置付け、実際の画面操作、利用者のアカウントや参拝履歴の直接確認はできないことを整理。実行していない操作を実行済みと案内しないことを重視しています。', sourceIds: [90] },
+                        { type: 'note', text: 'AI案内への入力内容は回答生成のためAIモデルへ送信されます。パスワードや認証コードなどの機密情報は入力しないでください。AI案内の会話と、AI夢占いなどの記録保存機能は別の仕組みです。利用条件・入力サイズ・回数制限も、機能ごとに区別して案内します。', sourceIds: [90] }
+                    ]
+                },
+                {
+                    icon: 'bi-shield-check', title: '明示的な許可とサーバー側の制限を維持',
+                    changes: [
+                        { type: 'fix', text: 'AI案内はクッキー設定で明示的に許可された後に読み込む方式を維持し、サーバー側の入力サイズ・利用回数制限も継続。AI案内の利用条件を、夢占い・悩み相談・記事要約へそのまま当てはめないよう整理しました。', sourceIds: [90] }
+                    ]
+                },
+                {
+                    icon: 'bi-calendar-event', title: 'Ver.5.0の大規模刷新は品質確認を優先して延期',
+                    changes: [
+                        { type: 'note', text: '当初は2026年10月23日または24日の公開を目指していましたが、今回の刷新作業ではGPT-6 Lunaを使った実装が意図どおりに進まず、修正とやり直しが続いたため、刷新前の状態へ戻して仕切り直しました。今回のVer.4.3にはVer.5.0向けの刷新内容を含めていません。', sourceIds: [90] },
+                        { type: 'note', text: '次回はClaude Haiku 5.5やClaude Sonnet 5.5を試す可能性があります。Anthropicの公式説明では、Haiku 5.5は高速な作業やサブエージェント用途に、Sonnet 5.5は日常的な開発やバグ修正などに向くとされています。ただし、採用モデルは未決定で、刷新の公開日は改めて品質を確認してから判断します。', sourceIds: [90] }
                     ]
                 }
             ]
@@ -35232,7 +35248,7 @@ window.applyTheme = function() {
                             <span class="ver-item-badge ver-badge-current"><i class="bi bi-patch-check-fill"></i>最新版</span>
                         </div>
                         <div class="ver-item-date">2026年10月23日リリース</div>
-                        <div class="ver-item-name">「AI案内の起動安定化と回答表示の改善」</div>
+                        <div class="ver-item-name">「AI案内の起動安定化」クッキー設定と回答表示の改善</div>
                         <div class="ver-item-desc">クッキー設定からAI案内を有効にした際の読み込み競合を修正し、AI回答の表示と失敗時の再試行を整えました。</div>
                         <div class="ver-item-tags">
                             <span class="ver-item-tag">AI案内安定化</span>
