@@ -4147,7 +4147,12 @@
 .news-bulletin-filter-control > span:first-child { display: flex; align-items: center; gap: 0.4rem; }
 .news-bulletin-filter-control > span:first-child i { color: var(--news-gold); }
 .news-bulletin-select-wrap { position: relative; display: flex; min-height: 46px; align-items: center; }
-.news-bulletin-select-wrap select { width: 100%; min-width: 0; min-height: 46px; appearance: none; padding: 0 2.5rem 0 0.85rem; border: 1px solid rgba(131, 92, 60, 0.22); border-radius: 13px; outline: 0; color: var(--news-ink); background: var(--news-paper-soft); font-family: 'Zen Kaku Gothic New', sans-serif; font-size: 0.84rem; font-weight: 700; cursor: pointer; }
+.news-bulletin-select-wrap > .tenmei-choice { width: 100%; min-width: 0; --tenmei-control-accent: var(--news-red, #a52a32); }
+.news-bulletin-select-wrap .tenmei-choice__trigger { width: 100%; min-height: 46px; grid-template-columns: 20px minmax(0, 1fr) 20px; padding: 0 0.85rem; border: 1px solid rgba(131, 92, 60, 0.22); border-radius: 13px; background: var(--news-paper-soft); color: var(--news-ink); font-size: 0.84rem; font-weight: 700; }
+.news-bulletin-select-wrap .tenmei-choice__icon { color: var(--news-gold); }
+.news-bulletin-select-wrap .tenmei-choice__value { padding: 0 0.5rem; }
+.news-bulletin-select-wrap .tenmei-choice__popover { width: 100%; min-width: 100%; }
+.dark .news-bulletin-select-wrap .tenmei-choice__trigger { border-color: rgba(184, 139, 57, 0.28); color: var(--news-ink); background: var(--news-paper-soft); }
 .news-bulletin-select-wrap select:focus-visible { border-color: var(--news-gold); box-shadow: 0 0 0 3px rgba(184, 139, 57, 0.18); }
 .news-bulletin-select-wrap > i { position: absolute; right: 0.9rem; color: var(--news-red); pointer-events: none; }
 .dark .news-bulletin-select-wrap select { border-color: rgba(184, 139, 57, 0.28); color: var(--news-ink); background: var(--news-paper-soft); color-scheme: dark; }
@@ -17673,27 +17678,26 @@ body.sidebar-collapsed.sidebar-pinned #sidebar .nav-group-title {
                 <input type="search" id="news-search-input" placeholder="キーワードを入力..." autocomplete="off" oninput="handleSearch('news', this.value)">
             </label>
             <div class="news-bulletin-filter-row" aria-label="記事の絞り込みと表示順">
-                <label class="news-bulletin-filter-control" for="news-category-filter">
+                <div class="news-bulletin-filter-control">
                     <span><i class="bi bi-tags" aria-hidden="true"></i> カテゴリ</span>
-                    <span class="news-bulletin-select-wrap">
-                        <select id="news-category-filter" onchange="changeNewsCategory(this.value)" aria-label="カテゴリで絞り込む">
-                            <option value="all">すべてのカテゴリ</option>
-                        </select>
-                        <i class="bi bi-chevron-down" aria-hidden="true"></i>
-                    </span>
-                </label>
-                <label class="news-bulletin-filter-control" for="news-sort-order">
+                    <div class="news-bulletin-select-wrap">
+                        <div class="tenmei-choice news-bulletin-choice" data-control-kind="choice" data-control-id="news-category-filter" data-control-label="カテゴリで絞り込む" data-options='[{"value":"all","label":"すべてのカテゴリ"}]'>
+                            <input type="hidden" id="news-category-filter" value="all">
+                            <button type="button" class="tenmei-choice__trigger" id="news-category-filter-trigger" aria-haspopup="listbox" aria-expanded="false" aria-controls="news-category-filter-options" aria-label="カテゴリで絞り込む"><span class="tenmei-choice__icon" aria-hidden="true"><i class="bi bi-tags"></i></span><span class="tenmei-choice__value"></span><i class="bi bi-chevron-down tenmei-choice__chevron" aria-hidden="true"></i></button>
+                            <div class="tenmei-choice__popover" id="news-category-filter-popover" hidden><div class="tenmei-choice__options" id="news-category-filter-options" role="listbox" aria-label="カテゴリで絞り込む"></div></div>
+                        </div>
+                    </div>
+                </div>
+                <div class="news-bulletin-filter-control">
                     <span><i class="bi bi-sort-down" aria-hidden="true"></i> 表示順</span>
-                    <span class="news-bulletin-select-wrap">
-                        <select id="news-sort-order" onchange="changeNewsSort(this.value)" aria-label="記事の表示順">
-                            <option value="newest">新しい順</option>
-                            <option value="oldest">古い順</option>
-                            <option value="title-asc">タイトル順（あ→ん）</option>
-                            <option value="title-desc">タイトル順（ん→あ）</option>
-                        </select>
-                        <i class="bi bi-chevron-down" aria-hidden="true"></i>
-                    </span>
-                </label>
+                    <div class="news-bulletin-select-wrap">
+                        <div class="tenmei-choice news-bulletin-choice" data-control-kind="choice" data-control-id="news-sort-order" data-control-label="記事の表示順" data-options='[{"value":"newest","label":"新しい順"},{"value":"oldest","label":"古い順"},{"value":"title-asc","label":"タイトル順（あ→ん）"},{"value":"title-desc","label":"タイトル順（ん→あ）"}]'>
+                            <input type="hidden" id="news-sort-order" value="newest">
+                            <button type="button" class="tenmei-choice__trigger" id="news-sort-order-trigger" aria-haspopup="listbox" aria-expanded="false" aria-controls="news-sort-order-options" aria-label="記事の表示順"><span class="tenmei-choice__icon" aria-hidden="true"><i class="bi bi-sort-down"></i></span><span class="tenmei-choice__value"></span><i class="bi bi-chevron-down tenmei-choice__chevron" aria-hidden="true"></i></button>
+                            <div class="tenmei-choice__popover" id="news-sort-order-popover" hidden><div class="tenmei-choice__options" id="news-sort-order-options" role="listbox" aria-label="記事の表示順"></div></div>
+                        </div>
+                    </div>
+                </div>
             </div>
         </form>
     </search>
@@ -26089,15 +26093,25 @@ let historyPageState = {
 
         const { data, totalPages, currentPage, totalItems } = getPaginatedData('news', newsData);
         const query = listState.news.query;
-        const categorySelect = document.getElementById('news-category-filter');
-        const sortSelect = document.getElementById('news-sort-order');
-        if (categorySelect) {
+        const categoryInput = document.getElementById('news-category-filter');
+        const sortInput = document.getElementById('news-sort-order');
+        if (categoryInput) {
             const categories = [...new Set(newsData.map(item => item.tag || '未分類'))].sort((a, b) => a.localeCompare(b, 'ja'));
-            const options = ['<option value="all">すべてのカテゴリ</option>', ...categories.map(category => `<option value="${category.replace(/&/g, '&amp;').replace(/"/g, '&quot;')}" ${listState.news.category === category ? 'selected' : ''}>${category}</option>`)];
-            categorySelect.innerHTML = options.join('');
-            categorySelect.value = listState.news.category;
+            categoryInput.value = listState.news.category;
+            window.TenmeiCustomControls?.updateChoiceOptions('news-category-filter', [
+                { value: 'all', label: 'すべてのカテゴリ' },
+                ...categories.map(category => ({ value: category, label: category }))
+            ]);
         }
-        if (sortSelect) sortSelect.value = listState.news.sort;
+        if (sortInput) {
+            sortInput.value = listState.news.sort;
+            window.TenmeiCustomControls?.updateChoiceOptions('news-sort-order', [
+                { value: 'newest', label: '新しい順' },
+                { value: 'oldest', label: '古い順' },
+                { value: 'title-asc', label: 'タイトル順（あ→ん）' },
+                { value: 'title-desc', label: 'タイトル順（ん→あ）' }
+            ]);
+        }
         const hasConditions = Boolean(query || (listState.news.category && listState.news.category !== 'all'));
         const summaryText = hasConditions
             ? `絞り込み結果: ${totalItems}件${listState.news.category !== 'all' ? ` ・ ${listState.news.category}` : ''}${query ? ` ・「${query}」` : ''}`
@@ -29599,9 +29613,29 @@ function resetSearch() {
             }, true);
             // 非表示画面のコントロールは一括生成しない。画面切替後の最初の操作で即時構築する。
             // これにより初期数秒間のメインスレッド占有を避ける。
-            return { syncAll, closeActive };
+            const updateChoiceOptions = (id, nextOptions) => {
+                const normalized = Array.isArray(nextOptions) ? nextOptions.map((option) => ({
+                    value: String(option.value),
+                    label: String(option.label),
+                    detail: option.detail ? String(option.detail) : '',
+                    symbol: option.symbol ? String(option.symbol) : ''
+                })) : [];
+                const state = choiceStates.get(id);
+                const root = state?.root || document.querySelector('[data-control-kind="choice"][data-control-id="' + id + '"]');
+                if (root) root.dataset.options = JSON.stringify(normalized);
+                if (!state) return false;
+                state.options = normalized;
+                state.listbox.innerHTML = normalized.map((option, index) => `<button type="button" class="tenmei-choice__option" id="${id}-option-${index}" role="option" aria-selected="false" data-option-index="${index}"><span class="tenmei-choice__option-label">${escapeHTML(option.symbol ? `${option.symbol} ` : '')}${escapeHTML(option.label)}</span><span class="tenmei-choice__option-detail">${escapeHTML(option.detail || '')}</span><i class="bi bi-check2 tenmei-choice__option-check" aria-hidden="true" hidden></i></button>`).join('');
+                state.optionNodes = [...state.listbox.querySelectorAll('.tenmei-choice__option')];
+                state.activeIndex = Math.max(0, normalized.findIndex((option) => option.value === state.input.value));
+                syncChoice(state);
+                return true;
+            };
+            return { syncAll, closeActive, updateChoiceOptions };
         })();
         window.TenmeiCustomControls = TenmeiCustomControls;
+        document.getElementById('news-category-filter')?.addEventListener('change', (event) => window.changeNewsCategory(event.target.value));
+        document.getElementById('news-sort-order')?.addEventListener('change', (event) => window.changeNewsSort(event.target.value));
 
         // --- シェア用画像生成 (崩れ防止・完全修正版) ---
         function generateResultImage() {
