@@ -3831,6 +3831,18 @@
 .column-library-search-field:focus-within { border-color: var(--column-violet); background: var(--column-paper); box-shadow: 0 0 0 3px rgba(113, 84, 196, 0.17); }
 .column-library-search-field input { width: 100%; min-width: 0; flex: 1 1 auto; border: 0; outline: 0; color: var(--column-ink); background: transparent; font-family: 'Zen Kaku Gothic New', sans-serif; font-size: 0.9rem; line-height: 1.5; }
 .column-library-search-field input::placeholder { color: var(--column-muted); opacity: 0.78; }
+.column-library-filter-row { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0.8rem; margin-top: 0.9rem; }
+.column-library-filter-control { display: grid; min-width: 0; gap: 0.42rem; color: var(--column-muted); font-family: 'Zen Kaku Gothic New', sans-serif; font-size: 0.72rem; font-weight: 800; }
+.column-library-filter-control > span:first-child { display: flex; align-items: center; gap: 0.4rem; }
+.column-library-filter-control > span:first-child i { color: var(--column-violet); }
+.column-library-select-wrap { position: relative; display: flex; min-height: 46px; align-items: center; }
+.column-library-select-wrap > .tenmei-choice { width: 100%; min-width: 0; --tenmei-control-accent: var(--column-violet, #7154c4); }
+.column-library-select-wrap .tenmei-choice__trigger { width: 100%; min-height: 46px; grid-template-columns: 20px minmax(0, 1fr) 20px; padding: 0 0.85rem; border: 1px solid rgba(86, 74, 122, 0.22); border-radius: 13px; background: var(--column-paper-soft); color: var(--column-ink); font-size: 0.84rem; font-weight: 700; }
+.column-library-select-wrap .tenmei-choice__icon { color: var(--column-violet); }
+.column-library-select-wrap .tenmei-choice__value { padding: 0 0.5rem; }
+.column-library-select-wrap .tenmei-choice__popover { width: 100%; min-width: 100%; }
+.dark .column-library-select-wrap .tenmei-choice__trigger { border-color: rgba(160, 142, 220, 0.28); color: var(--column-ink); background: var(--column-paper-soft); }
+@media (max-width: 560px) { .column-library-filter-row { grid-template-columns: minmax(0, 1fr); } }
 .column-library-list { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); grid-auto-rows: auto; align-items: stretch; gap: 0.9rem; margin-top: 1.15rem; }
 .column-library-card {
     position: relative;
@@ -17747,6 +17759,18 @@ body.sidebar-collapsed.sidebar-pinned #sidebar .nav-group-title {
             <i class="bi bi-search" aria-hidden="true"></i>
             <input type="search" id="column-search-input" placeholder="キーワードを入力..." oninput="handleSearch('column', this.value)">
         </div>
+        <div class="column-library-filter-row" aria-label="読み物の分類絞り込みと表示順">
+            <div class="column-library-filter-control"><span><i class="bi bi-bookmarks" aria-hidden="true"></i> 分類</span><div class="column-library-select-wrap">
+                <div class="tenmei-choice column-library-choice" data-control-kind="choice" data-control-id="column-category-filter" data-control-label="分類で絞り込む" data-options='[{"value":"all","label":"すべての分類"}]'>
+                    <input type="hidden" id="column-category-filter" value="all"><button type="button" class="tenmei-choice__trigger" id="column-category-filter-trigger" aria-haspopup="listbox" aria-expanded="false" aria-controls="column-category-filter-options" aria-label="分類で絞り込む"><span class="tenmei-choice__icon" aria-hidden="true"><i class="bi bi-bookmarks"></i></span><span class="tenmei-choice__value"></span><i class="bi bi-chevron-down tenmei-choice__chevron" aria-hidden="true"></i></button><div class="tenmei-choice__popover" id="column-category-filter-popover" hidden><div class="tenmei-choice__options" id="column-category-filter-options" role="listbox" aria-label="分類で絞り込む"></div></div>
+                </div>
+            </div></div>
+            <div class="column-library-filter-control"><span><i class="bi bi-sort-down" aria-hidden="true"></i> 表示順</span><div class="column-library-select-wrap">
+                <div class="tenmei-choice column-library-choice" data-control-kind="choice" data-control-id="column-sort-order" data-control-label="読み物の表示順" data-options='[{"value":"newest","label":"新しい順"},{"value":"oldest","label":"古い順"},{"value":"title-asc","label":"タイトル順（あ→ん）"},{"value":"title-desc","label":"タイトル順（ん→あ）"}]'>
+                    <input type="hidden" id="column-sort-order" value="newest"><button type="button" class="tenmei-choice__trigger" id="column-sort-order-trigger" aria-haspopup="listbox" aria-expanded="false" aria-controls="column-sort-order-options" aria-label="読み物の表示順"><span class="tenmei-choice__icon" aria-hidden="true"><i class="bi bi-sort-down"></i></span><span class="tenmei-choice__value"></span><i class="bi bi-chevron-down tenmei-choice__chevron" aria-hidden="true"></i></button><div class="tenmei-choice__popover" id="column-sort-order-popover" hidden><div class="tenmei-choice__options" id="column-sort-order-options" role="listbox" aria-label="読み物の表示順"></div></div>
+                </div>
+            </div></div>
+        </div>
     </search>
 
     <section class="column-library-shelf" aria-labelledby="column-records-heading">
@@ -25886,7 +25910,7 @@ let historyPageState = {
     // 状態管理 (ページ番号と検索ワード)
     const listState = {
         news: { page: 1, query: '', category: 'all', sort: 'newest', perPage: 6 },   // ニュースは1ページ6件
-        column: { page: 1, query: '', perPage: 6 }  // コラムは1ページ6件
+        column: { page: 1, query: '', category: 'all', sort: 'newest', perPage: 6 }  // コラムも同じ操作体系
     };
 
     // 検索ハンドラ
@@ -25909,6 +25933,10 @@ let historyPageState = {
         listState.news.page = 1;
         renderFullNewsView();
     };
+
+    // 神籤草子の分類・表示順も、社務所だよりと同じ状態管理で扱う。
+    window.changeColumnCategory = function(value) { listState.column.category = value || 'all'; listState.column.page = 1; renderFullColumnView(); };
+    window.changeColumnSort = function(value) { listState.column.sort = value || 'newest'; listState.column.page = 1; renderFullColumnView(); };
 
     // ページ切り替えハンドラ
     window.changePage = function(type, newPage) {
@@ -25934,19 +25962,17 @@ let historyPageState = {
         });
 
         // 2. 社務所だよりのカテゴリ絞り込み
-        const categoryFiltered = type === 'news' && state.category && state.category !== 'all'
-            ? filtered.filter(item => (item.tag || '未分類') === state.category)
+        const categoryFiltered = state.category && state.category !== 'all'
+            ? filtered.filter(item => (type === 'news' ? (item.tag || '未分類') : (item.category || '未分類')) === state.category)
             : filtered;
 
         // 3. 表示順（検索・カテゴリ絞り込み後に適用）
         const sorted = [...categoryFiltered];
-        if (type === 'news') {
-            const dateValue = item => String(item.date || '').replace(/\\//g, '') + String(item.time || '00:00').replace(':', '');
-            if (state.sort === 'oldest') sorted.sort((a, b) => dateValue(a).localeCompare(dateValue(b)) || a.id - b.id);
-            else if (state.sort === 'title-asc') sorted.sort((a, b) => String(a.title || '').localeCompare(String(b.title || ''), 'ja'));
-            else if (state.sort === 'title-desc') sorted.sort((a, b) => String(b.title || '').localeCompare(String(a.title || ''), 'ja'));
-            else sorted.sort((a, b) => dateValue(b).localeCompare(dateValue(a)) || b.id - a.id);
-        }
+        const dateValue = item => String(item.date || '').replace(/\\//g, '') + String(item.time || '00:00').replace(':', '');
+        if (state.sort === 'oldest') sorted.sort((a, b) => dateValue(a).localeCompare(dateValue(b)) || a.id - b.id);
+        else if (state.sort === 'title-asc') sorted.sort((a, b) => String(a.title || '').localeCompare(String(b.title || ''), 'ja'));
+        else if (state.sort === 'title-desc') sorted.sort((a, b) => String(b.title || '').localeCompare(String(a.title || ''), 'ja'));
+        else sorted.sort((a, b) => dateValue(b).localeCompare(dateValue(a)) || b.id - a.id);
 
         // 4. ページネーション計算
         const totalItems = sorted.length;
@@ -26093,25 +26119,6 @@ let historyPageState = {
 
         const { data, totalPages, currentPage, totalItems } = getPaginatedData('news', newsData);
         const query = listState.news.query;
-        const categoryInput = document.getElementById('news-category-filter');
-        const sortInput = document.getElementById('news-sort-order');
-        if (categoryInput) {
-            const categories = [...new Set(newsData.map(item => item.tag || '未分類'))].sort((a, b) => a.localeCompare(b, 'ja'));
-            categoryInput.value = listState.news.category;
-            window.TenmeiCustomControls?.updateChoiceOptions('news-category-filter', [
-                { value: 'all', label: 'すべてのカテゴリ' },
-                ...categories.map(category => ({ value: category, label: category }))
-            ]);
-        }
-        if (sortInput) {
-            sortInput.value = listState.news.sort;
-            window.TenmeiCustomControls?.updateChoiceOptions('news-sort-order', [
-                { value: 'newest', label: '新しい順' },
-                { value: 'oldest', label: '古い順' },
-                { value: 'title-asc', label: 'タイトル順（あ→ん）' },
-                { value: 'title-desc', label: 'タイトル順（ん→あ）' }
-            ]);
-        }
         const hasConditions = Boolean(query || (listState.news.category && listState.news.category !== 'all'));
         const summaryText = hasConditions
             ? `絞り込み結果: ${totalItems}件${listState.news.category !== 'all' ? ` ・ ${listState.news.category}` : ''}${query ? ` ・「${query}」` : ''}`
@@ -26188,6 +26195,15 @@ let historyPageState = {
                     </div>
                 </article>`;
         }).join('');
+        try {
+            const categories = [...new Set(newsData.map(item => item.tag || '未分類'))].sort((a, b) => a.localeCompare(b, 'ja'));
+            const categoryInput = document.getElementById('news-category-filter');
+            const sortInput = document.getElementById('news-sort-order');
+            if (categoryInput) categoryInput.value = listState.news.category;
+            if (sortInput) sortInput.value = listState.news.sort;
+            window.TenmeiCustomControls?.updateChoiceOptions?.('news-category-filter', [{ value: 'all', label: 'すべてのカテゴリ' }, ...categories.map(category => ({ value: category, label: category }))]);
+            window.TenmeiCustomControls?.updateChoiceOptions?.('news-sort-order', [{ value: 'newest', label: '新しい順' }, { value: 'oldest', label: '古い順' }, { value: 'title-asc', label: 'タイトル順（あ→ん）' }, { value: 'title-desc', label: 'タイトル順（ん→あ）' }]);
+        } catch (controlError) { console.warn('社務所だよりの絞り込み欄を同期できませんでした。記事一覧の表示は継続します。', controlError); }
         pagination.innerHTML = createPaginationHTML('news', currentPage, totalPages, "changePage('news', {P})");
         container.setAttribute('aria-busy', 'false');
     };
@@ -26200,24 +26216,29 @@ window.renderFullColumnView = function() {
     const countDisplay = document.getElementById('column-library-count');
     const heroSummary = document.getElementById('column-library-summary');
     const resultsSummary = document.getElementById('column-results-summary');
+    const categoryInput = document.getElementById('column-category-filter');
+    const sortInput = document.getElementById('column-sort-order');
 
     if (!container || !pagination) return;
 
     const { data, totalPages, currentPage, totalItems } = getPaginatedData('column', columnData);
-    const hasQuery = Boolean(listState.column.query);
+    const hasQuery = Boolean(listState.column.query || (listState.column.category && listState.column.category !== 'all'));
+    const orderLabel = listState.column.sort === 'oldest' ? '古い順' : listState.column.sort === 'title-asc' ? 'タイトル順（あ→ん）' : listState.column.sort === 'title-desc' ? 'タイトル順（ん→あ）' : '新しい順';
     const summaryText = hasQuery
         ? `${totalItems}篇が見つかりました`
         : `全${columnData.length}篇を収録`;
 
     if (countDisplay) countDisplay.textContent = summaryText;
+    if (categoryInput) categoryInput.value = listState.column.category;
+    if (sortInput) sortInput.value = listState.column.sort;
     // 検索語は利用者が直接入力する値であるため、HTML文字列へ組み込む前に必ずエスケープする。
     // アイコンだけをHTMLとして固定し、検索語はテキストとして扱う。
     if (heroSummary) heroSummary.innerHTML = hasQuery
         ? `<i class="bi bi-search" aria-hidden="true"></i>「${escapeHtml(listState.column.query)}」の検索結果を表示しています。`
         : '<i class="bi bi-journal-bookmark" aria-hidden="true"></i> 気になる題から、ひとつずつお読みいただけます。';
     if (resultsSummary) resultsSummary.textContent = hasQuery
-        ? `${totalItems}篇の検索結果`
-        : `全${columnData.length}篇を新しい順に並べています`;
+        ? `${totalItems}篇の検索・絞り込み結果 ・ ${orderLabel}`
+        : `全${columnData.length}篇を${orderLabel}に並べています`;
 
     container.setAttribute('aria-busy', 'true');
 
@@ -26264,6 +26285,11 @@ window.renderFullColumnView = function() {
             </article>`;
     }).join('');
 
+    try {
+        const categories = [...new Set(columnData.map(item => item.category || '未分類'))].sort((a, b) => a.localeCompare(b, 'ja'));
+        window.TenmeiCustomControls?.updateChoiceOptions?.('column-category-filter', [{ value: 'all', label: 'すべての分類' }, ...categories.map(category => ({ value: category, label: category }))]);
+        window.TenmeiCustomControls?.updateChoiceOptions?.('column-sort-order', [{ value: 'newest', label: '新しい順' }, { value: 'oldest', label: '古い順' }, { value: 'title-asc', label: 'タイトル順（あ→ん）' }, { value: 'title-desc', label: 'タイトル順（ん→あ）' }]);
+    } catch (controlError) { console.warn('神籤草子の絞り込み欄を同期できませんでした。読み物一覧の表示は継続します。', controlError); }
     pagination.innerHTML = createPaginationHTML('column', currentPage, totalPages, "changePage('column', {P})");
     container.setAttribute('aria-busy', 'false');
 };// 4. 記事詳細表示 (一覧画面のデザイン・色・アイコンを完全継承版)
@@ -29636,6 +29662,8 @@ function resetSearch() {
         window.TenmeiCustomControls = TenmeiCustomControls;
         document.getElementById('news-category-filter')?.addEventListener('change', (event) => window.changeNewsCategory(event.target.value));
         document.getElementById('news-sort-order')?.addEventListener('change', (event) => window.changeNewsSort(event.target.value));
+        document.getElementById('column-category-filter')?.addEventListener('change', (event) => window.changeColumnCategory(event.target.value));
+        document.getElementById('column-sort-order')?.addEventListener('change', (event) => window.changeColumnSort(event.target.value));
 
         // --- シェア用画像生成 (崩れ防止・完全修正版) ---
         function generateResultImage() {
