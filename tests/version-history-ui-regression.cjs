@@ -50,7 +50,7 @@ assert(historyHtml, '更新の軌跡のパネルHTMLを抽出できません。'
   'date: "2026/10/23"',
   'id: 89,',
   'date: "2026/10/02"',
-].forEach((text) => requireText(text, `Ver.4.2の現在版・記事契約が不足しています: ${text}`));
+].forEach((text) => requireText(text, `Ver.4.3の最新版・記事契約が不足しています: ${text}`));
 
 [
   "openVerDetail('v41')",
@@ -119,7 +119,7 @@ console.log(JSON.stringify({
   ver43LatestReleasePresent: true,
   ver42ArchivedReleasePresent: true,
   ver40ArchivedReleasePresent: true,
-  homeVersionLabelUpdatedTo42: true,
+  homeVersionLabelUpdatedTo43: true,
   customChoiceAndDateControlsDocumented: true,
   detailAndSourceLinkContractsPreserved: true,
   keyboardAndFocusContractsPresent: true,
