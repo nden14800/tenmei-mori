@@ -112,7 +112,7 @@ assert.equal(historyItems, 23, `更新の軌跡の履歴件数が変わってい
   '@media (prefers-reduced-motion: reduce) {',
 ].forEach((text) => requireText(text, `更新の軌跡のVer.4.0意匠規則が失われています: ${text}`));
 
-console.log('更新の軌跡Ver.4.2 UI回帰テストに合格しました。');
+console.log('更新の軌跡Ver.4.3 UI回帰テストに合格しました。');
 console.log(JSON.stringify({
   archiveHeroContract: true,
   twentyThreeHistoryItemsPreserved: true,
