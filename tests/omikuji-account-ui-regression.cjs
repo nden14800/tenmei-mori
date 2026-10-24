@@ -98,7 +98,7 @@ function requireIn(section, text, message) {
   'class="account-settings-v2-profile"',
   'class="account-settings-v2-form"',
   'class="account-settings-v2-settings-link"',
-  'onclick="showView(\\'settings\\')"',
+  "onclick=\"showView('settings')\"",
   'onclick="updateAccountSettings()"',
   'onclick="deleteAccount()"',
   'id="account-details-heading"',
