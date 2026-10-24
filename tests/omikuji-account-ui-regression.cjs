@@ -153,7 +153,7 @@ assert(!accountRenderer.includes('profile-v4-hero'), 'アカウント設定の�
 assert(accountRenderer.includes('account-settings-v2-intro-icon'), 'アカウント設定の見出しに統一されたアイコンがありません。');
 assert(accountRenderer.includes('ユーザー名・パスワードの変更、Google連携、ログアウトやアカウント削除を管理できます。'), 'アカウント設定の説明を実際の機能と一致させてください。');
 assert(accountRenderer.includes("let authMethod = null;"), 'ログイン方式の取得失敗をメール方式と誤認しないでください。');
-assert(accountRenderer.includes('確認できませんでした。ページを再読み込みして確認してください。'), 'ログイン方式の取得失敗時に誤った状態を表示してはいけません。');
+assert(accountRenderer.includes('取得できませんでした。ページを再読み込みして確認してください。'), 'ログイン方式の取得失敗時に誤った状態を表示してはいけません。');
 assert(accountRenderer.includes('Google連携済み') === false, '旧Google連携ステータスの文言が残っています。');
 assert(accountRenderer.includes('Googleのみ'), 'Google専用ログイン状態を明確に表示してください。');
 assert(accountRenderer.includes('padding:var(--ver4-card-padding)'), 'アカウント概要カードは共通カード余白を使用してください。');
