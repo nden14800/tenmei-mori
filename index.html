@@ -17386,21 +17386,21 @@ body.sidebar-collapsed.sidebar-pinned #sidebar .nav-group-title {
                 <div class="profile-v4-copy">
                     <p class="profile-v4-eyebrow"><i class="bi bi-person-gear" aria-hidden="true"></i> ACCOUNT SETTINGS</p>
                     <h1 id="profile-page-title" class="profile-v4-title">アカウント設定</h1>
-                    <p class="profile-v4-lead">参拝者名の編集、連携状況の確認、参拝証の管理を行うための設定画面です。</p>
-                    <div class="profile-v4-hero-meta" aria-label="設定画面の案内"><span><i class="bi bi-shield-check" aria-hidden="true"></i> この端末へすぐに反映</span><span><i class="bi bi-sliders" aria-hidden="true"></i> 環境・読書・連携を管理</span></div>
+                    <p class="profile-v4-lead">登録情報・ログイン方法・アカウントの安全性を管理する画面です。</p>
+                    <div class="profile-v4-hero-meta" aria-label="設定画面の案内"><span><i class="bi bi-shield-check" aria-hidden="true"></i> この端末へすぐに反映</span><span><i class="bi bi-shield-check" aria-hidden="true"></i> 登録情報と安全性を管理</span></div>
                 </div>
                 <div class="profile-v4-mark" data-ver4-hero-emblem aria-hidden="true"><i class="bi bi-person-gear"></i><span>MY<br>SETTINGS</span></div>
             </header>
 
             <section class="profile-v4-context" aria-labelledby="profile-v4-context-title">
                 <header class="omikuji-v4-panel-heading">
-                    <div><p class="omikuji-v4-panel-eyebrow"><i class="bi bi-grid-1x2" aria-hidden="true"></i> SETTINGS OVERVIEW</p><h2 id="profile-v4-context-title">参拝の環境を、自分らしく整える</h2></div>
-                    <p>表示や読書の好み、参拝証の連携、アカウントの安全性を、一つの場所で管理できます。</p>
+                    <div><p class="omikuji-v4-panel-eyebrow"><i class="bi bi-grid-1x2" aria-hidden="true"></i> SETTINGS OVERVIEW</p><h2 id="profile-v4-context-title">アカウント情報を一か所で管理</h2></div>
+                    <p>登録情報・ログイン方法・アカウント操作を整理しました。表示や読書の好みは専用の環境設定画面で管理します。</p>
                 </header>
                 <ul class="profile-v4-context-list">
-                    <li><span class="profile-v4-context-icon"><i class="bi bi-palette2" aria-hidden="true"></i></span><div><strong>環境と表示</strong><small>テーマ、演出、サイドバーの挙動</small></div></li>
-                    <li><span class="profile-v4-context-icon"><i class="bi bi-body-text" aria-hidden="true"></i></span><div><strong>読書の好み</strong><small>文字、行間、書体、本文の幅</small></div></li>
-                    <li><span class="profile-v4-context-icon"><i class="bi bi-shield-lock" aria-hidden="true"></i></span><div><strong>参拝証と安全性</strong><small>連携状況、登録情報、アカウント操作</small></div></li>
+                    <li><span class="profile-v4-context-icon"><i class="bi bi-person-vcard" aria-hidden="true"></i></span><div><strong>登録情報</strong><small>ユーザー名・パスワードの変更</small></div></li>
+                    <li><span class="profile-v4-context-icon"><i class="bi bi-google" aria-hidden="true"></i></span><div><strong>ログイン方法</strong><small>Googleアカウントとの連携</small></div></li>
+                    <li><span class="profile-v4-context-icon"><i class="bi bi-shield-lock" aria-hidden="true"></i></span><div><strong>アカウントの安全性</strong><small>ログアウト・アカウント削除</small></div></li>
                 </ul>
             </section>
 
@@ -32330,31 +32330,21 @@ function calculateMemberRank(stats) {
 async function renderSettingsDashboard() {
     const container = document.getElementById('profile-dashboard-content');
     if (!container || !currentState.user) return;
-
-    // ローディング表示
-    container.innerHTML = '<div class="text-center py-10"><div class="spinner-border text-red-500" role="status"></div><p class="text-gray-400 text-xs mt-2">会員情報を照会中...</p></div>';
+    container.innerHTML = '<div class="account-settings-v2-loading" role="status"><span class="spinner-border" aria-hidden="true"></span><p>アカウント情報を読み込んでいます...</p></div>';
 
     const user = currentState.user;
-    const safeEmail = escapeHtml(user.email);
-    const safeName = escapeHtml(user.username);
+    const safeEmail = escapeHtml(user.email || '');
+    const safeName = escapeHtml(user.username || '参拝者');
+    let rankInfo = { name: '確認中...', class: 'rank-normal', icon: 'bi-hourglass' };
 
-    // 統計データの取得（ランク判定のため）
-    let rankInfo = { name: "確認中...", class: "rank-normal", icon: "bi-hourglass" };
-    
     try {
         const res = await authFetch(`${API_BASE}/api/user/profile?username=${encodeURIComponent(user.username)}`, { method: 'GET' });
         if (res.ok) {
             const data = await res.json();
             rankInfo = calculateMemberRank(data.stats);
         }
-    } catch(e) {
-        console.error("Rank fetch failed", e);
-    }
+    } catch (e) { console.error('Rank fetch failed', e); }
 
-    // 現在の設定値を取得（AppConfigヘルパー利用）
-    const settings = AppConfig.getCurrent();
-
-    // auth_method の取得（Google連携カード表示用）
     let authMethod = 'email';
     try {
         const amRes = await authFetch(`${API_BASE}/api/auth/method`, { method: 'GET' });
@@ -32362,321 +32352,114 @@ async function renderSettingsDashboard() {
             const amData = await amRes.json();
             authMethod = amData.auth_method || 'email';
         }
-    } catch(e) {
-        console.error("auth_method fetch failed", e);
-    }
+    } catch (e) { console.error('auth_method fetch failed', e); }
 
-    // HTML生成
     container.innerHTML = `
-        <div class="profile-bento-grid">
-            <section class="profile-v4-dashboard-overview" aria-label="設定ダッシュボードの概要">
-                <div><p class="omikuji-v4-panel-eyebrow"><i class="bi bi-person-check" aria-hidden="true"></i> YOUR PILGRIMAGE PROFILE</p><h2>${safeName} さんの設定</h2><p>参拝の環境とアカウント情報を、目的ごとに確認・変更できます。</p></div>
-                <span><i class="bi bi-shield-check" aria-hidden="true"></i> 保護された設定</span>
+        <style id="account-settings-v2-styles">
+            #profile-dashboard-content { --account-line: color-mix(in srgb,var(--text-main) 12%,transparent); }
+            .account-settings-v2 { width:100%; max-width:1040px; margin:0 auto; padding:0 0 56px; color:var(--text-main); }
+            .account-settings-v2 * { box-sizing:border-box; }
+            .account-settings-v2-hero { display:flex; align-items:flex-start; justify-content:space-between; gap:24px; padding:clamp(22px,4vw,36px); border:1px solid var(--account-line); border-radius:24px; background:linear-gradient(135deg,var(--card-bg),color-mix(in srgb,var(--accent-red) 5%,var(--bg-color))); }
+            .account-settings-v2-kicker { margin:0 0 9px; color:var(--accent-red); font-size:.68rem; font-weight:800; letter-spacing:.14em; }
+            .account-settings-v2-hero h2 { margin:0; font-family:'Zen Old Mincho',serif; font-size:clamp(1.45rem,3vw,2rem); font-weight:800; }
+            .account-settings-v2-hero p:last-child { margin:9px 0 0; color:var(--text-muted); font-size:.88rem; line-height:1.8; }
+            .account-settings-v2-mark { display:grid; place-items:center; flex:0 0 58px; width:58px; height:58px; border:1px solid var(--account-line); border-radius:18px; color:var(--accent-red); background:var(--card-bg); font-size:1.35rem; }
+            .account-settings-v2-profile { display:flex; align-items:center; gap:17px; margin-top:18px; padding:20px 22px; border:1px solid var(--account-line); border-radius:20px; background:var(--card-bg); }
+            .account-settings-v2-avatar { display:grid; place-items:center; flex:0 0 54px; width:54px; height:54px; border-radius:17px; color:var(--text-main); background:var(--bg-color); border:1px solid var(--account-line); font-size:1.45rem; }
+            .account-settings-v2-profile-main { min-width:0; flex:1; }
+            .account-settings-v2-profile-main h3 { margin:5px 0 2px; font-size:1.1rem; font-weight:800; overflow-wrap:anywhere; }
+            .account-settings-v2-profile-main p { margin:0; color:var(--text-muted); font-size:.82rem; overflow-wrap:anywhere; }
+            .account-settings-v2-profile .rank-badge-base { display:inline-flex; }
+            .account-settings-v2-section { margin-top:30px; }
+            .account-settings-v2-section-head { display:flex; align-items:flex-end; justify-content:space-between; gap:12px; margin-bottom:13px; }
+            .account-settings-v2-section-head h3 { margin:0; font-size:1.05rem; font-weight:800; }
+            .account-settings-v2-section-head p { margin:4px 0 0; color:var(--text-muted); font-size:.78rem; }
+            .account-settings-v2-card { min-width:0; padding:clamp(18px,3vw,25px); border:1px solid var(--account-line); border-radius:20px; background:var(--card-bg); }
+            .account-settings-v2-form { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:16px; }
+            .account-settings-v2-field { min-width:0; }
+            .account-settings-v2-field--wide { grid-column:1/-1; }
+            .account-settings-v2-field label { display:block; margin:0 0 7px; font-size:.82rem; font-weight:750; }
+            .account-settings-v2-field input { width:100%; min-width:0; min-height:46px; padding:11px 13px; border:1px solid var(--account-line); border-radius:11px; color:var(--text-main); background:var(--bg-color); font:inherit; font-size:.88rem; transition:border-color .18s,box-shadow .18s; }
+            .account-settings-v2-field input:focus { outline:none; border-color:var(--accent-red); box-shadow:0 0 0 3px color-mix(in srgb,var(--accent-red) 15%,transparent); }
+            .account-settings-v2-help { margin:6px 0 0; color:var(--text-muted); font-size:.74rem; line-height:1.6; }
+            .account-settings-v2-actions { display:flex; justify-content:flex-end; margin-top:18px; }
+            .account-settings-v2-primary { display:inline-flex; align-items:center; justify-content:center; gap:8px; min-height:44px; padding:10px 18px; border:0; border-radius:11px; color:#fff; background:var(--accent-red); font-weight:750; cursor:pointer; }
+            .account-settings-v2-row { display:flex; align-items:center; justify-content:space-between; gap:16px; }
+            .account-settings-v2-row-main { display:flex; align-items:center; gap:12px; min-width:0; }
+            .account-settings-v2-icon { display:grid; place-items:center; flex:0 0 42px; width:42px; height:42px; border-radius:13px; background:var(--bg-color); border:1px solid var(--account-line); font-size:1.1rem; }
+            .account-settings-v2-row h4 { margin:0; font-size:.9rem; font-weight:800; }
+            .account-settings-v2-row p { margin:4px 0 0; color:var(--text-muted); font-size:.77rem; line-height:1.6; }
+            .account-settings-v2-status { display:inline-flex; align-items:center; gap:5px; padding:5px 9px; border-radius:999px; background:color-mix(in srgb,#16a34a 12%,transparent); color:#16803d; font-size:.72rem; font-weight:800; white-space:nowrap; }
+            .account-settings-v2-secondary { display:inline-flex; align-items:center; justify-content:center; gap:8px; min-height:40px; margin-top:16px; padding:9px 14px; border:1px solid var(--account-line); border-radius:10px; color:var(--text-main); background:var(--bg-color); font-size:.82rem; font-weight:750; cursor:pointer; }
+            .account-settings-v2-danger { border-color:color-mix(in srgb,#dc2626 25%,var(--account-line)); }
+            .account-settings-v2-danger h4 { color:#dc5555; }
+            .account-settings-v2-danger-actions { display:flex; flex-wrap:wrap; gap:10px; margin-top:17px; }
+            .account-settings-v2-danger-actions button { flex:1 1 180px; min-height:43px; padding:9px 13px; border:1px solid var(--account-line); border-radius:10px; background:var(--bg-color); color:var(--text-main); font-weight:750; cursor:pointer; }
+            .account-settings-v2-danger-actions .account-settings-v2-delete { border-color:color-mix(in srgb,#dc2626 35%,var(--account-line)); color:#dc5555; }
+            .account-settings-v2-settings-link { display:flex; align-items:center; justify-content:space-between; gap:14px; width:100%; margin-top:18px; padding:17px 19px; border:1px solid var(--account-line); border-radius:16px; color:var(--text-main); background:var(--card-bg); text-align:left; cursor:pointer; transition:border-color .18s,transform .18s; }
+            .account-settings-v2-settings-link:hover { border-color:var(--accent-red); transform:translateY(-1px); }
+            .account-settings-v2-settings-link strong { display:block; font-size:.88rem; }
+            .account-settings-v2-settings-link small { display:block; margin-top:3px; color:var(--text-muted); font-size:.75rem; }
+            .account-settings-v2-loading { display:grid; place-items:center; gap:10px; min-height:180px; color:var(--text-muted); }
+            .account-settings-v2-loading p { margin:0; font-size:.82rem; }
+            @media(max-width:640px) {
+                .account-settings-v2 { padding-bottom:36px; }
+                .account-settings-v2-hero { border-radius:18px; gap:12px; padding:20px; }
+                .account-settings-v2-mark { flex-basis:46px; width:46px; height:46px; border-radius:14px; }
+                .account-settings-v2-profile { padding:16px; gap:12px; }
+                .account-settings-v2-avatar { flex-basis:46px; width:46px; height:46px; }
+                .account-settings-v2-form { grid-template-columns:minmax(0,1fr); }
+                .account-settings-v2-field--wide { grid-column:auto; }
+                .account-settings-v2-actions { justify-content:stretch; }
+                .account-settings-v2-primary { width:100%; }
+                .account-settings-v2-row { align-items:flex-start; }
+                .account-settings-v2-settings-link { padding:15px; }
+            }
+            @media(prefers-reduced-motion:reduce) { .account-settings-v2 * { transition:none!important; } }
+        </style>
+        <div class="account-settings-v2">
+            <header class="account-settings-v2-hero">
+                <div><p class="account-settings-v2-kicker">YOUR ACCOUNT / TENMEI NO MORI</p><h2>アカウントを管理する</h2><p>登録情報やログイン方法、安全に関わる操作をまとめて管理できます。</p></div>
+                <span class="account-settings-v2-mark" aria-hidden="true"><i class="bi bi-person-gear"></i></span>
+            </header>
+            <section class="account-settings-v2-profile" aria-label="アカウント概要">
+                <span class="account-settings-v2-avatar" aria-hidden="true"><i class="bi bi-person-fill"></i></span>
+                <div class="account-settings-v2-profile-main"><span class="rank-badge-base ${rankInfo.class}"><i class="bi ${rankInfo.icon}"></i> ${rankInfo.name}</span><h3>${safeName}</h3><p>${safeEmail}</p></div>
             </section>
-            
-            <!-- 1. Identity Card (身分証) - フル幅 -->
-            <div class="stats-card-interactive profile-card-identity p-6 rounded-2xl">
-                <div class="profile-icon-ring">
-                    <i class="bi bi-person-fill"></i>
+            <section class="account-settings-v2-section" aria-labelledby="account-details-heading">
+                <div class="account-settings-v2-section-head"><div><h3 id="account-details-heading">登録情報</h3><p>ユーザー名やパスワードを変更できます。</p></div></div>
+                <div class="account-settings-v2-card">
+                    <div class="account-settings-v2-form">
+                        <div class="account-settings-v2-field account-settings-v2-field--wide"><label for="setting-new-username">新しいユーザー名</label><input type="text" id="setting-new-username" placeholder="${safeName}" autocomplete="username"><p class="account-settings-v2-help">変更しない場合は空欄のままにしてください。</p></div>
+                        <div class="account-settings-v2-field"><label for="setting-new-password">新しいパスワード</label><input type="password" id="setting-new-password" placeholder="8文字以上" autocomplete="new-password" oninput="toggleCurrentPasswordField()"><p class="account-settings-v2-help">変更する場合のみ入力してください。</p></div>
+                        <div class="account-settings-v2-field" id="setting-current-password-group" style="display:none;"><label for="setting-current-password">現在のパスワード</label><input type="password" id="setting-current-password" placeholder="現在のパスワード" autocomplete="current-password"><p class="account-settings-v2-help">本人確認のため必要です。</p></div>
+                    </div>
+                    <div class="account-settings-v2-actions"><button type="button" onclick="updateAccountSettings()" class="account-settings-v2-primary"><i class="bi bi-check2"></i> 変更を保存</button></div>
                 </div>
-                <div class="flex-1">
-                    <div class="mb-2">
-                        <span class="rank-badge-base ${rankInfo.class}">
-                            <i class="bi ${rankInfo.icon}"></i> ${rankInfo.name}
-                        </span>
+            </section>
+            <section class="account-settings-v2-section" aria-labelledby="account-connection-heading">
+                <div class="account-settings-v2-section-head"><div><h3 id="account-connection-heading">ログイン方法と連携</h3><p>このアカウントで利用できる認証方法を確認できます。</p></div></div>
+                <div class="account-settings-v2-card">
+                    <div class="account-settings-v2-row">
+                        <div class="account-settings-v2-row-main"><span class="account-settings-v2-icon"><i class="bi bi-google"></i></span><div><h4>Googleアカウント</h4><p>${authMethod === 'google' ? 'Googleアカウントでログインしています。' : authMethod === 'both' ? 'メールとGoogleの両方でログインできます。' : 'Googleアカウントとの連携状態を管理します。'}</p></div></div>
+                        <span class="account-settings-v2-status"><i class="bi bi-check-circle-fill"></i> ${authMethod === 'google' || authMethod === 'both' ? '利用中' : '未連携'}</span>
                     </div>
-                    <h3 class="text-2xl md:text-3xl font-black mb-1" style="font-family: 'Zen Old Mincho'">${safeName}</h3>
-                    <p class="text-sm text-gray-500 font-mono">${safeEmail}</p>
+                    ${authMethod === 'both' ? '<button type="button" onclick="disconnectGoogleAccount()" class="account-settings-v2-secondary"><i class="bi bi-link-45deg"></i> Google連携を解除</button>' : authMethod === 'email' ? '<button type="button" onclick="connectGoogleAccount()" class="account-settings-v2-secondary"><i class="bi bi-google"></i> Googleアカウントと連携</button>' : '<p class="account-settings-v2-help">Googleログイン専用アカウントです。メールログインへの切り替えはできません。</p>'}
                 </div>
-            </div>
-
-            <div class="profile-v4-section-heading profile-v4-section-heading--preferences"><div><p>DISPLAY &amp; EXPERIENCE</p><h3>環境と表示を整える</h3></div><span>テーマ・演出・操作方法</span></div>
-
-            <!-- 2. 環境設定 (左) -->
-            <div class="stats-card-interactive profile-card-status p-6 rounded-2xl bg-white dark:bg-zinc-900 border-l-4 border-l-indigo-500">
-                <div class="flex items-center gap-2 mb-4 text-indigo-600 dark:text-indigo-400">
-                    <i class="bi bi-sliders text-xl"></i>
-                    <h4 class="font-bold text-sm">環境設定</h4>
+            </section>
+            <button type="button" class="account-settings-v2-settings-link" onclick="showView('settings')" aria-label="環境・表示設定を開く">
+                <span><strong><i class="bi bi-sliders2"></i> 環境・表示設定へ</strong><small>テーマ、文字サイズ、読書設定、タイムゾーンなどはこちらで管理します。</small></span><i class="bi bi-arrow-up-right" aria-hidden="true"></i>
+            </button>
+            <section class="account-settings-v2-section" aria-labelledby="account-actions-heading">
+                <div class="account-settings-v2-section-head"><div><h3 id="account-actions-heading">アカウント操作</h3><p>ログアウトやアカウント削除を行います。</p></div></div>
+                <div class="account-settings-v2-card account-settings-v2-danger">
+                    <div class="account-settings-v2-row"><div class="account-settings-v2-row-main"><span class="account-settings-v2-icon"><i class="bi bi-shield-exclamation"></i></span><div><h4>重要な操作</h4><p>アカウント削除を行うと、関連するアカウント情報が削除されます。</p></div></div></div>
+                    <div class="account-settings-v2-danger-actions"><button type="button" onclick="logout()"><i class="bi bi-box-arrow-right"></i> ログアウト</button><button type="button" class="account-settings-v2-delete" onclick="deleteAccount()"><i class="bi bi-trash3"></i> アカウントを削除</button></div>
                 </div>
-                
-                <div class="space-y-4 w-full">
-                    <!-- 1. 表示テーマ (システム/ライト/ダーク) -->
-                    <div>
-                        <div class="flex items-center gap-2 mb-2">
-                            <div class="w-8 h-8 rounded-full bg-purple-100 dark:bg-purple-900/30 flex items-center justify-center text-purple-600 shrink-0">
-                                <i class="bi bi-moon-stars-fill"></i>
-                            </div>
-                            <div class="text-sm font-bold text-gray-700 dark:text-gray-300">
-                                表示テーマ
-                                <span class="block text-[10px] text-gray-400 font-normal">サイトの配色を選択</span>
-                            </div>
-                        </div>
-                        <div class="theme-select-group" data-value="${settings.theme || 'system'}">
-                            <button type="button" class="theme-select-btn ${(settings.theme || 'system') === 'system' ? 'active' : ''}" data-theme="system" onclick="AppConfig.toggle('theme','system')" title="端末の設定に合わせる">
-                                <i class="bi bi-circle-half"></i><span>自動</span>
-                            </button>
-                            <button type="button" class="theme-select-btn ${settings.theme === 'light' ? 'active' : ''}" data-theme="light" onclick="AppConfig.toggle('theme','light')" title="常にライトモード">
-                                <i class="bi bi-sun-fill"></i><span>ライト</span>
-                            </button>
-                            <button type="button" class="theme-select-btn ${settings.theme === 'dark' ? 'active' : ''}" data-theme="dark" onclick="AppConfig.toggle('theme','dark')" title="常にダークモード">
-                                <i class="bi bi-moon-stars-fill"></i><span>ダーク</span>
-                            </button>
-                        </div>
-                    </div>
-
-                    <!-- 2. 神速の祈り (アニメーション短縮) -->
-                    <div class="flex justify-between items-center">
-                        <div class="flex items-center gap-2">
-                            <div class="w-8 h-8 rounded-full bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center text-blue-600">
-                                <i class="bi bi-lightning-charge-fill"></i>
-                            </div>
-                            <div class="text-sm font-bold text-gray-700 dark:text-gray-300">
-                                神速の祈り
-                                <span class="block text-[10px] text-gray-400 font-normal">おみくじ演出を省略</span>
-                            </div>
-                        </div>
-                        <label class="toggle-switch scale-90">
-                            <input type="checkbox" ${settings.speed ? 'checked' : ''} onchange="AppConfig.toggle('speed', this.checked)">
-                            <span class="slider"></span>
-                        </label>
-                    </div>
-
-                    <!-- 3. サイドバーの挙動 -->
-                    <div class="flex justify-between items-center pt-3 border-t border-gray-100 dark:border-zinc-700">
-                        <div class="flex items-center gap-2">
-                            <div class="w-8 h-8 rounded-full bg-slate-100 dark:bg-slate-800/50 flex items-center justify-center text-slate-500 dark:text-slate-400">
-                                <i class="bi bi-layout-sidebar"></i>
-                            </div>
-                            <div class="text-sm font-bold text-gray-700 dark:text-gray-300">
-                                サイドバーの挙動
-                                <span class="block text-[10px] text-gray-400 font-normal">サイドバーの開閉方式を切り替え</span>
-                            </div>
-                        </div>
-                        <label class="toggle-switch scale-90" title="ON: ボタンで開閉 / OFF: ホバーで展開">
-                            <input type="checkbox" ${settings.sidebarButton ? 'checked' : ''} onchange="AppConfig.toggle('sidebarButton', this.checked)">
-                            <span class="slider"></span>
-                        </label>
-                    </div>
-
-                    <!-- 4. タブの呼びかけ（隠しコマンド演出） -->
-                    <div class="flex justify-between items-center pt-3 border-t border-gray-100 dark:border-zinc-700">
-                        <div class="flex items-center gap-2">
-                            <div class="w-8 h-8 rounded-full bg-rose-100 dark:bg-rose-900/30 flex items-center justify-center text-rose-500">
-                                <i class="bi bi-window-stack"></i>
-                            </div>
-                            <div class="text-sm font-bold text-gray-700 dark:text-gray-300">
-                                タブの呼びかけ
-                                <span class="block text-[10px] text-gray-400 font-normal">離席中、タブの文字が語りかけます</span>
-                            </div>
-                        </div>
-                        <label class="toggle-switch scale-90">
-                            <input type="checkbox" ${settings.tabTitle !== false ? 'checked' : ''} onchange="AppConfig.toggle('tabTitle', this.checked)">
-                            <span class="slider"></span>
-                        </label>
-                    </div>
-                </div>
-            </div>
-
-            <div class="profile-v4-section-heading profile-v4-section-heading--account"><div><p>ACCOUNT DETAILS</p><h3>参拝証の情報を管理する</h3></div><span>お名前・認証情報</span></div>
-
-            <!-- 3. 登録情報変更 (右) -->
-            <div class="stats-card-interactive profile-card-edit p-6 rounded-2xl bg-white dark:bg-zinc-900">
-                <div class="flex items-center gap-2 mb-6 border-b border-gray-100 dark:border-gray-700 pb-3">
-                    <i class="bi bi-pencil-square text-blue-500"></i>
-                    <h4 class="font-bold text-lg">登録情報の変更</h4>
-                </div>
-                
-                <div class="space-y-4">
-                    <div class="profile-input-group">
-                        <label class="profile-input-label">新しいユーザー名</label>
-                        <input type="text" id="setting-new-username" class="profile-input-field" placeholder="${safeName}">
-                    </div>
-                    
-                    <div class="profile-input-group">
-                        <label class="profile-input-label">新しいパスワード</label>
-                        <input type="password" id="setting-new-password" class="profile-input-field" placeholder="8文字以上（変更する場合のみ入力）" autocomplete="new-password" oninput="toggleCurrentPasswordField()">
-                    </div>
-
-                    <div class="profile-input-group" id="setting-current-password-group" style="display:none;">
-                        <label class="profile-input-label">現在のパスワード <span class="text-xs text-gray-400">（パスワード変更時のみ必須）</span></label>
-                        <input type="password" id="setting-current-password" class="profile-input-field" placeholder="確認のため現在のパスワードを入力" autocomplete="current-password">
-                    </div>
-                </div>
-
-                <div class="mt-4 text-right">
-                    <button onclick="updateAccountSettings()" class="btn-primary py-2 px-6 shadow-md text-sm">
-                        <i class="bi bi-save"></i> 変更を保存
-                    </button>
-                </div>
-            </div>
-
-            <div class="profile-v4-section-heading profile-v4-section-heading--reading"><div><p>READING EXPERIENCE</p><h3>読む環境を整える</h3></div><span>文字・書体・本文の幅</span></div>
-
-            <!-- 2.5 読書設定 (フカヨミより移植) -->
-            <div class="stats-card-interactive profile-card-secondary p-6 rounded-2xl bg-white dark:bg-zinc-900 border-l-4 rs-accent-emerald">
-                <div class="flex items-center gap-2 mb-4 rs-accent-emerald-text">
-                    <i class="bi bi-body-text text-xl"></i>
-                    <h4 class="font-bold text-sm">読書設定</h4>
-                </div>
-                <div class="space-y-4 w-full">
-                    <div>
-                        <div class="text-sm font-bold text-gray-700 dark:text-gray-300 mb-2">
-                            文字サイズ
-                            <span class="block text-[10px] text-gray-400 font-normal">記事本文の文字の大きさ</span>
-                        </div>
-                        <div class="theme-select-group opt-select-group" data-setting="fontSize" data-value="${settings.fontSize || 'md'}">
-                            <button type="button" class="theme-select-btn ${(settings.fontSize||'md')==='sm'?'active':''}" data-value="sm" onclick="AppConfig.toggle('fontSize','sm')"><span>小</span></button>
-                            <button type="button" class="theme-select-btn ${(settings.fontSize||'md')==='md'?'active':''}" data-value="md" onclick="AppConfig.toggle('fontSize','md')"><span>標準</span></button>
-                            <button type="button" class="theme-select-btn ${(settings.fontSize||'md')==='lg'?'active':''}" data-value="lg" onclick="AppConfig.toggle('fontSize','lg')"><span>大</span></button>
-                            <button type="button" class="theme-select-btn ${(settings.fontSize||'md')==='xl'?'active':''}" data-value="xl" onclick="AppConfig.toggle('fontSize','xl')"><span>特大</span></button>
-                        </div>
-                    </div>
-                    <div class="pt-3 border-t border-gray-100 dark:border-zinc-700">
-                        <div class="text-sm font-bold text-gray-700 dark:text-gray-300 mb-2">
-                            行間
-                            <span class="block text-[10px] text-gray-400 font-normal">行と行の間隔</span>
-                        </div>
-                        <div class="theme-select-group opt-select-group" data-setting="lineHeight" data-value="${settings.lineHeight || 'normal'}">
-                            <button type="button" class="theme-select-btn ${(settings.lineHeight||'normal')==='normal'?'active':''}" data-value="normal" onclick="AppConfig.toggle('lineHeight','normal')"><span>標準</span></button>
-                            <button type="button" class="theme-select-btn ${(settings.lineHeight||'normal')==='relaxed'?'active':''}" data-value="relaxed" onclick="AppConfig.toggle('lineHeight','relaxed')"><span>ゆったり</span></button>
-                        </div>
-                    </div>
-                    <div class="pt-3 border-t border-gray-100 dark:border-zinc-700">
-                        <div class="text-sm font-bold text-gray-700 dark:text-gray-300 mb-2">
-                            本文の書体
-                            <span class="block text-[10px] text-gray-400 font-normal">明朝体は雰囲気重視、ゴシック体は視認性重視です</span>
-                        </div>
-                        <div class="theme-select-group opt-select-group" data-setting="bodyFont" data-value="${settings.bodyFont || 'serif'}">
-                            <button type="button" class="theme-select-btn ${(settings.bodyFont||'serif')==='serif'?'active':''}" data-value="serif" onclick="AppConfig.toggle('bodyFont','serif')"><span>明朝体</span></button>
-                            <button type="button" class="theme-select-btn ${(settings.bodyFont||'serif')==='sans'?'active':''}" data-value="sans" onclick="AppConfig.toggle('bodyFont','sans')"><span>ゴシック体</span></button>
-                        </div>
-                    </div>
-                    <div class="pt-3 border-t border-gray-100 dark:border-zinc-700">
-                        <div class="text-sm font-bold text-gray-700 dark:text-gray-300 mb-2">
-                            本文の幅
-                            <span class="block text-[10px] text-gray-400 font-normal">1行あたりの文字量</span>
-                        </div>
-                        <div class="theme-select-group opt-select-group" data-setting="contentWidth" data-value="${settings.contentWidth || 'standard'}">
-                            <button type="button" class="theme-select-btn ${(settings.contentWidth||'standard')==='standard'?'active':''}" data-value="standard" onclick="AppConfig.toggle('contentWidth','standard')"><span>標準</span></button>
-                            <button type="button" class="theme-select-btn ${(settings.contentWidth||'standard')==='wide'?'active':''}" data-value="wide" onclick="AppConfig.toggle('contentWidth','wide')"><span>広め</span></button>
-                        </div>
-                    </div>
-                    <div class="pt-3 border-t border-gray-100 dark:border-zinc-700">
-                        <div class="text-sm font-bold text-gray-700 dark:text-gray-300 mb-2">
-                            公開文書への読書設定
-                            <span class="block text-[10px] text-gray-400 font-normal">「当サイトについて」「プライバシーポリシー」「使い方」に読書設定を反映</span>
-                        </div>
-                        <div class="theme-select-group opt-select-group" data-setting="publicDocumentReading" data-value="${settings.publicDocumentReading !== false ? 'true' : 'false'}" role="group" aria-label="公開文書への読書設定">
-                            <button type="button" class="theme-select-btn ${settings.publicDocumentReading !== false ? 'active' : ''}" data-value="true" onclick="AppConfig.toggle('publicDocumentReading', true)" aria-pressed="${settings.publicDocumentReading !== false}"><span>適用する</span></button>
-                            <button type="button" class="theme-select-btn ${settings.publicDocumentReading === false ? 'active' : ''}" data-value="false" onclick="AppConfig.toggle('publicDocumentReading', false)" aria-pressed="${settings.publicDocumentReading === false}"><span>適用しない</span></button>
-                        </div>
-                    </div>
-                    <div class="flex justify-between items-center pt-3 border-t border-gray-100 dark:border-zinc-700">
-                        <div class="flex items-center gap-2">
-                            <div class="w-8 h-8 rounded-full rs-accent-teal-icon flex items-center justify-center">
-                                <i class="bi bi-universal-access"></i>
-                            </div>
-                            <div class="text-sm font-bold text-gray-700 dark:text-gray-300">
-                                アニメーションを減らす
-                                <span class="block text-[10px] text-gray-400 font-normal">演出や画面遷移のアニメーションを抑えます</span>
-                            </div>
-                        </div>
-                        <label class="toggle-switch scale-90">
-                            <input type="checkbox" ${settings.reduceMotion ? 'checked' : ''} onchange="AppConfig.toggle('reduceMotion', this.checked)">
-                            <span class="slider"></span>
-                        </label>
-                    </div>
-                </div>
-            </div>
-
-            <!-- 2.6 全ての設定を初期値に戻す -->
-            <div class="text-center col-span-full">
-                <button type="button" onclick="resetAllSettings()" class="text-xs text-gray-400 hover:text-red-500 hover:underline transition">
-                    <i class="bi bi-arrow-counterclockwise mr-1"></i>環境設定・読書設定・TENMEI Labs機能を全て初期値に戻す
-                </button>
-            </div>
-
-            <div class="profile-v4-section-heading profile-v4-section-heading--connection"><div><p>CONNECTION &amp; SECURITY</p><h3>連携と安全性を確認する</h3></div><span>Google・アカウント操作</span></div>
-
-            <!-- 4. Google連携 -->
-            ${authMethod !== 'google' ? `
-            <div class="stats-card-interactive profile-card-secondary p-6 rounded-2xl bg-white dark:bg-zinc-900 border-l-4 ${authMethod === 'both' ? 'border-l-green-500' : 'border-l-gray-300 dark:border-l-zinc-600'}">
-                <div class="flex items-center justify-between mb-4">
-                    <div class="flex items-center gap-3">
-                        <div class="w-9 h-9 rounded-full flex items-center justify-center bg-gray-100 dark:bg-zinc-800 flex-shrink-0">
-                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" width="20" height="20"><path fill="#EA4335" d="M24 9.5c3.14 0 5.95 1.08 8.17 2.86l6.09-6.09C34.46 3.09 29.5 1 24 1 14.82 1 7.02 6.48 3.44 14.23l7.1 5.52C12.35 13.72 17.71 9.5 24 9.5z"/><path fill="#4285F4" d="M46.5 24.5c0-1.64-.15-3.22-.42-4.75H24v9h12.71c-.55 2.97-2.22 5.49-4.73 7.19l7.27 5.65C43.32 37.61 46.5 31.49 46.5 24.5z"/><path fill="#FBBC05" d="M10.54 28.25A14.58 14.58 0 0 1 9.5 24c0-1.48.26-2.91.73-4.25l-7.1-5.52A23.86 23.86 0 0 0 0 24c0 3.87.93 7.52 2.58 10.74l7.96-6.49z"/><path fill="#34A853" d="M24 47c5.5 0 10.12-1.82 13.5-4.95l-7.27-5.65c-1.83 1.23-4.17 1.95-6.23 1.95-6.29 0-11.65-4.22-13.46-9.9l-7.96 6.49C7.02 41.52 14.82 47 24 47z"/></svg>
-                        </div>
-                        <div>
-                            <h4 class="font-bold text-sm text-gray-700 dark:text-gray-300">Google連携</h4>
-                            <span class="block text-[10px] text-gray-400 font-normal">Googleアカウントとの紐付け</span>
-                        </div>
-                    </div>
-                    ${authMethod === 'both' ? `
-                    <span class="text-[10px] font-bold px-2 py-1 rounded-full bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300 flex items-center gap-1">
-                        <i class="bi bi-check-circle-fill"></i> 連携済み
-                    </span>
-                    ` : `
-                    <span class="text-[10px] font-bold px-2 py-1 rounded-full bg-gray-100 dark:bg-zinc-700 text-gray-500 dark:text-gray-400">
-                        未連携
-                    </span>
-                    `}
-                </div>
-                ${authMethod === 'both' ? `
-                <p class="text-xs text-gray-500 dark:text-gray-400 leading-relaxed mb-4">このアカウントはGoogleアカウントと連携されています。次回からメールログインとGoogleログインのどちらでもご参拝いただけます。</p>
-                <button onclick="disconnectGoogleAccount()" class="w-full py-2.5 rounded-xl border border-red-200 dark:border-red-800 bg-red-50 dark:bg-red-900/20 font-bold text-sm text-red-600 dark:text-red-400 hover:bg-red-100 dark:hover:bg-red-900/40 transition-all duration-200 flex items-center justify-center gap-2 shadow-sm">
-                    <i class="bi bi-x-circle"></i> Google連携を解除する
-                </button>
-                ` : `
-                <p class="text-xs text-gray-500 dark:text-gray-400 leading-relaxed mb-4">連携すると、次回からGoogleアカウントでもログインできるようになります。認証コードの入力が不要になります。</p>
-                <button onclick="connectGoogleAccount()" class="w-full py-2.5 rounded-xl border border-gray-200 dark:border-zinc-600 bg-gray-50 dark:bg-zinc-800 font-bold text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-zinc-700 transition-all duration-200 flex items-center justify-center gap-2 shadow-sm">
-                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" width="16" height="16"><path fill="#EA4335" d="M24 9.5c3.14 0 5.95 1.08 8.17 2.86l6.09-6.09C34.46 3.09 29.5 1 24 1 14.82 1 7.02 6.48 3.44 14.23l7.1 5.52C12.35 13.72 17.71 9.5 24 9.5z"/><path fill="#4285F4" d="M46.5 24.5c0-1.64-.15-3.22-.42-4.75H24v9h12.71c-.55 2.97-2.22 5.49-4.73 7.19l7.27 5.65C43.32 37.61 46.5 31.49 46.5 24.5z"/><path fill="#FBBC05" d="M10.54 28.25A14.58 14.58 0 0 1 9.5 24c0-1.48.26-2.91.73-4.25l-7.1-5.52A23.86 23.86 0 0 0 0 24c0 3.87.93 7.52 2.58 10.74l7.96-6.49z"/><path fill="#34A853" d="M24 47c5.5 0 10.12-1.82 13.5-4.95l-7.27-5.65c-1.83 1.23-4.17 1.95-6.23 1.95-6.29 0-11.65-4.22-13.46-9.9l-7.96 6.49C7.02 41.52 14.82 47 24 47z"/></svg>
-                    Googleアカウントと連携する
-                </button>
-                `}
-            </div>
-            ` : `
-            <!-- Google認証のみのユーザー向け: Google連携済みカード -->
-            <div class="stats-card-interactive profile-card-secondary p-6 rounded-2xl bg-white dark:bg-zinc-900 border-l-4 border-l-green-500">
-                <div class="flex items-center gap-3 mb-4">
-                    <div class="w-9 h-9 rounded-full flex items-center justify-center bg-green-100 dark:bg-green-900/30 flex-shrink-0">
-                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" width="20" height="20"><path fill="#EA4335" d="M24 9.5c3.14 0 5.95 1.08 8.17 2.86l6.09-6.09C34.46 3.09 29.5 1 24 1 14.82 1 7.02 6.48 3.44 14.23l7.1 5.52C12.35 13.72 17.71 9.5 24 9.5z"/><path fill="#4285F4" d="M46.5 24.5c0-1.64-.15-3.22-.42-4.75H24v9h12.71c-.55 2.97-2.22 5.49-4.73 7.19l7.27 5.65C43.32 37.61 46.5 31.49 46.5 24.5z"/><path fill="#FBBC05" d="M10.54 28.25A14.58 14.58 0 0 1 9.5 24c0-1.48.26-2.91.73-4.25l-7.1-5.52A23.86 23.86 0 0 0 0 24c0 3.87.93 7.52 2.58 10.74l7.96-6.49z"/><path fill="#34A853" d="M24 47c5.5 0 10.12-1.82 13.5-4.95l-7.27-5.65c-1.83 1.23-4.17 1.95-6.23 1.95-6.29 0-11.65-4.22-13.46-9.9l-7.96 6.49C7.02 41.52 14.82 47 24 47z"/></svg>
-                    </div>
-                    <div>
-                        <h4 class="font-bold text-sm text-gray-700 dark:text-gray-300">Google連携</h4>
-                        <span class="block text-[10px] text-gray-400 font-normal">Googleアカウントで認証中</span>
-                    </div>
-                    <span class="ml-auto text-[10px] font-bold px-2 py-1 rounded-full bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300 flex items-center gap-1">
-                        <i class="bi bi-check-circle-fill"></i> 連携中
-                    </span>
-                </div>
-                <p class="text-xs text-gray-500 dark:text-gray-400 leading-relaxed">Googleアカウントで参拝証を取得されています。次回以降もGoogleアカウントでログインいただけます。</p>
-            </div>
-            `}
-
-            <!-- 5. Danger Zone (ログアウト・削除) -->
-            <div class="stats-card-interactive profile-card-danger p-6 rounded-2xl bg-red-50 dark:bg-red-900/10 border-red-100 dark:border-red-900">
-                <div class="flex items-center gap-2 mb-4 text-[var(--accent-red)]">
-                    <i class="bi bi-shield-exclamation"></i>
-                    <h4 class="font-bold text-sm">アカウント操作</h4>
-                </div>
-                
-                <div class="space-y-3">
-                    <button onclick="logout()" class="w-full py-3 rounded-xl border border-gray-300 dark:border-gray-600 bg-white dark:bg-black font-bold text-sm text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-zinc-800 transition flex items-center justify-center gap-2">
-                        <i class="bi bi-box-arrow-right"></i> ログアウト
-                    </button>
-                    
-                    <button onclick="deleteAccount()" class="w-full py-3 rounded-xl border border-red-200 dark:border-red-800 bg-white dark:bg-black font-bold text-sm text-red-600 hover:bg-red-50 dark:hover:bg-red-900/30 transition flex items-center justify-center gap-2">
-                        <i class="bi bi-trash"></i> アカウント削除
-                    </button>
-                </div>
-            </div>
-
+            </section>
         </div>
     `;
-}
-
-    // プロフィール画面の描画
-    function renderProfilePage(data) {
+}function renderProfilePage(data) {
         const container = document.querySelector('#view-profile');
         if (!container) return;
 
