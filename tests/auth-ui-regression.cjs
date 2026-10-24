@@ -227,7 +227,7 @@ requireText(
   '参拝証の発行ヘッダーが共通カード型に刷新されていません。'
 );
 requireText(
-  '.auth-journey-panel {\n    grid-template-columns:minmax(170px,.32fr)',
+  'grid-template-columns:minmax(170px,.32fr) minmax(0,.68fr) !important;',
   '参拝証の道程案内が整理された横方向レイアウトになっていません。'
 );
 requireText(
