@@ -167,7 +167,16 @@
                 ensureConsentLauncher();
                 return;
             }
-            if (aiGuideState.scriptRequested) return;
+            if (aiGuideState.scriptRequested) {
+                // 読み込み中の再クリックでは入口を消さない。読み込み済みならAI案内を再マウントする。
+                if (window.TenmeiAIAgent && typeof window.TenmeiAIAgent.mount === 'function') {
+                    window.TenmeiAIAgent.mount();
+                    aiGuideState.loaded = true;
+                    const existingLauncher = document.getElementById('tenmei-ai-consent-launcher');
+                    if (existingLauncher) existingLauncher.remove();
+                }
+                return;
+            }
             const consentLauncher = document.getElementById('tenmei-ai-consent-launcher');
             if (consentLauncher) consentLauncher.remove();
             aiGuideState.scriptRequested = true;
