@@ -32343,6 +32343,22 @@ async function renderSettingsDashboard() {
             #profile-dashboard-content { --account-line: color-mix(in srgb,var(--text-main) 12%,transparent); }
             .account-settings-v2 { width:min(100% - 32px,960px); max-width:960px; margin:0 auto; padding:0 0 56px; color:var(--text-main); }
             .account-settings-v2 * { box-sizing:border-box; }
+            /* 共通Ver.4ヒーローの意匠を保ちつつ、アカウント画面の情報量に合わせて最適化。 */
+            .account-settings-v2 .profile-v4-hero { grid-template-columns:minmax(0,1fr) 88px; align-items:center; gap:clamp(18px,3vw,34px); min-height:220px; padding:clamp(24px,3.5vw,36px); border-radius:var(--ver4-card-radius,24px); }
+            .account-settings-v2 .profile-v4-mark[data-ver4-hero-emblem] { width:88px; height:88px; font-size:.86rem; box-shadow:inset 0 0 0 5px rgba(242,194,91,.15),0 10px 22px rgba(0,0,0,.18); }
+            .account-settings-v2 .profile-v4-mark[data-ver4-hero-emblem] i { font-size:1.65rem; }
+            .account-settings-v2 .account-settings-v2-section-head { align-items:center; }
+            .account-settings-v2-heading { display:flex; align-items:center; gap:11px; min-width:0; }
+            .account-settings-v2-heading-icon { display:grid; place-items:center; flex:0 0 38px; width:38px; height:38px; border:1px solid var(--card-border); border-radius:12px; color:var(--accent-red); background:var(--card-bg); box-shadow:0 5px 14px rgba(57,37,28,.045); font-size:1rem; }
+            .account-settings-v2-shortcuts { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:14px; }
+            .account-settings-v2-shortcut { display:flex; align-items:center; gap:14px; width:100%; min-width:0; padding:18px; border:1px solid var(--card-border); border-radius:var(--ver4-card-radius); color:var(--text-main); background:var(--card-bg); box-shadow:0 8px 22px rgba(57,37,28,.05); text-align:left; cursor:pointer; transition:transform .18s,border-color .18s,box-shadow .18s; }
+            .account-settings-v2-shortcut:hover { transform:translateY(-2px); border-color:color-mix(in srgb,var(--accent-red) 45%,var(--card-border)); box-shadow:0 12px 26px rgba(57,37,28,.08); }
+            .account-settings-v2-shortcut:focus-visible { outline:3px solid color-mix(in srgb,var(--accent-red) 35%,transparent); outline-offset:3px; }
+            .account-settings-v2-shortcut-icon { display:grid; place-items:center; flex:0 0 44px; width:44px; height:44px; border:1px solid var(--card-border); border-radius:14px; color:var(--accent-red); background:var(--bg-color); font-size:1.15rem; }
+            .account-settings-v2-shortcut-copy { flex:1; min-width:0; }
+            .account-settings-v2-shortcut-copy strong { display:block; font-size:.9rem; font-weight:800; }
+            .account-settings-v2-shortcut-copy small { display:block; margin-top:4px; color:var(--text-muted); font-size:.75rem; line-height:1.55; }
+            .account-settings-v2-shortcut-arrow { color:var(--text-muted); flex:0 0 auto; }
             /* アカウント設定の最上部は、他の刷新済みページと共通のVer.4ヒーローを使用。 */
             .account-settings-v2-kicker { margin:0 0 9px; color:var(--accent-red); font-size:.68rem; font-weight:800; letter-spacing:.14em; }
             
@@ -32388,7 +32404,13 @@ async function renderSettingsDashboard() {
             .account-settings-v2-loading p { margin:0; font-size:.82rem; }
             @media(max-width:640px) {
                 .account-settings-v2 { padding-bottom:36px; }
-                
+                .account-settings-v2 .profile-v4-hero { grid-template-columns:minmax(0,1fr) 64px; min-height:0; gap:14px; padding:22px 20px; }
+                .account-settings-v2 .profile-v4-mark[data-ver4-hero-emblem] { width:64px; height:64px; font-size:.68rem; }
+                .account-settings-v2 .profile-v4-mark[data-ver4-hero-emblem] i { font-size:1.25rem; }
+                .account-settings-v2 .profile-v4-hero::before { inset:8px; border-radius:16px; }
+                .account-settings-v2-shortcuts { grid-template-columns:minmax(0,1fr); gap:10px; }
+                .account-settings-v2-shortcut { padding:15px; }
+                .account-settings-v2-heading-icon { flex-basis:34px; width:34px; height:34px; border-radius:11px; }
                 .account-settings-v2-mark { flex-basis:46px; width:46px; height:46px; border-radius:14px; }
                 .account-settings-v2-profile { padding:clamp(16px,4vw,22px); gap:12px; }
                 .account-settings-v2-avatar { flex-basis:46px; width:46px; height:46px; }
@@ -32410,7 +32432,7 @@ async function renderSettingsDashboard() {
                 <div class="account-settings-v2-profile-main"><span class="rank-badge-base ${rankInfo.class}"><i class="bi ${rankInfo.icon}"></i> ${rankInfo.name}</span><h3>${safeName}</h3><p>${safeEmail}</p></div>
             </section>
             <section class="account-settings-v2-section" aria-labelledby="account-details-heading">
-                <div class="account-settings-v2-section-head"><div><h3 id="account-details-heading">登録情報</h3><p>ユーザー名やパスワードを変更できます。</p></div></div>
+                <div class="account-settings-v2-section-head"><div class="account-settings-v2-heading"><span class="account-settings-v2-heading-icon" aria-hidden="true"><i class="bi bi-person-vcard"></i></span><div><h3 id="account-details-heading">登録情報</h3><p>ユーザー名やパスワードを変更できます。</p></div></div></div>
                 <div class="account-settings-v2-card">
                     <div class="account-settings-v2-form">
                         <div class="account-settings-v2-field account-settings-v2-field--wide"><label for="setting-new-username">新しいユーザー名</label><input type="text" id="setting-new-username" placeholder="${safeName}" autocomplete="username"><p class="account-settings-v2-help">変更しない場合は空欄のままにしてください。</p></div>
@@ -32421,7 +32443,7 @@ async function renderSettingsDashboard() {
                 </div>
             </section>
             <section class="account-settings-v2-section" aria-labelledby="account-connection-heading">
-                <div class="account-settings-v2-section-head"><div><h3 id="account-connection-heading">ログイン方法と連携</h3><p>このアカウントで利用できる認証方法を確認できます。</p></div></div>
+                <div class="account-settings-v2-section-head"><div class="account-settings-v2-heading"><span class="account-settings-v2-heading-icon" aria-hidden="true"><i class="bi bi-shield-lock"></i></span><div><h3 id="account-connection-heading">ログイン方法と連携</h3><p>このアカウントで利用できる認証方法を確認できます。</p></div></div></div>
                 <div class="account-settings-v2-card">
                     <div class="account-settings-v2-row">
                         <div class="account-settings-v2-row-main"><span class="account-settings-v2-icon">${googleBrandMark}</span><div><h4>Googleアカウント</h4><p>${authMethod === 'google' ? 'Googleアカウントでログインしています。' : authMethod === 'both' ? 'メールとGoogleの両方でログインできます。' : 'Googleアカウントとの連携状態を管理します。'}</p></div></div>
@@ -32430,8 +32452,23 @@ async function renderSettingsDashboard() {
                     ${authMethod === 'both' ? '<button type="button" onclick="disconnectGoogleAccount()" class="account-settings-v2-secondary"><i class="bi bi-link-45deg"></i> Google連携を解除</button>' : authMethod === 'email' ? '<button type="button" onclick="connectGoogleAccount()" class="account-settings-v2-secondary">' + googleBrandMark + ' Googleアカウントと連携</button>' : '<p class="account-settings-v2-help">Googleログイン専用アカウントです。メールログインへの切り替えはできません。</p>'}
                 </div>
             </section>
+            <section class="account-settings-v2-section" aria-labelledby="account-shortcuts-heading">
+                <div class="account-settings-v2-section-head"><div class="account-settings-v2-heading"><span class="account-settings-v2-heading-icon" aria-hidden="true"><i class="bi bi-grid-1x2"></i></span><div><h3 id="account-shortcuts-heading">マイページへのショートカット</h3><p>プロフィールや参拝履歴へすばやくアクセスできます。</p></div></div></div>
+                <div class="account-settings-v2-shortcuts">
+                    <button type="button" class="account-settings-v2-shortcut" onclick="loadUserProfile(currentState.user.username)">
+                        <span class="account-settings-v2-shortcut-icon" aria-hidden="true"><i class="bi bi-person-badge"></i></span>
+                        <span class="account-settings-v2-shortcut-copy"><strong>公開プロフィール</strong><small>プロフィール・自己紹介・参拝記録を確認します。</small></span>
+                        <i class="bi bi-arrow-up-right account-settings-v2-shortcut-arrow" aria-hidden="true"></i>
+                    </button>
+                    <button type="button" class="account-settings-v2-shortcut" onclick="showView('history')">
+                        <span class="account-settings-v2-shortcut-icon" aria-hidden="true"><i class="bi bi-clock-history"></i></span>
+                        <span class="account-settings-v2-shortcut-copy"><strong>おみくじの轍</strong><small>これまでの参拝履歴や運勢の記録を確認します。</small></span>
+                        <i class="bi bi-arrow-up-right account-settings-v2-shortcut-arrow" aria-hidden="true"></i>
+                    </button>
+                </div>
+            </section>
             <section class="account-settings-v2-section" aria-labelledby="account-actions-heading">
-                <div class="account-settings-v2-section-head"><div><h3 id="account-actions-heading">アカウント操作</h3><p>ログアウトやアカウント削除を行います。</p></div></div>
+                <div class="account-settings-v2-section-head"><div class="account-settings-v2-heading"><span class="account-settings-v2-heading-icon" aria-hidden="true"><i class="bi bi-person-gear"></i></span><div><h3 id="account-actions-heading">アカウント操作</h3><p>ログアウトやアカウント削除を行います。</p></div></div></div>
                 <div class="account-settings-v2-card account-settings-v2-danger">
                     <div class="account-settings-v2-row"><div class="account-settings-v2-row-main"><span class="account-settings-v2-icon"><i class="bi bi-shield-exclamation"></i></span><div><h4>重要な操作</h4><p>アカウント削除を行うと、関連するアカウント情報が削除されます。</p></div></div></div>
                     <div class="account-settings-v2-danger-actions"><button type="button" onclick="logout()"><i class="bi bi-box-arrow-right"></i> ログアウト</button><button type="button" class="account-settings-v2-delete" onclick="deleteAccount()"><i class="bi bi-trash3"></i> アカウントを削除</button></div>

@@ -159,6 +159,15 @@ assert(!accountRenderer.includes('AppConfig.toggle('), '環境・表示設定の
 assert(!accountRenderer.includes('resetAllSettings()'), '環境設定の初期化操作をアカウント画面に重複配置してはいけません。');
 assert(accountRenderer.includes("showView('settings')"), '環境・表示設定への導線がありません。');
 
+const accountStart = html.indexOf('async function renderSettingsDashboard()');
+const accountEnd = html.indexOf('function renderProfilePage', accountStart);
+const accountSource = html.slice(accountStart, accountEnd);
+assert(accountSource.includes('grid-template-columns:minmax(0,1fr) 88px'), 'アカウント設定のヒーロー印章は専用の適正サイズに調整してください。');
+assert(accountSource.includes('account-settings-v2-heading-icon'), 'アカウント設定の各セクションに識別アイコンが必要です。');
+assert(accountSource.includes('onclick="loadUserProfile(currentState.user.username)"'), '公開プロフィールへのショートカットがありません。');
+assert(accountSource.includes('onclick="showView(\'history\')"'), '参拝履歴へのショートカットがありません。');
+assert(accountSource.includes('account-settings-v2-shortcuts'), 'マイページショートカットのレイアウトがありません。');
+
 console.log('おみくじ導線・アカウント設定のVer.4.0回帰テストに合格しました。');
 console.log(JSON.stringify({
   mindsetHeroAndSkipPreserved: true,
