@@ -25972,8 +25972,8 @@ let historyPageState = {
         // 日付が欠けた記事は末尾へ送り、表示順が実行環境や文字列長で変わらないようにする。
         const dateValue = item => {
             const rawDate = String(item.date || '').trim();
-            const match = rawDate.match(/^(\\d{4})\\s*[./-]\\s*(\\d{1,2})\\s*[./-]\\s*(\\d{1,2})$/)
-                || rawDate.match(/^(\\d{4})年(\\d{1,2})月(\\d{1,2})日?$/);
+            const match = rawDate.match(/^(\d{4})\s*[./-]\s*(\d{1,2})\s*[./-]\s*(\d{1,2})$/)
+                || rawDate.match(/^(\d{4})年(\d{1,2})月(\d{1,2})日?$/);
             if (!match) {
                 const parsed = Date.parse(rawDate);
                 return Number.isFinite(parsed) ? parsed : null;
@@ -25983,7 +25983,7 @@ let historyPageState = {
             const day = Number(match[3]);
             const calendarDate = new Date(Date.UTC(year, month - 1, day));
             if (calendarDate.getUTCFullYear() !== year || calendarDate.getUTCMonth() !== month - 1 || calendarDate.getUTCDate() !== day) return null;
-            const timeMatch = String(item.time || '00:00').match(/^(\\d{1,2}):([0-5]\\d)(?::([0-5]\\d))?$/);
+            const timeMatch = String(item.time || '00:00').match(/^(\d{1,2}):([0-5]\d)(?::([0-5]\d))?$/);
             const hours = timeMatch && Number(timeMatch[1]) <= 23 ? Number(timeMatch[1]) : 0;
             const minutes = timeMatch ? Number(timeMatch[2]) : 0;
             const seconds = timeMatch && timeMatch[3] ? Number(timeMatch[3]) : 0;
