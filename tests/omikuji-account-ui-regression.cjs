@@ -97,8 +97,6 @@ function requireIn(section, text, message) {
   'class="account-settings-v2"',
   'class="account-settings-v2-profile"',
   'class="account-settings-v2-form"',
-  'class="account-settings-v2-settings-link"',
-  "onclick=\"showView('settings')\"",
   'onclick="updateAccountSettings()"',
   'onclick="deleteAccount()"',
   'id="account-details-heading"',
@@ -152,6 +150,10 @@ const accountRenderer = html.slice(html.indexOf('async function renderSettingsDa
 assert(accountRenderer.includes('account-settings-v2'), '新しいアカウント設定UIがありません。');
 assert(accountRenderer.includes('class="profile-v4-hero account-settings-v2-hero"'), 'アカウント設定の最上部は全ページ共通のVer.4ヒーローを使用してください。');
 assert(accountRenderer.includes('class="profile-v4-mark" data-ver4-hero-emblem'), 'アカウント設定のヒーロー印章は共通デザインを使用してください。');
+assert(accountRenderer.includes('padding:var(--ver4-card-padding)'), 'アカウント概要カードは共通カード余白を使用してください。');
+assert(accountRenderer.includes('border-radius:var(--ver4-card-radius)'), 'アカウント概要カードは共通カード角丸を使用してください。');
+assert(accountRenderer.includes('box-shadow:0 8px 22px rgba(57,37,28,.05)'), 'アカウント概要カードは他画面と同じカード影を使用してください。');
+assert(!accountRenderer.includes('account-settings-v2-settings-link'), '環境・表示設定への重複導線をアカウント画面に置いてはいけません。');
 assert(!accountRenderer.includes('.account-settings-v2-hero { display:flex'), 'アカウント設定だけの独自ヒーローCSSを残してはいけません。');
 assert(!accountRenderer.includes('AppConfig.toggle('), '環境・表示設定の操作をアカウント画面に重複配置してはいけません。');
 assert(!accountRenderer.includes('resetAllSettings()'), '環境設定の初期化操作をアカウント画面に重複配置してはいけません。');
