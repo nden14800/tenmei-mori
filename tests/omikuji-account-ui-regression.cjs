@@ -175,7 +175,8 @@ assert(accountSource.includes("onclick=\"showView('history')\""), '参拝履歴�
 assert(accountSource.includes('account-settings-v2-shortcuts'), '参拝履歴ショートカットのレイアウトがありません。');
 assert(!accountSource.includes('.account-settings-v2 .profile-v4-hero {'), 'アカウント設定だけのヒーロー寸法上書きを残してはいけません。');
 assert(!accountSource.includes('.account-settings-v2 .profile-v4-mark[data-ver4-hero-emblem]'), 'アカウント設定だけのヒーロー印章上書きを残してはいけません。');
-assert(accountSource.includes('class="profile-v4-hero account-settings-v2-hero"'), '最上部カードは他画面と同じ共通Ver.4ヒーローを使用してください。');
+assert(accountSource.includes('class="account-settings-v2-card account-settings-v2-intro"'), '最上部カードは他画面と同じ共通カードを使用してください。');
+assert(!accountSource.includes('profile-v4-hero'), '最上部カードに巨大なヒーロー型を復活させてはいけません。');
 
 console.log('おみくじ導線・アカウント設定のVer.4.0回帰テストに合格しました。');
 console.log(JSON.stringify({
