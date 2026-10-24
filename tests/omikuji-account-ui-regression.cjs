@@ -97,15 +97,16 @@ function requireIn(section, text, message) {
   'id="profile-page-title"',
   'id="profile-dashboard-content"',
   'function renderSettingsDashboard() {',
-  'class="profile-bento-grid"',
-  'profile-card-identity',
+  'class="account-settings-v2"',
+  'class="account-settings-v2-profile"',
+  'class="account-settings-v2-form"',
+  'class="account-settings-v2-settings-link"',
+  'onclick="showView(\'settings\')"',
   'onclick="updateAccountSettings()"',
   'onclick="deleteAccount()"',
-  'class="profile-v4-dashboard-overview"',
-  'class="profile-v4-section-heading profile-v4-section-heading--preferences"',
-  'class="profile-v4-section-heading profile-v4-section-heading--account"',
-  'class="profile-v4-section-heading profile-v4-section-heading--reading"',
-  'class="profile-v4-section-heading profile-v4-section-heading--connection"',
+  'id="account-details-heading"',
+  'id="account-connection-heading"',
+  'id="account-actions-heading"',
 ].forEach((text) => requireText(text, `アカウント設定の既存機能またはVer.4.0構造が失われています: ${text}`));
 
 [
@@ -138,6 +139,13 @@ const stickAccessibilityRule = ver4StyleBlock.match(/\.omikuji-draw-v4 \.omikuji
 assert(stickAccessibilityRule.includes('outline-offset'), 'おみくじ棒はキーボード利用時のフォーカス表示を備える必要があります。');
 assert(!/(?:width|height|border-radius|background|transform)\s*:/.test(stickAccessibilityRule), 'おみくじ棒の視覚意匠をVer.4.0最終スタイルで変更してはいけません。');
 assert(!ver4StyleBlock.includes('#result-card-outer {'), 'おみくじ結果札の意匠をVer.4.0最終スタイルで変更してはいけません。');
+
+
+const accountRenderer = html.slice(html.indexOf('async function renderSettingsDashboard()'), html.indexOf('function renderProfilePage'));
+assert(accountRenderer.includes('account-settings-v2'), '新しいアカウント設定UIがありません。');
+assert(!accountRenderer.includes('AppConfig.toggle('), '環境・表示設定の操作をアカウント画面に重複配置してはいけません。');
+assert(!accountRenderer.includes('resetAllSettings()'), '環境設定の初期化操作をアカウント画面に重複配置してはいけません。');
+assert(accountRenderer.includes("showView('settings')"), '環境・表示設定への導線がありません。');
 
 console.log('おみくじ導線・アカウント設定のVer.4.0回帰テストに合格しました。');
 console.log(JSON.stringify({
