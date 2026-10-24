@@ -25968,7 +25968,7 @@ let historyPageState = {
 
         // 3. 表示順（検索・カテゴリ絞り込み後に適用）
         const sorted = [...categoryFiltered];
-        const dateValue = item => String(item.date || '').replace(/\\//g, '') + String(item.time || '00:00').replace(':', '');
+        const dateValue = item => String(item.date || '').replaceAll('/', '') + String(item.time || '00:00').replace(':', '');
         if (state.sort === 'oldest') sorted.sort((a, b) => dateValue(a).localeCompare(dateValue(b)) || a.id - b.id);
         else if (state.sort === 'title-asc') sorted.sort((a, b) => String(a.title || '').localeCompare(String(b.title || ''), 'ja'));
         else if (state.sort === 'title-desc') sorted.sort((a, b) => String(b.title || '').localeCompare(String(a.title || ''), 'ja'));
