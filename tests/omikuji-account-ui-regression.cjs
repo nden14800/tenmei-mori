@@ -145,6 +145,7 @@ assert(html.includes("section.icon === 'google-brand-mark' ? googleBrandMark"), 
 assert(!profileSection.includes('profile-v4-context-list'), 'アカウント概要と詳細セクションを重複表示してはいけません。');
 assert(!profileSection.includes('profile-v4-hero'), 'アカウント設定のヒーローを二重表示してはいけません。');
 
+assert(html.indexOf('const googleBrandMark') >= 0 && html.indexOf('const googleBrandMark') < html.indexOf('function renderSettingsDashboard()'), 'Googleロゴは複数画面から利用できる共通スコープで定義してください。');
 const accountRenderer = html.slice(html.indexOf('async function renderSettingsDashboard()'), html.indexOf('function renderProfilePage'));
 assert(accountRenderer.includes('account-settings-v2'), '新しいアカウント設定UIがありません。');
 assert(!accountRenderer.includes('AppConfig.toggle('), '環境・表示設定の操作をアカウント画面に重複配置してはいけません。');
