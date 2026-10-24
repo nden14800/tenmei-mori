@@ -90,18 +90,15 @@ function requireIn(section, text, message) {
 ].forEach((text) => requireIn(resultSection, text, `結果画面の既存操作またはVer.4.0構造が失われています: ${text}`));
 
 [
-  'class="view-section profile-v4-layout"',
-  'class="profile-v4-hero"',
-  'class="profile-v4-context"',
-  'class="profile-v4-context-list"',
-  'id="profile-page-title"',
+  'class="view-section account-settings-page"',
+  'aria-label="アカウント設定"',
   'id="profile-dashboard-content"',
   'function renderSettingsDashboard() {',
   'class="account-settings-v2"',
   'class="account-settings-v2-profile"',
   'class="account-settings-v2-form"',
   'class="account-settings-v2-settings-link"',
-  'onclick="showView(\'settings\')"',
+  'onclick="showView(\\'settings\\')"',
   'onclick="updateAccountSettings()"',
   'onclick="deleteAccount()"',
   'id="account-details-heading"',
@@ -140,6 +137,13 @@ assert(stickAccessibilityRule.includes('outline-offset'), 'おみくじ棒はキ
 assert(!/(?:width|height|border-radius|background|transform)\s*:/.test(stickAccessibilityRule), 'おみくじ棒の視覚意匠をVer.4.0最終スタイルで変更してはいけません。');
 assert(!ver4StyleBlock.includes('#result-card-outer {'), 'おみくじ結果札の意匠をVer.4.0最終スタイルで変更してはいけません。');
 
+
+
+assert(!html.includes('bi-google'), 'GoogleロゴはBootstrap Iconsと公式ロゴで混在させてはいけません。');
+assert(html.includes('class="google-brand-mark"'), 'サイト共通のGoogleブランドロゴがありません。');
+assert(html.includes("section.icon === 'google-brand-mark' ? googleBrandMark"), '更新履歴のGoogleロゴが共通ブランド表示を使用していません。');
+assert(!profileSection.includes('profile-v4-context-list'), 'アカウント概要と詳細セクションを重複表示してはいけません。');
+assert(!profileSection.includes('profile-v4-hero'), 'アカウント設定のヒーローを二重表示してはいけません。');
 
 const accountRenderer = html.slice(html.indexOf('async function renderSettingsDashboard()'), html.indexOf('function renderProfilePage'));
 assert(accountRenderer.includes('account-settings-v2'), '新しいアカウント設定UIがありません。');
