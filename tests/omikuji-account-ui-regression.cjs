@@ -162,11 +162,14 @@ assert(!accountRenderer.includes('resetAllSettings()'), '環境設定の初期�
 const accountStart = html.indexOf('async function renderSettingsDashboard()');
 const accountEnd = html.indexOf('function renderProfilePage', accountStart);
 const accountSource = html.slice(accountStart, accountEnd);
-assert(accountSource.includes('grid-template-columns:minmax(0,1fr) 88px'), 'アカウント設定のヒーロー印章は専用の適正サイズに調整してください。');
 assert(accountSource.includes('account-settings-v2-heading-icon'), 'アカウント設定の各セクションに識別アイコンが必要です。');
-assert(accountSource.includes('onclick="loadUserProfile(currentState.user.username)"'), '公開プロフィールへのショートカットがありません。');
-assert(accountSource.includes('onclick="showView(\'history\')"'), '参拝履歴へのショートカットがありません。');
-assert(accountSource.includes('account-settings-v2-shortcuts'), 'マイページショートカットのレイアウトがありません。');
+assert(!accountSource.includes('loadUserProfile('), '廃止済みの公開プロフィール機能をアカウント設定から復活させてはいけません。');
+assert(!accountSource.includes('公開プロフィール'), '廃止済みの公開プロフィールへの導線を表示してはいけません。');
+assert(accountSource.includes("onclick=\"showView('history')\""), '参拝履歴へのショートカットがありません。');
+assert(accountSource.includes('account-settings-v2-shortcuts'), '参拝履歴ショートカットのレイアウトがありません。');
+assert(!accountSource.includes('.account-settings-v2 .profile-v4-hero {'), 'アカウント設定だけのヒーロー寸法上書きを残してはいけません。');
+assert(!accountSource.includes('.account-settings-v2 .profile-v4-mark[data-ver4-hero-emblem]'), 'アカウント設定だけのヒーロー印章上書きを残してはいけません。');
+assert(accountSource.includes('class="profile-v4-hero account-settings-v2-hero"'), '最上部カードは他画面と同じ共通Ver.4ヒーローを使用してください。');
 
 console.log('おみくじ導線・アカウント設定のVer.4.0回帰テストに合格しました。');
 console.log(JSON.stringify({
