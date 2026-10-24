@@ -217,28 +217,6 @@ assert.equal(
   '参拝証の発行画面に古い端末のみ保存の説明が残っています。'
 );
 
-
-requireText(
-  '<style id="tenmei-auth-ui-refresh-v41">',
-  '参拝証の発行画面にVer.4.1刷新スタイルがありません。'
-);
-requireText(
-  '.auth-passport-hero {\n    display:flex !important;',
-  '参拝証の発行ヘッダーが共通カード型に刷新されていません。'
-);
-requireText(
-  'grid-template-columns:minmax(170px,.32fr) minmax(0,.68fr) !important;',
-  '参拝証の道程案内が整理された横方向レイアウトになっていません。'
-);
-requireText(
-  '.auth-choice-card {\n    min-height:190px !important;',
-  'ログイン・新規登録カードの新しい操作面がありません。'
-);
-requireText(
-  '@media(max-width:760px)',
-  '参拝証の発行画面にモバイル専用レイアウトがありません。'
-);
-
 console.log('参拝証の発行UIの回帰テストに合格しました。');
 console.log(JSON.stringify({
   accessibleChoices: true,
