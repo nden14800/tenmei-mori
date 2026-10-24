@@ -150,6 +150,9 @@ assert(!profileSection.includes('profile-v4-hero'), 'アカウント設定のヒ
 assert(html.indexOf('const googleBrandMark') >= 0 && html.indexOf('const googleBrandMark') < html.indexOf('function renderSettingsDashboard()'), 'Googleロゴは複数画面から利用できる共通スコープで定義してください。');
 const accountRenderer = html.slice(html.indexOf('async function renderSettingsDashboard()'), html.indexOf('function renderProfilePage'));
 assert(accountRenderer.includes('account-settings-v2'), '新しいアカウント設定UIがありません。');
+assert(accountRenderer.includes('class="profile-v4-hero account-settings-v2-hero"'), 'アカウント設定の最上部は全ページ共通のVer.4ヒーローを使用してください。');
+assert(accountRenderer.includes('class="profile-v4-mark" data-ver4-hero-emblem'), 'アカウント設定のヒーロー印章は共通デザインを使用してください。');
+assert(!accountRenderer.includes('.account-settings-v2-hero { display:flex'), 'アカウント設定だけの独自ヒーローCSSを残してはいけません。');
 assert(!accountRenderer.includes('AppConfig.toggle('), '環境・表示設定の操作をアカウント画面に重複配置してはいけません。');
 assert(!accountRenderer.includes('resetAllSettings()'), '環境設定の初期化操作をアカウント画面に重複配置してはいけません。');
 assert(accountRenderer.includes("showView('settings')"), '環境・表示設定への導線がありません。');
