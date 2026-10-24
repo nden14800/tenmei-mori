@@ -32341,13 +32341,13 @@ async function renderSettingsDashboard() {
     container.innerHTML = `
         <style id="account-settings-v2-styles">
             #profile-dashboard-content { --account-line: color-mix(in srgb,var(--text-main) 12%,transparent); }
-            .account-settings-v2 { width:100%; max-width:1040px; margin:0 auto; padding:0 0 56px; color:var(--text-main); }
+            .account-settings-v2 { width:min(100% - 32px,960px); max-width:960px; margin:0 auto; padding:0 0 56px; color:var(--text-main); }
             .account-settings-v2 * { box-sizing:border-box; }
-            .account-settings-v2-hero { display:flex; align-items:flex-start; justify-content:space-between; gap:24px; padding:clamp(22px,4vw,36px); border:1px solid var(--account-line); border-radius:24px; background:linear-gradient(135deg,var(--card-bg),color-mix(in srgb,var(--accent-red) 5%,var(--bg-color))); }
+            /* アカウント設定の最上部は、他の刷新済みページと共通のVer.4ヒーローを使用。 */
             .account-settings-v2-kicker { margin:0 0 9px; color:var(--accent-red); font-size:.68rem; font-weight:800; letter-spacing:.14em; }
-            .account-settings-v2-hero h2 { margin:0; font-family:'Zen Old Mincho',serif; font-size:clamp(1.45rem,3vw,2rem); font-weight:800; }
-            .account-settings-v2-hero p:last-child { margin:9px 0 0; color:var(--text-muted); font-size:.88rem; line-height:1.8; }
-            .account-settings-v2-mark { display:grid; place-items:center; flex:0 0 58px; width:58px; height:58px; border:1px solid var(--account-line); border-radius:18px; color:var(--accent-red); background:var(--card-bg); font-size:1.35rem; }
+            
+            
+            
             .account-settings-v2-profile { display:flex; align-items:center; gap:17px; margin-top:18px; padding:20px 22px; border:1px solid var(--account-line); border-radius:20px; background:var(--card-bg); }
             .account-settings-v2-avatar { display:grid; place-items:center; flex:0 0 54px; width:54px; height:54px; border-radius:17px; color:var(--text-main); background:var(--bg-color); border:1px solid var(--account-line); font-size:1.45rem; }
             .account-settings-v2-profile-main { min-width:0; flex:1; }
@@ -32392,7 +32392,7 @@ async function renderSettingsDashboard() {
             .account-settings-v2-loading p { margin:0; font-size:.82rem; }
             @media(max-width:640px) {
                 .account-settings-v2 { padding-bottom:36px; }
-                .account-settings-v2-hero { border-radius:18px; gap:12px; padding:20px; }
+                
                 .account-settings-v2-mark { flex-basis:46px; width:46px; height:46px; border-radius:14px; }
                 .account-settings-v2-profile { padding:16px; gap:12px; }
                 .account-settings-v2-avatar { flex-basis:46px; width:46px; height:46px; }
@@ -32406,9 +32406,9 @@ async function renderSettingsDashboard() {
             @media(prefers-reduced-motion:reduce) { .account-settings-v2 * { transition:none!important; } }
         </style>
         <div class="account-settings-v2">
-            <header class="account-settings-v2-hero">
-                <div><p class="account-settings-v2-kicker">YOUR ACCOUNT / TENMEI NO MORI</p><h2>アカウントを管理する</h2><p>登録情報やログイン方法、安全に関わる操作をまとめて管理できます。</p></div>
-                <span class="account-settings-v2-mark" aria-hidden="true"><i class="bi bi-person-gear"></i></span>
+            <header class="profile-v4-hero account-settings-v2-hero" aria-labelledby="account-settings-hero-title">
+                <div class="profile-v4-copy"><p class="profile-v4-eyebrow"><i class="bi bi-person-gear" aria-hidden="true"></i> YOUR ACCOUNT / TENMEI NO MORI</p><h1 id="account-settings-hero-title" class="profile-v4-title">アカウント設定</h1><p class="profile-v4-lead">登録情報やログイン方法、安全に関わる操作をひとつの場所で管理できます。</p></div>
+                <div class="profile-v4-mark" data-ver4-hero-emblem aria-hidden="true"><i class="bi bi-person-gear"></i><span>ACCOUNT<br>SETTING</span></div>
             </header>
             <section class="account-settings-v2-profile" aria-label="アカウント概要">
                 <span class="account-settings-v2-avatar" aria-hidden="true"><i class="bi bi-person-fill"></i></span>
