@@ -140,7 +140,9 @@ assert(!ver4StyleBlock.includes('#result-card-outer {'), 'おみくじ結果札�
 
 
 assert(!html.includes('bi-google'), 'GoogleロゴはBootstrap Iconsと公式ロゴで混在させてはいけません。');
-assert(html.includes('class="google-brand-mark"'), 'サイト共通のGoogleブランドロゴがありません。');
+assert(html.includes('const googleBrandMark = "<svg class=\\"google-brand-mark\\"'), 'サイト共通のGoogleブランドロゴ定義がありません。');
+assert(html.includes('data-google-brand-mark'), 'ログイン画面が共通Googleロゴの描画先を持っていません。');
+assert(html.includes("document.querySelectorAll('[data-google-brand-mark]')"), 'ログイン画面に共通Googleロゴを適用する処理がありません。');
 assert(html.includes("section.icon === 'google-brand-mark' ? googleBrandMark"), '更新履歴のGoogleロゴが共通ブランド表示を使用していません。');
 assert(!profileSection.includes('profile-v4-context-list'), 'アカウント概要と詳細セクションを重複表示してはいけません。');
 assert(!profileSection.includes('profile-v4-hero'), 'アカウント設定のヒーローを二重表示してはいけません。');
