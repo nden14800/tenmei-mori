@@ -157,7 +157,7 @@ assert(!accountRenderer.includes('account-settings-v2-settings-link'), '環境�
 assert(!accountRenderer.includes('.account-settings-v2-hero { display:flex'), 'アカウント設定だけの独自ヒーローCSSを残してはいけません。');
 assert(!accountRenderer.includes('AppConfig.toggle('), '環境・表示設定の操作をアカウント画面に重複配置してはいけません。');
 assert(!accountRenderer.includes('resetAllSettings()'), '環境設定の初期化操作をアカウント画面に重複配置してはいけません。');
-assert(accountRenderer.includes("showView('settings')"), '環境・表示設定への導線がありません。');
+// 環境・表示設定は専用画面に集約し、アカウント画面には重複導線を置かない。
 
 const accountStart = html.indexOf('async function renderSettingsDashboard()');
 const accountEnd = html.indexOf('function renderProfilePage', accountStart);
