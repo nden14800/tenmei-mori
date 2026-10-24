@@ -25968,11 +25968,39 @@ let historyPageState = {
 
         // 3. 表示順（検索・カテゴリ絞り込み後に適用）
         const sorted = [...categoryFiltered];
-        const dateValue = item => String(item.date || '').replaceAll('/', '') + String(item.time || '00:00').replace(':', '');
-        if (state.sort === 'oldest') sorted.sort((a, b) => dateValue(a).localeCompare(dateValue(b)) || a.id - b.id);
-        else if (state.sort === 'title-asc') sorted.sort((a, b) => String(a.title || '').localeCompare(String(b.title || ''), 'ja'));
-        else if (state.sort === 'title-desc') sorted.sort((a, b) => String(b.title || '').localeCompare(String(a.title || ''), 'ja'));
-        else sorted.sort((a, b) => dateValue(b).localeCompare(dateValue(a)) || b.id - a.id);
+        // 月日が1桁の旧データ（例: 2026/2/22）も含め、暦として比較できる数値へ正規化する。
+        // 日付が欠けた記事は末尾へ送り、表示順が実行環境や文字列長で変わらないようにする。
+        const dateValue = item => {
+            const rawDate = String(item.date || '').trim();
+            const match = rawDate.match(/^(\\d{4})\\s*[./-]\\s*(\\d{1,2})\\s*[./-]\\s*(\\d{1,2})$/)
+                || rawDate.match(/^(\\d{4})年(\\d{1,2})月(\\d{1,2})日?$/);
+            if (!match) {
+                const parsed = Date.parse(rawDate);
+                return Number.isFinite(parsed) ? parsed : null;
+            }
+            const year = Number(match[1]);
+            const month = Number(match[2]);
+            const day = Number(match[3]);
+            const calendarDate = new Date(Date.UTC(year, month - 1, day));
+            if (calendarDate.getUTCFullYear() !== year || calendarDate.getUTCMonth() !== month - 1 || calendarDate.getUTCDate() !== day) return null;
+            const timeMatch = String(item.time || '00:00').match(/^(\\d{1,2}):([0-5]\\d)(?::([0-5]\\d))?$/);
+            const hours = timeMatch && Number(timeMatch[1]) <= 23 ? Number(timeMatch[1]) : 0;
+            const minutes = timeMatch ? Number(timeMatch[2]) : 0;
+            const seconds = timeMatch && timeMatch[3] ? Number(timeMatch[3]) : 0;
+            return Date.UTC(year, month - 1, day, hours, minutes, seconds);
+        };
+        const compareDate = (a, b, direction) => {
+            const aDate = dateValue(a);
+            const bDate = dateValue(b);
+            if (aDate === null && bDate === null) return (Number(a.id) || 0) - (Number(b.id) || 0);
+            if (aDate === null) return 1;
+            if (bDate === null) return -1;
+            return direction * (aDate - bDate) || direction * ((Number(a.id) || 0) - (Number(b.id) || 0));
+        };
+        if (state.sort === 'oldest') sorted.sort((a, b) => compareDate(a, b, 1));
+        else if (state.sort === 'title-asc') sorted.sort((a, b) => String(a.title || '').localeCompare(String(b.title || ''), 'ja') || (Number(a.id) || 0) - (Number(b.id) || 0));
+        else if (state.sort === 'title-desc') sorted.sort((a, b) => String(b.title || '').localeCompare(String(a.title || ''), 'ja') || (Number(a.id) || 0) - (Number(b.id) || 0));
+        else sorted.sort((a, b) => compareDate(a, b, -1));
 
         // 4. ページネーション計算
         const totalItems = sorted.length;
@@ -38627,53 +38655,74 @@ window.addEventListener('hashchange',function(){setTimeout(buildAboutArticleTOC,
 
 
 <style id="tenmei-custom-control-unification-fix">
-/* Common custom controls: one visual language across every screen. */
-.tenmei-choice__trigger,
-.tenmei-date__trigger {
+/* Shared visual contract: section themes may change the accent, never the control geometry or typography. */
+#main-content .tenmei-choice__trigger {
+    display: grid;
+    grid-template-columns: 22px minmax(0, 1fr) 18px;
+    align-items: center;
+    width: 100%;
     min-height: 46px;
-    border-radius: 12px;
     padding: 8px 12px;
-    border-color: var(--card-border);
+    border: 1px solid var(--card-border);
+    border-radius: 12px;
     background: var(--input-bg);
     color: var(--text-main);
-    font-family: 'Zen Kaku Gothic New', 'Zen Old Mincho', sans-serif;
+    font-family: 'Zen Kaku Gothic New', sans-serif;
     font-size: .88rem;
     font-weight: 600;
+    line-height: 1.4;
+    text-align: left;
     box-shadow: none;
 }
-.tenmei-choice__trigger:hover,
-.tenmei-date__trigger:hover {
+#main-content .tenmei-choice__value {
+    min-width: 0;
+    padding: 0 8px;
+    overflow: hidden;
+    color: inherit;
+    font-family: 'Zen Kaku Gothic New', sans-serif;
+    font-size: .88rem;
+    font-weight: 600;
+    line-height: 1.4;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+#main-content .tenmei-choice__trigger:hover {
     border-color: color-mix(in srgb, var(--tenmei-control-accent) 46%, var(--card-border));
 }
-.tenmei-choice__trigger:focus-visible,
-.tenmei-date__trigger:focus-visible,
-.tenmei-choice[data-open="true"] .tenmei-choice__trigger,
-.tenmei-date[data-open="true"] .tenmei-date__trigger {
+#main-content .tenmei-choice__trigger:focus-visible,
+#main-content .tenmei-choice[data-open="true"] .tenmei-choice__trigger {
     border-color: var(--tenmei-control-accent);
     box-shadow: 0 0 0 3px color-mix(in srgb, var(--tenmei-control-accent) 14%, transparent);
 }
-.tenmei-choice__popover,
-.tenmei-date__popover {
+#main-content .tenmei-choice__popover {
     border-radius: 12px;
     padding: 6px;
     box-shadow: 0 16px 34px rgba(31,22,18,.16);
 }
-.tenmei-choice__option {
+#main-content .tenmei-choice__option {
     min-height: 40px;
     border-radius: 9px;
     padding: 8px 10px;
+    font-family: 'Zen Kaku Gothic New', sans-serif;
     font-size: .84rem;
+    font-weight: 500;
+    line-height: 1.45;
 }
-.tenmei-choice__option[aria-selected="true"] {
+#main-content .tenmei-choice__option[aria-selected="true"] { font-weight: 700; }
+#main-content .news-bulletin-filter-control > span:first-child,
+#main-content .column-library-filter-control > span:first-child {
+    display: flex;
+    align-items: center;
+    gap: .4rem;
+    font-family: 'Zen Kaku Gothic New', sans-serif;
+    font-size: .74rem;
     font-weight: 700;
+    line-height: 1.5;
+    letter-spacing: .01em;
 }
-.tenmei-choice__chevron,
-.tenmei-date__chevron {
-    transition: transform 160ms ease, color 160ms ease;
-}
+#main-content .tenmei-choice__chevron { transition: transform 160ms ease, color 160ms ease; }
 @media (prefers-reduced-motion: reduce) {
-    .tenmei-choice__chevron,
-    .tenmei-date__chevron { transition: none; }
+    #main-content .tenmei-choice__chevron { transition: none; }
 }
 </style>
 <script id="tenmei-history-reset-and-control-fix">
