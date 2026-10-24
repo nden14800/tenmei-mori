@@ -26021,49 +26021,56 @@ let historyPageState = {
     // idPrefix: id衝突を避けるための識別子（jump-input要素のid等に使用）
     // gotoTemplate: ページ遷移コードのテンプレート文字列。"{P}" の部分が実際のページ番号（またはJS式）に置換される
     //   例: "changePage('news', {P})" / "loadHistory({P})"
+    // Shared numbered pagination based on GOV.UK / USWDS patterns.
     function createPaginationHTML(idPrefix, current, total, gotoTemplate) {
+        total = Math.max(1, Number(total) || 1);
+        current = Math.max(1, Math.min(total, Number(current) || 1));
         if (total <= 1) return '';
-        const goto = (p) => gotoTemplate.replace('{P}', p);
-        const jumpId = `${idPrefix}-jump-input`;
-
-        let html = `<div class="modern-pagination ver4-pagination" role="navigation" aria-label="${idPrefix === 'news' ? '社務所だより' : idPrefix === 'column' ? '神籤草子' : '記録'}のページ送り">`;
-        html += '<div class="modern-pagination-controls">';
-
-        html += `<button type="button" onclick="${goto(1)}" class="modern-pagination-btn" title="最初へ" aria-label="最初のページへ"
-                 ${current === 1 ? 'disabled' : ''}><i class="bi bi-chevron-bar-left" aria-hidden="true"></i></button>`;
-
-        html += `<button type="button" onclick="${goto(current - 1)}" class="modern-pagination-btn" title="前へ" aria-label="前のページへ"
-                 ${current === 1 ? 'disabled' : ''}><i class="bi bi-chevron-left" aria-hidden="true"></i></button>`;
-
-        html += `<span class="modern-pagination-current" aria-live="polite" aria-label="${current}ページ目、全${total}ページ">
-                    <span class="modern-pagination-current-num">${current}</span>
-                    <span class="modern-pagination-total">/ ${total}</span>
-                 </span>`;
-
-        html += `<button type="button" onclick="${goto(current + 1)}" class="modern-pagination-btn" title="次へ" aria-label="次のページへ"
-                 ${current === total ? 'disabled' : ''}><i class="bi bi-chevron-right" aria-hidden="true"></i></button>`;
-
-        html += `<button type="button" onclick="${goto(total)}" class="modern-pagination-btn" title="最後へ" aria-label="最後のページへ"
-                 ${current === total ? 'disabled' : ''}><i class="bi bi-chevron-bar-right" aria-hidden="true"></i></button>`;
-
-        html += '</div>';
-
-        // ページジャンプ入力欄
-        html += `
-            <div class="modern-pagination-jump">
-                <span>ページ指定</span>
-                <input type="number" id="${jumpId}" min="1" max="${total}" value="${current}" aria-label="移動するページ番号"
-                       onkeydown="if(event.key==='Enter'){ ${goto('parseInt(this.value)')} }">
-                <button type="button" onclick="${goto(`parseInt(document.getElementById('${jumpId}').value)`)}"
-                        class="modern-pagination-jump-btn">移動</button>
-            </div>
-        `;
-
-        html += '</div>';
+        const goto = page => gotoTemplate.replace('{P}', String(page));
+        const label = idPrefix === 'news' ? '社務所だより' : idPrefix === 'column' ? '神籤草子' : idPrefix === 'history' ? '参拝履歴' : idPrefix === 'dream-history' ? 'おみくじの轍' : '記録';
+        const jumpId = idPrefix + '-jump-input';
+        const visible = new Set([1, total]);
+        for (let page = Math.max(1, current - 1); page <= Math.min(total, current + 1); page += 1) visible.add(page);
+        const pages = Array.from(visible).sort((a, b) => a - b);
+        const items = [];
+        let previous = 0;
+        for (const page of pages) {
+            if (previous && page - previous > 1) {
+                if (page - previous === 2) items.push({ type: 'page', page: previous + 1 });
+                else items.push({ type: 'ellipsis' });
+            }
+            items.push({ type: 'page', page });
+            previous = page;
+        }
+        let html = '<nav class="modern-pagination ver4-pagination" aria-label="' + label + 'のページ送り">';
+        html += '<div class="modern-pagination-main"><ul class="modern-pagination-controls" aria-label="ページ番号">';
+        html += '<li class="modern-pagination-edge"><button type="button" onclick="' + goto(current - 1) + '" class="modern-pagination-btn modern-pagination-prev" aria-label="前のページへ" ' + (current === 1 ? 'disabled' : '') + '><i class="bi bi-chevron-left" aria-hidden="true"></i><span>前へ</span></button></li>';
+        for (const item of items) {
+            if (item.type === 'ellipsis') { html += '<li class="modern-pagination-ellipsis" aria-hidden="true">…</li>'; continue; }
+            const active = item.page === current;
+            html += '<li class="modern-pagination-page-item"><button type="button" onclick="' + goto(item.page) + '" class="modern-pagination-page ' + (active ? 'is-current' : '') + '" aria-label="' + item.page + 'ページ目へ移動" ' + (active ? 'aria-current="page"' : '') + '>' + item.page + '</button></li>';
+        }
+        html += '<li class="modern-pagination-edge"><button type="button" onclick="' + goto(current + 1) + '" class="modern-pagination-btn modern-pagination-next" aria-label="次のページへ" ' + (current === total ? 'disabled' : '') + '><span>次へ</span><i class="bi bi-chevron-right" aria-hidden="true"></i></button></li>';
+        html += '</ul><p class="modern-pagination-position" aria-live="polite"><strong>' + current + '</strong><span>/</span>' + total + ' ページ</p></div>';
+        html += '<div class="modern-pagination-jump"><label for="' + jumpId + '">ページ指定</label><input type="number" inputmode="numeric" id="' + jumpId + '" class="pagination-page-input" min="1" max="' + total + '" step="1" value="' + current + '" aria-label="移動するページ番号" onkeydown="if(event.key===\'Enter\'){event.preventDefault();jumpToPaginationPage(\'' + idPrefix + '\',' + total + ',\'' + gotoTemplate + '\')}"><span class="modern-pagination-jump-total">/ ' + total + '</span><button type="button" onclick="jumpToPaginationPage(\'' + idPrefix + '\',' + total + ',\'' + gotoTemplate + '\')" class="modern-pagination-jump-btn">移動</button></div>';
+        html += '</nav>';
         return html;
     }
 
-    // シンプル版（前へ・次へのみ：参拝者の間・フォロワー一覧など）
+    window.jumpToPaginationPage = function(idPrefix, total, gotoTemplate) {
+        const input = document.getElementById(idPrefix + '-jump-input');
+        if (!input) return;
+        const value = Number(input.value);
+        if (!Number.isInteger(value) || value < 1 || value > total) {
+            input.setCustomValidity('1〜' + total + 'のページ番号を入力してください。');
+            input.reportValidity();
+            input.addEventListener('input', () => input.setCustomValidity(''), { once: true });
+            return;
+        }
+        input.setCustomValidity('');
+        Function(gotoTemplate.replace('{P}', String(value)))();
+    };
+
     function createSimplePaginationHTML(current, total, gotoTemplate) {
         if (total <= 1) return '';
         const goto = (p) => gotoTemplate.replace('{P}', p);
@@ -38651,6 +38658,31 @@ window.addEventListener('hashchange',function(){setTimeout(buildAboutArticleTOC,
 }());
 </script>
 
+<style id="tenmei-pagination-unified-refresh">
+.modern-pagination.ver4-pagination{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;width:min(100%,760px);margin:1.25rem auto 0;padding:16px 18px;border:1px solid var(--card-border);border-radius:16px;background:var(--card-bg);box-shadow:0 5px 18px rgba(45,32,24,.045);color:var(--text-main);font-family:"Zen Kaku Gothic New",sans-serif}
+.modern-pagination.ver4-pagination .modern-pagination-main{display:flex;flex-direction:column;align-items:center;gap:8px;width:100%}
+.modern-pagination.ver4-pagination .modern-pagination-controls{display:flex;align-items:center;justify-content:center;flex-wrap:nowrap;gap:5px;width:100%;margin:0;padding:0;list-style:none}
+.modern-pagination.ver4-pagination .modern-pagination-controls>li{display:flex;flex:0 0 auto;align-items:center;justify-content:center;margin:0;padding:0}
+.modern-pagination.ver4-pagination .modern-pagination-page,.modern-pagination.ver4-pagination .modern-pagination-btn{display:inline-flex;min-width:40px;min-height:40px;align-items:center;justify-content:center;gap:6px;padding:0 10px;border:1px solid var(--card-border);border-radius:10px;background:var(--input-bg);color:var(--text-main);font-family:"Zen Kaku Gothic New",sans-serif;font-size:.84rem;font-weight:600;line-height:1;cursor:pointer;box-shadow:none;transition:border-color 150ms ease,background 150ms ease,color 150ms ease}
+.modern-pagination.ver4-pagination .modern-pagination-page:hover:not(.is-current),.modern-pagination.ver4-pagination .modern-pagination-btn:hover:not(:disabled){border-color:var(--accent-red);color:var(--accent-red);background:color-mix(in srgb,var(--accent-red) 5%,var(--card-bg));transform:none;box-shadow:none}
+.modern-pagination.ver4-pagination .modern-pagination-page.is-current{border-color:var(--accent-red);background:var(--accent-red);color:#fff;font-weight:800;cursor:default}
+.modern-pagination.ver4-pagination .modern-pagination-btn:disabled{opacity:.38;cursor:not-allowed}
+.modern-pagination.ver4-pagination .modern-pagination-ellipsis{min-width:20px;color:var(--text-sub);font-size:.85rem}
+.modern-pagination.ver4-pagination .modern-pagination-position{display:flex;align-items:baseline;gap:5px;margin:0;color:var(--text-sub);font-size:.72rem;font-weight:500}
+.modern-pagination.ver4-pagination .modern-pagination-position strong{color:var(--accent-red);font-size:.95rem;font-weight:800;font-variant-numeric:tabular-nums}
+.modern-pagination.ver4-pagination .modern-pagination-jump{display:flex;min-height:44px;align-items:center;justify-content:center;gap:9px;padding:5px 7px 5px 12px;border:0;border-radius:0;background:transparent;color:var(--text-sub);font-family:"Zen Kaku Gothic New",sans-serif;font-size:.78rem}
+.modern-pagination.ver4-pagination .modern-pagination-jump label{margin:0;color:var(--text-sub);font:inherit;white-space:nowrap}
+.modern-pagination.ver4-pagination .pagination-page-input{width:76px;min-width:0;height:42px;padding:0 10px;border:1px solid var(--card-border);border-radius:10px;outline:0;background:var(--input-bg);color:var(--text-main);font-family:"Zen Kaku Gothic New",sans-serif;font-size:.88rem;font-weight:600;line-height:1.4;text-align:center;font-variant-numeric:tabular-nums;box-shadow:none;appearance:textfield;-moz-appearance:textfield}
+.modern-pagination.ver4-pagination .pagination-page-input::-webkit-inner-spin-button,.modern-pagination.ver4-pagination .pagination-page-input::-webkit-outer-spin-button{margin:0;appearance:none;-webkit-appearance:none}
+.modern-pagination.ver4-pagination .pagination-page-input:focus-visible{border-color:var(--accent-red);outline:3px solid color-mix(in srgb,var(--accent-red) 16%,transparent);outline-offset:1px}
+.modern-pagination.ver4-pagination .modern-pagination-jump-total{margin-left:-5px;color:var(--text-sub);font-size:.75rem;white-space:nowrap}
+.modern-pagination.ver4-pagination .modern-pagination-jump-btn{min-height:42px;padding:0 16px;border:1px solid var(--accent-red);border-radius:10px;background:var(--accent-red);color:#fff;font-family:"Zen Kaku Gothic New",sans-serif;font-size:.78rem;font-weight:700;cursor:pointer;transition:filter 150ms ease}
+.modern-pagination.ver4-pagination .modern-pagination-jump-btn:hover{filter:brightness(1.07)}
+.modern-pagination.ver4-pagination button:focus-visible{outline:3px solid color-mix(in srgb,var(--accent-red) 32%,transparent);outline-offset:2px}
+@media(min-width:600px){.modern-pagination.ver4-pagination{flex-direction:row;justify-content:space-between;gap:18px;padding:14px 16px}.modern-pagination.ver4-pagination .modern-pagination-main{flex:1 1 auto;flex-direction:row;justify-content:flex-start;gap:14px;width:auto;min-width:0}.modern-pagination.ver4-pagination .modern-pagination-position{display:none}.modern-pagination.ver4-pagination .modern-pagination-jump{flex:0 0 auto}}
+@media(max-width:430px){.modern-pagination.ver4-pagination{gap:10px;padding:12px 8px;border-radius:14px}.modern-pagination.ver4-pagination .modern-pagination-controls{gap:3px}.modern-pagination.ver4-pagination .modern-pagination-page,.modern-pagination.ver4-pagination .modern-pagination-btn{min-width:34px;min-height:38px;padding:0 7px;border-radius:9px;font-size:.78rem}.modern-pagination.ver4-pagination .modern-pagination-btn span{display:none}.modern-pagination.ver4-pagination .modern-pagination-ellipsis{min-width:14px}.modern-pagination.ver4-pagination .modern-pagination-jump{min-height:42px;gap:7px}.modern-pagination.ver4-pagination .pagination-page-input{width:68px}}
+@media(prefers-reduced-motion:reduce){.modern-pagination.ver4-pagination *,.modern-pagination.ver4-pagination *:before,.modern-pagination.ver4-pagination *:after{transition:none!important}}
+</style>
 </body>
 
 
