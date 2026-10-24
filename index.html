@@ -26068,7 +26068,14 @@ let historyPageState = {
             return;
         }
         input.setCustomValidity('');
-        Function(gotoTemplate.replace('{P}', String(value)))();
+        const action = gotoTemplate.replace('{P}', String(value));
+        if (idPrefix === 'news' || idPrefix === 'column') {
+            changePage(idPrefix, value);
+        } else if (idPrefix === 'history') {
+            loadHistory(value);
+        } else if (idPrefix === 'dream-history') {
+            loadDreamHistory(value);
+        }
     };
 
     function createSimplePaginationHTML(current, total, gotoTemplate) {
