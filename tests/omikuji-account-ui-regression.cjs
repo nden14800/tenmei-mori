@@ -148,8 +148,14 @@ assert(!profileSection.includes('profile-v4-hero'), 'アカウント設定のヒ
 assert(html.indexOf('const googleBrandMark') >= 0 && html.indexOf('const googleBrandMark') < html.indexOf('function renderSettingsDashboard()'), 'Googleロゴは複数画面から利用できる共通スコープで定義してください。');
 const accountRenderer = html.slice(html.indexOf('async function renderSettingsDashboard()'), html.indexOf('function renderProfilePage'));
 assert(accountRenderer.includes('account-settings-v2'), '新しいアカウント設定UIがありません。');
-assert(accountRenderer.includes('class="profile-v4-hero account-settings-v2-hero"'), 'アカウント設定の最上部は全ページ共通のVer.4ヒーローを使用してください。');
-assert(accountRenderer.includes('class="profile-v4-mark" data-ver4-hero-emblem'), 'アカウント設定のヒーロー印章は共通デザインを使用してください。');
+assert(accountRenderer.includes('class="account-settings-v2-card account-settings-v2-intro"'), 'アカウント設定の最上部は他の設定カードと同じ共通カードを使用してください。');
+assert(!accountRenderer.includes('profile-v4-hero'), 'アカウント設定の最上部に巨大な共通ヒーローを戻してはいけません。');
+assert(accountRenderer.includes('account-settings-v2-intro-icon'), 'アカウント設定の見出しに統一されたアイコンがありません。');
+assert(accountRenderer.includes('ユーザー名・パスワードの変更、Google連携、ログアウトやアカウント削除を管理できます。'), 'アカウント設定の説明を実際の機能と一致させてください。');
+assert(accountRenderer.includes("let authMethod = null;"), 'ログイン方式の取得失敗をメール方式と誤認しないでください。');
+assert(accountRenderer.includes('確認できませんでした。ページを再読み込みして確認してください。'), 'ログイン方式の取得失敗時に誤った状態を表示してはいけません。');
+assert(accountRenderer.includes('Google連携済み') === false, '旧Google連携ステータスの文言が残っています。');
+assert(accountRenderer.includes('Googleのみ'), 'Google専用ログイン状態を明確に表示してください。');
 assert(accountRenderer.includes('padding:var(--ver4-card-padding)'), 'アカウント概要カードは共通カード余白を使用してください。');
 assert(accountRenderer.includes('border-radius:var(--ver4-card-radius)'), 'アカウント概要カードは共通カード角丸を使用してください。');
 assert(accountRenderer.includes('box-shadow:0 8px 22px rgba(57,37,28,.05)'), 'アカウント概要カードは他画面と同じカード影を使用してください。');
