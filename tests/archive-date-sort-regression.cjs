@@ -10,7 +10,7 @@ const end = html.indexOf('// 4. ページネーション計算', start);
 assert(start >= 0 && end > start, '記事一覧の共通日付・並び替え処理を取得できません。');
 const sortLogic = html.slice(start, end);
 
-assert(sortLogic.includes("rawDate.match(/^(\\\\d{4})\\\\s*[./-]"), '年月日を数値として解析する処理がありません。');
+assert(sortLogic.includes('rawDate.match(/^(\\d{4})\\s*[./-]'), '年月日を数値として解析する処理がありません。');
 assert(sortLogic.includes('const compareDate = (a, b, direction) =>'), '日付不明の記事を安定して扱う比較処理がありません。');
 assert(sortLogic.includes('if (aDate === null) return 1;') && sortLogic.includes('if (bDate === null) return -1;'),
   '日付不明の記事を一覧の末尾へ送る処理がありません。');
