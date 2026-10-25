@@ -105,13 +105,49 @@ function banner(c){const e=base(c,'tm-ad-banner');const x=document.createElement
 function billboard(c){const e=base(c,'tm-ad-billboard');const x=document.createElement('div');x.className='tm-ad-banner-copy';x.innerHTML='<div class="tm-ad-kicker"><b>広告（架空）</b><span>FEATURED</span></div><span class="tm-ad-brand">'+esc(c.brand)+'</span><h3>'+esc(c.title)+'</h3><p>'+esc(c.copy)+'</p><strong class="tm-ad-price">'+esc(c.price)+'</strong>';x.appendChild(cta(c.cta));e.append(x,art(c));info(e);return e;}
 function infeed(c){const e=base(c,'tm-ad-infeed');e.appendChild(art(c));const x=document.createElement('div');x.innerHTML='<div class="tm-ad-kicker"><b>広告（架空）</b><span>'+esc(c.tag)+'</span></div><span class="tm-ad-brand">'+esc(c.brand)+'</span><h3>'+esc(c.title)+'</h3><p>'+esc(c.copy)+'</p><strong class="tm-ad-price">'+esc(c.price)+'</strong>';x.appendChild(cta(c.cta));e.appendChild(x);info(e);return e;}
 function inarticle(c){const e=base(c,'tm-ad-inarticle');e.appendChild(art(c));const x=document.createElement('div');x.innerHTML='<div class="tm-ad-kicker"><b>広告（架空）</b><span>SPONSORED</span></div><span class="tm-ad-brand">'+esc(c.brand)+'</span><h3>'+esc(c.title)+'</h3><p>'+esc(c.copy)+'</p>';x.appendChild(cta(c.cta));e.appendChild(x);info(e);return e;}
-function rectangle(c){const e=base(c,'tm-ad-rectangle');const label=document.createElement('div');label.className='tm-ad-kicker';label.innerHTML='<b>広告（架空）</b><span>'+esc(c.tag)+'</span>';const brand=document.createElement('span');brand.className='tm-ad-brand';brand.textContent=c.brand;e.append(label,brand,art(c));const h=document.createElement('h3');h.textContent=c.title;const p=document.createElement('p');p.textContent=c.copy;e.append(h,p);const price=document.createElement('strong');price.className='tm-ad-price';price.textContent=c.price;e.append(price,cta(c.cta));info(e);return e;}
-function halfpage(c){const e=base(c,'tm-ad-halfpage');const label=document.createElement('div');label.className='tm-ad-kicker';label.innerHTML='<b>広告（架空）</b><span>'+esc(c.tag)+'</span>';const brand=document.createElement('span');brand.className='tm-ad-brand';brand.textContent=c.brand;e.append(label,brand,art(c));const h=document.createElement('h3');h.textContent=c.title;const p=document.createElement('p');p.textContent=c.copy;e.append(h,p,cta(c.cta));info(e);return e;}
+function rectangle(c){
+ const e=base(c,'tm-ad-rectangle');
+ const label=document.createElement('div');label.className='tm-ad-kicker';label.innerHTML='<b>広告（架空）</b><span>'+esc(c.tag)+'</span>';
+ const brand=document.createElement('span');brand.className='tm-ad-brand';brand.textContent=c.brand;
+ e.append(label,brand,art(c));
+ const h=document.createElement('h3');h.textContent=c.title;const p=document.createElement('p');p.textContent=c.copy;
+ const price=document.createElement('strong');price.className='tm-ad-price';price.textContent=c.price;
+ e.append(h,p,price,cta(c.cta));info(e);return e;
+}
+function halfpage(c){
+ const e=base(c,'tm-ad-halfpage');
+ const label=document.createElement('div');label.className='tm-ad-kicker';label.innerHTML='<b>広告（架空）</b><span>'+esc(c.tag)+'</span>';
+ const brand=document.createElement('span');brand.className='tm-ad-brand';brand.textContent=c.brand;
+ e.append(label,brand,art(c));
+ const h=document.createElement('h3');h.textContent=c.title;const p=document.createElement('p');p.textContent=c.copy;
+ e.append(h,p,cta(c.cta));info(e);return e;
+}
 function multiplex(){const e=base(null,'tm-ad-multiplex');const head=document.createElement('div');head.className='tm-ad-multiplex-head';head.innerHTML='<span class="tm-ad-kicker"><b>広告（架空）</b><span>おすすめの商品</span></span><span class="tm-ad-brand">SPONSORED</span>';e.appendChild(head);const grid=document.createElement('div');grid.className='tm-ad-multiplex-grid';const used=[];for(let i=0;i<6;i++){let c;do{c=pick(i);}while(used.includes(c.brand));used.push(c.brand);const item=document.createElement('div');item.className='tm-ad-multiplex-item';item.appendChild(art(c));const h=document.createElement('h3');h.textContent=c.title;const p=document.createElement('span');p.className='tm-ad-price';p.textContent=c.price;item.append(h,p,cta('詳細を見る'));grid.appendChild(item);}e.appendChild(grid);info(e);return e;}
 function sponsoredStory(c){const e=base(c,'tm-ad-inarticle');e.classList.add('tm-ad-sponsored-story');e.appendChild(art(c));const x=document.createElement('div');x.innerHTML='<div class="tm-ad-kicker"><b>広告（架空）</b><span>PR · SPONSORED STORY</span></div><span class="tm-ad-brand">'+esc(c.brand)+'</span><h3>'+esc(c.title)+'</h3><p>'+esc(c.copy)+'</p><span class="tm-ad-price">'+esc(c.price)+'</span>';x.appendChild(cta('詳しく読む'));e.appendChild(x);info(e);return e;}
-function searchAd(c){const e=base(c,'tm-ad-search');const label=document.createElement('div');label.className='tm-ad-kicker';label.innerHTML='<b>広告（架空）</b><span>スポンサー検索結果</span>';e.appendChild(label);const choices=[c,pick(2)];choices.forEach(ad=>{const item=document.createElement('div');item.className='tm-ad-search-result';const brand=document.createElement('span');brand.className='tm-ad-brand';brand.textContent=ad.brand;const h=document.createElement('h3');h.textContent=ad.title;const p=document.createElement('p');p.textContent=ad.copy;item.append(brand,h,p);item.appendChild(cta('詳細を見る'));e.appendChild(item);});info(e);return e;}
-function videoAd(c){const e=base(c,'tm-ad-video');const label=document.createElement('div');label.className='tm-ad-kicker';label.innerHTML='<b>広告（架空）</b><span>動画広告デモ · 15秒</span>';e.appendChild(label);const frame=document.createElement('div');frame.className='tm-ad-video-frame';frame.appendChild(art(c));const play=document.createElement('button');play.type='button';play.className='tm-ad-video-play';play.innerHTML='<i class="bi bi-play-fill" aria-hidden="true"></i>';play.setAttribute('aria-label','動画広告デモを再生');play.addEventListener('click',()=>{play.textContent='デモ';toast('動画の実再生はありません。架空の動画広告枠です。');});frame.appendChild(play);const cap=document.createElement('div');cap.className='tm-ad-video-caption';cap.innerHTML='<span class="tm-ad-brand">'+esc(c.brand)+'</span><span class="tm-ad-brand">SPONSORED VIDEO</span>';e.append(frame,cap);info(e);return e;}
-function related(){const e=base(null,'tm-ad-related');const label=document.createElement('div');label.className='tm-ad-kicker';label.innerHTML='<b>広告（架空）</b><span>関連するサービス</span>';e.appendChild(label);const row=document.createElement('div');row.className='tm-ad-related-links';['神社めぐりの宿','お守り・和雑貨','御朱印帳','日本茶のお取り寄せ','週末の日帰り旅'].forEach(t=>{const b=document.createElement('button');b.type='button';b.textContent=t;b.addEventListener('click',()=>toast('検索リンクのデモです。実際の検索・外部遷移はありません。'));row.appendChild(b);});e.appendChild(row);info(e);return e;}
+function searchAd(c){
+ const e=base(c,'tm-ad-search');
+ const label=document.createElement('div');label.className='tm-ad-kicker';label.innerHTML='<b>広告（架空）</b><span>スポンサー検索結果</span>';e.appendChild(label);
+ const choices=[c,pick(2)];
+ choices.forEach(ad=>{const item=document.createElement('div');item.className='tm-ad-search-result';const brand=document.createElement('span');brand.className='tm-ad-brand';brand.textContent=ad.brand;const h=document.createElement('h3');h.textContent=ad.title;const p=document.createElement('p');p.textContent=ad.copy;item.append(brand,h,p);item.appendChild(cta('詳細を見る'));e.appendChild(item);});
+ info(e);return e;
+}
+function videoAd(c){
+ const e=base(c,'tm-ad-video');
+ const label=document.createElement('div');label.className='tm-ad-kicker';label.innerHTML='<b>広告（架空）</b><span>動画広告デモ · 15秒</span>';e.appendChild(label);
+ const frame=document.createElement('div');frame.className='tm-ad-video-frame';frame.appendChild(art(c));
+ const play=document.createElement('button');play.type='button';play.className='tm-ad-video-play';play.innerHTML='<i class="bi bi-play-fill" aria-hidden="true"></i>';play.setAttribute('aria-label','動画広告デモを再生');
+ play.addEventListener('click',()=>{play.innerHTML='<i class="bi bi-check2" aria-hidden="true"></i>';toast('動画の実再生はありません。架空の動画広告枠です。');});
+ frame.appendChild(play);
+ const cap=document.createElement('div');cap.className='tm-ad-video-caption';cap.innerHTML='<span class="tm-ad-brand">'+esc(c.brand)+'</span><span class="tm-ad-brand">SPONSORED VIDEO</span>';
+ e.append(frame,cap);info(e);return e;
+}
+function related(){
+ const e=base(null,'tm-ad-related');
+ const label=document.createElement('div');label.className='tm-ad-kicker';label.innerHTML='<b>広告（架空）</b><span>関連するサービス</span>';e.appendChild(label);
+ const row=document.createElement('div');row.className='tm-ad-related-links';
+ ['神社めぐりの宿','お守り・和雑貨','御朱印帳','日本茶のお取り寄せ','週末の日帰り旅'].forEach(t=>{const b=document.createElement('button');b.type='button';b.textContent=t;b.addEventListener('click',()=>toast('検索リンクのデモです。実際の検索・外部遷移はありません。'));row.appendChild(b);});
+ e.appendChild(row);info(e);return e;
+}
 function insertAfter(id,ref,node){if(!ref||document.getElementById(id)||dismissedAds.has(id))return false;node.id=id;ref.insertAdjacentElement('afterend',node);return true;}
 function insertIntoList(id,list,node){if(!list||document.getElementById(id)||dismissedAds.has(id))return false;const children=Array.from(list.children).filter(el=>!el.classList.contains('tm-ad-unit'));if(children.length<2)return false;node.id=id;list.insertBefore(node,children[Math.min(2,children.length-1)]||null);return true;}
 function renderView(view){
