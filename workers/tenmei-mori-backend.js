@@ -2120,11 +2120,23 @@ if (url.pathname === "/api/today-anniv" && method === "GET") {
                 if (!parsed.ok) return new Response(JSON.stringify({ error: "読み上げる文章を読み取れませんでした。" }), { status: parsed.status, headers: { ...corsHeaders, "Content-Type": "application/json; charset=utf-8", "Cache-Control": "no-store" } });
                 const text = typeof parsed.body?.text === "string" ? parsed.body.text.trim() : "";
                 if (!text || text.length > 1800) return new Response(JSON.stringify({ error: "文章は1,800文字以内で指定してください。" }), { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json; charset=utf-8", "Cache-Control": "no-store" } });
-                const audio = await env.AI.run("@cf/myshell-ai/melotts", { prompt: text, lang: "JP" }, { returnRawResponse: true });
-                if (!audio || !audio.body) throw new Error("音声データを取得できませんでした");
-                return new Response(audio.body, {
+                // Gemini 3.1 Flash TTSはWAV音声をBase64で返す。
+                const result = await env.AI.run("google/gemini-3.1-flash-tts", {
+                    text,
+                    voice: "Kore"
+                });
+                const encoded = typeof result?.audio === "string" ? result.audio : "";
+                if (!encoded) throw new Error("TTSモデルから音声データが返されませんでした");
+                const base64 = encoded.includes(",") ? encoded.slice(encoded.indexOf(",") + 1) : encoded;
+                const binary = atob(base64);
+                const bytes = new Uint8Array(binary.length);
+                for (let i = 0; i < binary.length; i += 1) bytes[i] = binary.charCodeAt(i);
+                if (bytes.length < 44 || String.fromCharCode(...bytes.slice(0, 4)) !== "RIFF") {
+                    throw new Error("TTSモデルの音声形式がWAVではありません");
+                }
+                return new Response(bytes, {
                     status: 200,
-                    headers: { ...corsHeaders, "Content-Type": "audio/mpeg", "Cache-Control": "no-store", "X-Content-Type-Options": "nosniff" }
+                    headers: { ...corsHeaders, "Content-Type": "audio/wav", "Content-Length": String(bytes.length), "Cache-Control": "no-store", "X-Content-Type-Options": "nosniff" }
                 });
             } catch (error) {
                 console.error("Article TTS error:", error);
