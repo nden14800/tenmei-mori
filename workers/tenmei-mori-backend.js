@@ -2120,19 +2120,19 @@ if (url.pathname === "/api/today-anniv" && method === "GET") {
                 if (!parsed.ok) return new Response(JSON.stringify({ error: "読み上げる文章を読み取れませんでした。" }), { status: parsed.status, headers: { ...corsHeaders, "Content-Type": "application/json; charset=utf-8", "Cache-Control": "no-store" } });
                 const text = typeof parsed.body?.text === "string" ? parsed.body.text.trim() : "";
                 if (!text || text.length > 1800) return new Response(JSON.stringify({ error: "文章は1,800文字以内で指定してください。" }), { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json; charset=utf-8", "Cache-Control": "no-store" } });
-                // Gemini 3.1 Flash TTSはWAV音声をBase64で返す。
-                const result = await env.AI.run("google/gemini-3.1-flash-tts", {
-                    text,
-                    voice: "Kore"
+                // Cloudflare-hosted MeloTTS。日本語（JP）を指定するとWAV音声をBase64で返す。
+                const result = await env.AI.run("@cf/myshell-ai/melotts", {
+                    prompt: text,
+                    lang: "JP"
                 });
                 const encoded = typeof result?.audio === "string" ? result.audio : "";
-                if (!encoded) throw new Error("TTSモデルから音声データが返されませんでした");
+                if (!encoded) throw new Error("MeloTTSから音声データが返されませんでした");
                 const base64 = encoded.includes(",") ? encoded.slice(encoded.indexOf(",") + 1) : encoded;
                 const binary = atob(base64);
                 const bytes = new Uint8Array(binary.length);
                 for (let i = 0; i < binary.length; i += 1) bytes[i] = binary.charCodeAt(i);
                 if (bytes.length < 44 || String.fromCharCode(...bytes.slice(0, 4)) !== "RIFF") {
-                    throw new Error("TTSモデルの音声形式がWAVではありません");
+                    throw new Error("MeloTTSの返却データがWAV形式ではありません");
                 }
                 return new Response(bytes, {
                     status: 200,
