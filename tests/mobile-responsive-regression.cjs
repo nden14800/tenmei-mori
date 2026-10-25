@@ -31,3 +31,18 @@ assert.ok(
 });
 
 console.log('共通レスポンシブCSSの読み込み・基本ルール検査に合格しました。');
+[
+  '/* Ver.4 cross-screen hero parity: events + member pass.',
+  'html body #view-events .events-hero,',
+  'html body #view-auth .auth-passport-hero',
+  'font-size: clamp(2rem, 4.1vw, 3rem) !important;',
+  'font-weight: 900 !important;',
+  'letter-spacing: .035em !important;',
+  'linear-gradient(135deg, #fffdfa 0%, #fbf4ec 58%, #f3e7dc 100%) !important;',
+  'html.dark body #view-events .events-hero,',
+  'html.dark body #view-auth .auth-passport-hero',
+  '@media (max-width: 760px)',
+  '@media (max-width: 460px)',
+].forEach((rule) => {
+  assert.ok(css.includes(rule), 'イベント・参拝証ヒーローの共通デザイン規則が不足しています: ' + rule);
+});
