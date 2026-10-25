@@ -7,10 +7,22 @@ const RATES=[0.75,0.9,1,1.1,1.25,1.5,1.75,2].map(v=>({value:String(v),label:v+'�
 let seq=0;
 function split(text){
  const out=[];let cur='';
- const sentences=String(text||'').replace(/\s+/g,' ').split(/(?<=[。！？.!?])\s*/);
- for(const sentence of sentences){if(!sentence)continue;if((cur+sentence).length>1500&&cur){out.push(cur);cur='';}
- if(sentence.length>1500){for(let i=0;i<sentence.length;i+=1400)out.push(sentence.slice(i,i+1400));}else cur+=sentence;}
- if(cur)out.push(cur);return out;
+ const sentences=String(text||'').replace(/\s+/g,' ').trim().split(/(?<=[。！？.!?])\s*/);
+ for(const sentence of sentences){if(!sentence)continue;
+  if((cur+sentence).length>1500&&cur){out.push(cur.trim());cur='';}
+  if(sentence.length>1500){for(let i=0;i<sentence.length;i+=1400)out.push(sentence.slice(i,i+1400));}
+  else{if(cur&&!/\s$/.test(cur)&&!/^\s/.test(sentence))cur+=' ';cur+=sentence;}
+ }
+ if(cur.trim())out.push(cur.trim());return out;
+}
+function splitAnchored(nodes){
+ const out=[];
+ nodes.forEach(node=>{
+  const text=(node.innerText||node.textContent||'').replace(/\s+/g,' ').trim();
+  if(!text)return;
+  split(text).forEach(part=>out.push({text,part,anchor:node}));
+ });
+ return out;
 }
 function makeChoice(id,label,options,icon){
  const shell=document.createElement('div');shell.className='tenmei-choice';shell.dataset.controlKind='choice';shell.dataset.controlId=id;shell.dataset.controlLabel=label;shell.dataset.options=JSON.stringify(options);
@@ -81,9 +93,13 @@ function installPlayerStyles(){
 function create(target,title,providedText,anchorRoot){
  installPlayerStyles();
  if(!target||target.querySelector(':scope > .tenmei-article-audio'))return;
- const id='site-audio-'+(++seq),parts=split(providedText||target.innerText||target.textContent||'');
+ const id='site-audio-'+(++seq);
  const anchorNodes=anchorRoot?Array.from(anchorRoot.querySelectorAll('p,h1,h2,h3,h4,h5,li,blockquote,figcaption')).filter(el=>(el.innerText||el.textContent||'').trim().length>0):[];
- const partAnchors=parts.map(part=>{const key=part.replace(/\s+/g,' ').trim().slice(0,36);if(!key)return null;return anchorNodes.find(el=>(el.innerText||el.textContent||'').replace(/\s+/g,' ').includes(key))||null;});
+ // 記事では本文を先に一続きの文字列へ潰さず、DOMの段落・見出し単位で音声チャンクを作る。
+ // これにより1つの音声が複数段落をまたいで、ハイライトが最初の段落に固定される問題を防ぐ。
+ const anchored=anchorNodes.length?splitAnchored(anchorNodes):[];
+ const parts=anchored.length?anchored.map(item=>item.part):split(providedText||target.innerText||target.textContent||'');
+ const partAnchors=anchored.length?anchored.map(item=>item.anchor):parts.map(part=>{const key=part.replace(/\s+/g,' ').trim().slice(0,36);if(!key)return null;return anchorNodes.find(el=>(el.innerText||el.textContent||'').replace(/\s+/g,' ').includes(key))||null;});
  let activeAnchor=null;
  function highlightCurrentPart(){const next=partAnchors[index];if(activeAnchor&&activeAnchor!==next)activeAnchor.classList.remove('tenmei-article-audio__active');activeAnchor=next;if(activeAnchor){activeAnchor.classList.add('tenmei-article-audio__active');activeAnchor.scrollIntoView({behavior:'smooth',block:'center'});}}
  if(!parts.length)return;
