@@ -38899,7 +38899,7 @@ function filtered(){
 }
 function eventCard(e){
  const st=status(e);
- return '<article class="events-card"><div class="events-card-top"><span class="events-tag">'+esc(e.category)+'</span><span class="events-card-status '+st+'">'+statusLabel(st)+'</span></div><h4>'+esc(e.title)+'</h4><div class="events-card-date"><i class="bi bi-calendar3" aria-hidden="true"></i>'+range(e)+'</div><p class="events-card-desc">'+esc(e.description)+'</p><div class="events-card-bottom"><span><i class="bi bi-globe2" aria-hidden="true"></i> オンライン</span><button type="button" class="events-card-open" data-open-event="'+e.id+'">詳細を見る <i class="bi bi-arrow-right"></i></button></div></article>';
+ return '<article class="events-card"><div class="events-card-top"><span class="events-tag">'+esc(e.category)+'</span><span class="events-card-status '+st+'">'+statusLabel(st)+'</span></div><h4>'+esc(e.title)+'</h4><div class="events-card-date"><i class="bi bi-calendar3" aria-hidden="true"></i>'+range(e)+'</div><p class="events-card-desc">'+esc(e.description)+'</p><div class="events-card-tags"><span class="events-tag">'+esc(e.format||'オンライン企画')+'</span><span class="events-tag">'+esc(e.duration||'自由参加')+'</span></div><div class="events-card-bottom"><span>サイト内・無料</span><button type="button" class="events-card-open" data-open-event="'+e.id+'">詳細を見る <i class="bi bi-arrow-right"></i></button></div></article>';
 }
 function renderList(){
  const list=filtered(),el=$('events-list'),empty=$('events-empty');
@@ -38932,17 +38932,19 @@ function renderCalendar(){
  $('events-selected-date').textContent=state.date?fmt(state.date)+'のイベントを表示中です。':'日付を選ぶと、その日に開催される催しを表示します。';
 }
 function render(){renderFeatured();renderCalendar();renderList();}
-function openDetail(id){
+let lastEventTrigger=null,previousEventOverflow='';
+function openDetail(id,trigger){
  const e=events.find(x=>x.id===id);if(!e)return;
- const st=status(e);
- $('event-dialog-content').innerHTML='<p class="events-dialog-kicker">TENMEI MORI · EVENT</p><h3 id="event-dialog-title">'+esc(e.title)+'</h3><p class="events-dialog-date"><i class="bi bi-calendar3"></i> '+range(e)+' ・ '+statusLabel(st)+'</p><p class="events-dialog-description">'+esc(e.description)+'</p><div class="events-dialog-detail"><p><strong>開催場所：</strong>'+esc(e.place)+'</p><p><strong>開催時間：</strong>'+esc(e.time)+'</p><p><strong>参加費：</strong>無料</p><p><strong>参加方法：</strong>申込不要。期間中にページ内のボタンから参加できます。</p><p>'+esc(e.detail)+'</p></div><button type="button" class="events-dialog-cta" data-event-action="'+e.target+'">'+esc(e.action)+' <i class="bi bi-arrow-right"></i></button>';
+ const st=status(e);lastEventTrigger=trigger||document.activeElement;
+ $('event-dialog-content').innerHTML='<p class="events-dialog-kicker">TENMEI MORI · EVENT PROGRAM</p><h3 id="event-dialog-title">'+esc(e.title)+'</h3><p class="events-dialog-date"><i class="bi bi-calendar3"></i> '+range(e)+' ・ '+statusLabel(st)+'</p><p class="events-dialog-description">'+esc(e.description)+'</p><div class="events-dialog-detail"><p><strong>企画形式：</strong>'+esc(e.format||'オンライン企画')+'</p><p><strong>所要時間：</strong>'+esc(e.duration||'自由参加')+'</p><p><strong>参加場所：</strong>'+esc(e.place)+'</p><p><strong>参加できる時間：</strong>'+esc(e.time)+'</p><p><strong>参加費：</strong>無料　<strong>申込：</strong>不要</p><p>'+esc(e.detail)+'</p></div><h4 class="events-dialog-subheading">この企画でできること</h4><ul class="events-dialog-list">'+(e.highlights||[]).map(x=>'<li><i class="bi bi-check2-circle"></i><span>'+esc(x)+'</span></li>').join('')+'</ul><h4 class="events-dialog-subheading">参加の流れ</h4><ol class="events-dialog-steps">'+(e.steps||[]).map(x=>'<li>'+esc(x)+'</li>').join('')+'</ol><button type="button" class="events-dialog-cta" data-event-action="'+e.target+'">'+esc(e.action)+' <i class="bi bi-arrow-right"></i></button>';
  $('tenmei-event-dialog').hidden=false;
- document.body.style.overflow='hidden';
+ previousEventOverflow=document.body.style.overflow;document.body.style.overflow='hidden';
  $('events-dialog-close').focus();
 }
 function closeDetail(){
  $('tenmei-event-dialog').hidden=true;
- document.body.style.overflow='';
+ document.body.style.overflow=previousEventOverflow;
+ if(lastEventTrigger&&lastEventTrigger.isConnected)lastEventTrigger.focus();lastEventTrigger=null;
 }
 function resetFilters(){
  state.status='all';state.category='all';state.query='';state.date='';
@@ -38954,7 +38956,7 @@ function resetFilters(){
 window.renderTenmeiEvents=render;
 document.addEventListener('click',e=>{
  const open=e.target.closest('[data-open-event]');
- if(open){openDetail(open.dataset.openEvent);return;}
+ if(open){openDetail(open.dataset.openEvent,open);return;}
  const date=e.target.closest('[data-event-date]');
  if(date){state.date=state.date===date.dataset.eventDate?'':date.dataset.eventDate;state.year=Number(date.dataset.eventDate.slice(0,4));state.month=Number(date.dataset.eventDate.slice(5,7))-1;renderCalendar();renderList();return;}
  const statusBtn=e.target.closest('[data-event-status]');
@@ -38968,12 +38970,13 @@ document.addEventListener('click',e=>{
  if(e.target.closest('#events-month-prev')){state.month--;if(state.month<0){state.month=11;state.year--;}renderCalendar();return;}
  if(e.target.closest('#events-month-next')){state.month++;if(state.month>11){state.month=0;state.year++;}renderCalendar();return;}
  const action=e.target.closest('[data-event-action]');
- if(action){const target=action.dataset.eventAction;closeDetail();if(target==='omikuji'&&typeof window.startOmikuji==='function')window.startOmikuji();else if(target==='column')window.showView('column');else if(target==='prefecture')window.showView('prefecture');}
+ if(action){const target=action.dataset.eventAction;closeDetail();if(target==='omikuji'&&typeof window.startOmikuji==='function')window.startOmikuji();else if(['column','prefecture','history'].includes(target))window.showView(target);}
 });
 $('events-search-input')?.addEventListener('input',e=>{state.query=e.target.value;renderList();});
 document.addEventListener('keydown',e=>{
- if(e.key==='Escape'&&!$('tenmei-event-dialog').hidden)closeDetail();
- if(e.key==='/'&&!/INPUT|TEXTAREA/.test(document.activeElement.tagName)&&$('view-events')?.classList.contains('active')){e.preventDefault();$('events-search-input').focus();}
+ if(e.key==='Escape'&&!$('tenmei-event-dialog').hidden){closeDetail();return;}
+ if(!$('tenmei-event-dialog').hidden&&e.key==='Tab'){const f=[...$('tenmei-event-dialog').querySelectorAll('button:not([disabled]),a[href],input:not([disabled]),[tabindex]:not([tabindex=-1])')];if(f.length){const first=f[0],last=f[f.length-1];if(e.shiftKey&&document.activeElement===first){e.preventDefault();last.focus();}else if(!e.shiftKey&&document.activeElement===last){e.preventDefault();first.focus();}}}
+ if(e.key==='/'&&!/INPUT|TEXTAREA|SELECT/.test(document.activeElement.tagName)&&$('view-events')?.classList.contains('active')){e.preventDefault();$('events-search-input').focus();}
 });
 render();
 })();
