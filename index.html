@@ -28232,6 +28232,13 @@ function showLoading(show) {
             requestAnimationFrame(updateReadingProgress);
         }
 
+        // 初期表示のホーム画面も、画面遷移前からページ進捗を追跡する。
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', () => startReadingProgress(currentState.view || 'home'), { once: true });
+        } else {
+            requestAnimationFrame(() => startReadingProgress(currentState.view || 'home'));
+        }
+
         function stopReadingProgress() {
             window.removeEventListener('scroll', onReadingProgressScroll);
             window.removeEventListener('resize', onReadingProgressScroll);
