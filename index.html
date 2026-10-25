@@ -36172,7 +36172,7 @@ try {
         matsuri:   ['🏮','小さなお祭り','境内に祭り囃子が響き、提灯の灯りがひとつずつともりました。','festival',['🏮','🎆','✨']],
         suzune:    ['🔔','鈴音','鈴の音がひとつ、澄んで響きました。小さな幸運に気づけますように。','bell',['🔔','🎐','✦']]
     };
-    var aliases = { tenmei:'tenmei', maintenance:'maintenance', arigatou:'arigatou', arigato:'arigatou', 'ありがとう':'arigatou' };
+    var aliases = { tenmei:'tenmei', maintenance:'maintenance', arigatou:'arigatou', arigato:'arigatou', 'ありがとう':'arigatou', koukoku:'koukoku' };
     Object.keys(eggs).forEach(function (word) { aliases[word] = word; });
     function resolveSecretWord(value) { var key = normalizeSecretWord(value); return aliases[key] || null; }
     function showToast(message, type, icon) { try { if (typeof window.showToast === 'function') window.showToast(message, type || 'info', icon || '🔎'); } catch (_) {} }
@@ -36273,6 +36273,7 @@ try {
         if (key==='tenmei') { showEggScene('tenmei'); spawnSakura(); return true; }
         if (key==='maintenance') { checkMaintenance(true); return true; }
         if (key==='arigatou') { showEggScene('arigatou'); return true; }
+        if (key==='koukoku') { if(window.TenmeiMockAds&&typeof window.TenmeiMockAds.show==='function'){window.TenmeiMockAds.show();return true;} showToast('広告デモを読み込めませんでした。もう一度お試しください。','info','');return false; }
         showEggScene(key); return true;
     }
     // TENMEI Labsの入力欄・キーボード入力の共通入口
