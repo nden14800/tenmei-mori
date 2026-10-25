@@ -107,7 +107,7 @@ const adHtml = html.slice(start, end);
   'Urijima-onsen_Hot_spring.jpg','Anekaeshi_%28wagashi%29.jpg','Celullar_or_mobile_phone.jpg',
   'VEGETABLES.jpg','Taxi.jpeg','Bottle_image.jpg',
   'CC0 1.0','広告主・商品・価格・リンク先は実在せず',
-  'window.showToast(message','tm-ad-dismiss','function closeAll()','function onEscape(event)',
+  'window.showToast(message','tm-ad-dismiss','function closeAll(options)','function onEscape(event)',
   'contentView','editorialItems.length>=8','window.matchMedia'
 ].forEach((needle) => assert(adEgg.includes(needle), '広告イースターエッグの不足: ' + needle));
 assert(adHtml.includes("koukoku:'koukoku'"), '広告の合言葉が既存エンジンに登録されていません。');
