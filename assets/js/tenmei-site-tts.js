@@ -115,62 +115,7 @@ function installPlayerStyles(){
 @media(max-width:560px){.tenmei-article-audio{gap:11px;padding:14px 13px}.tenmei-article-audio__top{grid-template-columns:minmax(0,1fr)}.tenmei-article-audio__duration{justify-self:start}.tenmei-article-audio__transport{grid-template-columns:repeat(3,minmax(0,1fr));gap:7px}.tenmei-article-audio__button{min-height:40px;padding:0 5px;font-size:.68rem}.tenmei-article-audio__button--primary{grid-column:1/-1;min-height:43px;padding:0 10px;font-size:.78rem}.tenmei-article-audio__meta{grid-template-columns:max-content minmax(0,1fr) max-content;gap:5px;font-size:.66rem}.tenmei-article-audio__settings{gap:7px}}
 @media(max-width:380px){.tenmei-article-audio{padding:12px 10px}.tenmei-article-audio__transport{gap:6px}.tenmei-article-audio__button{min-height:38px;font-size:.64rem}.tenmei-article-audio__button.audio-stop span{display:none}.tenmei-article-audio__meta{font-size:.62rem}.tenmei-article-audio__meta .audio-count{font-size:.58rem}}
 .tenmei-site-tts-host[hidden]{display:none!important}
-html.dark .tenmei-article-audio{
- color-scheme:dark;
- --card-bg:#211b19;
- --card-border:#493b35;
- --input-bg:#2b2320;
- --text-main:#f5e8df;
- --text-sub:#c8b8ad;
- --accent-red:#c56b70;
- --accent-gold:#d5b36a;
- --tenmei-audio-progress:#d5b36a;
- background:var(--card-bg)!important;
- border-color:var(--card-border)!important;
- color:var(--text-main)!important;
- box-shadow:0 8px 24px rgba(0,0,0,.24)!important;
-}
-html.dark .tenmei-article-audio__button{
- background:var(--input-bg)!important;
- border-color:var(--card-border)!important;
- color:var(--text-main)!important;
-}
-html.dark .tenmei-article-audio__button--primary{
- background:var(--accent-red)!important;
- border-color:var(--accent-red)!important;
- color:#fff!important;
-}
-html.dark .tenmei-article-audio__button--primary:hover:not(:disabled){
- background:color-mix(in srgb,var(--accent-red) 84%,#000)!important;
-}
-html.dark .tenmei-article-audio .tenmei-choice__trigger{
- background:var(--input-bg)!important;
- border-color:var(--card-border)!important;
- color:var(--text-main)!important;
-}
-html.dark .tenmei-article-audio .tenmei-choice__popover{
- background:var(--card-bg)!important;
- border-color:var(--card-border)!important;
- color:var(--text-main)!important;
-}
-html.dark .tenmei-article-audio .tenmei-choice__option{
- color:var(--text-main)!important;
-}
-html.dark .tenmei-article-audio .tenmei-choice__option:hover,
-html.dark .tenmei-article-audio .tenmei-choice__option[aria-selected="true"]{
- background:color-mix(in srgb,var(--accent-red) 16%,var(--card-bg))!important;
- color:var(--text-main)!important;
-}
-html.dark .tenmei-article-audio .tenmei-audio-seek-track::before{
- background:var(--card-border)!important;
-}
-html.dark .tenmei-article-audio .tenmei-audio-seek-fill{
- background:var(--accent-red)!important;
-}
-html.dark .tenmei-article-audio__seek:focus-visible,
-html.dark .tenmei-article-audio .tenmei-audio-seek-track:focus-within{
- outline-color:var(--accent-gold)!important;
-}
+/* TTS inherits the shared site card and tenmei-choice tokens; do not fork control colors here. */
 @media(prefers-reduced-motion:reduce){.tenmei-article-audio *{scroll-behavior:auto!important;transition:none!important}}
 `;
  document.head.appendChild(style);
