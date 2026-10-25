@@ -104,7 +104,7 @@ const adEgg = fs.readFileSync(path.resolve(__dirname, '..', 'assets/js/tenmei-ad
   '厄払いサブスク',
   '広告を非表示にするプレミアム',
   'sessionStorage',
-  '90000',
+  '20000',
   'Math.random()<.18',
   '実際の販売・申込み・外部リンクはありません。',
   'prefers-reduced-motion:reduce'
