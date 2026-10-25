@@ -127,9 +127,9 @@ assert(adEgg.includes("window.TenmeiMockAds={show,close:closeAll"), '広告デ�
 
 assert(adEgg.includes("dismissedAds.add(e.id)")&&adEgg.includes("dismissedAds.has(id)"), '個別に閉じた広告が再描画で復活します。');
 assert(adEgg.includes("className='tm-ad-global-close'")&&adEgg.includes('広告をすべて非表示'), '広告デモ全体を終了するボタンがありません。');
-assert(adEgg.includes("document.querySelectorAll('.tm-ad-unit,.tm-ad-toolbar').forEach(el=>el.remove())"), '全広告終了時に広告枠と操作バーを一括削除していません。');
+assert(adEgg.includes("document.querySelectorAll('.tm-ad-unit,.tm-ad-toolbar,.tm-ad-info-panel').forEach(el=>el.remove())"), '全広告終了時に広告枠と操作バーを一括削除していません。');
 assert(adEgg.includes("!dismissedAds.has('tenmei-ad-side-rail')"), '閉じたサイド広告が再表示される可能性があります。');
-assert(adEgg.includes("document.querySelectorAll('.tm-ad-unit,.tm-ad-toolbar').forEach(el=>el.remove())"), '対象外ページへ移動したときに広告操作バーを片付けていません。');
+assert(adEgg.includes("document.querySelectorAll('.tm-ad-unit,.tm-ad-toolbar,.tm-ad-info-panel').forEach(el=>el.remove())"), '対象外ページへ移動したときに広告操作バーを片付けていません。');
 assert(adEgg.includes("再表示するには合言葉「koukoku」を入力してください"), '全広告終了後の再表示方法が明示されていません。');
 assert(adEgg.includes("role','dialog'")&&adEgg.includes("aria-expanded','true'")&&adEgg.includes('function closeInfo()'), '広告情報パネルのアクセシブルな開閉制御がありません。');
 assert(adEgg.includes('position:fixed')&&adEgg.includes('p.offsetHeight'), '広告情報パネルが広告枠のoverflowで切れない配置になっていません。');
@@ -137,6 +137,19 @@ assert(adEgg.includes("if(activeInfo){closeInfo();return;}"), 'Escapeキーで�
 assert(adEgg.includes('bi bi-info-circle')&&adEgg.includes('bi bi-x-lg')&&adEgg.includes('bi bi-eye-slash'), 'サイト共通のBootstrap Iconsを使用していません。');
 assert(!adEgg.includes('<svg')&&!adEgg.includes('textContent=\'×\'')&&!adEgg.includes("textContent='i'"), '広告だけの独自SVG・文字アイコンが残っています。');
 assert(adEgg.includes('tenmei-article-audio__button')||adEgg.includes('min-height:40px'), '広告操作ボタンのタップ領域が共通コントロール基準に揃っていません。');
+
+assert(adEgg.includes("className='tm-ad-controls'")&&adEgg.includes("controls.appendChild(close);e.appendChild(controls)"), '広告の閉じる・情報ボタンが専用の操作列に分離されていません。');
+assert(adEgg.includes("function closeAll(options)")&&adEgg.includes("if(!options.silent"), '広告デモ全終了時の通知抑制・一括終了APIがありません。');
+assert(adEgg.includes("const style=document.getElementById('tenmei-ad-demo-style');if(style)style.remove()"), '広告デモ終了後に広告専用スタイルが残ります。');
+assert(adEgg.includes("if(view&&view.id!==lastViewId)")&&adEgg.includes("dismissedAds.clear()"), 'ページ遷移後に広告枠を再生成する処理がありません。');
+assert(adEgg.includes("window.innerWidth>=1824"), 'サイドレール広告のデスクトップ幅条件が不正です。');
+assert(!adEgg.slice(adEgg.indexOf('function rectangle('),adEgg.indexOf('function multiplex(')).includes('e.innerHTML'), '広告コントロールを innerHTML で消去する実装が残っています。');
+assert(html.includes('window.closeTenmeiHiddenEffects = closeAllHiddenEffects'), '全隠し演出を終了する共通APIがありません。');
+assert(html.includes('tenmei-maintenance-preview')&&html.includes('previewHost.innerHTML = maintenanceMarkup')&&html.includes('document.body.appendChild(previewHost)'), 'メンテナンス確認が通常画面を置き換えずに表示されません。');
+assert(html.includes('tenmei-secret-close-all'), 'コナミ演出に全終了ボタンがありません。');
+assert(html.includes('tenmeiSakuraTimers')&&html.includes('tenmeiSakuraNodes'), '桜吹雪の演出を即時に全終了できません。');
+assert(html.includes('tenmei-global-button-interactions'), '全ページ共通のボタン操作フィードバックがありません。');
+
 
 
 console.log('Secret Easter eggs regression checks passed.');
