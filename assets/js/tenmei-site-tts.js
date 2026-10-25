@@ -88,6 +88,27 @@ function scan(){
   const holder=document.createElement('div');holder.className='tenmei-site-tts-host';
   el.insertAdjacentElement('afterend',holder);create(holder,el.closest('#dream-response-area')?'夢の解釈を聴く':el.closest('#worry-response-area')?'AI相談の回答を聴く':'AIの回答を聴く',text);
  });
+ // 旧プレーヤーが担当していたページも、記事と同じ共通プレーヤーで処理する。
+ const sharedTargets=[
+  ['#my-rank-result','あなたの星座・血液型順位'],
+  ['#ranking-list','本日の運勢ランキング'],
+  ['#full-ranking-list','運勢ランキングの続き'],
+  ['#summary-result','記事のAI要約'],
+  ['#document-history-content','改定履歴の本文'],
+  ['#about-content-area','当サイトについて'],
+  ['#privacy-content-area','プライバシーポリシー'],
+  ['#howto-content-area','使い方'],
+  ['.tenmei-ai-message--assistant .tenmei-ai-response:not(.is-loading)','AI案内の回答']
+ ];
+ sharedTargets.forEach(([selector,label])=>document.querySelectorAll(selector).forEach(el=>{
+  if(el.dataset.ttsMounted==='true'||el.closest('.tenmei-article-audio,.tenmei-site-tts-host'))return;
+  if(el.hidden||el.closest('[hidden],.hidden,.d-none'))return;
+  const text=(el.innerText||el.textContent||'').trim();
+  if(text.length<35)return;
+  el.dataset.ttsMounted='true';
+  const holder=document.createElement('div');holder.className='tenmei-site-tts-host';
+  el.insertAdjacentElement('afterend',holder);create(holder,label,text);
+ }));
 }
 window.TenmeiSiteTTS={scan,stopAll:function(){document.querySelectorAll('.tenmei-article-audio[data-site-tts="true"]').forEach(x=>x.querySelector('.audio-stop')?.click());}};
 let scheduled=false;const schedule=()=>{if(scheduled)return;scheduled=true;requestAnimationFrame(()=>{scheduled=false;scan();});};
