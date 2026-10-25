@@ -150,6 +150,22 @@ assert(html.includes('tenmei-secret-close-all'), 'コナミ演出に全終了ボ
 assert(html.includes('tenmeiSakuraTimers')&&html.includes('tenmeiSakuraNodes'), '桜吹雪の演出を即時に全終了できません。');
 assert(html.includes('tenmei-global-button-interactions'), '全ページ共通のボタン操作フィードバックがありません。');
 
+assert(html.includes('window.__tenmeiHiddenEffectsSuppressed = true;'), '全終了後に自動の隠し通知を抑止していません。');
+assert(html.includes('window.__tenmeiSecretMatcherReset=function(){matcher.reset();}'), '全終了後に合言葉の入力バッファをリセットしていません。');
+assert(html.includes('window.__tenmeiKonamiReset=function(){konamiPos=0;}'), '全終了後にコナミコマンドの途中入力をリセットしていません。');
+assert(html.includes('window.__tenmeiIdleEffectClose=function(){'), '全終了後にアイドル通知のタイマーとイベントを解除していません。');
+assert(html.includes('data-tenmei-hidden-effect-toast="true"'), '隠し通知を通常の通知と区別して閉じられません。');
+assert(html.includes('window.__tenmeiOriginalDocumentTitle')&&html.includes('document.title = window.__tenmeiOriginalDocumentTitle'), '全終了後にタブタイトルを通常表示へ戻していません。');
+assert(html.includes("document.querySelectorAll('.tenmei-egg-stage,.tenmei-sakura-petal')"), '桜・隠し演出DOMをまとめて削除していません。');
+assert(html.includes("document.querySelectorAll('#toast-container .toast-notification[data-tenmei-hidden-effect-toast"), '表示中の隠し通知を閉じていません。');
+assert(adEgg.includes('tm-ad-global-close--all')&&adEgg.includes('隠し演出をすべて終了'), '広告表示中に全隠し演出を終了するボタンがありません。');
+assert(adEgg.includes('flex-wrap:wrap')&&adEgg.includes('gap:8px;max-width:1120px'), '広告操作バーが狭い画面でボタンを重ねず折り返せません。');
+assert(adEgg.includes("window.closeTenmeiHiddenEffects==='function'")||adEgg.includes("typeof window.closeTenmeiHiddenEffects==='function'"), '広告から共通の全終了APIを呼び出していません。');
+assert(adEgg.includes("dismissedAds.clear()")&&adEgg.includes("if(view&&pageKey!==lastViewId)"), 'ページ移動時の広告差し替えがありません。');
+assert(!adEgg.includes('setInterval('), '広告がページ内で勝手に自動更新されるタイマーを持っています。');
+assert(html.includes(':where(button:not(:disabled),[role="button"]):hover')&&html.includes(':active{transform:scale(.985)}')&&html.includes(':focus-visible'), '全ボタンのhover・active・focus状態が共通化されていません。');
+
+
 
 
 console.log('Secret Easter eggs regression checks passed.');
