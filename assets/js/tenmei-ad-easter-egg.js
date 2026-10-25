@@ -163,7 +163,7 @@ function renderGlobal(){
  const contentView=!!view&&['view-home','view-news','view-news-list','view-column','view-column-list','view-article-detail','view-howto','view-about','view-developer'].includes(view.id);
  if(!contentView){document.querySelectorAll('.tm-ad-unit').forEach(el=>el.remove());return;}
  renderView(view);
- if(!document.getElementById('tenmei-ad-toolbar')){const toolbar=document.createElement('div');toolbar.id='tenmei-ad-toolbar';toolbar.className='tm-ad-toolbar';const stop=document.createElement('button');stop.type='button';stop.className='tm-ad-global-close';stop.innerHTML='<i class="bi bi-eye-slash" aria-hidden="true"></i><span>広告をすべて非表示</span>';stop.addEventListener('click',closeAll);toolbar.appendChild(stop);view.insertBefore(toolbar,view.firstChild);}
+ if(!document.getElementById('tenmei-ad-toolbar')){const toolbar=document.createElement('div');toolbar.id='tenmei-ad-toolbar';toolbar.className='tm-ad-toolbar';const stop=document.createElement('button');stop.type='button';stop.className='tm-ad-global-close';stop.innerHTML='<i class="bi bi-eye-slash" aria-hidden="true"></i><span>広告をすべて非表示</span>';stop.addEventListener('click',closeAll);toolbar.appendChild(stop);const firstAd=view.querySelector('.tm-ad-unit');if(firstAd)view.insertBefore(toolbar,firstAd);else{const firstHeader=view.querySelector(':scope > header');if(firstHeader)firstHeader.insertAdjacentElement('afterend',toolbar);else view.insertBefore(toolbar,view.firstChild);}}
  if(!document.getElementById('tenmei-ad-side-rail')&&window.innerWidth>1100){const side=window.innerWidth>=1900?skyscraper(pick(7)):halfpage(pick(7));side.id='tenmei-ad-side-rail';side.classList.add('tm-ad-side');document.body.appendChild(side);}
 }
 function closeAll(){
