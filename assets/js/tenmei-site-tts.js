@@ -304,11 +304,11 @@ function create(target,title,providedText,anchorRoot){
 }
 function extractFortuneText(result){
  const selector='.result-poem-part,.result-desc-part,.detail-column,.lucky-area';
- const matches=Array.from(result.querySelectorAll(selector));
+ const matches=Array.from(result.querySelectorAll(selector)).filter(node=>!node.matches('.hidden,.d-none,.visually-hidden,.sr-only,[aria-hidden="true"],[hidden]'));
  const roots=matches.filter(node=>!matches.some(other=>other!==node&&other.contains(node)));
  return roots.map(node=>{
   const clone=node.cloneNode(true);
-  clone.querySelectorAll('svg,script,style,button,input,textarea,select,nav,form,.tenmei-choice,.tenmei-article-audio,.tenmei-site-tts-host,.hidden,.d-none,.visually-hidden,[aria-hidden="true"],[hidden]').forEach(child=>child.remove());
+  clone.querySelectorAll('svg,script,style,button,input,textarea,select,nav,form,.tenmei-choice,.tenmei-article-audio,.tenmei-site-tts-host,.hidden,.d-none,.visually-hidden,.sr-only,[aria-hidden="true"],[hidden]').forEach(child=>child.remove());
   return (clone.innerText||clone.textContent||'').replace(/\\s+/g,' ').trim();
  }).filter(Boolean).join('\\n');
 }
