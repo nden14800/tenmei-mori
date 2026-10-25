@@ -83,7 +83,7 @@ document.addEventListener('keydown',function(event){
 },false);
 
 var armed=false,sessionKey='tenmei_mock_ads_shown';
-window.setTimeout(function(){if(document.hidden)return;try{if(sessionStorage.getItem(sessionKey))return;}catch(_){}armed=true;},90000);
+window.setTimeout(function(){if(document.hidden)return;try{if(sessionStorage.getItem(sessionKey))return;}catch(_){}armed=true;},20000);
 function maybeShow(){if(!armed||document.hidden)return;armed=false;try{if(sessionStorage.getItem(sessionKey))return;sessionStorage.setItem(sessionKey,'1');}catch(_){}if(Math.random()<.18)window.setTimeout(showGallery,650);}
 ['pointerdown','touchstart','keydown'].forEach(function(type){document.addEventListener(type,maybeShow,{passive:true});});
 })();
