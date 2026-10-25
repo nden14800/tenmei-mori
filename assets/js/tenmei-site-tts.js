@@ -213,7 +213,8 @@ function create(target,title,providedText,anchorRoot){
    const rates={
     '1-1':[0,32,40,48,56,64,80,96,112,128,160,192,224,256,320],
     '1-2':[0,32,48,56,64,80,96,112,128,160,192,224,256,320,384],
-    '1-3':[0,32,64,96,128,160,192,224,256,288,320,352,384,416,448],    '2-1':[0,8,16,24,32,40,48,56,64,80,96,112,128,144,160],
+    '1-3':[0,32,64,96,128,160,192,224,256,288,320,352,384,416,448],
+    '2-1':[0,8,16,24,32,40,48,56,64,80,96,112,128,144,160],
     '2-2':[0,8,16,24,32,40,48,56,64,80,96,112,128,144,160],
     '2-3':[0,32,48,56,64,80,96,112,128,144,160,176,192,224,256]
    };
@@ -322,7 +323,8 @@ function scan(){
   const text=(el.innerText||el.textContent||'').trim();if(text.length<20||el.closest('.hidden,[hidden]'))return;
   el.dataset.ttsMounted='true';
   const holder=document.createElement('div');holder.className='tenmei-site-tts-host';
-  el.insertAdjacentElement('beforebegin',holder);create(holder,el.closest('#dream-response-area')?'夢の解釈を聴く':el.closest('#worry-response-area')?'AI相談の回答を聴く':'AIの回答を聴く',text); });
+  el.insertAdjacentElement('beforebegin',holder);create(holder,el.closest('#dream-response-area')?'夢の解釈を聴く':el.closest('#worry-response-area')?'AI相談の回答を聴く':'AIの回答を聴く',text);
+ });
  // 旧プレーヤーが担当していたページも、記事と同じ共通プレーヤーで処理する。
  const sharedTargets=[
   ['#dream-response-area','AI夢占いの結果'],
