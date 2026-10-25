@@ -90,6 +90,8 @@ function scan(){
  });
  // 旧プレーヤーが担当していたページも、記事と同じ共通プレーヤーで処理する。
  const sharedTargets=[
+  ['#dream-response-area','AI夢占いの結果'],
+  ['#worry-response-area','AI悩み相談の回答'],
   ['#my-rank-result','あなたの星座・血液型順位'],
   ['#ranking-list','本日の運勢ランキング'],
   ['#full-ranking-list','運勢ランキングの続き'],
@@ -103,7 +105,9 @@ function scan(){
  sharedTargets.forEach(([selector,label])=>document.querySelectorAll(selector).forEach(el=>{
   if(el.dataset.ttsMounted==='true'||el.closest('.tenmei-article-audio,.tenmei-site-tts-host'))return;
   if(el.hidden||el.closest('[hidden],.hidden,.d-none'))return;
-  const text=(el.innerText||el.textContent||'').trim();
+  const clone=el.cloneNode(true);
+  clone.querySelectorAll('button,input,textarea,select,script,style,svg,nav,form,.tenmei-choice,.tenmei-article-audio,.tenmei-site-tts-host,.hidden,.d-none,[aria-hidden="true"],[hidden]').forEach(node=>node.remove());
+  const text=(clone.innerText||clone.textContent||'').replace(/\\n{3,}/g,'\\n\\n').trim();
   if(text.length<35)return;
   el.dataset.ttsMounted='true';
   const holder=document.createElement('div');holder.className='tenmei-site-tts-host';
