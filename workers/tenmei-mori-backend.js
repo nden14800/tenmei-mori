@@ -2113,6 +2113,25 @@ if (url.pathname === "/api/today-anniv" && method === "GET") {
             });
         }
 
+        // 記事読み上げ：Workers AI MeloTTSで日本語音声を生成する。
+        if (url.pathname === "/api/article-tts" && method === "POST") {
+            try {
+                const parsed = await readBoundedJson(request, 12000);
+                if (!parsed.ok) return new Response(JSON.stringify({ error: "読み上げる文章を読み取れませんでした。" }), { status: parsed.status, headers: { ...corsHeaders, "Content-Type": "application/json; charset=utf-8", "Cache-Control": "no-store" } });
+                const text = typeof parsed.body?.text === "string" ? parsed.body.text.trim() : "";
+                if (!text || text.length > 1800) return new Response(JSON.stringify({ error: "文章は1,800文字以内で指定してください。" }), { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json; charset=utf-8", "Cache-Control": "no-store" } });
+                const audio = await env.AI.run("@cf/myshell-ai/melotts", { prompt: text, lang: "JP" }, { returnRawResponse: true });
+                if (!audio || !audio.body) throw new Error("音声データを取得できませんでした");
+                return new Response(audio.body, {
+                    status: 200,
+                    headers: { ...corsHeaders, "Content-Type": "audio/mpeg", "Cache-Control": "no-store", "X-Content-Type-Options": "nosniff" }
+                });
+            } catch (error) {
+                console.error("Article TTS error:", error);
+                return new Response(JSON.stringify({ error: "音声を生成できませんでした。少し時間をおいて再度お試しください。" }), { status: 502, headers: { ...corsHeaders, "Content-Type": "application/json; charset=utf-8", "Cache-Control": "no-store" } });
+            }
+        }
+
         // 天命乃杜独自AI案内：公開サイトの使い方だけを案内し、会話を保存しない。
         if (url.pathname === "/api/ai-guide" && method === "POST") {
             try {
