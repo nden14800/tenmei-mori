@@ -348,6 +348,21 @@ function enhanceDataTables(root=document){root.querySelectorAll('table').forEach
 const tableObserver=new MutationObserver(()=>enhanceDataTables());tableObserver.observe(document.querySelector('main'),{childList:true,subtree:true});
 document.addEventListener('keydown',e=>{const root=e.target.closest('.tenmei-choice');if(!root)return;const trigger=root.querySelector('.tenmei-choice__trigger'),options=[...root.querySelectorAll('.tenmei-choice__option')];if(e.key==='Escape'){root.dataset.open='false';root.querySelector('.tenmei-choice__popover').hidden=true;trigger.setAttribute('aria-expanded','false');trigger.focus();e.preventDefault();return}if(e.target===trigger&&e.key==='ArrowDown'){if(root.dataset.open!=='true')trigger.click();requestAnimationFrame(()=>{(options.find(x=>x.getAttribute('aria-selected')==='true')||options[0])?.focus()});e.preventDefault();return}if(options.includes(e.target)){const i=options.indexOf(e.target);if(e.key==='ArrowDown'||e.key==='ArrowUp'){options[(i+(e.key==='ArrowDown'?1:-1)+options.length)%options.length]?.focus();e.preventDefault()}if(e.key==='Home'){options[0]?.focus();e.preventDefault()}if(e.key==='End'){options[options.length-1]?.focus();e.preventDefault()}}});
 
+function renderCompare(){
+ const host=$('compareSelectors'),table=$('compareTable'),chart=$('compareChart');
+ if(!host||!table||!chart)return;
+ host.innerHTML=sites.map(s=>'<label class="compare-option"><input type="checkbox" data-compare="'+esc(s.id)+'" '+(selected.includes(s.id)?'checked':'')+' '+(!selected.includes(s.id)&&selected.length>=4?'disabled':'')+'><span>'+esc(s.name)+'</span><small>'+s.score.toFixed(1)+'</small></label>').join('');
+ const chosen=selected.map(id=>sites.find(s=>s.id===id)).filter(Boolean);
+ if(!chosen.length){
+  table.innerHTML='<div class="empty">比較するサイトを選択してください（最大4サイト）。</div>';
+  if(obCharts.compareChart){obCharts.compareChart.clear()}
+  return;
+ }
+ table.innerHTML='<table><thead><tr><th>評価項目</th><th>ウェイト</th>'+chosen.map(s=>'<th class="num">'+esc(s.name)+'</th>').join('')+'</tr></thead><tbody>'+CRITERIA.map((c,i)=>'<tr><td>'+esc(c[0])+'</td><td class="num">'+c[1]+'%</td>'+chosen.map(s=>'<td class="num">'+s.detailScores[i]+'</td>').join('')+'</tr>').join('')+'<tr><th>総合Index</th><th>100%</th>'+chosen.map(s=>'<th class="num">'+s.score.toFixed(1)+'</th>').join('')+'</tr></tbody></table>';
+ if(!window.echarts)return;
+ const option={tooltip:{trigger:'item'},legend:{top:0,textStyle:{color:obMuted(),fontSize:10}},radar:{indicator:CRITERIA.map(c=>({name:c[0],max:100})),radius:'66%',axisName:{color:obMuted(),fontSize:9},splitLine:{lineStyle:{color:obLine()}},splitArea:{areaStyle:{color:['transparent','rgba(128,128,128,.035)']}},axisLine:{lineStyle:{color:obLine()}}},series:[{type:'radar',data:chosen.map((s,i)=>({name:s.name,value:s.detailScores,lineStyle:{width:2},areaStyle:{opacity:.08}}))}]};
+ obChart('compareChart',option);
+}
 function renderAll(){
  obSelectInit();renderMetrics();renderTable();renderCards();renderAnalysisTables();renderCompare();updateDock();enhanceDataTables();labelChartRegions();
  if(!window.echarts){document.querySelectorAll('.chart-host').forEach(el=>{el.innerHTML='<div class="chart-fallback">グラフを読み込めませんでした。ランキング表と詳細データ表は引き続き利用できます。</div>'});return}
