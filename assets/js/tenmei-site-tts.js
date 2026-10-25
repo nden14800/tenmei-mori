@@ -212,6 +212,29 @@ function scanArticleReader(){
  create(host,title+'を聴く',text);
 }
 window.TenmeiSiteTTS={scan,stopAll:function(){document.querySelectorAll('.tenmei-article-audio[data-site-tts="true"]').forEach(x=>x.querySelector('.audio-stop')?.click());}};
+let articleMountGeneration=0;
+function mountArticleAfterOpen(){
+ const token=++articleMountGeneration;let attempts=0;
+ const attempt=()=>{
+  if(token!==articleMountGeneration)return;
+  const root=document.querySelector('#view-article-detail');
+  if(root&&root.getClientRects().length)scanArticleReader();
+  const player=root?.querySelector('.tenmei-article-audio[data-site-tts="true"]');
+  if(player)return;
+  if(attempts++<12)requestAnimationFrame(attempt);
+ };
+ requestAnimationFrame(()=>requestAnimationFrame(attempt));
+}
+const originalOpen=window.openArticle;
+if(typeof originalOpen==='function'&&!originalOpen.__tenmeiSiteTTSWrapped){
+ const wrappedOpen=function(...args){
+  const result=originalOpen.apply(this,args);
+  mountArticleAfterOpen();
+  return result;
+ };
+ wrappedOpen.__tenmeiSiteTTSWrapped=true;
+ window.openArticle=wrappedOpen;
+}
 document.dispatchEvent(new Event('tenmei:tts-ready'));
 let scheduled=false;const schedule=()=>{if(scheduled)return;scheduled=true;requestAnimationFrame(()=>{scheduled=false;scan();});};
 const mo=new MutationObserver(schedule);mo.observe(document.documentElement,{childList:true,subtree:true,characterData:true,attributes:true,attributeFilter:['class','hidden','aria-hidden']});
