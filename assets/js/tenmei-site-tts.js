@@ -86,7 +86,7 @@ function scan(){
   const text=(el.innerText||el.textContent||'').trim();if(text.length<20||el.closest('.hidden,[hidden]'))return;
   el.dataset.ttsMounted='true';
   const holder=document.createElement('div');holder.className='tenmei-site-tts-host';
-  el.insertAdjacentElement('afterend',holder);create(holder,el.closest('#dream-response-area')?'夢の解釈を聴く':el.closest('#worry-response-area')?'AI相談の回答を聴く':'AIの回答を聴く',text);
+  el.insertAdjacentElement('beforebegin',holder);create(holder,el.closest('#dream-response-area')?'夢の解釈を聴く':el.closest('#worry-response-area')?'AI相談の回答を聴く':'AIの回答を聴く',text);
  });
  // 旧プレーヤーが担当していたページも、記事と同じ共通プレーヤーで処理する。
  const sharedTargets=[
@@ -111,7 +111,7 @@ function scan(){
   if(text.length<35)return;
   el.dataset.ttsMounted='true';
   const holder=document.createElement('div');holder.className='tenmei-site-tts-host';
-  el.insertAdjacentElement('afterend',holder);create(holder,label,text);
+  el.insertAdjacentElement('beforebegin',holder);create(holder,label,text);
  }));
 }
 window.TenmeiSiteTTS={scan,stopAll:function(){document.querySelectorAll('.tenmei-article-audio[data-site-tts="true"]').forEach(x=>x.querySelector('.audio-stop')?.click());}};
