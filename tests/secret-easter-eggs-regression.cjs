@@ -95,21 +95,12 @@ assert.deepEqual(continued.matches, ['hoshizora'], '接頭辞の保留が続き�
 
 const adEgg = fs.readFileSync(path.resolve(__dirname, '..', 'assets/js/tenmei-ad-easter-egg.js'), 'utf8');
 [
-  'function showGallery()',
-  '天命乃杜 広告配信センター',
-  '神社Wi-Fi',
-  'お守り Pro Max',
-  '開運プレミアム',
-  'AI神託 EX',
-  '厄払いサブスク',
-  '広告を非表示にするプレミアム',
-  'sessionStorage',
-  '20000',
-  'Math.random()<.18',
-  '実際の販売・申込み・外部リンクはありません。',
-  'prefers-reduced-motion:reduce'
-].forEach((needle) => assert(adEgg.includes(needle), '架空広告機能の不足: ' + needle));
-assert(adEgg.includes("key==='koukoku'") || adEgg.includes("endsWith('koukoku')"), '広告の合言葉がありません。');
-assert(adEgg.includes("'/assets/js/tenmei-ad-easter-egg.js'") === false, '広告スクリプト本体に自己読み込みは不要です。');
+  'MORI SELECT','KOTOHA TRAVEL','日々の台所','SORA MOBILE','青葉オンライン講座','KURASHI INSURANCE','御影堂オンライン','NATURE LAB',
+  'tenmei-ad-leaderboard','tenmei-ad-rectangle','tenmei-ad-feed','tenmei-ad-multiplex','tenmei-ad-anchor','setTimeout(render,5000)','prefers-reduced-motion:reduce'
+].forEach((needle) => assert(adEgg.includes(needle), '広告イースターエッグの不足: ' + needle));
+assert(!adEgg.includes('sessionStorage'), '広告表示にセッション制限が残っています。');
+assert(!adEgg.includes('Math.random()<.18'), '広告表示に確率制限が残っています。');
+assert(!adEgg.includes('showGallery'), '旧式の広告モーダルが残っています。');
+assert(adEgg.includes("endsWith('koukoku')"), '広告の合言葉がありません。');
 
 console.log('Secret Easter eggs regression checks passed.');
