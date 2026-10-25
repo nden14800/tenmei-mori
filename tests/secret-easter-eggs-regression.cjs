@@ -100,10 +100,15 @@ const adHtml = html.slice(start, end);
   '杜の湯庵','神彩堂','結び守り工房','京菓子 こよみ','SORA MOBILE',
   '青葉オンライン学舎','NATURE LAB','日々の台所','KURASHI LIFE','旅する日本茶',
   '白狐タクシー','暦の宿',
-  'tm-ad-banner','tm-ad-billboard','tm-ad-infeed','tm-ad-inarticle','tm-ad-sponsored-story','tm-ad-rectangle','tm-ad-halfpage',
-  'tm-ad-multiplex','tm-ad-search','tm-ad-video','tm-ad-related','tm-ad-anchor','height:600px','@media(min-width:1824px)',
-  'function art(c)','<svg viewBox=','tm-art-onsen','tm-art-mobile','tm-art-vegetable','tm-art-tea',
-  '広告主・商品・価格は実在しません','外部リンク','クリック計測','TenmeiMockAds={show'
+  'tm-ad-banner','tm-ad-billboard','tm-ad-leaderboard','tm-ad-mobile-banner','tm-ad-skyscraper',
+  'tm-ad-infeed','tm-ad-inarticle','tm-ad-sponsored-story','tm-ad-rectangle','tm-ad-halfpage',
+  'tm-ad-multiplex','tm-ad-search','tm-ad-video','tm-ad-related','tm-ad-anchor',
+  'min-height:600px','@media(min-width:1824px)','IMAGE_ASSETS','function art(c)',
+  'Urijima-onsen_Hot_spring.jpg','Anekaeshi_%28wagashi%29.jpg','Smartphone_Use.jpg',
+  'VEGETABLES.jpg','Kokusai_Motorcars_Toyota_JPN_Taxi.jpg','Bottle_image.jpg',
+  'CC0 1.0','広告主・商品・価格・リンク先は実在しません',
+  'window.showToast(message','tm-ad-dismiss','function closeAll()','function onEscape(event)',
+  'contentView','editorialItems.length>=8','window.matchMedia'
 ].forEach((needle) => assert(adEgg.includes(needle), '広告イースターエッグの不足: ' + needle));
 assert(adHtml.includes("koukoku:'koukoku'"), '広告の合言葉が既存エンジンに登録されていません。');
 assert(adHtml.includes("key==='koukoku'"), '広告の合言葉が既存の共通トリガーを利用していません。');
@@ -113,6 +118,11 @@ assert(!adEgg.includes('window._trySecretWord='), '既存の合言葉処理を�
 assert(!adEgg.includes('sessionStorage'), '広告表示に独自セッション制限が残っています。');
 assert(!adEgg.includes('Math.random()<.18'), '広告表示に独自確率制限が残っています。');
 assert(!adEgg.includes('setTimeout(render'), '広告表示に時間待ち条件が残っています。');
+assert(!adEgg.includes('tm-ad-demo-notice')&&!adEgg.includes('tm-ad-toast')&&!adEgg.includes('function notice()'), '独自通知UIが残っています。');
+assert(!adEgg.includes('<svg viewBox='), '手製の簡易SVG画像が残っています。');
 assert(adEgg.includes("window.addEventListener('scroll'"), 'アンカー広告のスクロール表示がありません。');
+assert(adEgg.includes("window.showToast('以下はすべて架空の広告です。実在の広告配信・販売・申込はありません。','info','広告デモ')"), '共通通知UIでデモ表示を説明していません。');
+assert(adEgg.includes("document.createElement(format==='tm-ad-infeed'?'li':'aside')"), 'インフィード広告がリスト要素として挿入されていません。');
+assert(adEgg.includes("window.TenmeiMockAds={show,close:closeAll"), '広告デモを閉じるAPIがありません。');
 
 console.log('Secret Easter eggs regression checks passed.');
