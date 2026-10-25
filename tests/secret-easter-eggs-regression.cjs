@@ -60,6 +60,7 @@ assert.deepEqual(run('hoshizora', ['hoshi','hoshizora']), ['hoshizora'], 'hoshiz
 assert.deepEqual(run('hoshi', ['hoshi','hoshizora'], true), ['hoshi'], 'hoshi の保留確定に失敗しました。');
 assert.deepEqual(run('arigatou', ['arigato','arigatou']), ['arigatou'], 'arigatou が arigato として誤判定されます。');
 assert.deepEqual(run('tenmei', ['tenmei']), ['tenmei'], '通常の合言葉が即時発火しません。');
+assert.deepEqual(run('koukoku', ['koukoku']), ['koukoku'], '広告の合言葉が既存の共通マッチャーで発火しません。');
 assert.equal(api.normalizeSecretWord(' Ｈｏｓｈｉ　Ｚｏｒａ '), 'hoshizora', '全角・空白の正規化に失敗しました。');
 
 // 未完成の入力を放置した後、別の入力を足して合言葉が誤発火しないことを確認。
