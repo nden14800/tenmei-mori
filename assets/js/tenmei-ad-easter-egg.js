@@ -27,4 +27,6 @@ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',
 function norm(v){try{return String(v||'').normalize('NFKC').toLowerCase().replace(/[\s\-_]+/g,'');}catch(e){return String(v||'').toLowerCase();}}
 const old=window._trySecretWord;window._trySecretWord=function(w){const k=norm(w);if(['koukoku','ads','advertisement','広告'].includes(k)){render();return true;}return typeof old==='function'?old(w):false;};
 let buffer='';document.addEventListener('keydown',e=>{const t=e.target,tag=String(t&&t.tagName||'').toUpperCase();if(e.isComposing||e.keyCode===229||e.ctrlKey||e.metaKey||e.altKey||['INPUT','TEXTAREA','SELECT'].includes(tag)||(t&&(t.isContentEditable||(t.closest&&t.closest('[role="textbox"]'))))){buffer='';return;}if(e.key.length!==1){buffer='';return;}const k=norm(e.key);if(!/^[a-z0-9]$/.test(k)){buffer='';return;}buffer=(buffer+k).slice(-14);if(buffer.endsWith('koukoku')||buffer.endsWith('advertisement')||buffer.endsWith('ads')){buffer='';render();}},false);
+const feedList=document.getElementById('home-news-list');
+if(feedList&&typeof MutationObserver==='function'){new MutationObserver(()=>{if(feedList.children.length>=2&&!document.getElementById('tenmei-ad-feed')){const item=feed(pick());item.id='tenmei-ad-feed';feedList.insertBefore(item,feedList.children[2]||null);}}).observe(feedList,{childList:true});}
 })();
