@@ -223,3 +223,251 @@ table {
     transition-duration: 0.01ms !important;
   }
 }
+
+
+/* Ver.4 cross-screen hero parity: events + member pass.
+   Keep the page-specific content, but share the same paper, type scale,
+   frame, emblem, and responsive rhythm as the other sidebar page heroes. */
+#view-events,
+#view-auth {
+  --page-hero-ink: #302522;
+  --page-hero-muted: #756560;
+  --page-hero-gold: #b68a35;
+  --page-hero-line: rgba(182, 138, 53, .34);
+  --page-hero-inner: rgba(182, 138, 53, .24);
+  --page-hero-shadow: rgba(68, 34, 28, .09);
+  --page-hero-wash: rgba(182, 138, 53, .18);
+}
+#view-events { --page-hero-accent: #9f3038; }
+#view-auth { --page-hero-accent: #9f1d25; }
+
+html body #view-events .events-hero,
+html body #view-auth .auth-passport-hero {
+  position: relative !important;
+  isolation: isolate !important;
+  display: grid !important;
+  grid-template-columns: minmax(0, 1fr) auto !important;
+  align-items: center !important;
+  gap: clamp(24px, 5vw, 52px) !important;
+  min-height: var(--ver4-hero-min-height, 258px) !important;
+  margin: 0 0 var(--ver4-section-gap, 24px) !important;
+  padding: var(--ver4-hero-padding, clamp(28px, 5vw, 48px)) !important;
+  overflow: hidden !important;
+  box-sizing: border-box !important;
+  border: 1px solid var(--page-hero-line) !important;
+  border-radius: var(--ver4-hero-radius, 28px) !important;
+  background:
+    radial-gradient(circle at 91% 16%, var(--page-hero-wash), transparent 25%),
+    radial-gradient(circle at 6% 100%, rgba(159, 29, 37, .11), transparent 33%),
+    linear-gradient(135deg, #fffdfa 0%, #fbf4ec 58%, #f3e7dc 100%) !important;
+  color: var(--page-hero-ink) !important;
+  box-shadow: 0 15px 34px var(--page-hero-shadow) !important;
+}
+html body #view-events .events-hero::before,
+html body #view-auth .auth-passport-hero::before {
+  position: absolute !important;
+  inset: var(--ver4-hero-inner-inset, 12px) !important;
+  z-index: 0 !important;
+  border: 1px solid var(--page-hero-inner) !important;
+  border-radius: var(--ver4-hero-inner-radius, 20px) !important;
+  content: "" !important;
+  pointer-events: none !important;
+}
+html body #view-events .events-hero::after,
+html body #view-auth .auth-passport-hero::after {
+  position: absolute !important;
+  z-index: 0 !important;
+  top: -96px !important;
+  right: -58px !important;
+  width: 252px !important;
+  height: 252px !important;
+  border: 1px solid color-mix(in srgb, var(--page-hero-accent) 14%, transparent) !important;
+  border-radius: 50% !important;
+  box-shadow:
+    0 0 0 22px color-mix(in srgb, var(--page-hero-gold) 6%, transparent),
+    0 0 0 46px color-mix(in srgb, var(--page-hero-accent) 4%, transparent) !important;
+  content: "" !important;
+  pointer-events: none !important;
+}
+html body #view-events .events-hero > *,
+html body #view-auth .auth-passport-hero > * {
+  position: relative !important;
+  z-index: 1 !important;
+}
+html body #view-events .events-hero-copy,
+html body #view-auth .auth-passport-copy {
+  min-width: 0 !important;
+}
+html body #view-events .events-eyebrow,
+html body #view-auth .auth-passport-kicker {
+  display: flex !important;
+  align-items: center !important;
+  gap: .45rem !important;
+  margin: 0 0 .55rem !important;
+  color: var(--page-hero-accent) !important;
+  font-family: 'Zen Kaku Gothic New', sans-serif !important;
+  font-size: .68rem !important;
+  font-weight: 800 !important;
+  letter-spacing: .15em !important;
+  line-height: 1.35 !important;
+}
+html body #view-events .events-eyebrow i,
+html body #view-auth .auth-passport-kicker i {
+  color: var(--page-hero-gold) !important;
+  font-size: .82rem !important;
+}
+html body #view-events #events-page-title,
+html body #view-auth .auth-passport-title {
+  margin: 0 !important;
+  color: var(--page-hero-ink) !important;
+  font-family: 'Zen Old Mincho', 'Shippori Mincho', serif !important;
+  font-size: clamp(2rem, 4.1vw, 3rem) !important;
+  font-weight: 900 !important;
+  letter-spacing: .035em !important;
+  line-height: 1.2 !important;
+}
+html body #view-events .events-lead,
+html body #view-auth .auth-passport-lede {
+  max-width: 620px !important;
+  margin: .85rem 0 0 !important;
+  color: var(--page-hero-muted) !important;
+  font-family: 'Shippori Mincho', 'Zen Old Mincho', serif !important;
+  font-size: clamp(.9rem, 1.7vw, 1.02rem) !important;
+  font-weight: 500 !important;
+  letter-spacing: 0 !important;
+  line-height: 1.9 !important;
+}
+html body #view-events .events-hero-meta {
+  display: flex !important;
+  flex-wrap: wrap !important;
+  gap: 8px 16px !important;
+  margin: 18px 0 0 !important;
+  color: var(--page-hero-muted) !important;
+  font-family: 'Zen Kaku Gothic New', sans-serif !important;
+  font-size: .72rem !important;
+  font-weight: 700 !important;
+}
+html body #view-events .events-hero-meta span {
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 6px !important;
+  padding: 0 !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+  color: inherit !important;
+}
+html body #view-events .events-hero-meta span::before {
+  width: 4px;
+  height: 4px;
+  flex: 0 0 4px;
+  border-radius: 50%;
+  background: var(--page-hero-gold);
+  content: "";
+}
+html body #view-events .events-hero-emblem,
+html body #view-auth .auth-passport-mark {
+  display: grid !important;
+  width: 128px !important;
+  min-width: 128px !important;
+  height: 128px !important;
+  place-items: center !important;
+  align-content: center !important;
+  gap: .45rem !important;
+  padding: 0 !important;
+  border: 1px solid color-mix(in srgb, var(--page-hero-gold) 48%, var(--card-border)) !important;
+  border-radius: 50% !important;
+  background: color-mix(in srgb, var(--card-bg) 86%, #fff 14%) !important;
+  color: var(--page-hero-accent) !important;
+  box-shadow: inset 0 0 0 7px color-mix(in srgb, var(--page-hero-gold) 10%, transparent) !important;
+  text-align: center !important;
+}
+html body #view-events .events-hero-emblem > i,
+html body #view-auth .auth-passport-mark > i {
+  color: var(--page-hero-accent) !important;
+  font-size: 2.05rem !important;
+  line-height: 1 !important;
+}
+html body #view-events .events-hero-emblem > span,
+html body #view-auth .auth-passport-mark > span {
+  display: block !important;
+  margin: 0 !important;
+  color: var(--page-hero-muted) !important;
+  font-family: 'Zen Kaku Gothic New', sans-serif !important;
+  font-size: .62rem !important;
+  font-weight: 800 !important;
+  letter-spacing: .13em !important;
+  line-height: 1.35 !important;
+  text-align: center !important;
+}
+html.dark body #view-events,
+html.dark body #view-auth {
+  --page-hero-ink: #f4ece5;
+  --page-hero-muted: #c9bbb0;
+  --page-hero-accent: #e4a4a5;
+  --page-hero-gold: #d5b36a;
+  --page-hero-line: rgba(213, 179, 106, .30);
+  --page-hero-inner: rgba(213, 179, 106, .18);
+  --page-hero-shadow: rgba(0, 0, 0, .30);
+  --page-hero-wash: rgba(213, 179, 106, .14);
+}
+html.dark body #view-events .events-hero,
+html.dark body #view-auth .auth-passport-hero {
+  background:
+    radial-gradient(circle at 91% 16%, var(--page-hero-wash), transparent 25%),
+    radial-gradient(circle at 6% 100%, rgba(159, 29, 37, .20), transparent 33%),
+    linear-gradient(135deg, #181313 0%, #211918 58%, #151212 100%) !important;
+}
+html.dark body #view-events .events-hero-emblem,
+html.dark body #view-auth .auth-passport-mark {
+  background: rgba(24, 20, 20, .72) !important;
+}
+@media (max-width: 760px) {
+  html body #view-events .events-hero,
+  html body #view-auth .auth-passport-hero {
+    grid-template-columns: minmax(0, 1fr) !important;
+    gap: 18px !important;
+    min-height: 0 !important;
+    padding: 24px 20px !important;
+    border-radius: 22px !important;
+  }
+  html body #view-events .events-hero::before,
+  html body #view-auth .auth-passport-hero::before {
+    inset: 9px !important;
+    border-radius: 15px !important;
+  }
+  html body #view-events .events-hero-emblem,
+  html body #view-auth .auth-passport-mark {
+    width: 98px !important;
+    min-width: 98px !important;
+    height: 98px !important;
+    justify-self: start !important;
+  }
+}
+@media (max-width: 460px) {
+  html body #view-events #events-page-title,
+  html body #view-auth .auth-passport-title {
+    font-size: 1.8rem !important;
+    letter-spacing: .055em !important;
+  }
+  html body #view-events .events-hero-emblem,
+  html body #view-auth .auth-passport-mark {
+    width: 84px !important;
+    min-width: 84px !important;
+    height: 84px !important;
+  }
+  html body #view-events .events-hero-emblem > span,
+  html body #view-auth .auth-passport-mark > span {
+    font-size: .5rem !important;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  html body #view-events .events-hero,
+  html body #view-events .events-hero::before,
+  html body #view-events .events-hero::after,
+  html body #view-auth .auth-passport-hero,
+  html body #view-auth .auth-passport-hero::before,
+  html body #view-auth .auth-passport-hero::after {
+    transition: none !important;
+  }
+}
