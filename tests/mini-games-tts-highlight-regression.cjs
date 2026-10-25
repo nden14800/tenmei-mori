@@ -34,6 +34,11 @@ assert(tts.includes('var(--input-bg,'), 'TTS操作ボタンがサイト共通の
 assert(tts.includes('className=\'tenmei-choice\''), 'TTSの速度・音声選択欄がサイト共通の選択欄コンポーネントを使っていません。');
 assert(!tts.includes('html.dark .tenmei-article-audio'), 'TTSに独自のダーク配色を定義せず、サイト共通テーマを継承してください。');
 assert(!tts.includes('--card-bg:#211b19;'), 'TTSカードに独自のダーク背景色を固定しないでください。');
+assert(html.includes('<style id="tenmei-custom-control-unification-fix">'), 'サイト共通の選択欄スタイル定義が見つかりません。');
+assert(html.includes('#main-content .tenmei-choice__trigger'), 'TTSも含めた共通選択欄のトリガースタイルがありません。');
+assert(html.includes('#main-content .tenmei-choice__value'), '共通選択欄の文字スタイルがありません。');
+assert(!tts.includes('html.dark .tenmei-article-audio .tenmei-choice__trigger'), 'TTSだけの選択欄色上書きが残っています。');
+
 assert(tts.includes('.tenmei-site-tts-host[hidden]{display:none!important}'), 'hidden属性を持つTTS本文ホストがdisplay:blockにより露出する問題が残っています。');
 assert(tts.includes('function extractFortuneText(result)'), 'おみくじ結果の読み上げ本文を整理する抽出処理がありません。');
 assert(tts.includes("holder.setAttribute('aria-hidden','true')"), 'おみくじの読み上げ専用本文が支援技術へ露出しないようにしてください。');
