@@ -420,12 +420,21 @@ async function edgeTtsAudio(requestText,voice){
  url.searchParams.set("Sec-MS-GEC-Version",EDGE_TTS_VERSION);
  url.searchParams.set("ConnectionId",connectionId);
  const major=EDGE_TTS_VERSION.split("-")[1].split(".")[0];
- const response=await fetch(url.toString(),{headers:{
+ const handshakeHeaders={
   "User-Agent":"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/"+major+".0.0.0 Safari/537.36 Edg/"+major+".0.0.0",
   "Accept-Language":"en-US,en;q=0.9","Accept-Encoding":"gzip, deflate, br, zstd","Pragma":"no-cache","Cache-Control":"no-cache",
   "Sec-WebSocket-Version":"13","Upgrade":"websocket","Cookie":"muid="+muid+";"
- }});
- if(response.status!==101||!response.webSocket)throw new Error("Edge TTS WebSocket upgrade failed: "+response.status);
+ };
+ let response=null;
+ for(let attempt=0;attempt<3;attempt++){
+  response=await fetch(url.toString(),{headers:handshakeHeaders});
+  if(response.status===101&&response.webSocket)break;
+  if(![429,500,502,503,504].includes(response.status)||attempt===2)throw new Error("Edge TTS WebSocket upgrade failed: "+response.status);
+  const retryAfter=Number(response.headers.get("Retry-After"));
+  try{await response.body?.cancel();}catch(_){}
+  await new Promise(resolve=>setTimeout(resolve,Number.isFinite(retryAfter)&&retryAfter>0?Math.min(3000,retryAfter*1000):500*(attempt+1)));
+ }
+ if(!response||response.status!==101||!response.webSocket)throw new Error("Edge TTS WebSocket upgrade failed");
  const socket=response.webSocket,requestId=crypto.randomUUID().replace(/-/g,""),chunks=[];
  const audioBytes=await new Promise((resolve,reject)=>{
   let done=false;
