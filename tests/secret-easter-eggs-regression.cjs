@@ -37,8 +37,8 @@ assert(!eggs.includes('stopPropagation('), '既存イベントを遮断してい
 assert(eggs.includes('createSecretMatcher(keyboardWords,function(word){var key=resolveSecretWord(word);if(key)triggerSecretWord(key);},900)'), '接頭辞が重なる合言葉の待機時間が想定と異なります。');
 assert(eggs.includes('function onIdleActivity(){var now=Date.now();if(now-lastActivityAt<750)return;lastActivityAt=now;resetIdleTimer();}'), 'アイドル監視のマウス移動処理が間引かれていません。');
 assert(eggs.includes("showEggScene(key); return true;"), '手動の合言葉が共通の中央カード演出を使用していません。');
-assert(eggs.includes("if (key==='maintenance') { showEggScene('maintenance'); return true; }"), 'メンテナンス合言葉が中央カードだけで表示されません。');
-assert(!eggs.includes("if (key==='maintenance') { try { if(typeof checkMaintenance==='function')checkMaintenance(true); } catch (_) {} showEggScene('maintenance'); return true; }"), 'メンテナンス合言葉が中央カード以外の表示処理も起動しています。');
+assert(eggs.includes("if (key==='maintenance') { checkMaintenance(true); return true; }"), 'メンテナンス合言葉の既存処理が変更されています。');
+
 assert(eggs.includes("if (!overlay) { showEggScene('himitsu'); return; }"), 'コナミコマンドのフォールバックが壊れています。');
 
 const matcherStart = eggs.indexOf('function normalizeSecretWord(');
