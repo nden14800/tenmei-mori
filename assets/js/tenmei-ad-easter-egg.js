@@ -168,7 +168,7 @@ function renderGlobal(){
  renderView(view);
  if(!document.getElementById('tenmei-ad-side-rail')&&window.innerWidth>1100){const side=halfpage(pick(7));side.id='tenmei-ad-side-rail';side.classList.add('tm-ad-side');document.body.appendChild(side);}
 }
-function show(){enabled=true;renderGlobal();window.dispatchEvent(new CustomEvent('tenmei:mock-ads-shown'));}
+function show(){enabled=true;renderGlobal();if(window.__tenmeiAdAnchorMaybeShow)window.__tenmeiAdAnchorMaybeShow();window.dispatchEvent(new CustomEvent('tenmei:mock-ads-shown'));}
 function queue(){if(renderQueued)return;renderQueued=true;window.setTimeout(()=>{renderQueued=false;renderGlobal();},120);}
 function observe(){
  if(typeof MutationObserver!=='function')return;
@@ -177,7 +177,9 @@ function observe(){
 }
 function anchorOnScroll(){
  let shown=false;
- window.addEventListener('scroll',()=>{if(!enabled||shown||window.scrollY<240)return;shown=true;const c=pick(8),e=base(c,'tm-ad-anchor');e.id='tenmei-ad-anchor';e.appendChild(art(c));const x=document.createElement('div');x.innerHTML='<div class="tm-ad-kicker"><b>広告（架空）</b><span>'+esc(c.tag)+'</span></div><span class="tm-ad-brand">'+esc(c.brand)+'</span><h3>'+esc(c.title)+'</h3><p>'+esc(c.price)+'</p>';e.appendChild(x);e.appendChild(cta(c.cta));const close=document.createElement('button');close.type='button';close.className='tm-ad-close';close.textContent='×';close.setAttribute('aria-label','広告を閉じる');close.addEventListener('click',()=>e.remove());e.appendChild(close);document.body.appendChild(e);},{passive:true});
+ function maybeShow(){if(!enabled||shown||window.scrollY<240)return;shown=true;const c=pick(8),e=base(c,'tm-ad-anchor');e.id='tenmei-ad-anchor';e.appendChild(art(c));const x=document.createElement('div');x.innerHTML='<div class="tm-ad-kicker"><b>広告（架空）</b><span>'+esc(c.tag)+'</span></div><span class="tm-ad-brand">'+esc(c.brand)+'</span><h3>'+esc(c.title)+'</h3><p>'+esc(c.price)+'</p>';e.appendChild(x);e.appendChild(cta(c.cta));const close=document.createElement('button');close.type='button';close.className='tm-ad-close';close.textContent='×';close.setAttribute('aria-label','広告を閉じる');close.addEventListener('click',()=>e.remove());e.appendChild(close);document.body.appendChild(e);}
+ window.__tenmeiAdAnchorMaybeShow=maybeShow;
+ window.addEventListener('scroll',maybeShow,{passive:true});
 }
 window.TenmeiMockAds={show,render:renderGlobal,isEnabled:()=>enabled};
 observe();anchorOnScroll();
