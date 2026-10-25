@@ -11095,11 +11095,11 @@ body.sidebar-collapsed.sidebar-pinned #sidebar .nav-group-title {
        ========================================== */
     #reading-progress-bar {
         position: fixed;
-        top: 8px;
-        left: 12px;
-        z-index: 10001;
-        width: calc(100% - 24px);
-        height: 4px;
+        top: 0;
+        left: 0;
+        z-index: 10050;
+        width: 100%;
+        height: 3px;
         overflow: hidden;
         border-radius: 999px;
         background: color-mix(in srgb, var(--border-color, #a18c78) 24%, transparent);
@@ -26622,261 +26622,8 @@ window.renderFullColumnView = function() {
     };
 
 
-    // 記事読み上げ：Microsoft Edge TTS（日本語ニューラル音声）
-    (function initArticleSpeechReader() {
-        if (window.__tenmeiSpeechReaderInstalled) return;
-        window.__tenmeiSpeechReaderInstalled = true;
-        const API_URL = "https://tenmei-mori-backend.nden14800.workers.dev/api/article-tts";
-        const style = document.createElement("style");
-        style.textContent = `
-        .tenmei-article-audio{display:grid;gap:13px;margin:20px 0 28px;padding:17px 18px;border:1px solid var(--card-border,#e7ded7);border-radius:18px;background:var(--card-bg,#fffdfb);color:var(--text-main,#302923);box-shadow:0 7px 22px rgba(45,34,28,.045);font-family:'Zen Kaku Gothic New',sans-serif}
-        .tenmei-article-audio__top{display:flex;align-items:center;justify-content:space-between;gap:12px}
-        .tenmei-article-audio__heading{display:grid;gap:3px;min-width:0}
-        .tenmei-article-audio__eyebrow{color:var(--accent-red,#8f252b);font-size:.62rem;font-weight:800;letter-spacing:.12em}
-        .tenmei-article-audio__title{font-size:.91rem;font-weight:800;line-height:1.45}
-        .tenmei-article-audio__duration{flex:none;color:var(--text-sub,#786e67);font-size:.68rem}
-        .tenmei-article-audio__transport{display:flex;align-items:center;gap:8px}
-        .tenmei-article-audio__button{display:inline-flex;min-width:40px;min-height:40px;align-items:center;justify-content:center;gap:7px;padding:0 12px;border:1px solid var(--card-border,#e7ded7);border-radius:11px;background:var(--input-bg,#f7f2ed);color:var(--text-main,#302923);font:inherit;font-size:.76rem;font-weight:700;cursor:pointer;transition:background .16s ease,border-color .16s ease,transform .16s ease}
-        .tenmei-article-audio__button:hover:not(:disabled){border-color:var(--accent-red,#8f252b);background:color-mix(in srgb,var(--accent-red,#8f252b) 6%,var(--card-bg,#fffdfb))}
-        .tenmei-article-audio__button:active:not(:disabled){transform:scale(.97)}
-        .tenmei-article-audio__button:disabled{opacity:.42;cursor:not-allowed}
-        .tenmei-article-audio__button--primary{min-width:112px;border-color:var(--accent-red,#8f252b);background:var(--accent-red,#8f252b);color:#fff}
-        .tenmei-article-audio__button--primary:hover:not(:disabled){background:color-mix(in srgb,var(--accent-red,#8f252b) 88%,#000);color:#fff}
-        .tenmei-article-audio__button i{font-size:.9rem}
-        .tenmei-article-audio__timeline{display:grid;gap:7px}
-        .tenmei-article-audio__seek{width:100%;height:16px;margin:0;padding:0;appearance:none;-webkit-appearance:none;border:0;border-radius:999px;background:transparent;cursor:pointer;touch-action:pan-y;outline:none}
-        .tenmei-article-audio__seek::-webkit-slider-runnable-track{height:3px;border:0;border-radius:999px;background:linear-gradient(to right,var(--accent-red,#8f252b) 0 var(--seek-progress,0%),var(--card-border,#e7ded7) var(--seek-progress,0%) 100%);transition:background .12s linear}
-        .tenmei-article-audio__seek::-moz-range-track{height:3px;border:0;border-radius:999px;background:var(--card-border,#e7ded7)}
-        .tenmei-article-audio__seek::-moz-range-progress{height:3px;border-radius:999px;background:var(--accent-red,#8f252b);transition:width .12s linear}
-        .tenmei-article-audio__seek::-webkit-slider-thumb{-webkit-appearance:none;width:12px;height:12px;border:0;border-radius:50%;background:transparent;box-shadow:none}
-        .tenmei-article-audio__seek::-moz-range-thumb{width:12px;height:12px;border:0;border-radius:50%;background:transparent;box-shadow:none}
-        .tenmei-article-audio__seek:focus-visible{outline:2px solid var(--accent-gold,#c4a059);outline-offset:3px;border-radius:999px}
-        .tenmei-article-audio__spinner{width:18px;height:18px;flex:0 0 18px;animation:rotate 1s linear infinite}
-        .tenmei-article-audio__spinner .loader-path{stroke:currentColor;stroke-linecap:round;stroke-dasharray:89 150;stroke-dashoffset:0}
-        .tenmei-article-audio__seek:focus-visible{outline:2px solid var(--accent-gold,#c4a059);outline-offset:5px}
-        .tenmei-article-audio__meta{display:flex;justify-content:space-between;gap:12px;color:var(--text-sub,#786e67);font-size:.67rem;font-variant-numeric:tabular-nums}
-        .tenmei-article-audio__settings{display:flex;align-items:center;gap:10px;flex-wrap:wrap;padding-top:2px}
-        .tenmei-article-audio__setting-label{color:var(--text-sub,#786e67);font-size:.68rem;font-weight:700}
-        .tenmei-article-audio__rate-control{width:132px;min-width:0}
-        .tenmei-article-audio__rate-control .tenmei-choice{width:100%}
-        .tenmei-article-audio__rate-control .tenmei-choice__popover{z-index:260}
-        .tenmei-article-audio__voice-control{width:164px;min-width:0}
-        .tenmei-article-audio__voice-control .tenmei-choice{width:100%}
-        .tenmei-article-audio__voice-control .tenmei-choice__popover{z-index:260}
-        .tenmei-article-audio__status{min-height:1.4em;margin:0;color:var(--text-sub,#786e67);font-size:.68rem;line-height:1.6}
-        .tenmei-article-audio__status[data-state="error"]{color:var(--accent-red,#8f252b)}
-        .tenmei-article-audio__active{background:color-mix(in srgb,var(--accent-gold,#c4a059) 17%,transparent)!important;border-radius:4px;scroll-margin:110px}
-        .tenmei-article-audio__button:focus-visible,.tenmei-article-audio .tenmei-choice__trigger:focus-visible,.tenmei-article-audio .tenmei-choice__option:focus-visible{outline:2px solid var(--accent-gold,#c4a059);outline-offset:2px}
-        @media(max-width:560px){.tenmei-article-audio{gap:12px;padding:14px;border-radius:15px}.tenmei-article-audio__transport{gap:6px}.tenmei-article-audio__button{min-width:36px;min-height:40px;padding:0 9px}.tenmei-article-audio__button--primary{min-width:100px}.tenmei-article-audio__settings{gap:8px}.tenmei-article-audio .tenmei-choice{min-width:104px}}
-        @media(prefers-reduced-motion:reduce){.tenmei-article-audio *{scroll-behavior:auto!important;transition:none!important}}
-        `;
-        document.head.appendChild(style);
-        let parts = [], index = 0, audio = new Audio(), objectUrl = "", busy = false, paused = false, generation = 0, playbackRate = 1, selectedVoice = "ja-JP-NanamiNeural", activeTTSModel = "Microsoft Edge TTS", progressFrame = 0, voiceGeneration = 0, decodedDuration = 0;
-        const audioCache = new Map();
-        const audioPending = new Map();
-        audio.preload = "auto";
-        audio.playsInline = true;
-        audio.setAttribute("playsinline", "");
-        audio.setAttribute("webkit-playsinline", "");
-        const playerNow = () => document.querySelector(".tenmei-article-audio");
-        function createSilentAudioUrl(){
-            const sampleRate=8000,sampleCount=800,buffer=new ArrayBuffer(44+sampleCount*2),view=new DataView(buffer);
-            const write=(offset,value)=>{for(let i=0;i<value.length;i++)view.setUint8(offset+i,value.charCodeAt(i));};
-            write(0,"RIFF");view.setUint32(4,36+sampleCount*2,true);write(8,"WAVE");write(12,"fmt ");view.setUint32(16,16,true);
-            view.setUint16(20,1,true);view.setUint16(22,1,true);view.setUint32(24,sampleRate,true);view.setUint32(28,sampleRate*2,true);
-            view.setUint16(32,2,true);view.setUint16(34,16,true);write(36,"data");view.setUint32(40,sampleCount*2,true);
-            const bytes=new Uint8Array(buffer);let binary="";for(let i=0;i<bytes.length;i++)binary+=String.fromCharCode(bytes[i]);
-            return "data:audio/wav;base64,"+btoa(binary);
-        }
-        const silentAudioUrl=createSilentAudioUrl();
-        const cleanAudio = () => {
-            if (progressFrame) { cancelAnimationFrame(progressFrame); progressFrame = 0; }
-            audio.pause();
-            audio.onended = audio.onerror = audio.onloadedmetadata = audio.ontimeupdate = audio.ondurationchange = audio.onplay = audio.onpause = null;decodedDuration=0;
-            audio.removeAttribute("src");
-            audio.load();
-            if (objectUrl) { URL.revokeObjectURL(objectUrl); objectUrl = ""; }
-        };
-        function setStatus(message, state) { const p=playerNow(); if(!p)return; const el=p.querySelector(".tenmei-article-audio__status");el.textContent=message;el.dataset.state=state||"normal"; }
-        function formatAudioTime(seconds){if(!Number.isFinite(seconds)||seconds<0)return "0:00";const m=Math.floor(seconds/60),sec=Math.floor(seconds%60);return m+":"+String(sec).padStart(2,"0");}
-        function effectiveDuration(){return Number.isFinite(audio.duration)&&audio.duration>0?audio.duration:decodedDuration;}
-        async function measureDuration(blob,token){
-            try{
-                const bytes=new Uint8Array(await blob.arrayBuffer());
-                let offset=0;
-                if(bytes.length>10&&bytes[0]===0x49&&bytes[1]===0x44&&bytes[2]===0x33){
-                    offset=10+((bytes[6]&0x7f)<<21)+((bytes[7]&0x7f)<<14)+((bytes[8]&0x7f)<<7)+(bytes[9]&0x7f);
-                }
-                const tables={
-                    "1-1":[0,32,40,48,56,64,80,96,112,128,160,192,224,256,320],
-                    "1-2":[0,32,48,56,64,80,96,112,128,160,192,224,256,320,384],
-                    "1-3":[0,32,64,96,128,160,192,224,256,288,320,352,384,416,448],
-                    "2-1":[0,8,16,24,32,40,48,56,64,80,96,112,128,144,160],
-                    "2-2":[0,8,16,24,32,40,48,56,64,80,96,112,128,144,160],
-                    "2-3":[0,32,48,56,64,80,96,112,128,144,160,176,192,224,256]
-                };
-                let frames=0,total=0;
-                while(offset+4<=bytes.length){
-                    const h=(bytes[offset]<<24)|(bytes[offset+1]<<16)|(bytes[offset+2]<<8)|bytes[offset+3];
-                    if((h>>>21)!==0x7ff){offset++;continue;}
-                    const version=(h>>>19)&3,layer=(h>>>17)&3,bitrateIndex=(h>>>12)&15,sampleIndex=(h>>>10)&3,padding=(h>>>9)&1;
-                    if(version===1||layer===0||bitrateIndex===0||bitrateIndex===15||sampleIndex===3){offset++;continue;}
-                    const versionKey=version===3?"1":"2",layerKey=String(4-layer),bitrate=(tables[versionKey+"-"+layerKey]?.[bitrateIndex]||0)*1000;
-                    const base=[44100,48000,32000][sampleIndex],sampleRate=version===3?base:version===2?base/2:base/4;
-                    const samples=layer===3?384:layer===1&&version!==3?576:1152;
-                    const frameLength=layer===3?Math.floor(12*bitrate/sampleRate+padding)*4:Math.floor((version!==3&&layer===1?72:144)*bitrate/sampleRate)+padding;
-                    if(!bitrate||!frameLength||offset+frameLength>bytes.length){offset++;continue;}
-                    total+=samples/sampleRate;frames++;offset+=frameLength;
-                }
-                if(token===generation&&frames>=2&&Number.isFinite(total)&&total>0){decodedDuration=total;updatePlaybackTime();return;}
-            }catch(_){}
-            const AudioContextClass=window.AudioContext||window.webkitAudioContext;
-            if(!AudioContextClass)return;
-            let context;
-            try{context=new AudioContextClass();const decoded=await context.decodeAudioData((await blob.arrayBuffer()).slice(0));if(token===generation&&Number.isFinite(decoded.duration)&&decoded.duration>0){decodedDuration=decoded.duration;updatePlaybackTime();}}
-            catch(_){}
-            finally{try{await context?.close();}catch(_){}}
-        }
-        function updatePlaybackTime(){
-            const p=playerNow();if(!p)return;
-            const duration=effectiveDuration(),current=Number.isFinite(audio.currentTime)?audio.currentTime:0,seek=p.querySelector(".audio-seek");
-            if(seek){seek.disabled=!duration;seek.value=duration?String(Math.min(100,current/duration*100)):"0";seek.style.setProperty("--seek-progress",(duration?Math.min(100,current/duration*100):0)+"%");}
-            p.querySelector(".audio-time-current").textContent=formatAudioTime(current);
-            p.querySelector(".audio-time-total").textContent=formatAudioTime(duration);
-        }
-        function animatePlaybackTime(){
-            updatePlaybackTime();
-            if(!audio.paused&&!audio.ended)progressFrame=requestAnimationFrame(animatePlaybackTime);
-            else progressFrame=0;
-        }
-        function updateUI() {
-            const p=playerNow(); if(!p)return;
-            const play=p.querySelector(".audio-play"),count=p.querySelector(".audio-count");
-            if(play){play.innerHTML=busy?'<svg class="loader-svg tenmei-article-audio__spinner" viewBox="0 0 50 50" aria-hidden="true"><circle class="loader-path" cx="25" cy="25" r="20" fill="none" stroke-width="1.5"></circle></svg><span>音声を準備中</span>':paused?'<i class="bi bi-play-fill"></i><span>再開</span>':audio.src&&!audio.paused?'<i class="bi bi-pause-fill"></i><span>一時停止</span>':'<i class="bi bi-play-fill"></i><span>再生</span>';play.disabled=busy||!parts.length;}
-            if(count)count.textContent=parts.length?(Math.min(index+1,parts.length)+' / '+parts.length+' セクション'):'—';
-            p.querySelectorAll(".audio-prev,.audio-next,.audio-stop").forEach(b=>b.disabled=busy||!parts.length||(b.classList.contains("audio-prev")&&index===0)||(b.classList.contains("audio-next")&&index>=parts.length-1));
-            p.querySelectorAll(".audio-back10,.audio-forward10").forEach(b=>b.disabled=!audio.src||!effectiveDuration());
-            updatePlaybackTime();
-        }
-        function splitText(text) {
-            const out=[]; let current="";
-            const sentences=text.replace(/\s+/g," ").split(/(?<=[。！？.!?])\s*/);
-            for(const sentence of sentences){if(!sentence)continue;if((current+sentence).length>1500&&current){out.push(current);current="";}if(sentence.length>1500){for(let i=0;i<sentence.length;i+=1400)out.push(sentence.slice(i,i+1400));}else current+=sentence;}
-            if(current)out.push(current);return out;
-        }
-        async function fetchAudioBlob(partIndex){
-            const requestVoice=selectedVoice,requestVersion=voiceGeneration,cacheKey=partIndex+"|"+requestVoice+"|"+requestVersion;
-            if(audioCache.has(cacheKey))return audioCache.get(cacheKey);
-            if(audioPending.has(cacheKey))return audioPending.get(cacheKey);
-            const request=fetch(API_URL,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({text:parts[partIndex].text,voice:requestVoice}),credentials:"omit",cache:"no-store"})
-                .then(async response=>{
-                    if(!response.ok){let body={};try{body=await response.json();}catch(_){}throw new Error(body.error||"音声を生成できませんでした。");}
-                    activeTTSModel=response.headers.get("X-TTS-Model")||"Microsoft Edge TTS";
-                    const blob=await response.blob();
-                    if(requestVersion===voiceGeneration)audioCache.set(cacheKey,blob);
-                    return blob;
-                }).finally(()=>audioPending.delete(cacheKey));
-            audioPending.set(cacheKey,request);
-            return request;
-        }
-        function prefetchAudio(partIndex){if(partIndex>=0&&partIndex<parts.length)fetchAudioBlob(partIndex).catch(()=>{});}
-        function primeAudioPlayback(){
-            audio.muted=true;audio.src=silentAudioUrl;
-            const activation=audio.play();audio.muted=false;
-            if(activation&&typeof activation.then==="function")activation.then(()=>{if(audio.src===silentAudioUrl)audio.pause();}).catch(()=>{});
-        }
-        async function generateCurrent(autoplay) {
-            if(index<0||index>=parts.length)return;
-            const token=++generation;cleanAudio();busy=true;paused=false;updateUI();setStatus("日本語音声を生成しています…");
-            try{
-                const blob=await fetchAudioBlob(index);if(token!==generation)return;
-                decodedDuration=0;await measureDuration(blob,token);if(token!==generation)return;
-                objectUrl=URL.createObjectURL(blob);audio.src=objectUrl;audio.preload="auto";audio.playbackRate=playbackRate;
-                audio.onloadedmetadata=updatePlaybackTime;
-                audio.ondurationchange=updatePlaybackTime;
-                audio.ontimeupdate=updatePlaybackTime;
-                audio.load();
-                audio.onplay=()=>{paused=false;if(!progressFrame)progressFrame=requestAnimationFrame(animatePlaybackTime);updateUI();};
-                audio.onpause=()=>{if(progressFrame){cancelAnimationFrame(progressFrame);progressFrame=0;}if(!audio.ended&&!busy){paused=true;updateUI();}};
-                audio.onended=()=>{if(token!==generation)return;parts[index].el.classList.remove("tenmei-article-audio__active");if(index<parts.length-1){index++;generateCurrent(true);}else{paused=false;busy=false;updateUI();setStatus("この記事の読み上げが完了しました。");}};
-                audio.onerror=()=>{if(token!==generation)return;busy=false;updateUI();setStatus("音声データを再生できませんでした。再読み込みして再度お試しください。","error");};
-                busy=false;parts[index].el.classList.add("tenmei-article-audio__active");parts[index].el.scrollIntoView({behavior:"smooth",block:"center"});updateUI();
-                if(index+1<parts.length)prefetchAudio(index+1);
-                if(autoplay){try{await audio.play();paused=false;updateUI();setStatus("読み上げ中 · Microsoft Edge TTS");}catch(_){paused=true;updateUI();setStatus("音声の準備ができました。再生を押してください。");}}
-                else{paused=true;updateUI();setStatus("音声の準備ができました。再生を押してください。");}
-            }catch(error){if(token!==generation)return;busy=false;paused=false;updateUI();setStatus(error.message||"音声を生成できませんでした。","error");}
-        }
-        function stop(){generation++;voiceGeneration++;cleanAudio();audioCache.clear();audioPending.clear();busy=false;paused=false;parts.forEach(x=>x.el.classList.remove("tenmei-article-audio__active"));updateUI();setStatus("停止しました。");}
-        function chooseRate(value){playbackRate=Number(value)||1;if(audio)audio.playbackRate=playbackRate;}
-        function makeRateSelect(){
-            const shell=document.createElement("div");
-            shell.className="tenmei-choice audio-rate";
-            shell.dataset.controlKind="choice";
-            shell.dataset.controlId="article-audio-rate";
-            shell.dataset.controlLabel="再生速度";
-            shell.dataset.options=JSON.stringify([0.75,0.9,1,1.1,1.25,1.5,1.75,2].map(v=>({value:String(v),label:v+"倍"})));
-            shell.innerHTML='<input type="hidden" id="article-audio-rate" value="1"><button type="button" class="tenmei-choice__trigger" id="article-audio-rate-trigger" aria-haspopup="listbox" aria-expanded="false" aria-controls="article-audio-rate-options" aria-label="再生速度を選ぶ"><span class="tenmei-choice__icon" aria-hidden="true"><i class="bi bi-speedometer2"></i></span><span class="tenmei-choice__value"></span><i class="bi bi-chevron-down tenmei-choice__chevron" aria-hidden="true"></i></button><div class="tenmei-choice__popover" id="article-audio-rate-popover" hidden><div class="tenmei-choice__options" id="article-audio-rate-options" role="listbox" aria-label="再生速度"></div></div>';
-            return shell;
-        }
-        function makeVoiceSelect(){
-            const options=[{value:"ja-JP-NanamiNeural",label:"Nanami（女性）"},{value:"ja-JP-KeitaNeural",label:"Keita（男性）"}];
-            const shell=document.createElement("div");
-            shell.className="tenmei-choice audio-voice";
-            shell.dataset.controlKind="choice";
-            shell.dataset.controlId="article-audio-voice";
-            shell.dataset.controlLabel="音声";
-            shell.dataset.options=JSON.stringify(options);
-            shell.innerHTML='<input type="hidden" id="article-audio-voice" value="ja-JP-NanamiNeural"><button type="button" class="tenmei-choice__trigger" id="article-audio-voice-trigger" aria-haspopup="listbox" aria-expanded="false" aria-controls="article-audio-voice-options" aria-label="読み上げ音声を選ぶ"><span class="tenmei-choice__icon" aria-hidden="true"><i class="bi bi-mic"></i></span><span class="tenmei-choice__value"></span><i class="bi bi-chevron-down tenmei-choice__chevron" aria-hidden="true"></i></button><div class="tenmei-choice__popover" id="article-audio-voice-popover" hidden><div class="tenmei-choice__options" id="article-audio-voice-options" role="listbox" aria-label="読み上げ音声"></div></div>';
-            return shell;
-        }
-        function mount(){
-            const container=document.getElementById("article-detail-content");if(!container)return;
-            stop();const article=container.querySelector("article");if(!article)return;
-            const body=article.querySelector(".article-content");if(!body)return;
-            const nodes=[...body.querySelectorAll("h2,h3,h4,p,li,blockquote")].filter(el=>!el.closest(".article-toc-unified")&&!el.closest('[aria-label*="目次"]'));
-            parts=nodes.map(el=>({el,text:(el.innerText||"").replace(/\s+/g," ").trim()})).filter(x=>x.text.length).flatMap(x=>splitText(x.text).map(text=>({el:x.el,text})));
-            if(!parts.length)return;
-            const old=article.querySelector(".tenmei-article-audio");if(old)old.remove();
-            const player=document.createElement("section");player.className="tenmei-article-audio";player.setAttribute("aria-label","記事読み上げプレーヤー");
-            player.innerHTML='<div class="tenmei-article-audio__top"><div class="tenmei-article-audio__heading"><span class="tenmei-article-audio__eyebrow">ARTICLE AUDIO</span><strong class="tenmei-article-audio__title">この記事を聴く</strong></div><span class="tenmei-article-audio__duration">日本語音声</span></div><div class="tenmei-article-audio__transport"><button type="button" class="tenmei-article-audio__button tenmei-article-audio__button--primary audio-play"><i class="bi bi-play-fill"></i><span>再生</span></button><button type="button" class="tenmei-article-audio__button audio-back10" aria-label="10秒戻す" title="10秒戻す"><i class="bi bi-rewind"></i></button><button type="button" class="tenmei-article-audio__button audio-forward10" aria-label="10秒進める" title="10秒進める"><i class="bi bi-fast-forward"></i></button><button type="button" class="tenmei-article-audio__button audio-prev" aria-label="前のセクション"><i class="bi bi-skip-backward-fill"></i></button><button type="button" class="tenmei-article-audio__button audio-next" aria-label="次のセクション"><i class="bi bi-skip-forward-fill"></i></button><button type="button" class="tenmei-article-audio__button audio-stop"><i class="bi bi-stop-fill"></i><span>停止</span></button></div><div class="tenmei-article-audio__timeline"><input class="tenmei-article-audio__seek audio-seek" type="range" min="0" max="100" value="0" step="0.1" aria-label="現在の音声の再生位置" disabled><div class="tenmei-article-audio__meta"><span class="audio-time-current">0:00</span><span class="audio-count">1 / '+parts.length+' セクション</span><span class="audio-time-total">0:00</span></div></div><div class="tenmei-article-audio__settings"><span class="tenmei-article-audio__setting-label">速度</span></div><div class="tenmei-article-audio__settings tenmei-article-audio__settings--voice"><span class="tenmei-article-audio__setting-label">声</span></div><p class="tenmei-article-audio__status" role="status" aria-live="polite">再生ボタンを押すと記事全体を連続して読み上げます。</p>';
-            const rateSelect=makeRateSelect(),voiceSelect=makeVoiceSelect();
-            rateSelect.classList.add("tenmei-article-audio__rate-control");
-            voiceSelect.classList.add("tenmei-article-audio__voice-control");
-            player.querySelector(".tenmei-article-audio__settings").appendChild(rateSelect);
-            player.querySelector(".tenmei-article-audio__settings--voice").appendChild(voiceSelect);
-            const header=article.querySelector("header");if(header)header.insertAdjacentElement("afterend",player);else body.insertAdjacentElement("beforebegin",player);
-            player.appendChild(audio);
-            audio.style.display="none";
-            rateSelect.querySelector(".tenmei-choice__trigger").dispatchEvent(new Event("focusin",{bubbles:true}));
-            voiceSelect.querySelector(".tenmei-choice__trigger").dispatchEvent(new Event("focusin",{bubbles:true}));
-            window.TenmeiCustomControls?.syncAll?.();
-            const rateInput=rateSelect.querySelector("#article-audio-rate");
-            const voiceInput=voiceSelect.querySelector("#article-audio-voice");
-            rateInput.addEventListener("change",()=>chooseRate(rateInput.value));
-            voiceInput.addEventListener("change",()=>{
-                selectedVoice=voiceInput.value||"ja-JP-NanamiNeural";
-                stop();
-                setStatus("読み上げ音声を変更しました。再生すると新しい声で生成します。");
-            });
-            player.querySelector(".audio-play").addEventListener("click",()=>{
-                if(busy)return;
-                if(audio.src&&paused){audio.play().then(()=>{paused=false;updateUI();setStatus("読み上げ中 · "+activeTTSModel);}).catch(()=>setStatus("再生を開始できませんでした。もう一度押してください。","error"));return;}
-                if(audio.src&&!audio.paused){audio.pause();paused=true;updateUI();setStatus("一時停止中");return;}
-                primeAudioPlayback();
-                generateCurrent(true);
-            });
-            player.querySelector(".audio-seek").addEventListener("input",event=>{if(audio.src&&effectiveDuration()){try{audio.currentTime=effectiveDuration()*(Number(event.target.value)/100);updatePlaybackTime();}catch(_){}}});
-            player.querySelector(".audio-back10").addEventListener("click",()=>{if(effectiveDuration())try{audio.currentTime=Math.max(0,audio.currentTime-10);}catch(_){};});
-            player.querySelector(".audio-forward10").addEventListener("click",()=>{if(effectiveDuration())try{audio.currentTime=Math.min(effectiveDuration(),audio.currentTime+10);}catch(_){};});
-            player.querySelector(".audio-stop").addEventListener("click",stop);
-            player.querySelector(".audio-prev").addEventListener("click",()=>{if(busy)return;index=Math.max(0,index-1);generateCurrent(true);});
-            player.querySelector(".audio-next").addEventListener("click",()=>{if(busy)return;index=Math.min(parts.length-1,index+1);generateCurrent(true);});
-            chooseRate(1);updateUI();
-        }
-        const originalOpen=window.openArticle;
-        if(typeof originalOpen==="function"){window.openArticle=function(...args){stop();const result=originalOpen.apply(this,args);requestAnimationFrame(()=>requestAnimationFrame(mount));return result;};}
-        document.addEventListener("click",e=>{if(e.target.closest(".article-reader-back"))stop();});
-    })();
+    // 記事読み上げは assets/js/tenmei-site-tts.js の共通プレーヤーに一本化。
+    // 旧プレーヤーをここで再生成すると、共通プレーヤーとDOM・音声状態が競合するため撤去。
 
     // 5. クイズ機能ロジック
     window.handleQuiz = function(btn, isCorrect, correctIndex) {
@@ -28450,40 +28197,50 @@ function showLoading(show) {
         // ==========================================
         const readingProgressState = {
             contentEl: null,
-            progressStartEl: null,
-            progressEndEl: null,
+            mode: 'document',
             ticking: false,
-            reachedComplete: false
+            resizeObserver: null
         };
 
-        function startReadingProgress() {
+        function startReadingProgress(viewId) {
             stopReadingProgress();
-            const el = document.querySelector('#article-detail-content .article-content');
-            if (!el) return;
-
-            readingProgressState.contentEl = el;
-            readingProgressState.progressStartEl = el;
-            readingProgressState.progressEndEl = el;
-            readingProgressState.reachedComplete = false;
+            const currentView = viewId || currentState.view || 'home';
+            const isArticle = currentView === 'article-detail';
+            const article = isArticle
+                ? document.querySelector('#article-detail-content article .article-content, #article-detail-content .article-content')
+                : null;
+            readingProgressState.mode = isArticle && article ? 'article' : 'document';
+            readingProgressState.contentEl = article || document.scrollingElement || document.documentElement;
 
             const bar = document.getElementById('reading-progress-bar');
             if (bar) {
                 bar.classList.add('active');
                 bar.setAttribute('aria-valuenow', '0');
+                bar.setAttribute('aria-valuetext', '0%');
             }
             document.body.classList.add('reading-progress-active');
-
             window.addEventListener('scroll', onReadingProgressScroll, { passive: true });
+            window.addEventListener('resize', onReadingProgressScroll, { passive: true });
+
+            if (typeof ResizeObserver !== 'undefined') {
+                readingProgressState.resizeObserver = new ResizeObserver(onReadingProgressScroll);
+                readingProgressState.resizeObserver.observe(document.body);
+                if (article) readingProgressState.resizeObserver.observe(article);
+            }
             updateReadingProgress();
+            requestAnimationFrame(updateReadingProgress);
         }
 
         function stopReadingProgress() {
             window.removeEventListener('scroll', onReadingProgressScroll);
+            window.removeEventListener('resize', onReadingProgressScroll);
+            if (readingProgressState.resizeObserver) {
+                readingProgressState.resizeObserver.disconnect();
+                readingProgressState.resizeObserver = null;
+            }
             readingProgressState.contentEl = null;
-            readingProgressState.progressStartEl = null;
-            readingProgressState.progressEndEl = null;
+            readingProgressState.mode = 'document';
             readingProgressState.ticking = false;
-            readingProgressState.reachedComplete = false;
 
             const bar = document.getElementById('reading-progress-bar');
             const fill = document.getElementById('reading-progress-fill');
@@ -28492,18 +28249,27 @@ function showLoading(show) {
                 bar.setAttribute('aria-valuenow', '0');
                 bar.removeAttribute('aria-valuetext');
             }
-            if (fill) fill.style.width = '0%';
+            if (fill) {
+                fill.style.transform = 'scaleX(0)';
+                fill.classList.remove('is-complete');
+            }
             document.body.classList.remove('reading-progress-active');
         }
 
         function getCurrentArticleProgressPercent() {
-            const startEl = readingProgressState.progressStartEl || readingProgressState.contentEl;
-            const endEl = readingProgressState.progressEndEl || readingProgressState.contentEl;
-            if (!startEl || !endEl) return 0;
-            const startRect = startEl.getBoundingClientRect();
-            const endRect = endEl.getBoundingClientRect();
-            const readingHeight = Math.max(1, endRect.bottom - startRect.top);
-            return Math.max(0, Math.min(100, ((window.innerHeight - startRect.top) / readingHeight) * 100));
+            if (readingProgressState.mode === 'article') {
+                const article = readingProgressState.contentEl;
+                if (!article || !article.isConnected) return 0;
+                const rect = article.getBoundingClientRect();
+                const travel = rect.height - window.innerHeight;
+                if (travel <= 1) return rect.bottom <= window.innerHeight ? 100 : 0;
+                return Math.max(0, Math.min(100, (-rect.top / travel) * 100));
+            }
+            const scroller = document.scrollingElement || document.documentElement;
+            const maxScroll = Math.max(0, Math.max(scroller.scrollHeight, document.body.scrollHeight) - window.innerHeight);
+            if (maxScroll <= 1) return 0;
+            const scrollTop = Math.max(window.scrollY || 0, scroller.scrollTop || 0);
+            return Math.max(0, Math.min(100, (scrollTop / maxScroll) * 100));
         }
 
         function onReadingProgressScroll() {
@@ -28522,11 +28288,14 @@ function showLoading(show) {
             const bar = document.getElementById('reading-progress-bar');
             if (!fill || !bar) return;
 
+            const hasScrollableContent = readingProgressState.mode === 'article'
+                ? Boolean(readingProgressState.contentEl && readingProgressState.contentEl.scrollHeight > 0)
+                : (document.documentElement.scrollHeight - window.innerHeight > 4 || document.body.scrollHeight - window.innerHeight > 4);
+            bar.classList.toggle('active', hasScrollableContent);
             fill.style.transform = 'scaleX(' + (percent / 100) + ')';
             const roundedPercent = Math.round(percent);
             bar.setAttribute('aria-valuenow', String(roundedPercent));
             bar.setAttribute('aria-valuetext', roundedPercent + '%');
-
             if (percent >= 99.5) fill.classList.add('is-complete');
             else fill.classList.remove('is-complete');
         }
@@ -32455,10 +32224,8 @@ function renderServerPagination(currentPage, totalItems, perPage) {
 
     // 画面切り替え関数 (修正版: ボタンIDのマッピングを追加)
     window.showView = function(viewId) {
-        // 記事詳細画面以外に遷移する場合は読書進捗トラッキングを停止
-        if (viewId !== 'article-detail') {
-            stopReadingProgress();
-        }
+        // 記事詳細は本文範囲、それ以外の画面はページ全体のスクロール量を追跡する。
+        startReadingProgress(viewId);
 
         // 1. サイドバーのアクティブ状態を更新
         document.querySelectorAll('.nav-btn').forEach(btn => {
