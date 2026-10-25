@@ -107,7 +107,7 @@ table{font-size:11px}th{font-size:10px}
 <div class="panel"><div class="panel-title"><h3>評価軸別リーダーボード</h3><small>各軸の最高点・次点・差</small></div><div class="tablewrap" id="categoryLeaders"></div></div>
 <div class="panel" style="margin-top:13px"><div class="panel-title"><h3>全21サイト · スコア・根拠マトリクス</h3><small>評価値・確信度・公式情報源</small></div><div class="tablewrap" id="evidenceMatrix"></div></div>
 </section>
-<section class="section" id="method"><div class="section-head"><div><div class="kicker">06 / METHODOLOGY</div><h2>評価基準とデータの扱い</h2><p>Index v2.0ではウェイトを改訂し、全21サイトの総合点を再計算。</p></div><span class="tag">INDEX METHODOLOGY 2.0</span></div>
+<section class="section" id="method"><div class="section-head"><div><div class="kicker">05 / METHODOLOGY</div><h2>評価基準とデータの扱い</h2><p>Index v2.0ではウェイトを改訂し、全21サイトの総合点を再計算。</p></div><span class="tag">INDEX METHODOLOGY 2.0</span></div>
 <div class="method-grid">
 <div class="method"><b>体験・操作性 <span class="tag">20%</span></b><p>引くまでの導線、操作の明瞭さ、スマートフォンでの扱いやすさ。</p></div>
 <div class="method"><b>結果の品質 <span class="tag">20%</span></b><p>結果文の具体性、読み応え、カテゴリ・項目の充実度。的中率は評価しない。</p></div>
@@ -199,7 +199,7 @@ function renderPareto(){
  o.xAxis={type:'value',name:'機能・継続性',min:0,max:100,axisLabel:{color:obMuted()},splitLine:{lineStyle:{color:obLine(),type:'dashed'}}};
  o.yAxis={type:'value',name:'体験・操作性',min:0,max:100,axisLabel:{color:obMuted()},splitLine:{lineStyle:{color:obLine(),type:'dashed'}}};
  o.tooltip={formatter:p=>{if(p.seriesName==='Pareto frontier')return 'Pareto frontier';const d=p.data;return d.site.name+'<br>機能：'+d.value[0]+'<br>操作性：'+d.value[1]+'<br>総合：'+d.site.score.toFixed(1)}};
- o.series=[{name:'サイト',type:'scatter',symbolSize:p=>10+p.data.site.score/22,data:rows.map(r=>({site:r.site,value:[r.x,r.y],itemStyle:{color:r.site.score>=85?'#57988d':r.site.score>=75?'#5487a5':'#bd9457'}}))},{name:'Pareto frontier',type:'line',data:frontier.map(r=>[r.x,r.y]),symbol:'diamond',symbolSize:9,lineStyle:{width:2,type:'dashed',color:'#a85b73'},itemStyle:{color:'#a85b73'},z:4}];
+ o.series=[{name:'サイト',type:'scatter',symbolSize:14,data:rows.map(r=>({site:r.site,value:[r.x,r.y],itemStyle:{color:r.site.score>=85?'#57988d':r.site.score>=75?'#5487a5':'#bd9457'}}))},{name:'Pareto frontier',type:'line',data:frontier.map(r=>[r.x,r.y]),symbol:'diamond',symbolSize:9,lineStyle:{width:2,type:'dashed',color:'#a85b73'},itemStyle:{color:'#a85b73'},z:4}];
  obChart('paretoChart',o);
  $('paretoTable').innerHTML='<table><thead><tr><th>Frontier</th><th>サイト</th><th class="num">機能</th><th class="num">操作性</th><th class="num">総合</th></tr></thead><tbody>'+frontier.slice().sort((a,b)=>b.site.score-a.site.score).map((r,i)=>'<tr><td>'+(i+1)+'</td><td class="table-name">'+esc(r.site.name)+'</td><td class="num">'+r.x+'</td><td class="num">'+r.y+'</td><td class="num table-score">'+r.site.score.toFixed(1)+'</td></tr>').join('')+'</tbody></table>';
 }
