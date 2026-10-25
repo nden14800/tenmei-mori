@@ -94,13 +94,23 @@ for (const char of 'ora') continued.matcher.push(char);
 assert.deepEqual(continued.matches, ['hoshizora'], '接頭辞の保留が続きの入力で正しく解除されません。');
 
 const adEgg = fs.readFileSync(path.resolve(__dirname, '..', 'assets/js/tenmei-ad-easter-egg.js'), 'utf8');
+const adHtml = html.slice(start, end);
 [
-  'MORI SELECT','KOTOHA TRAVEL','日々の台所','SORA MOBILE','青葉オンライン講座','KURASHI INSURANCE','御影堂オンライン','NATURE LAB',
-  'tenmei-ad-leaderboard','tenmei-ad-rectangle','tenmei-ad-feed','tenmei-ad-multiplex','tenmei-ad-anchor','setTimeout(render,5000)','prefers-reduced-motion:reduce'
+  '杜の湯庵','神彩堂','結び守り工房','京菓子 こよみ','SORA MOBILE',
+  '青葉オンライン学舎','NATURE LAB','日々の台所','KURASHI LIFE','旅する日本茶',
+  '白狐タクシー','暦の宿',
+  'tm-ad-banner','tm-ad-infeed','tm-ad-inarticle','tm-ad-rectangle','tm-ad-halfpage',
+  'tm-ad-multiplex','tm-ad-search','tm-ad-video','tm-ad-related','tm-ad-anchor',
+  '広告主・商品・価格は実在しません','外部リンク','クリック計測','TenmeiMockAds={show'
 ].forEach((needle) => assert(adEgg.includes(needle), '広告イースターエッグの不足: ' + needle));
-assert(!adEgg.includes('sessionStorage'), '広告表示にセッション制限が残っています。');
-assert(!adEgg.includes('Math.random()<.18'), '広告表示に確率制限が残っています。');
-assert(!adEgg.includes('showGallery'), '旧式の広告モーダルが残っています。');
-assert(adEgg.includes("endsWith('koukoku')"), '広告の合言葉がありません。');
+assert(adHtml.includes("koukoku:'koukoku'"), '広告の合言葉が既存エンジンに登録されていません。');
+assert(adHtml.includes("key==='koukoku'"), '広告の合言葉が既存の共通トリガーを利用していません。');
+assert(adHtml.includes('window.TenmeiMockAds.show()'), '広告の表示APIが呼び出されていません。');
+assert(!adEgg.includes("document.addEventListener('keydown'"), '広告だけの独自キーボード判定が残っています。');
+assert(!adEgg.includes('window._trySecretWord='), '既存の合言葉処理を上書きしています。');
+assert(!adEgg.includes('sessionStorage'), '広告表示に独自セッション制限が残っています。');
+assert(!adEgg.includes('Math.random()<.18'), '広告表示に独自確率制限が残っています。');
+assert(!adEgg.includes('setTimeout(render'), '広告表示に時間待ち条件が残っています。');
+assert(adEgg.includes("window.addEventListener('scroll'"), 'アンカー広告のスクロール表示がありません。');
 
 console.log('Secret Easter eggs regression checks passed.');
