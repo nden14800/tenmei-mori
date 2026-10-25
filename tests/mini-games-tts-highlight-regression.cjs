@@ -27,17 +27,29 @@ assert(html.includes('data-event-date'), 'イベント日付選択がありま�
 assert(games.includes('window.TenmeiMiniGames={open,close}'), 'ミニゲーム起動APIがありません。');
 assert(games.includes('prefers-reduced-motion:reduce'), '動きを抑える設定に対応していません。');
 console.log('Mini games / TTS highlight regression checks passed.');
-// TTS must inherit the site's shared card and tenmei-choice styles instead of defining a private palette.
+// TTS dark mode mirrors the exact site palette and select-menu treatment; no separate color system.
 assert(tts.includes('var(--card-bg,'), 'TTSカードがサイト共通の背景トークンを参照していません。');
 assert(tts.includes('var(--card-border,'), 'TTSカードがサイト共通の境界色トークンを参照していません。');
 assert(tts.includes('var(--input-bg,'), 'TTS操作ボタンがサイト共通の入力背景トークンを参照していません。');
-assert(tts.includes('className=\'tenmei-choice\''), 'TTSの速度・音声選択欄がサイト共通の選択欄コンポーネントを使っていません。');
-assert(!tts.includes('html.dark .tenmei-article-audio'), 'TTSに独自のダーク配色を定義せず、サイト共通テーマを継承してください。');
-assert(!tts.includes('--card-bg:#211b19;'), 'TTSカードに独自のダーク背景色を固定しないでください。');
+assert(tts.includes("className='tenmei-choice'"), 'TTSの速度・音声選択欄がサイト共通の選択欄コンポーネントを使っていません。');
+[
+ 'html.dark .tenmei-article-audio{',
+ '--card-bg:#111111;',
+ '--card-border:#2a2a2a;',
+ '--text-main:#e4e4e7;',
+ '--text-sub:#a1a1aa;',
+ '--input-bg:#333333;',
+ '--accent-red:#b91c1c;',
+ '--accent-gold:#c5a059;',
+ 'html.dark #main-content .tenmei-article-audio .tenmei-choice__trigger',
+ 'html.dark #main-content .tenmei-article-audio .tenmei-choice__popover',
+ 'background:#1c1615;',
+ 'rgba(231,197,163,.19)',
+].forEach(token=>assert(tts.includes(token), 'TTSダークモードがサイト共通パレット／選択欄スタイルと一致していません: '+token));
+assert(!tts.includes('--card-bg:#211b19;'), 'サイト本体と異なるTTS専用ダークカラーが残っています。');
 assert(html.includes('<style id="tenmei-custom-control-unification-fix">'), 'サイト共通の選択欄スタイル定義が見つかりません。');
-assert(html.includes('#main-content .tenmei-choice__trigger'), 'TTSも含めた共通選択欄のトリガースタイルがありません。');
+assert(html.includes('#main-content .tenmei-choice__trigger'), 'TTSも含めた共通選択欄スタイルがありません。');
 assert(html.includes('#main-content .tenmei-choice__value'), '共通選択欄の文字スタイルがありません。');
-assert(!tts.includes('html.dark .tenmei-article-audio .tenmei-choice__trigger'), 'TTSだけの選択欄色上書きが残っています。');
 
 assert(tts.includes('.tenmei-site-tts-host[hidden]{display:none!important}'), 'hidden属性を持つTTS本文ホストがdisplay:blockにより露出する問題が残っています。');
 assert(tts.includes('function extractFortuneText(result)'), 'おみくじ結果の読み上げ本文を整理する抽出処理がありません。');
