@@ -104,9 +104,9 @@ const adHtml = html.slice(start, end);
   'tm-ad-infeed','tm-ad-inarticle','tm-ad-sponsored-story','tm-ad-rectangle','tm-ad-halfpage',
   'tm-ad-multiplex','tm-ad-search','tm-ad-video','tm-ad-related','tm-ad-anchor',
   'min-height:600px','@media(min-width:1824px)','IMAGE_ASSETS','function art(c)',
-  'Urijima-onsen_Hot_spring.jpg','Anekaeshi_%28wagashi%29.jpg','Smartphone_Use.jpg',
+  'Urijima-onsen_Hot_spring.jpg','Anekaeshi_%28wagashi%29.jpg','Celullar_or_mobile_phone.jpg','Surface wooden furniture interior.jpg',
   'VEGETABLES.jpg','Taxi.jpeg','Bottle_image.jpg',
-  'CC0 1.0','広告主・商品・価格・リンク先は実在しません',
+  'CC0 1.0','Public domain','広告主・商品・価格・リンク先は実在しません',
   'window.showToast(message','tm-ad-dismiss','function closeAll()','function onEscape(event)',
   'contentView','editorialItems.length>=8','window.matchMedia'
 ].forEach((needle) => assert(adEgg.includes(needle), '広告イースターエッグの不足: ' + needle));
