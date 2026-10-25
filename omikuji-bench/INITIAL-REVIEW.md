@@ -96,5 +96,3 @@
 ## 参考基準
 - WCAG 2.2: https://www.w3.org/TR/WCAG22/
 - Core Web Vitals: https://web.dev/articles/vitals
-- Arena FAQ（匿名ペア投票・Bradley–Terry）: https://arena.ai/faq
-- Arena Leaderboard Policy: https://arena.ai/blog/policy
