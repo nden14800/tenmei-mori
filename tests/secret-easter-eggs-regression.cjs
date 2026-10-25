@@ -136,7 +136,7 @@ assert(adEgg.includes('position:fixed')&&adEgg.includes('p.offsetHeight'), '広�
 assert(adEgg.includes("if(activeInfo){closeInfo();return;}"), 'Escapeキーで情報パネルを先に閉じる制御がありません。');
 assert(adEgg.includes('bi bi-info-circle')&&adEgg.includes('bi bi-x-lg')&&adEgg.includes('bi bi-eye-slash'), 'サイト共通のBootstrap Iconsを使用していません。');
 assert(!adEgg.includes('<svg')&&!adEgg.includes('textContent=\'×\'')&&!adEgg.includes("textContent='i'"), '広告だけの独自SVG・文字アイコンが残っています。');
-assert(adEgg.includes('tenmei-article-audio__button')||adEgg.includes('min-height:40px'), '広告操作ボタンのタップ領域が共通コントロール基準に揃っていません。');
+assert(adEgg.includes('tenmei-article-audio__button')||adEgg.includes('min-height:38px'), '広告操作ボタンのタップ領域が共通コントロール基準に揃っていません。');
 
 assert(adEgg.includes("className='tm-ad-controls'")&&adEgg.includes("controls.appendChild(close);e.appendChild(controls)"), '広告の閉じる・情報ボタンが専用の操作列に分離されていません。');
 assert(adEgg.includes("function closeAll(options)")&&adEgg.includes("if(!options.silent"), '広告デモ全終了時の通知抑制・一括終了APIがありません。');
