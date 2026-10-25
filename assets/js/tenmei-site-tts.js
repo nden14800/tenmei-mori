@@ -30,7 +30,7 @@ function create(target,title,providedText){
  target.insertAdjacentElement('afterend',player);
  window.TenmeiCustomControls?.syncAll?.();
  const audio=new Audio();audio.preload='auto';audio.playsInline=true;audio.setAttribute('playsinline','');
- let index=0,busy=false,paused=false,rateValue=1,voiceValue=VOICES[0].value,generation=0,objectUrl='',progress=0;
+ let index=0,busy=false,paused=false,rateValue=1,voiceValue=VOICES[0].value,generation=0,objectUrl='';
  const $=sel=>player.querySelector(sel),status=(msg,state)=>{const el=$('.tenmei-article-audio__status');if(el){el.textContent=msg;el.dataset.state=state||'normal';}};
  const time=n=>{if(!Number.isFinite(n)||n<0)return'0:00';return Math.floor(n/60)+':'+String(Math.floor(n%60)).padStart(2,'0');};
  function update(){
@@ -42,6 +42,7 @@ function create(target,title,providedText){
   $('.audio-prev').disabled=busy||index===0;$('.audio-next').disabled=busy||index>=parts.length-1;$('.audio-stop').disabled=busy&&!audio.src;
   $('.audio-back10').disabled=$('.audio-forward10').disabled=!audio.src||!duration;
  }
+ function prime(){const sampleRate=8000,sampleCount=800,buffer=new ArrayBuffer(44+sampleCount*2),view=new DataView(buffer);const write=(offset,value)=>{for(let i=0;i<value.length;i++)view.setUint8(offset+i,value.charCodeAt(i));};write(0,'RIFF');view.setUint32(4,36+sampleCount*2,true);write(8,'WAVE');write(12,'fmt ');view.setUint32(16,16,true);view.setUint16(20,1,true);view.setUint16(22,1,true);view.setUint32(24,sampleRate,true);view.setUint32(28,sampleRate*2,true);view.setUint16(32,2,true);view.setUint16(34,16,true);write(36,'data');view.setUint32(40,sampleCount*2,true);const bytes=new Uint8Array(buffer);let binary='';for(let i=0;i<bytes.length;i++)binary+=String.fromCharCode(bytes[i]);audio.muted=true;audio.src='data:audio/wav;base64,'+btoa(binary);const activation=audio.play();audio.muted=false;if(activation&&typeof activation.then==='function')activation.then(()=>{audio.pause();}).catch(()=>{});}
  function clean(){audio.pause();audio.onended=audio.onerror=audio.onloadedmetadata=audio.ontimeupdate=audio.onplay=audio.onpause=null;audio.removeAttribute('src');audio.load();if(objectUrl){URL.revokeObjectURL(objectUrl);objectUrl='';}}
  function stop(message){generation++;clean();busy=false;paused=false;update();status(message||'停止しました。');}
  async function playPart(auto){
@@ -52,7 +53,7 @@ function create(target,title,providedText){
    if(!response.ok){let body={};try{body=await response.json();}catch(_){}throw new Error(body.error||'音声を生成できませんでした。');}
    const blob=await response.blob();if(token!==generation)return;
    objectUrl=URL.createObjectURL(blob);audio.src=objectUrl;audio.playbackRate=rateValue;audio.load();
-   audio.onloadedmetadata=update;audio.ontimeupdate=update;
+   audio.onloadedmetadata=update;audio.ontimeupdate=update;audio.onerror=()=>{if(token!==generation)return;busy=false;paused=false;update();status('音声データを再生できませんでした。再読み込みして再度お試しください。','error');};
    audio.onplay=()=>{paused=false;update();};audio.onpause=()=>{if(!audio.ended&&!busy){paused=true;update();}};
    audio.onended=()=>{if(token!==generation)return;if(index<parts.length-1){index++;playPart(true);}else{busy=false;paused=false;update();status('読み上げが完了しました。');}};
    busy=false;update();
@@ -60,7 +61,7 @@ function create(target,title,providedText){
    else{paused=true;update();status('音声の準備ができました。再生を押してください。');}
   }catch(error){if(token!==generation)return;busy=false;paused=false;update();status(error.message||'音声を生成できませんでした。','error');}
  }
- $('.audio-play').addEventListener('click',()=>{if(busy)return;if(audio.src&&paused){audio.play().then(()=>{paused=false;update();status('読み上げ中 · Microsoft Edge TTS');}).catch(()=>status('再生を開始できませんでした。もう一度押してください。','error'));return;}if(audio.src&&!audio.paused){audio.pause();paused=true;update();status('一時停止中');return;}playPart(true);});
+ $('.audio-play').addEventListener('click',()=>{if(busy)return;if(audio.src&&paused){audio.play().then(()=>{paused=false;update();status('読み上げ中 · Microsoft Edge TTS');}).catch(()=>status('再生を開始できませんでした。もう一度押してください。','error'));return;}if(audio.src&&!audio.paused){audio.pause();paused=true;update();status('一時停止中');return;}prime();playPart(true);});
  $('.audio-stop').addEventListener('click',()=>stop());
  $('.audio-prev').addEventListener('click',()=>{if(busy)return;index=Math.max(0,index-1);playPart(true);});
  $('.audio-next').addEventListener('click',()=>{if(busy)return;index=Math.min(parts.length-1,index+1);playPart(true);});
@@ -88,7 +89,7 @@ function scan(){
   el.insertAdjacentElement('afterend',holder);create(holder,el.closest('#dream-response-area')?'夢の解釈を聴く':el.closest('#worry-response-area')?'AI相談の回答を聴く':'AIの回答を聴く',text);
  });
 }
-window.TenmeiSiteTTS={scan,stopAll:function(){document.querySelectorAll('.tenmei-site-tts-host .tenmei-article-audio').forEach(x=>x.querySelector('.audio-stop')?.click());}};
+window.TenmeiSiteTTS={scan,stopAll:function(){document.querySelectorAll('.tenmei-article-audio[data-site-tts="true"]').forEach(x=>x.querySelector('.audio-stop')?.click());}};
 let scheduled=false;const schedule=()=>{if(scheduled)return;scheduled=true;requestAnimationFrame(()=>{scheduled=false;scan();});};
 const mo=new MutationObserver(schedule);mo.observe(document.documentElement,{childList:true,subtree:true,characterData:true});
 document.addEventListener('click',e=>{if(e.target.closest('.article-reader-back'))window.TenmeiSiteTTS.stopAll();});
