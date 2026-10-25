@@ -195,7 +195,7 @@ function scanArticleReader(){
  const content=root.querySelector('#article-detail-content');
  if(!content)return;
  content.querySelectorAll('.tenmei-article-audio:not([data-site-tts="true"])').forEach(el=>el.remove());
- const body=content.querySelector('.column-reader-body .article-content,.news-chronicle-body .article-content,.column-reader-body,.news-chronicle-body');
+ const body=content.querySelector('.column-reader-body .article-content,.news-chronicle-body .article-content,.column-reader-body,.news-chronicle-body,article .article-content,.article-content');
  if(!body)return;
  const clone=body.cloneNode(true);
  clone.querySelectorAll('button,input,textarea,select,script,style,svg,nav,form,.tenmei-choice,.tenmei-article-audio,.tenmei-site-tts-host,.hidden,.d-none,[aria-hidden="true"],[hidden]').forEach(node=>node.remove());
@@ -203,7 +203,8 @@ function scanArticleReader(){
  if(text.length<20)return;
  const signature=text.length+':'+text.slice(0,96)+':'+text.slice(-96);
  const holder=content.querySelector('.tenmei-site-tts-host[data-article-tts="true"]');
- if(holder&&holder.dataset.signature===signature)return;
+ const mountedPlayer=holder?.nextElementSibling;
+ if(holder&&holder.dataset.signature===signature&&mountedPlayer?.dataset.siteTts==='true')return;
  if(holder){const oldPlayer=holder.nextElementSibling;if(oldPlayer?.dataset.siteTts==='true'){oldPlayer.querySelector('.audio-stop')?.click();oldPlayer.remove();}holder.remove();}
  const host=document.createElement('div');host.className='tenmei-site-tts-host';host.dataset.articleTts='true';host.dataset.signature=signature;
  body.insertAdjacentElement('beforebegin',host);
