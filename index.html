@@ -26639,9 +26639,15 @@ window.renderFullColumnView = function() {
         .tenmei-article-audio__button--primary:hover:not(:disabled){background:color-mix(in srgb,var(--accent-red,#8f252b) 88%,#000);color:#fff}
         .tenmei-article-audio__button i{font-size:.9rem}
         .tenmei-article-audio__timeline{display:grid;gap:7px}
-        .tenmei-article-audio__seek{width:100%;height:7px;margin:7px 0;appearance:none;-webkit-appearance:none;border:0;border-radius:999px;background:linear-gradient(to right,var(--accent-red,#8f252b) 0%,var(--accent-red,#8f252b) var(--seek-progress,0%),var(--card-border,#e7ded7) var(--seek-progress,0%),var(--card-border,#e7ded7) 100%);cursor:pointer;touch-action:pan-y;transition:background .06s linear}
-        .tenmei-article-audio__seek::-webkit-slider-thumb{width:16px;height:16px;appearance:none;-webkit-appearance:none;border:2px solid var(--card-bg,#fffdfb);border-radius:50%;background:var(--accent-red,#8f252b);box-shadow:0 1px 4px rgba(0,0,0,.2)}
-        .tenmei-article-audio__seek::-moz-range-thumb{width:13px;height:13px;border:2px solid var(--card-bg,#fffdfb);border-radius:50%;background:var(--accent-red,#8f252b);box-shadow:0 1px 4px rgba(0,0,0,.2)}
+        .tenmei-article-audio__seek{width:100%;height:16px;margin:0;padding:0;appearance:none;-webkit-appearance:none;border:0;border-radius:999px;background:transparent;cursor:pointer;touch-action:pan-y;outline:none}
+        .tenmei-article-audio__seek::-webkit-slider-runnable-track{height:3px;border:0;border-radius:999px;background:linear-gradient(to right,var(--accent-red,#8f252b) 0 var(--seek-progress,0%),var(--card-border,#e7ded7) var(--seek-progress,0%) 100%);transition:background .12s linear}
+        .tenmei-article-audio__seek::-moz-range-track{height:3px;border:0;border-radius:999px;background:var(--card-border,#e7ded7)}
+        .tenmei-article-audio__seek::-moz-range-progress{height:3px;border-radius:999px;background:var(--accent-red,#8f252b);transition:width .12s linear}
+        .tenmei-article-audio__seek::-webkit-slider-thumb{-webkit-appearance:none;width:12px;height:12px;border:0;border-radius:50%;background:transparent;box-shadow:none}
+        .tenmei-article-audio__seek::-moz-range-thumb{width:12px;height:12px;border:0;border-radius:50%;background:transparent;box-shadow:none}
+        .tenmei-article-audio__seek:focus-visible{outline:2px solid var(--accent-gold,#c4a059);outline-offset:3px;border-radius:999px}
+        .tenmei-article-audio__spinner{width:18px;height:18px;flex:0 0 18px;animation:rotate 1s linear infinite}
+        .tenmei-article-audio__spinner .loader-path{stroke:currentColor;stroke-linecap:round;stroke-dasharray:89 150;stroke-dashoffset:0}
         .tenmei-article-audio__seek:focus-visible{outline:2px solid var(--accent-gold,#c4a059);outline-offset:5px}
         .tenmei-article-audio__meta{display:flex;justify-content:space-between;gap:12px;color:var(--text-sub,#786e67);font-size:.67rem;font-variant-numeric:tabular-nums}
         .tenmei-article-audio__settings{display:flex;align-items:center;gap:10px;flex-wrap:wrap;padding-top:2px}
@@ -26660,7 +26666,7 @@ window.renderFullColumnView = function() {
         @media(prefers-reduced-motion:reduce){.tenmei-article-audio *{scroll-behavior:auto!important;transition:none!important}}
         `;
         document.head.appendChild(style);
-        let parts = [], index = 0, audio = new Audio(), objectUrl = "", busy = false, paused = false, generation = 0, playbackRate = 1, selectedVoice = "ja-JP-NanamiNeural", activeTTSModel = "Microsoft Edge TTS", progressFrame = 0, voiceGeneration = 0;
+        let parts = [], index = 0, audio = new Audio(), objectUrl = "", busy = false, paused = false, generation = 0, playbackRate = 1, selectedVoice = "ja-JP-NanamiNeural", activeTTSModel = "Microsoft Edge TTS", progressFrame = 0, voiceGeneration = 0, decodedDuration = 0;
         const audioCache = new Map();
         const audioPending = new Map();
         audio.preload = "auto";
@@ -26681,17 +26687,55 @@ window.renderFullColumnView = function() {
         const cleanAudio = () => {
             if (progressFrame) { cancelAnimationFrame(progressFrame); progressFrame = 0; }
             audio.pause();
-            audio.onended = audio.onerror = audio.onloadedmetadata = audio.ontimeupdate = audio.onplay = audio.onpause = null;
+            audio.onended = audio.onerror = audio.onloadedmetadata = audio.ontimeupdate = audio.ondurationchange = audio.onplay = audio.onpause = null;decodedDuration=0;
             audio.removeAttribute("src");
             audio.load();
             if (objectUrl) { URL.revokeObjectURL(objectUrl); objectUrl = ""; }
         };
         function setStatus(message, state) { const p=playerNow(); if(!p)return; const el=p.querySelector(".tenmei-article-audio__status");el.textContent=message;el.dataset.state=state||"normal"; }
         function formatAudioTime(seconds){if(!Number.isFinite(seconds)||seconds<0)return "0:00";const m=Math.floor(seconds/60),sec=Math.floor(seconds%60);return m+":"+String(sec).padStart(2,"0");}
+        function effectiveDuration(){return Number.isFinite(audio.duration)&&audio.duration>0?audio.duration:decodedDuration;}
+        async function measureDuration(blob,token){
+            try{
+                const bytes=new Uint8Array(await blob.arrayBuffer());
+                let offset=0;
+                if(bytes.length>10&&bytes[0]===0x49&&bytes[1]===0x44&&bytes[2]===0x33){
+                    offset=10+((bytes[6]&0x7f)<<21)+((bytes[7]&0x7f)<<14)+((bytes[8]&0x7f)<<7)+(bytes[9]&0x7f);
+                }
+                const tables={
+                    "1-1":[0,32,40,48,56,64,80,96,112,128,160,192,224,256,320],
+                    "1-2":[0,32,48,56,64,80,96,112,128,160,192,224,256,320,384],
+                    "1-3":[0,32,64,96,128,160,192,224,256,288,320,352,384,416,448],
+                    "2-1":[0,8,16,24,32,40,48,56,64,80,96,112,128,144,160],
+                    "2-2":[0,8,16,24,32,40,48,56,64,80,96,112,128,144,160],
+                    "2-3":[0,32,48,56,64,80,96,112,128,144,160,176,192,224,256]
+                };
+                let frames=0,total=0;
+                while(offset+4<=bytes.length){
+                    const h=(bytes[offset]<<24)|(bytes[offset+1]<<16)|(bytes[offset+2]<<8)|bytes[offset+3];
+                    if((h>>>21)!==0x7ff){offset++;continue;}
+                    const version=(h>>>19)&3,layer=(h>>>17)&3,bitrateIndex=(h>>>12)&15,sampleIndex=(h>>>10)&3,padding=(h>>>9)&1;
+                    if(version===1||layer===0||bitrateIndex===0||bitrateIndex===15||sampleIndex===3){offset++;continue;}
+                    const versionKey=version===3?"1":"2",layerKey=String(4-layer),bitrate=(tables[versionKey+"-"+layerKey]?.[bitrateIndex]||0)*1000;
+                    const base=[44100,48000,32000][sampleIndex],sampleRate=version===3?base:version===2?base/2:base/4;
+                    const samples=layer===3?384:layer===1&&version!==3?576:1152;
+                    const frameLength=layer===3?Math.floor(12*bitrate/sampleRate+padding)*4:Math.floor((version!==3&&layer===1?72:144)*bitrate/sampleRate)+padding;
+                    if(!bitrate||!frameLength||offset+frameLength>bytes.length){offset++;continue;}
+                    total+=samples/sampleRate;frames++;offset+=frameLength;
+                }
+                if(token===generation&&frames>=2&&Number.isFinite(total)&&total>0){decodedDuration=total;updatePlaybackTime();return;}
+            }catch(_){}
+            const AudioContextClass=window.AudioContext||window.webkitAudioContext;
+            if(!AudioContextClass)return;
+            let context;
+            try{context=new AudioContextClass();const decoded=await context.decodeAudioData((await blob.arrayBuffer()).slice(0));if(token===generation&&Number.isFinite(decoded.duration)&&decoded.duration>0){decodedDuration=decoded.duration;updatePlaybackTime();}}
+            catch(_){}
+            finally{try{await context?.close();}catch(_){}}
+        }
         function updatePlaybackTime(){
             const p=playerNow();if(!p)return;
-            const duration=Number.isFinite(audio.duration)?audio.duration:0,current=audio.currentTime||0,seek=p.querySelector(".audio-seek");
-            if(seek){seek.disabled=!duration;seek.value=duration?String(current/duration*100):"0";seek.style.setProperty("--seek-progress",(duration?current/duration*100:0)+"%");}
+            const duration=effectiveDuration(),current=Number.isFinite(audio.currentTime)?audio.currentTime:0,seek=p.querySelector(".audio-seek");
+            if(seek){seek.disabled=!duration;seek.value=duration?String(Math.min(100,current/duration*100)):"0";seek.style.setProperty("--seek-progress",(duration?Math.min(100,current/duration*100):0)+"%");}
             p.querySelector(".audio-time-current").textContent=formatAudioTime(current);
             p.querySelector(".audio-time-total").textContent=formatAudioTime(duration);
         }
@@ -26703,10 +26747,10 @@ window.renderFullColumnView = function() {
         function updateUI() {
             const p=playerNow(); if(!p)return;
             const play=p.querySelector(".audio-play"),count=p.querySelector(".audio-count");
-            if(play){play.innerHTML=busy?'<i class="bi bi-arrow-repeat"></i><span>音声を準備中</span>':paused?'<i class="bi bi-play-fill"></i><span>再開</span>':audio.src&&!audio.paused?'<i class="bi bi-pause-fill"></i><span>一時停止</span>':'<i class="bi bi-play-fill"></i><span>再生</span>';play.disabled=busy||!parts.length;}
+            if(play){play.innerHTML=busy?'<svg class="loader-svg tenmei-article-audio__spinner" viewBox="0 0 50 50" aria-hidden="true"><circle class="loader-path" cx="25" cy="25" r="20" fill="none" stroke-width="1.5"></circle></svg><span>音声を準備中</span>':paused?'<i class="bi bi-play-fill"></i><span>再開</span>':audio.src&&!audio.paused?'<i class="bi bi-pause-fill"></i><span>一時停止</span>':'<i class="bi bi-play-fill"></i><span>再生</span>';play.disabled=busy||!parts.length;}
             if(count)count.textContent=parts.length?(Math.min(index+1,parts.length)+' / '+parts.length+' セクション'):'—';
             p.querySelectorAll(".audio-prev,.audio-next,.audio-stop").forEach(b=>b.disabled=busy||!parts.length||(b.classList.contains("audio-prev")&&index===0)||(b.classList.contains("audio-next")&&index>=parts.length-1));
-            p.querySelectorAll(".audio-back10,.audio-forward10").forEach(b=>b.disabled=!audio.src||!Number.isFinite(audio.duration));
+            p.querySelectorAll(".audio-back10,.audio-forward10").forEach(b=>b.disabled=!audio.src||!effectiveDuration());
             updatePlaybackTime();
         }
         function splitText(text) {
@@ -26741,9 +26785,12 @@ window.renderFullColumnView = function() {
             const token=++generation;cleanAudio();busy=true;paused=false;updateUI();setStatus("日本語音声を生成しています…");
             try{
                 const blob=await fetchAudioBlob(index);if(token!==generation)return;
-                objectUrl=URL.createObjectURL(blob);audio.src=objectUrl;audio.preload="auto";audio.playbackRate=playbackRate;audio.load();
+                decodedDuration=0;await measureDuration(blob,token);if(token!==generation)return;
+                objectUrl=URL.createObjectURL(blob);audio.src=objectUrl;audio.preload="auto";audio.playbackRate=playbackRate;
                 audio.onloadedmetadata=updatePlaybackTime;
+                audio.ondurationchange=updatePlaybackTime;
                 audio.ontimeupdate=updatePlaybackTime;
+                audio.load();
                 audio.onplay=()=>{paused=false;if(!progressFrame)progressFrame=requestAnimationFrame(animatePlaybackTime);updateUI();};
                 audio.onpause=()=>{if(progressFrame){cancelAnimationFrame(progressFrame);progressFrame=0;}if(!audio.ended&&!busy){paused=true;updateUI();}};
                 audio.onended=()=>{if(token!==generation)return;parts[index].el.classList.remove("tenmei-article-audio__active");if(index<parts.length-1){index++;generateCurrent(true);}else{paused=false;busy=false;updateUI();setStatus("この記事の読み上げが完了しました。");}};
@@ -26813,9 +26860,9 @@ window.renderFullColumnView = function() {
                 primeAudioPlayback();
                 generateCurrent(true);
             });
-            player.querySelector(".audio-seek").addEventListener("input",event=>{if(audio.src&&Number.isFinite(audio.duration)){audio.currentTime=audio.duration*(Number(event.target.value)/100);updatePlaybackTime();}});
-            player.querySelector(".audio-back10").addEventListener("click",()=>{if(Number.isFinite(audio.duration))audio.currentTime=Math.max(0,audio.currentTime-10);});
-            player.querySelector(".audio-forward10").addEventListener("click",()=>{if(Number.isFinite(audio.duration))audio.currentTime=Math.min(audio.duration,audio.currentTime+10);});
+            player.querySelector(".audio-seek").addEventListener("input",event=>{if(audio.src&&effectiveDuration()){try{audio.currentTime=effectiveDuration()*(Number(event.target.value)/100);updatePlaybackTime();}catch(_){}}});
+            player.querySelector(".audio-back10").addEventListener("click",()=>{if(effectiveDuration())try{audio.currentTime=Math.max(0,audio.currentTime-10);}catch(_){};});
+            player.querySelector(".audio-forward10").addEventListener("click",()=>{if(effectiveDuration())try{audio.currentTime=Math.min(effectiveDuration(),audio.currentTime+10);}catch(_){};});
             player.querySelector(".audio-stop").addEventListener("click",stop);
             player.querySelector(".audio-prev").addEventListener("click",()=>{if(busy)return;index=Math.max(0,index-1);generateCurrent(true);});
             player.querySelector(".audio-next").addEventListener("click",()=>{if(busy)return;index=Math.min(parts.length-1,index+1);generateCurrent(true);});
