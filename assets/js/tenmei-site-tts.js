@@ -17,7 +17,21 @@ function makeChoice(id,label,options,icon){
  shell.innerHTML='<input type="hidden" id="'+id+'" value="'+(options.find(x=>x.value==='1')?.value||options[0].value)+'"><button type="button" class="tenmei-choice__trigger" id="'+id+'-trigger" aria-haspopup="listbox" aria-expanded="false" aria-controls="'+id+'-options" aria-label="'+label+'を選ぶ"><span class="tenmei-choice__icon" aria-hidden="true"><i class="bi '+icon+'"></i></span><span class="tenmei-choice__value"></span><i class="bi bi-chevron-down tenmei-choice__chevron" aria-hidden="true"></i></button><div class="tenmei-choice__popover" id="'+id+'-popover" hidden><div class="tenmei-choice__options" id="'+id+'-options" role="listbox" aria-label="'+label+'"></div></div>';
  return shell;
 }
+function installPlayerStyles(){
+ if(document.getElementById('tenmei-site-tts-unified-styles'))return;
+ const style=document.createElement('style');style.id='tenmei-site-tts-unified-styles';
+ style.textContent=`.tenmei-article-audio .tenmei-article-audio__seek{appearance:none;-webkit-appearance:none;display:block;width:100%;height:16px;margin:0;padding:0;border:0;border-radius:999px;background:transparent;cursor:pointer;outline:none;touch-action:pan-y}
+ .tenmei-article-audio .tenmei-article-audio__seek::-webkit-slider-runnable-track{height:3px;border:0;border-radius:999px;background:linear-gradient(to right,var(--tenmei-audio-progress,#75634f) 0 var(--seek-progress,0%),var(--tenmei-audio-track,rgba(120,110,96,.2)) var(--seek-progress,0%) 100%);transition:background .12s linear}
+ .tenmei-article-audio .tenmei-article-audio__seek::-moz-range-track{height:3px;border:0;border-radius:999px;background:var(--tenmei-audio-track,rgba(120,110,96,.2))}
+ .tenmei-article-audio .tenmei-article-audio__seek::-moz-range-progress{height:3px;border-radius:999px;background:var(--tenmei-audio-progress,#75634f);transition:width .12s linear}
+ .tenmei-article-audio .tenmei-article-audio__seek::-webkit-slider-thumb{-webkit-appearance:none;width:0;height:0;border:0;background:transparent;box-shadow:none}
+ .tenmei-article-audio .tenmei-article-audio__seek::-moz-range-thumb{width:0;height:0;border:0;background:transparent;box-shadow:none}
+ .tenmei-article-audio .tenmei-article-audio__seek:focus-visible{outline:2px solid var(--tenmei-audio-progress,#75634f);outline-offset:4px;border-radius:999px}
+ .tenmei-article-audio .audio-play .spinner-border{width:.9rem;height:.9rem;border-width:2px;flex:0 0 auto}`;
+ document.head.appendChild(style);
+}
 function create(target,title,providedText){
+ installPlayerStyles();
  if(!target||target.querySelector(':scope > .tenmei-article-audio'))return;
  const id='site-audio-'+(++seq),parts=split(providedText||target.innerText||target.textContent||'');
  if(!parts.length)return;
@@ -35,6 +49,37 @@ function create(target,title,providedText){
  const time=n=>{if(!Number.isFinite(n)||n<0)return'0:00';return Math.floor(n/60)+':'+String(Math.floor(n%60)).padStart(2,'0');};
  function mediaDuration(){return Number.isFinite(audio.duration)&&audio.duration>0?audio.duration:decodedDuration;}
  async function measureDuration(blob,token){
+  // MP3のXing/VBRIヘッダーがない音声でも、フレーム数から総時間を算出する。
+  try{
+   const bytes=new Uint8Array(await blob.arrayBuffer());
+   let offset=0;
+   if(bytes.length>10&&bytes[0]===0x49&&bytes[1]===0x44&&bytes[2]===0x33){
+    offset=10+((bytes[6]&0x7f)<<21)+((bytes[7]&0x7f)<<14)+((bytes[8]&0x7f)<<7)+(bytes[9]&0x7f);
+   }
+   const rates={
+    '1-1':[0,32,40,48,56,64,80,96,112,128,160,192,224,256,320],
+    '1-2':[0,32,48,56,64,80,96,112,128,160,192,224,256,320,384],
+    '1-3':[0,32,64,96,128,160,192,224,256,288,320,352,384,416,448],
+    '2-1':[0,8,16,24,32,40,48,56,64,80,96,112,128,144,160],
+    '2-2':[0,8,16,24,32,40,48,56,64,80,96,112,128,144,160],
+    '2-3':[0,32,48,56,64,80,96,112,128,144,160,176,192,224,256]
+   };
+   let frames=0,totalSeconds=0;
+   while(offset+4<=bytes.length){
+    const h=(bytes[offset]<<24)|(bytes[offset+1]<<16)|(bytes[offset+2]<<8)|bytes[offset+3];
+    if((h>>>21)!==0x7ff){offset++;continue;}
+    const version=(h>>>19)&3,layer=(h>>>17)&3,bitrateIndex=(h>>>12)&15,sampleIndex=(h>>>10)&3,padding=(h>>>9)&1;
+    if(version===1||layer===0||bitrateIndex===0||bitrateIndex===15||sampleIndex===3){offset++;continue;}
+    const versionKey=version===3?'1':'2',layerKey=String(4-layer),table=rates[versionKey+'-'+layerKey];
+    const bitrate=table?.[bitrateIndex]*1000;
+    const base=[44100,48000,32000][sampleIndex],sampleRate=version===3?base:version===2?base/2:base/4;
+    const samples=layer===3?384:layer===1&&version!==3?576:1152;
+    const frameLength=layer===3?Math.floor(12*bitrate/sampleRate+padding)*4:Math.floor((version!==3&&layer===1?72:144)*bitrate/sampleRate)+padding;
+    if(!frameLength||offset+frameLength>bytes.length){offset++;continue;}
+    totalSeconds+=samples/sampleRate;frames++;offset+=frameLength;
+   }
+   if(token===generation&&frames>=2&&Number.isFinite(totalSeconds)&&totalSeconds>0){decodedDuration=totalSeconds;update();return;}
+  }catch(_){}
   const AudioContextClass=window.AudioContext||window.webkitAudioContext;
   if(!AudioContextClass)return;
   let context;
@@ -50,13 +95,14 @@ function create(target,title,providedText){
   const duration=mediaDuration(),current=Number.isFinite(audio.currentTime)?audio.currentTime:0,seek=$('.audio-seek');
   seek.disabled=!duration;seek.value=duration?String(Math.min(100,current/duration*100)):'0';seek.style.setProperty('--seek-progress',(duration?Math.min(100,current/duration*100):0)+'%');
   $('.audio-time-current').textContent=time(current);$('.audio-time-total').textContent=time(duration);
-  const play=$('.audio-play');play.innerHTML=busy?'<i class="bi bi-arrow-repeat"></i><span>音声を準備中</span>':paused?'<i class="bi bi-play-fill"></i><span>再開</span>':audio.src&&!audio.paused?'<i class="bi bi-pause-fill"></i><span>一時停止</span>':'<i class="bi bi-play-fill"></i><span>再生</span>';
+  const play=$('.audio-play');play.innerHTML=busy?'<span class="spinner-border spinner-border-sm" role="status" aria-label="読み込み中"></span><span>音声を準備中</span>':paused?'<i class="bi bi-play-fill"></i><span>再開</span>':audio.src&&!audio.paused?'<i class="bi bi-pause-fill"></i><span>一時停止</span>':'<i class="bi bi-play-fill"></i><span>再生</span>';
   play.disabled=busy||!parts.length;$('.audio-count').textContent=(index+1)+' / '+parts.length+' セクション';
   $('.audio-prev').disabled=busy||index===0;$('.audio-next').disabled=busy||index>=parts.length-1;$('.audio-stop').disabled=busy&&!audio.src;
   $('.audio-back10').disabled=$('.audio-forward10').disabled=!audio.src||!duration;
  }
  function prime(){const sampleRate=8000,sampleCount=800,buffer=new ArrayBuffer(44+sampleCount*2),view=new DataView(buffer);const write=(offset,value)=>{for(let i=0;i<value.length;i++)view.setUint8(offset+i,value.charCodeAt(i));};write(0,'RIFF');view.setUint32(4,36+sampleCount*2,true);write(8,'WAVE');write(12,'fmt ');view.setUint32(16,16,true);view.setUint16(20,1,true);view.setUint16(22,1,true);view.setUint32(24,sampleRate,true);view.setUint32(28,sampleRate*2,true);view.setUint16(32,2,true);view.setUint16(34,16,true);write(36,'data');view.setUint32(40,sampleCount*2,true);const bytes=new Uint8Array(buffer);let binary='';for(let i=0;i<bytes.length;i++)binary+=String.fromCharCode(bytes[i]);audio.muted=true;audio.src='data:audio/wav;base64,'+btoa(binary);const activation=audio.play();audio.muted=false;if(activation&&typeof activation.then==='function')activation.then(()=>{audio.pause();}).catch(()=>{});}
- function clean(){audio.pause();audio.onended=audio.onerror=audio.onloadedmetadata=audio.ontimeupdate=audio.ondurationchange=audio.onplay=audio.onpause=null;audio.removeAttribute('src');audio.load();decodedDuration=0;if(objectUrl){URL.revokeObjectURL(objectUrl);objectUrl='';}}
+ let progressFrame=0;
+ function clean(){if(progressFrame)cancelAnimationFrame(progressFrame);progressFrame=0;audio.pause();audio.onended=audio.onerror=audio.onloadedmetadata=audio.ontimeupdate=audio.ondurationchange=audio.onplay=audio.onpause=null;audio.removeAttribute('src');audio.load();decodedDuration=0;if(objectUrl){URL.revokeObjectURL(objectUrl);objectUrl='';}}
  function stop(message){generation++;clean();busy=false;paused=false;update();status(message||'停止しました。');}
  async function playPart(auto){
   if(index<0||index>=parts.length)return;
@@ -70,7 +116,8 @@ function create(target,title,providedText){
    audio.onerror=()=>{if(token!==generation)return;busy=false;paused=false;update();status('音声データを再生できませんでした。再読み込みして再度お試しください。','error');};
    audio.load();
    if(!Number.isFinite(audio.duration)||audio.duration<=0)measureDuration(blob,token);
-   audio.onplay=()=>{paused=false;update();};audio.onpause=()=>{if(!audio.ended&&!busy){paused=true;update();}};
+   const animateProgress=()=>{if(audio.paused||audio.ended)return;update();progressFrame=requestAnimationFrame(animateProgress);};
+   audio.onplay=()=>{paused=false;if(progressFrame)cancelAnimationFrame(progressFrame);progressFrame=requestAnimationFrame(animateProgress);update();};audio.onpause=()=>{if(progressFrame)cancelAnimationFrame(progressFrame);progressFrame=0;if(!audio.ended&&!busy){paused=true;update();}};
    audio.onended=()=>{if(token!==generation)return;if(index<parts.length-1){index++;playPart(true);}else{busy=false;paused=false;update();status('読み上げが完了しました。');}};
    busy=false;update();
    if(auto){try{await audio.play();status('読み上げ中 · Microsoft Edge TTS');}catch(_){paused=true;update();status('音声の準備ができました。再生を押してください。');}}
