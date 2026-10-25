@@ -5,7 +5,7 @@
 ## URL
 https://omikuji-bench.pages.dev/
 
-Cloudflare Pagesは独立プロジェクト（root: `omikuji-bench/`）として公開。ビルド不要の静的HTMLで、`exit 0` / output `.`。
+Cloudflare Pagesは独立プロジェクト（root: `omikuji-bench/`）として公開。`omikuji-bench/wrangler.jsonc` で `pages_build_output_dir: .` を明示し、リポジトリ直下のStatus用設定と分離。
 
 ## ブランド・デザイン
 - tenmei-mori本体と同じGoogle Fonts：Zen Kaku Gothic New / Zen Old Mincho / Shippori Mincho。
@@ -17,12 +17,10 @@ Cloudflare Pagesは独立プロジェクト（root: `omikuji-bench/`）として
 - 21サイトの検索・カテゴリ絞り込み・並べ替え・カード/表切替。
 - 総合ランキング、カテゴリ平均、サイト別レーダー、カテゴリ別ヒートマップ。
 - 最大4サイトのカテゴリ別比較チャート・比較表。
-- 匿名A/Bペア比較投票、引き分け、ローカルEloレーティング。
 - 詳細評価・根拠・公式URL、CSV出力、レスポンシブ、ダークモード。
 
 ## データの扱い
 - AI一次評価は公開情報に基づく単独AIの暫定レビュー。複数AI平均・実機試験ではない。
-- A/B投票は現在このブラウザー内のみ保存。全体ランキングとは別。
 - 実測未実施の速度や安定性は測定値として表示しない。
 - 正式評価では3つ以上のAI評価者、ブラウザ操作、LCP/INP/CLS、アクセシビリティ検証を追加する。
 
