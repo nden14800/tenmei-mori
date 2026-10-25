@@ -47,10 +47,11 @@ assert(tts.includes('other.contains(node)'), 'おみくじ本文抽出で親子�
 assert(tts.includes("filter(node=>!node.matches('.hidden,.d-none,.visually-hidden,.sr-only,[aria-hidden=\"true\"],[hidden]'))"), 'おみくじの非表示・読み上げ専用ノードを抽出対象から除外してください。');
 assert((tts.match(/holder\.hidden=true/g)||[]).length===1, 'hiddenなTTS本文ホストはおみくじの読み上げソースだけに限定してください。');
 
-assert(tts.includes('mount.insertBefore(nextHolder,result);'), 'おみくじTTSを結果表示エリアの外側へ配置していません。');
-assert(tts.includes("mount.children).filter(node=>node.matches('.tenmei-site-tts-host[data-omikuji-tts-source=\"true\"]')"), 'おみくじTTSのホストを結果エリアの外側から検出していません。');
+assert(tts.includes("result.querySelector('.omikuji-result-v4-hero')"), 'おみくじ結果のヒーローカードを配置基準として取得していません。');
+assert(tts.includes("hero.insertAdjacentElement('afterend',nextHolder);"), 'おみくじTTSをヒーローカード直下へ配置していません。');
+assert(tts.includes("result.querySelectorAll(':scope > .tenmei-site-tts-host[data-omikuji-tts-source=\"true\"]')"), 'ヒーローカード直下のTTSホストを結果エリア内から検出していません。');
 assert(tts.includes('hosts.forEach(extra=>{'), '重複したおみくじTTSホストを除去する処理がありません。');
 assert(tts.includes("player?.matches('.tenmei-article-audio[data-site-tts=\"true\"]')"), '既存プレーヤーを確認せず再生成する問題が残っています。');
-assert(tts.includes('結果カードの内部レイアウト（横並び2カラム）には入れず'), 'おみくじTTSを結果カードの内部レイアウトから分離する方針がありません。');
+assert(tts.includes('ヒーローカードの直後。結果画面の外側やヒーローカードの上には置かない。'), 'おみくじTTSの配置方針が明示されていません。');
 assert(!tts.includes("playerMount.insertAdjacentElement('beforebegin',holder)"), 'おみくじTTSを結果カード内部の2カラム領域へ配置する旧実装が残っています。');
 assert(!tts.includes("playerMount.insertAdjacentElement('afterend',holder)"), 'おみくじTTSを結果カードの後ろへ配置する旧実装が残っています。');
