@@ -77,7 +77,6 @@ function installPlayerStyles(){
 .tenmei-article-audio__button:focus-visible,.tenmei-article-audio .tenmei-choice__trigger:focus-visible,.tenmei-article-audio .tenmei-choice__option:focus-visible{outline:2px solid var(--accent-gold,#c4a059);outline-offset:2px}
 @media(max-width:560px){.tenmei-article-audio{gap:12px;padding:14px;border-radius:15px}.tenmei-article-audio__transport{gap:6px}.tenmei-article-audio__button{min-width:36px;min-height:40px;padding:0 9px}.tenmei-article-audio__button--primary{min-width:100px}.tenmei-article-audio__settings{gap:8px}.tenmei-article-audio .tenmei-choice{min-width:104px}}
 @media(prefers-reduced-motion:reduce){.tenmei-article-audio *{scroll-behavior:auto!important;transition:none!important}}
-
 .tenmei-article-audio .tenmei-audio-seek-track{position:relative;width:100%;height:24px;border-radius:999px;overflow:hidden;touch-action:pan-y}
 .tenmei-article-audio .tenmei-audio-seek-track::before{content:"";position:absolute;left:0;right:0;top:10px;height:4px;border-radius:999px;background:var(--card-border,#e7ded7)}
 .tenmei-article-audio .tenmei-audio-seek-fill{position:absolute;z-index:1;left:0;top:10px;width:100%;height:4px;border-radius:999px;background:var(--accent-red,#8f252b);transform:scaleX(0);transform-origin:left center;will-change:transform;pointer-events:none}
@@ -115,6 +114,63 @@ function installPlayerStyles(){
 @media(min-width:561px){.tenmei-article-audio__transport{grid-template-columns:repeat(5,minmax(0,1fr));gap:7px}.tenmei-article-audio__button--primary{grid-column:1/-1}.tenmei-article-audio__transport .audio-back10,.tenmei-article-audio__transport .audio-forward10,.tenmei-article-audio__transport .audio-prev,.tenmei-article-audio__transport .audio-next,.tenmei-article-audio__transport .audio-stop{grid-row:auto}}
 @media(max-width:560px){.tenmei-article-audio{gap:11px;padding:14px 13px}.tenmei-article-audio__top{grid-template-columns:minmax(0,1fr)}.tenmei-article-audio__duration{justify-self:start}.tenmei-article-audio__transport{grid-template-columns:repeat(3,minmax(0,1fr));gap:7px}.tenmei-article-audio__button{min-height:40px;padding:0 5px;font-size:.68rem}.tenmei-article-audio__button--primary{grid-column:1/-1;min-height:43px;padding:0 10px;font-size:.78rem}.tenmei-article-audio__meta{grid-template-columns:max-content minmax(0,1fr) max-content;gap:5px;font-size:.66rem}.tenmei-article-audio__settings{gap:7px}}
 @media(max-width:380px){.tenmei-article-audio{padding:12px 10px}.tenmei-article-audio__transport{gap:6px}.tenmei-article-audio__button{min-height:38px;font-size:.64rem}.tenmei-article-audio__button.audio-stop span{display:none}.tenmei-article-audio__meta{font-size:.62rem}.tenmei-article-audio__meta .audio-count{font-size:.58rem}}
+.tenmei-site-tts-host[hidden]{display:none!important}
+html.dark .tenmei-article-audio{
+ color-scheme:dark;
+ --card-bg:#211b19;
+ --card-border:#493b35;
+ --input-bg:#2b2320;
+ --text-main:#f5e8df;
+ --text-sub:#c8b8ad;
+ --accent-red:#c56b70;
+ --accent-gold:#d5b36a;
+ --tenmei-audio-progress:#d5b36a;
+ background:var(--card-bg)!important;
+ border-color:var(--card-border)!important;
+ color:var(--text-main)!important;
+ box-shadow:0 8px 24px rgba(0,0,0,.24)!important;
+}
+html.dark .tenmei-article-audio__button{
+ background:var(--input-bg)!important;
+ border-color:var(--card-border)!important;
+ color:var(--text-main)!important;
+}
+html.dark .tenmei-article-audio__button--primary{
+ background:var(--accent-red)!important;
+ border-color:var(--accent-red)!important;
+ color:#fff!important;
+}
+html.dark .tenmei-article-audio__button--primary:hover:not(:disabled){
+ background:color-mix(in srgb,var(--accent-red) 84%,#000)!important;
+}
+html.dark .tenmei-article-audio .tenmei-choice__trigger{
+ background:var(--input-bg)!important;
+ border-color:var(--card-border)!important;
+ color:var(--text-main)!important;
+}
+html.dark .tenmei-article-audio .tenmei-choice__popover{
+ background:var(--card-bg)!important;
+ border-color:var(--card-border)!important;
+ color:var(--text-main)!important;
+}
+html.dark .tenmei-article-audio .tenmei-choice__option{
+ color:var(--text-main)!important;
+}
+html.dark .tenmei-article-audio .tenmei-choice__option:hover,
+html.dark .tenmei-article-audio .tenmei-choice__option[aria-selected="true"]{
+ background:color-mix(in srgb,var(--accent-red) 16%,var(--card-bg))!important;
+ color:var(--text-main)!important;
+}
+html.dark .tenmei-article-audio .tenmei-audio-seek-track::before{
+ background:var(--card-border)!important;
+}
+html.dark .tenmei-article-audio .tenmei-audio-seek-fill{
+ background:var(--accent-red)!important;
+}
+html.dark .tenmei-article-audio__seek:focus-visible,
+html.dark .tenmei-article-audio .tenmei-audio-seek-track:focus-within{
+ outline-color:var(--accent-gold)!important;
+}
 @media(prefers-reduced-motion:reduce){.tenmei-article-audio *{scroll-behavior:auto!important;transition:none!important}}
 `;
  document.head.appendChild(style);
@@ -157,8 +213,7 @@ function create(target,title,providedText,anchorRoot){
    const rates={
     '1-1':[0,32,40,48,56,64,80,96,112,128,160,192,224,256,320],
     '1-2':[0,32,48,56,64,80,96,112,128,160,192,224,256,320,384],
-    '1-3':[0,32,64,96,128,160,192,224,256,288,320,352,384,416,448],
-    '2-1':[0,8,16,24,32,40,48,56,64,80,96,112,128,144,160],
+    '1-3':[0,32,64,96,128,160,192,224,256,288,320,352,384,416,448],    '2-1':[0,8,16,24,32,40,48,56,64,80,96,112,128,144,160],
     '2-2':[0,8,16,24,32,40,48,56,64,80,96,112,128,144,160],
     '2-3':[0,32,48,56,64,80,96,112,128,144,160,176,192,224,256]
    };
@@ -246,19 +301,28 @@ function create(target,title,providedText,anchorRoot){
  observer.observe(document.documentElement,{childList:true,subtree:true});
  return player;
 }
+function extractFortuneText(result){
+ const selector='.result-poem-part,.result-desc-part,.detail-column,.lucky-area';
+ const matches=Array.from(result.querySelectorAll(selector));
+ const roots=matches.filter(node=>!matches.some(other=>other!==node&&other.contains(node)));
+ return roots.map(node=>{
+  const clone=node.cloneNode(true);
+  clone.querySelectorAll('svg,script,style,button,input,textarea,select,nav,form,.tenmei-choice,.tenmei-article-audio,.tenmei-site-tts-host,.hidden,.d-none,.visually-hidden,[aria-hidden="true"],[hidden]').forEach(child=>child.remove());
+  return (clone.innerText||clone.textContent||'').replace(/\\s+/g,' ').trim();
+ }).filter(Boolean).join('\\n');
+}
 function scan(){
  const result=document.querySelector('#view-result:not(.hidden) #result-display-area');
  if(result&&!result.querySelector('.tenmei-site-tts-host')){
   const source=result.querySelector('.result-main-message-area')||result.querySelector('.result-v4-reading-guide');
-  if(source){const text=Array.from(result.querySelectorAll('.result-poem-part,.result-desc-part,.detail-column,.lucky-area')).map(x=>x.innerText||x.textContent||'').join('\n');if(text.trim()){const holder=document.createElement('div');holder.className='tenmei-site-tts-host';holder.hidden=true;holder.textContent=text;source.insertAdjacentElement('afterend',holder);create(holder,'今日のおみくじを聴く',text);}}
+  if(source){const text=extractFortuneText(result);if(text.trim()){const holder=document.createElement('div');holder.className='tenmei-site-tts-host';holder.hidden=true;holder.setAttribute('aria-hidden','true');holder.dataset.omikujiTtsSource='true';holder.textContent=text;source.insertAdjacentElement('afterend',holder);create(holder,'今日のおみくじを聴く',text);}}
  }
  document.querySelectorAll('[data-ai-response-text],.tenmei-ai-response-text').forEach(el=>{
   if(el.closest('.tenmei-article-audio,.document-history-preview,#document-history-content,#document-history-dialog')||el.dataset.ttsMounted==='true')return;
   const text=(el.innerText||el.textContent||'').trim();if(text.length<20||el.closest('.hidden,[hidden]'))return;
   el.dataset.ttsMounted='true';
   const holder=document.createElement('div');holder.className='tenmei-site-tts-host';
-  el.insertAdjacentElement('beforebegin',holder);create(holder,el.closest('#dream-response-area')?'夢の解釈を聴く':el.closest('#worry-response-area')?'AI相談の回答を聴く':'AIの回答を聴く',text);
- });
+  el.insertAdjacentElement('beforebegin',holder);create(holder,el.closest('#dream-response-area')?'夢の解釈を聴く':el.closest('#worry-response-area')?'AI相談の回答を聴く':'AIの回答を聴く',text); });
  // 旧プレーヤーが担当していたページも、記事と同じ共通プレーヤーで処理する。
  const sharedTargets=[
   ['#dream-response-area','AI夢占いの結果'],
