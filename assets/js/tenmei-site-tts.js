@@ -32,21 +32,21 @@ function makeChoice(id,label,options,icon){
 function installPlayerStyles(){
  if(document.getElementById('tenmei-site-tts-unified-styles'))return;
  const style=document.createElement('style');style.id='tenmei-site-tts-unified-styles';
- style.textContent=`.tenmei-article-audio{display:grid;gap:13px;margin:20px 0 28px;padding:17px 18px;border:1px solid var(--card-border,#e7ded7);border-radius:18px;background:var(--card-bg,#fffdfb);color:var(--text-main,#302923);box-shadow:0 7px 22px rgba(45,34,28,.045);font-family:'Zen Kaku Gothic New',sans-serif}
-.tenmei-article-audio__top{display:flex;align-items:center;justify-content:space-between;gap:12px}
+ style.textContent=`.tenmei-article-audio{display:grid;gap:13px;width:100%;max-width:100%;min-width:0;box-sizing:border-box;margin:20px 0 28px;padding:17px 18px;border:1px solid var(--card-border,#e7ded7);border-radius:18px;background:var(--card-bg,#fffdfb);color:var(--text-main,#302923);box-shadow:0 7px 22px rgba(45,34,28,.045);font-family:'Zen Kaku Gothic New',sans-serif}
+.tenmei-article-audio__top{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px 12px;min-width:0}
 .tenmei-article-audio__heading{display:grid;gap:3px;min-width:0}
 .tenmei-article-audio__eyebrow{color:var(--accent-red,#8f252b);font-size:.62rem;font-weight:800;letter-spacing:.12em}
 .tenmei-article-audio__title{font-size:.91rem;font-weight:800;line-height:1.45}
 .tenmei-article-audio__duration{flex:none;color:var(--text-sub,#786e67);font-size:.68rem}
-.tenmei-article-audio__transport{display:flex;align-items:center;gap:8px}
-.tenmei-article-audio__button{display:inline-flex;min-width:40px;min-height:40px;align-items:center;justify-content:center;gap:7px;padding:0 12px;border:1px solid var(--card-border,#e7ded7);border-radius:11px;background:var(--input-bg,#f7f2ed);color:var(--text-main,#302923);font:inherit;font-size:.76rem;font-weight:700;cursor:pointer;transition:background .16s ease,border-color .16s ease,transform .16s ease}
+.tenmei-article-audio__transport{display:flex;align-items:center;flex-wrap:wrap;gap:8px;width:100%;min-width:0}
+.tenmei-article-audio__button{display:inline-flex;flex:0 1 auto;max-width:100%;min-width:36px;min-height:40px;box-sizing:border-box;align-items:center;justify-content:center;gap:7px;padding:0 12px;white-space:nowrap;border:1px solid var(--card-border,#e7ded7);border-radius:11px;background:var(--input-bg,#f7f2ed);color:var(--text-main,#302923);font:inherit;font-size:.76rem;font-weight:700;cursor:pointer;transition:background .16s ease,border-color .16s ease,transform .16s ease}
 .tenmei-article-audio__button:hover:not(:disabled){border-color:var(--accent-red,#8f252b);background:color-mix(in srgb,var(--accent-red,#8f252b) 6%,var(--card-bg,#fffdfb))}
 .tenmei-article-audio__button:active:not(:disabled){transform:scale(.97)}
 .tenmei-article-audio__button:disabled{opacity:.42;cursor:not-allowed}
-.tenmei-article-audio__button--primary{min-width:112px;border-color:var(--accent-red,#8f252b);background:var(--accent-red,#8f252b);color:#fff}
+.tenmei-article-audio__button--primary{flex:1 1 112px;min-width:112px;border-color:var(--accent-red,#8f252b);background:var(--accent-red,#8f252b);color:#fff}
 .tenmei-article-audio__button--primary:hover:not(:disabled){background:color-mix(in srgb,var(--accent-red,#8f252b) 88%,#000);color:#fff}
 .tenmei-article-audio__button i{font-size:.9rem}
-.tenmei-article-audio__timeline{display:grid;grid-template-columns:minmax(0,1fr);gap:7px;min-width:0;overflow:visible}
+.tenmei-article-audio__timeline{display:grid;grid-template-columns:minmax(0,1fr);gap:7px;width:100%;min-width:0;overflow:visible}
 .tenmei-article-audio__meta{display:grid;grid-template-columns:max-content minmax(0,1fr) max-content;align-items:center;gap:8px;min-width:0;overflow:visible;padding:2px 0 3px;color:var(--text-sub,#786e67);font-size:.72rem;font-variant-numeric:tabular-nums;line-height:1.5;white-space:nowrap}
 .tenmei-article-audio__meta .audio-time-current{justify-self:start;min-width:max-content}
 .tenmei-article-audio__meta .audio-count{justify-self:center;min-width:0;text-align:center;white-space:nowrap}
@@ -63,7 +63,7 @@ function installPlayerStyles(){
 .tenmei-article-audio__spinner .loader-path{stroke:currentColor;stroke-linecap:round;stroke-dasharray:89 150;stroke-dashoffset:0}
 .tenmei-article-audio__seek:focus-visible{outline:2px solid var(--accent-gold,#c4a059);outline-offset:5px}
 .tenmei-article-audio__meta{display:grid;grid-template-columns:max-content minmax(0,1fr) max-content;align-items:center;gap:6px;min-width:0;color:var(--text-sub,#786e67);font-size:.72rem;font-variant-numeric:tabular-nums;white-space:nowrap}.tenmei-article-audio__meta .audio-time-current{justify-self:start;min-width:max-content}.tenmei-article-audio__meta .audio-count{justify-self:center;min-width:0;text-align:center;white-space:nowrap}.tenmei-article-audio__meta .audio-time-total{justify-self:end;min-width:max-content}
-.tenmei-article-audio__settings{display:flex;align-items:center;gap:10px;flex-wrap:wrap;padding-top:2px}
+.tenmei-article-audio__settings{display:flex;align-items:center;gap:10px;flex-wrap:wrap;width:100%;min-width:0;box-sizing:border-box;padding-top:2px}
 .tenmei-article-audio__setting-label{color:var(--text-sub,#786e67);font-size:.68rem;font-weight:700}
 .tenmei-article-audio__rate-control{width:132px;min-width:0}
 .tenmei-article-audio__rate-control .tenmei-choice{width:100%}
@@ -87,6 +87,34 @@ function installPlayerStyles(){
 .tenmei-article-audio .tenmei-article-audio__seek::-webkit-slider-thumb{-webkit-appearance:none;width:0;height:0;border:0;background:transparent;box-shadow:none}
 .tenmei-article-audio .tenmei-article-audio__seek::-moz-range-thumb{width:0;height:0;border:0;background:transparent;box-shadow:none}
 .tenmei-article-audio .tenmei-article-audio__seek:focus-visible{outline:2px solid var(--tenmei-audio-progress,#75634f);outline-offset:2px;border-radius:999px}
+
+/* Shared player safety: prevent the control row and metadata from widening narrow cards. */
+.tenmei-article-audio,.tenmei-article-audio *{box-sizing:border-box}
+.tenmei-article-audio__heading{overflow-wrap:anywhere}
+.tenmei-article-audio__transport{max-width:100%}
+.tenmei-article-audio__button{max-width:100%;flex-shrink:1}
+.tenmei-article-audio__button--primary{flex:1 1 112px}
+.tenmei-article-audio__timeline,.tenmei-article-audio__meta,.tenmei-article-audio__settings{max-width:100%;min-width:0}
+.tenmei-article-audio__meta .audio-count{overflow:hidden;text-overflow:ellipsis}
+.tenmei-article-audio__rate-control,.tenmei-article-audio__voice-control{max-width:100%;min-width:0}
+.tenmei-article-audio .tenmei-choice__trigger{min-width:0;max-width:100%}
+@media(max-width:560px){
+ .tenmei-article-audio{gap:11px;padding:14px 13px}
+ .tenmei-article-audio__transport{gap:6px}
+ .tenmei-article-audio__button{min-width:34px;min-height:38px;padding:0 9px}
+ .tenmei-article-audio__button--primary{flex:1 1 100%;width:100%;min-width:0}
+ .tenmei-article-audio__meta{grid-template-columns:max-content minmax(0,1fr) max-content;gap:4px;font-size:.66rem}
+ .tenmei-article-audio__meta .audio-count{font-size:.6rem}
+ .tenmei-article-audio__settings{gap:7px}
+ .tenmei-article-audio__rate-control{width:min(42%,148px)}
+ .tenmei-article-audio__voice-control{width:min(54%,172px)}
+}
+@media(max-width:360px){
+ .tenmei-article-audio__meta{font-size:.61rem}
+ .tenmei-article-audio__meta .audio-count{font-size:.56rem}
+ .tenmei-article-audio__button{padding:0 7px}
+}
+
 `;
  document.head.appendChild(style);
 }
@@ -238,7 +266,6 @@ function scan(){
   ['#ranking-list','本日の運勢ランキング'],
   ['#full-ranking-list','運勢ランキングの続き'],
   ['#summary-result','記事のAI要約'],
-  ['#document-history-content','改定履歴の本文'],
   ['#about-content-area','当サイトについて'],
   ['#privacy-content-area','プライバシーポリシー'],
   ['#howto-content-area','使い方'],
