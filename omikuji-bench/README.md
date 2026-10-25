@@ -5,6 +5,8 @@
 ## URL
 https://omikuji-bench.pages.dev/
 
+Cloudflare Pagesは独立プロジェクト（root: `omikuji-bench/`）として公開。ビルド不要の静的HTMLで、`exit 0` / output `.`。
+
 ## ブランド・デザイン
 - tenmei-mori本体と同じGoogle Fonts：Zen Kaku Gothic New / Zen Old Mincho / Shippori Mincho。
 - Bootstrap Icons、共通の和モダンな書体・余白・フォーカス・ライト/ダーク切替。
