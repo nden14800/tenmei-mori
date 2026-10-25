@@ -20,7 +20,48 @@ function makeChoice(id,label,options,icon){
 function installPlayerStyles(){
  if(document.getElementById('tenmei-site-tts-unified-styles'))return;
  const style=document.createElement('style');style.id='tenmei-site-tts-unified-styles';
- style.textContent=`.tenmei-article-audio .tenmei-article-audio__seek{appearance:none;-webkit-appearance:none;display:block;width:100%;height:24px;margin:0;padding:0;border:0;border-radius:999px;background:transparent;cursor:ew-resize;outline:none;touch-action:pan-y;-webkit-tap-highlight-color:transparent}
+ style.textContent=`.tenmei-article-audio{display:grid;gap:13px;margin:20px 0 28px;padding:17px 18px;border:1px solid var(--card-border,#e7ded7);border-radius:18px;background:var(--card-bg,#fffdfb);color:var(--text-main,#302923);box-shadow:0 7px 22px rgba(45,34,28,.045);font-family:'Zen Kaku Gothic New',sans-serif}
+.tenmei-article-audio__top{display:flex;align-items:center;justify-content:space-between;gap:12px}
+.tenmei-article-audio__heading{display:grid;gap:3px;min-width:0}
+.tenmei-article-audio__eyebrow{color:var(--accent-red,#8f252b);font-size:.62rem;font-weight:800;letter-spacing:.12em}
+.tenmei-article-audio__title{font-size:.91rem;font-weight:800;line-height:1.45}
+.tenmei-article-audio__duration{flex:none;color:var(--text-sub,#786e67);font-size:.68rem}
+.tenmei-article-audio__transport{display:flex;align-items:center;gap:8px}
+.tenmei-article-audio__button{display:inline-flex;min-width:40px;min-height:40px;align-items:center;justify-content:center;gap:7px;padding:0 12px;border:1px solid var(--card-border,#e7ded7);border-radius:11px;background:var(--input-bg,#f7f2ed);color:var(--text-main,#302923);font:inherit;font-size:.76rem;font-weight:700;cursor:pointer;transition:background .16s ease,border-color .16s ease,transform .16s ease}
+.tenmei-article-audio__button:hover:not(:disabled){border-color:var(--accent-red,#8f252b);background:color-mix(in srgb,var(--accent-red,#8f252b) 6%,var(--card-bg,#fffdfb))}
+.tenmei-article-audio__button:active:not(:disabled){transform:scale(.97)}
+.tenmei-article-audio__button:disabled{opacity:.42;cursor:not-allowed}
+.tenmei-article-audio__button--primary{min-width:112px;border-color:var(--accent-red,#8f252b);background:var(--accent-red,#8f252b);color:#fff}
+.tenmei-article-audio__button--primary:hover:not(:disabled){background:color-mix(in srgb,var(--accent-red,#8f252b) 88%,#000);color:#fff}
+.tenmei-article-audio__button i{font-size:.9rem}
+.tenmei-article-audio__timeline{display:grid;gap:7px}
+.tenmei-article-audio__seek{width:100%;height:16px;margin:0;padding:0;appearance:none;-webkit-appearance:none;border:0;border-radius:999px;background:transparent;cursor:pointer;touch-action:pan-y;outline:none}
+.tenmei-article-audio__seek::-webkit-slider-runnable-track{height:3px;border:0;border-radius:999px;background:linear-gradient(to right,var(--accent-red,#8f252b) 0 var(--seek-progress,0%),var(--card-border,#e7ded7) var(--seek-progress,0%) 100%);transition:background .12s linear}
+.tenmei-article-audio__seek::-moz-range-track{height:3px;border:0;border-radius:999px;background:var(--card-border,#e7ded7)}
+.tenmei-article-audio__seek::-moz-range-progress{height:3px;border-radius:999px;background:var(--accent-red,#8f252b);transition:width .12s linear}
+.tenmei-article-audio__seek::-webkit-slider-thumb{-webkit-appearance:none;width:12px;height:12px;border:0;border-radius:50%;background:transparent;box-shadow:none}
+.tenmei-article-audio__seek::-moz-range-thumb{width:12px;height:12px;border:0;border-radius:50%;background:transparent;box-shadow:none}
+.tenmei-article-audio__seek:focus-visible{outline:2px solid var(--accent-gold,#c4a059);outline-offset:3px;border-radius:999px}
+.tenmei-article-audio__spinner{width:18px;height:18px;flex:0 0 18px;animation:rotate 1s linear infinite}
+.tenmei-article-audio__spinner .loader-path{stroke:currentColor;stroke-linecap:round;stroke-dasharray:89 150;stroke-dashoffset:0}
+.tenmei-article-audio__seek:focus-visible{outline:2px solid var(--accent-gold,#c4a059);outline-offset:5px}
+.tenmei-article-audio__meta{display:flex;justify-content:space-between;gap:12px;color:var(--text-sub,#786e67);font-size:.67rem;font-variant-numeric:tabular-nums}
+.tenmei-article-audio__settings{display:flex;align-items:center;gap:10px;flex-wrap:wrap;padding-top:2px}
+.tenmei-article-audio__setting-label{color:var(--text-sub,#786e67);font-size:.68rem;font-weight:700}
+.tenmei-article-audio__rate-control{width:132px;min-width:0}
+.tenmei-article-audio__rate-control .tenmei-choice{width:100%}
+.tenmei-article-audio__rate-control .tenmei-choice__popover{z-index:260}
+.tenmei-article-audio__voice-control{width:164px;min-width:0}
+.tenmei-article-audio__voice-control .tenmei-choice{width:100%}
+.tenmei-article-audio__voice-control .tenmei-choice__popover{z-index:260}
+.tenmei-article-audio__status{min-height:1.4em;margin:0;color:var(--text-sub,#786e67);font-size:.68rem;line-height:1.6}
+.tenmei-article-audio__status[data-state="error"]{color:var(--accent-red,#8f252b)}
+.tenmei-article-audio__active{background:color-mix(in srgb,var(--accent-gold,#c4a059) 17%,transparent)!important;border-radius:4px;scroll-margin:110px}
+.tenmei-article-audio__button:focus-visible,.tenmei-article-audio .tenmei-choice__trigger:focus-visible,.tenmei-article-audio .tenmei-choice__option:focus-visible{outline:2px solid var(--accent-gold,#c4a059);outline-offset:2px}
+@media(max-width:560px){.tenmei-article-audio{gap:12px;padding:14px;border-radius:15px}.tenmei-article-audio__transport{gap:6px}.tenmei-article-audio__button{min-width:36px;min-height:40px;padding:0 9px}.tenmei-article-audio__button--primary{min-width:100px}.tenmei-article-audio__settings{gap:8px}.tenmei-article-audio .tenmei-choice{min-width:104px}}
+@media(prefers-reduced-motion:reduce){.tenmei-article-audio *{scroll-behavior:auto!important;transition:none!important}}
+
+.tenmei-article-audio .tenmei-article-audio__seek{appearance:none;-webkit-appearance:none;display:block;width:100%;height:24px;margin:0;padding:0;border:0;border-radius:999px;background:transparent;cursor:ew-resize;outline:none;touch-action:pan-y;-webkit-tap-highlight-color:transparent}
  .tenmei-article-audio .tenmei-article-audio__seek::-webkit-slider-runnable-track{height:4px;border:0;border-radius:999px;background:linear-gradient(to right,var(--accent-red,#8f252b) 0 var(--seek-progress,0%),var(--card-border,#e7ded7) var(--seek-progress,0%) 100%);transition:none}
  .tenmei-article-audio .tenmei-article-audio__seek::-moz-range-track{height:4px;border:0;border-radius:999px;background:var(--card-border,#e7ded7)}
  .tenmei-article-audio .tenmei-article-audio__seek::-moz-range-progress{height:4px;border:0;border-radius:999px;background:var(--accent-red,#8f252b);transition:none}
