@@ -45,7 +45,7 @@ function installPlayerStyles(){
 .tenmei-article-audio__spinner{width:18px;height:18px;flex:0 0 18px;animation:rotate 1s linear infinite}
 .tenmei-article-audio__spinner .loader-path{stroke:currentColor;stroke-linecap:round;stroke-dasharray:89 150;stroke-dashoffset:0}
 .tenmei-article-audio__seek:focus-visible{outline:2px solid var(--accent-gold,#c4a059);outline-offset:5px}
-.tenmei-article-audio__meta{display:flex;justify-content:space-between;gap:12px;color:var(--text-sub,#786e67);font-size:.67rem;font-variant-numeric:tabular-nums}
+.tenmei-article-audio__meta{display:grid;grid-template-columns:max-content minmax(0,1fr) max-content;align-items:center;gap:6px;min-width:0;color:var(--text-sub,#786e67);font-size:.72rem;font-variant-numeric:tabular-nums;white-space:nowrap}.tenmei-article-audio__meta .audio-time-current{justify-self:start;min-width:max-content}.tenmei-article-audio__meta .audio-count{justify-self:center;min-width:0;text-align:center;white-space:nowrap}.tenmei-article-audio__meta .audio-time-total{justify-self:end;min-width:max-content}
 .tenmei-article-audio__settings{display:flex;align-items:center;gap:10px;flex-wrap:wrap;padding-top:2px}
 .tenmei-article-audio__setting-label{color:var(--text-sub,#786e67);font-size:.68rem;font-weight:700}
 .tenmei-article-audio__rate-control{width:132px;min-width:0}
@@ -77,8 +77,8 @@ function create(target,title,providedText,anchorRoot){
  installPlayerStyles();
  if(!target||target.querySelector(':scope > .tenmei-article-audio'))return;
  const id='site-audio-'+(++seq),parts=split(providedText||target.innerText||target.textContent||'');
- const anchorNodes=anchorRoot?Array.from(anchorRoot.querySelectorAll('p,h1,h2,h3,h4,h5,li,blockquote,figcaption,.article-content > div')).filter(el=>(el.innerText||el.textContent||'').trim().length>0):[];
- const partAnchors=parts.map(part=>{const key=part.replace(/\s+/g,' ').trim().slice(0,48);return anchorNodes.find(el=>(el.innerText||el.textContent||'').replace(/\s+/g,' ').includes(key))||null;});
+ const anchorNodes=anchorRoot?Array.from(anchorRoot.querySelectorAll('p,h1,h2,h3,h4,h5,li,blockquote,figcaption')).filter(el=>(el.innerText||el.textContent||'').trim().length>0):[];
+ const partAnchors=parts.map(part=>{const key=part.replace(/\s+/g,' ').trim().slice(0,36);if(!key)return null;return anchorNodes.find(el=>(el.innerText||el.textContent||'').replace(/\s+/g,' ').includes(key))||null;});
  let activeAnchor=null;
  function highlightCurrentPart(){const next=partAnchors[index];if(activeAnchor&&activeAnchor!==next)activeAnchor.classList.remove('tenmei-article-audio__active');activeAnchor=next;if(activeAnchor){activeAnchor.classList.add('tenmei-article-audio__active');activeAnchor.scrollIntoView({behavior:'smooth',block:'center'});}}
  if(!parts.length)return;
