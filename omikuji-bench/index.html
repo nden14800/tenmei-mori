@@ -6,7 +6,7 @@
 <meta name="theme-color" content="#f7f6f3">
 <meta name="application-name" content="OmikujiBench"><meta name="version" content="1.0">
 <meta name="description" content="オンラインおみくじを、体験・結果・機能・透明性・独自性・技術の6軸で比較する独立ベンチマーク。根拠付き評価、比較グラフ、比較表を公開。">
-<title>OmikujiBench v1.0 — 運勢・天命乃杜</title><script src="https://cdn.jsdelivr.net/npm/echarts@5.6.0/dist/echarts.min.js" defer></script>
+<title>OmikujiBench v1.0 — 運勢・天命乃杜</title><script src="https://cdn.jsdelivr.net/npm/echarts@5.6.0/dist/echarts.min.js"></script>
 <link rel="icon" type="image/svg+xml" href="favicon.svg">
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Shippori+Mincho:wght@400;500;600;700;800&family=Zen+Kaku+Gothic+New:wght@400;500;600;700;800;900&family=Zen+Old+Mincho:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
@@ -82,7 +82,7 @@ table{font-size:11px}th{font-size:10px}
 <div class="panel chartbox"><div class="panel-title"><h3>評価カテゴリの平均</h3><small>6つの評価軸</small></div><div id="categoryChart" class="chart-host chart-host--compact"></div><div class="chart-legend"><span><i style="background:#a95d70"></i>平均評価点</span></div></div>
 </div>
 <div class="lower-grid">
-<div class="panel"><div class="panel-title"><h3>サイト別・6軸レーダー比較</h3><small>サイトを選択して切替</small></div><div class="radar-wrap"><div id="radarChart" class="chart-host chart-host--compact"></div><div class="legend-list" id="radarLegend"></div></div></div>
+<div class="panel"><div class="panel-title"><h3>サイト別・6軸レーダー比較</h3><small>サイトを選択して切替</small></div><div class="radar-wrap"><div id="radarSelect" class="custom-select" style="margin:0 0 8px 8px;max-width:230px"></div><div id="radarChart" class="chart-host chart-host--compact"></div><div class="legend-list" id="radarLegend"></div></div></div>
 <div class="panel"><div class="panel-title"><h3>カテゴリ別スコア・ヒートマップ</h3><small>上位12サイト</small></div><div id="heatmap" class="chart-host chart-host--compact"></div></div>
 </div>
 <div class="chart-grid-advanced">
@@ -97,7 +97,7 @@ table{font-size:11px}th{font-size:10px}
 <div id="siteCards" class="site-grid"></div><div id="siteTable" class="tablewrap" hidden></div>
 </section>
 <section class="section" id="compare"><div class="section-head"><div><div class="kicker">03 / COMPARISON</div><h2>比較分析</h2><p>選択したサイトの評価軸・差分を横並びで確認。</p></div><button class="mini-btn" id="resetCompare">選択を解除</button></div>
-<div class="panel"><div class="panel-title"><h3>比較対象を選択</h3><small>最大4サイト</small></div><div id="compareSelectors" class="controls"></div><div id="compareChart"></div><div class="tablewrap" id="compareTable" style="margin-top:14px"></div></div>
+<div class="panel"><div class="panel-title"><h3>比較対象を選択</h3><small>最大4サイト</small></div><div id="compareSelectors" class="controls"></div><div id="compareChart" class="chart-host chart-host--compact"></div><div class="tablewrap" id="compareTable" style="margin-top:14px"></div></div>
 </section>
 <section class="section" id="method"><div class="section-head"><div><div class="kicker">05 / METHODOLOGY</div><h2>評価基準とデータの扱い</h2><p>点数の根拠・未検証項目・評価上の制約を明確に分離。</p></div></div>
 <div class="method-grid">
@@ -189,6 +189,10 @@ function renderScatter(){const o=obTheme();o.xAxis={type:'value',name:'操作性
 function renderTreemap(){const o=obTheme();o.tooltip={formatter:p=>p.name+'<br>加重寄与：'+p.value};o.series=[{type:'treemap',data:AXES.map((a,i)=>({name:a[1],value:+(avg(sites.map(s=>s.scores[i]))*a[2]/100).toFixed(2)})),breadcrumb:{show:false},label:{show:true,formatter:'{b}'}}];obChart('treemapChart',o)}
 function renderConfidence(){const o=obTheme();o.legend={bottom:0};o.series=[{type:'pie',radius:['42%','70%'],data:['高','中','低'].map((x,i)=>({name:x,value:sites.filter(s=>s.confidence===x).length,itemStyle:{color:obColors[i]}})),label:{formatter:'{b} {c}件'}}];obChart('confidenceChart',o)}
 function renderAll(){obSelectInit();renderMetrics();renderRankingChart();renderCategoryChart();renderRadar();renderHeatmap();renderParallel();renderBoxplot();renderScatter();renderTreemap();renderConfidence();renderCards();renderCompare();updateDock();Object.values(obCharts).forEach(c=>c.resize())}
+
+
+function renderMetrics(){const n=sites.length*AXES.length,vals=sites.map(s=>s.score);$('metrics').innerHTML=[['掲載サイト',sites.length,'評価対象'],['評価データ',n,'21サイト × 6評価軸'],['暫定レビュー平均',avg(vals).toFixed(1),'/ 100'],['最高スコア',Math.max(...vals).toFixed(1),'暫定デスクレビュー']].map(x=>'<div class="metric"><label>'+x[0]+'</label><strong>'+x[1]+'</strong><small>'+x[2]+'</small></div>').join('')}
+function renderCompare(){const a=selected.map(id=>sites.find(s=>s.id===id)).filter(Boolean);$('compareSelectors').innerHTML=sites.map(s=>'<label class="tag" style="cursor:pointer"><input type="checkbox" data-compare="'+s.id+'" '+(selected.includes(s.id)?'checked':'')+' '+(!selected.includes(s.id)&&selected.length>=4?'disabled':'')+'> '+esc(s.name)+'</label>').join('');if(!a.length){if(obCharts.compareChart){obCharts.compareChart.clear()}$('compareChart').innerHTML='<div class="empty">比較したいサイトをカードの「比較」から選択してください。</div>';$('compareTable').innerHTML='';return}const o=obTheme();o.grid={left:112,right:20,top:18,bottom:50};o.xAxis={type:'value',min:0,max:100,axisLabel:{color:getComputedStyle(document.documentElement).getPropertyValue('--muted')}};o.yAxis={type:'category',inverse:true,data:AXES.map(x=>x[1]),axisLabel:{color:getComputedStyle(document.documentElement).getPropertyValue('--muted')}};o.legend={bottom:0,textStyle:{color:getComputedStyle(document.documentElement).getPropertyValue('--muted')}};o.tooltip={trigger:'axis',axisPointer:{type:'shadow'}};o.series=a.map((s,i)=>({name:s.name,type:'bar',data:s.scores,itemStyle:{color:obColors[i],borderRadius:[0,5,5,0]},barMaxWidth:13}));obChart('compareChart',o);$('compareTable').innerHTML='<table><thead><tr><th>評価軸</th>'+a.map(s=>'<th class="num">'+esc(s.name)+'</th>').join('')+'</tr></thead><tbody>'+[['総合スコア',a.map(s=>s.score.toFixed(1))],...AXES.map((x,i)=>[x[1],a.map(s=>s.scores[i])])].map(row=>'<tr><td class="table-name">'+row[0]+'</td>'+row[1].map(v=>'<td class="num">'+v+'</td>').join('')+'</tr>').join('')+'</tbody></table>'}
 
 try{if(window.echarts)renderAll();else setTimeout(()=>{if(window.echarts)renderAll()},300)}catch(error){console.error('OmikujiBench render error:',error);const fallback=document.createElement('section');fallback.style.cssText='margin:24px auto;padding:20px;max-width:760px;border:1px solid #c66;border-radius:12px;background:#fff;color:#292c31;font:14px/1.7 sans-serif';fallback.innerHTML='<strong>表示の初期化に失敗しました。</strong><p>ページを再読み込みしてください。問題が続く場合は運営にお知らせください。</p>';document.body.appendChild(fallback)}
 </script>
