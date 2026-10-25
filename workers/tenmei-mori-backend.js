@@ -85,7 +85,7 @@ async function loadAIGuideKnowledge(question) {
 /* Microsoft Edge TTS runtime. Sec-MS-GEC v2 algorithm based on rany2/edge-tts (LGPL-3.0-or-later). */
 const EDGE_TTS_TRUSTED_TOKEN = "6A5AA1D4EAFF4E9FB37E23D68491D6F4";
 const EDGE_TTS_VERSION = "2-155.0.4283.45";
-const EDGE_TTS_HOST = "speech.platform.bing.com";
+const EDGE_TTS_HOST = "api.msedgeservices.com";
 const EDGE_TTS_AUDIO_FORMAT = "audio-24khz-48kbitrate-mono-mp3";
 // Sec-MS-GEC v2 token for the Edge read-aloud service, sent together with
 // `Sec-MS-GEC-Version: 2-<edge version>`. Since 2026-10-10 the synthesis
@@ -414,8 +414,8 @@ async function edgeTtsAudio(requestText,voice){
  const connectionId=crypto.randomUUID().replace(/-/g,"");
  const muid=Array.from(crypto.getRandomValues(new Uint8Array(16))).map(b=>b.toString(16).padStart(2,"0")).join("").toUpperCase();
  const token=generateSecMsGec(EDGE_TTS_TRUSTED_TOKEN);
- const url=new URL("https://"+EDGE_TTS_HOST+"/consumer/speech/synthesize/readaloud/edge/v1");
- url.searchParams.set("TrustedClientToken",EDGE_TTS_TRUSTED_TOKEN);
+ const url=new URL("https://"+EDGE_TTS_HOST+"/tts/cognitiveservices/websocket/v1");
+ url.searchParams.set("Ocp-Apim-Subscription-Key",EDGE_TTS_TRUSTED_TOKEN);
  url.searchParams.set("Sec-MS-GEC",token);
  url.searchParams.set("Sec-MS-GEC-Version",EDGE_TTS_VERSION);
  url.searchParams.set("ConnectionId",connectionId);
