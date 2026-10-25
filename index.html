@@ -28209,12 +28209,22 @@ function showLoading(show) {
             const article = isArticle
                 ? document.querySelector('#article-detail-content article .article-content, #article-detail-content .article-content')
                 : null;
-            readingProgressState.mode = isArticle && article ? 'article' : 'document';
-            readingProgressState.contentEl = article || document.scrollingElement || document.documentElement;
-
             const bar = document.getElementById('reading-progress-bar');
+            // 読書進捗は長文記事の詳細画面だけに表示する。通常画面には出さない。
+            if (!isArticle || !article) {
+                if (bar) {
+                    bar.classList.remove('active');
+                    bar.setAttribute('aria-valuenow', '0');
+                    bar.removeAttribute('aria-valuetext');
+                }
+                document.body.classList.remove('reading-progress-active');
+                return;
+            }
+            readingProgressState.mode = 'article';
+            readingProgressState.contentEl = article;
+
             if (bar) {
-                bar.setAttribute('aria-label', isArticle ? '記事の読書進捗' : 'ページのスクロール進捗');
+                bar.setAttribute('aria-label', '記事の読書進捗');
                 bar.classList.add('active');
                 bar.setAttribute('aria-valuenow', '0');
                 bar.setAttribute('aria-valuetext', '0%');
@@ -28232,12 +28242,7 @@ function showLoading(show) {
             requestAnimationFrame(updateReadingProgress);
         }
 
-        // 初期表示のホーム画面も、画面遷移前からページ進捗を追跡する。
-        if (document.readyState === 'loading') {
-            document.addEventListener('DOMContentLoaded', () => startReadingProgress(currentState.view || 'home'), { once: true });
-        } else {
-            requestAnimationFrame(() => startReadingProgress(currentState.view || 'home'));
-        }
+        // 初期画面では進捗バーを表示しない。記事詳細へ移動した時だけ開始する。
 
         function stopReadingProgress() {
             window.removeEventListener('scroll', onReadingProgressScroll);
@@ -32232,7 +32237,7 @@ function renderServerPagination(currentPage, totalItems, perPage) {
 
     // 画面切り替え関数 (修正版: ボタンIDのマッピングを追加)
     window.showView = function(viewId) {
-        // 記事詳細は本文範囲、それ以外の画面はページ全体のスクロール量を追跡する。
+        // 読書進捗バーは長文記事の詳細画面だけで使用する。
         startReadingProgress(viewId);
 
         // 1. サイドバーのアクティブ状態を更新
