@@ -19725,7 +19725,7 @@ function escapeHtml(str) {
                 : ((serverMaintenance && typeof serverMaintenance.title === 'string' && serverMaintenance.title.trim())
                     ? serverMaintenance.title.trim()
                     : maintenanceConfig.title);
-            document.body.innerHTML = `
+            const maintenanceMarkup = `
                 <main class="maintenance-screen" aria-labelledby="maintenance-title">
                     <div class="maintenance-shell">
                         <div class="maintenance-brand" aria-label="運勢・天命乃杜">
@@ -19766,12 +19766,37 @@ function escapeHtml(str) {
                 </main>
             `;
 
-            // 強制モードのときはエラーを投げずにスクロールだけ止める（コンソールエラー回避）
+            // 合言葉からの表示確認は既存画面を置き換えず、閉じればその場で元に戻るプレビューにする。
+            if (force) {
+                if (document.getElementById('tenmei-maintenance-preview')) return;
+                const previewHost = document.createElement('div');
+                previewHost.id = 'tenmei-maintenance-preview';
+                previewHost.innerHTML = maintenanceMarkup;
+                const previewActions = previewHost.querySelector('.maintenance-actions');
+                if (previewActions) {
+                    const closePreview = document.createElement('button');
+                    closePreview.type = 'button';
+                    closePreview.className = 'maintenance-reload maintenance-preview-close';
+                    closePreview.innerHTML = '<i class="bi bi-x-circle" aria-hidden="true"></i><span>通常画面に戻る</span>';
+                    closePreview.style.gridColumn = '1 / -1';
+                    closePreview.addEventListener('click', function () {
+                        if (typeof window.closeTenmeiHiddenEffects === 'function') window.closeTenmeiHiddenEffects();
+                        else previewHost.remove();
+                    });
+                    previewActions.appendChild(closePreview);
+                }
+                document.body.dataset.tenmeiMaintenancePreviousOverflow = document.body.style.overflow;
+                document.body.appendChild(previewHost);
+                document.body.style.overflow = 'hidden';
+                window.requestAnimationFrame(() => previewHost.querySelector('[data-maintenance-primary]')?.focus());
+                return;
+            }
+
+            // 実際のサーバーメンテナンス時だけ、従来どおりサイト全体をメンテナンス画面に切り替える。
+            document.body.innerHTML = maintenanceMarkup;
             document.body.style.overflow = 'hidden';
             window.requestAnimationFrame(() => document.querySelector('[data-maintenance-primary]')?.focus());
-            if(!force) {
-                throw new Error("Maintenance Mode Active");
-            }
+            throw new Error("Maintenance Mode Active");
         }
     }
 
@@ -35927,6 +35952,7 @@ window.applyTheme = function() {
 <!-- ── 隠しコマンド演出用オーバーレイ（コナミコマンド） ── -->
 <div id="secret-overlay">
     <div class="secret-text"></div>
+    <button type="button" class="tenmei-secret-close-all" onclick="window.closeTenmeiHiddenEffects && window.closeTenmeiHiddenEffects()">隠し演出をすべて終了</button>
     <p style="font-size:0.75rem;opacity:0.5;margin-top:10px;">（画面をタップ、または Esc キーで閉じる）</p>
 </div>
 
@@ -36186,6 +36212,45 @@ try {
             window.__tenmeiEggEscapeHandler = null;
         }
     }
+    var tenmeiSakuraNodes = [];
+    var tenmeiSakuraTimers = [];
+    function closeAllHiddenEffects(options) {
+        options = options || {};
+        try {
+            var stage = document.getElementById('tenmei-secret-scene');
+            if (stage) closeEggScene(stage);
+            var overlay = document.getElementById('secret-overlay');
+            if (overlay) overlay.classList.remove('active');
+            if (typeof window.__tenmeiKonamiClose === 'function') window.__tenmeiKonamiClose();
+            window.__tenmeiKonamiClose = null;
+            if (window.__tenmeiKonamiTimer) {
+                window.clearTimeout(window.__tenmeiKonamiTimer);
+                window.__tenmeiKonamiTimer = null;
+            }
+            if (window.__tenmeiEggEscapeHandler) {
+                document.removeEventListener('keydown', window.__tenmeiEggEscapeHandler, false);
+                window.__tenmeiEggEscapeHandler = null;
+            }
+            tenmeiSakuraTimers.forEach(function(timer){ window.clearTimeout(timer); });
+            tenmeiSakuraTimers = [];
+            tenmeiSakuraNodes.forEach(function(node){ if(node && node.parentNode)node.parentNode.removeChild(node); });
+            tenmeiSakuraNodes = [];
+            var preview = document.getElementById('tenmei-maintenance-preview');
+            if (preview) preview.remove();
+            if (document.body && Object.prototype.hasOwnProperty.call(document.body.dataset,'tenmeiMaintenancePreviousOverflow')) {
+                document.body.style.overflow = document.body.dataset.tenmeiMaintenancePreviousOverflow;
+                delete document.body.dataset.tenmeiMaintenancePreviousOverflow;
+            }
+            if (window.TenmeiMockAds && typeof window.TenmeiMockAds.close === 'function') {
+                window.TenmeiMockAds.close({silent:true});
+            }
+            if (!options.silent && typeof window.showToast === 'function') {
+                window.showToast('隠し演出をすべて終了し、通常の画面に戻しました。','success','非表示');
+            }
+        } catch (_) {}
+    }
+    window.closeTenmeiHiddenEffects = closeAllHiddenEffects;
+
     function showEggScene(key) {
         var data = eggs[key]; if (!data || !document.body) return;
         try {
@@ -36194,7 +36259,7 @@ try {
             stage.id = 'tenmei-secret-scene'; stage.className = 'tenmei-egg-stage tenmei-egg-theme-' + data[3];
             stage.setAttribute('role','status'); stage.setAttribute('aria-live','polite');
             var card = document.createElement('div'); card.className = 'tenmei-egg-card';
-            var close = document.createElement('button'); close.type = 'button'; close.className = 'tenmei-egg-close'; close.textContent = '閉じる'; close.setAttribute('aria-label','隠し演出を閉じる');
+            var close = document.createElement('button'); close.type = 'button'; close.className = 'tenmei-egg-close'; close.textContent = 'すべて閉じる'; close.setAttribute('aria-label','すべての隠し演出を閉じる');
             var icon = document.createElement('div'); icon.className = 'tenmei-egg-icon'; icon.textContent = data[0]; icon.setAttribute('aria-hidden','true');
             var title = document.createElement('h2'); title.className = 'tenmei-egg-title'; title.textContent = data[1];
             var message = document.createElement('p'); message.className = 'tenmei-egg-message'; message.textContent = data[2];
@@ -36205,7 +36270,7 @@ try {
                 particle.textContent = symbol; particle.setAttribute('aria-hidden','true'); particle.style.setProperty('--egg-index',String(i)); particle.style.left=(10+i*24)+'%'; particle.style.top=(16+i*17)+'%'; particle.style.animationDelay=(-i*0.31)+'s'; if(i===1){particle.style.left='auto';particle.style.right='14%';} if(i===2){particle.style.left='50%';particle.style.top='auto';particle.style.bottom='12%';} stage.appendChild(particle);
             });
             document.body.appendChild(stage);
-            var dismiss = function () { closeEggScene(stage); };
+            var dismiss = function () { closeAllHiddenEffects(); };
             close.addEventListener('click',dismiss);
             stage.addEventListener('click',function (event) { if (event.target === stage) dismiss(); });
             window.__tenmeiEggEscapeHandler = function (event) { if (event.key === 'Escape') dismiss(); };
@@ -36245,10 +36310,10 @@ try {
             var target=stage||document.body;
             var duration=reduced?'.4s':'3.5s';
             for (var i=0;i<(reduced?8:24);i++) {
-                var p=document.createElement('div'); p.textContent='🌸'; p.setAttribute('aria-hidden','true');
-                p.style.cssText='position:fixed;top:-30px;left:'+(Math.random()*100)+'vw;font-size:'+(14+Math.random()*12)+'px;opacity:.9;pointer-events:none;z-index:'+(stage?'1':'100000')+';transition:transform '+duration+' linear,opacity '+duration+' linear;';
-                target.appendChild(p);
-                (function(petal){requestAnimationFrame(function(){petal.style.transform='translateY('+(window.innerHeight+60)+'px) translateX('+(Math.random()*80-40)+'px) rotate('+(Math.random()*360)+'deg)';petal.style.opacity='0';});window.setTimeout(function(){if(petal.parentNode)petal.parentNode.removeChild(petal);},reduced?500:4000);})(p);
+                var p=document.createElement('div'); p.className='tenmei-sakura-petal'; p.textContent='🌸'; p.setAttribute('aria-hidden','true');
+                p.style.cssText='position:fixed;top:-30px;left:'+(Math.random()*100)+'vw;font-size:'+(14+Math.random()*12)+'px;opacity:.9;pointer-events:none;z-index:'+(stage?'100002':'100000')+';transition:transform '+duration+' linear,opacity '+duration+' linear;';
+                target.appendChild(p); tenmeiSakuraNodes.push(p);
+                (function(petal){requestAnimationFrame(function(){if(!petal.isConnected)return;petal.style.transform='translateY('+(window.innerHeight+60)+'px) translateX('+(Math.random()*80-40)+'px) rotate('+(Math.random()*360)+'deg)';petal.style.opacity='0';});var timer=window.setTimeout(function(){if(petal.parentNode)petal.parentNode.removeChild(petal);tenmeiSakuraNodes=tenmeiSakuraNodes.filter(function(node){return node!==petal;});tenmeiSakuraTimers=tenmeiSakuraTimers.filter(function(id){return id!==timer;});},reduced?500:4000);tenmeiSakuraTimers.push(timer);})(p);
             }
         } catch (_) {}
     }
@@ -36262,9 +36327,12 @@ try {
             ];
             var text=overlay.querySelector('.secret-text'); if(text){text.textContent=messages[Math.floor(Math.random()*messages.length)];text.classList.add('secret-cursor');}
             overlay.classList.add('active');
-            var close=function(){overlay.classList.remove('active');overlay.removeEventListener('click',close);document.removeEventListener('keydown',escapeHandler,false);};
-            var escapeHandler=function(e){if(e.key==='Escape')close();};
-            overlay.addEventListener('click',close);document.addEventListener('keydown',escapeHandler,false);window.setTimeout(close,8000);
+            var close=function(){overlay.classList.remove('active');overlay.removeEventListener('click',dismissAll);document.removeEventListener('keydown',escapeHandler,false);if(window.__tenmeiKonamiClose===close)window.__tenmeiKonamiClose=null;if(window.__tenmeiKonamiTimer){window.clearTimeout(window.__tenmeiKonamiTimer);window.__tenmeiKonamiTimer=null;}};
+            var dismissAll=function(){close();closeAllHiddenEffects({silent:true});};
+            var escapeHandler=function(e){if(e.key==='Escape')dismissAll();};
+            window.__tenmeiKonamiClose=close;
+            overlay.addEventListener('click',dismissAll);document.addEventListener('keydown',escapeHandler,false);
+            window.__tenmeiKonamiTimer=window.setTimeout(dismissAll,8000);
         } catch (_) {}
     }
     function triggerSecretWord(value) {
@@ -38604,6 +38672,16 @@ window.addEventListener('hashchange',function(){setTimeout(buildAboutArticleTOC,
 
     <script src="assets/js/site-speech-reader.js"></script>
 <script src="/assets/js/tenmei-site-tts.js" defer></script>
+<style id="tenmei-global-button-interactions">
+:where(button,[role="button"]):not(:disabled){transition-property:background-color,border-color,color,box-shadow,transform,filter;transition-duration:.16s;transition-timing-function:ease}
+:where(button,[role="button"]):not(:disabled):hover{border-color:color-mix(in srgb,var(--accent-red,#8f252b) 62%,var(--card-border,#ded8cf));background-color:color-mix(in srgb,var(--accent-red,#8f252b) 5%,var(--card-bg,#fff));box-shadow:0 3px 12px rgba(58,38,28,.08)}
+:where(button,[role="button"]):not(:disabled):active{transform:scale(.985)}
+:where(button,[role="button"]):focus-visible{outline:2px solid color-mix(in srgb,var(--accent-gold,#c4a059) 82%,#fff);outline-offset:2px}
+.tenmei-secret-close-all{display:inline-flex;align-items:center;justify-content:center;min-height:40px;height:40px;width:auto;max-width:100%;padding:0 16px;border:1px solid rgba(180,150,95,.48);border-radius:10px;background:rgba(255,255,255,.1);color:inherit;font:inherit;font-size:13px;font-weight:700;white-space:nowrap;cursor:pointer}
+.maintenance-preview-close{min-height:42px;height:42px;width:auto;white-space:nowrap}
+@media(hover:none){:where(button,[role="button"]):not(:disabled):hover{box-shadow:none}}
+@media(prefers-reduced-motion:reduce){:where(button,[role="button"]):not(:disabled){transition:none}}
+</style>
 </body>
 
 
