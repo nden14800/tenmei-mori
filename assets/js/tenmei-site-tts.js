@@ -94,7 +94,8 @@ function create(target,title,providedText,anchorRoot){
  installPlayerStyles();
  if(!target||target.querySelector(':scope > .tenmei-article-audio'))return;
  const id='site-audio-'+(++seq);
- const anchorNodes=anchorRoot?Array.from(anchorRoot.querySelectorAll('p,h1,h2,h3,h4,h5,li,blockquote,figcaption')).filter(el=>(el.innerText||el.textContent||'').trim().length>0):[];
+ const anchorSelector='p,h1,h2,h3,h4,h5,li,blockquote,figcaption';
+ const anchorNodes=anchorRoot?Array.from(anchorRoot.querySelectorAll(anchorSelector)).filter(el=>(el.innerText||el.textContent||'').trim().length>0&&!el.querySelector(anchorSelector)):[];
  // 記事では本文を先に一続きの文字列へ潰さず、DOMの段落・見出し単位で音声チャンクを作る。
  // これにより1つの音声が複数段落をまたいで、ハイライトが最初の段落に固定される問題を防ぐ。
  const anchored=anchorNodes.length?splitAnchored(anchorNodes):[];
