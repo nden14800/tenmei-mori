@@ -14,12 +14,12 @@ function split(text){
 }
 function makeChoice(id,label,options,icon){
  const shell=document.createElement('div');shell.className='tenmei-choice';shell.dataset.controlKind='choice';shell.dataset.controlId=id;shell.dataset.controlLabel=label;shell.dataset.options=JSON.stringify(options);
- shell.innerHTML='<input type="hidden" id="'+id+'" value="'+options.find(x=>x.value==='1')?.value+'"><button type="button" class="tenmei-choice__trigger" id="'+id+'-trigger" aria-haspopup="listbox" aria-expanded="false" aria-controls="'+id+'-options" aria-label="'+label+'を選ぶ"><span class="tenmei-choice__icon" aria-hidden="true"><i class="bi '+icon+'"></i></span><span class="tenmei-choice__value"></span><i class="bi bi-chevron-down tenmei-choice__chevron" aria-hidden="true"></i></button><div class="tenmei-choice__popover" id="'+id+'-popover" hidden><div class="tenmei-choice__options" id="'+id+'-options" role="listbox" aria-label="'+label+'"></div></div>';
+ shell.innerHTML='<input type="hidden" id="'+id+'" value="'+options.find(x=>x.value==='1')?.value||options[0].value+'"><button type="button" class="tenmei-choice__trigger" id="'+id+'-trigger" aria-haspopup="listbox" aria-expanded="false" aria-controls="'+id+'-options" aria-label="'+label+'を選ぶ"><span class="tenmei-choice__icon" aria-hidden="true"><i class="bi '+icon+'"></i></span><span class="tenmei-choice__value"></span><i class="bi bi-chevron-down tenmei-choice__chevron" aria-hidden="true"></i></button><div class="tenmei-choice__popover" id="'+id+'-popover" hidden><div class="tenmei-choice__options" id="'+id+'-options" role="listbox" aria-label="'+label+'"></div></div>';
  return shell;
 }
-function create(target,title){
+function create(target,title,providedText){
  if(!target||target.querySelector(':scope > .tenmei-article-audio'))return;
- const id='site-audio-'+(++seq),parts=split(target.innerText||target.textContent||'');
+ const id='site-audio-'+(++seq),parts=split(providedText||target.innerText||target.textContent||'');
  if(!parts.length)return;
  const player=document.createElement('section');player.className='tenmei-article-audio';player.setAttribute('aria-label','読み上げプレーヤー');player.dataset.siteTts='true';
  player.innerHTML='<div class="tenmei-article-audio__top"><div class="tenmei-article-audio__heading"><span class="tenmei-article-audio__eyebrow">TENMEI AUDIO</span><strong class="tenmei-article-audio__title"></strong></div><span class="tenmei-article-audio__duration">日本語音声</span></div><div class="tenmei-article-audio__transport"><button type="button" class="tenmei-article-audio__button tenmei-article-audio__button--primary audio-play"><i class="bi bi-play-fill"></i><span>再生</span></button><button type="button" class="tenmei-article-audio__button audio-back10" aria-label="10秒戻す" title="10秒戻す"><i class="bi bi-rewind"></i></button><button type="button" class="tenmei-article-audio__button audio-forward10" aria-label="10秒進める" title="10秒進める"><i class="bi bi-fast-forward"></i></button><button type="button" class="tenmei-article-audio__button audio-prev" aria-label="前のセクション"><i class="bi bi-skip-backward-fill"></i></button><button type="button" class="tenmei-article-audio__button audio-next" aria-label="次のセクション"><i class="bi bi-skip-forward-fill"></i></button><button type="button" class="tenmei-article-audio__button audio-stop"><i class="bi bi-stop-fill"></i><span>停止</span></button></div><div class="tenmei-article-audio__timeline"><input class="tenmei-article-audio__seek audio-seek" type="range" min="0" max="100" value="0" step="0.1" aria-label="現在の音声の再生位置" disabled><div class="tenmei-article-audio__meta"><span class="audio-time-current">0:00</span><span class="audio-count">1 / '+parts.length+' セクション</span><span class="audio-time-total">0:00</span></div></div><div class="tenmei-article-audio__settings"><span class="tenmei-article-audio__setting-label">速度</span></div><div class="tenmei-article-audio__settings tenmei-article-audio__settings--voice"><span class="tenmei-article-audio__setting-label">声</span></div><p class="tenmei-article-audio__status" role="status" aria-live="polite">再生ボタンを押すと連続して読み上げます。</p>';
@@ -78,14 +78,14 @@ function scan(){
  const result=document.querySelector('#view-result:not(.hidden) #result-display-area');
  if(result&&!result.querySelector(':scope > .tenmei-article-audio')){
   const source=result.querySelector('.result-main-message-area')||result.querySelector('.result-v4-reading-guide');
-  if(source){const text=Array.from(result.querySelectorAll('.result-poem-part,.result-desc-part,.detail-column,.lucky-area')).map(x=>x.innerText||x.textContent||'').join('\n');if(text.trim()){const holder=document.createElement('div');holder.hidden=true;holder.textContent=text;source.insertAdjacentElement('afterend',holder);create(holder,'今日のおみくじを聴く');}}
+  if(source){const text=Array.from(result.querySelectorAll('.result-poem-part,.result-desc-part,.detail-column,.lucky-area')).map(x=>x.innerText||x.textContent||'').join('\n');if(text.trim()){const holder=document.createElement('div');holder.hidden=true;holder.textContent=text;source.insertAdjacentElement('afterend',holder);create(holder,'今日のおみくじを聴く',text);}}
  }
  document.querySelectorAll('[data-ai-response-text],.tenmei-ai-response-text').forEach(el=>{
   if(el.closest('.tenmei-article-audio')||el.dataset.ttsMounted==='true')return;
   const text=(el.innerText||el.textContent||'').trim();if(text.length<20||el.closest('.hidden,[hidden]'))return;
   el.dataset.ttsMounted='true';
   const holder=document.createElement('div');holder.className='tenmei-site-tts-host';
-  el.insertAdjacentElement('afterend',holder);create(holder,el.closest('#dream-response-area')?'夢の解釈を聴く':el.closest('#worry-response-area')?'AI相談の回答を聴く':'AIの回答を聴く');
+  el.insertAdjacentElement('afterend',holder);create(holder,el.closest('#dream-response-area')?'夢の解釈を聴く':el.closest('#worry-response-area')?'AI相談の回答を聴く':'AIの回答を聴く',text);
  });
 }
 window.TenmeiSiteTTS={scan,stopAll:function(){document.querySelectorAll('.tenmei-site-tts-host .tenmei-article-audio').forEach(x=>x.querySelector('.audio-stop')?.click());}};
