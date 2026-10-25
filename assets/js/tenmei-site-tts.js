@@ -260,11 +260,10 @@ function extractFortuneText(result){
 function scan(){
  const result=document.querySelector('#view-result:not(.hidden) #result-display-area');
  if(result){
-  // ホストはresultの外側に置くため、result内部ではなく同じ親の直下から探す。
-  const mount=result.parentElement;
-  const hosts=mount?Array.from(mount.children).filter(node=>node.matches('.tenmei-site-tts-host[data-omikuji-tts-source="true"]')):[];
+  // おみくじTTSは結果のヒーローカード直下に置き、他ページの本文直前配置と同じ流れにする。
+  const hero=result.querySelector('.omikuji-result-v4-hero');
+  const hosts=Array.from(result.querySelectorAll(':scope > .tenmei-site-tts-host[data-omikuji-tts-source="true"]'));
   const holder=hosts.shift()||null;
-  // 以前の監視ループで増殖したホストと、その直後にあるプレーヤーをまとめて除去する。
   hosts.forEach(extra=>{
    const extraPlayer=extra.nextElementSibling;
    if(extraPlayer?.dataset.siteTts==='true'){extraPlayer.querySelector('.audio-stop')?.click();extraPlayer.remove();}
@@ -276,12 +275,19 @@ function scan(){
     const text=extractFortuneText(result);
     if(text.trim())create(holder,'今日のおみくじを聴く',text);
    }
-  }else{
-   const source=result.querySelector('.result-main-message-area')||result.querySelector('.result-v4-reading-guide');
-   if(source){const text=extractFortuneText(result);if(text.trim()){const nextHolder=document.createElement('div');nextHolder.className='tenmei-site-tts-host';nextHolder.hidden=true;nextHolder.setAttribute('aria-hidden','true');nextHolder.dataset.omikujiTtsSource='true';nextHolder.textContent=text;// 結果カードの内部レイアウト（横並び2カラム）には入れず、結果表示エリアの外側に独立して配置する。
-    // 記事TTSと同様、本文カード群より上にフル幅で表示する。
-    mount.insertBefore(nextHolder,result);
-    create(nextHolder,'今日のおみくじを聴く',text);}}
+  }else if(hero){
+   const text=extractFortuneText(result);
+   if(text.trim()){
+    const nextHolder=document.createElement('div');
+    nextHolder.className='tenmei-site-tts-host';
+    nextHolder.hidden=true;
+    nextHolder.setAttribute('aria-hidden','true');
+    nextHolder.dataset.omikujiTtsSource='true';
+    nextHolder.textContent=text;
+    // ヒーローカードの直後。結果画面の外側やヒーローカードの上には置かない。
+    hero.insertAdjacentElement('afterend',nextHolder);
+    create(nextHolder,'今日のおみくじを聴く',text);
+   }
   }
  }
  document.querySelectorAll('[data-ai-response-text],.tenmei-ai-response-text').forEach(el=>{
