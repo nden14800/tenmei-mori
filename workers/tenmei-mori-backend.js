@@ -2113,30 +2113,67 @@ if (url.pathname === "/api/today-anniv" && method === "GET") {
             });
         }
 
-        // 記事読み上げ：Workers AI MeloTTSで日本語音声を生成する。
+        // 記事読み上げ：Gemini 3.8 Flash TTSを優先し、APIキー未設定時のみMeloTTSへフォールバック。
         if (url.pathname === "/api/article-tts" && method === "POST") {
             try {
                 const parsed = await readBoundedJson(request, 12000);
                 if (!parsed.ok) return new Response(JSON.stringify({ error: "読み上げる文章を読み取れませんでした。" }), { status: parsed.status, headers: { ...corsHeaders, "Content-Type": "application/json; charset=utf-8", "Cache-Control": "no-store" } });
                 const text = typeof parsed.body?.text === "string" ? parsed.body.text.trim() : "";
                 if (!text || text.length > 1800) return new Response(JSON.stringify({ error: "文章は1,800文字以内で指定してください。" }), { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json; charset=utf-8", "Cache-Control": "no-store" } });
-                // Cloudflare-hosted MeloTTS。日本語（JP）を指定するとWAV音声をBase64で返す。
-                const result = await env.AI.run("@cf/myshell-ai/melotts", {
-                    prompt: text,
-                    lang: "JP"
-                });
+                const allowedVoices = ["Kore", "Aoede", "Puck", "Charon"];
+                const voice = allowedVoices.includes(parsed.body?.voice) ? parsed.body.voice : "Kore";
+                if (typeof env.GEMINI_API_KEY === "string" && env.GEMINI_API_KEY.length > 20) {
+                    const response = await fetch("https://generativelanguage.googleapis.com/v1beta/interactions", {
+                        method: "POST",
+                        headers: { "x-goog-api-key": env.GEMINI_API_KEY, "Content-Type": "application/json" },
+                        body: JSON.stringify({
+                            model: "gemini-3.8-flash-tts",
+                            input: [{
+                                type: "user_input",
+                                content: [{
+                                    type: "text",
+                                    text,
+                                    annotations: [{
+                                        type: "speech_metadata",
+                                        style: "Calm, clear, natural Japanese narration with accurate pronunciation, a steady pace, and gentle pauses."
+                                    }]
+                                }]
+                            }],
+                            response_format: { type: "audio" },
+                            generation_config: { speech_config: [{ voice }] }
+                        })
+                    });
+                    if (!response.ok) {
+                        const detail = await response.text();
+                        console.error("Gemini TTS API error:", response.status, detail.slice(0, 1200));
+                        throw new Error("Gemini音声生成APIでエラーが発生しました（" + response.status + "）。");
+                    }
+                    const payload = await response.json();
+                    const audioPart = Array.isArray(payload?.steps)
+                        ? payload.steps.slice().reverse().flatMap(step => Array.isArray(step?.content) ? step.content : []).find(part => part?.type === "audio" && typeof part.data === "string")
+                        : null;
+                    if (!audioPart?.data) throw new Error("Gemini TTSから音声データが返されませんでした。");
+                    const binary = atob(audioPart.data);
+                    const bytes = new Uint8Array(binary.length);
+                    for (let i = 0; i < binary.length; i += 1) bytes[i] = binary.charCodeAt(i);
+                    if (bytes.length < 44 || String.fromCharCode(...bytes.slice(0, 4)) !== "RIFF") throw new Error("Gemini TTSの返却データがWAV形式ではありません。");
+                    return new Response(bytes, {
+                        status: 200,
+                        headers: { ...corsHeaders, "Access-Control-Expose-Headers": "X-TTS-Model, X-TTS-Voice", "Content-Type": "audio/wav", "Content-Length": String(bytes.length), "Cache-Control": "no-store", "X-Content-Type-Options": "nosniff", "X-TTS-Model": "Gemini 3.8 Flash TTS", "X-TTS-Voice": voice }
+                    });
+                }
+                // APIキーを設定するまでは既存の無料MeloTTSを維持し、読み上げ機能を停止させない。
+                const result = await env.AI.run("@cf/myshell-ai/melotts", { prompt: text, lang: "JP" });
                 const encoded = typeof result?.audio === "string" ? result.audio : "";
                 if (!encoded) throw new Error("MeloTTSから音声データが返されませんでした");
                 const base64 = encoded.includes(",") ? encoded.slice(encoded.indexOf(",") + 1) : encoded;
                 const binary = atob(base64);
                 const bytes = new Uint8Array(binary.length);
                 for (let i = 0; i < binary.length; i += 1) bytes[i] = binary.charCodeAt(i);
-                if (bytes.length < 44 || String.fromCharCode(...bytes.slice(0, 4)) !== "RIFF") {
-                    throw new Error("MeloTTSの返却データがWAV形式ではありません");
-                }
+                if (bytes.length < 44 || String.fromCharCode(...bytes.slice(0, 4)) !== "RIFF") throw new Error("MeloTTSの返却データがWAV形式ではありません");
                 return new Response(bytes, {
                     status: 200,
-                    headers: { ...corsHeaders, "Content-Type": "audio/wav", "Content-Length": String(bytes.length), "Cache-Control": "no-store", "X-Content-Type-Options": "nosniff" }
+                    headers: { ...corsHeaders, "Access-Control-Expose-Headers": "X-TTS-Model, X-TTS-Voice", "Content-Type": "audio/wav", "Content-Length": String(bytes.length), "Cache-Control": "no-store", "X-Content-Type-Options": "nosniff", "X-TTS-Model": "MeloTTS", "X-TTS-Voice": "Default" }
                 });
             } catch (error) {
                 console.error("Article TTS error:", error);
