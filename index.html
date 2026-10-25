@@ -36216,17 +36216,32 @@ try {
     var tenmeiSakuraTimers = [];
     function closeAllHiddenEffects(options) {
         options = options || {};
-        try {
+        var failures = [];
+        function safely(run) { try { run(); } catch (error) { failures.push(error); } }
+        safely(function () {
             var stage = document.getElementById('tenmei-secret-scene');
             if (stage) closeEggScene(stage);
+            document.querySelectorAll('.tenmei-egg-stage,.tenmei-sakura-petal').forEach(function(node){ node.remove(); });
+        });
+        safely(function () {
             var overlay = document.getElementById('secret-overlay');
-            if (overlay) overlay.classList.remove('active');
+            if (overlay) {
+                overlay.classList.remove('active');
+                var text = overlay.querySelector('.secret-text');
+                if (text) text.classList.remove('secret-cursor');
+            }
+        });
+        safely(function () {
             if (typeof window.__tenmeiKonamiClose === 'function') window.__tenmeiKonamiClose();
             window.__tenmeiKonamiClose = null;
-            if (window.__tenmeiKonamiTimer) {
+            if (window.__tenmeiKonamiTimer != null) {
                 window.clearTimeout(window.__tenmeiKonamiTimer);
                 window.__tenmeiKonamiTimer = null;
             }
+            if (typeof window.__tenmeiKonamiReset === 'function') window.__tenmeiKonamiReset();
+            if (typeof window.__tenmeiSecretMatcherReset === 'function') window.__tenmeiSecretMatcherReset();
+        });
+        safely(function () {
             if (window.__tenmeiEggEscapeHandler) {
                 document.removeEventListener('keydown', window.__tenmeiEggEscapeHandler, false);
                 window.__tenmeiEggEscapeHandler = null;
@@ -36235,19 +36250,25 @@ try {
             tenmeiSakuraTimers = [];
             tenmeiSakuraNodes.forEach(function(node){ if(node && node.parentNode)node.parentNode.removeChild(node); });
             tenmeiSakuraNodes = [];
+        });
+        safely(function () {
             var preview = document.getElementById('tenmei-maintenance-preview');
             if (preview) preview.remove();
             if (document.body && Object.prototype.hasOwnProperty.call(document.body.dataset,'tenmeiMaintenancePreviousOverflow')) {
                 document.body.style.overflow = document.body.dataset.tenmeiMaintenancePreviousOverflow;
                 delete document.body.dataset.tenmeiMaintenancePreviousOverflow;
             }
-            if (window.TenmeiMockAds && typeof window.TenmeiMockAds.close === 'function') {
-                window.TenmeiMockAds.close({silent:true});
-            }
-            if (!options.silent && typeof window.showToast === 'function') {
-                window.showToast('隠し演出をすべて終了し、通常の画面に戻しました。','success','非表示');
-            }
-        } catch (_) {}
+        });
+        safely(function () {
+            if (window.TenmeiMockAds && typeof window.TenmeiMockAds.close === 'function') window.TenmeiMockAds.close({silent:true});
+            document.querySelectorAll('.tm-ad-unit,.tm-ad-toolbar,.tm-ad-info-panel').forEach(function(node){ node.remove(); });
+            var adStyle = document.getElementById('tenmei-ad-demo-style');
+            if (adStyle) adStyle.remove();
+        });
+        if (!options.silent && typeof window.showToast === 'function') {
+            safely(function(){ window.showToast('隠し演出をすべて終了し、通常の画面に戻しました。','success','非表示'); });
+        }
+        return failures.length === 0;
     }
     window.closeTenmeiHiddenEffects = closeAllHiddenEffects;
 
@@ -36351,6 +36372,7 @@ try {
     // コナミコマンドは従来の隠し部屋を維持し、himitsuとは別の体験にする。
     try {
         var konami=['ArrowUp','ArrowUp','ArrowDown','ArrowDown','ArrowLeft','ArrowRight','ArrowLeft','ArrowRight','b','a'], konamiPos=0;
+        window.__tenmeiKonamiReset=function(){konamiPos=0;};
         document.addEventListener('keydown',function(e){
             try {
                 var t=e.target,tag=String(t&&t.tagName||'').toUpperCase();
@@ -36366,6 +36388,7 @@ try {
     // 一元化した入力。INPUT等では暴発させず、Labs欄の送信は _trySecretWord で処理。
     var keyboardWords=Object.keys(aliases).filter(function(w){return /^[a-z0-9]+$/.test(w);});
     var matcher=createSecretMatcher(keyboardWords,function(word){var key=resolveSecretWord(word);if(key)triggerSecretWord(key);},900);
+    window.__tenmeiSecretMatcherReset=function(){matcher.reset();};
     try {
         document.addEventListener('keydown',function(e){
             try {
