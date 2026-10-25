@@ -21,13 +21,14 @@ function installPlayerStyles(){
  if(document.getElementById('tenmei-site-tts-unified-styles'))return;
  const style=document.createElement('style');style.id='tenmei-site-tts-unified-styles';
  style.textContent=`.tenmei-article-audio .tenmei-article-audio__seek{appearance:none;-webkit-appearance:none;display:block;width:100%;height:16px;margin:0;padding:0;border:0;border-radius:999px;background:transparent;cursor:pointer;outline:none;touch-action:pan-y}
- .tenmei-article-audio .tenmei-article-audio__seek::-webkit-slider-runnable-track{height:3px;border:0;border-radius:999px;background:linear-gradient(to right,var(--tenmei-audio-progress,#75634f) 0 var(--seek-progress,0%),var(--tenmei-audio-track,rgba(120,110,96,.2)) var(--seek-progress,0%) 100%);transition:background .12s linear}
- .tenmei-article-audio .tenmei-article-audio__seek::-moz-range-track{height:3px;border:0;border-radius:999px;background:var(--tenmei-audio-track,rgba(120,110,96,.2))}
- .tenmei-article-audio .tenmei-article-audio__seek::-moz-range-progress{height:3px;border-radius:999px;background:var(--tenmei-audio-progress,#75634f);transition:width .12s linear}
+ .tenmei-article-audio .tenmei-article-audio__seek::-webkit-slider-runnable-track{height:3px;border:0;border-radius:999px;background:linear-gradient(to right,var(--accent-red,#8f252b) 0 var(--seek-progress,0%),var(--card-border,#e7ded7) var(--seek-progress,0%) 100%);transition:background .12s linear}
+ .tenmei-article-audio .tenmei-article-audio__seek::-moz-range-track{height:3px;border:0;border-radius:999px;background:var(--card-border,#e7ded7)}
+ .tenmei-article-audio .tenmei-article-audio__seek::-moz-range-progress{height:3px;border-radius:999px;background:var(--accent-red,#8f252b);transition:width .12s linear}
  .tenmei-article-audio .tenmei-article-audio__seek::-webkit-slider-thumb{-webkit-appearance:none;width:0;height:0;border:0;background:transparent;box-shadow:none}
- .tenmei-article-audio .tenmei-article-audio__seek::-moz-range-thumb{width:0;height:0;border:0;background:transparent;box-shadow:none}
+ .tenmei-article-audio .tenmei-article-audio__seek::-moz-range-thumb{width:12px;height:12px;border:0;background:transparent;box-shadow:none}
  .tenmei-article-audio .tenmei-article-audio__seek:focus-visible{outline:2px solid var(--tenmei-audio-progress,#75634f);outline-offset:4px;border-radius:999px}
- .tenmei-article-audio .audio-play .spinner-border{width:.9rem;height:.9rem;border-width:2px;flex:0 0 auto}`;
+ .tenmei-article-audio .tenmei-article-audio__spinner{width:18px;height:18px;flex:0 0 18px;animation:rotate 1s linear infinite}
+ .tenmei-article-audio .tenmei-article-audio__spinner .loader-path{stroke:currentColor;stroke-linecap:round;stroke-dasharray:89 150;stroke-dashoffset:0}`;
  document.head.appendChild(style);
 }
 function create(target,title,providedText){
@@ -95,7 +96,7 @@ function create(target,title,providedText){
   const duration=mediaDuration(),current=Number.isFinite(audio.currentTime)?audio.currentTime:0,seek=$('.audio-seek');
   seek.disabled=!duration;seek.value=duration?String(Math.min(100,current/duration*100)):'0';seek.style.setProperty('--seek-progress',(duration?Math.min(100,current/duration*100):0)+'%');
   $('.audio-time-current').textContent=time(current);$('.audio-time-total').textContent=time(duration);
-  const play=$('.audio-play');play.innerHTML=busy?'<span class="spinner-border spinner-border-sm" role="status" aria-label="読み込み中"></span><span>音声を準備中</span>':paused?'<i class="bi bi-play-fill"></i><span>再開</span>':audio.src&&!audio.paused?'<i class="bi bi-pause-fill"></i><span>一時停止</span>':'<i class="bi bi-play-fill"></i><span>再生</span>';
+  const play=$('.audio-play');play.innerHTML=busy?'<svg class="loader-svg tenmei-article-audio__spinner" viewBox="0 0 50 50" aria-hidden="true"><circle class="loader-path" cx="25" cy="25" r="20" fill="none" stroke-width="1.5"></circle></svg><span>音声を準備中</span>':paused?'<i class="bi bi-play-fill"></i><span>再開</span>':audio.src&&!audio.paused?'<i class="bi bi-pause-fill"></i><span>一時停止</span>':'<i class="bi bi-play-fill"></i><span>再生</span>';
   play.disabled=busy||!parts.length;$('.audio-count').textContent=(index+1)+' / '+parts.length+' セクション';
   $('.audio-prev').disabled=busy||index===0;$('.audio-next').disabled=busy||index>=parts.length-1;$('.audio-stop').disabled=busy&&!audio.src;
   $('.audio-back10').disabled=$('.audio-forward10').disabled=!audio.src||!duration;
