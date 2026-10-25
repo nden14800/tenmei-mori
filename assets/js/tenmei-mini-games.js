@@ -152,7 +152,7 @@ function onClick(e){
  if(e.target.closest('[data-tmg-back]')){showHome();return;}
  if(e.target.closest('[data-tmg-restart]')){if(game==='memory')memoryStart();else if(game==='puzzle')puzzleStart();else if(game==='reaction')reactionStart();return;}
  const m=e.target.closest('[data-memory]');if(m){memoryPick(Number(m.dataset.memory));return;}
- const p=e.target.closest('[data-puzzle]');if(p){const i=Number(p.dataset.puzzle);puzzleMove(i);$('[data-puzzle="'+i+'"]')?.focus();return;}
+ const p=e.target.closest('[data-puzzle]');if(p){const i=Number(p.dataset.puzzle),blank=puzzle?.tiles.indexOf(0);puzzleMove(i);$('[data-puzzle="'+blank+'"]')?.focus();return;}
  if(e.target.closest('[data-reaction-start]')){if(reaction.phase==='idle'||reaction.phase==='finished')reactionStart();else if(reaction.phase==='result')reactionBegin();return;}
  if(e.target.closest('[data-reaction]')){if(reaction.phase==='waiting'){clearTimers();reaction.phase='idle';reaction.message='早押し！ 合図が出る前に押しました。もう一度スタート。';renderReaction();}else reactionHit();}
 }
@@ -165,7 +165,7 @@ function onBoardKey(e){
  if(e.key==='ArrowRight'&&z%4>0)i=z-1;
  if(e.key==='ArrowUp'&&z<12)i=z+4;
  if(e.key==='ArrowDown'&&z>=4)i=z-4;
- if(i>=0){e.preventDefault();puzzleMove(i);const next=$('[data-puzzle="'+i+'"]');if(next)next.focus();}
+ if(i>=0){e.preventDefault();puzzleMove(i);const next=$('[data-puzzle="'+z+'"]');if(next)next.focus();}
 }
 window.TenmeiMiniGames={open,close};
 document.addEventListener('keydown',e=>{if(root&&!root.hidden&&e.key==='Escape')close();});
