@@ -102,6 +102,7 @@ const adHtml = html.slice(start, end);
   '白狐タクシー','暦の宿',
   'tm-ad-banner','tm-ad-billboard','tm-ad-infeed','tm-ad-inarticle','tm-ad-sponsored-story','tm-ad-rectangle','tm-ad-halfpage',
   'tm-ad-multiplex','tm-ad-search','tm-ad-video','tm-ad-related','tm-ad-anchor','height:600px','@media(min-width:1500px)',
+  'function art(c)','<svg viewBox=','tm-art-onsen','tm-art-mobile','tm-art-vegetable','tm-art-tea',
   '広告主・商品・価格は実在しません','外部リンク','クリック計測','TenmeiMockAds={show'
 ].forEach((needle) => assert(adEgg.includes(needle), '広告イースターエッグの不足: ' + needle));
 assert(adHtml.includes("koukoku:'koukoku'"), '広告の合言葉が既存エンジンに登録されていません。');
