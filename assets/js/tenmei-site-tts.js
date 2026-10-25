@@ -182,7 +182,7 @@ function scan(){
 }
 function scanArticleReader(){
  const root=document.querySelector('#view-article-detail');
- if(!root||root.hidden||root.classList.contains('hidden')||root.classList.contains('d-none')||root.getAttribute('aria-hidden')==='true')return;
+ if(!root||root.hidden||root.classList.contains('hidden')||root.classList.contains('d-none')||root.getAttribute('aria-hidden')==='true'||!root.getClientRects().length)return;
  const content=root.querySelector('#article-detail-content');
  if(!content)return;
  content.querySelectorAll('.tenmei-article-audio:not([data-site-tts="true"])').forEach(el=>el.remove());
