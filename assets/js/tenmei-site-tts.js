@@ -261,9 +261,9 @@ function scan(){
  const result=document.querySelector('#view-result:not(.hidden) #result-display-area');
  if(result&&!result.querySelector('.tenmei-site-tts-host')){
   const source=result.querySelector('.result-main-message-area')||result.querySelector('.result-v4-reading-guide');
-  if(source){const text=extractFortuneText(result);if(text.trim()){const holder=document.createElement('div');holder.className='tenmei-site-tts-host';holder.hidden=true;holder.setAttribute('aria-hidden','true');holder.dataset.omikujiTtsSource='true';holder.textContent=text;const playerMount=result.querySelector('#result-capture-container')||source;
-   // 記事と同じく、プレーヤーを読み上げ対象コンテンツの直前に置く。
-   playerMount.insertAdjacentElement('beforebegin',holder);
+  if(source){const text=extractFortuneText(result);if(text.trim()){const holder=document.createElement('div');holder.className='tenmei-site-tts-host';holder.hidden=true;holder.setAttribute('aria-hidden','true');holder.dataset.omikujiTtsSource='true';holder.textContent=text;// 結果カードの内部レイアウト（横並び2カラム）には入れず、結果表示エリアの外側に独立して配置する。
+   // 記事TTSと同様、本文カード群より上にフル幅で表示する。
+   result.parentElement.insertBefore(holder,result);
    create(holder,'今日のおみくじを聴く',text);}}
  }
  document.querySelectorAll('[data-ai-response-text],.tenmei-ai-response-text').forEach(el=>{
