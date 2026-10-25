@@ -36201,7 +36201,18 @@ try {
     var aliases = { tenmei:'tenmei', maintenance:'maintenance', arigatou:'arigatou', arigato:'arigatou', 'ありがとう':'arigatou', koukoku:'koukoku' };
     Object.keys(eggs).forEach(function (word) { aliases[word] = word; });
     function resolveSecretWord(value) { var key = normalizeSecretWord(value); return aliases[key] || null; }
-    function showToast(message, type, icon) { try { if (typeof window.showToast === 'function') window.showToast(message, type || 'info', icon || '🔎'); } catch (_) {} }
+    window.__tenmeiHiddenEffectsSuppressed = false;
+    function showToast(message, type, icon) {
+        if (window.__tenmeiHiddenEffectsSuppressed) return;
+        try {
+            if (typeof window.showToast === 'function') {
+                window.showToast(message, type || 'info', icon || '🔎');
+                var container = document.getElementById('toast-container');
+                var latest = container && container.firstElementChild;
+                if (latest && latest.classList.contains('toast-notification')) latest.dataset.tenmeiHiddenEffectToast = 'true';
+            }
+        } catch (_) {}
+    }
 
     function closeEggScene(stage) {
         var isCurrent = !!(stage && stage.id === 'tenmei-secret-scene' && document.getElementById('tenmei-secret-scene') === stage);
@@ -36216,6 +36227,7 @@ try {
     var tenmeiSakuraTimers = [];
     function closeAllHiddenEffects(options) {
         options = options || {};
+        window.__tenmeiHiddenEffectsSuppressed = true;
         var failures = [];
         function safely(run) { try { run(); } catch (error) { failures.push(error); } }
         safely(function () {
@@ -36240,6 +36252,7 @@ try {
             }
             if (typeof window.__tenmeiKonamiReset === 'function') window.__tenmeiKonamiReset();
             if (typeof window.__tenmeiSecretMatcherReset === 'function') window.__tenmeiSecretMatcherReset();
+            if (window.__tenmeiOriginalDocumentTitle) document.title = window.__tenmeiOriginalDocumentTitle;
         });
         safely(function () {
             if (window.__tenmeiEggEscapeHandler) {
@@ -36250,6 +36263,15 @@ try {
             tenmeiSakuraTimers = [];
             tenmeiSakuraNodes.forEach(function(node){ if(node && node.parentNode)node.parentNode.removeChild(node); });
             tenmeiSakuraNodes = [];
+        });
+        safely(function () {
+            document.querySelectorAll('#toast-container .toast-notification[data-tenmei-hidden-effect-toast="true"]').forEach(function(node){
+                var closeButton = node.querySelector('.toast-close');
+                if (closeButton) closeButton.click(); else node.remove();
+            });
+        });
+        safely(function () {
+            if (typeof window.__tenmeiIdleEffectClose === 'function') window.__tenmeiIdleEffectClose();
         });
         safely(function () {
             var preview = document.getElementById('tenmei-maintenance-preview');
@@ -36438,8 +36460,13 @@ try {
     } catch (_) {}
     try {
         var originalTitle=document.title,titleMessages=['おかえりをお待ちしております…','今日のおみくじ、まだですか？','天命乃杜が、ここにあります'];
+        window.__tenmeiOriginalDocumentTitle = originalTitle;
         document.addEventListener('visibilitychange',function(){
-            try{var enabled=true;if(typeof AppConfig!=='undefined'&&typeof AppConfig.getCurrent==='function')enabled=AppConfig.getCurrent().tabTitle!==false;if(enabled)document.title=document.hidden?titleMessages[Math.floor(Math.random()*titleMessages.length)]:originalTitle;}catch(_){}
+            try{
+                if(window.__tenmeiHiddenEffectsSuppressed){document.title=originalTitle;return;}
+                var enabled=true;if(typeof AppConfig!=='undefined'&&typeof AppConfig.getCurrent==='function')enabled=AppConfig.getCurrent().tabTitle!==false;
+                if(enabled)document.title=document.hidden?titleMessages[Math.floor(Math.random()*titleMessages.length)]:originalTitle;
+            }catch(_){}
         },false);
     } catch (_) {}
     try {
@@ -36448,9 +36475,19 @@ try {
     } catch (_) {}
     try {
         var idleShown=false,idleTimer=null,lastActivityAt=0,idleMessages=['迷っているなら、まずはおみくじを一枚。','ゆっくりでも構いません。天命は、待ってくれています。','少し休憩がてら、今日の運勢を覗いてみませんか。'];
-        function resetIdleTimer(){if(idleTimer)window.clearTimeout(idleTimer);if(idleShown)return;idleTimer=window.setTimeout(function(){if(!idleShown&&!document.hidden){idleShown=true;showToast(idleMessages[Math.floor(Math.random()*idleMessages.length)],'info','🕯️');}},4*60*1000);}
+        function resetIdleTimer(){
+            if(idleTimer!==null){window.clearTimeout(idleTimer);idleTimer=null;}
+            if(idleShown||window.__tenmeiHiddenEffectsSuppressed)return;
+            idleTimer=window.setTimeout(function(){idleTimer=null;if(!idleShown&&!document.hidden&&!window.__tenmeiHiddenEffectsSuppressed){idleShown=true;showToast(idleMessages[Math.floor(Math.random()*idleMessages.length)],'info','🕯️');}},4*60*1000);
+        }
         function onIdleActivity(){var now=Date.now();if(now-lastActivityAt<750)return;lastActivityAt=now;resetIdleTimer();}
-        ['mousemove','keydown','touchstart','scroll'].forEach(function(name){document.addEventListener(name,onIdleActivity,{passive:true});});resetIdleTimer();
+        var idleEvents=['mousemove','keydown','touchstart','scroll'];
+        idleEvents.forEach(function(name){document.addEventListener(name,onIdleActivity,{passive:true});});
+        window.__tenmeiIdleEffectClose=function(){
+            if(idleTimer!==null){window.clearTimeout(idleTimer);idleTimer=null;}
+            idleEvents.forEach(function(name){document.removeEventListener(name,onIdleActivity,{passive:true});});
+        };
+        resetIdleTimer();
     } catch (_) {}
 } catch (error) {
     // 隠し要素のエラーが通常のサイト機能へ波及しないよう隔離。
