@@ -26617,7 +26617,7 @@ window.renderFullColumnView = function() {
     };
 
 
-    // 記事読み上げ：Cloudflare Workers AI MeloTTS（日本語）
+    // 記事読み上げ：Microsoft Edge TTS（日本語ニューラル音声）
     (function initArticleSpeechReader() {
         if (window.__tenmeiSpeechReaderInstalled) return;
         window.__tenmeiSpeechReaderInstalled = true;
@@ -26660,7 +26660,7 @@ window.renderFullColumnView = function() {
         @media(prefers-reduced-motion:reduce){.tenmei-article-audio *{scroll-behavior:auto!important;transition:none!important}}
         `;
         document.head.appendChild(style);
-        let parts = [], index = 0, audio = new Audio(), objectUrl = "", busy = false, paused = false, generation = 0, playbackRate = 1, selectedVoice = "Kore", activeTTSModel = "", progressFrame = 0, voiceGeneration = 0;
+        let parts = [], index = 0, audio = new Audio(), objectUrl = "", busy = false, paused = false, generation = 0, playbackRate = 1, selectedVoice = "ja-JP-NanamiNeural", activeTTSModel = "Microsoft Edge TTS", progressFrame = 0, voiceGeneration = 0;
         const audioCache = new Map();
         const audioPending = new Map();
         audio.preload = "auto";
@@ -26722,7 +26722,7 @@ window.renderFullColumnView = function() {
             const request=fetch(API_URL,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({text:parts[partIndex].text,voice:requestVoice}),credentials:"omit",cache:"no-store"})
                 .then(async response=>{
                     if(!response.ok){let body={};try{body=await response.json();}catch(_){}throw new Error(body.error||"音声を生成できませんでした。");}
-                    activeTTSModel=response.headers.get("X-TTS-Model")||"音声モデル";
+                    activeTTSModel=response.headers.get("X-TTS-Model")||"Microsoft Edge TTS";
                     const blob=await response.blob();
                     if(requestVersion===voiceGeneration)audioCache.set(cacheKey,blob);
                     return blob;
@@ -26748,11 +26748,9 @@ window.renderFullColumnView = function() {
                 audio.onpause=()=>{if(progressFrame){cancelAnimationFrame(progressFrame);progressFrame=0;}if(!audio.ended&&!busy){paused=true;updateUI();}};
                 audio.onended=()=>{if(token!==generation)return;parts[index].el.classList.remove("tenmei-article-audio__active");if(index<parts.length-1){index++;generateCurrent(true);}else{paused=false;busy=false;updateUI();setStatus("この記事の読み上げが完了しました。");}};
                 audio.onerror=()=>{if(token!==generation)return;busy=false;updateUI();setStatus("音声データを再生できませんでした。再読み込みして再度お試しください。","error");};
-                const voiceTrigger=playerNow()?.querySelector(".audio-voice .tenmei-choice__trigger");
-                if(voiceTrigger){voiceTrigger.disabled=activeTTSModel!=="Gemini 3.8 Flash TTS";voiceTrigger.title=voiceTrigger.disabled?"Gemini APIキーを設定すると音声を選べます。":"";}
                 busy=false;parts[index].el.classList.add("tenmei-article-audio__active");parts[index].el.scrollIntoView({behavior:"smooth",block:"center"});updateUI();
                 if(index+1<parts.length)prefetchAudio(index+1);
-                if(autoplay){try{await audio.play();paused=false;updateUI();setStatus(activeTTSModel==="MeloTTS"?"読み上げ中 · MeloTTS（Gemini設定後は音声を選択できます）":"読み上げ中 · "+activeTTSModel);}catch(_){paused=true;updateUI();setStatus("音声の準備ができました。再生を押してください。");}}
+                if(autoplay){try{await audio.play();paused=false;updateUI();setStatus("読み上げ中 · Microsoft Edge TTS");}catch(_){paused=true;updateUI();setStatus("音声の準備ができました。再生を押してください。");}}
                 else{paused=true;updateUI();setStatus("音声の準備ができました。再生を押してください。");}
             }catch(error){if(token!==generation)return;busy=false;paused=false;updateUI();setStatus(error.message||"音声を生成できませんでした。","error");}
         }
@@ -26769,14 +26767,14 @@ window.renderFullColumnView = function() {
             return shell;
         }
         function makeVoiceSelect(){
-            const options=[{value:"Kore",label:"Kore（女性）"},{value:"Aoede",label:"Aoede（女性）"},{value:"Puck",label:"Puck（男性）"},{value:"Charon",label:"Charon（男性）"}];
+            const options=[{value:"ja-JP-NanamiNeural",label:"Nanami（女性）"},{value:"ja-JP-KeitaNeural",label:"Keita（男性）"}];
             const shell=document.createElement("div");
             shell.className="tenmei-choice audio-voice";
             shell.dataset.controlKind="choice";
             shell.dataset.controlId="article-audio-voice";
             shell.dataset.controlLabel="音声";
             shell.dataset.options=JSON.stringify(options);
-            shell.innerHTML='<input type="hidden" id="article-audio-voice" value="Kore"><button type="button" class="tenmei-choice__trigger" id="article-audio-voice-trigger" aria-haspopup="listbox" aria-expanded="false" aria-controls="article-audio-voice-options" aria-label="読み上げ音声を選ぶ"><span class="tenmei-choice__icon" aria-hidden="true"><i class="bi bi-mic"></i></span><span class="tenmei-choice__value"></span><i class="bi bi-chevron-down tenmei-choice__chevron" aria-hidden="true"></i></button><div class="tenmei-choice__popover" id="article-audio-voice-popover" hidden><div class="tenmei-choice__options" id="article-audio-voice-options" role="listbox" aria-label="読み上げ音声"></div></div>';
+            shell.innerHTML='<input type="hidden" id="article-audio-voice" value="ja-JP-NanamiNeural"><button type="button" class="tenmei-choice__trigger" id="article-audio-voice-trigger" aria-haspopup="listbox" aria-expanded="false" aria-controls="article-audio-voice-options" aria-label="読み上げ音声を選ぶ"><span class="tenmei-choice__icon" aria-hidden="true"><i class="bi bi-mic"></i></span><span class="tenmei-choice__value"></span><i class="bi bi-chevron-down tenmei-choice__chevron" aria-hidden="true"></i></button><div class="tenmei-choice__popover" id="article-audio-voice-popover" hidden><div class="tenmei-choice__options" id="article-audio-voice-options" role="listbox" aria-label="読み上げ音声"></div></div>';
             return shell;
         }
         function mount(){
@@ -26799,11 +26797,12 @@ window.renderFullColumnView = function() {
             audio.style.display="none";
             rateSelect.querySelector(".tenmei-choice__trigger").dispatchEvent(new Event("focusin",{bubbles:true}));
             voiceSelect.querySelector(".tenmei-choice__trigger").dispatchEvent(new Event("focusin",{bubbles:true}));
+            window.TenmeiCustomControls?.syncAll?.();
             const rateInput=rateSelect.querySelector("#article-audio-rate");
             const voiceInput=voiceSelect.querySelector("#article-audio-voice");
             rateInput.addEventListener("change",()=>chooseRate(rateInput.value));
             voiceInput.addEventListener("change",()=>{
-                selectedVoice=voiceInput.value||"Kore";
+                selectedVoice=voiceInput.value||"ja-JP-NanamiNeural";
                 stop();
                 setStatus("読み上げ音声を変更しました。再生すると新しい声で生成します。");
             });
