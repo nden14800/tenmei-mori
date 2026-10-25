@@ -171,6 +171,7 @@ function closeAll(){
 function onEscape(event){if(event.key==='Escape'&&enabled){closeAll();}}
 function show(){
  enabled=true;renderGlobal();
+ if(window.__tenmeiAdAnchorReset)window.__tenmeiAdAnchorReset();
  if(window.__tenmeiAdAnchorMaybeShow)window.__tenmeiAdAnchorMaybeShow();
  window.addEventListener('keydown',onEscape);
  window.dispatchEvent(new CustomEvent('tenmei:mock-ads-shown'));
@@ -193,6 +194,7 @@ function anchorOnScroll(){
    e.appendChild(x);e.appendChild(cta(c.cta));document.body.appendChild(e);
  }
  window.__tenmeiAdAnchorMaybeShow=maybeShow;
+ window.__tenmeiAdAnchorReset=()=>{shown=false;document.getElementById('tenmei-ad-anchor')?.remove();};
  window.addEventListener('scroll',maybeShow,{passive:true});
 }
 window.TenmeiMockAds={show,close:closeAll,render:renderGlobal,isEnabled:()=>enabled};
