@@ -26617,32 +26617,115 @@ window.renderFullColumnView = function() {
     };
 
 
-    // 記事読み上げ機能（Web Speech API・外部通信なし）
+    // 記事読み上げ：Cloudflare Workers AI MeloTTS（日本語）
     (function initArticleSpeechReader() {
         if (window.__tenmeiSpeechReaderInstalled) return;
         window.__tenmeiSpeechReaderInstalled = true;
-        const style = document.createElement('style');
+        const API_URL = "https://tenmei-mori-backend.nden14800.workers.dev/api/article-tts";
+        const style = document.createElement("style");
         style.textContent = `
-        .tenmei-speech-player{display:flex;flex-wrap:wrap;align-items:center;gap:10px;margin:18px 0 26px;padding:14px 16px;border:1px solid var(--column-line,#e5e0d6);border-radius:16px;background:var(--column-paper-soft,#faf8f3);color:var(--column-ink,#29251f);font-family:'Zen Kaku Gothic New',sans-serif}
-        .tenmei-speech-player .speech-main{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
-        .tenmei-speech-player button,.tenmei-speech-player select{min-height:40px;border:1px solid var(--column-line,#d9d3c8);border-radius:10px;background:var(--card-bg,#fff);color:inherit;padding:7px 11px;font:inherit;font-size:13px}
-        .tenmei-speech-player button{cursor:pointer;font-weight:700}
-        .tenmei-speech-player button:disabled{opacity:.4;cursor:not-allowed}
-        .tenmei-speech-player .speech-play{background:var(--column-indigo,#514477);color:#fff;border-color:transparent}
-        .tenmei-speech-player .speech-status{flex:1 1 100%;font-size:12px;color:var(--text-secondary,#777);min-height:1.4em}
-        .tenmei-speech-player label{display:flex;align-items:center;gap:6px;font-size:12px}
-        .tenmei-speech-active{background:color-mix(in srgb,#d9b86c 22%,transparent)!important;outline:2px solid color-mix(in srgb,#b58a36 40%,transparent);border-radius:4px;scroll-margin:100px}
-        @media(max-width:600px){.tenmei-speech-player{padding:12px}.tenmei-speech-player .speech-main{width:100%}.tenmei-speech-player button{flex:1}.tenmei-speech-player label{flex:1}.tenmei-speech-player select{min-width:0;max-width:100%}}
+        .tenmei-article-audio{display:grid;gap:13px;margin:20px 0 28px;padding:17px 18px;border:1px solid var(--card-border,#e7ded7);border-radius:18px;background:var(--card-bg,#fffdfb);color:var(--text-main,#302923);box-shadow:0 7px 22px rgba(45,34,28,.045);font-family:'Zen Kaku Gothic New',sans-serif}
+        .tenmei-article-audio__top{display:flex;align-items:center;justify-content:space-between;gap:12px}
+        .tenmei-article-audio__heading{display:grid;gap:3px;min-width:0}
+        .tenmei-article-audio__eyebrow{color:var(--accent-red,#8f252b);font-size:.62rem;font-weight:800;letter-spacing:.12em}
+        .tenmei-article-audio__title{font-size:.91rem;font-weight:800;line-height:1.45}
+        .tenmei-article-audio__duration{flex:none;color:var(--text-sub,#786e67);font-size:.68rem}
+        .tenmei-article-audio__transport{display:flex;align-items:center;gap:8px}
+        .tenmei-article-audio__button{display:inline-flex;min-width:40px;min-height:40px;align-items:center;justify-content:center;gap:7px;padding:0 12px;border:1px solid var(--card-border,#e7ded7);border-radius:11px;background:var(--input-bg,#f7f2ed);color:var(--text-main,#302923);font:inherit;font-size:.76rem;font-weight:700;cursor:pointer;transition:background .16s ease,border-color .16s ease,transform .16s ease}
+        .tenmei-article-audio__button:hover:not(:disabled){border-color:var(--accent-red,#8f252b);background:color-mix(in srgb,var(--accent-red,#8f252b) 6%,var(--card-bg,#fffdfb))}
+        .tenmei-article-audio__button:active:not(:disabled){transform:scale(.97)}
+        .tenmei-article-audio__button:disabled{opacity:.42;cursor:not-allowed}
+        .tenmei-article-audio__button--primary{min-width:112px;border-color:var(--accent-red,#8f252b);background:var(--accent-red,#8f252b);color:#fff}
+        .tenmei-article-audio__button--primary:hover:not(:disabled){background:color-mix(in srgb,var(--accent-red,#8f252b) 88%,#000);color:#fff}
+        .tenmei-article-audio__button i{font-size:.9rem}
+        .tenmei-article-audio__timeline{display:grid;gap:7px}
+        .tenmei-article-audio__track{height:5px;overflow:hidden;border-radius:99px;background:var(--card-border,#e7ded7)}
+        .tenmei-article-audio__fill{width:0;height:100%;border-radius:inherit;background:var(--accent-red,#8f252b);transition:width .2s ease}
+        .tenmei-article-audio__meta{display:flex;justify-content:space-between;gap:12px;color:var(--text-sub,#786e67);font-size:.67rem;font-variant-numeric:tabular-nums}
+        .tenmei-article-audio__settings{display:flex;align-items:center;gap:10px;flex-wrap:wrap;padding-top:2px}
+        .tenmei-article-audio__setting-label{color:var(--text-sub,#786e67);font-size:.68rem;font-weight:700}
+        .tenmei-article-audio .tenmei-choice{position:relative;min-width:112px;--tenmei-control-accent:var(--accent-red,#8f252b)}
+        .tenmei-article-audio .tenmei-choice__trigger{display:grid;width:100%;min-height:38px;grid-template-columns:18px minmax(0,1fr) 16px;align-items:center;gap:6px;padding:0 10px;border:1px solid var(--card-border,#e7ded7);border-radius:11px;background:var(--input-bg,#f7f2ed);color:var(--text-main,#302923);font:inherit;font-size:.72rem;font-weight:700;cursor:pointer}
+        .tenmei-article-audio .tenmei-choice__icon{display:grid;place-items:center;color:var(--accent-red,#8f252b);font-size:.76rem}
+        .tenmei-article-audio .tenmei-choice__value{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+        .tenmei-article-audio .tenmei-choice__chevron{justify-self:end;color:var(--text-sub,#786e67);font-size:.68rem;transition:transform .16s ease}
+        .tenmei-article-audio .tenmei-choice[data-open="true"] .tenmei-choice__chevron{transform:rotate(180deg)}
+        .tenmei-article-audio .tenmei-choice__popover{position:absolute;z-index:130;top:calc(100% + 6px);left:0;width:100%;min-width:145px;padding:5px;border:1px solid var(--card-border,#e7ded7);border-radius:12px;background:var(--card-bg,#fffdfb);box-shadow:0 12px 30px rgba(30,20,15,.14)}
+        .tenmei-article-audio .tenmei-choice__popover[hidden]{display:none}
+        .tenmei-article-audio .tenmei-choice__options{display:grid;gap:2px;max-height:220px;overflow:auto}
+        .tenmei-article-audio .tenmei-choice__option{width:100%;min-height:36px;padding:7px 9px;border:0;border-radius:8px;background:transparent;color:var(--text-main,#302923);font:inherit;font-size:.72rem;text-align:left;cursor:pointer}
+        .tenmei-article-audio .tenmei-choice__option:hover,.tenmei-article-audio .tenmei-choice__option[aria-selected="true"]{background:var(--input-bg,#f7f2ed);color:var(--accent-red,#8f252b)}
+        .tenmei-article-audio__status{min-height:1.4em;margin:0;color:var(--text-sub,#786e67);font-size:.68rem;line-height:1.6}
+        .tenmei-article-audio__status[data-state="error"]{color:var(--accent-red,#8f252b)}
+        .tenmei-article-audio__active{background:color-mix(in srgb,var(--accent-gold,#c4a059) 17%,transparent)!important;border-radius:4px;scroll-margin:110px}
+        .tenmei-article-audio__button:focus-visible,.tenmei-article-audio .tenmei-choice__trigger:focus-visible,.tenmei-article-audio .tenmei-choice__option:focus-visible{outline:2px solid var(--accent-gold,#c4a059);outline-offset:2px}
+        @media(max-width:560px){.tenmei-article-audio{gap:12px;padding:14px;border-radius:15px}.tenmei-article-audio__transport{gap:6px}.tenmei-article-audio__button{min-width:36px;min-height:40px;padding:0 9px}.tenmei-article-audio__button--primary{min-width:100px}.tenmei-article-audio__settings{gap:8px}.tenmei-article-audio .tenmei-choice{min-width:104px}}
+        @media(prefers-reduced-motion:reduce){.tenmei-article-audio *{scroll-behavior:auto!important;transition:none!important}}
         `;
         document.head.appendChild(style);
-        let utterance=null, parts=[], index=0, playing=false, voices=[];
-        const synth=window.speechSynthesis;
-        function stop(clear=true){if(synth)synth.cancel();playing=false;utterance=null;if(clear)document.querySelectorAll('.tenmei-speech-active').forEach(n=>n.classList.remove('tenmei-speech-active'));const p=document.querySelector('.tenmei-speech-player');if(p){p.querySelector('.speech-play').textContent='▶ 再生';p.querySelector('.speech-status').textContent='停止中';}}
-        function speak(){if(!synth||!parts.length)return; synth.cancel();const part=parts[index];if(!part)return;document.querySelectorAll('.tenmei-speech-active').forEach(n=>n.classList.remove('tenmei-speech-active'));part.el.classList.add('tenmei-speech-active');part.el.scrollIntoView({behavior:'smooth',block:'center'});utterance=new SpeechSynthesisUtterance(part.text);utterance.lang='ja-JP';const p=document.querySelector('.tenmei-speech-player');const voiceSelect=p?.querySelector('.speech-voice');const selected=voices.find(v=>v.name===voiceSelect?.value);if(selected)utterance.voice=selected;utterance.rate=Number(p?.querySelector('.speech-rate')?.value||1);utterance.onstart=()=>{playing=true;p.querySelector('.speech-play').textContent='Ⅱ 一時停止';p.querySelector('.speech-status').textContent=(index+1)+' / '+parts.length+' 段落を読み上げ中';};utterance.onend=()=>{if(!playing)return;index++;if(index<parts.length)speak();else{playing=false;p.querySelector('.speech-play').textContent='▶ 再生';p.querySelector('.speech-status').textContent='読み上げが完了しました';part.el.classList.remove('tenmei-speech-active');}};utterance.onerror=()=>{playing=false;p.querySelector('.speech-play').textContent='▶ 再生';p.querySelector('.speech-status').textContent='音声を開始できませんでした。もう一度お試しください。';};synth.speak(utterance);}
-        function mount(){const container=document.getElementById('article-detail-content');if(!container)return;stop();const article=container.querySelector('article');if(!article)return;const body=article.querySelector('.article-content');if(!body)return;const nodes=[...body.querySelectorAll('h2,h3,h4,p,li,blockquote')].filter(el=>!el.closest('.article-toc-unified')&&!el.closest('[aria-label*="目次"]'));parts=nodes.map(el=>({el,text:(el.innerText||'').replace(/\s+/g,' ').trim()})).filter(x=>x.text.length>0);if(!parts.length)return;const old=article.querySelector('.tenmei-speech-player');if(old)old.remove();const player=document.createElement('section');player.className='tenmei-speech-player';player.setAttribute('aria-label','記事読み上げ操作');player.innerHTML='<div class="speech-main"><button type="button" class="speech-play">▶ 再生</button><button type="button" class="speech-prev" aria-label="前の段落">前へ</button><button type="button" class="speech-next" aria-label="次の段落">次へ</button><button type="button" class="speech-stop">停止</button></div><label>速度<select class="speech-rate" aria-label="読み上げ速度"><option value="0.75">0.75倍</option><option value="1" selected>1.0倍</option><option value="1.25">1.25倍</option><option value="1.5">1.5倍</option><option value="1.75">1.75倍</option><option value="2">2.0倍</option></select></label><label>音声<select class="speech-voice" aria-label="読み上げ音声"><option value="">端末の日本語音声</option></select></label><p class="speech-status" role="status" aria-live="polite">全'+parts.length+'段落を読み上げできます</p>';const header=article.querySelector('header');if(header)header.insertAdjacentElement('afterend',player);else body.insertAdjacentElement('beforebegin',player);player.querySelector('.speech-play').addEventListener('click',()=>{if(!synth){player.querySelector('.speech-status').textContent='このブラウザーは読み上げに対応していません';return;}if(playing){playing=false;synth.pause();player.querySelector('.speech-play').textContent='▶ 再開';player.querySelector('.speech-status').textContent='一時停止中';}else if(synth.paused){playing=true;synth.resume();player.querySelector('.speech-play').textContent='Ⅱ 一時停止';}else speak();});player.querySelector('.speech-stop').addEventListener('click',()=>stop());player.querySelector('.speech-prev').addEventListener('click',()=>{stop();index=Math.max(0,index-1);speak();});player.querySelector('.speech-next').addEventListener('click',()=>{stop();index=Math.min(parts.length-1,index+1);speak();});player.querySelector('.speech-rate').addEventListener('change',()=>{if(playing){stop();speak();}});voices=synth?.getVoices?.()||[];function fillVoices(){voices=synth?.getVoices?.()||[];const select=player.querySelector('.speech-voice');if(!select)return;const current=select.value;select.innerHTML='<option value="">端末の日本語音声</option>';voices.filter(v=>/^ja(-|_)/i.test(v.lang)).forEach(v=>{const o=document.createElement('option');o.value=v.name;o.textContent=v.name+'（'+v.lang+'）';select.appendChild(o);});if(current)select.value=current;}fillVoices();if(synth)synth.onvoiceschanged=fillVoices;index=0;}
+        let parts = [], index = 0, audio = null, objectUrl = "", busy = false, paused = false, generation = 0, playbackRate = 1;
+        const cleanAudio = () => { if (audio) { audio.pause(); audio.removeAttribute("src"); audio.load(); audio = null; } if (objectUrl) { URL.revokeObjectURL(objectUrl); objectUrl = ""; } };
+        const playerNow = () => document.querySelector(".tenmei-article-audio");
+        function setStatus(message, state) { const p=playerNow(); if(!p)return; const el=p.querySelector(".tenmei-article-audio__status");el.textContent=message;el.dataset.state=state||"normal"; }
+        function updateUI() {
+            const p=playerNow(); if(!p)return;
+            const play=p.querySelector(".audio-play"),fill=p.querySelector(".tenmei-article-audio__fill"),count=p.querySelector(".audio-count");
+            if(play){play.innerHTML=busy?'<i class="bi bi-arrow-repeat"></i><span>音声を準備中</span>':paused?'<i class="bi bi-play-fill"></i><span>再開</span>':audio&&!audio.paused?'<i class="bi bi-pause-fill"></i><span>一時停止</span>':'<i class="bi bi-play-fill"></i><span>再生</span>';play.disabled=busy||!parts.length;}
+            if(fill)fill.style.width=(parts.length?((index+(audio&&!audio.paused?0.5:0))/parts.length*100):0)+'%';
+            if(count)count.textContent=parts.length?(Math.min(index+1,parts.length)+' / '+parts.length+' セクション'):'—';
+            p.querySelectorAll(".audio-prev,.audio-next,.audio-stop").forEach(b=>b.disabled=busy||!parts.length||(b.classList.contains("audio-prev")&&index===0)||(b.classList.contains("audio-next")&&index>=parts.length-1));
+        }
+        function splitText(text) {
+            const out=[]; let current="";
+            const sentences=text.replace(/\s+/g," ").split(/(?<=[。！？.!?])\s*/);
+            for(const sentence of sentences){if(!sentence)continue;if((current+sentence).length>1500&&current){out.push(current);current="";}if(sentence.length>1500){for(let i=0;i<sentence.length;i+=1400)out.push(sentence.slice(i,i+1400));}else current+=sentence;}
+            if(current)out.push(current);return out;
+        }
+        async function generateCurrent(autoplay) {
+            if(index<0||index>=parts.length)return;
+            const token=++generation;cleanAudio();busy=true;paused=false;updateUI();setStatus('日本語音声を生成しています…');
+            try{
+                const response=await fetch(API_URL,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({text:parts[index].text}),credentials:"omit",cache:"no-store"});
+                if(!response.ok){let body={};try{body=await response.json();}catch(_){}throw new Error(body.error||"音声を生成できませんでした。");}
+                const blob=await response.blob();if(token!==generation)return;
+                objectUrl=URL.createObjectURL(blob);audio=new Audio(objectUrl);audio.preload="auto";audio.playbackRate=playbackRate;
+                audio.addEventListener("ended",()=>{if(token!==generation)return;parts[index].el.classList.remove("tenmei-article-audio__active");if(index<parts.length-1){index++;generateCurrent(true);}else{paused=false;busy=false;updateUI();setStatus("この記事の読み上げが完了しました。");}});
+                audio.addEventListener("error",()=>{if(token!==generation)return;busy=false;updateUI();setStatus("音声を再生できませんでした。もう一度お試しください。","error");});
+                busy=false;parts[index].el.classList.add("tenmei-article-audio__active");parts[index].el.scrollIntoView({behavior:"smooth",block:"center"});updateUI();
+                if(autoplay){try{await audio.play();paused=false;updateUI();setStatus("読み上げ中");}catch(_){paused=true;updateUI();setStatus("音声の準備ができました。再生を押してください。");}}
+                else{paused=true;updateUI();setStatus("音声の準備ができました。再生を押してください。");}
+            }catch(error){if(token!==generation)return;busy=false;paused=false;updateUI();setStatus(error.message||"音声を生成できませんでした。","error");}
+        }
+        function stop(){generation++;cleanAudio();busy=false;paused=false;parts.forEach(x=>x.el.classList.remove("tenmei-article-audio__active"));updateUI();setStatus("停止しました。");}
+        function chooseRate(value){playbackRate=Number(value)||1;if(audio)audio.playbackRate=playbackRate;const p=playerNow();if(!p)return;const shell=p.querySelector(".audio-rate");shell.dataset.value=String(playbackRate);shell.querySelector(".tenmei-choice__value").textContent=playbackRate.toFixed(2).replace(/0$/,"").replace(/\.0$/,"")+'倍';shell.querySelectorAll(".tenmei-choice__option").forEach(b=>b.setAttribute("aria-selected",String(Number(b.dataset.value)===playbackRate)));shell.querySelector(".tenmei-choice__popover").hidden=true;shell.dataset.open="false";}
+        function makeRateSelect(){
+            const shell=document.createElement("div");shell.className="tenmei-choice audio-rate";shell.dataset.open="false";shell.innerHTML='<button type="button" class="tenmei-choice__trigger" aria-haspopup="listbox" aria-expanded="false"><span class="tenmei-choice__icon"><i class="bi bi-speedometer2"></i></span><span class="tenmei-choice__value">1倍</span><i class="bi bi-chevron-down tenmei-choice__chevron"></i></button><div class="tenmei-choice__popover" hidden><div class="tenmei-choice__options" role="listbox" aria-label="読み上げ速度"></div></div>';
+            const options=shell.querySelector(".tenmei-choice__options");[0.75,0.9,1,1.1,1.25,1.5,1.75,2].forEach(v=>{const b=document.createElement("button");b.type="button";b.className="tenmei-choice__option";b.dataset.value=String(v);b.setAttribute("role","option");b.textContent=v+"倍";b.addEventListener("click",()=>chooseRate(v));options.appendChild(b);});
+            const trigger=shell.querySelector(".tenmei-choice__trigger");trigger.addEventListener("click",()=>{const open=shell.dataset.open!=="true";shell.dataset.open=String(open);trigger.setAttribute("aria-expanded",String(open));shell.querySelector(".tenmei-choice__popover").hidden=!open;});
+            document.addEventListener("click",e=>{if(!shell.contains(e.target)){shell.dataset.open="false";trigger.setAttribute("aria-expanded","false");shell.querySelector(".tenmei-choice__popover").hidden=true;}});
+            return shell;
+        }
+        function mount(){
+            const container=document.getElementById("article-detail-content");if(!container)return;
+            stop();const article=container.querySelector("article");if(!article)return;
+            const body=article.querySelector(".article-content");if(!body)return;
+            const nodes=[...body.querySelectorAll("h2,h3,h4,p,li,blockquote")].filter(el=>!el.closest(".article-toc-unified")&&!el.closest('[aria-label*="目次"]'));
+            parts=nodes.map(el=>({el,text:(el.innerText||"").replace(/\s+/g," ").trim()})).filter(x=>x.text.length).flatMap(x=>splitText(x.text).map(text=>({el:x.el,text})));
+            if(!parts.length)return;
+            const old=article.querySelector(".tenmei-article-audio");if(old)old.remove();
+            const player=document.createElement("section");player.className="tenmei-article-audio";player.setAttribute("aria-label","記事読み上げプレーヤー");
+            player.innerHTML='<div class="tenmei-article-audio__top"><div class="tenmei-article-audio__heading"><span class="tenmei-article-audio__eyebrow">ARTICLE AUDIO</span><strong class="tenmei-article-audio__title">この記事を聴く</strong></div><span class="tenmei-article-audio__duration">日本語音声</span></div><div class="tenmei-article-audio__transport"><button type="button" class="tenmei-article-audio__button tenmei-article-audio__button--primary audio-play"><i class="bi bi-play-fill"></i><span>再生</span></button><button type="button" class="tenmei-article-audio__button audio-prev" aria-label="前へ"><i class="bi bi-skip-backward-fill"></i></button><button type="button" class="tenmei-article-audio__button audio-next" aria-label="次へ"><i class="bi bi-skip-forward-fill"></i></button><button type="button" class="tenmei-article-audio__button audio-stop"><i class="bi bi-stop-fill"></i><span>停止</span></button></div><div class="tenmei-article-audio__timeline"><div class="tenmei-article-audio__track" role="progressbar" aria-label="読み上げの進行状況" aria-valuemin="0" aria-valuemax="100"><div class="tenmei-article-audio__fill"></div></div><div class="tenmei-article-audio__meta"><span class="audio-count">1 / '+parts.length+' セクション</span><span>本文に沿って読み上げ</span></div></div><div class="tenmei-article-audio__settings"><span class="tenmei-article-audio__setting-label">再生速度</span></div><p class="tenmei-article-audio__status" role="status" aria-live="polite">再生ボタンを押すと音声を生成します。</p>';
+            player.querySelector(".tenmei-article-audio__settings").appendChild(makeRateSelect());
+            const header=article.querySelector("header");if(header)header.insertAdjacentElement("afterend",player);else body.insertAdjacentElement("beforebegin",player);
+            player.querySelector(".audio-play").addEventListener("click",()=>{if(busy)return;if(audio&&paused){audio.play().then(()=>{paused=false;updateUI();setStatus("読み上げ中");}).catch(()=>setStatus("再生を開始できませんでした。もう一度押してください。","error"));return;}if(audio&&!audio.paused){audio.pause();paused=true;updateUI();setStatus("一時停止中");return;}generateCurrent(true);});
+            player.querySelector(".audio-stop").addEventListener("click",stop);
+            player.querySelector(".audio-prev").addEventListener("click",()=>{if(busy)return;index=Math.max(0,index-1);generateCurrent(true);});
+            player.querySelector(".audio-next").addEventListener("click",()=>{if(busy)return;index=Math.min(parts.length-1,index+1);generateCurrent(true);});
+            chooseRate(1);updateUI();
+        }
         const originalOpen=window.openArticle;
-        if(typeof originalOpen==='function'){window.openArticle=function(...args){stop();const result=originalOpen.apply(this,args);requestAnimationFrame(()=>requestAnimationFrame(mount));return result;};}
-        document.addEventListener('click',e=>{if(e.target.closest('.article-reader-back'))stop();});
+        if(typeof originalOpen==="function"){window.openArticle=function(...args){stop();const result=originalOpen.apply(this,args);requestAnimationFrame(()=>requestAnimationFrame(mount));return result;};}
+        document.addEventListener("click",e=>{if(e.target.closest(".article-reader-back"))stop();});
     })();
 
     // 5. クイズ機能ロジック
