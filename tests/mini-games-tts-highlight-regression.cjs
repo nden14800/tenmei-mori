@@ -36,4 +36,5 @@ assert(tts.includes('.tenmei-site-tts-host[hidden]{display:none!important}'), 'h
 assert(tts.includes('function extractFortuneText(result)'), 'おみくじ結果の読み上げ本文を整理する抽出処理がありません。');
 assert(tts.includes("holder.setAttribute('aria-hidden','true')"), 'おみくじの読み上げ専用本文が支援技術へ露出しないようにしてください。');
 assert(tts.includes('other.contains(node)'), 'おみくじ本文抽出で親子セレクターの重複を除去していません。');
+assert(tts.includes("filter(node=>!node.matches('.hidden,.d-none,.visually-hidden,.sr-only,[aria-hidden=\"true\"],[hidden]'))"), 'おみくじの非表示・読み上げ専用ノードを抽出対象から除外してください。');
 assert((tts.match(/holder\.hidden=true/g)||[]).length===1, 'hiddenなTTS本文ホストはおみくじの読み上げソースだけに限定してください。');
