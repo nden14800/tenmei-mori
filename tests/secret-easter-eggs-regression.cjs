@@ -163,7 +163,7 @@ assert(adEgg.includes('flex-wrap:wrap')&&adEgg.includes('gap:8px;max-width:1120p
 assert(adEgg.includes("window.closeTenmeiHiddenEffects==='function'")||adEgg.includes("typeof window.closeTenmeiHiddenEffects==='function'"), '広告から共通の全終了APIを呼び出していません。');
 assert(adEgg.includes("dismissedAds.clear()")&&adEgg.includes("if(view&&pageKey!==lastViewId)"), 'ページ移動時の広告差し替えがありません。');
 assert(!adEgg.includes('setInterval('), '広告がページ内で勝手に自動更新されるタイマーを持っています。');
-assert(html.includes(':where(button:not(:disabled),[role="button"]):hover')&&html.includes(':active{transform:scale(.985)}')&&html.includes(':focus-visible'), '全ボタンのhover・active・focus状態が共通化されていません。');
+assert(html.includes(':where(button:not(:disabled)):hover')&&html.includes(':active{transform:scale(.985)}')&&html.includes(':focus-visible'), '実ボタンのhover・active・focus状態が共通化されていません。');
 
 
 
