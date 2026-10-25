@@ -11104,10 +11104,15 @@ body.sidebar-collapsed.sidebar-pinned #sidebar .nav-group-title {
         border-radius: 999px;
         background: color-mix(in srgb, var(--border-color, #a18c78) 24%, transparent);
         opacity: 0;
+        visibility: hidden;
         pointer-events: none;
-        transition: opacity .18s ease;
+        transition: opacity .18s ease, visibility .18s ease;
     }
-    #reading-progress-bar.active { opacity: 1; }
+    /* 記事詳細の読書中だけ表示。通常画面や他の画面では常に非表示。 */
+    body.reading-progress-active #reading-progress-bar.active {
+        opacity: 1;
+        visibility: visible;
+    }
     #reading-progress-fill {
         width: 100%;
         height: 100%;
