@@ -27,3 +27,14 @@ assert(html.includes('data-event-date'), 'イベント日付選択がありま�
 assert(games.includes('window.TenmeiMiniGames={open,close}'), 'ミニゲーム起動APIがありません。');
 assert(games.includes('prefers-reduced-motion:reduce'), '動きを抑える設定に対応していません。');
 console.log('Mini games / TTS highlight regression checks passed.');
+// Shared TTS must follow the site's html.dark theme and keep source-only hosts invisible.
+assert(tts.includes('html.dark .tenmei-article-audio{'), '共通TTSプレーヤーにサイト標準のダークモード対応がありません。');
+['--card-bg:#211b19;', '--card-border:#493b35;', '--input-bg:#2b2320;', '--text-main:#f5e8df;', '--text-sub:#c8b8ad;', '--accent-red:#c56b70;', '--accent-gold:#d5b36a;'].forEach(token=>assert(tts.includes(token), 'TTSダークテーマの共通色トークンが不足しています: '+token));
+assert(tts.includes('html.dark .tenmei-article-audio .tenmei-choice__trigger'), 'TTSの速度・音声選択欄がダークモードに対応していません。');
+assert(tts.includes('html.dark .tenmei-article-audio .tenmei-choice__popover'), 'TTSの選択メニューがダークモードに対応していません。');
+assert(tts.includes('.tenmei-site-tts-host[hidden]{display:none!important}'), 'hidden属性を持つTTS本文ホストがdisplay:blockにより露出する問題が残っています。');
+assert(tts.includes('function extractFortuneText(result)'), 'おみくじ結果の読み上げ本文を整理する抽出処理がありません。');
+assert(tts.includes("holder.setAttribute('aria-hidden','true')"), 'おみくじの読み上げ専用本文が支援技術へ露出しないようにしてください。');
+assert(tts.includes('node.contains(node)') === false, 'おみくじ本文抽出の入れ子判定を誤実装しています。');
+assert(tts.includes('other.contains(node)'), 'おみくじ本文抽出で親子セレクターの重複を除去していません。');
+assert((tts.match(/holder\.hidden=true/g)||[]).length===1, 'hiddenなTTS本文ホストはおみくじの読み上げソースだけに限定してください。');
