@@ -46,3 +46,7 @@ assert(tts.includes("holder.setAttribute('aria-hidden','true')"), 'おみくじ�
 assert(tts.includes('other.contains(node)'), 'おみくじ本文抽出で親子セレクターの重複を除去していません。');
 assert(tts.includes("filter(node=>!node.matches('.hidden,.d-none,.visually-hidden,.sr-only,[aria-hidden=\"true\"],[hidden]'))"), 'おみくじの非表示・読み上げ専用ノードを抽出対象から除外してください。');
 assert((tts.match(/holder\.hidden=true/g)||[]).length===1, 'hiddenなTTS本文ホストはおみくじの読み上げソースだけに限定してください。');
+
+assert(tts.includes("const playerMount=result.querySelector('#result-capture-container')||source;"), 'おみくじTTSを結果カードの外側へ配置していません。');
+assert(tts.includes("playerMount.insertAdjacentElement('afterend',holder);"), 'おみくじTTSのホストを結果カードの後ろへ配置していません。');
+assert(!tts.includes("source.insertAdjacentElement('afterend',holder)"), 'おみくじTTSが和紙カード内部へ挿入される旧実装が残っています。');
