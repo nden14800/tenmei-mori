@@ -115,53 +115,7 @@ function installPlayerStyles(){
 @media(max-width:560px){.tenmei-article-audio{gap:11px;padding:14px 13px}.tenmei-article-audio__top{grid-template-columns:minmax(0,1fr)}.tenmei-article-audio__duration{justify-self:start}.tenmei-article-audio__transport{grid-template-columns:repeat(3,minmax(0,1fr));gap:7px}.tenmei-article-audio__button{min-height:40px;padding:0 5px;font-size:.68rem}.tenmei-article-audio__button--primary{grid-column:1/-1;min-height:43px;padding:0 10px;font-size:.78rem}.tenmei-article-audio__meta{grid-template-columns:max-content minmax(0,1fr) max-content;gap:5px;font-size:.66rem}.tenmei-article-audio__settings{gap:7px}}
 @media(max-width:380px){.tenmei-article-audio{padding:12px 10px}.tenmei-article-audio__transport{gap:6px}.tenmei-article-audio__button{min-height:38px;font-size:.64rem}.tenmei-article-audio__button.audio-stop span{display:none}.tenmei-article-audio__meta{font-size:.62rem}.tenmei-article-audio__meta .audio-count{font-size:.58rem}}
 .tenmei-site-tts-host[hidden]{display:none!important}
-/* Dark TTS uses the exact global .dark palette and the same custom-select surface as the rest of the site. */
-html.dark .tenmei-article-audio{
- color-scheme:dark;
- --card-bg:#111111;
- --card-border:#2a2a2a;
- --text-main:#e4e4e7;
- --text-sub:#a1a1aa;
- --input-bg:#333333;
- --accent-red:#b91c1c;
- --accent-gold:#c5a059;
-}
-html.dark #main-content .tenmei-article-audio .tenmei-choice__trigger{
- border-color:rgba(255,255,255,.12);
- background:rgba(255,255,255,.045);
- color:var(--text-main);
-}
-html.dark #main-content .tenmei-article-audio .tenmei-choice__value{color:inherit}
-html.dark #main-content .tenmei-article-audio .tenmei-choice__popover{
- border-color:rgba(231,197,163,.19);
- background:#1c1615;
- box-shadow:0 20px 44px rgba(0,0,0,.42),inset 0 1px 0 rgba(255,255,255,.04);
-}
-html.dark #main-content .tenmei-article-audio .tenmei-choice__option{color:#e4e4e7}
-html.dark #main-content .tenmei-article-audio .tenmei-choice__option:hover,
-html.dark #main-content .tenmei-article-audio .tenmei-choice__option.is-active{
- background:color-mix(in srgb,var(--tenmei-control-accent) 15%,transparent);
-}
-html.dark .tenmei-article-audio .tenmei-article-audio__button{
- border-color:var(--card-border);
- background:var(--input-bg);
- color:var(--text-main);
-}
-html.dark .tenmei-article-audio .tenmei-article-audio__button--primary{
- border-color:var(--accent-red);
- background:var(--accent-red);
- color:#fff;
-}
-html.dark .tenmei-article-audio .tenmei-article-audio__button--primary:hover:not(:disabled){
- background:color-mix(in srgb,var(--accent-red) 88%,#000);
- color:#fff;
-}
-html.dark .tenmei-article-audio .tenmei-audio-seek-track::before{background:var(--card-border)}
-html.dark .tenmei-article-audio .tenmei-audio-seek-fill{background:var(--accent-red)}
-html.dark .tenmei-article-audio .tenmei-article-audio__meta,
-html.dark .tenmei-article-audio .tenmei-article-audio__status,
-html.dark .tenmei-article-audio .tenmei-article-audio__setting-label{color:var(--text-sub)}
-
+/* Theme colors and custom-select surfaces are inherited from the site's shared styles. */
 @media(prefers-reduced-motion:reduce){.tenmei-article-audio *{scroll-behavior:auto!important;transition:none!important}}
 `;
  document.head.appendChild(style);
