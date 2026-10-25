@@ -127,11 +127,19 @@ function renderView(view){
  }
  if(view.id==='view-article-detail'||(article&&paragraphs.length>=3)){
    if(header)responsiveTopAd(header,'tenmei-ad-banner-'+suffix,pick(2));
-   if(paragraphs.length>=3)insertAfter('tenmei-ad-article-'+suffix,paragraphs[Math.min(2,paragraphs.length-1)],inarticle(pick(3)));
+   if(paragraphs.length>=3){
+     const sponsored=view.id==='view-news'?sponsoredStory(pick(3)):inarticle(pick(3));
+     insertAfter('tenmei-ad-article-'+suffix,paragraphs[Math.min(2,paragraphs.length-1)],sponsored);
+   }else if(article){
+     insertAfter('tenmei-ad-rectangle-'+suffix,article,rectangle(pick(3)));
+   }
+   if(article)insertAfter('tenmei-ad-related-'+suffix,article,related());
    return;
  }
  if(list){
-   if(header)responsiveTopAd(header,'tenmei-ad-banner-'+suffix,pick(5));
+   const searchAnchor=view.querySelector('.column-library-search,.news-bulletin-search');
+   if(searchAnchor)insertAfter('tenmei-ad-search-'+suffix,searchAnchor,searchAd(pick(5)));
+   else if(header)responsiveTopAd(header,'tenmei-ad-banner-'+suffix,pick(5));
    insertIntoList('tenmei-ad-feed-'+suffix,list,infeed(pick(6)));
    const editorialItems=Array.from(list.children).filter(el=>!el.classList.contains('tm-ad-unit'));
    if(editorialItems.length>=8){const anchor=editorialItems[Math.min(6,editorialItems.length-1)];insertAfter('tenmei-ad-multiplex-'+suffix,anchor,multiplex());}
@@ -141,9 +149,10 @@ function renderView(view){
    if(header)responsiveTopAd(header,'tenmei-ad-banner-'+suffix,pick(7));
    const sections=Array.from(view.querySelectorAll(':scope > section,.howto-guide-entry')).filter(el=>!el.classList.contains('tm-ad-unit'));
    if(sections.length>=4)insertAfter('tenmei-ad-video-'+suffix,sections[2],videoAd(pick(8)));
+   else if(sections.length>=2)insertAfter('tenmei-ad-rectangle-'+suffix,sections[1],rectangle(pick(8)));
    return;
  }
- if(header)responsiveTopAd(header,'tenmei-ad-banner-'+suffix,pick(9));
+ if(header)insertAfter('tenmei-ad-banner-'+suffix,header,banner(pick(9)));
 }
 function renderGlobal(){
  if(!enabled||!document.body)return;
