@@ -28214,6 +28214,7 @@ function showLoading(show) {
 
             const bar = document.getElementById('reading-progress-bar');
             if (bar) {
+                bar.setAttribute('aria-label', isArticle ? '記事の読書進捗' : 'ページのスクロール進捗');
                 bar.classList.add('active');
                 bar.setAttribute('aria-valuenow', '0');
                 bar.setAttribute('aria-valuetext', '0%');
@@ -28289,7 +28290,7 @@ function showLoading(show) {
             if (!fill || !bar) return;
 
             const hasScrollableContent = readingProgressState.mode === 'article'
-                ? Boolean(readingProgressState.contentEl && readingProgressState.contentEl.scrollHeight > 0)
+                ? Boolean(readingProgressState.contentEl && readingProgressState.contentEl.scrollHeight > window.innerHeight + 4)
                 : (document.documentElement.scrollHeight - window.innerHeight > 4 || document.body.scrollHeight - window.innerHeight > 4);
             bar.classList.toggle('active', hasScrollableContent);
             fill.style.transform = 'scaleX(' + (percent / 100) + ')';
