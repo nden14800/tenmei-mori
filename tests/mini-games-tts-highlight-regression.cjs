@@ -48,5 +48,6 @@ assert(tts.includes("filter(node=>!node.matches('.hidden,.d-none,.visually-hidde
 assert((tts.match(/holder\.hidden=true/g)||[]).length===1, 'hiddenなTTS本文ホストはおみくじの読み上げソースだけに限定してください。');
 
 assert(tts.includes("const playerMount=result.querySelector('#result-capture-container')||source;"), 'おみくじTTSを結果カードの外側へ配置していません。');
-assert(tts.includes("playerMount.insertAdjacentElement('afterend',holder);"), 'おみくじTTSのホストを結果カードの後ろへ配置していません。');
-assert(!tts.includes("source.insertAdjacentElement('afterend',holder)"), 'おみくじTTSが和紙カード内部へ挿入される旧実装が残っています。');
+assert(tts.includes("playerMount.insertAdjacentElement('beforebegin',holder);"), 'おみくじTTSを結果カードの直前へ配置していません。');
+assert(tts.includes('記事と同じく、プレーヤーを読み上げ対象コンテンツの直前に置く。'), 'おみくじTTSの配置方針が明示されていません。');
+assert(!tts.includes("playerMount.insertAdjacentElement('afterend',holder)"), 'おみくじTTSを結果カードの後ろへ配置する旧実装が残っています。');
