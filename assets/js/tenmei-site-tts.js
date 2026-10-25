@@ -259,12 +259,30 @@ function extractFortuneText(result){
 }
 function scan(){
  const result=document.querySelector('#view-result:not(.hidden) #result-display-area');
- if(result&&!result.querySelector('.tenmei-site-tts-host')){
-  const source=result.querySelector('.result-main-message-area')||result.querySelector('.result-v4-reading-guide');
-  if(source){const text=extractFortuneText(result);if(text.trim()){const holder=document.createElement('div');holder.className='tenmei-site-tts-host';holder.hidden=true;holder.setAttribute('aria-hidden','true');holder.dataset.omikujiTtsSource='true';holder.textContent=text;// 結果カードの内部レイアウト（横並び2カラム）には入れず、結果表示エリアの外側に独立して配置する。
-   // 記事TTSと同様、本文カード群より上にフル幅で表示する。
-   result.parentElement.insertBefore(holder,result);
-   create(holder,'今日のおみくじを聴く',text);}}
+ if(result){
+  // ホストはresultの外側に置くため、result内部ではなく同じ親の直下から探す。
+  const mount=result.parentElement;
+  const hosts=mount?Array.from(mount.children).filter(node=>node.matches('.tenmei-site-tts-host[data-omikuji-tts-source="true"]')):[];
+  const holder=hosts.shift()||null;
+  // 以前の監視ループで増殖したホストと、その直後にあるプレーヤーをまとめて除去する。
+  hosts.forEach(extra=>{
+   const extraPlayer=extra.nextElementSibling;
+   if(extraPlayer?.dataset.siteTts==='true'){extraPlayer.querySelector('.audio-stop')?.click();extraPlayer.remove();}
+   extra.remove();
+  });
+  if(holder){
+   const player=holder.nextElementSibling;
+   if(!player?.matches('.tenmei-article-audio[data-site-tts="true"]')){
+    const text=extractFortuneText(result);
+    if(text.trim())create(holder,'今日のおみくじを聴く',text);
+   }
+  }else{
+   const source=result.querySelector('.result-main-message-area')||result.querySelector('.result-v4-reading-guide');
+   if(source){const text=extractFortuneText(result);if(text.trim()){const nextHolder=document.createElement('div');nextHolder.className='tenmei-site-tts-host';nextHolder.hidden=true;nextHolder.setAttribute('aria-hidden','true');nextHolder.dataset.omikujiTtsSource='true';nextHolder.textContent=text;// 結果カードの内部レイアウト（横並び2カラム）には入れず、結果表示エリアの外側に独立して配置する。
+    // 記事TTSと同様、本文カード群より上にフル幅で表示する。
+    mount.insertBefore(nextHolder,result);
+    create(nextHolder,'今日のおみくじを聴く',text);}}
+  }
  }
  document.querySelectorAll('[data-ai-response-text],.tenmei-ai-response-text').forEach(el=>{
   if(el.closest('.tenmei-article-audio,.document-history-preview,#document-history-content,#document-history-dialog')||el.dataset.ttsMounted==='true')return;
