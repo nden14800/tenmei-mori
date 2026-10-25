@@ -36315,7 +36315,8 @@ try {
         koyomi:    ['📅','暦のひとめくり','暦が一枚、静かにめくられました。ここから気持ちも新しく。','ink',['📅','🍃','✦']],
         tsubaki:   ['🌺','椿の花','深い緑の中に、椿の花がひとつ。静かな美しさに気づく日です。','flower',['🌺','🌸','✧']],
         matsuri:   ['🏮','小さなお祭り','境内に祭り囃子が響き、提灯の灯りがひとつずつともりました。','festival',['🏮','🎆','✨']],
-        suzune:    ['🔔','鈴音','鈴の音がひとつ、澄んで響きました。小さな幸運に気づけますように。','bell',['🔔','🎐','✦']]
+        suzune:    ['🔔','鈴音','鈴の音がひとつ、澄んで響きました。小さな幸運に気づけますように。','bell',['🔔','🎐','✦']],
+        minigame:  ['🎮','杜のミニゲーム','境内の片隅に、小さな遊び場がひらきました。記憶・ひらめき・反射神経の3つの遊びを楽しめます。','secret',['🎮','🃏','🏮']]
     };
     var aliases = { tenmei:'tenmei', maintenance:'maintenance', arigatou:'arigatou', arigato:'arigatou', 'ありがとう':'arigatou', koukoku:'koukoku' };
     Object.keys(eggs).forEach(function (word) { aliases[word] = word; });
@@ -36350,6 +36351,7 @@ try {
         var failures = [];
         function safely(run) { try { run(); } catch (error) { failures.push(error); } }
         safely(function () {
+            if (window.TenmeiMiniGames && typeof window.TenmeiMiniGames.close === 'function') window.TenmeiMiniGames.close();
             var stage = document.getElementById('tenmei-secret-scene');
             if (stage) closeEggScene(stage);
             document.querySelectorAll('.tenmei-egg-stage,.tenmei-sakura-petal').forEach(function(node){ node.remove(); });
@@ -36504,6 +36506,7 @@ try {
         if (key==='maintenance') { checkMaintenance(true); return true; }
         if (key==='arigatou') { showEggScene('arigatou'); return true; }
         if (key==='koukoku') { if(window.TenmeiMockAds&&typeof window.TenmeiMockAds.show==='function'){window.TenmeiMockAds.show();return true;} showToast('広告デモを読み込めませんでした。もう一度お試しください。','info','');return false; }
+        if (key==='minigame') { if(window.TenmeiMiniGames&&typeof window.TenmeiMiniGames.open==='function'){window.TenmeiMiniGames.open();return true;} showToast('ミニゲームを読み込めませんでした。ページを再読み込みしてください。','warning','🎮');return false; }
         showEggScene(key); return true;
     }
     // TENMEI Labsの入力欄・キーボード入力の共通入口
@@ -38851,6 +38854,7 @@ window.addEventListener('hashchange',function(){setTimeout(buildAboutArticleTOC,
 
     <script src="assets/js/site-speech-reader.js"></script>
 <script src="/assets/js/tenmei-site-tts.js" defer></script>
+<script src="/assets/js/tenmei-mini-games.js" defer></script>
 <style id="tenmei-global-button-interactions">
 /* 共通フィードバックは実際のbutton要素だけに適用。role=buttonのカード等は個別デザインを優先する。 */
 :where(button:not(:disabled)){transition-property:border-color,color,box-shadow,transform,filter;transition-duration:.16s;transition-timing-function:ease}
@@ -38873,7 +38877,8 @@ const events=[
  {id:'winter-grove',title:'師走・冬支度の杜めぐり',category:'季節',start:'2026-12-01',end:'2026-12-07',description:'一年の終わりが近づく季節。これまでの歩みを振り返り、心の中を少し整えるオンライン企画です。',detail:'一年の中でうれしかったこと、頑張ったこと、来年に持ち越したくないことをひとつずつ思い返してみましょう。静かな時間を過ごすためのきっかけとしてご参加ください。',place:'天命乃杜 オンライン',time:'期間中いつでも',action:'おみくじを引く',target:'omikuji'},
  {id:'year-end',title:'年越しの心整え',category:'季節',start:'2026-12-26',end:'2026-12-31',description:'新しい年を迎える前に、一年の感謝とこれからの願いを静かに見つめる年末のオンライン企画です。',detail:'この一年を振り返り、感謝したいことをひとつ思い浮かべてみてください。新しい年に向けて、無理のない小さな目標を考える時間にもどうぞ。',place:'天命乃杜 オンライン',time:'期間中いつでも',action:'新年に向けて参拝する',target:'omikuji'}
 ];
-const state={status:'all',category:'all',query:'',date:'',year:2026,month:9};
+const initialCalendarDate=new Date();
+const state={status:'all',category:'all',query:'',date:'',year:initialCalendarDate.getFullYear(),month:initialCalendarDate.getMonth()};
 const $=id=>document.getElementById(id);
 const today=()=>{const d=new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');};
 const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
