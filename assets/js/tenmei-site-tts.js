@@ -20,12 +20,13 @@ function makeChoice(id,label,options,icon){
 function installPlayerStyles(){
  if(document.getElementById('tenmei-site-tts-unified-styles'))return;
  const style=document.createElement('style');style.id='tenmei-site-tts-unified-styles';
- style.textContent=`.tenmei-article-audio .tenmei-article-audio__seek{appearance:none;-webkit-appearance:none;display:block;width:100%;height:16px;margin:0;padding:0;border:0;border-radius:999px;background:transparent;cursor:pointer;outline:none;touch-action:pan-y}
- .tenmei-article-audio .tenmei-article-audio__seek::-webkit-slider-runnable-track{height:3px;border:0;border-radius:999px;background:linear-gradient(to right,var(--accent-red,#8f252b) 0 var(--seek-progress,0%),var(--card-border,#e7ded7) var(--seek-progress,0%) 100%);transition:background .12s linear}
- .tenmei-article-audio .tenmei-article-audio__seek::-moz-range-track{height:3px;border:0;border-radius:999px;background:var(--card-border,#e7ded7)}
- .tenmei-article-audio .tenmei-article-audio__seek::-moz-range-progress{height:3px;border-radius:999px;background:var(--accent-red,#8f252b);transition:width .12s linear}
- .tenmei-article-audio .tenmei-article-audio__seek::-webkit-slider-thumb{-webkit-appearance:none;width:0;height:0;border:0;background:transparent;box-shadow:none}
- .tenmei-article-audio .tenmei-article-audio__seek::-moz-range-thumb{width:12px;height:12px;border:0;background:transparent;box-shadow:none}
+ style.textContent=`.tenmei-article-audio .tenmei-article-audio__seek{appearance:none;-webkit-appearance:none;display:block;width:100%;height:24px;margin:0;padding:0;border:0;border-radius:999px;background:transparent;cursor:grab;outline:none;touch-action:pan-y;-webkit-tap-highlight-color:transparent}
+ .tenmei-article-audio .tenmei-article-audio__seek:active{cursor:grabbing}
+ .tenmei-article-audio .tenmei-article-audio__seek::-webkit-slider-runnable-track{height:4px;border:0;border-radius:999px;background:radial-gradient(circle at var(--seek-progress,0%) 50%,var(--accent-red,#8f252b) 0 2px,transparent 2.1px),linear-gradient(to right,var(--accent-red,#8f252b) 0 var(--seek-progress,0%),var(--card-border,#e7ded7) var(--seek-progress,0%) 100%);transition:background .1s linear}
+ .tenmei-article-audio .tenmei-article-audio__seek::-moz-range-track{height:4px;border:0;border-radius:999px;background:var(--card-border,#e7ded7)}
+ .tenmei-article-audio .tenmei-article-audio__seek::-moz-range-progress{height:4px;border-radius:999px;background:var(--accent-red,#8f252b);transition:width .1s linear}
+ .tenmei-article-audio .tenmei-article-audio__seek::-webkit-slider-thumb{-webkit-appearance:none;width:12px;height:12px;margin-top:-4px;border:2px solid var(--card-bg,#fffdfb);border-radius:50%;background:var(--accent-red,#8f252b);box-shadow:0 1px 3px rgba(0,0,0,.18);cursor:grab}
+ .tenmei-article-audio .tenmei-article-audio__seek::-moz-range-thumb{width:10px;height:10px;border:2px solid var(--card-bg,#fffdfb);border-radius:50%;background:var(--accent-red,#8f252b);box-shadow:0 1px 3px rgba(0,0,0,.18);cursor:grab}
  .tenmei-article-audio .tenmei-article-audio__seek:focus-visible{outline:2px solid var(--tenmei-audio-progress,#75634f);outline-offset:4px;border-radius:999px}
  .tenmei-article-audio .tenmei-article-audio__spinner{width:18px;height:18px;flex:0 0 18px;animation:rotate 1s linear infinite}
  .tenmei-article-audio .tenmei-article-audio__spinner .loader-path{stroke:currentColor;stroke-linecap:round;stroke-dasharray:89 150;stroke-dashoffset:0}`;
@@ -71,7 +72,7 @@ function create(target,title,providedText){
     if((h>>>21)!==0x7ff){offset++;continue;}
     const version=(h>>>19)&3,layer=(h>>>17)&3,bitrateIndex=(h>>>12)&15,sampleIndex=(h>>>10)&3,padding=(h>>>9)&1;
     if(version===1||layer===0||bitrateIndex===0||bitrateIndex===15||sampleIndex===3){offset++;continue;}
-    const versionKey=version===3?'1':'2',layerKey=String(4-layer),table=rates[versionKey+'-'+layerKey];
+    const versionKey=version===3?'1':'2',layerKey=String(layer),table=rates[versionKey+'-'+layerKey];
     const bitrate=table?.[bitrateIndex]*1000;
     const base=[44100,48000,32000][sampleIndex],sampleRate=version===3?base:version===2?base/2:base/4;
     const samples=layer===3?384:layer===1&&version!==3?576:1152;
@@ -94,7 +95,7 @@ function create(target,title,providedText){
  }
  function update(){
   const duration=mediaDuration(),current=Number.isFinite(audio.currentTime)?audio.currentTime:0,seek=$('.audio-seek');
-  seek.disabled=!duration;seek.value=duration?String(Math.min(100,current/duration*100)):'0';seek.style.setProperty('--seek-progress',(duration?Math.min(100,current/duration*100):0)+'%');
+  seek.disabled=!duration;seek.value=duration?String(Math.min(100,current/duration*100)):'0';seek.style.setProperty('--seek-progress',(duration?Math.min(100,current/duration*100):0)+'%');seek.setAttribute('aria-valuetext',time(current)+' / '+time(duration));
   $('.audio-time-current').textContent=time(current);$('.audio-time-total').textContent=time(duration);
   const play=$('.audio-play');play.innerHTML=busy?'<svg class="loader-svg tenmei-article-audio__spinner" viewBox="0 0 50 50" aria-hidden="true"><circle class="loader-path" cx="25" cy="25" r="20" fill="none" stroke-width="1.5"></circle></svg><span>音声を準備中</span>':paused?'<i class="bi bi-play-fill"></i><span>再開</span>':audio.src&&!audio.paused?'<i class="bi bi-pause-fill"></i><span>一時停止</span>':'<i class="bi bi-play-fill"></i><span>再生</span>';
   play.disabled=busy||!parts.length;$('.audio-count').textContent=(index+1)+' / '+parts.length+' セクション';
@@ -177,6 +178,28 @@ function scan(){
   const holder=document.createElement('div');holder.className='tenmei-site-tts-host';
   el.insertAdjacentElement('beforebegin',holder);create(holder,label,text);
  }));
+ scanArticleReader();
+}
+function scanArticleReader(){
+ const root=document.querySelector('#view-article-detail');
+ if(!root||root.hidden||root.classList.contains('hidden')||root.classList.contains('d-none')||root.getAttribute('aria-hidden')==='true')return;
+ const content=root.querySelector('#article-detail-content');
+ if(!content)return;
+ content.querySelectorAll('.tenmei-article-audio:not([data-site-tts="true"])').forEach(el=>el.remove());
+ const body=content.querySelector('.column-reader-body .article-content,.news-chronicle-body .article-content,.column-reader-body,.news-chronicle-body');
+ if(!body)return;
+ const clone=body.cloneNode(true);
+ clone.querySelectorAll('button,input,textarea,select,script,style,svg,nav,form,.tenmei-choice,.tenmei-article-audio,.tenmei-site-tts-host,.hidden,.d-none,[aria-hidden="true"],[hidden]').forEach(node=>node.remove());
+ const text=(clone.innerText||clone.textContent||'').replace(/\\n{3,}/g,'\\n\\n').trim();
+ if(text.length<20)return;
+ const signature=text.length+':'+text.slice(0,96)+':'+text.slice(-96);
+ const holder=content.querySelector('.tenmei-site-tts-host[data-article-tts="true"]');
+ if(holder&&holder.dataset.signature===signature)return;
+ if(holder){const oldPlayer=holder.nextElementSibling;if(oldPlayer?.dataset.siteTts==='true'){oldPlayer.querySelector('.audio-stop')?.click();oldPlayer.remove();}holder.remove();}
+ const host=document.createElement('div');host.className='tenmei-site-tts-host';host.dataset.articleTts='true';host.dataset.signature=signature;
+ body.insertAdjacentElement('beforebegin',host);
+ const title=content.querySelector('.column-reader-title,.news-chronicle-title')?.textContent?.trim()||'この記事';
+ create(host,title+'を聴く',text);
 }
 window.TenmeiSiteTTS={scan,stopAll:function(){document.querySelectorAll('.tenmei-article-audio[data-site-tts="true"]').forEach(x=>x.querySelector('.audio-stop')?.click());}};
 document.dispatchEvent(new Event('tenmei:tts-ready'));
