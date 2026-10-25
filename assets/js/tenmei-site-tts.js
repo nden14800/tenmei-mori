@@ -262,7 +262,8 @@ function scan(){
  if(result&&!result.querySelector('.tenmei-site-tts-host')){
   const source=result.querySelector('.result-main-message-area')||result.querySelector('.result-v4-reading-guide');
   if(source){const text=extractFortuneText(result);if(text.trim()){const holder=document.createElement('div');holder.className='tenmei-site-tts-host';holder.hidden=true;holder.setAttribute('aria-hidden','true');holder.dataset.omikujiTtsSource='true';holder.textContent=text;const playerMount=result.querySelector('#result-capture-container')||source;
-   playerMount.insertAdjacentElement('afterend',holder);
+   // 記事と同じく、プレーヤーを読み上げ対象コンテンツの直前に置く。
+   playerMount.insertAdjacentElement('beforebegin',holder);
    create(holder,'今日のおみくじを聴く',text);}}
  }
  document.querySelectorAll('[data-ai-response-text],.tenmei-ai-response-text').forEach(el=>{
