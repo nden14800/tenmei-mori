@@ -55,7 +55,6 @@ const IMAGE_ASSETS={
  sweets:{src:'https://thumb.wikimedia.org/wikipedia/commons/thumb/2/2e/Anekaeshi_%28wagashi%29.jpg/1280px-Anekaeshi_%28wagashi%29.jpg',alt:'和菓子「あねかえし」の写真',source:'Anekaeshi (wagashi).jpg'},
  tea:{src:'https://thumb.wikimedia.org/wikipedia/commons/thumb/2/28/A_cup_of_warm_tea.jpg/960px-A_cup_of_warm_tea.jpg',alt:'テーブルに置かれた温かいお茶',source:'A cup of warm tea.jpg'},
  mobile:{src:'https://thumb.wikimedia.org/wikipedia/commons/thumb/0/09/Celullar_or_mobile_phone.jpg/960px-Celullar_or_mobile_phone.jpg',alt:'画面を消したスマートフォンの写真',source:'Celullar or mobile phone.jpg'},
- beauty:{src:'https://thumb.wikimedia.org/wikipedia/commons/thumb/1/1e/Skin_care_cosmetics.jpg/1280px-Skin_care_cosmetics.jpg',alt:'スキンケア用品が並ぶ売り場',source:'Skin care cosmetics.jpg'},
  vegetable:{src:'https://thumb.wikimedia.org/wikipedia/commons/thumb/1/14/VEGETABLES.jpg/1280px-VEGETABLES.jpg',alt:'市場に並ぶ新鮮な野菜',source:'VEGETABLES.jpg'},
  garden:{src:'https://thumb.wikimedia.org/wikipedia/commons/thumb/3/33/Japanese_Garden_01.jpg/1280px-Japanese_Garden_01.jpg',alt:'木々のある日本庭園',source:'Japanese Garden 01.jpg'},
  taxi:{src:'https://thumb.wikimedia.org/wikipedia/commons/thumb/1/1b/Taxi.jpeg/960px-Taxi.jpeg',alt:'タクシーが並ぶ車庫の風景',source:'Taxi.jpeg'},
