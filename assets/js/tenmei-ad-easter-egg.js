@@ -125,7 +125,7 @@ function renderView(view){
  const firstSection=view.querySelector(':scope > section, .home-v4-section-card, .omikuji-draw-v4-guidance, .result-v4-reading-guide, .column-library-search, .howto-guide-overview');
  if(!document.getElementById('tenmei-ad-notice-'+suffix)){const n=notice();n.id='tenmei-ad-notice-'+suffix;if(header)header.insertAdjacentElement('afterend',n);else view.insertBefore(n,view.firstChild);}
  if(header)insertAfter('tenmei-ad-banner-'+suffix,header,banner(pick()));
- const list=view.querySelector('.home-v4-article-list,.news-bulletin-list,.column-library-list,#home-news-list,#view-news-list,#view-column-list,ul,ol');
+ const list=view.querySelector('.home-v4-article-list,.news-bulletin-list,.column-library-list,#home-news-list,#view-news-list,#view-column-list');
  if(list)insertIntoList('tenmei-ad-feed-'+suffix,list,infeed(pick(1)));
  const article=view.querySelector('#article-detail-content,.news-chronicle-frame,.column-library-layout');
  const paragraph=article&&article.querySelector('p');
