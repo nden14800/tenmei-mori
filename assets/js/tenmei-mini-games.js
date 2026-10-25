@@ -2,14 +2,14 @@
 'use strict';
 if(window.TenmeiMiniGames)return;
 const STORE='tenmei_minigames_v1';
-let root=null,previousFocus=null,game='home',memory=null,puzzle=null,reaction=null,timers=[];
+let root=null,previousFocus=null,game='home',memory=null,puzzle=null,reaction=null,timers=[],tickers=[];
 const $=(s,base=root)=>base&&base.querySelector(s);
 const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 function readStore(){try{return JSON.parse(localStorage.getItem(STORE)||'{}')||{};}catch(_){return {};}}
 function saveBest(key,value,mode){const data=readStore(),old=data[key];if(old==null||(mode==='lower'?value<old:value>old)){data[key]=value;try{localStorage.setItem(STORE,JSON.stringify(data));}catch(_){}return true;}return false;}
 function best(key){const n=readStore()[key];return Number.isFinite(n)?n:null;}
 function later(fn,ms){const id=setTimeout(()=>{timers=timers.filter(x=>x!==id);fn();},ms);timers.push(id);return id;}
-function clearTimers(){timers.forEach(clearTimeout);timers=[];}
+function clearTimers(){timers.forEach(clearTimeout);timers=[];tickers.forEach(clearInterval);tickers=[];}
 function installStyles(){
  if(document.getElementById('tenmei-mini-games-style'))return;
  const style=document.createElement('style');style.id='tenmei-mini-games-style';
@@ -91,20 +91,21 @@ function memoryStart(){
  clearTimers();game='memory';const icons=['🌸','🦊','⛩️','🍁','🦉','🎐','🌙','🪷'];const deck=icons.concat(icons).map((v,i)=>({id:i,value:v,matched:false,open:false}));for(let i=deck.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[deck[i],deck[j]]=[deck[j],deck[i]];}
  memory={deck,first:null,lock:false,moves:0,pairs:0,started:Date.now(),elapsed:0,done:false};
  renderMemory();
+ const ticker=setInterval(()=>{if(game!=='memory'||!memory||memory.done)return;const el=$('[data-memory-time]');if(el)el.textContent=Math.floor((Date.now()-memory.started)/1000)+'秒';},1000);tickers.push(ticker);
 }
 function renderMemory(){
  if(game!=='memory'||!memory)return;
  const m=memory,secs=Math.floor((Date.now()-m.started)/1000);
- $('#tmg-content').innerHTML=gameHeader('記憶の札','2枚ずつめくって同じ絵柄をそろえよう。すべての札を見つけるとクリアです。',stat('手数',m.moves)+stat('そろえた組',m.pairs+' / 8')+stat('経過時間',secs+'秒')+stat('自己ベスト',best('memory')==null?'—':best('memory')+'手'))+
+ $('#tmg-content').innerHTML=gameHeader('記憶の札','2枚ずつめくって同じ絵柄をそろえよう。すべての札を見つけるとクリアです。',stat('手数',m.moves)+stat('そろえた組',m.pairs+' / 8')+stat('経過時間','<span data-memory-time>'+secs+'秒</span>')+stat('自己ベスト',best('memory')==null?'—':best('memory')+'手'))+
  '<p class="tmg-status" role="status" aria-live="polite">'+(m.done?'全ての札がそろいました。お見事！':m.lock?'絵柄を確認中…':'札を2枚選んでください。')+'</p><div class="tmg-board-wrap"><div class="tmg-memory-board" aria-label="神経衰弱の札">'+m.deck.map((c,i)=>'<button type="button" class="tmg-memory-card '+(!c.open&&!c.matched?'is-hidden ':'')+(c.matched?'is-matched':'')+'" data-memory="'+i+'" aria-label="'+(c.matched?'一致した '+c.value:c.open?'開いた '+c.value:'伏せた札 '+(i+1))+'" '+(c.matched||m.lock||c.open?'disabled':'')+'>'+(c.open||c.matched?c.value:'✦')+'</button>').join('')+'</div></div>';
 }
 function memoryPick(i){
  const m=memory;if(!m||m.lock||m.done)return;const c=m.deck[i];if(!c||c.open||c.matched)return;
  c.open=true;
- if(m.first===null){m.first=i;renderMemory();return;}
+ if(m.first===null){m.first=i;renderMemory();$('[data-memory="'+i+'"]')?.focus();return;}
  m.moves++;const first=m.deck[m.first];m.first=null;
- if(first.value===c.value){first.matched=true;c.matched=true;m.pairs++;if(m.pairs===8){m.done=true;const isBest=saveBest('memory',m.moves,'lower');renderMemory();const p=$('.tmg-status');if(p)p.textContent='クリア！ '+m.moves+'手で完成'+(isBest?' · 自己ベスト更新！':'');return;}renderMemory();}
- else{m.lock=true;renderMemory();later(()=>{if(!memory||game!=='memory')return;first.open=false;c.open=false;m.lock=false;renderMemory();},750);}
+ if(first.value===c.value){first.matched=true;c.matched=true;m.pairs++;if(m.pairs===8){m.done=true;clearTimers();const isBest=saveBest('memory',m.moves,'lower');renderMemory();const p=$('.tmg-status');if(p)p.textContent='クリア！ '+m.moves+'手で完成'+(isBest?' · 自己ベスト更新！':'');return;}renderMemory();$('[data-memory="'+i+'"]')?.focus();}
+ else{m.lock=true;renderMemory();$('[data-memory="'+i+'"]')?.focus();later(()=>{if(!memory||game!=='memory')return;first.open=false;c.open=false;m.lock=false;renderMemory();$('[data-memory="'+i+'"]')?.focus();},750);}
 }
 function puzzleStart(){
  clearTimers();game='puzzle';puzzle={tiles:Array.from({length:16},(_,i)=>(i+1)%16),moves:0,done:false};
@@ -135,14 +136,15 @@ function renderReaction(){
  '<p class="tmg-status" role="status" aria-live="polite">'+esc(r.message)+'</p><div class="tmg-reaction-stage"><button type="button" class="tmg-reaction-hit '+(r.phase==='ready'?'ready':'')+'" data-reaction '+(r.phase==='idle'||r.phase==='result'||r.phase==='finished'?'disabled':'')+'>'+({idle:'開始して挑戦',waiting:'まだです…',ready:'今！',result:r.times[r.times.length-1]+' ms',finished:'挑戦完了'})[r.phase]+'</button></div><div class="tmg-actions" style="margin-top:14px"><button type="button" class="tmg-btn primary" data-reaction-start>'+(r.phase==='idle'?'スタート':r.phase==='finished'?'もう一度挑戦':'次へ')+'</button></div>';
 }
 function reactionBegin(){
- const r=reaction;if(!r)return;r.phase='waiting';r.message='画面が緑に変わるまで待ってください。';renderReaction();
- later(()=>{if(!reaction||game!=='reaction'||reaction.phase!=='waiting')return;reaction.phase='ready';reaction.start=performance.now();reaction.message='今すぐタップ！';renderReaction();},1000+Math.random()*2200);
+ const r=reaction;if(!r)return;r.phase='waiting';r.message='画面が緑に変わるまで待ってください。';renderReaction();$('[data-reaction]')?.focus();
+ later(()=>{if(!reaction||game!=='reaction'||reaction.phase!=='waiting')return;reaction.phase='ready';reaction.start=performance.now();reaction.message='今すぐタップ！';renderReaction();$('[data-reaction]')?.focus();},1000+Math.random()*2200);
 }
 function reactionHit(){
  const r=reaction;if(!r||r.phase!=='ready')return;const ms=Math.round(performance.now()-r.start);r.times.push(ms);
  if(r.times.length>=r.total){r.phase='finished';const avg=Math.round(r.times.reduce((a,b)=>a+b,0)/r.times.length);const isBest=saveBest('reaction',avg,'lower');r.message='5回の平均は '+avg+' ms。'+(isBest?'自己ベスト更新！':'お疲れさまでした。');}
  else{r.phase='result';r.round=r.times.length+1;r.message='反応時間：'+ms+' ms。次のラウンドへ進もう。';}
  renderReaction();
+ $('[data-reaction-start]')?.focus();
 }
 function onClick(e){
  if(e.target.closest('[data-tmg-close]')||e.target===root){close();return;}
@@ -150,7 +152,7 @@ function onClick(e){
  if(e.target.closest('[data-tmg-back]')){showHome();return;}
  if(e.target.closest('[data-tmg-restart]')){if(game==='memory')memoryStart();else if(game==='puzzle')puzzleStart();else if(game==='reaction')reactionStart();return;}
  const m=e.target.closest('[data-memory]');if(m){memoryPick(Number(m.dataset.memory));return;}
- const p=e.target.closest('[data-puzzle]');if(p){puzzleMove(Number(p.dataset.puzzle));return;}
+ const p=e.target.closest('[data-puzzle]');if(p){const i=Number(p.dataset.puzzle);puzzleMove(i);$('[data-puzzle="'+i+'"]')?.focus();return;}
  if(e.target.closest('[data-reaction-start]')){if(reaction.phase==='idle'||reaction.phase==='finished')reactionStart();else if(reaction.phase==='result')reactionBegin();return;}
  if(e.target.closest('[data-reaction]')){if(reaction.phase==='waiting'){clearTimers();reaction.phase='idle';reaction.message='早押し！ 合図が出る前に押しました。もう一度スタート。';renderReaction();}else reactionHit();}
 }
