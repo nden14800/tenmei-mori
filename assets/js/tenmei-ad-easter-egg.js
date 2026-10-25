@@ -54,13 +54,13 @@ const IMAGE_ASSETS={
  shrine:{src:'https://thumb.wikimedia.org/wikipedia/commons/thumb/5/5e/Shrine_with_torii_-_Hokai-ji_-_Kamakura%2C_Kanagawa%2C_Japan_-_DSC08433.JPG/960px-Shrine_with_torii_-_Hokai-ji_-_Kamakura%2C_Kanagawa%2C_Japan_-_DSC08433.JPG',alt:'鎌倉・宝戒寺の鳥居と境内',source:'Shrine with torii - Hokai-ji.jpg'},
  sweets:{src:'https://thumb.wikimedia.org/wikipedia/commons/thumb/2/2e/Anekaeshi_%28wagashi%29.jpg/1280px-Anekaeshi_%28wagashi%29.jpg',alt:'和菓子「あねかえし」の写真',source:'Anekaeshi (wagashi).jpg'},
  tea:{src:'https://thumb.wikimedia.org/wikipedia/commons/thumb/2/28/A_cup_of_warm_tea.jpg/960px-A_cup_of_warm_tea.jpg',alt:'テーブルに置かれた温かいお茶',source:'A cup of warm tea.jpg'},
- mobile:{src:'https://thumb.wikimedia.org/wikipedia/commons/thumb/5/57/Smartphone_Use.jpg/1280px-Smartphone_Use.jpg',alt:'スマートフォンを操作する手元',source:'Smartphone Use.jpg'},
+ mobile:{src:'https://thumb.wikimedia.org/wikipedia/commons/thumb/0/09/Celullar_or_mobile_phone.jpg/960px-Celullar_or_mobile_phone.jpg',alt:'画面を消したスマートフォンの写真',source:'Celullar or mobile phone.jpg'},
  beauty:{src:'https://thumb.wikimedia.org/wikipedia/commons/thumb/1/1e/Skin_care_cosmetics.jpg/1280px-Skin_care_cosmetics.jpg',alt:'スキンケア用品が並ぶ売り場',source:'Skin care cosmetics.jpg'},
  vegetable:{src:'https://thumb.wikimedia.org/wikipedia/commons/thumb/1/14/VEGETABLES.jpg/1280px-VEGETABLES.jpg',alt:'市場に並ぶ新鮮な野菜',source:'VEGETABLES.jpg'},
  garden:{src:'https://thumb.wikimedia.org/wikipedia/commons/thumb/3/33/Japanese_Garden_01.jpg/1280px-Japanese_Garden_01.jpg',alt:'木々のある日本庭園',source:'Japanese Garden 01.jpg'},
  taxi:{src:'https://thumb.wikimedia.org/wikipedia/commons/thumb/1/1b/Taxi.jpeg/960px-Taxi.jpeg',alt:'タクシーが並ぶ車庫の風景',source:'Taxi.jpeg'},
  bottle:{src:'https://thumb.wikimedia.org/wikipedia/commons/thumb/5/54/Bottle_image.jpg/960px-Bottle_image.jpg',alt:'シンプルなスプレーボトル',source:'Bottle image.jpg'},
- craft:{src:'https://thumb.wikimedia.org/wikipedia/commons/thumb/2/29/Wood_Craft.jpg/960px-Wood_Craft.jpg',alt:'木工の彫刻作品',source:'Wood Craft.jpg'},
+ craft:{src:'https://thumb.wikimedia.org/wikipedia/commons/thumb/0/0b/Surface_wooden_furniture_interior.jpg/1280px-Surface_wooden_furniture_interior.jpg',alt:'木目のある木製家具の表面',source:'Surface wooden furniture interior.jpg',license:'Public domain'},
  food:{src:'https://upload.wikimedia.org/wikipedia/commons/thumb/e/e6/Food%2C_Japan_-_DSC07989.jpg/1280px-Food%2C_Japan_-_DSC07989.jpg',alt:'日本の和菓子の写真',source:'Food, Japan - DSC07989.jpg'}
 };
 function art(c){
@@ -69,11 +69,11 @@ function art(c){
  const el=document.createElement('div');el.className='tm-ad-art tm-art-'+c.theme;
  const img=document.createElement('img');img.src=asset.src;img.alt=asset.alt;img.loading='lazy';img.decoding='async';img.referrerPolicy='no-referrer';
  img.addEventListener('error',()=>el.classList.add('tm-ad-image-fallback'),{once:true});
- el.appendChild(img);el.dataset.imageSource=asset.source;return el;
+ el.appendChild(img);el.dataset.imageSource=asset.source;el.dataset.imageLicense=asset.license||'CC0 1.0';return el;
 }
 function toast(message){if(typeof window.showToast==='function'){window.showToast(message,'info','広告デモ');}else{console.info('[広告デモ]',message);}}
 function cta(label){const b=document.createElement('button');b.type='button';b.className='tm-ad-cta';b.textContent=label;b.addEventListener('click',()=>toast('これは架空広告のデモです。実際の販売・申込・リンク先はありません。'));return b;}
-function info(el){const b=document.createElement('button');b.type='button';b.className='tm-ad-info';b.textContent='i';b.setAttribute('aria-label','この広告について');b.addEventListener('click',e=>{e.stopPropagation();const old=el.querySelector('.tm-ad-info-panel');if(old){old.remove();return;}const p=document.createElement('div');p.className='tm-ad-info-panel';const media=el.querySelector('.tm-ad-art');const source=media?.dataset.imageSource||'Wikimedia Commons';p.textContent='これは架空広告のデモです。広告主・商品・価格・リンク先は実在しません。広告配信・クリック計測・外部送信は行いません。画像素材：Wikimedia Commons「'+source+'」（CC0 1.0）。';el.appendChild(p);});el.appendChild(b);}
+function info(el){const b=document.createElement('button');b.type='button';b.className='tm-ad-info';b.textContent='i';b.setAttribute('aria-label','この広告について');b.addEventListener('click',e=>{e.stopPropagation();const old=el.querySelector('.tm-ad-info-panel');if(old){old.remove();return;}const p=document.createElement('div');p.className='tm-ad-info-panel';const media=el.querySelector('.tm-ad-art');const source=media?.dataset.imageSource||'Wikimedia Commons';const license=media?.dataset.imageLicense||'CC0 1.0';p.textContent='これは架空広告のデモです。広告主・商品・価格・リンク先は実在しません。広告配信・クリック計測・外部送信は行いません。画像素材：Wikimedia Commons「'+source+'」（'+license+'）。';el.appendChild(p);});el.appendChild(b);}
 function base(c,format){
  const e=document.createElement(format==='tm-ad-infeed'?'li':'aside');e.className='tm-ad-unit '+format;e.setAttribute('aria-label','広告（架空・デモ）');
  const close=document.createElement('button');close.type='button';close.className='tm-ad-dismiss';close.textContent='×';close.setAttribute('aria-label','この広告を閉じる');close.addEventListener('click',()=>{e.remove();toast('この広告を閉じました。');});e.appendChild(close);
