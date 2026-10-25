@@ -76,9 +76,9 @@ function create(target,title,providedText){
 }
 function scan(){
  const result=document.querySelector('#view-result:not(.hidden) #result-display-area');
- if(result&&!result.querySelector(':scope > .tenmei-article-audio')){
+ if(result&&!result.querySelector('.tenmei-site-tts-host')){
   const source=result.querySelector('.result-main-message-area')||result.querySelector('.result-v4-reading-guide');
-  if(source){const text=Array.from(result.querySelectorAll('.result-poem-part,.result-desc-part,.detail-column,.lucky-area')).map(x=>x.innerText||x.textContent||'').join('\n');if(text.trim()){const holder=document.createElement('div');holder.hidden=true;holder.textContent=text;source.insertAdjacentElement('afterend',holder);create(holder,'今日のおみくじを聴く',text);}}
+  if(source){const text=Array.from(result.querySelectorAll('.result-poem-part,.result-desc-part,.detail-column,.lucky-area')).map(x=>x.innerText||x.textContent||'').join('\n');if(text.trim()){const holder=document.createElement('div');holder.className='tenmei-site-tts-host';holder.hidden=true;holder.textContent=text;source.insertAdjacentElement('afterend',holder);create(holder,'今日のおみくじを聴く',text);}}
  }
  document.querySelectorAll('[data-ai-response-text],.tenmei-ai-response-text').forEach(el=>{
   if(el.closest('.tenmei-article-audio')||el.dataset.ttsMounted==='true')return;
