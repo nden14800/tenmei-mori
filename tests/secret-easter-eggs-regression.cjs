@@ -125,4 +125,16 @@ assert(adEgg.includes("window.showToast('以下はすべて架空の広告です
 assert(adEgg.includes("document.createElement(format==='tm-ad-infeed'?'li':'aside')"), 'インフィード広告がリスト要素として挿入されていません。');
 assert(adEgg.includes("window.TenmeiMockAds={show,close:closeAll"), '広告デモを閉じるAPIがありません。');
 
+assert(adEgg.includes("dismissedAds.add(e.id)")&&adEgg.includes("dismissedAds.has(id)"), '個別に閉じた広告が再描画で復活します。');
+assert(adEgg.includes("className='tm-ad-global-close'")&&adEgg.includes('広告をすべて非表示'), '広告デモ全体を終了するボタンがありません。');
+assert(adEgg.includes("document.querySelectorAll('.tm-ad-unit,.tm-ad-toolbar').forEach(el=>el.remove())"), '全広告終了時に広告枠と操作バーを一括削除していません。');
+assert(adEgg.includes("再表示するには合言葉「koukoku」を入力してください"), '全広告終了後の再表示方法が明示されていません。');
+assert(adEgg.includes("role','dialog'")&&adEgg.includes("aria-expanded','true'")&&adEgg.includes('function closeInfo()'), '広告情報パネルのアクセシブルな開閉制御がありません。');
+assert(adEgg.includes('position:fixed')&&adEgg.includes('p.offsetHeight'), '広告情報パネルが広告枠のoverflowで切れない配置になっていません。');
+assert(adEgg.includes("if(activeInfo){closeInfo();return;}"), 'Escapeキーで情報パネルを先に閉じる制御がありません。');
+assert(adEgg.includes('bi bi-info-circle')&&adEgg.includes('bi bi-x-lg')&&adEgg.includes('bi bi-eye-slash'), 'サイト共通のBootstrap Iconsを使用していません。');
+assert(!adEgg.includes('<svg')&&!adEgg.includes('textContent=\'×\'')&&!adEgg.includes("textContent='i'"), '広告だけの独自SVG・文字アイコンが残っています。');
+assert(adEgg.includes('tenmei-article-audio__button')||adEgg.includes('min-height:40px'), '広告操作ボタンのタップ領域が共通コントロール基準に揃っていません。');
+
+
 console.log('Secret Easter eggs regression checks passed.');
