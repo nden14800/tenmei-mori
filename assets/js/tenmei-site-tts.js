@@ -261,7 +261,9 @@ function scan(){
  const result=document.querySelector('#view-result:not(.hidden) #result-display-area');
  if(result&&!result.querySelector('.tenmei-site-tts-host')){
   const source=result.querySelector('.result-main-message-area')||result.querySelector('.result-v4-reading-guide');
-  if(source){const text=extractFortuneText(result);if(text.trim()){const holder=document.createElement('div');holder.className='tenmei-site-tts-host';holder.hidden=true;holder.setAttribute('aria-hidden','true');holder.dataset.omikujiTtsSource='true';holder.textContent=text;source.insertAdjacentElement('afterend',holder);create(holder,'今日のおみくじを聴く',text);}}
+  if(source){const text=extractFortuneText(result);if(text.trim()){const holder=document.createElement('div');holder.className='tenmei-site-tts-host';holder.hidden=true;holder.setAttribute('aria-hidden','true');holder.dataset.omikujiTtsSource='true';holder.textContent=text;const playerMount=result.querySelector('#result-capture-container')||source;
+   playerMount.insertAdjacentElement('afterend',holder);
+   create(holder,'今日のおみくじを聴く',text);}}
  }
  document.querySelectorAll('[data-ai-response-text],.tenmei-ai-response-text').forEach(el=>{
   if(el.closest('.tenmei-article-audio,.document-history-preview,#document-history-content,#document-history-dialog')||el.dataset.ttsMounted==='true')return;
