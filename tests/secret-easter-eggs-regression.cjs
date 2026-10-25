@@ -141,7 +141,7 @@ assert(adEgg.includes('tenmei-article-audio__button')||adEgg.includes('min-heigh
 assert(adEgg.includes("className='tm-ad-controls'")&&adEgg.includes("controls.appendChild(close);e.appendChild(controls)"), '広告の閉じる・情報ボタンが専用の操作列に分離されていません。');
 assert(adEgg.includes("function closeAll(options)")&&adEgg.includes("if(!options.silent"), '広告デモ全終了時の通知抑制・一括終了APIがありません。');
 assert(adEgg.includes("const style=document.getElementById('tenmei-ad-demo-style');if(style)style.remove()"), '広告デモ終了後に広告専用スタイルが残ります。');
-assert(adEgg.includes("if(view&&view.id!==lastViewId)")&&adEgg.includes("dismissedAds.clear()"), 'ページ遷移後に広告枠を再生成する処理がありません。');
+assert(adEgg.includes("if(view&&pageKey!==lastViewId)")&&adEgg.includes("dismissedAds.clear()"), 'ページ遷移後に広告枠を再生成する処理がありません。');
 assert(adEgg.includes("window.innerWidth>=1824"), 'サイドレール広告のデスクトップ幅条件が不正です。');
 assert(!adEgg.slice(adEgg.indexOf('function rectangle('),adEgg.indexOf('function multiplex(')).includes('e.innerHTML'), '広告コントロールを innerHTML で消去する実装が残っています。');
 assert(html.includes('window.closeTenmeiHiddenEffects = closeAllHiddenEffects'), '全隠し演出を終了する共通APIがありません。');
