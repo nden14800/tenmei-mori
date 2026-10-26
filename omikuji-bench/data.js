@@ -24,11 +24,11 @@ const OB_SITES=[
    90,
    90,
    null,
-   65,
+   80,
    90,
-   80
+   90
   ],
-  "recheck": "未確認（許可待ち）"
+  "recheck": "確認済（2026-10-26、自サイトも同一基準）"
  },
  {
   "id": "omikujido",
@@ -532,7 +532,7 @@ const OB_SITES=[
    null,
    90
   ],
-  "recheck": "未確認（許可待ち）"
+  "recheck": "要確認：取得ページ（omikujinja.com）の内容が既存の記録（総合・恋愛・仕事の13カテゴリ）と一致せず、採点は据え置き"
  },
  {
   "id": "omikujidev",
@@ -549,18 +549,18 @@ const OB_SITES=[
    85,
    70,
    90,
-   null,
+   60,
    100,
    100,
    90,
-   null,
-   70,
+   55,
+   55,
    null,
    null,
    95,
    90
   ],
-  "recheck": "未確認（許可待ち）"
+  "recheck": "確認済（2026-10-26）"
  },
  {
   "id": "asari",
