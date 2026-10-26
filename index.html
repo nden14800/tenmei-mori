@@ -362,16 +362,6 @@
         window.open(DISCORD_INVITE_URL, '_blank', 'noopener,noreferrer');
     }
 
-    function toggleSidebar() {
-        const supportsHoverSidebar = window.innerWidth >= 1025 && window.matchMedia('(hover: hover)').matches;
-        if (supportsHoverSidebar && document.body.classList.contains('sidebar-hover-mode')) return;
-        const isTabletOrMobile = window.innerWidth <= 1366 || (('ontouchstart' in window || navigator.maxTouchPoints > 0) && window.innerWidth <= 1400);
-        if (isTabletOrMobile || document.body.classList.contains('sidebar-button-mode')) {
-            document.body.classList.toggle('sidebar-pinned');
-        } else {
-            document.body.classList.toggle('sidebar-collapsed');
-        }
-    }
     </script>
     <!-- ★変更(次の土曜日タスク9): おみくじ結果札のQRコード廃止に伴い、QRCode.jsライブラリの読み込みも撤去 -->
 
@@ -14206,7 +14196,7 @@ html.dark #tenmei-event-dialog .events-dialog-heading{background:linear-gradient
     <div class="nav-toggle-area">
         <button id="sidebar-toggle" type="button" class="nav-btn nav-toggle-btn" onclick="toggleSidebar()" title="メニューを開く" aria-controls="sidebar-navigation-list" aria-expanded="false" aria-label="メニューを開く">
             <!-- 左：天アイコン（閉じた2状態） -->
-            <div class="nav-icon-box nav-icon-kanji">
+            <span class="nav-icon-box nav-icon-kanji">
                 <!-- 閉じた・ホバーなし → 天漢字 -->
                 <span class="kanji-default">天</span>
                 <!-- 閉じた・ホバーあり → Show Sidebar Horiz -->
@@ -14216,10 +14206,10 @@ html.dark #tenmei-event-dialog .events-dialog-heading{background:linear-gradient
                     <path d="M17,13c-0.3,0-0.5-0.1-0.7-0.3l-3-3c-0.4-0.4-0.4-1,0-1.4s1-0.4,1.4,0l3,3c0.4,0.4,0.4,1,0,1.4C17.5,12.9,17.3,13,17,13z"/>
                     <path d="M14,16c-0.3,0-0.5-0.1-0.7-0.3c-0.4-0.4-0.4-1,0-1.4l3-3c0.4-0.4,1-0.4,1.4,0s0.4,1,0,1.4l-3,3C14.5,15.9,14.3,16,14,16z"/>
                 </svg>
-            </div>
+            </span>
             <span class="nav-text nav-toggle-label">天命乃杜</span>
             <!-- 右：開いた状態のアイコン -->
-            <div class="nav-icon-box nav-toggle-end-icon">
+            <span class="nav-icon-box nav-toggle-end-icon">
                 <!-- 開いた・ホバーなし → Sidebar Minimalistic -->
                 <svg class="ti-sidebar-mini" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" width="22" height="22" style="pointer-events:none" aria-hidden="true">
                     <path d="M2 11C2 7.22876 2 5.34315 3.17157 4.17157C4.34315 3 6.22876 3 10 3H14C17.7712 3 19.6569 3 20.8284 4.17157C22 5.34315 22 7.22876 22 11V13C22 16.7712 22 18.6569 20.8284 19.8284C19.6569 21 17.7712 21 14 21H10C6.22876 21 4.34315 21 3.17157 19.8284C2 18.6569 2 16.7712 2 13V11Z" stroke="currentColor" stroke-width="1.5"/>
@@ -14231,7 +14221,7 @@ html.dark #tenmei-event-dialog .events-dialog-heading{background:linear-gradient
                     <path d="M7.96997 2V22" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
                     <path d="M14.97 9.43994L12.41 11.9999L14.97 14.5599" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
                 </svg>
-            </div>
+            </span>
         </button>
     </div>
 
@@ -14241,33 +14231,33 @@ html.dark #tenmei-event-dialog .events-dialog-heading{background:linear-gradient
         <div class="nav-group-title">MAIN MENU</div>
         
         <button class="nav-btn active" onclick="showView('home')" id="nav-home" aria-current="page">
-            <div class="nav-icon-box"><i class="bi bi-house-door-fill"></i></div>
+            <span class="nav-icon-box"><i aria-hidden="true" class="bi bi-house-door-fill"></i></span>
             <span class="nav-text">ホーム</span>
         </button>
         
         <button class="nav-btn" onclick="showView('zodiac')" id="nav-zodiac">
-            <div class="nav-icon-box"><i class="bi bi-stars"></i></div>
+            <span class="nav-icon-box"><i aria-hidden="true" class="bi bi-stars"></i></span>
             <span class="nav-text">12星座</span>
         </button>
         
         <button class="nav-btn" onclick="showView('stats')" id="nav-stats">
-            <div class="nav-icon-box"><i class="bi bi-bar-chart-line-fill"></i></div>
+            <span class="nav-icon-box"><i aria-hidden="true" class="bi bi-bar-chart-line-fill"></i></span>
             <span class="nav-text">参拝記録</span>
         </button>
 
         <button class="nav-btn" onclick="showView('omamori')" id="nav-omamori">
-            <div class="nav-icon-box"><i class="bi bi-shield-fill-check"></i></div>
+            <span class="nav-icon-box"><i aria-hidden="true" class="bi bi-shield-fill-check"></i></span>
             <span class="nav-text">御守</span>
         </button>
 
         <button class="nav-btn" onclick="showView('dream')" id="nav-dream">
-            <div class="nav-icon-box"><i class="bi bi-moon-stars-fill"></i></div>
+            <span class="nav-icon-box"><i aria-hidden="true" class="bi bi-moon-stars-fill"></i></span>
             <span class="nav-text">AI夢占い</span>
         </button>
 
         <button class="nav-btn" onclick="showView('lab')" id="nav-lab">
-            <div class="nav-icon-box">
-                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="25" viewBox="0 0 303.278 480.459" style="display:block;">
+            <span class="nav-icon-box">
+                <svg xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false" width="16" height="25" viewBox="0 0 303.278 480.459" style="display:block;">
                     <g fill="currentColor">
                         <path d="M137.24,18.519 C132.134,18.519 127.98,14.365 127.98,9.26 C127.98,4.154 132.134,0 137.24,0 C142.346,0 146.5,4.154 146.5,9.26 C146.5,14.365 142.346,18.519 137.24,18.519"/>
                         <path d="M172.638,43.444 C165.885,43.444 160.392,37.949 160.392,31.197 C160.392,24.445 165.885,18.95 172.638,18.95 C179.39,18.95 184.884,24.445 184.884,31.197 C184.884,37.949 179.39,43.444 172.638,43.444"/>
@@ -14282,82 +14272,82 @@ html.dark #tenmei-event-dialog .events-dialog-heading{background:linear-gradient
                         <path d="M85.245,318.126 C86.159,317.255 90.937,314.164 95.434,313.083 C96.488,312.83 97.547,312.697 98.557,312.721 C100.65,312.77 102.877,313.588 105.325,314.764 C109.807,316.913 115.076,320.248 121.778,322.162 C123.681,322.707 125.979,322.859 128.564,322.72 C137.558,322.242 149.929,318.235 160.398,315.152 C163.556,314.222 166.54,313.377 169.205,312.739 C170.522,312.423 171.961,312.217 173.49,312.109 C175.185,311.989 177.024,311.992 178.966,312.098 C192.834,312.871 211.335,318.808 218.499,320.941 C218.99,321.087 219.426,321.215 219.805,321.322 C262.591,398.661 274.155,426.885 276.064,434.014 C276.598,436.008 276.482,439.582 276.39,441.965 C276.381,442.155 276.376,442.34 276.37,442.52 C276.281,444.734 275.32,446.875 273.809,448.32 C273.713,448.406 273.614,448.516 273.513,448.597 C272.775,449.259 271.88,449.784 270.879,450.104 C261.414,453.136 247.077,453.661 236.588,453.661 L66.688,453.661 C56.222,453.661 41.866,453.138 32.398,450.105 C31.405,449.787 30.519,449.265 29.783,448.612 C28.088,447.106 26.994,444.789 26.912,442.461 C26.754,437.896 26.79,435.565 27.21,433.975 C29.343,426.028 36.422,405.436 85.245,318.125"/>
                     </g>
                 </svg>
-            </div>
+            </span>
             <span class="nav-text">Labs</span>
         </button>
     </div>
 
     <!-- 2. コンテンツグループ -->
-    <div class="nav-group desktop-only">
+    <div class="nav-group">
         <div class="nav-group-title">CONTENTS</div>
         
         <button class="nav-btn" onclick="showView('history')" id="nav-history">
-            <div class="nav-icon-box"><i class="bi bi-clock-history"></i></div>
+            <span class="nav-icon-box"><i aria-hidden="true" class="bi bi-clock-history"></i></span>
             <span class="nav-text">おみくじの轍</span>
         </button>
         
         <button class="nav-btn" onclick="showView('prefecture')" id="nav-prefecture">
-            <div class="nav-icon-box"><i class="bi bi-map-fill"></i></div>
+            <span class="nav-icon-box"><i aria-hidden="true" class="bi bi-map-fill"></i></span>
             <span class="nav-text">全国の運気</span>
         </button>
 
         <button class="nav-btn" onclick="showView('events')" id="nav-events">
-            <div class="nav-icon-box"><i class="bi bi-calendar2-event-fill"></i></div>
+            <span class="nav-icon-box"><i aria-hidden="true" class="bi bi-calendar2-event-fill"></i></span>
             <span class="nav-text">イベント</span>
         </button>
 
         <button class="nav-btn" onclick="showView('news')" id="nav-news">
-            <div class="nav-icon-box"><i class="bi bi-bell-fill"></i></div>
+            <span class="nav-icon-box"><i aria-hidden="true" class="bi bi-bell-fill"></i></span>
             <span class="nav-text">社務所だより</span>
         </button>
         
         <button class="nav-btn" onclick="showView('column')" id="nav-column">
-            <div class="nav-icon-box"><i class="bi bi-journal-text"></i></div>
+            <span class="nav-icon-box"><i aria-hidden="true" class="bi bi-journal-text"></i></span>
             <span class="nav-text">神籤草子</span>
         </button>
     </div>
 
     <!-- 3. システムグループ (クラス nav-group-bottom を追加) -->
-    <div class="nav-group nav-group-bottom desktop-only">
+    <div class="nav-group nav-group-bottom">
         <div class="nav-group-title">SYSTEM</div>
         
         <button class="nav-btn special-auth" onclick="handleProfileClick()" id="nav-login-btn">
-            <div class="nav-icon-box"><i class="bi bi-person-circle"></i></div>
+            <span class="nav-icon-box"><i aria-hidden="true" class="bi bi-person-circle"></i></span>
             <span class="nav-text">ログイン</span>
         </button>
 
         <button class="nav-btn" type="button" onclick="showView('settings')" id="nav-settings">
-            <div class="nav-icon-box"><i class="bi bi-sliders2"></i></div>
+            <span class="nav-icon-box"><i aria-hidden="true" class="bi bi-sliders2"></i></span>
             <span class="nav-text">環境・表示設定</span>
         </button>
 
         <button class="nav-btn notranslate" type="button" onclick="openTranslationPanel()" id="nav-language" title="表示言語を選択" aria-haspopup="dialog" aria-controls="translation-dialog" aria-label="表示言語を選択">
-            <div class="nav-icon-box"><i class="bi bi-translate" aria-hidden="true"></i></div>
+            <span class="nav-icon-box"><i aria-hidden="true" class="bi bi-translate"></i></span>
             <span class="nav-text">表示言語</span>
         </button>
 
         <a class="nav-btn" href="https://tenmei-mori-status.pages.dev" target="_blank" rel="noopener noreferrer" id="nav-status" title="独立したサービス状況サイトを開く" aria-label="サービス状況を別サイトで開く">
-            <div class="nav-icon-box"><i class="bi bi-activity" aria-hidden="true"></i></div>
+            <span class="nav-icon-box"><i aria-hidden="true" class="bi bi-activity"></i></span>
             <span class="nav-text">サービス状況</span>
         </a>
 
         <button class="nav-btn" onclick="showView('developer')" id="nav-developer">
-            <div class="nav-icon-box"><i class="bi bi-code-slash"></i></div>
+            <span class="nav-icon-box"><i aria-hidden="true" class="bi bi-code-slash"></i></span>
             <span class="nav-text">開発者について</span>
         </button>
 
         <button class="nav-btn" onclick="showView('about')" id="nav-about">
-            <div class="nav-icon-box"><i class="bi bi-info-circle"></i></div>
+            <span class="nav-icon-box"><i aria-hidden="true" class="bi bi-info-circle"></i></span>
             <span class="nav-text">当サイトについて</span>
         </button>
         
         <button class="nav-btn" onclick="showView('privacy')" id="nav-privacy">
-            <div class="nav-icon-box"><i class="bi bi-shield-lock"></i></div>
+            <span class="nav-icon-box"><i aria-hidden="true" class="bi bi-shield-lock"></i></span>
             <span class="nav-text">プライバシー</span>
         </button>
 
         <button class="nav-btn" onclick="showView('howto')" id="nav-howto">
-            <div class="nav-icon-box"><i class="bi bi-question-circle"></i></div>
+            <span class="nav-icon-box"><i aria-hidden="true" class="bi bi-question-circle"></i></span>
             <span class="nav-text">使い方</span>
         </button>
     </div>
@@ -19563,6 +19553,24 @@ html.dark #tenmei-event-dialog .events-dialog-heading{background:linear-gradient
     document.addEventListener('keydown', function(event) {
         if (event.key === 'Escape') closeSidebarFromKeyboard();
     });
+    // 小型画面でピン留めされたサイドバーは本文に重なるため、外側タップ・メニュー選択で閉じる。
+    document.addEventListener('click', function(event) {
+        const body = document.body;
+        if (!body.classList.contains('sidebar-pinned') || window.innerWidth > 1366) return;
+        const target = event.target;
+        if (target.closest('#sidebar-toggle')) return;
+        if (target.closest('#sidebar')) {
+            if (target.closest('#sidebar .nav-btn')) {
+                body.classList.remove('sidebar-pinned');
+                body.classList.add('sidebar-collapsed');
+                updateSidebarA11y();
+            }
+            return;
+        }
+        body.classList.remove('sidebar-pinned');
+        body.classList.add('sidebar-collapsed');
+        updateSidebarA11y();
+    }, true);
     updateSidebarA11y();
         // ==========================================
         //  設定: Cloudflare WorkerのURL
@@ -31433,7 +31441,7 @@ async function logout() {
             // ログイン中
             if (navBtn) {
                 // ★修正: アイコンを <div class="nav-icon-box"> で囲み、位置ズレを解消
-                navBtn.innerHTML = `<div class="nav-icon-box"><i class="bi bi-person-check-fill text-green-400"></i></div><span class="nav-text">アカウント設定</span>`;
+                navBtn.innerHTML = `<span class="nav-icon-box"><i aria-hidden="true" class="bi bi-person-check-fill text-green-400"></i></span><span class="nav-text">アカウント設定</span>`;
             }
             if (badge) {
                 badge.textContent = "クラウド保存済み";
@@ -31446,8 +31454,8 @@ async function logout() {
             const guestName = getGuestName();
             if (navBtn) {
                 navBtn.innerHTML = guestName
-                    ? `<div class="nav-icon-box"><i class="bi bi-person-circle"></i></div><span class="nav-text">${escapeHtml(guestName)}さん（ゲスト）</span>`
-                    : `<div class="nav-icon-box"><i class="bi bi-person-circle"></i></div><span class="nav-text">ログイン/登録</span>`;
+                    ? `<span class="nav-icon-box"><i aria-hidden="true" class="bi bi-person-circle"></i></span><span class="nav-text">${escapeHtml(guestName)}さん（ゲスト）</span>`
+                    : `<span class="nav-icon-box"><i aria-hidden="true" class="bi bi-person-circle"></i></span><span class="nav-text">ログイン/登録</span>`;
             }
             if (badge) {
                 badge.textContent = "端末に保存中";
@@ -37237,6 +37245,22 @@ try {
     #sidebar.sidebar-v4 .nav-btn:focus-visible { outline: 3px solid color-mix(in srgb, var(--sidebar-v4-gold) 88%, #fff); outline-offset: 3px; }
     #sidebar.sidebar-v4 .nav-text { color: inherit; font-family: 'Zen Kaku Gothic New', sans-serif; font-size: 0.8rem; font-weight: 800; letter-spacing: 0.025em; }
     #sidebar.sidebar-v4 .nav-toggle-label { font-family: 'Zen Old Mincho', serif; font-size: 0.94rem; letter-spacing: 0.06em; }
+    /* 閉じた小型レール（スマホ・タブレット）でもボタン名が読み上げられるよう、文字は視覚的に隠して残す。 */
+    @media (max-width: 1024px) {
+        body:not(.sidebar-pinned) #sidebar.sidebar-v4 .nav-btn { position: relative; }
+        body:not(.sidebar-pinned) #sidebar.sidebar-v4 .nav-btn .nav-text {
+            display: block !important;
+            position: absolute !important;
+            width: 1px !important;
+            height: 1px !important;
+            margin: -1px !important;
+            padding: 0 !important;
+            overflow: hidden !important;
+            clip: rect(0, 0, 0, 0) !important;
+            white-space: nowrap !important;
+            border: 0 !important;
+        }
+    }
 
     @media (min-width: 1025px) and (hover: hover) {
         /* ホバーモードでは、カーソルがサイドバー上にある時だけ全体を展開する。 */
