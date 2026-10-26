@@ -11431,7 +11431,7 @@ body.sidebar-collapsed.sidebar-pinned #sidebar .nav-group-title {
         }
     }
     /* スマホでは左の読書レールを出さない（本文の目次で代わりになり、はみ出しの原因になっていたため）。 */
-    @media (max-width: 760px) {
+    @media (max-width: 1024px) {
         .article-toc-rail { display: none !important; }
     }
     @media (max-width: 760px) {
@@ -27024,7 +27024,6 @@ window.renderFullColumnView = function() {
     };
 
 
-    // 記事読み上げは assets/js/tenmei-site-tts.js の共通プレーヤーに一本化。
     // 旧プレーヤーをここで再生成すると、共通プレーヤーとDOM・音声状態が競合するため撤去。
 
     // 5. クイズ機能ロジック
@@ -37840,7 +37839,7 @@ try {
 
         function sanitizeDocumentHistoryPreview(container) {
             container.querySelectorAll('script, style, iframe, object, embed, form, input, textarea, select, button').forEach((element) => element.remove());
-            container.querySelectorAll('audio, audio-player, .tenmei-article-audio, .tenmei-site-tts-host, [data-site-tts], [data-tts], [data-audio-player], [aria-label*="読み上げプレーヤー"], [id*="tts" i], [id*="audio-player" i], [class*="tts" i], [class*="audio-player" i], [class*="article-audio" i]').forEach((element) => element.remove());
+            container.querySelectorAll('audio, audio-player, [id*="tts" i], [id*="audio-player" i], [class*="tts" i], [class*="audio-player" i], [class*="article-audio" i]').forEach((element) => element.remove());
             container.querySelectorAll('.view-section').forEach((element) => {
                 element.setAttribute('data-document-history-source-view', '');
                 element.classList.remove('view-section');
@@ -39140,7 +39139,6 @@ window.addEventListener('hashchange',function(){setTimeout(buildAboutArticleTOC,
 
 
     <script src="assets/js/site-speech-reader.js"></script>
-<script src="/assets/js/tenmei-site-tts.js?v=tts-prefetch-20261026" defer></script>
 <script src="/assets/js/tenmei-mini-games.js" defer></script>
 <style id="tenmei-global-button-interactions">
 /* 共通フィードバックは実際のbutton要素だけに適用。role=buttonのカード等は個別デザインを優先する。 */
