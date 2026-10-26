@@ -19559,6 +19559,26 @@ html.dark #tenmei-event-dialog .events-dialog-heading{background:linear-gradient
     });
     // ホバー方式（ボタン方式OFF）では、タッチ端末で閉じたサイドバーに触れるだけで開く。
     // 開いた直後のタップはナビゲーションとして扱わず、もう一度タップすると項目を開く。
+    // ホバー方式（ボタン方式OFF）では、マウスを重ねたときもサイドバーを開く（画面幅に関係なく）。
+    (function () {
+        const sidebar = document.getElementById('sidebar');
+        if (!sidebar) return;
+        sidebar.addEventListener('pointerenter', function (event) {
+            if (event.pointerType !== 'mouse') return;
+            const body = document.body;
+            if (!body.classList.contains('sidebar-hover-mode')) return;
+            body.classList.add('sidebar-pinned');
+            body.classList.remove('sidebar-collapsed');
+            updateSidebarA11y();
+        });
+        sidebar.addEventListener('pointerleave', function (event) {
+            if (event.pointerType !== 'mouse') return;
+            const body = document.body;
+            if (!body.classList.contains('sidebar-hover-mode')) return;
+            body.classList.remove('sidebar-pinned');
+            updateSidebarA11y();
+        });
+    })();
     (function () {
         let suppressNextClick = false;
         document.addEventListener('pointerdown', function (event) {
@@ -19589,7 +19609,7 @@ html.dark #tenmei-event-dialog .events-dialog-heading{background:linear-gradient
         const target = event.target;
         if (target.closest('#sidebar-toggle')) return;
         if (target.closest('#sidebar')) {
-            if (target.closest('#sidebar .nav-btn')) {
+            if (target.closest('#sidebar .nav-btn') && !document.getElementById('sidebar').matches(':hover')) {
                 body.classList.remove('sidebar-pinned');
                 body.classList.add('sidebar-collapsed');
                 updateSidebarA11y();
