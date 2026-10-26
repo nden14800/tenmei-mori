@@ -69,6 +69,8 @@ expect(!headers.includes("'unsafe-eval'"), 'CSPにunsafe-evalを追加しては�
 expect(headers.includes('X-Content-Type-Options: nosniff'), 'X-Content-Type-Options: nosniffがありません。');
 expect(headers.includes('X-Frame-Options: DENY'), 'X-Frame-Options: DENYがありません。');
 expect(headers.includes('Referrer-Policy: strict-origin-when-cross-origin'), 'Referrer-Policyがありません。');
+expect(headers.includes('Strict-Transport-Security: max-age=31536000'), 'HSTSがありません。');
+expect(worker.includes('"Cache-Control": "no-store, max-age=0"'), '認証レスポンスにキャッシュ禁止がありません。');
 
 expect(!/Math\.random\(\).*900000/.test(worker), '認証コード生成にMath.random()を使用しています。');
 expect(!worker.includes('tenmei-mori-fallback'), '認証用暗号鍵に固定フォールバック秘密値が残っています。');

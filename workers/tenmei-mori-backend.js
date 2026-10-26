@@ -48,8 +48,8 @@ const isMaintenanceActive = () => {
 };
 
 // パスワードハッシュ設定
-// 【注意】OWASPの現行推奨値はPBKDF2-HMAC-SHA256で600,000回だが、
-// Cloudflare Workers Free（CPU時間制限が短い環境）でも安全に動作するよう、
+// PBKDF2-HMAC-SHA256の600,000回は、OWASPがFIPS-140準拠を求める場合に示す設定値。
+// 無料WorkersのCPU上限とログイン処理時間を実測せずに引き上げると認証障害になり得るため、
 // 控えめな100,000回を採用している（無料プランで実行時間制限に達して
 // ログイン・登録が失敗する事故を避けるための安全マージン）。
 // Workers Paid（CPU時間の上限が高い）で運用している場合は、
@@ -862,7 +862,7 @@ export default {
                 const cookie = `${COOKIE_NAME}=${token}; Path=/; Max-Age=${COOKIE_MAX_AGE}; Secure; HttpOnly; SameSite=None`;
                 
                 return new Response(JSON.stringify({ success: true, username, token }), { 
-                    headers: { ...corsHeaders, "Content-Type": "application/json", "Set-Cookie": cookie } 
+                    headers: { ...corsHeaders, "Content-Type": "application/json", "Set-Cookie": cookie, "Cache-Control": "no-store, max-age=0" } 
                 });
             } catch (e) {
                 return new Response(JSON.stringify({ error: e.message }), { status: 400, headers: corsHeaders });
@@ -984,7 +984,7 @@ export default {
             if (session) {
                 const rows = await runSQL("SELECT username FROM users WHERE email = ?", [session.email]);
                 if(rows.length) {
-                    return new Response(JSON.stringify({ loggedIn: true, username: rows[0].username, email: session.email, token: session.token }), { headers: { ...corsHeaders, "Content-Type": "application/json" } });
+                    return new Response(JSON.stringify({ loggedIn: true, username: rows[0].username, email: session.email, token: session.token }), { headers: { ...corsHeaders, "Content-Type": "application/json", "Cache-Control": "no-store, max-age=0" } });
                 }
             } 
             return new Response(JSON.stringify({ loggedIn: false }), { headers: { ...corsHeaders, "Content-Type": "application/json" } });
