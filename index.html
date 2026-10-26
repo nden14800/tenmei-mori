@@ -19517,7 +19517,11 @@ html.dark #tenmei-event-dialog .events-dialog-heading{background:linear-gradient
     function updateSidebarA11y() {
         const toggle = document.getElementById('sidebar-toggle');
         if (!toggle) return;
-        const expanded = document.body.classList.contains('sidebar-pinned') || !document.body.classList.contains('sidebar-collapsed');
+        // ボタン方式・ホバー方式では開閉状態の判定が異なる。
+        // ボタン方式は「ピン留め」だけが開いた状態で、設定変更直後に見た目と表示が食い違わないようにする。
+        const body = document.body;
+        const expanded = body.classList.contains('sidebar-pinned')
+            || (!body.classList.contains('sidebar-button-mode') && !body.classList.contains('sidebar-hover-mode') && !body.classList.contains('sidebar-collapsed'));
         toggle.setAttribute('aria-expanded', String(expanded));
         toggle.setAttribute('aria-label', expanded ? 'メニューを閉じる' : 'メニューを開く');
         toggle.title = expanded ? 'メニューを閉じる' : 'メニューを開く';
