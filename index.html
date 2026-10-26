@@ -19557,6 +19557,31 @@ html.dark #tenmei-event-dialog .events-dialog-heading{background:linear-gradient
     document.addEventListener('keydown', function(event) {
         if (event.key === 'Escape') closeSidebarFromKeyboard();
     });
+    // ホバー方式（ボタン方式OFF）では、タッチ端末で閉じたサイドバーに触れるだけで開く。
+    // 開いた直後のタップはナビゲーションとして扱わず、もう一度タップすると項目を開く。
+    (function () {
+        let suppressNextClick = false;
+        document.addEventListener('pointerdown', function (event) {
+            if (event.pointerType === 'mouse') return;
+            const body = document.body;
+            const sidebar = document.getElementById('sidebar');
+            if (!sidebar || !body.classList.contains('sidebar-hover-mode')) return;
+            if (body.classList.contains('sidebar-pinned')) return;
+            if (!event.target.closest('#sidebar')) return;
+            body.classList.add('sidebar-pinned');
+            body.classList.remove('sidebar-collapsed');
+            updateSidebarA11y();
+            suppressNextClick = true;
+            // クリックが続かない操作（スクロールなど）でも次のタップを誤って止めないように時間で解除する。
+            setTimeout(function () { suppressNextClick = false; }, 400);
+        }, true);
+        document.addEventListener('click', function (event) {
+            if (!suppressNextClick) return;
+            suppressNextClick = false;
+            event.preventDefault();
+            event.stopPropagation();
+        }, true);
+    })();
     // 小型画面でピン留めされたサイドバーは本文に重なるため、外側タップ・メニュー選択で閉じる。
     document.addEventListener('click', function(event) {
         const body = document.body;
