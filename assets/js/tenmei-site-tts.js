@@ -63,16 +63,17 @@ function installPlayerStyles(){
 .audio-count{color:var(--text-sub,#786e67);font-size:.6rem;font-variant-numeric:tabular-nums;white-space:nowrap}
 .tenmei-article-audio__settings{display:flex;align-items:center;min-width:0}
 .tenmei-article-audio__setting-label{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
-.tenmei-article-audio__rate-control{width:64px}
-.tenmei-article-audio__voice-control{width:112px}
+.tenmei-article-audio__rate-control{width:92px}
+.tenmei-article-audio__voice-control{width:150px}
 .tenmei-article-audio .tenmei-choice{width:100%;min-width:0;max-width:100%}
-.tenmei-article-audio .tenmei-choice__trigger{display:flex;width:100%;min-width:0;height:24px;gap:3px;padding:0 6px;border-radius:999px;font-size:.62rem}
+.tenmei-article-audio .tenmei-choice__trigger{display:flex;width:100%;min-width:0;height:32px;gap:6px;padding:0 10px;border-radius:999px;font-size:.8rem;line-height:1.2}
+.tenmei-article-audio .tenmei-choice__option{min-height:36px;padding:6px 12px;font-size:.84rem}
 .tenmei-article-audio .tenmei-choice__value{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.tenmei-article-audio .tenmei-choice__popover{z-index:270;max-width:min(240px,calc(100vw - 32px))}
+.tenmei-article-audio .tenmei-choice__popover{z-index:270;min-width:150px;max-width:min(300px,calc(100vw - 32px))}
 .tenmei-article-audio__status{flex-basis:100%;margin:0;font-size:.64rem;line-height:1.5;color:var(--accent-red,#8f252b)}
 .tenmei-article-audio__status:not([data-state="error"]){display:none}
 .tenmei-article-audio__active{background:color-mix(in srgb,var(--accent-gold,#c4a059) 17%,transparent)!important;border-radius:4px;scroll-margin:110px}
-@media(max-width:560px){.tenmei-article-audio{border-radius:14px;padding:6px 8px}.tenmei-article-audio__foot{width:100%;justify-content:space-between}.tenmei-article-audio__rate-control{width:auto;flex:1 1 0}.tenmei-article-audio__voice-control{width:auto;flex:2 1 0}}
+@media(max-width:560px){.tenmei-article-audio{border-radius:14px;padding:8px 10px}.tenmei-article-audio .tenmei-choice__trigger{height:34px;font-size:.84rem}.tenmei-article-audio__foot{width:100%;justify-content:space-between}.tenmei-article-audio__rate-control{width:auto;flex:1 1 0}.tenmei-article-audio__voice-control{width:auto;flex:2 1 0}}
 @media(prefers-reduced-motion:reduce){.tenmei-article-audio *{transition:none!important;scroll-behavior:auto!important}}
 `;
  document.head.appendChild(style);
@@ -173,28 +174,55 @@ player.innerHTML='<strong class="tenmei-article-audio__title"></strong><div clas
   }
  function prime(){const sampleRate=8000,sampleCount=800,buffer=new ArrayBuffer(44+sampleCount*2),view=new DataView(buffer);const write=(offset,value)=>{for(let i=0;i<value.length;i++)view.setUint8(offset+i,value.charCodeAt(i));};write(0,'RIFF');view.setUint32(4,36+sampleCount*2,true);write(8,'WAVE');write(12,'fmt ');view.setUint32(16,16,true);view.setUint16(20,1,true);view.setUint16(22,1,true);view.setUint32(24,sampleRate,true);view.setUint32(28,sampleRate*2,true);view.setUint16(32,2,true);view.setUint16(34,16,true);write(36,'data');view.setUint32(40,sampleCount*2,true);const bytes=new Uint8Array(buffer);let binary='';for(let i=0;i<bytes.length;i++)binary+=String.fromCharCode(bytes[i]);audio.muted=true;audio.src='data:audio/wav;base64,'+btoa(binary);const activation=audio.play();audio.muted=false;if(activation&&typeof activation.then==='function')activation.then(()=>{audio.pause();}).catch(()=>{});}
  let progressFrame=0;
- function clean(){if(progressFrame)cancelAnimationFrame(progressFrame);progressFrame=0;lastMediaTime=0;lastMediaStamp=0;audio.pause();audio.onended=audio.onerror=audio.onloadedmetadata=audio.ontimeupdate=audio.ondurationchange=audio.onplay=audio.onpause=null;audio.removeAttribute('src');audio.load();decodedDuration=0;if(objectUrl){URL.revokeObjectURL(objectUrl);objectUrl='';}}
- function stop(message){generation++;clean();if(activeAnchor)activeAnchor.classList.remove('tenmei-article-audio__active');activeAnchor=null;busy=false;paused=false;update();status(message||'停止しました。');}
- async function playPart(auto){
-  if(index<0||index>=parts.length)return;
-  const token=++generation;clean();busy=true;paused=false;update();status('日本語音声を生成しています…');
-  try{
-   const response=await fetch(API,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({text:parts[index],voice:voiceValue}),credentials:'omit',cache:'no-store'});
-   if(!response.ok){let body={};try{body=await response.json();}catch(_){}throw new Error(body.error||'音声を生成できませんでした。');}
-   const blob=await response.blob();if(token!==generation)return;
-   objectUrl=URL.createObjectURL(blob);audio.src=objectUrl;audio.playbackRate=rateValue;
-   audio.onloadedmetadata=update;audio.ondurationchange=update;audio.ontimeupdate=()=>{syncMediaClock();update();};
-   audio.onerror=()=>{if(token!==generation)return;busy=false;paused=false;update();status('音声データを再生できませんでした。再読み込みして再度お試しください。','error');};
-   audio.load();
-   if(!Number.isFinite(audio.duration)||audio.duration<=0)measureDuration(blob,token);
-   const animateProgress=()=>{if(audio.paused||audio.ended)return;update();progressFrame=requestAnimationFrame(animateProgress);};
-   audio.onplay=()=>{paused=false;syncMediaClock();if(progressFrame)cancelAnimationFrame(progressFrame);progressFrame=requestAnimationFrame(animateProgress);update();};audio.onpause=()=>{if(progressFrame)cancelAnimationFrame(progressFrame);progressFrame=0;if(!audio.ended&&!busy){paused=true;update();}};
-   audio.onended=()=>{if(token!==generation)return;if(index<parts.length-1){index++;playPart(true);}else{if(activeAnchor)activeAnchor.classList.remove('tenmei-article-audio__active');activeAnchor=null;busy=false;paused=false;update();status('読み上げが完了しました。');}};
-   busy=false;update();highlightCurrentPart();
-   if(auto){try{await audio.play();status('読み上げ中');}catch(_){paused=true;update();status('音声の準備ができました。再生を押してください。');}}
-   else{paused=true;update();status('音声の準備ができました。再生を押してください。');}
-  }catch(error){if(token!==generation)return;busy=false;paused=false;update();status(error.message||'音声を生成できませんでした。','error');}
+ function clean(){if(progressFrame)cancelAnimationFrame(progressFrame);progressFrame=0;lastMediaTime=0;lastMediaStamp=0;audio.pause();audio.onended=audio.onerror=audio.onloadedmetadata=audio.ontimeupdate=audio.ondurationchange=audio.onplay=audio.onpause=null;audio.removeAttribute('src');audio.load();decodedDuration=0;objectUrl='';}
+ function stop(message){generation++;clean();clearChunks();if(activeAnchor)activeAnchor.classList.remove('tenmei-article-audio__active');activeAnchor=null;busy=false;paused=false;update();status(message||'停止しました。');}
+ const chunkCache=new Map(),readyChunks=new Map();
+function clearChunks(){chunkCache.clear();readyChunks.forEach(c=>{try{URL.revokeObjectURL(c.url);}catch(_){}});readyChunks.clear();}
+function getChunk(i){
+ if(!chunkCache.has(i)){
+  const p=fetch(API,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({text:parts[i],voice:voiceValue}),credentials:'omit',cache:'no-store'})
+   .then(async r=>{if(!r.ok){let body={};try{body=await r.json();}catch(_){}throw new Error(body.error||'音声を生成できませんでした。');}return r.blob();})
+   .then(blob=>{const c={blob,url:URL.createObjectURL(blob)};readyChunks.set(i,c);return c;});
+  p.catch(()=>chunkCache.delete(i));
+  chunkCache.set(i,p);
  }
+ return chunkCache.get(i);
+}
+function loadChunk(chunk,token,auto){
+ objectUrl=chunk.url;audio.src=chunk.url;audio.playbackRate=rateValue;
+ audio.onloadedmetadata=update;audio.ondurationchange=update;audio.ontimeupdate=()=>{syncMediaClock();update();};
+ audio.onerror=()=>{if(token!==generation)return;busy=false;paused=false;update();status('音声データを再生できませんでした。もう一度お試しください。','error');};
+ audio.load();
+ if(!Number.isFinite(audio.duration)||audio.duration<=0)measureDuration(chunk.blob,token);
+ const animateProgress=()=>{if(audio.paused||audio.ended)return;update();progressFrame=requestAnimationFrame(animateProgress);};
+ audio.onplay=()=>{paused=false;syncMediaClock();if(progressFrame)cancelAnimationFrame(progressFrame);progressFrame=requestAnimationFrame(animateProgress);update();};
+ audio.onpause=()=>{if(progressFrame)cancelAnimationFrame(progressFrame);progressFrame=0;if(!audio.ended&&!busy){paused=true;update();}};
+ // 区切りが終わったら、次の区切りを同じ操作の流れで続けて再生する（取得済みならすぐ切り替える）
+ audio.onended=()=>{
+  if(token!==generation)return;
+  if(index<parts.length-1){index++;advanceTo(index);}
+  else{if(activeAnchor)activeAnchor.classList.remove('tenmei-article-audio__active');activeAnchor=null;busy=false;paused=false;update();status('読み上げが完了しました。');}
+ };
+ busy=false;update();highlightCurrentPart();
+ if(index+1<parts.length)getChunk(index+1).catch(()=>{});
+ if(auto){audio.play().then(()=>{paused=false;update();}).catch(()=>{paused=true;update();status('再生ボタンを押すと続きを再生します。');});}
+ else{paused=true;update();}
+}
+function advanceTo(i){
+ const token=++generation;clean();busy=true;paused=false;update();
+ const ready=readyChunks.get(i);
+ if(ready){loadChunk(ready,token,true);return;}
+ getChunk(i).then(c=>{if(token===generation)loadChunk(c,token,true);}).catch(error=>{if(token!==generation)return;busy=false;paused=false;update();status(error.message||'音声を生成できませんでした。','error');});
+}
+async function playPart(auto){
+ if(index<0||index>=parts.length)return;
+ const token=++generation;clean();busy=true;paused=false;update();status('');
+ try{
+  const chunk=await getChunk(index);
+  if(token!==generation)return;
+  loadChunk(chunk,token,auto);
+ }catch(error){if(token!==generation)return;busy=false;paused=false;update();status(error.message||'音声を生成できませんでした。','error');}
+}
  $('.audio-play').addEventListener('click',()=>{if(busy)return;if(audio.src&&paused){audio.play().then(()=>{paused=false;update();status('読み上げ中');}).catch(()=>status('再生を開始できませんでした。もう一度押してください。','error'));return;}if(audio.src&&!audio.paused){audio.pause();paused=true;update();status('一時停止中');return;}prime();playPart(true);});
  $('.audio-stop').addEventListener('click',()=>stop());
  $('.audio-prev').addEventListener('click',()=>{if(busy)return;index=Math.max(0,index-1);playPart(true);});
