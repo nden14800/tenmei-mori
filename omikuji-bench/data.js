@@ -27,7 +27,8 @@ const OB_SITES=[
    65,
    90,
    80
-  ]
+  ],
+  "recheck": "未確認（許可待ち）"
  },
  {
   "id": "omikujido",
@@ -49,12 +50,13 @@ const OB_SITES=[
    null,
    null,
    null,
-   85,
+   70,
    null,
    null,
    null,
    null
-  ]
+  ],
+  "recheck": "確認済（2026-10-26）"
  },
  {
   "id": "piyotaso",
@@ -80,8 +82,9 @@ const OB_SITES=[
    null,
    null,
    null,
-   85
-  ]
+   null
+  ],
+  "recheck": "確認済"
  },
  {
   "id": "omikuji-jp",
@@ -108,7 +111,8 @@ const OB_SITES=[
    null,
    null,
    80
-  ]
+  ],
+  "recheck": "JavaScript必須のため本文を再取得できず、既存の確認内容を維持"
  },
  {
   "id": "prism",
@@ -125,17 +129,18 @@ const OB_SITES=[
    85,
    90,
    80,
+   75,
+   null,
+   null,
+   30,
+   60,
+   70,
    null,
    null,
    null,
-   null,
-   null,
-   80,
-   null,
-   null,
-   null,
-   90
-  ]
+   null
+  ],
+  "recheck": "確認済"
  },
  {
   "id": "ichizen",
@@ -152,17 +157,18 @@ const OB_SITES=[
    85,
    90,
    80,
+   75,
+   75,
+   null,
+   30,
+   60,
+   75,
    null,
    null,
    null,
-   null,
-   null,
-   85,
-   null,
-   null,
-   null,
-   85
-  ]
+   80
+  ],
+  "recheck": "確認済"
  },
  {
   "id": "online",
@@ -182,14 +188,15 @@ const OB_SITES=[
    null,
    null,
    null,
-   40,
+   75,
    null,
    null,
    null,
    null,
    null,
-   80
-  ]
+   null
+  ],
+  "recheck": "確認済"
  },
  {
   "id": "sando",
@@ -209,14 +216,15 @@ const OB_SITES=[
    80,
    null,
    null,
+   70,
+   55,
    60,
    null,
-   85,
    null,
    null,
-   null,
-   90
-  ]
+   85
+  ],
+  "recheck": "確認済"
  },
  {
   "id": "manabi",
@@ -243,7 +251,8 @@ const OB_SITES=[
    null,
    95,
    95
-  ]
+  ],
+  "recheck": "確認済"
  },
  {
   "id": "noveblo",
@@ -263,14 +272,15 @@ const OB_SITES=[
    null,
    85,
    100,
-   95,
+   85,
    null,
-   80,
+   75,
    null,
    null,
    null,
-   90
-  ]
+   85
+  ],
+  "recheck": "確認済"
  },
  {
   "id": "toolboxday",
@@ -287,17 +297,18 @@ const OB_SITES=[
    90,
    90,
    90,
-   null,
-   95,
-   null,
-   100,
-   null,
    75,
+   95,
+   null,
+   95,
+   60,
+   80,
    null,
    null,
    95,
-   90
-  ]
+   85
+  ],
+  "recheck": "確認済"
  },
  {
   "id": "toolsnavi",
@@ -324,7 +335,8 @@ const OB_SITES=[
    null,
    90,
    90
-  ]
+  ],
+  "recheck": "再取得失敗（接続エラー）、既存の確認内容を維持"
  },
  {
   "id": "jiman",
@@ -341,17 +353,18 @@ const OB_SITES=[
    80,
    80,
    85,
+   70,
    null,
    null,
-   null,
-   null,
+   30,
    null,
    75,
    null,
    null,
    null,
-   85
-  ]
+   null
+  ],
+  "recheck": "確認済"
  },
  {
   "id": "cmt",
@@ -378,7 +391,8 @@ const OB_SITES=[
    null,
    null,
    null
-  ]
+  ],
+  "recheck": "確認済"
  },
  {
   "id": "co3",
@@ -405,7 +419,8 @@ const OB_SITES=[
    null,
    null,
    null
-  ]
+  ],
+  "recheck": "確認済（簡易）"
  },
  {
   "id": "omikuji-com",
@@ -427,12 +442,13 @@ const OB_SITES=[
    null,
    null,
    null,
-   70,
+   60,
    null,
    null,
    null,
-   80
-  ]
+   null
+  ],
+  "recheck": "確認済"
  },
  {
   "id": "shugo",
@@ -449,17 +465,18 @@ const OB_SITES=[
    85,
    95,
    80,
-   null,
+   60,
    null,
    85,
    null,
    null,
-   70,
+   50,
    null,
    null,
    null,
-   85
-  ]
+   null
+  ],
+  "recheck": "確認済"
  },
  {
   "id": "omikujijapan",
@@ -481,12 +498,13 @@ const OB_SITES=[
    null,
    null,
    null,
+   65,
    null,
    null,
    null,
-   null,
-   85
-  ]
+   null
+  ],
+  "recheck": "確認済"
  },
  {
   "id": "mikujidoki",
@@ -513,7 +531,8 @@ const OB_SITES=[
    null,
    null,
    90
-  ]
+  ],
+  "recheck": "未確認（許可待ち）"
  },
  {
   "id": "omikujidev",
@@ -540,7 +559,8 @@ const OB_SITES=[
    null,
    95,
    90
-  ]
+  ],
+  "recheck": "未確認（許可待ち）"
  },
  {
   "id": "asari",
@@ -567,7 +587,8 @@ const OB_SITES=[
    90,
    95,
    95
-  ]
+  ],
+  "recheck": "確認済"
  },
  {
   "id": "sakupochi",
@@ -594,7 +615,8 @@ const OB_SITES=[
    null,
    95,
    85
-  ]
+  ],
+  "recheck": "確認済"
  },
  {
   "id": "moli",
@@ -616,12 +638,13 @@ const OB_SITES=[
    null,
    60,
    null,
-   70,
+   60,
    null,
    null,
    null,
-   85
-  ]
+   null
+  ],
+  "recheck": "確認済"
  },
  {
   "id": "omajinai",
@@ -642,13 +665,14 @@ const OB_SITES=[
    90,
    85,
    null,
-   90,
-   85,
+   60,
+   70,
    null,
    null,
    90,
-   90
-  ]
+   null
+  ],
+  "recheck": "確認済"
  },
  {
   "id": "guanyin",
@@ -668,14 +692,15 @@ const OB_SITES=[
    null,
    null,
    null,
-   80,
-   90,
-   75,
+   50,
+   85,
+   55,
    null,
    null,
    80,
-   90
-  ]
+   null
+  ],
+  "recheck": "確認済"
  },
  {
   "id": "worldatlas",
@@ -697,12 +722,13 @@ const OB_SITES=[
    null,
    null,
    null,
-   75,
+   50,
    null,
    null,
    85,
-   85
-  ]
+   null
+  ],
+  "recheck": "確認済"
  },
  {
   "id": "koimikuji",
@@ -722,14 +748,15 @@ const OB_SITES=[
    null,
    null,
    null,
+   30,
+   null,
+   65,
    null,
    null,
-   70,
    null,
-   null,
-   null,
-   80
-  ]
+   null
+  ],
+  "recheck": "確認済"
  },
  {
   "id": "powerspot",
@@ -749,14 +776,15 @@ const OB_SITES=[
    75,
    null,
    null,
+   30,
+   null,
+   55,
    null,
    null,
-   60,
    null,
-   null,
-   null,
-   70
-  ]
+   null
+  ],
+  "recheck": "確認済"
  },
  {
   "id": "makko",
@@ -776,13 +804,14 @@ const OB_SITES=[
    95,
    90,
    null,
-   85,
-   95,
+   60,
    90,
+   85,
    null,
    null,
    95,
-   95
-  ]
+   null
+  ],
+  "recheck": "確認済"
  }
 ];

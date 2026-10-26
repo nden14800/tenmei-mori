@@ -18,6 +18,10 @@ Cloudflare Pagesは独立プロジェクト（root: `omikuji-bench/`）として
 - Index ランキング（棒）、体験×機能の散布図（パレート線）、カテゴリ平均、16項目マトリクス。
 - 詳細評価・根拠・公式URL、CSV出力、レスポンシブ、ダークモード。
 
+## 再確認（2026-10-26）
+- 29件のうち取得できた公式ページは本文で一次確認。取得不可のものは data.js の recheck に理由を記録。
+- 採点値は取得結果に合わせて修正（58項目）。根拠が見つからない項目は null（—）。
+
 ## データの扱い
 - 暫定レビューは公開情報に基づく単独評価者による暫定レビュー。複数AI平均・実機試験ではない。
 - 実測未実施の速度や安定性は測定値として表示しない。
@@ -30,5 +34,6 @@ Cloudflare Pagesは独立プロジェクト（root: `omikuji-bench/`）として
 - index.html：ベンチマーク本体（描画のみ。採点は画面側で16項目から計算）
 - data.js：サイト一覧・16項目の採点値・根拠の唯一の情報源
 - favicon.svg / favicon-96x96.png / apple-touch-icon.png / favicon.ico：アイコン
+- vendor/echarts.min.js：ECharts 6.1.0（Apache-2.0、ライセンスは vendor/ECHARTS-LICENSE.txt）
 - evaluation-rubric.json：採点基準（v3.5）
 - INITIAL-REVIEW.md：旧版（v1.2・21件・旧配点）の記録。現行値ではない
