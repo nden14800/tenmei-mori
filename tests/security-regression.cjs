@@ -13,6 +13,7 @@ const middlewarePath = path.join(repositoryRoot, 'functions', '_middleware.js');
 const middleware = fs.readFileSync(middlewarePath, 'utf8');
 expect(/url\.pathname\.startsWith\("\/api\/"\)/.test(middleware), '同一オリジンAPIプロキシがありません。');
 expect(middleware.includes('tenmei-mori-backend.nden14800.workers.dev'), 'APIプロキシ先Workerがありません。');
+expect(/fetch\(upstreamRequest, \{ redirect: "manual" \}\)/.test(middleware), 'Google OAuthの302リダイレクトをBFFが追跡しない設定がありません。');
 expect(/crypto\.getRandomValues\(new Uint8Array\(16\)\)/.test(middleware), 'CSP nonceがCSPRNGで生成されていません。');
 expect(/element\.setAttribute\("nonce", nonce\)/.test(middleware), 'script要素へCSP nonceを付与していません。');
 expect(/script-src 'self' 'nonce-\$\{nonce\}'/.test(middleware), 'HTML CSPにscript nonceがありません。');

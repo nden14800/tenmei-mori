@@ -11,7 +11,7 @@ export async function onRequest({ request, next }) {
     upstreamUrl.protocol = "https:";
     upstreamUrl.hostname = "tenmei-mori-backend.nden14800.workers.dev";
     const upstreamRequest = new Request(upstreamUrl.toString(), request);
-    const upstreamResponse = await fetch(upstreamRequest);
+    const upstreamResponse = await fetch(upstreamRequest, { redirect: "manual" });
     const proxyHeaders = new Headers(upstreamResponse.headers);
     if (url.pathname.startsWith("/api/auth/")) {
       proxyHeaders.set("Cache-Control", "no-store, max-age=0");
