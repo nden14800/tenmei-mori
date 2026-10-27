@@ -1,0 +1,28 @@
+name: Security regression checks
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: security-regression-main
+  cancel-in-progress: false
+
+jobs:
+  security-regression:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out source
+        uses: actions/checkout@v4
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Check Worker syntax
+        run: node --check workers/tenmei-mori-backend.js
+      - name: Run security regression tests
+        run: node tests/security-regression.cjs

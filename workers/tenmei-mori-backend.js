@@ -323,6 +323,13 @@ export default {
             return Array.from(array).map(b => b.toString(16).padStart(2, '0')).join('');
         }
 
+        // セッションIDは既存のUUID形式より余裕を持たせた256-bit CSPRNG値を使用する。
+        // hexのみで構成するためCookie・SQL・既存の照合処理との互換性を維持する。
+        function generateSessionToken() {
+            const bytes = crypto.getRandomValues(new Uint8Array(32));
+            return Array.from(bytes).map(byte => byte.toString(16).padStart(2, '0')).join('');
+        }
+
         // 【旧形式・現在は新規生成には使わない】単純なSHA-256(password+salt)。
         // 既存ユーザーの過去のハッシュを検証するためだけに残してある。
         async function hashPasswordLegacySHA256(password, salt) {
@@ -856,7 +863,7 @@ export default {
                 }
         
                 // セッション発行処理 (既存のまま)
-                const token = crypto.randomUUID();
+                const token = generateSessionToken();
                 await runSQL("INSERT INTO sessions (token, email, created_at) VALUES (?, ?, ?)", [token, email, Date.now()]);
                 await runSQL("DELETE FROM auth_codes WHERE email = ?", [email]);
                 const cookie = `${COOKIE_NAME}=${token}; Path=/; Max-Age=${COOKIE_MAX_AGE}; Secure; HttpOnly; SameSite=None`;
@@ -903,7 +910,7 @@ export default {
                 // ワンタイム使用: 検証成功と同時に認証コード自体も無効化する
                 await runSQL("DELETE FROM auth_codes WHERE email = ?", [email]);
 
-                const sessionToken = crypto.randomUUID();
+                const sessionToken = generateSessionToken();
                 await runSQL("INSERT INTO sessions (token, email, created_at) VALUES (?, ?, ?)", [sessionToken, email, Date.now()]);
                 const cookie = `${COOKIE_NAME}=${sessionToken}; Path=/; Max-Age=${COOKIE_MAX_AGE}; Secure; HttpOnly; SameSite=None`;
                 const exchangeCode = await makeExchangeCode(sessionToken, env.GOOGLE_CLIENT_SECRET);
@@ -987,7 +994,7 @@ export default {
                     return new Response(JSON.stringify({ loggedIn: true, username: rows[0].username, email: session.email, token: session.token }), { headers: { ...corsHeaders, "Content-Type": "application/json", "Cache-Control": "no-store, max-age=0" } });
                 }
             } 
-            return new Response(JSON.stringify({ loggedIn: false }), { headers: { ...corsHeaders, "Content-Type": "application/json" } });
+            return new Response(JSON.stringify({ loggedIn: false }), { headers: { ...corsHeaders, "Content-Type": "application/json", "Cache-Control": "no-store, max-age=0", "Vary": "Origin" } });
         }
 
         if (url.pathname === "/api/counter" && method === "GET") {
@@ -1803,7 +1810,7 @@ if (url.pathname === "/api/today-anniv" && method === "GET") {
                 if (existingByGoogleId.length > 0) {
                     // 既存Googleユーザーとしてログイン
                     const user = existingByGoogleId[0];
-                    const sessionToken = crypto.randomUUID();
+                    const sessionToken = generateSessionToken();
                     await runSQL("INSERT INTO sessions (token, email, created_at) VALUES (?, ?, ?)", [sessionToken, user.email, Date.now()]);
                     const cookie = `${COOKIE_NAME}=${sessionToken}; Path=/; Max-Age=${COOKIE_MAX_AGE}; Secure; HttpOnly; SameSite=None`;
                     const exchangeCode = await makeExchangeCode(sessionToken, env.GOOGLE_CLIENT_SECRET);
@@ -1841,7 +1848,7 @@ if (url.pathname === "/api/today-anniv" && method === "GET") {
                 );
                 await runSQL("UPDATE counter SET user_count = user_count + 1 WHERE id = 1");
 
-                const sessionToken = crypto.randomUUID();
+                const sessionToken = generateSessionToken();
                 await runSQL("INSERT INTO sessions (token, email, created_at) VALUES (?, ?, ?)", [sessionToken, googleEmail, Date.now()]);
                 const cookie = `${COOKIE_NAME}=${sessionToken}; Path=/; Max-Age=${COOKIE_MAX_AGE}; Secure; HttpOnly; SameSite=None`;
                 const exchangeCode = await makeExchangeCode(sessionToken, env.GOOGLE_CLIENT_SECRET);
