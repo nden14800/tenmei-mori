@@ -91,9 +91,9 @@ expect(headers.includes('X-Frame-Options: DENY'), 'X-Frame-Options: DENYがあ�
 expect(headers.includes('Referrer-Policy: strict-origin-when-cross-origin'), 'Referrer-Policyがありません。');
 expect(headers.includes('Strict-Transport-Security: max-age=31536000'), 'HSTSがありません。');
 expect(worker.includes('"Cache-Control": "no-store, max-age=0"'), '認証レスポンスにキャッシュ禁止がありません。');
-const authCheck = between(worker, 'if (url.pathname === "/api/auth/check" && method === "GET") {', 'if (url.pathname === "/api/counter" && method === "GET") {');
-expect(authCheck.length > 0, '/api/auth/check の実装を検出できません。');
-expect((authCheck.match(/"Cache-Control": "no-store, max-age=0"/g) || []).length === 2, 'ログイン済み・未ログイン双方の認証確認レスポンスにno-storeがありません。');
+const authCheckMigration = between(worker, 'if (url.pathname === "/api/auth/check" && method === "GET") {', 'if (url.pathname === "/api/counter" && method === "GET") {');
+expect(authCheckMigration.length > 0, '/api/auth/check の実装を検出できません。');
+expect((authCheckMigration.match(/"Cache-Control": "no-store, max-age=0"/g) || []).length === 2, 'ログイン済み・未ログイン双方の認証確認レスポンスにno-storeがありません。');
 expect(/function generateSessionToken\(\)/.test(worker), '256-bit CSPRNGセッショントークン生成関数がありません。');
 expect(!/const (?:token|sessionToken) = crypto\.randomUUID\(\);/.test(worker), '新規セッションIDにUUIDを使用しています。');
 
