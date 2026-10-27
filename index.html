@@ -27813,9 +27813,13 @@ function submitGuestName() {
 async function authFetch(url, options = {}) {
     // デフォルトヘッダー設定
     if (!options.headers) options.headers = {};
-    
-    // 旧セッションを一度だけ移行するための互換処理。認証確認成功後に削除する。
-    const legacyToken = localStorage.getItem('auth_token');
+
+    // 旧Bearerは /api/auth/check でHttpOnly Cookieへ移行する一度だけ使用する。
+    // それ以外のAPIへlocalStorageの認証情報を送信しない。
+    const requestUrl = new URL(url, window.location.origin);
+    const isSessionMigrationCheck = requestUrl.origin === window.location.origin
+        && requestUrl.pathname === '/api/auth/check';
+    const legacyToken = isSessionMigrationCheck ? localStorage.getItem('auth_token') : null;
     if (legacyToken) {
         options.headers['Authorization'] = `Bearer ${legacyToken}`;
     } else {

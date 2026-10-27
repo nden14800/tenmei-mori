@@ -29,6 +29,11 @@ expect(!/JSON\.stringify\(\{ success: true, token: payload\.t \}\)/.test(exchang
 const authCheck = between(worker, 'if (url.pathname === "/api/auth/check" && method === "GET") {', 'if (url.pathname === "/api/counter" && method === "GET") {');
 expect(authCheck.includes('"Set-Cookie": cookie'), 'auth/checkのCookie移行がありません。');
 expect(!/loggedIn: true[^\n]*token:/.test(authCheck), 'auth/checkがトークンをJSONで返しています。');
+const verifySession = between(worker, 'async function verifySession(req) {', '// JSON本文はContent-Length');
+expect(/new URL\(req\.url\)\.pathname === "\/api\/auth\/check"/.test(verifySession), '旧Bearer移行がauth/checkに限定されていません。');
+const authFetch = between(index, 'async function authFetch(url, options = {}) {', '// ==========================================================');
+expect(/requestUrl\.pathname === '\/api\/auth\/check'/.test(authFetch), 'フロントエンドの旧Bearer送信がauth/checkに限定されていません。');
+expect(/options\.credentials = 'same-origin'/.test(authFetch), 'same-origin Cookie送信がありません。');
 
 
 function expect(condition, message) {

@@ -592,7 +592,9 @@ export default {
 
         async function verifySession(req) {
             let token = getCookie(req, COOKIE_NAME);
-            if (!token) {
+            // 旧ブラウザーの移行用Bearerは、セッション確認エンドポイントだけで受け付ける。
+            // 一度Cookieへ移行した後、他のAPIでBearerトークンを再利用できないようにする。
+            if (!token && new URL(req.url).pathname === "/api/auth/check") {
                 const authHeader = req.headers.get("Authorization");
                 if (authHeader && authHeader.startsWith("Bearer ")) {
                     token = authHeader.substring(7);
