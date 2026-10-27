@@ -19628,7 +19628,7 @@ html.dark #tenmei-event-dialog .events-dialog-heading{background:linear-gradient
         // ==========================================
         //  設定: Cloudflare WorkerのURL
         // ==========================================
-        const API_BASE = "https://tenmei-mori-backend.nden14800.workers.dev";
+        const API_BASE = ""; // API is routed through the same-origin Pages BFF.
 
         // ==========================================
         //  会員限定機能：共通ログイン要求モーダル
@@ -27814,18 +27814,15 @@ async function authFetch(url, options = {}) {
     // デフォルトヘッダー設定
     if (!options.headers) options.headers = {};
     
-    // localStorageからトークンを取得してヘッダーに付与
-    const token = localStorage.getItem('auth_token');
-    if (token) {
-        options.headers['Authorization'] = `Bearer ${token}`;
+    // 旧セッションを一度だけ移行するための互換処理。認証確認成功後に削除する。
+    const legacyToken = localStorage.getItem('auth_token');
+    if (legacyToken) {
+        options.headers['Authorization'] = `Bearer ${legacyToken}`;
     } else {
-        // 未ログイン時：ゲストIDがあればヘッダーで送信（本人の記録の識別にのみ使用）
         const gid = getGuestId();
         if (gid) options.headers['X-Guest-Id'] = gid;
     }
-
-    // Cookie送信用設定
-    options.credentials = 'include';
+    options.credentials = 'same-origin';
 
     return fetch(url, options);
 }
@@ -27952,9 +27949,8 @@ window.onload = async function() {
                         body: JSON.stringify({ code: _code })
                     });
                     const exData = await exRes.json();
-                    if (exRes.ok && exData.token) {
-                        localStorage.setItem('auth_token', exData.token);
-                    }
+                    if (!exRes.ok) throw new Error('auth_exchange_failed');
+                    // セッショントークンはJSへ返さず、BFF経由のHttpOnly Cookieで確立する。
                 } catch (e) { console.warn('Auth exchange error:', e); }
             }
         }
@@ -28078,10 +28074,8 @@ async function checkSession() {
                 
                 // ★削除: checkGoshuin(); (定義されていないためエラーになる)
                 
-                if (data.token) {
-                    localStorage.setItem('auth_token', data.token);
-                }
-
+                // HttpOnly Cookieへ移行したため、旧Bearerトークンはブラウザ保存から消す。
+                localStorage.removeItem('auth_token');
                 updateAuthUI();
                 loadLabSettings();
                 loadMyStats(); // ★追加: ログイン確認直後に統計を読み込む
@@ -28089,6 +28083,7 @@ async function checkSession() {
                 console.log("Session restored");
                 LabAuth.refresh(); // Lab解錠判定もサーバー基準で同時に確定させる
             } else {
+                localStorage.removeItem('auth_token');
                 currentState.user = null;
                 updateAuthUI();
                 loadLabSettings(); 
@@ -31111,12 +31106,6 @@ function toggleAuthPassword(inputId, button) {
 
 // Googleアカウント連携（コネクト）
 async function connectGoogleAccount() {
-    const token = localStorage.getItem('auth_token');
-    if (!token) {
-        showToast('ログインが必要です', 'error');
-        return;
-    }
-
     try {
         showLoading(true);
         // 認証トークンはauthFetchのAuthorizationヘッダーでWorkersへ送る。
@@ -31412,9 +31401,6 @@ function validateAuthField(el, onBlurOnly) {
             
             if(res.ok && data.success) {
                 stopAuthCodeTimer();
-                if (data.token) {
-                    localStorage.setItem('auth_token', data.token);
-                }
                 loginSuccess({ email, username: data.username });
             } else {
                 // ▼ alert置き換え

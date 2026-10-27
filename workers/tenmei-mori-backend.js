@@ -360,11 +360,11 @@ export default {
         }
 
         function makeGoogleConnectStateCookie(state, maxAge) {
-            return `${OAUTH_CONNECT_STATE_COOKIE}=${state}; Path=/api/auth/google; Max-Age=${maxAge}; Secure; HttpOnly; SameSite=None`;
+            return `${OAUTH_CONNECT_STATE_COOKIE}=${state}; Path=/api/auth/google; Max-Age=${maxAge}; Secure; HttpOnly; SameSite=Lax`;
         }
 
         function clearGoogleConnectStateCookie() {
-            return `${OAUTH_CONNECT_STATE_COOKIE}=; Path=/api/auth/google; Max-Age=0; Secure; HttpOnly; SameSite=None`;
+            return `${OAUTH_CONNECT_STATE_COOKIE}=; Path=/api/auth/google; Max-Age=0; Secure; HttpOnly; SameSite=Lax`;
         }
 
         // Googleログイン用のstateパラメータに署名を付けるためのHMAC-SHA256ヘルパー。
@@ -866,10 +866,9 @@ export default {
                 const token = generateSessionToken();
                 await runSQL("INSERT INTO sessions (token, email, created_at) VALUES (?, ?, ?)", [token, email, Date.now()]);
                 await runSQL("DELETE FROM auth_codes WHERE email = ?", [email]);
-                const cookie = `${COOKIE_NAME}=${token}; Path=/; Max-Age=${COOKIE_MAX_AGE}; Secure; HttpOnly; SameSite=None`;
-                
-                return new Response(JSON.stringify({ success: true, username, token }), { 
-                    headers: { ...corsHeaders, "Content-Type": "application/json", "Set-Cookie": cookie, "Cache-Control": "no-store, max-age=0" } 
+                const cookie = `${COOKIE_NAME}=${token}; Path=/; Max-Age=${COOKIE_MAX_AGE}; Secure; HttpOnly; SameSite=Lax`;
+                return new Response(JSON.stringify({ success: true, username }), {
+                    headers: { ...corsHeaders, "Content-Type": "application/json", "Set-Cookie": cookie, "Cache-Control": "no-store, max-age=0" }
                 });
             } catch (e) {
                 return new Response(JSON.stringify({ error: e.message }), { status: 400, headers: corsHeaders });
@@ -912,7 +911,7 @@ export default {
 
                 const sessionToken = generateSessionToken();
                 await runSQL("INSERT INTO sessions (token, email, created_at) VALUES (?, ?, ?)", [sessionToken, email, Date.now()]);
-                const cookie = `${COOKIE_NAME}=${sessionToken}; Path=/; Max-Age=${COOKIE_MAX_AGE}; Secure; HttpOnly; SameSite=None`;
+                const cookie = `${COOKIE_NAME}=${sessionToken}; Path=/; Max-Age=${COOKIE_MAX_AGE}; Secure; HttpOnly; SameSite=Lax`;
                 const exchangeCode = await makeExchangeCode(sessionToken, env.GOOGLE_CLIENT_SECRET);
 
                 return new Response(null, {
@@ -971,7 +970,17 @@ export default {
                     throw e;
                 }
 
-                return new Response(JSON.stringify({ success: true, token: payload.t }), { headers: { ...corsHeaders, "Content-Type": "application/json" } });
+                const activeSession = await runSQL("SELECT email FROM sessions WHERE token = ?", [payload.t]);
+                if (!activeSession.length) {
+                    return new Response(JSON.stringify({ error: "invalid_or_expired" }), {
+                        status: 401,
+                        headers: { ...corsHeaders, "Content-Type": "application/json", "Cache-Control": "no-store, max-age=0" }
+                    });
+                }
+                const sessionCookie = `${COOKIE_NAME}=${payload.t}; Path=/; Max-Age=${COOKIE_MAX_AGE}; Secure; HttpOnly; SameSite=Lax`;
+                return new Response(JSON.stringify({ success: true }), {
+                    headers: { ...corsHeaders, "Content-Type": "application/json", "Set-Cookie": sessionCookie, "Cache-Control": "no-store, max-age=0" }
+                });
             } catch (e) {
                 return new Response(JSON.stringify({ error: e.message }), { status: 500, headers: corsHeaders });
             }
@@ -982,7 +991,7 @@ export default {
             if (session) {
                 await runSQL("DELETE FROM sessions WHERE token = ?", [session.token]);
             }
-            const cookie = `${COOKIE_NAME}=; Path=/; Max-Age=0; Secure; HttpOnly; SameSite=None`;
+            const cookie = `${COOKIE_NAME}=; Path=/; Max-Age=0; Secure; HttpOnly; SameSite=Lax`;
             return new Response(JSON.stringify({ success: true }), { headers: { ...corsHeaders, "Content-Type": "application/json", "Set-Cookie": cookie } });
         }
 
@@ -991,7 +1000,10 @@ export default {
             if (session) {
                 const rows = await runSQL("SELECT username FROM users WHERE email = ?", [session.email]);
                 if(rows.length) {
-                    return new Response(JSON.stringify({ loggedIn: true, username: rows[0].username, email: session.email, token: session.token }), { headers: { ...corsHeaders, "Content-Type": "application/json", "Cache-Control": "no-store, max-age=0" } });
+                    const cookie = `${COOKIE_NAME}=${session.token}; Path=/; Max-Age=${COOKIE_MAX_AGE}; Secure; HttpOnly; SameSite=Lax`;
+                    return new Response(JSON.stringify({ loggedIn: true, username: rows[0].username, email: session.email }), {
+                        headers: { ...corsHeaders, "Content-Type": "application/json", "Set-Cookie": cookie, "Cache-Control": "no-store, max-age=0", "Vary": "Origin" }
+                    });
                 }
             } 
             return new Response(JSON.stringify({ loggedIn: false }), { headers: { ...corsHeaders, "Content-Type": "application/json", "Cache-Control": "no-store, max-age=0", "Vary": "Origin" } });
@@ -1579,7 +1591,7 @@ if (url.pathname === "/api/today-anniv" && method === "GET") {
                 // ★修正: ここにあった「counterを減らす処理」を削除しました。
                 // 「累計参拝者数」は歴史的記録として、退会しても減らしません。
 
-                const cookie = `${COOKIE_NAME}=; Path=/; Max-Age=0; Secure; HttpOnly; SameSite=None`;
+                const cookie = `${COOKIE_NAME}=; Path=/; Max-Age=0; Secure; HttpOnly; SameSite=Lax`;
                 return new Response(JSON.stringify({ success: true }), { 
                     headers: { ...corsHeaders, "Content-Type": "application/json", "Set-Cookie": cookie } 
                 });
@@ -1635,12 +1647,7 @@ if (url.pathname === "/api/today-anniv" && method === "GET") {
                 googleAuthUrl.searchParams.set("prompt", "select_account");
 
                 return new Response(JSON.stringify({ success: true, redirectUrl: googleAuthUrl.toString() }), {
-                    headers: {
-                        ...corsHeaders,
-                        "Content-Type": "application/json",
-                        "Cache-Control": "no-store",
-                        "Set-Cookie": makeGoogleConnectStateCookie(state, OAUTH_CONNECT_STATE_TTL_SECONDS)
-                    }
+                    headers: { ...corsHeaders, "Content-Type": "application/json", "Cache-Control": "no-store" }
                 });
             } catch (e) {
                 console.error("Google connect start error:", e);
@@ -1698,17 +1705,8 @@ if (url.pathname === "/api/today-anniv" && method === "GET") {
                 const isConnectState = typeof stateParam === "string" && stateParam.startsWith("connect_");
 
                 if (isConnectState) {
-                    const cookieState = getCookie(request, OAUTH_CONNECT_STATE_COOKIE);
-                    if (!cookieState || cookieState !== stateParam) {
-                        return new Response(null, {
-                            status: 302,
-                            headers: {
-                                "Location": `${frontendUrl}/?google_error=connect_state_invalid`,
-                                "Set-Cookie": clearGoogleConnectStateCookie()
-                            }
-                        });
-                    }
-
+                    // CSPRNG state is short-lived, bound to the account in Turso, and consumed once.
+                    // Google redirects directly to this Worker, so do not depend on a Pages-origin cookie.
                     const stateHash = await sha256Hex(stateParam);
                     const consumedStates = await runSQL(
                         "DELETE FROM oauth_connect_states WHERE state_hash = ? AND expires_at >= ? RETURNING email",
@@ -1812,7 +1810,7 @@ if (url.pathname === "/api/today-anniv" && method === "GET") {
                     const user = existingByGoogleId[0];
                     const sessionToken = generateSessionToken();
                     await runSQL("INSERT INTO sessions (token, email, created_at) VALUES (?, ?, ?)", [sessionToken, user.email, Date.now()]);
-                    const cookie = `${COOKIE_NAME}=${sessionToken}; Path=/; Max-Age=${COOKIE_MAX_AGE}; Secure; HttpOnly; SameSite=None`;
+                    const cookie = `${COOKIE_NAME}=${sessionToken}; Path=/; Max-Age=${COOKIE_MAX_AGE}; Secure; HttpOnly; SameSite=Lax`;
                     const exchangeCode = await makeExchangeCode(sessionToken, env.GOOGLE_CLIENT_SECRET);
                     return new Response(null, {
                         status: 302,
@@ -1850,7 +1848,7 @@ if (url.pathname === "/api/today-anniv" && method === "GET") {
 
                 const sessionToken = generateSessionToken();
                 await runSQL("INSERT INTO sessions (token, email, created_at) VALUES (?, ?, ?)", [sessionToken, googleEmail, Date.now()]);
-                const cookie = `${COOKIE_NAME}=${sessionToken}; Path=/; Max-Age=${COOKIE_MAX_AGE}; Secure; HttpOnly; SameSite=None`;
+                const cookie = `${COOKIE_NAME}=${sessionToken}; Path=/; Max-Age=${COOKIE_MAX_AGE}; Secure; HttpOnly; SameSite=Lax`;
                 const exchangeCode = await makeExchangeCode(sessionToken, env.GOOGLE_CLIENT_SECRET);
                 return new Response(null, {
                     status: 302,

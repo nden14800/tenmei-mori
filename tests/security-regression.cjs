@@ -9,6 +9,26 @@ const headers = fs.readFileSync(headersPath, 'utf8');
 const workerPath = path.join(repositoryRoot, 'workers', 'tenmei-mori-backend.js');
 const worker = fs.readFileSync(workerPath, 'utf8');
 const failures = [];
+const middlewarePath = path.join(repositoryRoot, 'functions', '_middleware.js');
+const middleware = fs.readFileSync(middlewarePath, 'utf8');
+expect(/url\.pathname\.startsWith\("\/api\/"\)/.test(middleware), '同一オリジンAPIプロキシがありません。');
+expect(middleware.includes('tenmei-mori-backend.nden14800.workers.dev'), 'APIプロキシ先Workerがありません。');
+expect(/crypto\.getRandomValues\(new Uint8Array\(16\)\)/.test(middleware), 'CSP nonceがCSPRNGで生成されていません。');
+expect(/element\.setAttribute\("nonce", nonce\)/.test(middleware), 'script要素へCSP nonceを付与していません。');
+expect(/script-src 'self' 'nonce-\$\{nonce\}'/.test(middleware), 'HTML CSPにscript nonceがありません。');
+expect(/script-src-attr 'unsafe-inline'/.test(middleware), '既存イベントハンドラーの互換性ポリシーがありません。');
+expect(!/script-src 'self' 'unsafe-inline'/.test(headers), '_headersのscript-srcにunsafe-inlineが残っています。');
+expect(/const API_BASE = ""/.test(index), 'API_BASEが同一オリジンに切り替わっていません。');
+expect(!/localStorage\.setItem\(['"]auth_token['"]/.test(index), '認証トークンをlocalStorageへ保存する処理が残っています。');
+expect(/localStorage\.removeItem\('auth_token'\)/.test(index), '旧Bearerトークンの移行後削除がありません。');
+expect(/options\.credentials = 'same-origin'/.test(index), 'API fetchがsame-origin Cookie送信になっていません。');
+const exchange = between(worker, 'if (url.pathname === "/api/auth/exchange" && method === "POST") {', 'if (url.pathname === "/api/auth/logout" && method === "POST") {');
+expect(exchange.includes('"Set-Cookie": sessionCookie'), 'exchange APIのHttpOnly Cookie発行がありません。');
+expect(!/JSON\.stringify\(\{ success: true, token: payload\.t \}\)/.test(exchange), 'exchange APIがトークンをJSONで返しています。');
+const authCheck = between(worker, 'if (url.pathname === "/api/auth/check" && method === "GET") {', 'if (url.pathname === "/api/counter" && method === "GET") {');
+expect(authCheck.includes('"Set-Cookie": cookie'), 'auth/checkのCookie移行がありません。');
+expect(!/loggedIn: true[^\n]*token:/.test(authCheck), 'auth/checkがトークンをJSONで返しています。');
+
 
 function expect(condition, message) {
   if (!condition) failures.push(message);

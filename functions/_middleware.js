@@ -3,6 +3,27 @@ const LINK_HEADER = '</.well-known/api-catalog>; rel="api-catalog", </openapi.js
 
 export async function onRequest({ request, next }) {
   const url = new URL(request.url);
+
+  // Same-origin BFF: forward API requests to the Worker while preserving browser
+  // Origin, Cookie, Authorization (legacy migration only), body, and Set-Cookie.
+  if (url.pathname.startsWith("/api/")) {
+    const upstreamUrl = new URL(request.url);
+    upstreamUrl.protocol = "https:";
+    upstreamUrl.hostname = "tenmei-mori-backend.nden14800.workers.dev";
+    const upstreamRequest = new Request(upstreamUrl.toString(), request);
+    const upstreamResponse = await fetch(upstreamRequest);
+    const proxyHeaders = new Headers(upstreamResponse.headers);
+    if (url.pathname.startsWith("/api/auth/")) {
+      proxyHeaders.set("Cache-Control", "no-store, max-age=0");
+      proxyHeaders.set("CDN-Cache-Control", "no-store");
+    }
+    return new Response(upstreamResponse.body, {
+      status: upstreamResponse.status,
+      statusText: upstreamResponse.statusText,
+      headers: proxyHeaders
+    });
+  }
+
   const accept = request.headers.get("Accept") || "";
   const isDocumentPath = !/\.[^/]+$/.test(url.pathname)
     && !url.pathname.startsWith("/.well-known/")
@@ -23,13 +44,24 @@ export async function onRequest({ request, next }) {
   if (url.pathname === "/" || url.pathname === "/index.html") headers.set("Link", LINK_HEADER);
 
   if (request.method === "GET" && (headers.get("Content-Type") || "").includes("text/html")) {
-    return new HTMLRewriter().on("body", {
-      element(element) {
-        element.append('<script src="/scripts/agent-discovery.js" defer></script>', { html: true });
-      }
-    }).transform(new Response(response.body, {
-      status: response.status, statusText: response.statusText, headers
-    }));
+    const nonceBytes = crypto.getRandomValues(new Uint8Array(16));
+    const nonce = btoa(String.fromCharCode(...nonceBytes));
+    headers.set("Content-Security-Policy",
+      `default-src 'self'; base-uri 'self'; object-src 'none'; script-src 'self' 'nonce-${nonce}' 'wasm-unsafe-eval' https://www.googletagmanager.com https://www.clarity.ms https://challenges.cloudflare.com https://cdnjs.cloudflare.com https://unpkg.com https://cdn.jsdelivr.net; script-src-attr 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://cdn.jsdelivr.net https://cdnjs.cloudflare.com https://unpkg.com; font-src 'self' data: https://fonts.gstatic.com https://cdn.jsdelivr.net; img-src 'self' data: blob: https://*.tile.openstreetmap.org https://www.gstatic.com https://*.cdninstagram.com; connect-src 'self' https://tenmei-discord-bot.nden14800.workers.dev https://*.google-analytics.com https://*.clarity.ms https://challenges.cloudflare.com https://cdn.jsdelivr.net https://storage.googleapis.com https://bergamot.s3.amazonaws.com; frame-src https://challenges.cloudflare.com; manifest-src 'self'; worker-src 'self' blob:; form-action 'self'; frame-ancestors 'none'; upgrade-insecure-requests`);
+    return new HTMLRewriter()
+      .on("script", {
+        element(element) {
+          element.setAttribute("nonce", nonce);
+        }
+      })
+      .on("body", {
+        element(element) {
+          element.append(`<script nonce="${nonce}" src="/scripts/agent-discovery.js" defer></script>`, { html: true });
+        }
+      })
+      .transform(new Response(response.body, {
+        status: response.status, statusText: response.statusText, headers
+      }));
   }
   return new Response(response.body, { status: response.status, statusText: response.statusText, headers });
 }
