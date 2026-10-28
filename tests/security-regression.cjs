@@ -45,8 +45,8 @@ function collectHtmlFiles(directory) {
 }
 for (const htmlFile of collectHtmlFiles(repositoryRoot)) {
   const htmlSource = fs.readFileSync(htmlFile, 'utf8');
-  for (const match of htmlSource.matchAll(/<script\\b([^>]*)>([\\s\\S]*?)<\\/script\\s*>/gi)) {
-    if (/\\bsrc\\s*=/.test(match[1])) continue;
+  for (const match of htmlSource.matchAll(/<script\b([^>]*)>([\s\S]*?)<\/script\s*>/gi)) {
+    if (/\bsrc\s*=/.test(match[1])) continue;
     const digest = crypto.createHash('sha256').update(match[2], 'utf8').digest('base64');
     expect(middleware.includes(`'sha256-${digest}'`), `CSPに${path.relative(repositoryRoot, htmlFile)}のinline script hashがありません。`);
   }
