@@ -16,7 +16,7 @@ expect(/url\.pathname\.startsWith\("\/api\/"\)/.test(middleware), '同一オリ�
 expect(middleware.includes('tenmei-mori-backend.nden14800.workers.dev'), 'APIプロキシ先Workerがありません。');
 expect(/fetch\(upstreamRequest, \{ redirect: "manual" \}\)/.test(middleware), 'Google OAuthの302リダイレクトをBFFが追跡しない設定がありません。');
 expect(/script-src-attr 'unsafe-inline'/.test(middleware), '既存イベントハンドラーの互換性ポリシーがありません。');
-expect(/script-src-elem[^;]*sha256-/.test(middleware), 'HTML CSPにハッシュベースのscript-src-elemがありません。');
+expect(middleware.includes('script-src-elem ${scriptElementSources}') && /const SCRIPT_HASH_SOURCES = \[/.test(middleware), 'HTML CSPにハッシュベースのscript-src-elemがありません。');
 expect(!/element\.setAttribute\("nonce", nonce\)/.test(middleware), 'HTMLRewriterが全script要素へnonceを付与しています。');
 expect(!/script-src 'self' 'unsafe-inline'/.test(headers), '_headersのscript-srcにunsafe-inlineが残っています。');
 expect(/const API_BASE = ""/.test(index), 'API_BASEが同一オリジンに切り替わっていません。');
