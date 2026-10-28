@@ -1,5 +1,6 @@
 const fs = require('node:fs');
 const path = require('node:path');
+const crypto = require('node:crypto');
 
 const repositoryRoot = path.resolve(__dirname, '..');
 const indexPath = path.join(repositoryRoot, 'index.html');
@@ -14,10 +15,9 @@ const middleware = fs.readFileSync(middlewarePath, 'utf8');
 expect(/url\.pathname\.startsWith\("\/api\/"\)/.test(middleware), '同一オリジンAPIプロキシがありません。');
 expect(middleware.includes('tenmei-mori-backend.nden14800.workers.dev'), 'APIプロキシ先Workerがありません。');
 expect(/fetch\(upstreamRequest, \{ redirect: "manual" \}\)/.test(middleware), 'Google OAuthの302リダイレクトをBFFが追跡しない設定がありません。');
-expect(/crypto\.getRandomValues\(new Uint8Array\(16\)\)/.test(middleware), 'CSP nonceがCSPRNGで生成されていません。');
-expect(/element\.setAttribute\("nonce", nonce\)/.test(middleware), 'script要素へCSP nonceを付与していません。');
-expect(/script-src 'self' 'nonce-\$\{nonce\}'/.test(middleware), 'HTML CSPにscript nonceがありません。');
 expect(/script-src-attr 'unsafe-inline'/.test(middleware), '既存イベントハンドラーの互換性ポリシーがありません。');
+expect(/script-src-elem[^;]*sha256-/.test(middleware), 'HTML CSPにハッシュベースのscript-src-elemがありません。');
+expect(!/element\.setAttribute\("nonce", nonce\)/.test(middleware), 'HTMLRewriterが全script要素へnonceを付与しています。');
 expect(!/script-src 'self' 'unsafe-inline'/.test(headers), '_headersのscript-srcにunsafe-inlineが残っています。');
 expect(/const API_BASE = ""/.test(index), 'API_BASEが同一オリジンに切り替わっていません。');
 expect(!/localStorage\.setItem\(['"]auth_token['"]/.test(index), '認証トークンをlocalStorageへ保存する処理が残っています。');
@@ -35,6 +35,22 @@ const authFetch = between(index, 'async function authFetch(url, options = {}) {'
 expect(/requestUrl\.pathname === '\/api\/auth\/check'/.test(authFetch), 'フロントエンドの旧Bearer送信がauth/checkに限定されていません。');
 expect(/options\.credentials = 'same-origin'/.test(authFetch), 'same-origin Cookie送信がありません。');
 
+
+function collectHtmlFiles(directory) {
+  return fs.readdirSync(directory, { withFileTypes: true }).flatMap((entry) => {
+    const fullPath = path.join(directory, entry.name);
+    if (entry.isDirectory()) return collectHtmlFiles(fullPath);
+    return entry.isFile() && entry.name.toLowerCase().endsWith('.html') ? [fullPath] : [];
+  });
+}
+for (const htmlFile of collectHtmlFiles(repositoryRoot)) {
+  const htmlSource = fs.readFileSync(htmlFile, 'utf8');
+  for (const match of htmlSource.matchAll(/<script\\b([^>]*)>([\\s\\S]*?)<\\/script\\s*>/gi)) {
+    if (/\\bsrc\\s*=/.test(match[1])) continue;
+    const digest = crypto.createHash('sha256').update(match[2], 'utf8').digest('base64');
+    expect(middleware.includes(`'sha256-${digest}'`), `CSPに${path.relative(repositoryRoot, htmlFile)}のinline script hashがありません。`);
+  }
+}
 
 function expect(condition, message) {
   if (!condition) failures.push(message);
