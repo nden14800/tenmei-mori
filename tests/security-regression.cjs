@@ -121,6 +121,10 @@ expect(!/const (?:token|sessionToken) = crypto\.randomUUID\(\);/.test(worker), '
 
 expect(!/Math\.random\(\).*900000/.test(worker), '認証コード生成にMath.random()を使用しています。');
 expect(!worker.includes('tenmei-mori-fallback'), '認証用暗号鍵に固定フォールバック秘密値が残っています。');
+expect(/const PBKDF2_MAX_ITERATIONS = 600000/.test(worker), 'PBKDF2の反復回数上限がありません。');
+expect(/function constantTimeStringEqual\(/.test(worker), 'パスワードハッシュの定時間比較関数がありません。');
+expect(/iterations < PBKDF2_ITERATIONS/.test(worker), '古いPBKDF2 work factorのログイン時更新判定がありません。');
+expect(!/candidate === storedHash/.test(worker), 'パスワードハッシュを通常の文字列比較で検証しています。');
 expect(/crypto\.getRandomValues\(codeBytes\)/.test(worker), '認証コード生成に暗号学的乱数が使われていません。');
 
 if (failures.length > 0) {
