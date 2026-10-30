@@ -10,7 +10,9 @@
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Zen+Kaku+Gothic+New:wght@400;500;700;800&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Shippori+Mincho:wght@400;500;600;800&family=Zen+Old+Mincho:wght@400;700;900&family=Zen+Kaku+Gothic+New:wght@400;500;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/font/bootstrap-icons.min.css">
+<script>try{if(matchMedia('(prefers-color-scheme: dark)').matches)document.documentElement.classList.add('dark');}catch(e){}</script>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.22/dist/katex.min.css" integrity="sha384-5TcZemv2l/9On385z///+d7MSYlvIEw9FuZTIdZ14vJLqWphw7e7ZPuOiCHJcFCP" crossorigin="anonymous">
 <style>
 :root{
@@ -20,7 +22,7 @@
   --text-main:#1a1a1a;
   --text-sub:#555555;
   --card-bg:#ffffff;
-  --page-bg:#f4f1ee;
+  --bg-color:#f5f4f0;
   --ver4-control-height:48px;
   --ver4-control-radius:14px;
   --good:#2f7d55;
@@ -28,32 +30,16 @@
   --bad:#b91c1c;
   --bad-bg:#fbe3e3;
   --unk-bg:#ececec;
-  --tenmei-control-accent:var(--accent-red);
   --shadow:0 10px 24px rgba(31,22,18,.14);
 }
-@media (prefers-color-scheme: dark){
-  :root:not([data-theme="light"]){
-    --card-border:#3a3a3a;
-    --input-bg:#1f1f1f;
-    --text-main:#f1efec;
-    --text-sub:#b5b1ab;
-    --card-bg:#171717;
-    --page-bg:#0f0f0f;
-    --good:#6fcf97;
-    --good-bg:#183a28;
-    --bad:#ff8a8a;
-    --bad-bg:#4a1d1d;
-    --unk-bg:#2a2a2a;
-    --shadow:0 10px 24px rgba(0,0,0,.4);
-  }
-}
-:root[data-theme="dark"]{
-  --card-border:#3a3a3a;
-  --input-bg:#1f1f1f;
-  --text-main:#f1efec;
-  --text-sub:#b5b1ab;
-  --card-bg:#171717;
-  --page-bg:#0f0f0f;
+.dark{
+  --accent-red:#b91c1c !important;
+  --card-bg:#111111 !important;
+  --card-border:#2a2a2a !important;
+  --input-bg:#333333 !important;
+  --text-main:#e4e4e7 !important;
+  --text-sub:#a1a1aa !important;
+  --bg-color:#0d0d0d !important;
   --good:#6fcf97;
   --good-bg:#183a28;
   --bad:#ff8a8a;
@@ -63,7 +49,7 @@
 }
 *{box-sizing:border-box}
 html{-webkit-text-size-adjust:100%}
-body{margin:0;background:var(--page-bg);color:var(--text-main);font-family:'Zen Kaku Gothic New','Hiragino Sans','Yu Gothic',sans-serif;font-size:15px;line-height:1.6}
+body{margin:0;background:var(--bg-color);color:var(--text-main);font-family:'Zen Kaku Gothic New','Hiragino Sans','Yu Gothic',sans-serif;font-size:15px;line-height:1.6}
 a{color:var(--accent-red)}
 .wrap{max-width:1120px;margin:0 auto;padding:0 16px}
 header.top{position:sticky;top:0;z-index:50;background:var(--card-bg);border-bottom:1px solid var(--card-border)}
@@ -95,35 +81,118 @@ section.panel>p.note{margin:0 0 12px;color:var(--text-sub);font-size:13px}
 .filters{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-bottom:12px}
 .filters .f{flex:1 1 200px;min-width:0}
 .filters .f-search{flex:2 1 260px}
-.tenmei-input{display:block;width:100%;height:var(--ver4-control-height);padding:0 14px;border:1px solid var(--card-border);border-radius:var(--ver4-control-radius);background:var(--input-bg);color:var(--text-main);font-family:'Zen Kaku Gothic New','Hiragino Sans',sans-serif;font-size:.92rem;outline:none}
-.tenmei-input::placeholder{color:var(--text-sub)}
-.tenmei-input:hover{border-color:color-mix(in srgb,var(--accent-red) 52%,var(--card-border))}
-.tenmei-input:focus-visible{border-color:var(--accent-red);box-shadow:0 0 0 3px color-mix(in srgb,var(--accent-red) 20%,transparent)}
 .check{display:inline-flex;align-items:center;gap:8px;font-size:14px;color:var(--text-sub);cursor:pointer;user-select:none}
 .check input{width:18px;height:18px;accent-color:var(--accent-red)}
 .btn{height:var(--ver4-control-height);padding:0 16px;border:1px solid var(--card-border);border-radius:var(--ver4-control-radius);background:var(--input-bg);color:var(--text-main);font:inherit;font-size:14px;font-weight:700;cursor:pointer}
 .btn:hover{border-color:color-mix(in srgb,var(--accent-red) 52%,var(--card-border))}
 .btn:focus-visible{outline:none;border-color:var(--accent-red);box-shadow:0 0 0 3px color-mix(in srgb,var(--accent-red) 20%,transparent)}
-/* tenmei-mori choice component (trigger / popover / option) */
-.tenmei-choice{position:relative;width:100%;max-width:520px}
-.tenmei-choice__trigger{display:grid;grid-template-columns:26px minmax(0,1fr) 20px;align-items:center;width:100%;min-height:var(--ver4-control-height);padding:7px 11px;border:1px solid var(--card-border);border-radius:var(--ver4-control-radius);background:var(--input-bg);color:var(--text-main);font-family:'Zen Kaku Gothic New','Zen Old Mincho',sans-serif;font-size:.92rem;line-height:1.35;text-align:left;cursor:pointer;touch-action:manipulation;-webkit-tap-highlight-color:transparent}
-.tenmei-choice__trigger:hover{border-color:color-mix(in srgb,var(--tenmei-control-accent) 52%,var(--card-border))}
-.tenmei-choice__trigger:focus-visible,.tenmei-choice[data-open="true"] .tenmei-choice__trigger{outline:0;border-color:var(--tenmei-control-accent);box-shadow:0 0 0 3px color-mix(in srgb,var(--tenmei-control-accent) 20%,transparent)}
-.tenmei-choice__icon{display:inline-flex;align-items:center;justify-content:center}
-.tenmei-choice__icon::before{content:"";width:9px;height:9px;border-radius:50%;background:var(--tenmei-control-accent)}
-.tenmei-choice__value{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-weight:500}
-.tenmei-choice__chevron{justify-self:end;color:var(--text-sub);font-size:.8rem;transition:transform 160ms ease}
-.tenmei-choice[data-open="true"] .tenmei-choice__chevron{transform:rotate(180deg)}
-.tenmei-choice__popover{position:absolute;top:calc(100% + 6px);left:0;right:0;z-index:1000;padding:6px;border:1px solid var(--card-border);border-radius:10px;background:var(--card-bg);box-shadow:var(--shadow);max-height:min(320px,calc(100dvh - 136px))}
-.tenmei-choice__popover[hidden]{display:none}
-.tenmei-choice__options{display:grid;max-height:252px;gap:1px;overflow-y:auto;overscroll-behavior:contain;padding:0}
-.tenmei-choice__option{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:center;gap:10px;width:100%;min-height:38px;padding:7px 9px;border:1px solid transparent;border-radius:7px;background:transparent;color:var(--text-main);font-family:'Zen Kaku Gothic New','Zen Old Mincho',sans-serif;font-size:.86rem;line-height:1.35;text-align:left;cursor:pointer;touch-action:manipulation}
-.tenmei-choice__option:hover{background:color-mix(in srgb,var(--tenmei-control-accent) 6%,transparent)}
-.tenmei-choice__option:focus-visible{outline:0;border-color:var(--tenmei-control-accent);box-shadow:0 0 0 3px color-mix(in srgb,var(--tenmei-control-accent) 20%,transparent)}
-.tenmei-choice__option[aria-selected="true"]{border-color:color-mix(in srgb,var(--tenmei-control-accent) 38%,transparent);background:color-mix(in srgb,var(--tenmei-control-accent) 15%,transparent);color:var(--tenmei-control-accent);font-weight:700}
-.tenmei-choice__option-label{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.tenmei-choice__option-check{color:var(--tenmei-control-accent);font-size:.9rem}
-.tenmei-choice__option-check:empty{display:none}
+/* tenmei-mori choice + filter input (verbatim from tenmei-mori index.html) */
+.modern-filter-select, .modern-filter-input {
+    padding: 10px 14px;
+    border-radius: 10px;
+    border: 1px solid var(--card-border);
+    background-color: var(--input-bg);
+    color: var(--text-main);
+    font-size: 0.9rem;
+    outline: none;
+    transition: all 0.2s;}
+.modern-filter-select:focus, .modern-filter-input:focus {
+    border-color: var(--accent-red);
+    box-shadow: 0 0 0 3px rgba(185, 28, 28, 0.1);}
+.tenmei-choice,     .tenmei-date {
+        --tenmei-control-accent: var(--accent-red);
+        position: relative;
+        z-index: 1;
+        width: 100%;
+        min-width: 0;}
+.tenmei-choice:focus-within,     .tenmei-date:focus-within { z-index: 80;}
+.tenmei-choice[data-open="true"],     .tenmei-date[data-open="true"] { z-index: 240 !important;}
+.tenmei-choice[data-open="true"] .tenmei-choice__popover,     .tenmei-date[data-open="true"] .tenmei-date__popover {
+        z-index: 241 !important;
+        pointer-events: auto;}
+.tenmei-choice__trigger,     .tenmei-date__trigger {
+        display: grid;
+        grid-template-columns: 26px minmax(0, 1fr) 20px;
+        align-items: center;
+        width: 100%;
+        min-height: 44px;
+        padding: 7px 11px;
+        border: 1px solid var(--card-border);
+        border-radius: 10px;
+        background: var(--input-bg);
+        color: var(--text-main);
+        font-family: 'Zen Kaku Gothic New', 'Zen Old Mincho', sans-serif;
+        font-size: 0.88rem;
+        line-height: 1.35;
+        text-align: left;
+        cursor: pointer;
+        box-sizing: border-box;
+        transition: border-color 140ms ease, box-shadow 140ms ease, background-color 140ms ease;}
+.tenmei-choice__trigger,     .tenmei-date__trigger,     .tenmei-choice__option,     .tenmei-date__day,     .tenmei-date__nav,     .tenmei-date__utility { touch-action: manipulation; -webkit-tap-highlight-color: transparent;}
+.tenmei-choice__trigger:hover,     .tenmei-date__trigger:hover { border-color: color-mix(in srgb, var(--tenmei-control-accent) 52%, var(--card-border));}
+.tenmei-choice__trigger:focus-visible,     .tenmei-date__trigger:focus-visible,     .tenmei-choice__option:focus-visible,     .tenmei-date__day:focus-visible,     .tenmei-date__nav:focus-visible,     .tenmei-date__utility:focus-visible { outline: 0; border-color: var(--tenmei-control-accent); box-shadow: 0 0 0 3px color-mix(in srgb, var(--tenmei-control-accent) 20%, transparent);}
+.tenmei-choice[data-open="true"] .tenmei-choice__trigger,     .tenmei-date[data-open="true"] .tenmei-date__trigger { border-color: var(--tenmei-control-accent); box-shadow: 0 0 0 3px color-mix(in srgb, var(--tenmei-control-accent) 16%, transparent);}
+.tenmei-choice__icon,     .tenmei-date__icon {
+        display: grid;
+        width: 20px;
+        height: 20px;
+        place-items: center;
+        border-radius: 0;
+        background: transparent;
+        color: var(--tenmei-control-accent);
+        font-size: 0.72rem;}
+.tenmei-choice__value,     .tenmei-date__value { min-width: 0; padding: 0 8px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-weight: 700;}
+.tenmei-choice__chevron,     .tenmei-date__chevron { justify-self: end; color: var(--text-sub); font-size: 0.8rem; transition: transform 180ms cubic-bezier(0.23, 1, 0.32, 1), color 180ms cubic-bezier(0.23, 1, 0.32, 1);}
+.tenmei-choice[data-open="true"] .tenmei-choice__chevron,     .tenmei-date[data-open="true"] .tenmei-date__chevron { color: var(--tenmei-control-accent); transform: rotate(180deg);}
+.tenmei-choice__popover,     .tenmei-date__popover {
+        position: absolute;
+        top: calc(100% + 6px);
+        left: 0;
+        z-index: 120;
+        width: 100%;
+        min-width: min(100%, 296px);
+        padding: 6px;
+        border: 1px solid color-mix(in srgb, var(--tenmei-control-accent) 25%, var(--card-border));
+        border-radius: 10px;
+        background: var(--card-bg);
+        box-shadow: 0 10px 24px rgba(31, 22, 18, 0.14);
+        box-sizing: border-box;
+        transform-origin: top center;}
+.tenmei-choice__popover[hidden],     .tenmei-date__popover[hidden] { display: none !important;}
+.tenmei-choice__options { display: grid; max-height: 252px; gap: 1px; overflow-y: auto; overscroll-behavior: contain; padding: 0;}
+.tenmei-choice__option {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) auto;
+        align-items: center;
+        gap: 10px;
+        width: 100%;
+        min-height: 38px;
+        padding: 7px 9px;
+        border: 1px solid transparent;
+        border-radius: 7px;
+        background: transparent;
+        color: var(--text-main);
+        font-family: 'Zen Kaku Gothic New', 'Zen Old Mincho', sans-serif;
+        font-size: 0.84rem;
+        line-height: 1.35;
+        text-align: left;
+        cursor: pointer;
+        transition: background-color 120ms ease, color 120ms ease;}
+.tenmei-choice__option:hover,     .tenmei-choice__option.is-active { border-color: color-mix(in srgb, var(--tenmei-control-accent) 24%, transparent); background: color-mix(in srgb, var(--tenmei-control-accent) 10%, transparent);}
+.tenmei-choice__option[aria-selected="true"] { border-color: color-mix(in srgb, var(--tenmei-control-accent) 38%, transparent); background: color-mix(in srgb, var(--tenmei-control-accent) 15%, transparent); color: var(--tenmei-control-accent); font-weight: 800;}
+.tenmei-choice__option-label { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;}
+.tenmei-choice__option-detail { display: none;}
+.tenmei-choice__option-check { color: var(--tenmei-control-accent); font-size: 0.9rem;}
+.dark .tenmei-choice__trigger,     .dark .tenmei-date__trigger { border-color: rgba(255,255,255,0.12); background: rgba(255,255,255,0.045);}
+.dark .tenmei-choice__popover,     .dark .tenmei-date__popover { border-color: rgba(231, 197, 163, 0.19); background: #1c1615; box-shadow: 0 20px 44px rgba(0,0,0,0.42), inset 0 1px 0 rgba(255,255,255,0.04);}
+.dark .tenmei-choice__option:hover,     .dark .tenmei-choice__option.is-active { background: color-mix(in srgb, var(--tenmei-control-accent) 15%, transparent);}
+.tenmei-choice__trigger,         .tenmei-date__trigger,         .tenmei-choice__chevron,         .tenmei-date__chevron,         .tenmei-choice__option,         .tenmei-date__day,         .tenmei-date__nav,         .tenmei-date__utility { transition: none !important;}
+.document-revision-selector .tenmei-choice {width:100%;max-width:520px}
+.document-revision-selector .tenmei-choice__trigger {width:100%;min-height:46px}
+.document-revision-selector .tenmei-choice__trigger {min-height:44px}
+/* 上記共通ルールの後に、ver4 の高さ・角丸を適用（tenmei-mori の ver4 表示と同じ） */
+.tenmei-choice__trigger{min-height:var(--ver4-control-height);border-radius:var(--ver4-control-radius);font-size:.95rem}
+.modern-filter-input{height:var(--ver4-control-height);border-radius:var(--ver4-control-radius);font-family:'Zen Old Mincho','Shippori Mincho',serif;box-sizing:border-box}
 .tbl-wrap{overflow-x:auto;border:1px solid var(--card-border);border-radius:12px}
 table{width:100%;border-collapse:collapse;font-size:13.5px;font-variant-numeric:tabular-nums}
 th,td{padding:9px 10px;border-bottom:1px solid var(--card-border);text-align:left;vertical-align:middle;white-space:nowrap}
@@ -220,8 +289,10 @@ footer a{color:var(--text-sub)}
     <h2>一覧</h2>
     <p class="note">列見出しをクリックすると並べ替えできます。行をクリックすると詳細を表示します。</p>
     <div class="filters">
-      <div class="f" id="fTypeWrap"></div>
-      <div class="f f-search"><input id="fSearch" class="tenmei-input" type="search" placeholder="サイト名・説明で検索" aria-label="検索"></div>
+      <div class="tenmei-choice f" style="min-width:160px" data-control-kind="choice" data-control-id="fType" data-control-label="種別で絞り込む" data-options='[{"value":"all","label":"すべての種別"}]'>
+        <input type="hidden" id="fType" value="all"><button type="button" class="tenmei-choice__trigger" id="fType-trigger" aria-haspopup="listbox" aria-expanded="false" aria-controls="fType-options" aria-label="種別で絞り込む"><span class="tenmei-choice__icon" aria-hidden="true"><i class="bi bi-funnel-fill"></i></span><span class="tenmei-choice__value"></span><i class="bi bi-chevron-down tenmei-choice__chevron" aria-hidden="true"></i></button><div class="tenmei-choice__popover" id="fType-popover" hidden><div class="tenmei-choice__options" id="fType-options" role="listbox" aria-label="種別で絞り込む"></div></div>
+      </div>
+      <div class="f f-search"><input id="fSearch" class="modern-filter-input" type="search" placeholder="サイト名・説明で検索" aria-label="検索"></div>
       <label class="check"><input id="fEligible" type="checkbox" checked> 算出対象のみ</label>
       <button class="btn" id="btnCsv" type="button">CSVを書き出す</button>
       <span class="muted" id="count" aria-live="polite"></span>
@@ -293,6 +364,371 @@ footer a{color:var(--text-sub)}
 <script src="https://cdn.jsdelivr.net/npm/katex@0.16.22/dist/katex.min.js" integrity="sha384-cMkvdD8LoxVzGF/RPUKAcvmm49FQ0oxwDF3BGKtDXcEc+T1b2N+teh/OJfpU0jr6" crossorigin="anonymous"></script>
 <script src="https://cdn.jsdelivr.net/npm/katex@0.16.22/dist/contrib/auto-render.min.js" integrity="sha384-hCXGrW6PitJEwbkoStFjeJxv+fSOOQKOPbJxSfM6G5sWZjAyWhXiTIIAmQqnlLlh" crossorigin="anonymous"></script>
 <script>
+        const TenmeiCustomControls = (() => {
+            const choiceStates = new Map();
+            const dateStates = new Map();
+            let activeRoot = null;
+            let typeaheadBuffer = '';
+            let typeaheadTimer = null;
+            const choicePointerMoveTolerance = 10;
+
+            const escapeHTML = (value) => String(value).replace(/[&<>'"]/g, (character) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;' }[character]));
+            const isoDate = (date) => {
+                const year = date.getFullYear();
+                const month = String(date.getMonth() + 1).padStart(2, '0');
+                const day = String(date.getDate()).padStart(2, '0');
+                return `${year}-${month}-${day}`;
+            };
+            const parseISODate = (value) => {
+                if (!/^\d{4}-\d{2}-\d{2}$/.test(value || '')) return null;
+                const [year, month, day] = value.split('-').map(Number);
+                const date = new Date(year, month - 1, day);
+                return date.getFullYear() === year && date.getMonth() === month - 1 && date.getDate() === day ? date : null;
+            };
+            const sameDate = (left, right) => left && right && isoDate(left) === isoDate(right);
+            const displayDate = (date) => date ? new Intl.DateTimeFormat('ja-JP', { year: 'numeric', month: 'long', day: 'numeric', weekday: 'short' }).format(date) : '';
+            const notifyValueChange = (input) => {
+                input.dispatchEvent(new Event('input', { bubbles: true }));
+                input.dispatchEvent(new Event('change', { bubbles: true }));
+            };
+            const closeActive = (returnFocus = false) => {
+                if (!activeRoot) return;
+                const root = activeRoot;
+                root.dataset.open = 'false';
+                const trigger = root.querySelector('.tenmei-choice__trigger, .tenmei-date__trigger');
+                const popover = root.querySelector('.tenmei-choice__popover, .tenmei-date__popover');
+                if (trigger) trigger.setAttribute('aria-expanded', 'false');
+                if (popover) popover.hidden = true;
+                root.closest('.history-control-bar, .zodiac-ranking-panel')?.classList.remove('is-control-expanded');
+                root.style.zIndex = '';
+                activeRoot = null;
+                if (returnFocus) trigger?.focus();
+            };
+            const setControlValue = (input, value) => {
+                input.value = value;
+                notifyValueChange(input);
+            };
+
+            const syncChoice = (state) => {
+                const selectedIndex = Math.max(0, state.options.findIndex((option) => option.value === state.input.value));
+                const selected = state.options[selectedIndex];
+                state.valueNode.textContent = selected.detail ? `${selected.symbol ? `${selected.symbol} ` : ''}${selected.label} (${selected.detail})` : `${selected.symbol ? `${selected.symbol} ` : ''}${selected.label}`;
+                state.optionNodes.forEach((optionNode, index) => {
+                    const isSelected = index === selectedIndex;
+                    optionNode.setAttribute('aria-selected', String(isSelected));
+                    optionNode.classList.toggle('is-active', index === state.activeIndex && state.root.dataset.open === 'true');
+                    const check = optionNode.querySelector('.tenmei-choice__option-check');
+                    if (check) check.hidden = !isSelected;
+                });
+            };
+            const setChoiceActive = (state, nextIndex, focus = true) => {
+                const normalized = (nextIndex + state.options.length) % state.options.length;
+                state.activeIndex = normalized;
+                syncChoice(state);
+                if (focus) {
+                    const node = state.optionNodes[normalized];
+                    node?.focus({ preventScroll: true });
+                    node?.scrollIntoView({ block: 'nearest' });
+                }
+            };
+            const selectChoice = (state, index) => {
+                const option = state.options[index];
+                if (!option) return;
+                setControlValue(state.input, option.value);
+                state.activeIndex = index;
+                syncChoice(state);
+                closeActive(true);
+            };
+            const openChoice = (state, requestedIndex = null) => {
+                if (activeRoot && activeRoot !== state.root) closeActive(false);
+                activeRoot = state.root;
+                state.root.dataset.open = 'true';
+                state.root.style.zIndex = '240';
+                state.root.closest('.history-control-bar, .zodiac-ranking-panel')?.classList.add('is-control-expanded');
+                state.popover.hidden = false;
+                state.trigger.setAttribute('aria-expanded', 'true');
+                const selectedIndex = Math.max(0, state.options.findIndex((option) => option.value === state.input.value));
+                setChoiceActive(state, requestedIndex === null ? selectedIndex : requestedIndex, true);
+            };
+            const buildChoice = (root) => {
+                const id = root.dataset.controlId;
+                const input = document.getElementById(id);
+                const trigger = document.getElementById(`${id}-trigger`);
+                const popover = document.getElementById(`${id}-popover`);
+                const listbox = document.getElementById(`${id}-options`);
+                if (!id || !input || !trigger || !popover || !listbox) return;
+                let options = [];
+                try { options = JSON.parse(root.dataset.options || '[]'); } catch (error) { console.error('選択欄データの読み込みに失敗しました。', error); }
+                const valueNode = trigger.querySelector('.tenmei-choice__value');
+                listbox.innerHTML = options.map((option, index) => `<button type="button" class="tenmei-choice__option" id="${id}-option-${index}" role="option" aria-selected="false" data-option-index="${index}"><span class="tenmei-choice__option-label">${escapeHTML(option.symbol ? `${option.symbol} ` : '')}${escapeHTML(option.label)}</span><span class="tenmei-choice__option-detail">${escapeHTML(option.detail || '')}</span><i class="bi bi-check2 tenmei-choice__option-check" aria-hidden="true" hidden></i></button>`).join('');
+                const state = { root, input, trigger, popover, listbox, valueNode, options, optionNodes: [...listbox.querySelectorAll('.tenmei-choice__option')], activeIndex: 0, pendingPointer: null, ignoreClickUntil: 0 };
+                choiceStates.set(id, state);
+                syncChoice(state);
+                trigger.addEventListener('click', () => root.dataset.open === 'true' ? closeActive(true) : openChoice(state));
+                trigger.addEventListener('keydown', (event) => {
+                    if (['Enter', ' ', 'ArrowDown', 'ArrowUp'].includes(event.key)) {
+                        event.preventDefault();
+                        const current = Math.max(0, options.findIndex((option) => option.value === input.value));
+                        openChoice(state, event.key === 'ArrowUp' ? current - 1 : current);
+                    }
+                    if (event.key === 'Escape') closeActive(true);
+                });
+                // 指を動かした操作はスクロールとして扱う。移動量を確認せずpointerdownで確定すると、
+                // 指で選択肢リストを送ろうとした最初の接触まで選択操作になってしまう。
+                const clearPendingPointer = (pointerId) => {
+                    if (!state.pendingPointer || state.pendingPointer.id !== pointerId) return null;
+                    const pending = state.pendingPointer;
+                    state.pendingPointer = null;
+                    const captureTarget = pending.captureTarget || listbox;
+                    if (captureTarget.hasPointerCapture?.(pointerId)) captureTarget.releasePointerCapture(pointerId);
+                    return pending;
+                };
+                listbox.addEventListener('pointerdown', (event) => {
+                    if (event.button !== 0) return;
+                    const optionNode = event.target.closest('.tenmei-choice__option');
+                    if (!optionNode) return;
+                    state.pendingPointer = {
+                        id: event.pointerId,
+                        optionIndex: Number(optionNode.dataset.optionIndex),
+                        captureTarget: optionNode,
+                        startX: event.clientX,
+                        startY: event.clientY,
+                        moved: false,
+                    };
+                    // Capture on the actual option, not its listbox ancestor. Capturing the
+                    // ancestor can retarget click to the listbox and make the option unclickable.
+                    optionNode.setPointerCapture?.(event.pointerId);
+                });
+                listbox.addEventListener('pointermove', (event) => {
+                    const pending = state.pendingPointer;
+                    if (!pending || pending.id !== event.pointerId || pending.moved) return;
+                    const movedDistance = Math.hypot(event.clientX - pending.startX, event.clientY - pending.startY);
+                    if (movedDistance <= choicePointerMoveTolerance) return;
+                    pending.moved = true;
+                    // ブラウザがpointerup後にclickを生成しても、スクロール直後の誤選択を防ぐ。
+                    state.ignoreClickUntil = performance.now() + 500;
+                });
+                listbox.addEventListener('pointerup', (event) => {
+                    const pending = clearPendingPointer(event.pointerId);
+                    if (!pending || pending.moved) return;
+                    const optionNode = pending.captureTarget;
+                    if (!optionNode?.isConnected) return;
+                    const rect = optionNode.getBoundingClientRect();
+                    if (event.clientX < rect.left || event.clientX > rect.right ||
+                        event.clientY < rect.top || event.clientY > rect.bottom) return;
+                    // Pointer capture and browser-generated click targeting differ by browser.
+                    // Commit a tap here, then ignore its synthetic click; keyboard clicks still
+                    // use the click handler below.
+                    state.ignoreClickUntil = performance.now() + 700;
+                    selectChoice(state, pending.optionIndex);
+                });
+                listbox.addEventListener('pointercancel', (event) => {
+                    clearPendingPointer(event.pointerId);
+                });
+                listbox.addEventListener('click', (event) => {
+                    const optionNode = event.target.closest('.tenmei-choice__option');
+                    if (!optionNode) return;
+                    if (performance.now() < state.ignoreClickUntil) {
+                        event.preventDefault();
+                        event.stopPropagation();
+                        return;
+                    }
+                    selectChoice(state, Number(optionNode.dataset.optionIndex));
+                });
+                listbox.addEventListener('keydown', (event) => {
+                    const current = state.activeIndex;
+                    if (event.key === 'ArrowDown') { event.preventDefault(); setChoiceActive(state, current + 1); }
+                    else if (event.key === 'ArrowUp') { event.preventDefault(); setChoiceActive(state, current - 1); }
+                    else if (event.key === 'Home') { event.preventDefault(); setChoiceActive(state, 0); }
+                    else if (event.key === 'End') { event.preventDefault(); setChoiceActive(state, options.length - 1); }
+                    else if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); selectChoice(state, current); }
+                    else if (event.key === 'Escape') { event.preventDefault(); closeActive(true); }
+                    else if (event.key.length === 1 && !event.ctrlKey && !event.metaKey && !event.altKey) {
+                        typeaheadBuffer += event.key.toLocaleLowerCase('ja-JP');
+                        window.clearTimeout(typeaheadTimer);
+                        typeaheadTimer = window.setTimeout(() => { typeaheadBuffer = ''; }, 650);
+                        const query = typeaheadBuffer;
+                        const offset = options.slice(current + 1).findIndex((option) => option.label.toLocaleLowerCase('ja-JP').startsWith(query));
+                        const fallback = options.findIndex((option) => option.label.toLocaleLowerCase('ja-JP').startsWith(query));
+                        if (offset >= 0) setChoiceActive(state, current + 1 + offset);
+                        else if (fallback >= 0) setChoiceActive(state, fallback);
+                    }
+                });
+                input.addEventListener('change', () => syncChoice(state));
+                return state;
+            };
+
+            const clampDay = (date, year, month) => new Date(year, month, Math.min(date.getDate(), new Date(year, month + 1, 0).getDate()));
+            const syncDate = (state) => {
+                const selected = parseISODate(state.input.value);
+                state.selected = selected;
+                state.valueNode.textContent = selected ? displayDate(selected) : state.root.dataset.controlLabel;
+                state.valueNode.classList.toggle('is-placeholder', !selected);
+                state.trigger.setAttribute('aria-label', selected ? `${state.root.dataset.controlLabel}を変更する。現在の選択は${displayDate(selected)}` : `${state.root.dataset.controlLabel}を選ぶ`);
+            };
+            const focusDate = (state, date, focus = true) => {
+                state.focus = date;
+                if (state.view.getFullYear() !== date.getFullYear() || state.view.getMonth() !== date.getMonth()) state.view = new Date(date.getFullYear(), date.getMonth(), 1);
+                renderDate(state);
+                if (focus) window.requestAnimationFrame(() => state.popover.querySelector(`[data-date="${isoDate(date)}"]`)?.focus({ preventScroll: true }));
+            };
+            const setDate = (state, date) => {
+                setControlValue(state.input, isoDate(date));
+                syncDate(state);
+                closeActive(true);
+            };
+            const renderDate = (state) => {
+                const year = state.view.getFullYear();
+                const month = state.view.getMonth();
+                const monthTitle = new Intl.DateTimeFormat('ja-JP', { year: 'numeric', month: 'long' }).format(state.view);
+                const firstWeekday = new Date(year, month, 1).getDay();
+                const totalDays = new Date(year, month + 1, 0).getDate();
+                const today = new Date();
+                let cells = '';
+                for (let blank = 0; blank < firstWeekday; blank += 1) cells += '<span class="tenmei-date__blank" aria-hidden="true"></span>';
+                for (let day = 1; day <= totalDays; day += 1) {
+                    const date = new Date(year, month, day);
+                    const selected = sameDate(state.selected, date);
+                    const focused = sameDate(state.focus, date);
+                    const classes = ['tenmei-date__day'];
+                    if (selected) classes.push('is-selected');
+                    if (focused) classes.push('is-focused');
+                    if (sameDate(today, date)) classes.push('is-today');
+                    cells += `<button type="button" class="${classes.join(' ')}" role="gridcell" aria-selected="${selected}" tabindex="${focused ? '0' : '-1'}" data-date="${isoDate(date)}" aria-label="${displayDate(date)}${selected ? '、選択済み' : ''}">${day}</button>`;
+                }
+                state.popover.innerHTML = `<div class="tenmei-date__header"><button type="button" class="tenmei-date__nav" data-date-action="previous-month" aria-label="前の月"><i class="bi bi-chevron-left" aria-hidden="true"></i></button><h4 class="tenmei-date__title" aria-live="polite">${monthTitle}</h4><button type="button" class="tenmei-date__nav" data-date-action="next-month" aria-label="次の月"><i class="bi bi-chevron-right" aria-hidden="true"></i></button></div><div class="tenmei-date__weekdays" aria-hidden="true"><span>日</span><span>月</span><span>火</span><span>水</span><span>木</span><span>金</span><span>土</span></div><div class="tenmei-date__grid" role="grid" aria-label="${monthTitle}のカレンダー">${cells}</div><div class="tenmei-date__footer"><button type="button" class="tenmei-date__utility" data-date-action="today">今日</button><button type="button" class="tenmei-date__utility" data-date-action="clear">クリア</button></div>`;
+            };
+            const openDate = (state) => {
+                if (activeRoot && activeRoot !== state.root) closeActive(false);
+                syncDate(state);
+                const base = state.selected || new Date();
+                state.focus = new Date(base.getFullYear(), base.getMonth(), base.getDate());
+                state.view = new Date(base.getFullYear(), base.getMonth(), 1);
+                activeRoot = state.root;
+                state.root.dataset.open = 'true';
+                state.root.style.zIndex = '240';
+                state.root.closest('.history-control-bar, .zodiac-ranking-panel')?.classList.add('is-control-expanded');
+                state.popover.hidden = false;
+                state.trigger.setAttribute('aria-expanded', 'true');
+                renderDate(state);
+                window.requestAnimationFrame(() => state.popover.querySelector(`[data-date="${isoDate(state.focus)}"]`)?.focus({ preventScroll: true }));
+            };
+            const buildDate = (root) => {
+                const id = root.dataset.controlId;
+                const input = document.getElementById(id);
+                const trigger = document.getElementById(`${id}-trigger`);
+                const popover = document.getElementById(`${id}-dialog`);
+                const valueNode = trigger?.querySelector('.tenmei-date__value');
+                if (!id || !input || !trigger || !popover || !valueNode) return;
+                const state = { root, input, trigger, popover, valueNode, selected: null, focus: null, view: new Date() };
+                dateStates.set(id, state);
+                syncDate(state);
+                trigger.addEventListener('click', () => root.dataset.open === 'true' ? closeActive(true) : openDate(state));
+                trigger.addEventListener('keydown', (event) => {
+                    if (['Enter', ' ', 'ArrowDown', 'ArrowUp'].includes(event.key)) { event.preventDefault(); openDate(state); }
+                    if (event.key === 'Escape') closeActive(true);
+                });
+                popover.addEventListener('click', (event) => {
+                    const action = event.target.closest('[data-date-action]')?.dataset.dateAction;
+                    if (action === 'previous-month' || action === 'next-month') {
+                        const delta = action === 'previous-month' ? -1 : 1;
+                        state.view = new Date(state.view.getFullYear(), state.view.getMonth() + delta, 1);
+                        state.focus = clampDay(state.focus, state.view.getFullYear(), state.view.getMonth());
+                        renderDate(state);
+                        return;
+                    }
+                    if (action === 'today') { setDate(state, new Date()); return; }
+                    if (action === 'clear') { setControlValue(input, ''); syncDate(state); closeActive(true); return; }
+                    const dayButton = event.target.closest('[data-date]');
+                    if (dayButton) setDate(state, parseISODate(dayButton.dataset.date));
+                });
+                popover.addEventListener('keydown', (event) => {
+                    if (event.key === 'Escape') { event.preventDefault(); closeActive(true); return; }
+                    const target = event.target.closest('[data-date]');
+                    if (!target) return;
+                    let next = new Date(state.focus.getFullYear(), state.focus.getMonth(), state.focus.getDate());
+                    if (event.key === 'ArrowLeft') next.setDate(next.getDate() - 1);
+                    else if (event.key === 'ArrowRight') next.setDate(next.getDate() + 1);
+                    else if (event.key === 'ArrowUp') next.setDate(next.getDate() - 7);
+                    else if (event.key === 'ArrowDown') next.setDate(next.getDate() + 7);
+                    else if (event.key === 'Home') next.setDate(next.getDate() - next.getDay());
+                    else if (event.key === 'End') next.setDate(next.getDate() + (6 - next.getDay()));
+                    else if (event.key === 'PageUp') next = clampDay(next, next.getFullYear() - (event.shiftKey ? 1 : 0), next.getMonth() - (event.shiftKey ? 0 : 1));
+                    else if (event.key === 'PageDown') next = clampDay(next, next.getFullYear() + (event.shiftKey ? 1 : 0), next.getMonth() + (event.shiftKey ? 0 : 1));
+                    else if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); setDate(state, state.focus); return; }
+                    else return;
+                    event.preventDefault();
+                    focusDate(state, next);
+                });
+                input.addEventListener('change', () => syncDate(state));
+                return state;
+            };
+            document.addEventListener('keydown', (event) => {
+                if (event.key === 'Escape' && activeRoot) closeActive(true);
+            });
+            const syncAll = () => {
+                choiceStates.forEach(syncChoice);
+                dateStates.forEach(syncDate);
+            };
+            // 初期ロード時に全ページの選択肢を一気にDOM生成すると、iOSで数秒間メインスレッドが占有され、
+            // 最初のタップが無反応に見えることがある。初期表示中のコントロールだけ先に構築し、
+            // 非表示・未到達のコントロールは最初の操作時またはアイドル時に遅延構築する。
+            const roots = [...document.querySelectorAll('[data-control-kind="choice"], [data-control-kind="date"]')];
+            const isVisible = (root) => {
+                const style = getComputedStyle(root);
+                return style.display !== 'none' && style.visibility !== 'hidden' && root.offsetParent !== null;
+            };
+            const buildRoot = (root) => {
+                if (!root || root.dataset.tenmeiControlReady === 'true') return;
+                let state = null;
+                if (root.dataset.controlKind === 'choice') state = buildChoice(root);
+                else if (root.dataset.controlKind === 'date') state = buildDate(root);
+                // Do not permanently mark a control initialized if required DOM is not ready yet.
+                if (state) root.dataset.tenmeiControlReady = 'true';
+            };
+            const isInActiveView = (root) => {
+                const view = root.closest('.view-section');
+                return !view || view.classList.contains('active');
+            };
+            roots.filter((root) => isVisible(root) && isInActiveView(root)).forEach(buildRoot);
+            document.addEventListener('pointerdown', (event) => {
+                const root = event.target.closest?.('[data-control-kind="choice"], [data-control-kind="date"]');
+                if (root) {
+                    if (activeRoot && activeRoot !== root) closeActive(false);
+                    buildRoot(root);
+                    return;
+                }
+                if (activeRoot && !activeRoot.contains(event.target)) closeActive(false);
+            }, true);
+            document.addEventListener('focusin', (event) => {
+                const root = event.target.closest?.('[data-control-kind="choice"], [data-control-kind="date"]');
+                if (root) buildRoot(root);
+            }, true);
+            // 非表示画面のコントロールは一括生成しない。画面切替後の最初の操作で即時構築する。
+            // これにより初期数秒間のメインスレッド占有を避ける。
+            const updateChoiceOptions = (id, nextOptions) => {
+                const normalized = Array.isArray(nextOptions) ? nextOptions.map((option) => ({
+                    value: String(option.value),
+                    label: String(option.label),
+                    detail: option.detail ? String(option.detail) : '',
+                    symbol: option.symbol ? String(option.symbol) : ''
+                })) : [];
+                const state = choiceStates.get(id);
+                const root = state?.root || document.querySelector('[data-control-kind="choice"][data-control-id="' + id + '"]');
+                if (root) root.dataset.options = JSON.stringify(normalized);
+                if (!state) return false;
+                state.options = normalized;
+                state.listbox.innerHTML = normalized.map((option, index) => `<button type="button" class="tenmei-choice__option" id="${id}-option-${index}" role="option" aria-selected="false" data-option-index="${index}"><span class="tenmei-choice__option-label">${escapeHTML(option.symbol ? `${option.symbol} ` : '')}${escapeHTML(option.label)}</span><span class="tenmei-choice__option-detail">${escapeHTML(option.detail || '')}</span><i class="bi bi-check2 tenmei-choice__option-check" aria-hidden="true" hidden></i></button>`).join('');
+                state.optionNodes = [...state.listbox.querySelectorAll('.tenmei-choice__option')];
+                state.activeIndex = Math.max(0, normalized.findIndex((option) => option.value === state.input.value));
+                syncChoice(state);
+                return true;
+            };
+            return { syncAll, closeActive, updateChoiceOptions };
+        })();
+        window.TenmeiCustomControls = TenmeiCustomControls;
+</script>
+<script>
 (function(){
 'use strict';
 const CATS=OB_CATS, CHK=OB_CHECKS, SITES=OB_SITES;
@@ -348,60 +784,11 @@ function renderKpis(){
   byId('kpis').innerHTML=k.map(([v,l])=>'<div class="kpi"><b>'+v+'</b><span>'+l+'</span></div>').join('');
 }
 
-// ---------- custom choice (tenmei-mori markup) ----------
-let choiceSeq=0;
-function Choice(host,opts,value,onChange,label){
-  const id='choice'+(++choiceSeq);
-  host.innerHTML=
-   '<div class="tenmei-choice" data-open="false">'+
-     '<button type="button" class="tenmei-choice__trigger" aria-haspopup="listbox" aria-expanded="false" aria-controls="'+id+'-pop" aria-label="'+esc(label)+'">'+
-       '<span class="tenmei-choice__icon" aria-hidden="true"></span>'+
-       '<span class="tenmei-choice__value"></span>'+
-       '<span class="tenmei-choice__chevron" aria-hidden="true">▼</span>'+
-     '</button>'+
-     '<div class="tenmei-choice__popover" id="'+id+'-pop" role="listbox" hidden>'+
-       '<div class="tenmei-choice__options">'+
-         opts.map(o=>'<button type="button" role="option" class="tenmei-choice__option" data-v="'+esc(o.value)+'" aria-selected="false"><span class="tenmei-choice__option-label">'+esc(o.label)+'</span><span class="tenmei-choice__option-check" aria-hidden="true">✓</span></button>').join('')+
-       '</div>'+
-     '</div>'+
-   '</div>';
-  const root=host.firstElementChild, trig=root.querySelector('.tenmei-choice__trigger'),
-        val=root.querySelector('.tenmei-choice__value'), pop=root.querySelector('.tenmei-choice__popover');
-  const items=[...root.querySelectorAll('.tenmei-choice__option')];
-  let cur=value;
-  const paint=()=>{
-    const o=opts.find(x=>x.value===cur)||opts[0];
-    val.textContent=o.label;
-    items.forEach(b=>{ const sel=b.dataset.v===cur; b.setAttribute('aria-selected',sel?'true':'false'); });
-  };
-  const open=()=>{ pop.hidden=false; root.dataset.open='true'; trig.setAttribute('aria-expanded','true'); const a=items.find(b=>b.getAttribute('aria-selected')==='true')||items[0]; a&&a.focus(); };
-  const close=(focusTrigger)=>{ pop.hidden=true; root.dataset.open='false'; trig.setAttribute('aria-expanded','false'); if(focusTrigger) trig.focus(); };
-  const pick=v=>{ const changed=v!==cur; cur=v; paint(); close(true); if(changed) onChange(v); };
-  trig.addEventListener('click',()=>pop.hidden?open():close(false));
-  trig.addEventListener('keydown',e=>{
-    if(['ArrowDown','ArrowUp','Enter',' '].includes(e.key)){ e.preventDefault(); if(pop.hidden) open(); }
-    if(e.key==='Escape') close(false);
-  });
-  items.forEach((b,i)=>{
-    b.addEventListener('click',()=>pick(b.dataset.v));
-    b.addEventListener('keydown',e=>{
-      if(e.key==='ArrowDown'){ e.preventDefault(); items[(i+1)%items.length].focus(); }
-      else if(e.key==='ArrowUp'){ e.preventDefault(); items[(i-1+items.length)%items.length].focus(); }
-      else if(e.key==='Home'){ e.preventDefault(); items[0].focus(); }
-      else if(e.key==='End'){ e.preventDefault(); items[items.length-1].focus(); }
-      else if(e.key==='Escape'){ e.preventDefault(); close(true); }
-      else if(e.key==='Tab'){ close(false); }
-    });
-  });
-  document.addEventListener('pointerdown',e=>{ if(!root.contains(e.target)&&!pop.hidden) close(false); });
-  paint();
-  return {get value(){return cur;}, set value(v){cur=v;paint();}};
-}
-
 // ---------- filters ----------
-const typeOpts=[{value:'',label:'すべての種別'}].concat([...new Set(SITES.map(s=>s.type))].sort().map(t=>({value:t,label:t})));
-let typeVal='';
-Choice(byId('fTypeWrap'),typeOpts,'',v=>{ typeVal=v; renderTable(); },'種別で絞り込み');
+const typeOpts=[{value:'all',label:'すべての種別'}].concat([...new Set(SITES.map(s=>s.type))].sort().map(t=>({value:t,label:t})));
+let typeVal='all';
+TenmeiCustomControls.updateChoiceOptions('fType',typeOpts);
+byId('fType').addEventListener('change',()=>{ typeVal=byId('fType').value; renderTable(); });
 
 // ---------- table ----------
 const COLS=[
@@ -436,7 +823,7 @@ function confPill(c){ const cls=c==='高'?'hi':c==='中'?'mid':'lo'; return '<sp
 function renderTable(){
   const q=byId('fSearch').value.trim().toLowerCase();
   const onlyElig=byId('fEligible').checked;
-  let rows=ROWS.filter(r=>(!onlyElig||r.e.eligible)&&(!typeVal||r.s.type===typeVal)&&(!q||(r.s.name+' '+r.s.desc).toLowerCase().includes(q)));
+  let rows=ROWS.filter(r=>(!onlyElig||r.e.eligible)&&(typeVal==='all'||r.s.type===typeVal)&&(!q||(r.s.name+' '+r.s.desc).toLowerCase().includes(q)));
   const rankOf=new Map(RANKED.map((r,i)=>[r.s.id,i+1]));
   rows.sort((a,b)=>{
     const va=valueOf(a,sortKey), vb=valueOf(b,sortKey);
