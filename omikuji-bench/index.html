@@ -272,6 +272,12 @@ footer a{color:var(--text-sub)}
   <section class="panel" id="analysis">
     <h2>分析</h2>
     <p class="note">横軸は確認できた項目の割合（カバレッジ）、縦軸は Index。カバレッジが低いサイトは点数の信頼性が下がります。</p>
+    <div class="filters" style="margin-bottom:8px">
+      <div class="tenmei-choice f" style="min-width:200px;max-width:320px" data-control-kind="choice" data-control-id="fAxis" data-control-label="横軸を選ぶ" data-options='[{"value":"cov","label":"横軸: カバレッジ"},{"value":"0","label":"横軸: 体験・操作性"},{"value":"1","label":"横軸: 結果の質"},{"value":"2","label":"横軸: 機能"},{"value":"3","label":"横軸: 透明性"},{"value":"4","label":"横軸: 技術・独自性"}]'>
+        <input type="hidden" id="fAxis" value="cov"><button type="button" class="tenmei-choice__trigger" id="fAxis-trigger" aria-haspopup="listbox" aria-expanded="false" aria-controls="fAxis-options" aria-label="横軸を選ぶ"><span class="tenmei-choice__icon" aria-hidden="true"><i class="bi bi-arrows-move"></i></span><span class="tenmei-choice__value"></span><i class="bi bi-chevron-down tenmei-choice__chevron" aria-hidden="true"></i></button><div class="tenmei-choice__popover" id="fAxis-popover" hidden><div class="tenmei-choice__options" id="fAxis-options" role="listbox" aria-label="横軸を選ぶ"></div></div>
+      </div>
+      <label class="check"><input id="fPareto" type="checkbox" checked> Pareto 線を表示</label>
+    </div>
     <div id="chartScatter" class="chart chart-scatter"></div>
     <div class="grid2" style="margin-top:14px">
       <div>
@@ -924,9 +930,9 @@ function renderCharts(){
   const grid=getComputedStyle(document.body).getPropertyValue('--card-border').trim()||'#e2e2e2';
   const red=getComputedStyle(document.body).getPropertyValue('--accent-red').trim()||'#b91c1c';
   // rank bar
-  const rc=echarts.init(byId('chartRank'));
+  const rc=echarts.getInstanceByDom(byId('chartRank'))||echarts.init(byId('chartRank'));
   const rr=RANKED.slice().reverse();
-  rc.setOption({
+  rc.setOption({notMerge:true,
     textStyle:{color:textColor,fontFamily:'Zen Kaku Gothic New, sans-serif'},
     grid:{left:8,right:64,top:8,bottom:8,containLabel:true},
     tooltip:{trigger:'axis',axisPointer:{type:'shadow'},formatter:p=>{const d=rr[p[0].dataIndex];return '<b>'+esc(d.s.name)+'</b><br>Index '+f1(d.e.index)+'<br>信頼度 '+d.e.confidence+' / カバレッジ '+pct(d.e.coverage);}},
@@ -935,24 +941,47 @@ function renderCharts(){
     series:[{type:'bar',data:rr.map(d=>({value:+d.e.index.toFixed(1)})),itemStyle:{color:red,borderRadius:[0,4,4,0]},barMaxWidth:16,label:{show:true,position:'right',color:textColor,fontSize:11,formatter:p=>p.value.toFixed(1)}}]
   });
   rc.resize();
-  // scatter
-  const sc=echarts.init(byId('chartScatter'));
-  sc.setOption({
+  // scatter (AA-style: Pareto frontier = points not dominated in both coverage and index)
+  const sc=echarts.getInstanceByDom(byId('chartScatter'))||echarts.init(byId('chartScatter'));
+  const axis=byId('fAxis').value;
+  const xOf=r=>axis==='cov'?r.e.coverage:(r.e.cats[+axis].score);
+  const xLabel=axis==='cov'?'カバレッジ（%）':CATS[+axis].label+'（スコア）';
+  const xMin=axis==='cov'?50:0;
+  const pts=ROWS.filter(r=>r.e.ok&&r.e.index!=null&&xOf(r)!=null);
+  // Pareto frontier: maximize both x (selected axis) and Index; keep points not dominated
+  const pareto=(()=>{
+    const cand=pts.slice().sort((a,b)=>b.e.index-a.e.index||xOf(b)-xOf(a));
+    const front=[]; let best=-Infinity;
+    cand.forEach(r=>{ if(xOf(r)>best){ front.push(r); best=xOf(r); } });
+    return front.sort((a,b)=>xOf(a)-xOf(b));
+  })();
+  const median=a=>{ const v=a.slice().sort((x,y)=>x-y); if(!v.length) return 0; const m=v.length>>1; return v.length%2?v[m]:(v[m-1]+v[m])/2; };
+  const medIdx=median(RANKED.map(r=>r.e.index));
+  const xThr=axis==='cov'?60:median(pts.map(xOf));
+  const paretoOn=!!(byId('fPareto')&&byId('fPareto').checked);
+  sc.setOption({notMerge:true,
     textStyle:{color:textColor,fontFamily:'Zen Kaku Gothic New, sans-serif'},
     grid:{left:48,right:24,top:24,bottom:44},
-    tooltip:{formatter:p=>'<b>'+esc(p.data.name)+'</b><br>カバレッジ '+p.data.value[0].toFixed(1)+'%<br>Index '+(p.data.value[1]==null?'—':p.data.value[1].toFixed(1))},
-    xAxis:{name:'カバレッジ（%）',nameLocation:'middle',nameGap:28,min:50,max:100,axisLabel:{color:sub},splitLine:{lineStyle:{color:grid}}},
+    tooltip:{formatter:p=>'<b>'+esc(p.data.name)+'</b><br>'+esc(xLabel)+' '+p.data.value[0].toFixed(1)+'<br>Index '+(p.data.value[1]==null?'—':p.data.value[1].toFixed(1))},
+    xAxis:{name:xLabel,nameLocation:'middle',nameGap:28,min:xMin,max:100,axisLabel:{color:sub},splitLine:{lineStyle:{color:grid}}},
     yAxis:{name:'Index',min:0,max:100,axisLabel:{color:sub},splitLine:{lineStyle:{color:grid}}},
-    series:[{type:'scatter',symbolSize:12,data:ROWS.filter(r=>r.e.ok&&r.e.index!=null).map(r=>({name:r.s.name,value:[r.e.coverage,r.e.index],itemStyle:{color:r.e.eligible?red:sub,opacity:r.e.eligible?.9:.5}})),
-      markLine:{silent:true,symbol:'none',lineStyle:{color:sub,type:'dashed'},data:[{xAxis:60,label:{formatter:'算出下限 60%',color:sub}}]},
-      label:{show:true,position:'right',formatter:p=>p.data.name,fontSize:10,color:textColor}}]
+    series:[
+      {type:'scatter',symbolSize:12,z:3,data:pts.map(r=>({name:r.s.name,value:[xOf(r),r.e.index],itemStyle:{color:r.e.eligible?red:sub,opacity:r.e.eligible?.9:.5}})),
+        label:{show:true,position:'right',formatter:p=>p.data.name,fontSize:10,color:textColor},
+        markArea:{silent:true,itemStyle:{color:'rgba(47,125,85,0.06)'},label:{show:true,position:'insideTopRight',formatter:'最も魅力的な象限',color:'#2f7d55',fontSize:11},
+          data:[[{xAxis:xThr,yAxis:medIdx},{xAxis:100,yAxis:100}]]},
+        markLine:{silent:true,symbol:'none',lineStyle:{color:sub,type:'dashed'},label:{color:sub,fontSize:10},data:[...(axis==='cov'?[{xAxis:60,label:{formatter:'算出下限 60%'}}]:[{xAxis:xThr,label:{formatter:'中央値 '+xThr.toFixed(1)}}]),{yAxis:medIdx,label:{formatter:'Index 中央値 '+medIdx.toFixed(1)}}]}},
+      ...(paretoOn?[{type:'line',name:'Pareto 線',z:2,symbol:'circle',symbolSize:6,
+        lineStyle:{color:red,width:2},itemStyle:{color:red},
+        data:pareto.map(r=>[xOf(r),r.e.index]),tooltip:{show:false}}]:[])
+    ]
   });
   sc.resize();
   // category grouped bars (top 10)
   const top=RANKED.slice(0,10);
-  const cc=echarts.init(byId('chartCat'));
+  const cc=echarts.getInstanceByDom(byId('chartCat'))||echarts.init(byId('chartCat'));
   const palette=['#b91c1c','#d97706','#2f7d55','#2563eb','#7c3aed'];
-  cc.setOption({
+  cc.setOption({notMerge:true,
     textStyle:{color:textColor,fontFamily:'Zen Kaku Gothic New, sans-serif'},
     tooltip:{trigger:'axis',axisPointer:{type:'shadow'}},
     legend:{top:0,textStyle:{color:textColor,fontSize:11}},
@@ -962,6 +991,8 @@ function renderCharts(){
     series:CATS.map((c,i)=>({name:c.label,type:'bar',barGap:'10%',itemStyle:{color:palette[i]},data:top.map(r=>r.e.cats[i].score==null?null:+r.e.cats[i].score.toFixed(1)).reverse()}))
   });
   cc.resize();
+  byId('fPareto').onchange=()=>renderCharts();
+  byId('fAxis').addEventListener('change',()=>renderCharts());
   let t;
   window.addEventListener('resize',()=>{ clearTimeout(t); t=setTimeout(()=>[rc,sc,cc].forEach(c=>c.resize()),120); });
 }
