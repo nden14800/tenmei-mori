@@ -284,15 +284,17 @@ function paretoFront(pts,xOf){
   cand.forEach(r=>{ if(xOf(r)>best){ front.push(r); best=xOf(r); } });
   return front.sort((a,b)=>xOf(a)-xOf(b));
 }
-// Step line through the frontier, extended to the plot edges (AA-style staircase).
-function stepPath(front,xOf,xMin,xMax){
+// Staircase boundary of the attainable region (AA-style), extended to the plot edges:
+// left edge at the best Index, horizontal steps to each frontier point, and the right end dropped to the x-axis.
+function stepPath(front,xOf,xMin,yMin){
   if(!front.length) return [];
-  const p=[[xMin,front[0].e.index],[xOf(front[0]),front[0].e.index]];
-  for(let i=1;i<front.length;i++){
-    p.push([xOf(front[i]),front[i-1].e.index]);
-    p.push([xOf(front[i]),front[i].e.index]);
-  }
-  p.push([xMax,front[front.length-1].e.index]);
+  const p=[[xMin,front[0].e.index]];
+  front.forEach((r,i)=>{
+    const x=xOf(r);
+    p.push([x,r.e.index]);
+    if(i<front.length-1) p.push([x,front[i+1].e.index]);
+  });
+  p.push([xOf(front[front.length-1]),yMin]);
   return p;
 }
 
@@ -346,7 +348,7 @@ function renderCharts(){
       data:[...(axis==='cov'?[{xAxis:60,label:{formatter:'算出下限 60%'}}]:[{xAxis:xThr,label:{formatter:'中央値 '+xThr.toFixed(1)}}]),{yAxis:medIdx,label:{position:'insideEndTop',formatter:'Index 中央値 '+medIdx.toFixed(1)}}]}};
   const seriesPareto={type:'line',name:'Pareto 線',z:2,symbol:'circle',symbolSize:7,showSymbol:true,
     lineStyle:{color:red,width:2},itemStyle:{color:red},
-    data:stepPath(front,xOf,xMin,100),tooltip:{show:false}};
+    data:stepPath(front,xOf,xMin,0),tooltip:{show:false}};
   inst('chartScatter').setOption({
     notMerge:true,
     textStyle:{color:text,fontFamily:FONT},
