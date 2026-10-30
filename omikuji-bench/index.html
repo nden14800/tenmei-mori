@@ -3,607 +3,602 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>OmikujiBench v3.5 | 運勢・天命乃杜</title>
-<meta name="description" content="オンラインおみくじ29サイトを16の採点項目で比較する独立ベンチマーク。未確認項目は除外して集計します。">
+<title>OmikujiBench v4.0 | 運勢・天命乃杜</title>
+<meta name="description" content="オンラインおみくじ29サイトを22のチェックポイントで比較する独立ベンチマーク v4.0。確認できた項目だけで集計します。">
 <link rel="icon" href="favicon.svg" type="image/svg+xml">
 <link rel="icon" href="favicon.ico" sizes="any">
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Zen+Kaku+Gothic+New:wght@400;500;700;900&display=swap" rel="stylesheet">
-<script src="vendor/echarts.min.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=Zen+Kaku+Gothic+New:wght@400;500;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.11/katex.min.css">
 <style>
 :root{
-  --bg:#ffffff;--fg:#111827;--muted:#6b7280;--line:#e5e7eb;--soft:#f9fafb;
-  --accent:#2563eb;--owner:#f59e0b;--danger:#dc2626;
-  --heat:37,99,235;
+  --accent-red:#b91c1c;
+  --card-border:#e2e2e2;
+  --input-bg:#f9f9f9;
+  --text-main:#1a1a1a;
+  --text-sub:#555555;
+  --card-bg:#ffffff;
+  --page-bg:#f4f1ee;
+  --ver4-control-height:48px;
+  --ver4-control-radius:14px;
+  --good:#2f7d55;
+  --good-bg:#dff1e7;
+  --bad:#b91c1c;
+  --bad-bg:#fbe3e3;
+  --unk-bg:#ececec;
+  --tenmei-control-accent:var(--accent-red);
+  --shadow:0 10px 24px rgba(31,22,18,.14);
 }
-@media (prefers-color-scheme:dark){
-  :root{--bg:#0b0d12;--fg:#f3f4f6;--muted:#9ca3af;--line:#262a33;--soft:#11141b;--accent:#60a5fa;--owner:#fbbf24;--danger:#f87171;--heat:96,165,250}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --card-border:#3a3a3a;
+    --input-bg:#1f1f1f;
+    --text-main:#f1efec;
+    --text-sub:#b5b1ab;
+    --card-bg:#171717;
+    --page-bg:#0f0f0f;
+    --good:#6fcf97;
+    --good-bg:#183a28;
+    --bad:#ff8a8a;
+    --bad-bg:#4a1d1d;
+    --unk-bg:#2a2a2a;
+    --shadow:0 10px 24px rgba(0,0,0,.4);
+  }
+}
+:root[data-theme="dark"]{
+  --card-border:#3a3a3a;
+  --input-bg:#1f1f1f;
+  --text-main:#f1efec;
+  --text-sub:#b5b1ab;
+  --card-bg:#171717;
+  --page-bg:#0f0f0f;
+  --good:#6fcf97;
+  --good-bg:#183a28;
+  --bad:#ff8a8a;
+  --bad-bg:#4a1d1d;
+  --unk-bg:#2a2a2a;
+  --shadow:0 10px 24px rgba(0,0,0,.4);
 }
 *{box-sizing:border-box}
-html,body{margin:0;background:var(--bg);color:var(--fg);font-family:"Zen Kaku Gothic New","Hiragino Sans","Yu Gothic UI",system-ui,sans-serif;font-size:14px;line-height:1.55}
-a{color:var(--accent);text-decoration:none}
-a:hover{text-decoration:underline}
-button,select,input{font:inherit;color:inherit}
-.wrap{max-width:1280px;margin:0 auto;padding:0 20px}
-
-/* header */
-.top{position:sticky;top:0;z-index:10;background:var(--bg);border-bottom:1px solid var(--line)}
-.top .wrap{display:flex;align-items:center;gap:20px;height:56px}
-.brand{display:flex;align-items:center;gap:10px;font-weight:900;font-size:16px;color:var(--fg);text-decoration:none;white-space:nowrap}
-.brand svg{width:26px;height:26px}
-.brand small{font-weight:500;color:var(--muted);font-size:12px}
-.nav{display:flex;gap:16px;margin-left:auto;overflow-x:auto}
-.nav a{color:var(--muted);font-size:13px;white-space:nowrap}
-.nav a:hover{color:var(--fg);text-decoration:none}
-
-/* hero */
-.hero{padding:28px 0 8px}
-.hero h1{margin:0 0 6px;font-size:26px;font-weight:900;letter-spacing:.01em}
-.hero p{margin:0;color:var(--muted);max-width:820px}
-.kpis{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin:20px 0 4px}
-.kpi{border:1px solid var(--line);border-radius:10px;padding:14px 16px;background:var(--bg)}
-.kpi span{display:block;color:var(--muted);font-size:12px}
-.kpi strong{display:block;font-size:24px;font-weight:900;margin-top:2px;font-variant-numeric:tabular-nums}
-.kpi em{display:block;font-style:normal;color:var(--muted);font-size:12px;margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-
-/* filter bar */
-.filters{position:sticky;top:56px;z-index:9;background:var(--bg);border-bottom:1px solid var(--line);padding:10px 0}
-.filters .wrap{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
-.filters select,.filters input[type=search]{height:34px;border:1px solid var(--line);border-radius:8px;background:var(--bg);padding:0 10px}
-.filters input[type=search]{width:260px}
-.filters select:focus-visible,.filters input:focus-visible,button:focus-visible,a:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
-.check{display:inline-flex;align-items:center;gap:6px;color:var(--muted);font-size:13px;cursor:pointer}
-.count{margin-left:auto;color:var(--muted);font-size:13px;font-variant-numeric:tabular-nums}
-
-/* sections */
-section{padding:28px 0 6px}
-.sec-head{display:flex;align-items:baseline;justify-content:space-between;gap:12px;margin-bottom:10px;flex-wrap:wrap}
-.sec-head h2{margin:0;font-size:18px;font-weight:900}
-.sec-head p{margin:0;color:var(--muted);font-size:13px}
-.card{border:1px solid var(--line);border-radius:12px;padding:16px;background:var(--bg)}
-.card h3{margin:0;font-size:14px;font-weight:700}
-.card .sub{color:var(--muted);font-size:12px;margin:2px 0 8px}
-.grid2{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--page-bg);color:var(--text-main);font-family:'Zen Kaku Gothic New','Hiragino Sans','Yu Gothic',sans-serif;font-size:15px;line-height:1.6}
+a{color:var(--accent-red)}
+.wrap{max-width:1120px;margin:0 auto;padding:0 16px}
+header.top{position:sticky;top:0;z-index:50;background:var(--card-bg);border-bottom:1px solid var(--card-border)}
+header.top .wrap{display:flex;align-items:center;gap:16px;min-height:56px;flex-wrap:wrap;padding-top:8px;padding-bottom:8px}
+.brand{display:flex;align-items:center;gap:10px;font-weight:800;text-decoration:none;color:var(--text-main)}
+.brand img{width:28px;height:28px}
+.brand small{font-weight:500;color:var(--text-sub);font-size:12px}
+nav.links{display:flex;gap:4px;flex-wrap:wrap;margin-left:auto}
+nav.links a{color:var(--text-sub);text-decoration:none;font-size:13px;padding:6px 10px;border-radius:8px}
+nav.links a:hover{background:var(--input-bg);color:var(--text-main)}
+.hero{padding:28px 0 12px}
+.hero h1{font-size:clamp(22px,4vw,30px);margin:0 0 8px;font-weight:800;letter-spacing:.01em}
+.hero p{margin:0;color:var(--text-sub);max-width:760px}
+.badge{display:inline-block;margin-left:8px;padding:2px 8px;border-radius:999px;background:var(--accent-red);color:#fff;font-size:12px;font-weight:700;vertical-align:middle}
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:12px;margin:18px 0 8px}
+.kpi{background:var(--card-bg);border:1px solid var(--card-border);border-radius:14px;padding:14px 16px}
+.kpi b{display:block;font-size:24px;font-weight:800;font-variant-numeric:tabular-nums}
+.kpi span{font-size:12px;color:var(--text-sub)}
+section.panel{margin:20px 0;background:var(--card-bg);border:1px solid var(--card-border);border-radius:16px;padding:18px 18px 16px}
+section.panel>h2{margin:0 0 4px;font-size:18px;font-weight:800}
+section.panel>p.note{margin:0 0 12px;color:var(--text-sub);font-size:13px}
 .chart{width:100%}
-.note{color:var(--muted);font-size:12px;margin-top:8px}
-
-/* tables */
-.tbl-wrap{overflow:auto;border:1px solid var(--line);border-radius:12px;max-height:72vh}
-table{border-collapse:separate;border-spacing:0;width:100%;font-variant-numeric:tabular-nums}
-th,td{padding:8px 10px;border-bottom:1px solid var(--line);text-align:right;white-space:nowrap;font-size:13px}
-th{position:sticky;top:0;background:var(--soft);z-index:2;font-weight:700;color:var(--muted);font-size:12px;cursor:pointer;user-select:none}
-th.left,td.left{text-align:left}
-th .arrow{opacity:.5;margin-left:3px}
-th[aria-sort] .arrow{opacity:1;color:var(--accent)}
-tbody tr:hover td{background:var(--soft)}
-td.rank{color:var(--muted);width:44px}
-td.name{font-weight:700;max-width:320px;overflow:hidden;text-overflow:ellipsis}
-td.name small{display:block;font-weight:400;color:var(--muted);font-size:11px;font-variant-numeric:normal}
-tr.owner td.name::after{content:"本サイト";margin-left:8px;font-size:10px;font-weight:700;color:#7c2d12;background:#fde68a;border-radius:999px;padding:1px 7px;vertical-align:2px}
-tr.ineligible td{color:var(--muted)}
-td.idx{font-weight:900;font-size:15px}
-.pill{display:inline-block;border:1px solid var(--line);border-radius:999px;padding:0 8px;font-size:11px;color:var(--muted);white-space:nowrap}
-.conf-高{color:var(--fg);font-weight:700}
-.conf-中{color:var(--muted)}
-.conf-低{color:var(--muted);opacity:.7}
-.btn{height:28px;border:1px solid var(--line);border-radius:7px;background:var(--bg);padding:0 10px;cursor:pointer;font-size:12px}
-.btn:hover{border-color:var(--accent);color:var(--accent)}
-.btn.primary{background:var(--accent);border-color:var(--accent);color:#fff}
-.btn.primary:hover{color:#fff;opacity:.92}
-
-/* matrix */
-.matrix td.cell{min-width:44px;text-align:center;font-size:12px}
-.matrix th.col{text-align:center;min-width:44px;font-size:11px}
-.matrix th.sitecol,.matrix td.sitecol{position:sticky;left:0;z-index:1;background:var(--bg);text-align:left;max-width:260px;overflow:hidden;text-overflow:ellipsis}
-.matrix th.sitecol{z-index:3;background:var(--soft)}
-.legend{display:flex;gap:6px;align-items:center;color:var(--muted);font-size:12px;margin-top:8px;flex-wrap:wrap}
-.legend i{display:inline-block;width:18px;height:12px;border-radius:3px}
-
-/* method */
-.method-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px}
-ol.rules,ul.rules{margin:6px 0 0;padding-left:18px;color:var(--fg)}
-ol.rules li,ul.rules li{margin:4px 0}
-.mini{width:100%}
-.mini td,.mini th{font-size:12px;padding:6px 8px;text-align:left}
-.mini td.n,.mini th.n{text-align:right}
-
-/* detail drawer */
-dialog{border:1px solid var(--line);border-radius:14px;background:var(--bg);color:var(--fg);width:min(760px,94vw);max-height:88vh;padding:0}
-dialog::backdrop{background:rgba(0,0,0,.35)}
-.dlg-head{display:flex;justify-content:space-between;gap:12px;padding:16px 20px;border-bottom:1px solid var(--line);align-items:flex-start}
-.dlg-head h2{margin:0;font-size:18px;font-weight:900}
-.dlg-body{padding:16px 20px;overflow:auto;max-height:calc(88vh - 70px)}
-.dlg-body h4{margin:18px 0 8px;font-size:13px}
-.bigidx{font-size:34px;font-weight:900;font-variant-numeric:tabular-nums;line-height:1}
-.bar{height:6px;background:var(--line);border-radius:999px;overflow:hidden;margin-top:4px}
-.bar span{display:block;height:100%;background:var(--accent)}
-.crit{display:grid;grid-template-columns:1fr 1fr;gap:6px 16px}
-.crit div{font-size:13px}
-.crit small{color:var(--muted)}
-.facts{background:var(--soft);border-radius:10px;padding:12px 14px;font-size:13px;margin-top:12px}
-.src{font-size:12px;margin-top:10px;word-break:break-all}
-
-footer{margin-top:40px;border-top:1px solid var(--line);padding:24px 0 40px;color:var(--muted);font-size:12px}
-footer strong{color:var(--fg)}
-
-@media (max-width:900px){
-  .kpis{grid-template-columns:1fr 1fr}
-  .grid2,.method-grid{grid-template-columns:1fr}
-  .filters input[type=search]{width:100%}
-  .nav{display:none}
-  .crit{grid-template-columns:1fr}
-}
+.chart-rank{height:720px}
+.chart-scatter{height:380px}
+.chart-cat{height:460px}
+.fallback{color:var(--text-sub);font-size:13px;padding:12px;border:1px dashed var(--card-border);border-radius:10px}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+@media (max-width:820px){.grid2{grid-template-columns:1fr}}
+.filters{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-bottom:12px}
+.filters .f{flex:1 1 200px;min-width:0}
+.filters .f-search{flex:2 1 260px}
+.tenmei-input{display:block;width:100%;height:var(--ver4-control-height);padding:0 14px;border:1px solid var(--card-border);border-radius:var(--ver4-control-radius);background:var(--input-bg);color:var(--text-main);font-family:'Zen Kaku Gothic New','Hiragino Sans',sans-serif;font-size:.92rem;outline:none}
+.tenmei-input::placeholder{color:var(--text-sub)}
+.tenmei-input:hover{border-color:color-mix(in srgb,var(--accent-red) 52%,var(--card-border))}
+.tenmei-input:focus-visible{border-color:var(--accent-red);box-shadow:0 0 0 3px color-mix(in srgb,var(--accent-red) 20%,transparent)}
+.check{display:inline-flex;align-items:center;gap:8px;font-size:14px;color:var(--text-sub);cursor:pointer;user-select:none}
+.check input{width:18px;height:18px;accent-color:var(--accent-red)}
+.btn{height:var(--ver4-control-height);padding:0 16px;border:1px solid var(--card-border);border-radius:var(--ver4-control-radius);background:var(--input-bg);color:var(--text-main);font:inherit;font-size:14px;font-weight:700;cursor:pointer}
+.btn:hover{border-color:color-mix(in srgb,var(--accent-red) 52%,var(--card-border))}
+.btn:focus-visible{outline:none;border-color:var(--accent-red);box-shadow:0 0 0 3px color-mix(in srgb,var(--accent-red) 20%,transparent)}
+/* tenmei-mori choice component (trigger / popover / option) */
+.tenmei-choice{position:relative;width:100%;max-width:520px}
+.tenmei-choice__trigger{display:grid;grid-template-columns:26px minmax(0,1fr) 20px;align-items:center;width:100%;min-height:var(--ver4-control-height);padding:7px 11px;border:1px solid var(--card-border);border-radius:var(--ver4-control-radius);background:var(--input-bg);color:var(--text-main);font-family:'Zen Kaku Gothic New','Zen Old Mincho',sans-serif;font-size:.92rem;line-height:1.35;text-align:left;cursor:pointer;touch-action:manipulation;-webkit-tap-highlight-color:transparent}
+.tenmei-choice__trigger:hover{border-color:color-mix(in srgb,var(--tenmei-control-accent) 52%,var(--card-border))}
+.tenmei-choice__trigger:focus-visible,.tenmei-choice[data-open="true"] .tenmei-choice__trigger{outline:0;border-color:var(--tenmei-control-accent);box-shadow:0 0 0 3px color-mix(in srgb,var(--tenmei-control-accent) 20%,transparent)}
+.tenmei-choice__icon{display:inline-flex;align-items:center;justify-content:center}
+.tenmei-choice__icon::before{content:"";width:9px;height:9px;border-radius:50%;background:var(--tenmei-control-accent)}
+.tenmei-choice__value{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-weight:500}
+.tenmei-choice__chevron{justify-self:end;color:var(--text-sub);font-size:.8rem;transition:transform 160ms ease}
+.tenmei-choice[data-open="true"] .tenmei-choice__chevron{transform:rotate(180deg)}
+.tenmei-choice__popover{position:absolute;top:calc(100% + 6px);left:0;right:0;z-index:1000;padding:6px;border:1px solid var(--card-border);border-radius:10px;background:var(--card-bg);box-shadow:var(--shadow);max-height:min(320px,calc(100dvh - 136px))}
+.tenmei-choice__popover[hidden]{display:none}
+.tenmei-choice__options{display:grid;max-height:252px;gap:1px;overflow-y:auto;overscroll-behavior:contain;padding:0}
+.tenmei-choice__option{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:center;gap:10px;width:100%;min-height:38px;padding:7px 9px;border:1px solid transparent;border-radius:7px;background:transparent;color:var(--text-main);font-family:'Zen Kaku Gothic New','Zen Old Mincho',sans-serif;font-size:.86rem;line-height:1.35;text-align:left;cursor:pointer;touch-action:manipulation}
+.tenmei-choice__option:hover{background:color-mix(in srgb,var(--tenmei-control-accent) 6%,transparent)}
+.tenmei-choice__option:focus-visible{outline:0;border-color:var(--tenmei-control-accent);box-shadow:0 0 0 3px color-mix(in srgb,var(--tenmei-control-accent) 20%,transparent)}
+.tenmei-choice__option[aria-selected="true"]{border-color:color-mix(in srgb,var(--tenmei-control-accent) 38%,transparent);background:color-mix(in srgb,var(--tenmei-control-accent) 15%,transparent);color:var(--tenmei-control-accent);font-weight:700}
+.tenmei-choice__option-label{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.tenmei-choice__option-check{color:var(--tenmei-control-accent);font-size:.9rem}
+.tenmei-choice__option-check:empty{display:none}
+.tbl-wrap{overflow-x:auto;border:1px solid var(--card-border);border-radius:12px}
+table{width:100%;border-collapse:collapse;font-size:13.5px;font-variant-numeric:tabular-nums}
+th,td{padding:9px 10px;border-bottom:1px solid var(--card-border);text-align:left;vertical-align:middle;white-space:nowrap}
+th{background:var(--input-bg);font-weight:700;color:var(--text-sub);font-size:12px;position:sticky;top:0}
+th button{all:unset;cursor:pointer;color:inherit;font:inherit}
+th button:focus-visible{outline:2px solid var(--accent-red);outline-offset:2px;border-radius:4px}
+tbody tr{cursor:pointer}
+tbody tr:hover{background:color-mix(in srgb,var(--accent-red) 5%,transparent)}
+tbody tr:focus-visible{outline:2px solid var(--accent-red);outline-offset:-2px}
+td.num,th.num{text-align:right}
+.name{font-weight:700}
+.muted{color:var(--text-sub);font-size:12px}
+.pill{display:inline-block;padding:1px 8px;border-radius:999px;font-size:12px;font-weight:700;border:1px solid var(--card-border)}
+.pill.hi{background:var(--good-bg);color:var(--good);border-color:transparent}
+.pill.mid{background:var(--input-bg);color:var(--text-main)}
+.pill.lo{background:var(--bad-bg);color:var(--bad);border-color:transparent}
+.bar{display:inline-block;width:70px;height:7px;border-radius:4px;background:var(--unk-bg);vertical-align:middle;margin-right:6px;overflow:hidden}
+.bar>i{display:block;height:100%;background:var(--accent-red)}
+.mtx td,.mtx th{padding:6px 6px;font-size:12px;text-align:center}
+.mtx th.sitecol,.mtx td.sitecol{text-align:left;position:sticky;left:0;background:var(--card-bg);z-index:1;min-width:140px}
+.cell{display:inline-block;width:26px;height:24px;line-height:24px;border-radius:5px;font-weight:700;font-size:12px;font-style:normal}
+.cell.c1{background:var(--good-bg);color:var(--good)}
+.cell.c0{background:var(--bad-bg);color:var(--bad)}
+.cell.cq{background:var(--unk-bg);color:var(--text-sub)}
+.cell.cx{background:transparent;color:var(--text-sub);border:1px dashed var(--card-border)}
+.legend{display:flex;gap:14px;flex-wrap:wrap;font-size:12px;color:var(--text-sub);margin:0 0 10px}
+.legend span{display:inline-flex;align-items:center;gap:6px}
+.legend .cell{width:18px;height:16px;line-height:16px;font-size:10px}
+.mtx-wrap{overflow-x:auto;border:1px solid var(--card-border);border-radius:12px}
+.method table td,.method table th{white-space:normal}
+.formula{background:var(--input-bg);border:1px solid var(--card-border);border-radius:12px;padding:12px 14px;overflow-x:auto;margin:10px 0}
+dialog{width:min(760px,calc(100vw - 24px));max-height:calc(100dvh - 24px);border:1px solid var(--card-border);border-radius:16px;background:var(--card-bg);color:var(--text-main);padding:0;box-shadow:var(--shadow)}
+dialog::backdrop{background:rgba(0,0,0,.45)}
+.dlg-head{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;padding:16px 18px 10px;border-bottom:1px solid var(--card-border)}
+.dlg-head h3{margin:0;font-size:19px;font-weight:800}
+.dlg-body{padding:14px 18px 18px;overflow-y:auto;max-height:calc(100dvh - 120px)}
+.dlg-body h4{margin:16px 0 6px;font-size:14px}
+.dlg-body p{margin:6px 0;font-size:14px}
+.chk-list{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:6px}
+.chk{display:flex;gap:8px;align-items:flex-start;padding:7px 9px;border:1px solid var(--card-border);border-radius:9px;font-size:12.5px;white-space:normal}
+.chk .cell{flex:0 0 auto}
+.dlg-close{height:36px;padding:0 14px}
+.empty{padding:24px;text-align:center;color:var(--text-sub)}
+footer{padding:24px 0 40px;color:var(--text-sub);font-size:12.5px}
+footer a{color:var(--text-sub)}
 </style>
 </head>
 <body>
-
 <header class="top">
   <div class="wrap">
-    <a class="brand" href="#overview" aria-label="OmikujiBench トップ">
-      <svg viewBox="0 0 64 64" aria-hidden="true">
-        <path d="M32 32V4a28 28 0 0 1 28 28z" fill="#ff6b6b"/>
-        <path d="M32 32H60a28 28 0 0 1-28 28z" fill="#ffd166"/>
-        <path d="M32 32v28a28 28 0 0 1-28-28z" fill="#06d6a0"/>
-        <path d="M32 32H4a28 28 0 0 1 28-28z" fill="#4d96ff"/>
-        <circle cx="32" cy="32" r="9" fill="#ffffff"/>
-      </svg>
-      OmikujiBench <small>v3.5</small>
-    </a>
-    <nav class="nav" aria-label="セクション">
-      <a href="#overview">概要</a>
+    <a class="brand" href="#top"><img src="favicon.svg" alt=""><span>OmikujiBench <small>v4.0</small></span></a>
+    <nav class="links" aria-label="セクション">
       <a href="#ranking">ランキング</a>
       <a href="#analysis">分析</a>
-      <a href="#table">順位表</a>
-      <a href="#matrix">16項目</a>
-      <a href="#method">手法</a>
+      <a href="#table">一覧</a>
+      <a href="#matrix">チェック項目</a>
+      <a href="#method">方法</a>
     </nav>
   </div>
 </header>
 
-<main>
-  <div class="wrap">
-    <div class="hero" id="overview">
-      <h1>オンラインおみくじ 比較ベンチマーク</h1>
-      <p>公開情報に基づき、29サイトを同一の16項目で採点。根拠が不足する項目は「—」として集計から外し、根拠範囲が60%以上かつ6カテゴリ中4つ以上で評価できたサイトだけをIndexでランキングします。</p>
-      <div class="kpis" id="kpis"></div>
+<main class="wrap" id="top">
+  <div class="hero">
+    <h1>おみくじサイト ベンチマーク<span class="badge">v4.0</span></h1>
+    <p>公開ページで確認できた22のチェックポイントを「1 / 0 / ?」で判定し、確認できた項目だけで点数を出します。「?」は集計から除外します。点数は単一レビュアーによる公開情報の机上確認で、実機の動作測定は行っていません。</p>
+  </div>
+
+  <div class="kpis" id="kpis"></div>
+
+  <section class="panel" id="ranking">
+    <h2>ランキング（Index）</h2>
+    <p class="note">Index は確認できたチェックポイントの重み付き平均（0〜100）。バーの長さが Index を示します。</p>
+    <div id="chartRank" class="chart chart-rank"></div>
+    <div id="rankFallback" class="fallback" hidden>グラフ用ライブラリを読み込めなかったため、一覧表を参照してください。</div>
+  </section>
+
+  <section class="panel" id="analysis">
+    <h2>分析</h2>
+    <p class="note">横軸は確認できた項目の割合（カバレッジ）、縦軸は Index。カバレッジが低いサイトは点数の信頼性が下がります。</p>
+    <div id="chartScatter" class="chart chart-scatter"></div>
+    <div class="grid2" style="margin-top:14px">
+      <div>
+        <h3 style="font-size:15px;margin:6px 0 4px">上位10サイトのカテゴリ別スコア</h3>
+        <div id="chartCat" class="chart chart-cat"></div>
+      </div>
+      <div>
+        <h3 style="font-size:15px;margin:6px 0 4px">カテゴリの重み</h3>
+        <div id="catWeights"></div>
+      </div>
     </div>
-  </div>
+  </section>
 
-  <div class="filters">
-    <div class="wrap">
-      <select id="fType" aria-label="分類で絞り込み"></select>
-      <input id="fSearch" type="search" placeholder="サイト名・説明で検索" aria-label="検索">
-      <label class="check"><input id="fEligible" type="checkbox"> Index算出対象のみ</label>
-      <span class="count" id="count"></span>
+  <section class="panel" id="table">
+    <h2>一覧</h2>
+    <p class="note">列見出しをクリックすると並べ替えできます。行をクリックすると詳細を表示します。</p>
+    <div class="filters">
+      <div class="f" id="fTypeWrap"></div>
+      <div class="f f-search"><input id="fSearch" class="tenmei-input" type="search" placeholder="サイト名・説明で検索" aria-label="検索"></div>
+      <label class="check"><input id="fEligible" type="checkbox" checked> 算出対象のみ</label>
+      <button class="btn" id="btnCsv" type="button">CSVを書き出す</button>
+      <span class="muted" id="count" aria-live="polite"></span>
     </div>
-  </div>
+    <div class="tbl-wrap">
+      <table id="tbl">
+        <thead><tr id="thr"></tr></thead>
+        <tbody id="tbody"></tbody>
+      </table>
+    </div>
+  </section>
 
-  <div class="wrap">
-    <section id="ranking">
-      <div class="sec-head">
-        <div><h2>Index ランキング</h2><p>総合Index（100点満点）。算出対象サイトのみ。</p></div>
-      </div>
-      <div class="card">
-        <h3>サイト別 Index</h3>
-        <div class="sub">棒をクリックすると詳細を表示</div>
-        <div id="chartRank" class="chart"></div>
-      </div>
-    </section>
+  <section class="panel" id="matrix">
+    <h2>チェックポイント マトリクス</h2>
+    <p class="note">サイトごとに22項目の判定を表示します。Index の高い順に並べています。</p>
+    <div class="legend">
+      <span><i class="cell c1">1</i>公開ページで明記</span>
+      <span><i class="cell c0">0</i>確認し明確に無い</span>
+      <span><i class="cell cq">?</i>判断不能（除外）</span>
+      <span><i class="cell cx">—</i>未取得（算出対象外）</span>
+    </div>
+    <div class="mtx-wrap"><table class="mtx" id="mtx"></table></div>
+  </section>
 
-    <section id="analysis">
-      <div class="sec-head">
-        <div><h2>分析</h2><p>算出対象サイトの分布と、体験・機能のトレードオフ。</p></div>
-      </div>
-      <div class="grid2">
-        <div class="card">
-          <h3>体験 × 機能（パレート線）</h3>
-          <div class="sub">両軸ともに高いほど右上。線上のサイトは他のどのサイトにも両軸で劣らない</div>
-          <div id="chartScatter" class="chart"></div>
-        </div>
-        <div class="card">
-          <h3>カテゴリ別の平均</h3>
-          <div class="sub">表示中の算出対象サイトの平均（欠損は除外）</div>
-          <div id="chartCat" class="chart"></div>
-        </div>
-      </div>
-    </section>
+  <section class="panel method" id="method">
+    <h2>評価方法 v4.0</h2>
+    <p class="note">v3.5 までの 16 項目・旧採点は廃止しました。判定基準は 22 項目に固定しています。</p>
 
-    <section id="table">
-      <div class="sec-head">
-        <div><h2>順位表</h2><p>列見出しをクリックで並べ替え。行をクリックで詳細。</p></div>
-        <button class="btn primary" id="csv">CSVを出力</button>
-      </div>
-      <div class="tbl-wrap">
-        <table id="tbl">
-          <caption class="left" style="position:absolute;left:-9999px">サイト別の評価一覧</caption>
-          <thead></thead>
-          <tbody></tbody>
-        </table>
-      </div>
-      <div class="note">— は未確認（集計対象外）。Index算出対象外のサイトは灰色で表示します。</div>
-    </section>
+    <h3 style="font-size:15px;margin:14px 0 4px">1. 項目判定</h3>
+    <p>各チェックポイントは公開ページの記載のみで判定します。1 は明記、0 は確認して明確に無いと判断できた場合、? は判断できない場合です。? は集計から除外し、推測で補完しません。ページがスクリプトで描画され本文を取得できない場合も ? とします。</p>
 
-    <section id="matrix">
-      <div class="sec-head">
-        <div><h2>16項目マトリクス</h2><p>各セルは項目ごとの採点（0–100）。横の数字は項目番号（下の手法を参照）。</p></div>
-      </div>
-      <div class="tbl-wrap matrix">
-        <table id="mtx"><thead></thead><tbody></tbody></table>
-      </div>
-      <div class="legend">
-        <span>低</span>
-        <i style="background:rgba(var(--heat),.08)"></i>
-        <i style="background:rgba(var(--heat),.25)"></i>
-        <i style="background:rgba(var(--heat),.45)"></i>
-        <i style="background:rgba(var(--heat),.65)"></i>
-        <i style="background:rgba(var(--heat),.85)"></i>
-        <span>高</span>
-        <span style="margin-left:12px">— は未確認</span>
-      </div>
-    </section>
+    <h3 style="font-size:15px;margin:14px 0 4px">2. 項目の重み</h3>
+    <p>項目の重みは素数（2, 3, 5, … 79）としています。これにより、同じ組み合わせ以外で点数が整数や端数の少ない値に揃うのを避けます。</p>
+    <div class="tbl-wrap"><table id="critTable"></table></div>
 
-    <section id="method">
-      <div class="sec-head">
-        <div><h2>評価方法</h2><p>単独評価者による公開情報のデスクレビュー（v3.5）。</p></div>
-      </div>
-      <div class="method-grid">
-        <div class="card">
-          <h3>カテゴリ配点（合計100）</h3>
-          <div class="sub">各カテゴリは配下の項目の加重平均</div>
-          <table class="mini" id="catTable"></table>
-        </div>
-        <div class="card">
-          <h3>採点ルール</h3>
-          <ul class="rules">
-            <li>未確認の項目は「—」。推定値で埋めず、Index計算の分母からも除外します。</li>
-            <li>算出対象：根拠範囲60%以上かつ6カテゴリ中4つ以上で評価できたサイト。</li>
-            <li>確信度：根拠範囲 75%以上を「高」、55%以上を「中」、それ未満を「低」。</li>
-            <li>実機操作、視覚品質、LCP/INP/CLSは未測定のため採点しません（デザイン項目13は全サイト未確認）。</li>
-            <li>抽選確率は小規模サンプルや累計本数から推定しません。</li>
-            <li>占いの的中率・信仰上の価値は採点しません。</li>
-            <li>本サイト（運勢・天命乃杜）も同じ基準で採点し、加点・減点はしていません。</li>
-          </ul>
-        </div>
-      </div>
-      <div class="card" style="margin-top:16px">
-        <h3>16項目の一覧</h3>
-        <table class="mini" id="critTable"></table>
-      </div>
-    </section>
-  </div>
+    <h3 style="font-size:15px;margin:14px 0 4px">3. 集計式</h3>
+    <div class="formula">
+      <div>\[ S_c = \frac{\sum_{j \in V_c} w_{j}\, x_{j}}{\sum_{j \in V_c} w_{j}} \times 100 \]</div>
+      <div>\[ \mathrm{Index} = \frac{\sum_{c \in C'} W_c\, S_c}{\sum_{c \in C'} W_c} \]</div>
+    </div>
+    <p>\(x_j\) は 1 または 0、\(V_c\) はカテゴリ \(c\) で判定済みの項目、\(W_c\) はカテゴリの重み、\(C'\) は判定済み項目を 1 つ以上持つカテゴリです。</p>
+
+    <h3 style="font-size:15px;margin:14px 0 4px">4. 算出対象</h3>
+    <p>判定済み項目の割合（カバレッジ）が 60% 以上、かつ 5 カテゴリのうち 4 つ以上で判定済みの場合に順位を付けます。信頼度はカバレッジで区分します（75% 以上を高、55% 以上を中、それ未満を低）。</p>
+
+    <h3 style="font-size:15px;margin:14px 0 4px">5. 注意</h3>
+    <p>点数は単一レビュアーの机上確認によるもので、実機測定や多人数評価の平均ではありません。視覚品質・表示速度・抽選確率の数値は採点していません。確率は推測しません。</p>
+  </section>
+
+  <footer>
+    <p>OmikujiBench v4.0（2026-10-30 時点の公開情報）。データは <code>data.js</code>、評価基準は <code>evaluation-rubric.json</code> を参照。</p>
+    <p>本ベンチマークは <a href="../">運勢・天命乃杜</a> とは独立した評価です。自サイトも同じ基準で判定しています。</p>
+  </footer>
 </main>
-
-<footer>
-  <div class="wrap">
-    <strong>OmikujiBench</strong> · Independent benchmark project<br>
-    © 2026 天命乃杜 ·
-    <a href="https://github.com/nden14800/tenmei-mori/tree/main/omikuji-bench">GitHub</a> ·
-    <a href="https://www.w3.org/TR/WCAG22/">WCAG 2.2</a> ·
-    <a href="https://web.dev/articles/vitals">Core Web Vitals</a>
-    <br>公開情報に基づく暫定レビューです。正式な順位ではありません。各サイトの権利・利用条件を尊重します。
-  </div>
-</footer>
 
 <dialog id="dlg" aria-labelledby="dlgTitle">
   <div class="dlg-head">
     <div>
-      <h2 id="dlgTitle"></h2>
-      <div class="note" id="dlgMeta"></div>
+      <h3 id="dlgTitle"></h3>
+      <div class="muted" id="dlgSub"></div>
     </div>
-    <button class="btn" id="dlgClose" aria-label="閉じる">閉じる</button>
+    <button class="btn dlg-close" type="button" id="dlgClose">閉じる</button>
   </div>
   <div class="dlg-body" id="dlgBody"></div>
 </dialog>
 
 <script src="data.js"></script>
+<script src="vendor/echarts.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.11/katex.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.11/contrib/auto-render.min.js"></script>
 <script>
-(() => {
-  const TOTAL = OB_CRITERIA.reduce((a, c) => a + c.weight, 0);
-  const GROUPS = OB_AXES.map((_, g) => OB_CRITERIA.map((c, i) => c.axis === g ? i : -1).filter(i => i >= 0));
-  const OWNER = 'tenmei';
-  const $ = id => document.getElementById(id);
-  const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-  const f1 = v => (v == null ? '—' : (Math.round(v * 10) / 10).toFixed(1));
-  const css = name => getComputedStyle(document.documentElement).getPropertyValue(name).trim();
+(function(){
+'use strict';
+const CATS=OB_CATS, CHK=OB_CHECKS, SITES=OB_SITES;
+const byId=id=>document.getElementById(id);
+const esc=s=>String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const f1=v=>v==null?'—':v.toFixed(1);
+const pct=v=>v==null?'—':v.toFixed(1)+'%';
+const CHKS_BY_ID=Object.fromEntries(CHK.map(c=>[c.id,c]));
 
-  // ---- scoring (all numbers derived from the 16 criteria) ----
-  function evaluate(s) {
-    const obsW = s.scores.reduce((a, v, i) => a + (v == null ? 0 : OB_CRITERIA[i].weight), 0);
-    const coverage = obsW / TOTAL * 100;
-    const groupsCovered = GROUPS.filter(ids => ids.some(i => s.scores[i] != null)).length;
-    const cats = GROUPS.map(ids => {
-      const w = ids.reduce((a, i) => a + (s.scores[i] == null ? 0 : OB_CRITERIA[i].weight), 0);
-      if (!w) return null;
-      return ids.reduce((a, i) => a + (s.scores[i] == null ? 0 : s.scores[i] * OB_CRITERIA[i].weight), 0) / w;
-    });
-    const eligible = coverage >= 60 && groupsCovered >= 4;
-    const index = eligible && obsW
-      ? Math.round(s.scores.reduce((a, v, i) => a + (v == null ? 0 : v * OB_CRITERIA[i].weight), 0) / obsW * 10) / 10
-      : null;
-    const confidence = coverage >= 75 ? '高' : coverage >= 55 ? '中' : '低';
-    const scored = s.scores.filter(v => v != null).length;
-    return {...s, cats, coverage, groupsCovered, eligible, index, confidence, scored};
-  }
-  const ALL = OB_SITES.map(evaluate);
-  const byId = Object.fromEntries(ALL.map(s => [s.id, s]));
+// v4.0 scoring: 22 checkpoints, prime weights (same as data definition)
+function evaluate(s){
+  if(!s.codes) return {ok:false,cats:CATS.map(()=>({ver:0,score:null})),verified:0,coverage:0,covered:0,index:null,eligible:false,confidence:'低'};
+  const parts=s.codes.split('|');
+  const cats=CATS.map((c,i)=>{
+    const xs=(parts[i]||'').split('');
+    let num=0,den=0,ver=0;
+    xs.forEach((x,j)=>{ if(x==='?') return; ver++; den+=c.pw[j]; if(x==='1') num+=c.pw[j]; });
+    return {ver,score:den?num/den*100:null};
+  });
+  const verified=cats.reduce((a,c)=>a+c.ver,0);
+  const coverage=verified/22*100;
+  const covered=cats.filter(c=>c.ver>0).length;
+  let num=0,den=0;
+  cats.forEach((c,i)=>{ if(c.score!=null){ num+=CATS[i].weight*c.score; den+=CATS[i].weight; } });
+  const index=den?num/den:null;
+  const eligible=index!=null && coverage>=60 && covered>=4;
+  const confidence=coverage>=75?'高':coverage>=55?'中':'低';
+  return {ok:true,cats,verified,coverage,covered,index,eligible,confidence};
+}
+function cellsOf(s){
+  const out=[];
+  if(!s.codes) return out;
+  const parts=s.codes.split('|');
+  CATS.forEach((c,i)=>{ (parts[i]||'').split('').forEach((x,j)=>out.push({id:c.ids[j],x,cat:c.key})); });
+  return out;
+}
+const ROWS=SITES.map(s=>({s,e:evaluate(s)}));
+const RANKED=ROWS.filter(r=>r.e.eligible).sort((a,b)=>b.e.index-a.e.index);
+const OTHER=ROWS.filter(r=>!r.e.eligible);
 
-  // ---- filters & sort state ----
-  const state = {type: 'all', q: '', eligibleOnly: false, sortKey: 'index', sortDir: -1};
-  function visible() {
-    const q = state.q.trim().toLowerCase();
-    return ALL.filter(s =>
-      (state.type === 'all' || s.type === state.type) &&
-      (!state.eligibleOnly || s.eligible) &&
-      (!q || [s.name, s.desc, s.type, s.url].join(' ').toLowerCase().includes(q)));
-  }
-  function sortVal(s, key) {
-    if (key === 'index') return s.index;
-    if (key === 'name') return s.name;
-    if (key === 'type') return s.type;
-    if (key === 'coverage') return s.coverage;
-    if (key === 'confidence') return ({高: 3, 中: 2, 低: 1})[s.confidence];
-    if (key.startsWith('cat')) return s.cats[+key.slice(3)];
-    return null;
-  }
-  function sorted(list) {
-    const k = state.sortKey, d = state.sortDir;
-    return [...list].sort((a, b) => {
-      // Index-ranked sites always sort within eligible block first
-      if (k === 'index') {
-        if (a.eligible !== b.eligible) return a.eligible ? -1 : 1;
-        if (!a.eligible) return b.coverage - a.coverage;
-      }
-      const x = sortVal(a, k), y = sortVal(b, k);
-      if (x == null && y == null) return a.name.localeCompare(b.name, 'ja');
-      if (x == null) return 1;
-      if (y == null) return -1;
-      if (typeof x === 'string') return d * x.localeCompare(y, 'ja');
-      return d * (x - y) || a.name.localeCompare(b.name, 'ja');
-    });
-  }
-
-  // ---- KPIs ----
-  function renderKPIs() {
-    const elig = ALL.filter(s => s.eligible);
-    const top = [...elig].sort((a, b) => b.index - a.index)[0];
-    const avgCov = ALL.reduce((a, s) => a + s.coverage, 0) / ALL.length;
-    $('kpis').innerHTML = [
-      ['評価対象', ALL.length + '件', '公開情報の再確認対象'],
-      ['採点項目', OB_CRITERIA.length + '項目', '6カテゴリ・配点合計100'],
-      ['Index算出', elig.length + '件', '根拠範囲60%以上・4カテゴリ以上'],
-      ['最高Index', top ? f1(top.index) : '—', top ? top.name : '']
-    ].map(([a, b, c]) => `<div class="kpi"><span>${esc(a)}</span><strong>${esc(b)}</strong><em>${esc(c)}</em></div>`).join('');
-  }
-
-  function renderTypeFilter() {
-    const types = [...new Set(ALL.map(s => s.type))].sort((a, b) => a.localeCompare(b, 'ja'));
-    $('fType').innerHTML = '<option value="all">すべての分類</option>' +
-      types.map(t => `<option value="${esc(t)}">${esc(t)}</option>`).join('');
-  }
-
-  // ---- charts ----
-  const charts = {};
-  function chart(id) {
-    const el = $(id);
-    if (!charts[id]) charts[id] = echarts.init(el, null, {renderer: 'canvas'});
-    return charts[id];
-  }
-  function baseOpt() {
-    return {
-      textStyle: {fontFamily: '"Zen Kaku Gothic New", sans-serif', color: css('--fg')},
-      tooltip: {backgroundColor: css('--bg'), borderColor: css('--line'), textStyle: {color: css('--fg'), fontSize: 12}},
-    };
-  }
-  const axisLine = {lineStyle: {color: css('--line')}};
-  const splitLine = {lineStyle: {color: css('--line'), type: 'dashed'}};
-
-  function renderRank(list) {
-    if (!window.echarts) return;
-    const el = $('chartRank');
-    const data = list.filter(s => s.eligible).sort((a, b) => b.index - a.index);
-    el.style.height = Math.max(240, data.length * 24 + 40) + 'px';
-    const c = chart('chartRank');
-    c.setOption({
-      ...baseOpt(),
-      grid: {left: 8, right: 56, top: 6, bottom: 6, containLabel: true},
-      tooltip: {trigger: 'axis', axisPointer: {type: 'shadow'},
-        formatter: p => {const s = data[p[0].dataIndex]; return `<b>${esc(s.name)}</b><br>Index ${f1(s.index)}<br>根拠範囲 ${f1(s.coverage)}%`;}},
-      xAxis: {type: 'value', min: 0, max: 100, axisLabel: {color: css('--muted')}, splitLine, axisLine: {show: false}},
-      yAxis: {type: 'category', inverse: true, data: data.map(s => s.name), axisLabel: {color: css('--fg'), fontSize: 12, width: 200, overflow: 'truncate'}, axisLine, axisTick: {show: false}},
-      series: [{
-        type: 'bar', barWidth: 14,
-        data: data.map(s => ({value: s.index, itemStyle: {color: s.id === OWNER ? css('--owner') : css('--accent'), borderRadius: [0, 4, 4, 0]}})),
-        label: {show: true, position: 'right', color: css('--fg'), fontSize: 12, formatter: p => f1(p.value)},
-      }],
-    }, true);
-    c.off('click');
-    c.on('click', p => { const s = data[p.dataIndex]; if (s) openDetail(s.id); });
-  }
-
-  function renderScatter(list) {
-    if (!window.echarts) return;
-    const pts = list.filter(s => s.eligible && s.cats[0] != null && s.cats[2] != null);
-    const sortedX = [...pts].sort((a, b) => b.cats[2] - a.cats[2] || b.cats[0] - a.cats[0]);
-    const frontier = []; let bestY = -1;
-    sortedX.forEach(s => { if (s.cats[0] > bestY) { frontier.push(s); bestY = s.cats[0]; } });
-    const line = frontier.map(s => [s.cats[2], s.cats[0]]).sort((a, b) => a[0] - b[0]);
-    const c = chart('chartScatter');
-    c.setOption({
-      ...baseOpt(),
-      grid: {left: 52, right: 24, top: 24, bottom: 46},
-      tooltip: {formatter: p => {
-        if (p.seriesName === 'パレート線') return 'パレート線';
-        const s = pts[p.dataIndex]; return `<b>${esc(s.name)}</b><br>機能 ${f1(s.cats[2])} / 体験 ${f1(s.cats[0])}<br>Index ${f1(s.index)}`;
-      }},
-      xAxis: {type: 'value', name: '機能・継続性', nameLocation: 'middle', nameGap: 28, min: 40, max: 100, axisLabel: {color: css('--muted')}, splitLine, axisLine},
-      yAxis: {type: 'value', name: '体験・操作性', min: 40, max: 100, axisLabel: {color: css('--muted')}, splitLine, axisLine},
-      series: [
-        {name: 'サイト', type: 'scatter', symbolSize: 11,
-          data: pts.map(s => ({value: [s.cats[2], s.cats[0]], itemStyle: {color: s.id === OWNER ? css('--owner') : css('--accent'), opacity: .85}})),
-          label: {show: false}},
-        {name: 'パレート線', type: 'line', data: line, symbol: 'circle', symbolSize: 6,
-          lineStyle: {width: 2, type: 'dashed', color: css('--danger')}, itemStyle: {color: css('--danger')}, z: 3, silent: false},
-      ],
-    }, true);
-  }
-
-  function renderCats(list) {
-    if (!window.echarts) return;
-    const elig = list.filter(s => s.eligible);
-    const avg = OB_AXES.map((_, g) => {
-      const v = elig.map(s => s.cats[g]).filter(x => x != null);
-      return v.length ? v.reduce((a, b) => a + b, 0) / v.length : null;
-    });
-    const c = chart('chartCat');
-    c.setOption({
-      ...baseOpt(),
-      grid: {left: 8, right: 56, top: 8, bottom: 8, containLabel: true},
-      tooltip: {trigger: 'axis', axisPointer: {type: 'shadow'}, formatter: p => `${esc(p[0].name)}<br>平均 ${f1(p[0].value)}`},
-      xAxis: {type: 'value', min: 0, max: 100, axisLabel: {color: css('--muted')}, splitLine, axisLine: {show: false}},
-      yAxis: {type: 'category', inverse: true, data: OB_AXES.map(a => `${a.label}（${a.weight}）`), axisLabel: {color: css('--fg')}, axisLine, axisTick: {show: false}},
-      series: [{type: 'bar', barWidth: 16, data: avg.map(v => ({value: v == null ? 0 : v, itemStyle: {color: css('--accent'), borderRadius: [0, 4, 4, 0]}})),
-        label: {show: true, position: 'right', color: css('--fg'), formatter: p => avg[p.dataIndex] == null ? '—' : f1(avg[p.dataIndex])}}],
-    }, true);
-  }
-
-  // ---- table ----
-  const COLS = [
-    {key: 'index', label: 'Index', cls: 'num'},
-    ...OB_AXES.map((a, g) => ({key: 'cat' + g, label: a.label, cls: 'num'})),
-    {key: 'coverage', label: '根拠範囲', cls: 'num'},
-    {key: 'confidence', label: '確信度', cls: 'num'},
+// ---------- KPIs ----------
+function renderKpis(){
+  const idx=RANKED.map(r=>r.e.index).sort((a,b)=>a-b);
+  const med=idx.length?(idx.length%2?idx[(idx.length-1)/2]:(idx[idx.length/2-1]+idx[idx.length/2])/2):null;
+  const avgCov=RANKED.length?RANKED.reduce((a,r)=>a+r.e.coverage,0)/RANKED.length:null;
+  const top=RANKED[0];
+  const k=[
+    [RANKED.length,'算出対象サイト（全'+SITES.length+'件）'],
+    [top?f1(top.e.index):'—','最高 Index（'+(top?esc(top.s.name):'')+'）'],
+    [med==null?'—':f1(med),'Index の中央値'],
+    [avgCov==null?'—':pct(avgCov),'平均カバレッジ（確認済み項目）'],
   ];
-  function renderTable(list) {
-    const rows = sorted(list);
-    const head = `<tr>
-      <th class="left" data-sort="rank" aria-label="順位">#</th>
-      <th class="left" data-sort="name">サイト<span class="arrow">↕</span></th>
-      <th class="left" data-sort="type">分類<span class="arrow">↕</span></th>
-      ${COLS.map(c => `<th data-sort="${c.key}"${state.sortKey === c.key ? ` aria-sort="${state.sortDir === -1 ? 'descending' : 'ascending'}"` : ''}>${esc(c.label)}<span class="arrow">${state.sortKey === c.key ? (state.sortDir === -1 ? '▼' : '▲') : '↕'}</span></th>`).join('')}
-      <th>詳細</th></tr>`;
-    $('tbl').tHead.innerHTML = head;
-    const eligRank = new Map(ALL.filter(s => s.eligible).sort((a, b) => b.index - a.index).map((s, i) => [s.id, i + 1]));
-    $('tbl').tBodies[0].innerHTML = rows.map(s => `
-      <tr class="${s.id === OWNER ? 'owner' : ''} ${s.eligible ? '' : 'ineligible'}">
-        <td class="rank left">${eligRank.get(s.id) ?? '—'}</td>
-        <td class="name left">${esc(s.name)}<small>${esc(s.url.replace(/^https?:\/\//, ''))}</small></td>
-        <td class="left"><span class="pill">${esc(s.type)}</span></td>
-        <td class="idx">${f1(s.index)}</td>
-        ${s.cats.map(v => `<td>${f1(v)}</td>`).join('')}
-        <td>${f1(s.coverage)}%</td>
-        <td class="conf-${s.confidence}">${s.confidence}</td>
-        <td><button class="btn" data-detail="${esc(s.id)}">詳細</button></td>
-      </tr>`).join('');
-  }
+  byId('kpis').innerHTML=k.map(([v,l])=>'<div class="kpi"><b>'+v+'</b><span>'+l+'</span></div>').join('');
+}
 
-  function renderMatrix(list) {
-    const rows = sorted(list);
-    const head = `<tr><th class="sitecol left">サイト</th>${OB_CRITERIA.map((c, i) =>
-      `<th class="col" title="${esc(c.label)}（${c.weight}%）">${i + 1}</th>`).join('')}</tr>`;
-    $('mtx').tHead.innerHTML = head;
-    $('mtx').tBodies[0].innerHTML = rows.map(s => `<tr>
-      <td class="sitecol left">${esc(s.name)}</td>
-      ${s.scores.map(v => v == null
-        ? '<td class="cell" style="color:var(--muted)">—</td>'
-        : `<td class="cell" style="background:rgba(var(--heat),${(0.08 + 0.8 * Math.max(0, Math.min(100, v)) / 100).toFixed(2)})">${v}</td>`).join('')}
-    </tr>`).join('');
-  }
-
-  // ---- detail ----
-  function openDetail(id) {
-    const s = byId[id]; if (!s) return;
-    $('dlgTitle').textContent = s.name;
-    $('dlgMeta').innerHTML = `${esc(s.type)} · <a href="${esc(s.url)}" target="_blank" rel="noopener noreferrer">${esc(s.url)}</a>`;
-    const idx = s.eligible
-      ? `<div class="bigidx">${f1(s.index)}<small style="font-size:14px;color:var(--muted)"> / 100</small></div>`
-      : `<div class="bigidx" style="font-size:18px">Index算出対象外</div>`;
-    const cats = OB_AXES.map((a, g) => `<div><div>${esc(a.label)} <small style="color:var(--muted)">${a.weight}%</small></div>
-      <b>${f1(s.cats[g])}</b>${s.cats[g] == null ? '' : `<div class="bar"><span style="width:${Math.max(0, Math.min(100, s.cats[g]))}%"></span></div>`}</div>`).join('');
-    const crit = OB_CRITERIA.map((c, i) => `<div><span>${i + 1}. ${esc(c.label)}</span> <small>${c.weight}%</small><br>
-      <b>${s.scores[i] == null ? '<small>未確認</small>' : s.scores[i]}</b></div>`).join('');
-    $('dlgBody').innerHTML = `
-      <div style="display:flex;gap:24px;align-items:flex-end;flex-wrap:wrap">
-        <div>${idx}<div class="note">根拠範囲 ${f1(s.coverage)}% · ${s.scored}/16項目 · ${s.groupsCovered}/6カテゴリ · 確信度 ${s.confidence}</div></div>
-      </div>
-      <p style="color:var(--muted);margin:12px 0 0">${esc(s.desc)}</p>
-      <h4>カテゴリ</h4><div class="crit">${cats}</div>
-      <h4>16項目</h4><div class="crit">${crit}</div>
-      <div class="facts">${esc(s.facts)}</div>
-      <div class="note">再確認状況：${esc(s.recheck || '—')}</div>
-      <div class="src">出典：<a href="${esc(s.source)}" target="_blank" rel="noopener noreferrer">${esc(s.source)}</a></div>`;
-    $('dlg').showModal();
-  }
-
-  // ---- method tables ----
-  function renderMethod() {
-    $('catTable').innerHTML = `<thead><tr><th class="left">カテゴリ</th><th class="n">配点</th><th class="left">含む項目</th></tr></thead><tbody>` +
-      OB_AXES.map((a, g) => `<tr><td>${esc(a.label)}</td><td class="n">${a.weight}</td><td>${GROUPS[g].map(i => i + 1).join(', ')}</td></tr>`).join('') +
-      `<tr><td><b>合計</b></td><td class="n"><b>${OB_AXES.reduce((x, a) => x + a.weight, 0)}</b></td><td></td></tr></tbody>`;
-    $('critTable').innerHTML = `<thead><tr><th class="n">#</th><th class="left">項目</th><th class="n">配点</th><th class="left">カテゴリ</th></tr></thead><tbody>` +
-      OB_CRITERIA.map((c, i) => `<tr><td class="n">${i + 1}</td><td>${esc(c.label)}</td><td class="n">${c.weight}</td><td>${esc(OB_AXES[c.axis].label)}</td></tr>`).join('') + '</tbody>';
-  }
-
-  // ---- CSV ----
-  function exportCSV() {
-    const header = ['順位', 'サイト', 'URL', '分類', 'Index', '根拠範囲(%)', '採点項目数', '確信度',
-      ...OB_AXES.map(a => a.label), ...OB_CRITERIA.map((c, i) => `${i + 1}.${c.label}`)];
-    const ranked = [...ALL].sort((a, b) => (b.index ?? -1) - (a.index ?? -1) || b.coverage - a.coverage);
-    let r = 0;
-    const rows = ranked.map(s => [s.eligible ? ++r : '', s.name, s.url, s.type, s.index ?? '', s.coverage.toFixed(1), s.scored, s.confidence,
-      ...s.cats.map(v => v == null ? '' : v.toFixed(1)), ...s.scores.map(v => v ?? '')]);
-    const csv = [header, ...rows].map(row => row.map(v => '"' + String(v).replace(/"/g, '""') + '"').join(',')).join('\r\n');
-    const url = URL.createObjectURL(new Blob(['﻿' + csv], {type: 'text/csv;charset=utf-8'}));
-    const a = document.createElement('a');
-    a.href = url; a.download = 'omikujibench-v3.5-2026-10-26.csv'; a.click();
-    URL.revokeObjectURL(url);
-  }
-
-  // ---- render all ----
-  function renderAll() {
-    const list = visible();
-    $('count').textContent = `${list.length} / ${ALL.length} サイト`;
-    renderRank(list);
-    renderScatter(list);
-    renderCats(list);
-    renderTable(list);
-    renderMatrix(list);
-  }
-
-  // ---- events ----
-  $('fType').addEventListener('change', e => { state.type = e.target.value; renderAll(); });
-  $('fSearch').addEventListener('input', e => { state.q = e.target.value; renderAll(); });
-  $('fEligible').addEventListener('change', e => { state.eligibleOnly = e.target.checked; renderAll(); });
-  $('tbl').addEventListener('click', e => {
-    const th = e.target.closest('th[data-sort]');
-    if (th) {
-      const k = th.dataset.sort;
-      if (k === 'rank') return;
-      if (state.sortKey === k) state.sortDir *= -1;
-      else { state.sortKey = k; state.sortDir = (k === 'name' || k === 'type') ? 1 : -1; }
-      renderTable(visible()); renderMatrix(visible()); return;
-    }
-    const b = e.target.closest('[data-detail]');
-    if (b) openDetail(b.dataset.detail);
+// ---------- custom choice (tenmei-mori markup) ----------
+let choiceSeq=0;
+function Choice(host,opts,value,onChange,label){
+  const id='choice'+(++choiceSeq);
+  host.innerHTML=
+   '<div class="tenmei-choice" data-open="false">'+
+     '<button type="button" class="tenmei-choice__trigger" aria-haspopup="listbox" aria-expanded="false" aria-controls="'+id+'-pop" aria-label="'+esc(label)+'">'+
+       '<span class="tenmei-choice__icon" aria-hidden="true"></span>'+
+       '<span class="tenmei-choice__value"></span>'+
+       '<span class="tenmei-choice__chevron" aria-hidden="true">▼</span>'+
+     '</button>'+
+     '<div class="tenmei-choice__popover" id="'+id+'-pop" role="listbox" hidden>'+
+       '<div class="tenmei-choice__options">'+
+         opts.map(o=>'<button type="button" role="option" class="tenmei-choice__option" data-v="'+esc(o.value)+'" aria-selected="false"><span class="tenmei-choice__option-label">'+esc(o.label)+'</span><span class="tenmei-choice__option-check" aria-hidden="true">✓</span></button>').join('')+
+       '</div>'+
+     '</div>'+
+   '</div>';
+  const root=host.firstElementChild, trig=root.querySelector('.tenmei-choice__trigger'),
+        val=root.querySelector('.tenmei-choice__value'), pop=root.querySelector('.tenmei-choice__popover');
+  const items=[...root.querySelectorAll('.tenmei-choice__option')];
+  let cur=value;
+  const paint=()=>{
+    const o=opts.find(x=>x.value===cur)||opts[0];
+    val.textContent=o.label;
+    items.forEach(b=>{ const sel=b.dataset.v===cur; b.setAttribute('aria-selected',sel?'true':'false'); });
+  };
+  const open=()=>{ pop.hidden=false; root.dataset.open='true'; trig.setAttribute('aria-expanded','true'); const a=items.find(b=>b.getAttribute('aria-selected')==='true')||items[0]; a&&a.focus(); };
+  const close=(focusTrigger)=>{ pop.hidden=true; root.dataset.open='false'; trig.setAttribute('aria-expanded','false'); if(focusTrigger) trig.focus(); };
+  const pick=v=>{ const changed=v!==cur; cur=v; paint(); close(true); if(changed) onChange(v); };
+  trig.addEventListener('click',()=>pop.hidden?open():close(false));
+  trig.addEventListener('keydown',e=>{
+    if(['ArrowDown','ArrowUp','Enter',' '].includes(e.key)){ e.preventDefault(); if(pop.hidden) open(); }
+    if(e.key==='Escape') close(false);
   });
-  document.addEventListener('click', e => {
-    const b = e.target.closest('[data-detail]');
-    if (b && !b.closest('#tbl')) openDetail(b.dataset.detail);
+  items.forEach((b,i)=>{
+    b.addEventListener('click',()=>pick(b.dataset.v));
+    b.addEventListener('keydown',e=>{
+      if(e.key==='ArrowDown'){ e.preventDefault(); items[(i+1)%items.length].focus(); }
+      else if(e.key==='ArrowUp'){ e.preventDefault(); items[(i-1+items.length)%items.length].focus(); }
+      else if(e.key==='Home'){ e.preventDefault(); items[0].focus(); }
+      else if(e.key==='End'){ e.preventDefault(); items[items.length-1].focus(); }
+      else if(e.key==='Escape'){ e.preventDefault(); close(true); }
+      else if(e.key==='Tab'){ close(false); }
+    });
   });
-  $('dlgClose').addEventListener('click', () => $('dlg').close());
-  $('dlg').addEventListener('click', e => { if (e.target === $('dlg')) $('dlg').close(); });
-  $('csv').addEventListener('click', exportCSV);
-  window.addEventListener('resize', () => Object.values(charts).forEach(c => c.resize()));
-  matchMedia('(prefers-color-scheme: dark)').addEventListener('change', () => {
-    Object.values(charts).forEach(c => c.dispose()); for (const k in charts) delete charts[k];
-    renderAll();
-  });
+  document.addEventListener('pointerdown',e=>{ if(!root.contains(e.target)&&!pop.hidden) close(false); });
+  paint();
+  return {get value(){return cur;}, set value(v){cur=v;paint();}};
+}
 
-  renderKPIs();
-  renderTypeFilter();
-  renderMethod();
-  renderAll();
+// ---------- filters ----------
+const typeOpts=[{value:'',label:'すべての種別'}].concat([...new Set(SITES.map(s=>s.type))].sort().map(t=>({value:t,label:t})));
+let typeVal='';
+Choice(byId('fTypeWrap'),typeOpts,'',v=>{ typeVal=v; renderTable(); },'種別で絞り込み');
+
+// ---------- table ----------
+const COLS=[
+ {k:'rank',label:'順位',num:true},
+ {k:'name',label:'サイト'},
+ {k:'type',label:'種別'},
+ {k:'index',label:'Index',num:true},
+ {k:'conf',label:'信頼度'},
+ {k:'coverage',label:'カバレッジ',num:true},
+ {k:'verified',label:'確認項目',num:true},
+ ...CATS.map((c,i)=>({k:'cat'+i,label:c.label,num:true,cat:i})),
+];
+let sortKey='index', sortDir=-1;
+function valueOf(r,k){
+  if(k==='name') return r.s.name;
+  if(k==='type') return r.s.type;
+  if(k==='index') return r.e.index;
+  if(k==='conf') return ({高:3,中:2,低:1})[r.e.confidence]||0;
+  if(k==='coverage') return r.e.coverage;
+  if(k==='verified') return r.e.verified;
+  if(k.startsWith('cat')) return r.e.cats[+k.slice(3)].score;
+  return null;
+}
+function renderHead(){
+  byId('thr').innerHTML=COLS.map(c=>'<th class="'+(c.num?'num':'')+'" aria-sort="'+(sortKey===c.k?(sortDir>0?'ascending':'descending'):'none')+'"><button type="button" data-k="'+c.k+'">'+esc(c.label)+(sortKey===c.k?(sortDir>0?' ▲':' ▼'):'')+'</button></th>').join('');
+  byId('thr').querySelectorAll('button').forEach(b=>b.addEventListener('click',()=>{
+    const k=b.dataset.k; if(sortKey===k) sortDir*=-1; else { sortKey=k; sortDir=(k==='name'||k==='type')?1:-1; }
+    renderHead(); renderTable();
+  }));
+}
+function confPill(c){ const cls=c==='高'?'hi':c==='中'?'mid':'lo'; return '<span class="pill '+cls+'">'+c+'</span>'; }
+function renderTable(){
+  const q=byId('fSearch').value.trim().toLowerCase();
+  const onlyElig=byId('fEligible').checked;
+  let rows=ROWS.filter(r=>(!onlyElig||r.e.eligible)&&(!typeVal||r.s.type===typeVal)&&(!q||(r.s.name+' '+r.s.desc).toLowerCase().includes(q)));
+  const rankOf=new Map(RANKED.map((r,i)=>[r.s.id,i+1]));
+  rows.sort((a,b)=>{
+    const va=valueOf(a,sortKey), vb=valueOf(b,sortKey);
+    if(va==null&&vb==null) return 0; if(va==null) return 1; if(vb==null) return -1;
+    if(typeof va==='string') return va.localeCompare(vb,'ja')*sortDir;
+    return (va-vb)*sortDir;
+  });
+  byId('count').textContent=rows.length+' 件表示';
+  byId('tbody').innerHTML=rows.length?rows.map(r=>{
+    const rk=rankOf.get(r.s.id);
+    const idx=r.e.index;
+    const cells=[
+      rk?rk:'—',
+      '<span class="name">'+esc(r.s.name)+'</span><div class="muted">'+esc(r.s.url.replace(/^https?:\/\//,'').replace(/\/$/,''))+'</div>',
+      esc(r.s.type),
+      idx==null?'<span class="muted">算出対象外</span>':'<b>'+f1(idx)+'</b> <span class="bar" aria-hidden="true"><i style="width:'+Math.max(0,Math.min(100,idx)).toFixed(1)+'%"></i></span>',
+      r.e.ok?confPill(r.e.confidence):'<span class="muted">—</span>',
+      r.e.ok?pct(r.e.coverage):'—',
+      r.e.ok?r.e.verified+' / 22':'0 / 22',
+      ...CATS.map((c,i)=>f1(r.e.cats[i].score)),
+    ];
+    return '<tr tabindex="0" data-id="'+esc(r.s.id)+'">'+cells.map((v,i)=>'<td class="'+(COLS[i].num?'num':'')+'">'+v+'</td>').join('')+'</tr>';
+  }).join(''):'<tr><td colspan="'+COLS.length+'" class="empty">該当するサイトがありません</td></tr>';
+  byId('tbody').querySelectorAll('tr[data-id]').forEach(tr=>{
+    const open=()=>openDetail(tr.dataset.id);
+    tr.addEventListener('click',open);
+    tr.addEventListener('keydown',e=>{ if(e.key==='Enter'||e.key===' '){ e.preventDefault(); open(); } });
+  });
+}
+byId('fSearch').addEventListener('input',renderTable);
+byId('fEligible').addEventListener('change',renderTable);
+byId('btnCsv').addEventListener('click',()=>{
+  const head=['rank','name','type','index','confidence','coverage_pct','verified','codes'].concat(CATS.map(c=>c.key+'_score'));
+  const rankOf=new Map(RANKED.map((r,i)=>[r.s.id,i+1]));
+  const lines=[head.join(',')].concat(ROWS.map(r=>[
+    rankOf.get(r.s.id)||'',r.s.name,r.s.type,r.e.index==null?'':r.e.index.toFixed(1),r.e.ok?r.e.confidence:'',r.e.ok?r.e.coverage.toFixed(1):'',r.e.verified,r.s.codes||'',...r.e.cats.map(c=>c.score==null?'':c.score.toFixed(1))
+  ].map(v=>'"'+String(v).replace(/"/g,'""')+'"').join(',')));
+  const blob=new Blob(['﻿'+lines.join('\n')],{type:'text/csv;charset=utf-8'});
+  const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download='omikuji-bench-v4.csv'; a.click();
+  setTimeout(()=>URL.revokeObjectURL(a.href),1000);
+});
+
+// ---------- matrix ----------
+function renderMatrix(){
+  const order=RANKED.concat(OTHER);
+  const head='<tr><th class="sitecol">サイト</th>'+CHK.map(c=>'<th title="'+esc(c.label)+'">'+c.id+'</th>').join('')+'<th>Index</th></tr>';
+  const body=order.map(r=>{
+    const map=Object.fromEntries(cellsOf(r.s).map(c=>[c.id,c.x]));
+    const tds=CHK.map(c=>{
+      if(!r.s.codes) return '<td><i class="cell cx">—</i></td>';
+      const x=map[c.id];
+      const cls=x==='1'?'c1':x==='0'?'c0':'cq';
+      return '<td><i class="cell '+cls+'" title="'+esc(c.label)+'">'+x+'</i></td>';
+    }).join('');
+    return '<tr><td class="sitecol"><span class="name">'+esc(r.s.name)+'</span></td>'+tds+'<td>'+(r.e.index==null?'—':'<b>'+f1(r.e.index)+'</b>')+'</td></tr>';
+  }).join('');
+  byId('mtx').innerHTML='<thead>'+head+'</thead><tbody>'+body+'</tbody>';
+}
+
+// ---------- detail dialog ----------
+function openDetail(id){
+  const r=ROWS.find(x=>x.s.id===id); if(!r) return;
+  const s=r.s,e=r.e;
+  byId('dlgTitle').textContent=s.name;
+  byId('dlgSub').innerHTML=esc(s.type)+' ・ <a href="'+esc(s.url)+'" target="_blank" rel="noopener">'+esc(s.url)+'</a>';
+  const idxTxt=e.index==null?'算出対象外':f1(e.index);
+  const catRows=CATS.map((c,i)=>{
+    const sc=e.cats[i].score;
+    return '<tr><td>'+esc(c.label)+'</td><td class="num">'+c.weight+'</td><td class="num">'+(e.cats[i].ver)+' / '+c.ids.length+'</td><td class="num">'+f1(sc)+'</td></tr>';
+  }).join('');
+  const chks=cellsOf(s).map(x=>{
+    const c=CHKS_BY_ID[x.id];
+    const cls=x.x==='1'?'c1':x.x==='0'?'c0':'cq';
+    return '<div class="chk"><i class="cell '+cls+'">'+x.x+'</i><div><b>'+x.id+'</b> '+esc(c.label)+'<div class="muted">'+esc(c.note)+'</div></div></div>';
+  }).join('');
+  byId('dlgBody').innerHTML=
+    '<p><b>Index：</b>'+idxTxt+' 　<b>信頼度：</b>'+(e.ok?e.confidence:'—')+' 　<b>カバレッジ：</b>'+(e.ok?pct(e.coverage):'—')+'（'+e.verified+' / 22）</p>'+
+    '<p>'+esc(s.desc)+'</p>'+
+    '<h4>カテゴリ別</h4><div class="tbl-wrap"><table><thead><tr><th>カテゴリ</th><th class="num">重み</th><th class="num">確認項目</th><th class="num">スコア</th></tr></thead><tbody>'+catRows+'</tbody></table></div>'+
+    '<h4>チェックポイント</h4>'+(s.codes?'<div class="chk-list">'+chks+'</div>':'<p class="muted">本文を取得できなかったため、判定は行っていません。</p>')+
+    '<h4>確認した根拠</h4><p>'+esc(s.facts)+'</p>'+
+    '<h4>出典・再確認</h4><p><a href="'+esc(s.source)+'" target="_blank" rel="noopener">'+esc(s.source)+'</a><br><span class="muted">'+esc(s.recheck)+'</span></p>';
+  byId('dlg').showModal();
+}
+byId('dlgClose').addEventListener('click',()=>byId('dlg').close());
+byId('dlg').addEventListener('click',e=>{ if(e.target===byId('dlg')) byId('dlg').close(); });
+
+// ---------- charts ----------
+function chartsReady(){ return !!window.echarts; }
+function renderCharts(){
+  if(!chartsReady()){
+    byId('rankFallback').hidden=false;
+    ['chartRank','chartScatter','chartCat'].forEach(id=>{ byId(id).innerHTML='<div class="fallback">グラフを表示できません（ライブラリ未読込）。</div>'; });
+    return;
+  }
+  const textColor=getComputedStyle(document.body).color;
+  const sub=getComputedStyle(document.body).getPropertyValue('--text-sub').trim()||'#555';
+  const grid=getComputedStyle(document.body).getPropertyValue('--card-border').trim()||'#e2e2e2';
+  const red=getComputedStyle(document.body).getPropertyValue('--accent-red').trim()||'#b91c1c';
+  // rank bar
+  const rc=echarts.init(byId('chartRank'));
+  const rr=RANKED.slice().reverse();
+  rc.setOption({
+    textStyle:{color:textColor,fontFamily:'Zen Kaku Gothic New, sans-serif'},
+    grid:{left:8,right:64,top:8,bottom:8,containLabel:true},
+    tooltip:{trigger:'axis',axisPointer:{type:'shadow'},formatter:p=>{const d=rr[p[0].dataIndex];return '<b>'+esc(d.s.name)+'</b><br>Index '+f1(d.e.index)+'<br>信頼度 '+d.e.confidence+' / カバレッジ '+pct(d.e.coverage);}},
+    xAxis:{type:'value',min:0,max:100,axisLabel:{color:sub},splitLine:{lineStyle:{color:grid}}},
+    yAxis:{type:'category',data:rr.map(d=>d.s.name),axisLabel:{color:textColor,fontSize:11},axisTick:{show:false},axisLine:{show:false}},
+    series:[{type:'bar',data:rr.map(d=>({value:+d.e.index.toFixed(1)})),itemStyle:{color:red,borderRadius:[0,4,4,0]},barMaxWidth:16,label:{show:true,position:'right',color:textColor,fontSize:11,formatter:p=>p.value.toFixed(1)}}]
+  });
+  rc.resize();
+  // scatter
+  const sc=echarts.init(byId('chartScatter'));
+  sc.setOption({
+    textStyle:{color:textColor,fontFamily:'Zen Kaku Gothic New, sans-serif'},
+    grid:{left:48,right:24,top:24,bottom:44},
+    tooltip:{formatter:p=>'<b>'+esc(p.data.name)+'</b><br>カバレッジ '+p.data.value[0].toFixed(1)+'%<br>Index '+(p.data.value[1]==null?'—':p.data.value[1].toFixed(1))},
+    xAxis:{name:'カバレッジ（%）',nameLocation:'middle',nameGap:28,min:50,max:100,axisLabel:{color:sub},splitLine:{lineStyle:{color:grid}}},
+    yAxis:{name:'Index',min:0,max:100,axisLabel:{color:sub},splitLine:{lineStyle:{color:grid}}},
+    series:[{type:'scatter',symbolSize:12,data:ROWS.filter(r=>r.e.ok&&r.e.index!=null).map(r=>({name:r.s.name,value:[r.e.coverage,r.e.index],itemStyle:{color:r.e.eligible?red:sub,opacity:r.e.eligible?.9:.5}})),
+      markLine:{silent:true,symbol:'none',lineStyle:{color:sub,type:'dashed'},data:[{xAxis:60,label:{formatter:'算出下限 60%',color:sub}}]},
+      label:{show:true,position:'right',formatter:p=>p.data.name,fontSize:10,color:textColor}}]
+  });
+  sc.resize();
+  // category grouped bars (top 10)
+  const top=RANKED.slice(0,10);
+  const cc=echarts.init(byId('chartCat'));
+  const palette=['#b91c1c','#d97706','#2f7d55','#2563eb','#7c3aed'];
+  cc.setOption({
+    textStyle:{color:textColor,fontFamily:'Zen Kaku Gothic New, sans-serif'},
+    tooltip:{trigger:'axis',axisPointer:{type:'shadow'}},
+    legend:{top:0,textStyle:{color:textColor,fontSize:11}},
+    grid:{left:8,right:16,top:34,bottom:8,containLabel:true},
+    xAxis:{type:'value',min:0,max:100,axisLabel:{color:sub},splitLine:{lineStyle:{color:grid}}},
+    yAxis:{type:'category',data:top.map(r=>r.s.name).reverse(),axisLabel:{color:textColor,fontSize:11}},
+    series:CATS.map((c,i)=>({name:c.label,type:'bar',barGap:'10%',itemStyle:{color:palette[i]},data:top.map(r=>r.e.cats[i].score==null?null:+r.e.cats[i].score.toFixed(1)).reverse()}))
+  });
+  cc.resize();
+  let t;
+  window.addEventListener('resize',()=>{ clearTimeout(t); t=setTimeout(()=>[rc,sc,cc].forEach(c=>c.resize()),120); });
+}
+function renderCatWeights(){
+  byId('catWeights').innerHTML='<div class="tbl-wrap"><table><thead><tr><th>カテゴリ</th><th class="num">重み</th><th class="num">項目数</th></tr></thead><tbody>'+
+    CATS.map(c=>'<tr><td>'+esc(c.label)+'</td><td class="num">'+c.weight+'</td><td class="num">'+c.ids.length+'</td></tr>').join('')+
+    '<tr><th>合計</th><th class="num">'+CATS.reduce((a,c)=>a+c.weight,0)+'</th><th class="num">'+CHK.length+'</th></tr></tbody></table></div>';
+}
+function renderCritTable(){
+  byId('critTable').innerHTML='<thead><tr><th>ID</th><th>項目</th><th>カテゴリ</th><th class="num">重み（素数）</th><th>判定の注記</th></tr></thead><tbody>'+
+    CHK.map(c=>'<tr><td>'+c.id+'</td><td>'+esc(c.label)+'</td><td>'+esc(CATS.find(k=>k.key===c.cat).label)+'</td><td class="num">'+c.weight+'</td><td class="muted" style="white-space:normal">'+esc(c.note)+'</td></tr>').join('')+'</tbody>';
+}
+
+// ---------- init ----------
+renderKpis();
+renderHead();
+renderTable();
+renderMatrix();
+renderCatWeights();
+renderCritTable();
+renderCharts();
+if(window.renderMathInElement){
+  renderMathInElement(document.getElementById('method'),{delimiters:[{left:'\\[',right:'\\]',display:true},{left:'\\(',right:'\\)',display:false}],throwOnError:false});
+}
 })();
 </script>
 </body>
