@@ -257,7 +257,7 @@ footer a{color:var(--text-sub)}
 <main class="wrap" id="top">
   <div class="hero">
     <h1>おみくじサイト ベンチマーク<span class="badge">v4.0</span></h1>
-    <p>公開ページで確認できた22のチェックポイントを「1 / 0 / ?」で判定し、確認できた項目だけで点数を出します。「?」は集計から除外します。点数は単一レビュアーによる公開情報の机上確認で、実機の動作測定は行っていません。</p>
+    <p>公開ページで確認できた22のチェックポイントを「1 / 0 / ?」で判定し、確認できた項目だけで点数を出します。「?」は加点せず、分母には含めます（未確認のまま満点にはなりません）。点数は単一レビュアーによる公開情報の机上確認で、実機の動作測定は行っていません。</p>
   </div>
 
   <div class="kpis" id="kpis"></div>
@@ -317,7 +317,7 @@ footer a{color:var(--text-sub)}
     <div class="legend">
       <span><i class="cell c1">1</i>公開ページで明記</span>
       <span><i class="cell c0">0</i>確認し明確に無い</span>
-      <span><i class="cell cq">?</i>判断不能（除外）</span>
+      <span><i class="cell cq">?</i>判断不能（加点なし・分母に含む）</span>
       <span><i class="cell cx">—</i>未取得（算出対象外）</span>
     </div>
     <div class="mtx-wrap"><table class="mtx" id="mtx"></table></div>
@@ -328,7 +328,7 @@ footer a{color:var(--text-sub)}
     <p class="note">v3.5 までの 16 項目・旧採点は廃止しました。判定基準は 22 項目に固定しています。</p>
 
     <h3 style="font-size:15px;margin:14px 0 4px">1. 項目判定</h3>
-    <p>各チェックポイントは公開ページの記載のみで判定します。1 は明記、0 は確認して明確に無いと判断できた場合、? は判断できない場合です。? は集計から除外し、推測で補完しません。ページがスクリプトで描画され本文を取得できない場合も ? とします。</p>
+    <p>各チェックポイントは公開ページの記載のみで判定します。1 は明記、0 は確認して明確に無いと判断できた場合、? は判断できない場合です。? は加点しない（0 として扱う）が、分母には含めます。推測で補完しません。ページがスクリプトで描画され本文を取得できない場合も ? とします。</p>
 
     <h3 style="font-size:15px;margin:14px 0 4px">2. 項目の重み</h3>
     <p>項目の重みは素数（2, 3, 5, … 79）としています。これにより、同じ組み合わせ以外で点数が整数や端数の少ない値に揃うのを避けます。</p>
@@ -336,10 +336,10 @@ footer a{color:var(--text-sub)}
 
     <h3 style="font-size:15px;margin:14px 0 4px">3. 集計式</h3>
     <div class="formula">
-      <div>\[ S_c = \frac{\sum_{j \in V_c} w_{j}\, x_{j}}{\sum_{j \in V_c} w_{j}} \times 100 \]</div>
-      <div>\[ \mathrm{Index} = \frac{\sum_{c \in C'} W_c\, S_c}{\sum_{c \in C'} W_c} \]</div>
+      <div>\[ S_c = \frac{\sum_{j \in c} w_{j}\, x_{j}}{\sum_{j \in c} w_{j}} \times 100 \]</div>
+      <div>\[ \mathrm{Index} = \frac{\sum_{c} W_c\, S_c}{\sum_{c} W_c} \]</div>
     </div>
-    <p>\(x_j\) は 1 または 0、\(V_c\) はカテゴリ \(c\) で判定済みの項目、\(W_c\) はカテゴリの重み、\(C'\) は判定済み項目を 1 つ以上持つカテゴリです。</p>
+    <p>\(x_j\) は 1 のとき 1、0 と ? のとき 0（? は加点なし）。\(j \in c\) はカテゴリ \(c\) の全項目、\(W_c\) はカテゴリの重みです。分母は判定の有無にかかわらず全項目なので、満点（100）になるのは全項目が 1 と確認された場合だけです。</p>
 
     <h3 style="font-size:15px;margin:14px 0 4px">4. 算出対象</h3>
     <p>判定済み項目の割合（カバレッジ）が 60% 以上、かつ 5 カテゴリのうち 4 つ以上で判定済みの場合に順位を付けます。信頼度はカバレッジで区分します（75% 以上を高、55% 以上を中、それ未満を低）。</p>
@@ -751,15 +751,15 @@ function evaluate(s){
   const cats=CATS.map((c,i)=>{
     const xs=(parts[i]||'').split('');
     let num=0,den=0,ver=0;
-    xs.forEach((x,j)=>{ if(x==='?') return; ver++; den+=c.pw[j]; if(x==='1') num+=c.pw[j]; });
+    xs.forEach((x,j)=>{ den+=c.pw[j]; if(x!=='?') ver++; if(x==='1') num+=c.pw[j]; });
     return {ver,score:den?num/den*100:null};
   });
   const verified=cats.reduce((a,c)=>a+c.ver,0);
   const coverage=verified/22*100;
   const covered=cats.filter(c=>c.ver>0).length;
   let num=0,den=0;
-  cats.forEach((c,i)=>{ if(c.score!=null){ num+=CATS[i].weight*c.score; den+=CATS[i].weight; } });
-  const index=den?num/den:null;
+  cats.forEach((c,i)=>{ num+=CATS[i].weight*c.score; den+=CATS[i].weight; });
+  const index=(den&&verified>0)?num/den:null;
   const eligible=index!=null && coverage>=60 && covered>=4;
   const confidence=coverage>=75?'高':coverage>=55?'中':'低';
   return {ok:true,cats,verified,coverage,covered,index,eligible,confidence};
@@ -837,7 +837,7 @@ function renderTable(){
     if(typeof va==='string') return va.localeCompare(vb,'ja')*sortDir;
     return (va-vb)*sortDir;
   });
-  byId('count').textContent=rows.length+' 件表示';
+  byId('count').textContent=rows.length+' / '+ROWS.length+' 件表示';
   byId('tbody').innerHTML=rows.length?rows.map(r=>{
     const rk=rankOf.get(r.s.id);
     const idx=r.e.index;
