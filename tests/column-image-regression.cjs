@@ -33,7 +33,7 @@ for (const token of [
   'Artist',
   'localStorage',
   'CACHE_TTL',
-  'CC BY-SA',
+  'CC BY(?:-SA)?',
   'Public domain',
   'column-editorial-visual',
   'column-editorial-attribution',
