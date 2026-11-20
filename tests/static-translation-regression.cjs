@@ -29,6 +29,8 @@ for (const language of languages) {
   assert.equal(Object.keys(dictionary.translations).length, manifest.entryCount);
   assert.deepEqual(Object.keys(curated.languages[language]).sort(), curatedKeys);
   assert.ok(Object.values(curated.languages[language]).every((value) => typeof value === 'string' && value.trim()));
+  const effective = { ...dictionary.translations, ...curated.languages[language] };
+  assert.ok(Object.values(effective).every((value) => typeof value === 'string' && value.trim()), `${language} has an empty effective translation`);
   assert.equal(manifest.sizes[language], Buffer.byteLength(read(`assets/data/static-translations/${language}.json`), 'utf8'));
 }
 
