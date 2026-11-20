@@ -50,8 +50,8 @@ export async function onRequest({ request, next }) {
     // Hash the exact HTML being served so a changed inline script cannot silently
     // disable page JavaScript, navigation, or primary actions through a stale CSP.
     const html = await response.text();
-    const inlineScripts = [...html.matchAll(/<script\\b([^>]*)>([\\s\\S]*?)<\\/script\\s*>/gi)]
-      .filter((match) => !/\\bsrc\\s*=/.test(match[1]));
+    const inlineScripts = [...html.matchAll(/<script\b([^>]*)>([\s\\S]*?)<\/script\s*>/gi)]
+      .filter((match) => !/\bsrc\s*=/.test(match[1]));
     const scriptHashes = await Promise.all(inlineScripts.map(async (match) => {
       const digest = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(match[2]));
       const base64 = btoa(String.fromCharCode(...new Uint8Array(digest)));
