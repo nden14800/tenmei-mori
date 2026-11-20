@@ -229,7 +229,7 @@ assert.ok(privacySection.includes('<strong>第35版 ・ 2026/11/20 ・ 現行版
 assert.ok(privacySection.includes('第35版の本文スナップショットを読み込みます。'), '改定履歴の初期スナップショット表示が現行版35になっていません。');
 assert.ok(privacySection.includes('HttpOnly属性により、JavaScriptからCookie値を読み取ることはできません。'), 'HttpOnlyセッションCookieの説明がありません。');
 assert.ok(privacySection.includes('最大14日') && privacySection.includes('最大30日'), 'Mailerooの公表保持期間が最新情報に更新されていません。');
-assert.ok(privacySection.includes('すべての処理がEU内だけで完結することを意味しません。'), 'Mailerooのサブプロセッサーによる補助処理の範囲が明示されていません。');
+assert.ok(privacySection.includes('関連するすべての処理がEU内だけで完結することを意味しません。'), 'Mailerooのサブプロセッサーによる補助処理の範囲が明示されていません。');
 assert.ok(privacySection.includes('期限はデータベース上の削除期限を意味しません。'), 'Tursoのレート制限データの期限と物理削除が区別されていません。');
 assert(fs.readFileSync(path.resolve(__dirname, '..', 'index.html'), 'utf8').includes('本文スナップショット未記録'), '未記録版の正直なスナップショット表示がありません。');
 assert(html.includes('class="document-revision-snapshot__details"'), '本文スナップショットが開閉可能なdetailsになっていません。');
