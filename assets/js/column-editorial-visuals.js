@@ -41,14 +41,25 @@
 
     function createVisual(item, sections) {
         const figure = document.createElement('figure');
-        figure.className = 'column-native-visual';
+        const isComparison = /違い|比較|対比/.test(String(item.title || '')) && sections.length >= 3;
+        figure.className = 'column-native-visual' + (isComparison ? ' column-native-visual--comparison' : '');
         figure.setAttribute('aria-labelledby', 'column-native-visual-title-' + item.id);
         appendText(figure, 'p', 'ARTICLE GUIDE', 'column-native-visual__eyebrow');
-        appendText(figure, 'h2', 'この記事の見取り図', 'column-native-visual__title').id = 'column-native-visual-title-' + item.id;
-        appendText(figure, 'p', '本文の見出しと説明をもとに、主な論点を整理しています。', 'column-native-visual__description');
+        appendText(
+            figure,
+            'h2',
+            isComparison ? '四つの言葉の違いを整理' : 'この記事の見取り図',
+            'column-native-visual__title'
+        ).id = 'column-native-visual-title-' + item.id;
+        appendText(
+            figure,
+            'p',
+            isComparison ? '本文の説明に沿って、関係する言葉と役割を並べて確認できます。' : '本文の見出しと説明をもとに、主な論点を整理しています。',
+            'column-native-visual__description'
+        );
 
         const list = document.createElement('ol');
-        list.className = 'column-native-visual__list';
+        list.className = 'column-native-visual__list column-native-visual__list--count-' + sections.length;
         sections.forEach((section, index) => {
             const row = document.createElement('li');
             row.className = 'column-native-visual__item';
