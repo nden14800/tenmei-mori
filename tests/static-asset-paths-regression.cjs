@@ -4,6 +4,8 @@ const path = require('node:path');
 
 const root = path.resolve(__dirname, '..');
 const html = fs.readFileSync(path.join(root, 'index.html'), 'utf8');
+const imageScriptPath = path.join(root, 'assets', 'js', 'column-editorial-images.js');
+const imageAssetDirectory = path.join(root, 'assets', 'article-images');
 const requiredFaviconFiles = [
   'favicon-96x96.png',
   'favicon.svg',
@@ -40,10 +42,14 @@ assert.equal(manifest.name, '天命乃杜', 'Manifestのサイト名が天命乃
 assert(manifest.icons.some((icon) => icon.src === 'web-app-manifest-192x192.png' && icon.sizes === '192x192'), '192pxのManifestアイコン参照が不正です。');
 assert(manifest.icons.some((icon) => icon.src === 'web-app-manifest-512x512.png' && icon.sizes === '512x512'), '512pxのManifestアイコン参照が不正です。');
 
-const generatedImageReferences = [...html.matchAll(/<img src="(assets\/article-images\/column-\d{3}-overview\.webp)"/g)].map((match) => match[1]);
-assert(generatedImageReferences.length >= 56, 'RawGitHackで確認すべきAI生成画像の文書相対参照が不足しています。');
-for (const reference of generatedImageReferences) {
-  assert(fs.existsSync(path.join(root, reference)), `AI生成画像の実ファイルがありません: ${reference}`);
-}
+assert(fs.existsSync(imageScriptPath), 'コラム共通画像ライブラリがありません。');
+assert(fs.existsSync(imageAssetDirectory), '記事資料画像ディレクトリがありません。');
+assert(html.includes('<script src="assets/js/column-editorial-images.js" defer></script>'), 'コラム画像ライブラリの配信参照がありません。');
+assert(!/assets\/article-images\/column-\d{3}-overview\.(?:webp|svg)/.test(html), '旧AI生成画像への参照が残っています。');
+assert.equal(
+  fs.readdirSync(imageAssetDirectory).filter((name) => /^column-\d{3}-overview\.(?:webp|jpg|jpeg|png|svg)$/i.test(name)).length,
+  0,
+  '旧AI生成コラム画像ファイルが残っています。'
+);
 
-console.log(`静的アセット参照回帰テストに合格しました。AI生成画像 ${generatedImageReferences.length} 件と本サイトアイコンを確認しました。`);
+console.log('静的アセット参照回帰テストに合格しました。共通画像ライブラリ、旧AI画像の撤去、本サイトアイコンを確認しました。');
