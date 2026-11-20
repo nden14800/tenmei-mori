@@ -57,6 +57,22 @@ for (const language of manifest.languages) {
   assert.equal(Object.keys(dictionary.translations).length, manifest.entryCount, `${language}辞書のエントリ数が不正です`);
 }
 
+const curated = JSON.parse(read('assets/data/static-translations/curated.json'));
+assert.equal(curated.schemaVersion, 1, 'ChatGPT翻訳辞書のスキーマが不正です');
+assert.deepEqual(Object.keys(curated.languages).sort(), [...manifest.languages].sort(), 'ChatGPT翻訳辞書の対象言語が一致しません');
+const curatedKeys = Object.keys(curated.languages.en);
+assert.ok(curatedKeys.length >= 20, 'ChatGPT翻訳辞書の基本UI翻訳が不足しています');
+for (const language of manifest.languages) {
+  assert.deepEqual(Object.keys(curated.languages[language]).sort(), [...curatedKeys].sort(), `${language}のChatGPT翻訳キーが一致しません`);
+  assert.ok(Object.values(curated.languages[language]).every((value) => typeof value === 'string' && value.trim()), `${language}のChatGPT翻訳に空欄があります`);
+}
+assert.equal(curated.languages.en['おみくじ'], 'Omikuji');
+assert.equal(curated.languages.en['ログイン'], 'Log in');
+assert.equal(curated.languages.ko['ログイン'], '로그인');
+assert.equal(curated.languages.zh_hant['プライバシーポリシー'], '隱私權政策');
+assert.ok(translationModule.includes('curated.json'), 'ChatGPT翻訳辞書がランタイムで読み込まれていません');
+assert.ok(translationModule.includes('Object.assign({}, legacyTranslations, curatedTranslations)'), 'ChatGPT翻訳が旧辞書より優先されていません');
+
 const english = JSON.parse(fs.readFileSync(path.join(directory, 'en.json'), 'utf8')).translations;
 for (const expectedLabel of ['Tenmei no Mori', 'Omikuji History', 'Pilgrimage Certificate', 'Shrine Office News', 'Omikuji Journal']) {
   assert.ok(Object.values(english).some((value) => value.includes(expectedLabel)), `英語辞書に用語表ラベルがありません: ${expectedLabel}`);
