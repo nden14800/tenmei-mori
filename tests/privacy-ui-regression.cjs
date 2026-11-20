@@ -99,7 +99,7 @@ assert.equal(
 assert.equal(
   (externalServicesSection.match(/<p class="font-bold text-sm">(?:1[0-4]|[1-9])\./g) || []).length,
   14,
-  '外部サービス12件の開示カードが保持されていません。'
+  '外部サービス14件の開示カードが保持されていません。'
 );
 assert.equal(
   (privacySection.match(/<p class="font-bold text-sm">(?:1[0-4]|[1-9])\./g) || []).length,
@@ -119,6 +119,8 @@ assert.equal(
 
 [
   'https://maileroo.com/legal/privacy-policy',
+  'https://maileroo.com/legal/data-processing-addendum',
+  'https://maileroo.com/trust-center',
   'https://www.cloudflare.com/privacypolicy/',
   'https://turso.tech/privacy-policy',
   'https://policies.google.com/privacy',
@@ -196,10 +198,10 @@ for (const documentKey of ['about', 'privacy']) {
   assert(currentVersion.availability === 'full', documentKey + 'の現行版がfullとして記録されていません。');
   assert(currentVersion.html && currentVersion.html.trim(), documentKey + 'の現行版本文スナップショットがありません。');
   if (documentKey === 'privacy') {
-    assert.equal(document.current.edition, 35, 'プライバシーポリシーの現行版メタデータが第34版ではありません。');
+    assert.equal(document.current.edition, 35, 'プライバシーポリシーの現行版メタデータが第35版ではありません。');
     assert.equal(document.current.revisedLabel, '2026/11/20 (第35版)', 'プライバシーポリシーの現行改定日が一致しません。');
-    assert(currentVersion.html.includes('現行版（第35版）の本文です。'), 'プライバシーポリシー第34版の本文ラベルが現行版と一致しません。');
-    assert(!currentVersion.html.includes('現行版（第32版）の本文です。'), 'プライバシーポリシー第34版のアーカイブに古い第32版ラベルが残っています。');
+    assert(currentVersion.html.includes('現行版（第35版）の本文です。'), 'プライバシーポリシー第35版の本文ラベルが現行版と一致しません。');
+    assert(!currentVersion.html.includes('現行版（第32版）の本文です。'), 'プライバシーポリシー第35版のアーカイブに古い第32版ラベルが残っています。');
   }
   assert(currentVersion.changeDescription && currentVersion.changeDescription.trim(), documentKey + 'の現行版改定内容がありません。');
   document.versions.forEach((version) => {
@@ -216,6 +218,8 @@ assert.equal(archive.documents.about.versions.find((version) => version.edition 
 assert.equal(archive.documents.privacy.versions.find((version) => version.edition === 15).availability, 'missing', 'プライバシー第15版は欠番・記録なしとして保持します。');
 assert.equal(archive.documents.about.versions[0].edition, 27, '当サイトについての現行版がアーカイブ先頭にありません。');
 assert.equal(archive.documents.about.current.edition, 27, '当サイトについての現行版メタデータが第27版ではありません。');
+assert.ok(archive.documents.about.versions[0].html.includes('直近最大10件の会話メッセージ'), '第27版アーカイブにAI案内の画面情報・会話範囲がありません。');
+assert.equal(archive.source.lastReviewedAt, '2026-11-20', '公開文書アーカイブの確認日が更新されていません。');
 assert.equal(archive.documents.privacy.versions[0].edition, 35, 'プライバシーポリシーの現行版がアーカイブ先頭にありません。');
 assert.match(archive.documents.privacy.versions[0].changeDescription, /独自AI案内/);
 assert.ok(archive.documents.privacy.versions[0].html.includes('12. 天命乃杜独自のAI案内'), '第35版アーカイブにAI案内の開示がありません。');
@@ -225,14 +229,15 @@ assert.ok(privacySection.includes('<strong>第35版 ・ 2026/11/20 ・ 現行版
 assert.ok(privacySection.includes('第35版の本文スナップショットを読み込みます。'), '改定履歴の初期スナップショット表示が現行版35になっていません。');
 assert.ok(privacySection.includes('HttpOnly属性により、JavaScriptからCookie値を読み取ることはできません。'), 'HttpOnlyセッションCookieの説明がありません。');
 assert.ok(privacySection.includes('最大14日') && privacySection.includes('最大30日'), 'Mailerooの公表保持期間が最新情報に更新されていません。');
+assert.ok(privacySection.includes('期限はデータベース上の削除期限を意味しません。'), 'Tursoのレート制限データの期限と物理削除が区別されていません。');
 assert(fs.readFileSync(path.resolve(__dirname, '..', 'index.html'), 'utf8').includes('本文スナップショット未記録'), '未記録版の正直なスナップショット表示がありません。');
 assert(html.includes('class="document-revision-snapshot__details"'), '本文スナップショットが開閉可能なdetailsになっていません。');
 assert(html.includes('class="document-revision-snapshot__summary"'), '本文スナップショットの開閉見出しがありません。');
 assert(html.includes('bi bi-chevron-down document-revision-snapshot__chevron'), '本文スナップショットの開閉アイコンがサイト共通のBootstrap Iconsになっていません。');
 assert(html.includes('.document-revision-snapshot__details[open] .document-revision-snapshot__chevron'), '本文スナップショットの開閉状態とアイコン表示が連動していません。');
 assert(!html.includes('<details class="document-revision-snapshot__details" open>'), '本文スナップショットは初期状態で開いてはいけません。');
-assert(html.includes('第27版の本文スナップショットを読み込みます。'), '当サイトについての初期スナップショット表示が現行第26版と一致しません。');
-assert(html.includes('第35版の本文スナップショットを読み込みます。'), 'プライバシーポリシーの初期スナップショット表示が現行第34版と一致しません。');
+assert(html.includes('第27版の本文スナップショットを読み込みます。'), '当サイトについての初期スナップショット表示が現行第27版と一致しません。');
+assert(html.includes('第35版の本文スナップショットを読み込みます。'), 'プライバシーポリシーの初期スナップショット表示が現行第35版と一致しません。');
 assert(!html.includes('第24版の本文スナップショットは保存されていません。'), '初期表示に別版のスナップショット状態が残っています。');
 assert(!html.includes('第32版の本文スナップショットを読み込みます。'), '初期表示に旧版のスナップショット読み込み表示が残っています。');
 // 改定履歴スナップショット内の旧カスタム選択欄が本体側コントロールを壊さないことを保証する。
