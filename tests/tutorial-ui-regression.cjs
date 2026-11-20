@@ -26,6 +26,12 @@ assert(tutorialScript, 'ウォークスルーの制御スクリプトを抽出�
   'id="tutorial-next-btn"',
   'id="tutorial-next-label"',
   'id="tutorial-next-icon"',
+  '画面右下のAI案内も使えます',
+  '直近最大10件の会話',
+  '見えている見出し（最大8件）',
+  '操作ラベルと位置区分（最大12件）',
+  '画面全体や入力欄の値は送信されません',
+  '個人情報は入力しないでください',
 ].forEach((text) => {
   assert(tutorialSection.includes(text), `Ver.4.0ウォークスルーの構造が不足しています: ${text}`);
 });

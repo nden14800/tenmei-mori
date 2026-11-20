@@ -17,7 +17,7 @@ for (const expected of [
   "script.id = 'tenmei-ai-agent-script'",
   "script.src = '/assets/js/tenmei-ai-agent.js'",
   "天命乃杜独自のAI案内（Cloudflare Workers AI）",
-  "質問文と直近の会話だけを回答生成のためCloudflare Workers AIへ送信",
+  "質問文と直近最大10件の会話メッセージに加え、質問送信時のページタイトル",
 ]) assert.ok(html.includes(expected), '独自AIへの移行実装が不足しています: ' + expected);
 for (const prohibited of ["CHATLING_CHATBOT_ID","window.chtlConfig","chatling.ai","Chatling AI Agent","Chatlingの標準ウィジェット","chtl-script","chtl-chat-iframe"]) {
   assert.ok(!html.toLowerCase().includes(prohibited.toLowerCase()), '旧外部AI実装がHTMLに残っています: ' + prohibited);
@@ -64,7 +64,7 @@ for (const expectedLabel of ['Tenmei no Mori', 'Omikuji History', 'Pilgrimage Ce
 
 for (const expected of [
   '12. 天命乃杜独自のAI案内（Cloudflare Workers AI）',
-  '送信される情報：利用者が入力した質問と、その会話で直近に送信する会話文。',
+  '送信される情報：利用者が入力した質問、直近最大10件の会話メッセージ、質問送信時のページタイトル',
   '当サイトはAI案内の会話履歴をデータベース、アカウント、ブラウザー内ストレージへ保存しません',
   'AI案内はアカウント操作、データ変更、有人対応、運営者への転送を行いません',
 ]) {
