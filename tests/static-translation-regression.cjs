@@ -55,10 +55,12 @@ assert.ok(translationModule.includes('まだ翻訳が用意されていない項
 assert.ok(!translationModule.includes('従来の機械翻訳辞書で補完します'));
 assert.ok(translationModule.includes('ChatGPT作成の翻訳がない項目は日本語のまま表示されます'));
 assert.ok(translationModule.includes('if (translatedValue !== normalized) translated += 1;'));
-assert.ok(translationBuilder.includes('def apply_english_overrides'));
-assert.ok(translationBuilder.includes('apply_english_overrides(translate_mapping('));
-assert.ok(translationBuilder.includes("'curatedGenerationVersion'"));
-assert.ok(translationBuilder.includes('previous = read_manifest()'));
+assert.ok(translationBuilder.includes('chatgpt-authored-only'));
+assert.ok(translationBuilder.includes('Only reviewed ChatGPT-authored entries'));
+assert.ok(!translationBuilder.includes('argostranslate'));
+assert.ok(!translationBuilder.includes('OpenCC'));
+assert.ok(!translationBuilder.includes('translate_mapping'));
+assert.ok(translationBuilder.includes('curated.json'));
 
 console.log(JSON.stringify({
   status: 'ok',
