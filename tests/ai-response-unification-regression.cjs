@@ -53,8 +53,8 @@ requireText(markdownRenderer, 'code.textContent = codeLines.join', 'コード本
 requireText(markdownRenderer, "url.protocol === 'https:' || url.protocol === 'http:'", 'Markdownリンクのプロトコル制限がありません。');
 
 
-requireText(html, "infoTitle: 'AI悩み相談について'", 'AI悩み相談の詳細情報がありません。');
-requireText(html, "infoTitle: 'AI夢占いについて'", 'AI夢占いの詳細情報がありません。');
+requireText(html, `infoTitle:'AI悩み相談について'`, 'AI悩み相談の詳細情報がありません。');
+requireText(html, `infoTitle:'AI夢占いについて'`, 'AI夢占いの詳細情報がありません。');
 requireText(html, '相談内容・AI回答はデータベースに保存されません。', 'AI悩み相談の保存仕様が情報パネルにありません。');
 requireText(html, '夢の本文・AIによる解釈・生成日時は会員向けの夢の記録として保存されます。', 'AI夢占いの保存仕様が情報パネルにありません。');
 
