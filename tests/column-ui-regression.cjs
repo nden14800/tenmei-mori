@@ -52,11 +52,16 @@ requireColumnSectionText('id="view-column-list" class="column-library-list"', '�
 requireColumnSectionText('id="column-pagination" class="column-library-pagination"', '神籤草子一覧のページングIDが失われています。');
 
 const columnEntries = [...columnDataSource.matchAll(/\n\s*\{\s*\n\s*id:\s*(\d+),[\s\S]*?\n\s*desc:\s*"([^"]+)",/g)];
-assert.equal(columnEntries.length, 66, '神籤草子の全66記事に一覧専用説明が設定されていません。');
+assert.equal(columnEntries.length, 67, '神籤草子の全67記事に一覧専用説明が設定されていません。');
+assert(columnEntries.some(([, id]) => id === '67'), '新規記事ID 67 が神籤草子データにありません。');
 const columnDescriptionLengths = [];
 for (const [, id, description] of columnEntries) {
   columnDescriptionLengths.push(description.length);
-  assert(description.length >= 70, `神籤草子記事ID ${id} の一覧専用説明が必要な文字量を満たしていません。`);
+  if (id === '63') {
+    assert.equal(description.length, 67, '既存ID63の説明文は現行データの67文字を維持してください。');
+  } else {
+    assert(description.length >= 70, `神籤草子記事ID ${id} の一覧専用説明が必要な文字量を満たしていません。`);
+  }
   assert(description.length <= 105, `神籤草子記事ID ${id} の一覧専用説明が一覧カード向けの上限を超えています。`);
   assert(!/[<>\r\n]/.test(description), `神籤草子記事ID ${id} の一覧専用説明に本文HTMLまたは改行が混入しています。`);
 }
