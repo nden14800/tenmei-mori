@@ -68,8 +68,8 @@ const dreamBlock = worker.slice(dreamStart, dreamEnd);
 
 requireText(worryBlock, 'streamUnifiedAIResponse(', 'AI悩み相談がストリーミングAPIを利用していません。');
 requireText(dreamBlock, 'streamUnifiedAIResponse(', 'AI夢占いがストリーミングAPIを利用していません。');
-requireText(worryBlock, 'text/event-stream', 'AI悩み相談のSSE応答がありません。');
-requireText(dreamBlock, 'text/event-stream', 'AI夢占いのSSE応答がありません。');
+requireText(worker, '"Content-Type": "text/event-stream; charset=utf-8"', '共通ストリーミング関数のSSE応答ヘッダーがありません。');
+requireText(worker, 'return new Response(readable,', '共通ストリーミング関数がReadableStreamをHTTP応答として返していません。');
 requireText(dreamBlock, 'INSERT INTO dream_history', 'AI夢占いの履歴保存が失われています。');
 
 requireText(worker, 'if (url.pathname === "/api/summary-feedback" && method === "POST")', 'AI要約のフィードバック保存APIまで削除されていません。');
