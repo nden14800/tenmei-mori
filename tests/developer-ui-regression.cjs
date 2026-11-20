@@ -80,19 +80,21 @@ assert.equal(
   'https://www.youtube.com/@nden148-x2g',
   'https://github.com/nden14800/tenmei-mori',
   'https://github.com/nden14800/tenmei-mori-article-analysis-dashboard',
+  'https://github.com/nden14800/tenmei-mori/tree/main/status',
+  'https://github.com/nden14800/tenmei-mori/tree/main/omikuji-bench',
 ].forEach((href) => {
   requireText(href, `開発者について画面の既存リンクが失われています: ${href}`);
 });
 
 assert.equal(
   (developerSection.split('target="_blank" rel="noopener noreferrer" class="developer-study-').length - 1),
-  6,
-  '開発者について画面の外部リンク6件に安全な新規タブ属性が揃っていません。'
+  7,
+  '開発者について画面の外部リンク7件に安全な新規タブ属性が揃っていません。'
 );
 assert.equal(
   (developerSection.match(/aria-label="/g) || []).length,
-  7,
-  '開発者について画面の活動要点と外部リンク6件にアクセシブルな名称が揃っていません。'
+  8,
+  '開発者について画面の活動要点と外部リンク7件にアクセシブルな名称が揃っていません。'
 );
 requireText(
   'class="bi bi-person-fill" aria-hidden="true"',
