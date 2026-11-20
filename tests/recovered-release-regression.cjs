@@ -10,6 +10,7 @@ const read = (relative) => fs.readFileSync(path.join(root, relative), 'utf8');
 const html = read('index.html');
 const headers = read('_headers');
 const translationModule = read('assets/js/static-translation.js');
+const translationBuilder = read('scripts/build-static-translation-data.py');
 
 for (const expected of [
   "const COOKIE_PREFERENCES_VERSION = 4",
@@ -72,6 +73,9 @@ assert.equal(curated.languages.ko['ログイン'], '로그인');
 assert.equal(curated.languages.zh_hant['プライバシーポリシー'], '隱私權政策');
 assert.ok(translationModule.includes('curated.json'), 'ChatGPT翻訳辞書がランタイムで読み込まれていません');
 assert.ok(translationModule.includes('Object.assign({}, legacyTranslations, curatedTranslations)'), 'ChatGPT翻訳が旧辞書より優先されていません');
+assert.ok(translationBuilder.includes('def apply_english_overrides'), '英語の品質修正が辞書生成処理に組み込まれていません');
+assert.ok(translationBuilder.includes('apply_english_overrides(translate_mapping('), '英語辞書の再生成時に品質修正が適用されません');
+assert.ok(translationBuilder.includes("'curatedGenerationVersion'"), '辞書再生成時にChatGPT翻訳の版情報が維持されません');
 
 const english = JSON.parse(fs.readFileSync(path.join(directory, 'en.json'), 'utf8')).translations;
 for (const [source, expected] of Object.entries({
