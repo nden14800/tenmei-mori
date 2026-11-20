@@ -59,6 +59,7 @@
       const listItems = nodes.filter((node) => node.tagName === 'LI').map((node) => summarize(node.textContent, 110)).filter(Boolean).slice(0, 4);
       return {
         index,
+        level: Math.max(0, Number(heading.tagName.slice(1)) - 2),
         title: normalizeText(heading.textContent),
         summary: summarize(paragraphs.slice(0, 2).join(' '), MAX_SUMMARY_LENGTH) || summarize(listItems.join(' / ')),
         listItems,
@@ -77,7 +78,7 @@
       const start = Math.max(0, position - 54);
       const end = Math.min(text.length, position + value.length + 62);
       return { value, context: summarize(text.slice(start, end), 112) };
-    }).filter((metric) => metric.context.length > metric.value.length + 4);
+    }).filter((metric) => !/年$/.test(metric.value) && metric.context.length > metric.value.length + 4);
   }
 
   function detectMode(item, article, sections) {
@@ -95,7 +96,9 @@
     if (/比較|違い|対比|比較表|メリット.*デメリット|長所.*短所|AとB|vs\.?|対.*比/i.test(title + ' ' + headings)) return 'comparison';
     if (datedSections >= 2 || (/年表|沿革|歴史|変遷|時系列|経緯|これまでの歩み|履歴/.test(title + headings) && datedSections >= 1)) return 'timeline';
     if (/判断|選び方|どちら|分岐|条件|場合分け|診断|決め方/.test(title + headings) && sections.length >= 3) return 'decision';
-    if (/原因|理由|なぜ|影響|結果|背景|要因|つながり/.test(title + headings) && sections.length >= 3) return 'causal';
+    const hasCauseTerms = /原因|理由|背景|要因/.test(headings);
+    const hasEffectTerms = /影響|結果|帰結/.test(headings);
+    if (hasCauseTerms && hasEffectTerms && sections.length >= 3) return 'causal';
     if (/段階|フェーズ|ライフサイクル|周期|循環|成長過程/.test(title + headings) && sections.length >= 3) return 'lifecycle';
     if (/手順|使い方|設定方法|進め方|流れ|プロセス|ステップ|導入方法|操作方法/.test(title + headings) || numberedSections >= 3) return 'process';
     if (/階層|体系|構造|分類|区分|種類|役割|仕組み|構成図/.test(title + headings) && sections.length >= 3) return 'hierarchy';
@@ -199,7 +202,8 @@
     const grid = append(body, 'div', null, 'column-visual-causal');
     sections.slice(0, 3).forEach((section, index) => {
       const node = append(grid, 'section', null, 'column-visual-causal__node');
-      append(node, 'span', ['BACKGROUND', 'CAUSE', 'RESULT'][index], 'column-visual-causal__tag');
+      const role = /原因|要因/.test(section.title) ? 'CAUSE' : /影響|結果|帰結/.test(section.title) ? 'EFFECT' : 'CONTEXT';
+      append(node, 'span', role + ' / ' + String(index + 1).padStart(2, '0'), 'column-visual-causal__tag');
       append(node, 'h3', section.title, 'column-visual-causal__title');
       append(node, 'p', section.summary, 'column-visual-causal__summary');
     });
@@ -231,7 +235,7 @@
     const stack = append(body, 'ol', null, 'column-visual-hierarchy');
     sections.slice(0, 5).forEach((section, index) => {
       const level = append(stack, 'li', null, 'column-visual-hierarchy__level');
-      level.style.setProperty('--level', Math.min(index, 3));
+      level.style.setProperty('--level', Math.min(Number(section.level) || 0, 3));
       append(level, 'span', 'L' + (index + 1), 'column-visual-hierarchy__rank');
       const copy = append(level, 'div', null, 'column-visual-hierarchy__copy');
       append(copy, 'h3', section.title, 'column-visual-hierarchy__title');
