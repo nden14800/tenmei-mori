@@ -3917,52 +3917,28 @@
 .column-reader-body .article-content li { color: var(--column-ink); }
 .column-reader-body .article-content a { color: var(--column-indigo); text-decoration-color: rgba(75, 63, 164, 0.35); text-underline-offset: 0.18em; }
 .column-reader-body .article-visual--screen { background: var(--column-paper-soft); }
-.column-reader-body .column-editorial-visual {
-    max-width: min(100%, 760px);
-    margin: 1.75rem auto 2.15rem;
-    overflow: hidden;
-    border: 1px solid var(--column-line);
-    border-radius: 16px;
-    background: var(--column-paper-soft);
-    box-shadow: 0 10px 24px rgba(50, 40, 82, 0.08);
+.column-reader-body .column-native-visual {
+    max-width: min(100%, 820px); margin: 2rem auto 2.35rem; padding: clamp(1.1rem, 2.5vw, 1.65rem);
+    border: 1px solid var(--column-line); border-radius: 14px; background: var(--column-paper-soft);
+    box-shadow: 0 8px 22px rgba(50, 40, 82, 0.055);
 }
-.column-reader-body .column-editorial-visual img {
-    display: block;
-    width: 100%;
-    aspect-ratio: 16 / 9;
-    object-fit: cover;
-    background: var(--column-paper-deep);
+.column-native-visual__eyebrow { margin: 0 0 0.45rem; color: var(--column-indigo); font: 700 0.68rem/1.5 'Zen Kaku Gothic New', sans-serif; letter-spacing: 0.12em; }
+.column-native-visual__title { margin: 0; color: var(--column-ink); font: 700 clamp(1.05rem, 2vw, 1.28rem)/1.65 'Zen Old Mincho', 'Shippori Mincho', serif; }
+.column-native-visual__description { margin: 0.45rem 0 1.1rem; color: var(--column-muted); font: 0.8rem/1.8 'Zen Kaku Gothic New', sans-serif; }
+.column-native-visual__list { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 0; margin: 0; padding: 0; list-style: none; border-top: 1px solid var(--column-line); }
+.column-native-visual__item { min-width: 0; padding: 1rem 1rem 0.2rem 0; }
+.column-native-visual__item + .column-native-visual__item { padding-left: 1rem; border-left: 1px solid var(--column-line); }
+.column-native-visual__number { display: inline-flex; align-items: center; justify-content: center; min-width: 1.8rem; height: 1.8rem; margin-bottom: 0.55rem; border: 1px solid var(--column-line); border-radius: 50%; color: var(--column-indigo); font: 700 0.68rem/1 'Zen Kaku Gothic New', sans-serif; font-variant-numeric: tabular-nums; }
+.column-native-visual__item-title { margin: 0 0 0.35rem; color: var(--column-ink); font: 700 0.88rem/1.65 'Zen Kaku Gothic New', sans-serif; }
+.column-native-visual__item-summary { margin: 0; color: var(--column-muted); font: 0.76rem/1.8 'Zen Kaku Gothic New', sans-serif; }
+.column-native-visual__caption { margin: 1rem 0 0; padding-top: 0.75rem; border-top: 1px solid var(--column-line); color: var(--column-muted); font: 0.68rem/1.7 'Zen Kaku Gothic New', sans-serif; }
+@media (max-width: 680px) {
+    .column-native-visual__list { grid-template-columns: minmax(0, 1fr); }
+    .column-native-visual__item { padding: 0.9rem 0; }
+    .column-native-visual__item + .column-native-visual__item { padding-left: 0; border-left: 0; border-top: 1px solid var(--column-line); }
 }
-.column-reader-body .column-editorial-loading {
-    margin: 1.5rem auto;
-    color: var(--column-muted);
-    font: 0.78rem/1.6 'Zen Kaku Gothic New', sans-serif;
-    text-align: center;
-}
-.column-editorial-attribution {
-    display: flex;
-    align-items: center;
-    flex-wrap: wrap;
-    gap: 0.35rem 0.65rem;
-    padding: 0.7rem 0.9rem;
-    border-top: 1px solid var(--column-line);
-    color: var(--column-muted);
-    background: var(--column-paper-soft);
-    font: 0.72rem/1.6 'Zen Kaku Gothic New', sans-serif;
-}
-.column-editorial-attribution__icon {
-    display: inline-grid;
-    width: 1.65rem;
-    height: 1.65rem;
-    place-items: center;
-    border: 1px solid var(--column-line);
-    border-radius: 50%;
-    color: var(--column-indigo);
-}
-.column-editorial-attribution a { color: var(--column-indigo); text-decoration: underline; text-underline-offset: 0.16em; }
-.column-editorial-attribution a:hover { color: var(--column-violet); }
-.dark .column-editorial-attribution { color: var(--column-muted); }
-.dark .column-editorial-attribution__icon { color: #c7b8ff; }
+.dark .column-native-visual { box-shadow: 0 8px 22px rgba(0, 0, 0, 0.16); }
+
 .column-library-layout a:focus-visible,
 .column-library-layout button:focus-visible,
 .column-library-layout input:focus-visible,
@@ -14084,7 +14060,7 @@ html.dark #tenmei-event-dialog .events-dialog-heading{background:linear-gradient
 #view-events .events-search input::-webkit-search-decoration,#view-events .events-search input::-webkit-search-results-button,#view-events .events-search input::-webkit-search-results-decoration,#view-events .events-search input::-webkit-search-cancel-button{-webkit-appearance:none;display:none}
 #view-events .events-search kbd{display:none!important}
 </style>
-    <script src="assets/js/column-editorial-images.js" defer></script>
+    <script src="assets/js/column-editorial-visuals.js" defer></script>
 </head>
 
     <!-- ▼▼▼ 修正: 既定のサイドバー方式をPCホバーモードに設定 ▼▼▼ -->
@@ -26930,8 +26906,8 @@ window.renderFullColumnView = function() {
                         const resolvedColumnTagStyle = detailTagStyle || columnTagStyles.indigo;
 
 // --- 文字数・読了目安の算出（一覧と同じ共通関数を利用） ---
-            const displayContent = isColumn && window.TenmeiColumnImages
-                ? window.TenmeiColumnImages.clean(item.content)
+            const displayContent = isColumn && window.TenmeiColumnVisuals
+                ? window.TenmeiColumnVisuals.clean(item.content)
                 : item.content;
             const readingMeta = getArticleReadingMeta(displayContent);
 
@@ -27033,8 +27009,8 @@ window.renderFullColumnView = function() {
             showView('article-detail');
             window.scrollTo(0, 0);
             buildArticleTOC();
-            if (isColumn && window.TenmeiColumnImages) {
-                window.TenmeiColumnImages.mount(item, container);
+            if (isColumn && window.TenmeiColumnVisuals) {
+                window.TenmeiColumnVisuals.mount(item, container);
             }
             startReadingProgress();
         }
