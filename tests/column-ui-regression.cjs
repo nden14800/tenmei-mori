@@ -100,7 +100,7 @@ assert(
   'id="summarize-btn"',
   "requestArticleSummary('column', ${item.id})",
   'id="summary-result"',
-  'class="column-reader-body"',
+  'class="column-reader-body article-reading-main"',
   'class="article-content prose dark:prose-invert max-w-none leading-loose text-justify"',
   'buildArticleTOC();',
   'startReadingProgress(readingMeta);',
