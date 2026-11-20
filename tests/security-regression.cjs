@@ -54,6 +54,9 @@ for (const htmlFile of htmlFiles) {
   let inlineScriptIndex = 0;
   for (const match of htmlSource.matchAll(/<script\b([^>]*)>([\s\S]*?)<\/script\s*>/gi)) {
     inlineScriptIndex++;
+    const commentStart = htmlSource.lastIndexOf('<!--', match.index);
+    const commentEnd = htmlSource.lastIndexOf('-->', match.index);
+    if (commentStart > commentEnd) continue;
     if (/\bsrc\s*=/.test(match[1])) continue;
     const type = match[1].match(/\btype\s*=\s*["']([^"']+)["']/i)?.[1]?.toLowerCase() || '';
     if (!type || /^(?:text|application)\/(?:java|ecma)script$/.test(type) || type === 'module') {
