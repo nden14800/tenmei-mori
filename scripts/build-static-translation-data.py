@@ -399,10 +399,10 @@ def write_manifest(source_fingerprint: str, entry_count: int) -> None:
     curated_entry_count = len(curated_languages.get('en', {}))
     has_curated = curated_entry_count > 0
     generation = {
-        'mode': 'static-dictionary-with-chatgpt-curated-overrides' if has_curated else 'build-time-local-translation',
-        'engine': 'ChatGPT-authored contextual translations; legacy Argos entries are fallback only while migration is in progress' if has_curated else 'Argos Translate (OpenNMT/CTranslate2, local beam search)',
-        'qualityPolicy': 'ChatGPT-authored entries take precedence; legacy machine-generated entries remain fallback only until every source key is reviewed.' if has_curated else 'Machine-detected corrupted English is kept in Japanese rather than shown as a false translation; stable site terms are restored from the release glossary.',
-        'traditionalChinese': 'Traditional Chinese curated entries are authored directly; remaining legacy entries are still awaiting review.' if has_curated else 'OpenCC s2twp',
+        'mode': 'chatgpt-authored-only' if has_curated else 'build-time-local-translation',
+        'engine': 'ChatGPT-authored contextual translations only; no legacy machine-translation fallback is loaded at runtime' if has_curated else 'Argos Translate (build-time legacy generation; not loaded by the runtime)',
+        'qualityPolicy': 'Only reviewed ChatGPT-authored entries are displayed as translations. Missing entries remain in Japanese until ChatGPT-authored translations are added.' if has_curated else 'Legacy machine-generated dictionaries are build artifacts only and must not be loaded by the runtime.',
+        'traditionalChinese': 'Traditional Chinese entries are authored directly by ChatGPT; untranslated entries remain in Japanese.' if has_curated else 'Legacy conversion is not used by the runtime.',
         'notice': 'Visitors load only same-origin static JSON dictionaries. No external translation engine or browser-side model is downloaded. Page text is not sent to a translation API.',
         'generatedAt': datetime.now(timezone.utc).replace(microsecond=0).isoformat(),
     }
