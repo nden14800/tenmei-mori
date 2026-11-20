@@ -44,6 +44,6 @@ assert(html.includes('public-document-reading-content-width-custom'), '本文幅
 assert(html.includes('public-document-reading-font-size-custom:not(.public-document-reading-disabled) #view-about .about-codex-chapter>div:not(.about-codex-chapter-head)'), '当サイトについての章本文に文字サイズ設定が適用されません。');
 assert(html.includes('public-document-reading-line-height-custom:not(.public-document-reading-disabled) #view-about .about-codex-chapter>div:not(.about-codex-chapter-head)'), '当サイトについての章本文に行間設定が適用されません。');
 assert(html.includes('public-document-reading-body-font-custom:not(.public-document-reading-disabled) #view-about .about-codex-chapter>div:not(.about-codex-chapter-head)'), '当サイトについての章本文に書体設定が適用されません。');
-assert(html.includes('公開文書への読書設定') && html.includes('profile-v4-section-heading--reading'), 'アカウント設定側の公開文書読書設定がありません。');
+assert(html.includes('<section id="view-settings"') && html.includes('公開文書への読書設定') && html.includes('settings-public-documents-heading'), '環境・表示設定の正本画面に公開文書読書設定がありません。');
 
 assert(!html.includes("if (!window.AppConfig || typeof window.AppConfig.toggle !== 'function')"), 'AppConfig は window プロパティではないため、読書設定フックはトップレベルの AppConfig を参照する必要があります。');
