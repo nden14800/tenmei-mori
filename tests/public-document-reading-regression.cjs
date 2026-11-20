@@ -21,8 +21,10 @@ const html = fs.readFileSync(path.resolve(__dirname, '..', 'index.html'), 'utf8'
 const readingSettingControl = '<div class="theme-select-group opt-select-group howto-guide-option-group" data-setting="publicDocumentReading"';
 assert.equal(html.split(readingSettingControl).length - 1, 1,
   '公開文書の読書設定UIは正本の環境・表示設定に1つだけ配置してください。');
-assert.equal((html.match(/data-value="true" onclick="AppConfig.toggle\\('publicDocumentReading', true\\)"/g) || []).length, 1);
-assert.equal((html.match(/data-value="false" onclick="AppConfig.toggle\\('publicDocumentReading', false\\)"/g) || []).length, 1);
+const trueControl = "data-value=\"true\" onclick=\"AppConfig.toggle('publicDocumentReading', true)\"";
+const falseControl = "data-value=\"false\" onclick=\"AppConfig.toggle('publicDocumentReading', false)\"";
+assert.equal(html.split(trueControl).length - 1, 1);
+assert.equal(html.split(falseControl).length - 1, 1);
 const settingsStart = html.indexOf('<section id="view-settings"');
 const settingsEnd = html.indexOf('<section id="view-howto"', settingsStart);
 const howtoStart = settingsEnd;
