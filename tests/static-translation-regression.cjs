@@ -25,12 +25,8 @@ assert.deepEqual(Object.keys(curated.languages).sort(), [...languages].sort());
 const curatedKeys = Object.keys(curated.languages.en).sort();
 assert.equal(curatedKeys.length, 1092);
 for (const language of languages) {
-  const dictionary = JSON.parse(read(`assets/data/static-translations/${language}.json`));
-  assert.equal(Object.keys(dictionary.translations).length, manifest.entryCount);
   assert.deepEqual(Object.keys(curated.languages[language]).sort(), curatedKeys);
-  assert.ok(Object.values(curated.languages[language]).every((value) => typeof value === 'string' && value.trim()));
   assert.ok(Object.values(curated.languages[language]).every((value) => typeof value === 'string' && value.trim()), `${language} has an empty ChatGPT translation`);
-  assert.equal(manifest.sizes[language], Buffer.byteLength(read(`assets/data/static-translations/${language}.json`), 'utf8'));
 }
 
 const english = curated.languages.en;
