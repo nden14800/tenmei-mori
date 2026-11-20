@@ -45,13 +45,13 @@ function collectHtmlFiles(directory) {
 }
 const htmlFiles = collectHtmlFiles(repositoryRoot);
 expect(htmlFiles.length > 0, 'CSP検証対象のHTMLファイルがありません。');
-expect(/crypto\\.subtle\\.digest\\(["']SHA-256["']/.test(middleware), '配信HTMLごとのinline script hashを動的生成していません。');
-expect(/html\\.matchAll\\(\\/<script/.test(middleware), '配信対象HTMLからinline scriptを抽出していません。');
-expect(/btoa\\(String\\.fromCharCode\\(\\.\\.\\.new Uint8Array\\(digest\\)\\)\\)/.test(middleware), 'SHA-256 digestをCSP用Base64へ変換していません。');
+expect(/crypto\.subtle\.digest\(["']SHA-256["']/.test(middleware), '配信HTMLごとのinline script hashを動的生成していません。');
+expect(/html\.matchAll\(\/<script/.test(middleware), '配信対象HTMLからinline scriptを抽出していません。');
+expect(/btoa\(String\.fromCharCode\(\.\.\.new Uint8Array\(digest\)\)\)/.test(middleware), 'SHA-256 digestをCSP用Base64へ変換していません。');
 for (const htmlFile of htmlFiles) {
   const htmlSource = fs.readFileSync(htmlFile, 'utf8');
-  const inlineScriptCount = [...htmlSource.matchAll(/<script\\b([^>]*)>([\\s\\S]*?)<\\/script\\s*>/gi)]
-    .filter((match) => !/\\bsrc\\s*=/.test(match[1])).length;
+  const inlineScriptCount = [...htmlSource.matchAll(/<script\b([^>]*)>([\s\S]*?)<\/script\s*>/gi)]
+    .filter((match) => !/\bsrc\s*=/.test(match[1])).length;
   if (inlineScriptCount > 0) {
     expect(middleware.includes('crypto.subtle.digest("SHA-256"'), `CSPに${path.relative(repositoryRoot, htmlFile)}のinline script hash生成がありません。`);
   }
