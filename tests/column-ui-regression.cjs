@@ -103,10 +103,15 @@ assert(
   'class="column-reader-body article-reading-main"',
   'class="article-content prose dark:prose-invert max-w-none leading-loose text-justify"',
   'buildArticleTOC();',
-  'startReadingProgress(readingMeta);',
+  "showView('article-detail');",
 ].forEach((text) => {
   requireText(text, `神籤草子記事詳細の既存機能接続が失われています: ${text}`);
 });
+
+requireText(
+  'startReadingProgress(viewId);',
+  '記事詳細画面への遷移時に共通の読書進捗処理が起動しません。'
+);
 
 // 一覧と詳細のカテゴリ色マッピングが分岐しない単一正本になっていることを確認する。
 assert.equal((html.match(/const NEWS_TAG_COLOR_CLASS_MAP = Object\.freeze\(\{/g) || []).length, 1,
