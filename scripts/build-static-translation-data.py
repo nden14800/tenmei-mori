@@ -160,9 +160,5 @@ def main() -> None:
     }, ensure_ascii=False, indent=2))
 
 
-if __name__ == '__main__':
-    try:
-        main()
-    except Exception as error:
-        print(f'Static translation generation failed: {error}', file=sys.stderr)
-        raise
+if __name__ == "__main__":
+    main()
