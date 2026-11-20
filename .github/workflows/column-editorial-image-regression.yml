@@ -1,0 +1,41 @@
+name: Column editorial image regression
+on:
+  push:
+    branches: [main]
+    paths:
+      - "index.html"
+      - "assets/js/column-editorial-images.js"
+      - "functions/_middleware.js"
+      - "_headers"
+      - "tests/column-*-regression.cjs"
+      - "tests/static-asset-paths-regression.cjs"
+      - ".github/workflows/column-editorial-image-regression.yml"
+  pull_request:
+    branches: [main]
+    paths:
+      - "index.html"
+      - "assets/js/column-editorial-images.js"
+      - "functions/_middleware.js"
+      - "_headers"
+      - "tests/column-*-regression.cjs"
+      - "tests/static-asset-paths-regression.cjs"
+      - ".github/workflows/column-editorial-image-regression.yml"
+  workflow_dispatch:
+jobs:
+  column-image-regression:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out source
+        uses: actions/checkout@v4
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Check image library syntax
+        run: node --check assets/js/column-editorial-images.js
+      - name: Test image discovery, attribution, and removal of AI artwork
+        run: node tests/column-image-regression.cjs
+      - name: Test reader UI consistency
+        run: node tests/column-ui-regression.cjs
+      - name: Test static asset paths
+        run: node tests/static-asset-paths-regression.cjs
