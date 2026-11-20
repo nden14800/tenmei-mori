@@ -45,6 +45,10 @@ assert(manifest.icons.some((icon) => icon.src === 'web-app-manifest-512x512.png'
 assert(fs.existsSync(visualScriptPath), '記事ネイティブビジュアルの共通スクリプトがありません。');
 assert(fs.existsSync(imageAssetDirectory), '記事資料画像ディレクトリがありません。');
 assert(html.includes('<script src="assets/js/column-editorial-visuals.js" defer></script>'), '記事ネイティブビジュアルの配信参照がありません。');
+const visualSource = fs.readFileSync(visualScriptPath, 'utf8');
+for (const mode of ['timeline', 'process', 'comparison', 'beforeAfter', 'hierarchy', 'statistics', 'editorial']) {
+  assert(visualSource.includes(mode), `記事ビジュアルの種別がありません: ${mode}`);
+}
 assert(!/assets\/article-images\/column-\d{3}-overview\.(?:webp|svg)/.test(html), '旧AI生成画像への参照が残っています。');
 assert.equal(
   fs.readdirSync(imageAssetDirectory).filter((name) => /^column-\d{3}-overview\.(?:webp|jpg|jpeg|png|svg)$/i.test(name)).length,
