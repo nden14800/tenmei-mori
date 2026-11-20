@@ -68,6 +68,71 @@ GLOSSARY_SORTED = tuple(sorted(GLOSSARY, key=lambda item: max(len(item[0]), len(
 GARBLED_EN_RE = re.compile(r'[\u3040-\u30ff\u3400-\u9fff\uff66-\uff9f]|[。、]|⁇')
 ASCII_LETTER_RE = re.compile(r'[A-Za-z]')
 
+# Known short-label failures from the legacy Japanese→English model.
+# Keep these reviewed labels stable across dictionary regeneration.
+ENGLISH_OVERRIDES = {
+    ' "You are here",
+    ' "Will come true soon",
+    ' "View the quick guide again",
+    ' "Select",
+    ' "Accessibility",
+    ' "Content",
+    ' "Back to list",
+    ' "Traffic safety",
+    ' "Hold back for now",
+    ' "Sign up",
+    ' "Register or log in here",
+    ' "Persevere",
+    ' "Unlikely to come true",
+    ' "Will not come true",
+    ' "Enter passphrase",
+    ' "Syncing…",
+    ' "Something went wrong",
+    ' "Difficulties lie ahead",
+    ' "Transfer of the land",
+    ' "Wish fulfilled",
+    ' "Will come true later",
+    ' "Pay attention",
+    ' "Hearts will connect",
+    ' "On the road to recovery",
+    ' "Organize the information",
+    ' "Update",
+    ' "Go to first",
+    ' "Go to last",
+    ' "Skip to content",
+    ' "They will not come; an obstacle may arise",
+    ' "They will not come; only an inquiry",
+    ' "They will not come; only a message",
+    ' "They will not come, but you will hear from them",
+    ' "They will come; expect a message",
+    ' "Correct!",
+    ' "Ask for advice",
+    ' "Checking",
+    ' "Checking…",
+    ' "Will come true before long",
+    ' "Thinking…",
+    ' "Good fortune lies ahead",
+    ' "Turn it into action",
+    ' "Authorizing…",
+    ' "Stronger authentication",
+    ' "Sincerity will get through",
+    ' "Interpretation",
+    ' "Interpreting…",
+    ' "Sending…",
+    ' "Will come true after a delay",
+    ' "Will come true by taking a detour",
+    ' "Delivery worker",
+    ' "Important notices",
+    ' "Calculating…",
+    ' "Encounter difficulties",
+    ' "Take care of your health",
+    ' "Proceed with confidence",
+    ' "Please see the details.",
+    ' "Use the table of contents to jump to the relevant guide",
+    ' "Note: This site sends email requests to Maileroo's API. Maileroo is based in Australia and may retain email content for up to 90 days for troubleshooting and support. For details, see Maileroo's data-use policy."
+}
+
+
 
 
 class VisibleTextCollector(HTMLParser):
@@ -156,6 +221,13 @@ def restore_glossary(value: str, original: str) -> str:
     return WHITESPACE_RE.sub(' ', restored).strip()
 
 
+def apply_english_overrides(translations: dict[str, str]) -> dict[str, str]:
+    for source, translated in ENGLISH_OVERRIDES.items():
+        if source in translations:
+            translations[source] = translated
+    return translations
+
+
 def english_is_garbled(value: str) -> bool:
     return not value.strip() or bool(GARBLED_EN_RE.search(value))
 
@@ -165,6 +237,8 @@ def english_is_unsafe(source: str, value: str) -> bool:
     source_compact = WHITESPACE_RE.sub('', source)
     target = value.strip()
     if english_is_garbled(target):
+        return True
+    if target.casefold() in {'contact us', 'click here for more information.', 'click here to register and log in.'}:
         return True
     # Decorative glyphs and two-character labels are often misread as unrelated
     # English words by generic models. Keeping the Japanese glyph is clearer.
@@ -311,8 +385,27 @@ def write_dictionary(language: str, translations: dict[str, str], source_fingerp
 
 
 def write_manifest(source_fingerprint: str, entry_count: int) -> None:
+    previous = read_manifest()
     files = {language: f'{language}.json' for language in LANGUAGES if (OUTPUT_DIR / f'{language}.json').exists()}
     sizes = {language: (OUTPUT_DIR / file_name).stat().st_size for language, file_name in files.items()}
+    curated_path = OUTPUT_DIR / 'curated.json'
+    curated = {}
+    if curated_path.exists():
+        try:
+            curated = json.loads(curated_path.read_text(encoding='utf-8'))
+        except json.JSONDecodeError:
+            curated = {}
+    curated_languages = curated.get('languages', {})
+    curated_entry_count = len(curated_languages.get('en', {}))
+    has_curated = curated_entry_count > 0
+    generation = {
+        'mode': 'static-dictionary-with-chatgpt-curated-overrides' if has_curated else 'build-time-local-translation',
+        'engine': 'ChatGPT-authored contextual translations; legacy Argos entries are fallback only while migration is in progress' if has_curated else 'Argos Translate (OpenNMT/CTranslate2, local beam search)',
+        'qualityPolicy': 'ChatGPT-authored entries take precedence; legacy machine-generated entries remain fallback only until every source key is reviewed.' if has_curated else 'Machine-detected corrupted English is kept in Japanese rather than shown as a false translation; stable site terms are restored from the release glossary.',
+        'traditionalChinese': 'Traditional Chinese curated entries are authored directly; remaining legacy entries are still awaiting review.' if has_curated else 'OpenCC s2twp',
+        'notice': 'Visitors load only same-origin static JSON dictionaries. No external translation engine or browser-side model is downloaded. Page text is not sent to a translation API.',
+        'generatedAt': datetime.now(timezone.utc).replace(microsecond=0).isoformat(),
+    }
     payload = {
         'schemaVersion': 1,
         'generationVersion': GENERATION_VERSION,
@@ -322,16 +415,13 @@ def write_manifest(source_fingerprint: str, entry_count: int) -> None:
         'sizes': sizes,
         'entryCount': entry_count,
         'sourceFingerprint': source_fingerprint,
-        'generation': {
-            'mode': 'build-time-local-translation',
-            'engine': 'Argos Translate (OpenNMT/CTranslate2, local beam search)',
-            'qualityPolicy': 'Machine-detected corrupted English is kept in Japanese rather than shown as a false translation; stable site terms are restored from the release glossary.',
-            'traditionalChinese': 'OpenCC s2twp',
-            'notice': 'Visitors receive static dictionaries only; no browser-side neural model is distributed.',
-            'generatedAt': datetime.now(timezone.utc).replace(microsecond=0).isoformat(),
-        },
+        'generation': generation,
     }
-    (OUTPUT_DIR / 'manifest.json').write_text(json.dumps(payload, ensure_ascii=False, indent=2) + '\n', encoding='utf-8')
+    if has_curated:
+        payload['curatedFile'] = 'curated.json'
+        payload['curatedGenerationVersion'] = previous.get('curatedGenerationVersion', curated.get('generationVersion', 1))
+        payload['curatedEntryCount'] = curated_entry_count
+    (OUTPUT_DIR / 'manifest.json').write_text(json.dumps(payload, ensure_ascii=False, indent=2) + '\\n', encoding='utf-8')
 
 
 def dictionary_is_current(language: str, source_fingerprint: str) -> bool:
@@ -353,7 +443,7 @@ def generate(language: str, sources: list[str], source_fingerprint: str) -> None
         print(f'{language}: current dictionary already exists; skipped', flush=True)
         return
     if language == 'en':
-        write_dictionary('en', translate_mapping(sources, 'ja', 'en', 'Japanese → English'), source_fingerprint)
+        write_dictionary('en', apply_english_overrides(translate_mapping(sources, 'ja', 'en', 'Japanese → English')), source_fingerprint)
     elif language == 'zh_hant':
         if not dictionary_is_current('zh', source_fingerprint):
             generate('zh', sources, source_fingerprint)
@@ -398,11 +488,12 @@ def main() -> None:
         if not english_path.exists():
             raise RuntimeError('English dictionary is required before --repair-existing')
         english = json.loads(english_path.read_text(encoding='utf-8'))['translations']
+        english = apply_english_overrides(english)
         fallback_sources = {source for source, value in english.items() if english_is_unsafe(source, value)}
+        for source in fallback_sources:
+            english[source] = source
+        write_dictionary('en', english, source_fingerprint)
         if fallback_sources:
-            for source in fallback_sources:
-                english[source] = source
-            write_dictionary('en', english, source_fingerprint)
             for language in LANGUAGES:
                 if language == 'en':
                     continue
