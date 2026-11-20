@@ -51,14 +51,16 @@ expect(middleware.includes('html.matchAll(/<script'), '配信対象HTMLからinl
 expect(middleware.includes('btoa(String.fromCharCode(...new Uint8Array(digest)))'), 'SHA-256 digestをCSP用Base64へ変換していません。');
 for (const htmlFile of htmlFiles) {
   const htmlSource = fs.readFileSync(htmlFile, 'utf8');
+  let inlineScriptIndex = 0;
   for (const match of htmlSource.matchAll(/<script\b([^>]*)>([\s\S]*?)<\/script\s*>/gi)) {
+    inlineScriptIndex++;
     if (/\bsrc\s*=/.test(match[1])) continue;
     const type = match[1].match(/\btype\s*=\s*["']([^"']+)["']/i)?.[1]?.toLowerCase() || '';
     if (!type || /^(?:text|application)\/(?:java|ecma)script$/.test(type) || type === 'module') {
       try {
         new vm.Script(match[2], { filename: path.relative(repositoryRoot, htmlFile) });
       } catch (error) {
-        expect(false, 'inline script構文エラー: ' + path.relative(repositoryRoot, htmlFile) + ': ' + error.message);
+        expect(false, 'inline script構文エラー: ' + path.relative(repositoryRoot, htmlFile) + ' #' + inlineScriptIndex + ': ' + error.stack);
       }
     }
   }
