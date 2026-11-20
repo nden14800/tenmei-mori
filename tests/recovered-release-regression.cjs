@@ -74,6 +74,21 @@ assert.ok(translationModule.includes('curated.json'), 'ChatGPT翻訳辞書がラ
 assert.ok(translationModule.includes('Object.assign({}, legacyTranslations, curatedTranslations)'), 'ChatGPT翻訳が旧辞書より優先されていません');
 
 const english = JSON.parse(fs.readFileSync(path.join(directory, 'en.json'), 'utf8')).translations;
+for (const [source, expected] of Object.entries({
+  'アクセシビリティ': 'Accessibility',
+  'コンテンツ': 'Content',
+  '会員登録': 'Sign up',
+  '本文へ移動': 'Skip to content',
+  '集計中...': 'Calculating…',
+  '難航する': 'Encounter difficulties',
+  '養生せよ': 'Take care of your health',
+})) {
+  assert.equal(english[source], expected, `英語辞書の誤訳・汎用置換が残っています: ${source}`);
+}
+assert.ok(!Object.values(english).includes('Contact Us'), '英語辞書に汎用的な誤訳 Contact Us が残っています');
+assert.ok(!Object.values(english).includes('Click here for more information.'), '英語辞書に文脈を失った汎用リンク文が残っています');
+assert.equal(manifest.generation.mode, 'static-dictionary-with-chatgpt-curated-overrides', '翻訳マニフェストが旧Argos方式へ巻き戻っています');
+assert.equal(manifest.curatedEntryCount, curatedKeys.length, '翻訳マニフェストのChatGPT翻訳件数が一致しません');
 for (const expectedLabel of ['Tenmei no Mori', 'Omikuji History', 'Pilgrimage Certificate', 'Shrine Office News', 'Omikuji Journal']) {
   assert.ok(Object.values(english).some((value) => value.includes(expectedLabel)), `英語辞書に用語表ラベルがありません: ${expectedLabel}`);
 }
