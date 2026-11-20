@@ -16,14 +16,14 @@ const languages = ['en', 'ko', 'zh', 'zh_hant', 'fr', 'de', 'es', 'pt', 'vi', 'i
 
 assert.equal(manifest.generation.mode, 'chatgpt-authored-only');
 assert.equal(manifest.curatedFile, 'curated.json');
-assert.equal(manifest.curatedGenerationVersion, 28);
+assert.equal(manifest.curatedGenerationVersion, 29);
 assert.equal(manifest.curatedEntryCount, Object.keys(curated.languages.en).length);
 assert.deepEqual(manifest.languages, languages);
 assert.equal(manifest.entryCount, 3378);
 assert.deepEqual(Object.keys(curated.languages).sort(), [...languages].sort());
 
 const curatedKeys = Object.keys(curated.languages.en).sort();
-assert.equal(curatedKeys.length, 1091);
+assert.equal(curatedKeys.length, 1098);
 for (const language of languages) {
   const dictionary = JSON.parse(read(`assets/data/static-translations/${language}.json`));
   assert.equal(Object.keys(dictionary.translations).length, manifest.entryCount);
