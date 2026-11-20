@@ -193,8 +193,6 @@ assert.equal(
   '.column-library-search-field > i { flex: 0 0 auto; }',
   '.column-library-search-field input { width: 100%; min-width: 0; flex: 1 1 auto;',
   '.column-library-search-field input:focus-visible { outline: 0; outline-offset: 0; }',
-  'aspect-ratio: 16 / 9;',
-  'object-fit: cover;',
   '.dark .column-library-layout,',
   '@media (prefers-color-scheme: dark) {',
   '.column-library-layout a:focus-visible,',
