@@ -181,18 +181,11 @@ async function loadCuratedDictionary() {
 async function loadTranslationDictionary(language) {
     if (state.dictionaries.has(language)) return state.dictionaries.get(language);
     if (!state.dictionaryPromises.has(language)) {
-        const promise = Promise.all([
-            fetch(`/assets/data/static-translations/${language}.json`, { credentials: 'same-origin' }).then((response) => {
-                if (!response.ok) throw new Error('translation_dictionary_http_' + response.status);
-                return response.json();
-            }),
-            loadCuratedDictionary(),
-        ]).then(([legacy, curated]) => {
-            const legacyTranslations = legacy?.translations && typeof legacy.translations === 'object' ? legacy.translations : {};
-            const curatedTranslations = curated?.languages?.[language] && typeof curated.languages[language] === 'object'
-                ? curated.languages[language]
-                : {};
-            const dictionary = Object.assign({}, legacyTranslations, curatedTranslations);
+        const promise = loadCuratedDictionary().then((curated) => {
+            const dictionary = curated?.languages?.[language];
+            if (!dictionary || typeof dictionary !== 'object') {
+                throw new Error('curated_translation_language_missing_' + language);
+            }
             state.dictionaries.set(language, dictionary);
             return dictionary;
         }).catch((error) => {
@@ -258,7 +251,7 @@ async function selectLanguage(language, { force = false } = {}) {
         const attributeTargets = collectAttributeTargets();
         setStatus({
             title: `${option.japanese}の翻訳辞書を読み込んでいます`,
-            detail: 'ChatGPT作成の翻訳を優先し、未確認の項目は従来の機械翻訳辞書で補完します。AI・機械翻訳には誤訳や不自然な表現が含まれる場合があるため、重要な内容は日本語原文もご確認ください。辞書はこのサイトから読み込み、ページ本文を翻訳APIへ送信しません。',
+            detail: 'ChatGPTが作成した翻訳だけを使用します。まだ翻訳が用意されていない項目は、誤った機械翻訳で補わず日本語のまま表示します。ページ本文を翻訳APIへ送信しません。',
             loading: true,
             progress: 25,
         });
@@ -269,7 +262,7 @@ async function selectLanguage(language, { force = false } = {}) {
         document.documentElement.lang = option.locale;
         setStatus({
             title: `${option.japanese}を表示中です`,
-            detail: `辞書から実際に翻訳文へ置き換えた項目は ${result.translated}/${result.total} 件です。AI・機械翻訳のため、重要な内容は日本語原文もご確認ください。ページ本文を翻訳APIへ送信しません。`,
+            detail: `辞書から実際に翻訳文へ置き換えた項目は ${result.translated}/${result.total} 件です。ChatGPT作成の翻訳がない項目は日本語のまま表示されます。ページ本文を翻訳APIへ送信しません。`,
             loading: false,
             progress: 100,
         });
