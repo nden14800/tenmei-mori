@@ -22,16 +22,19 @@ requireText(
   '<section id="view-auth" class="view-section auth-pilgrimage-view relative">',
   '参拝証の発行画面が新しい参拝証の道程テンプレートとして定義されていません。'
 );
-requireText(
-  'class="auth-passport-hero"',
+assert.match(
+  authSection,
+  /class="[^"]*\bauth-passport-hero\b[^"]*"/,
   '参拝証の発行画面に共通紙面の導入ヘッダーがありません。'
 );
-requireText(
-  'class="auth-passport-mark"',
+assert.match(
+  authSection,
+  /class="[^"]*\bauth-passport-mark\b[^"]*"/,
   '参拝証の発行画面に共通紙面に合わせた会員印がありません。'
 );
-requireText(
-  '<h2 id="auth-passport-title" class="auth-passport-title">参拝証の発行</h2>',
+assert.match(
+  authSection,
+  /<h2 id="auth-passport-title" class="[^"]*\bauth-passport-title\b[^"]*">参拝証の発行<\/h2>/,
   '参拝証の発行の主見出しが他の刷新済み画面と同じテキスト開始位置になっていません。'
 );
 assert.equal(
