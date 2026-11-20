@@ -33,7 +33,7 @@ for (const language of languages) {
   assert.equal(manifest.sizes[language], Buffer.byteLength(read(`assets/data/static-translations/${language}.json`), 'utf8'));
 }
 
-const english = JSON.parse(read('assets/data/static-translations/en.json')).translations;
+const english = curated.languages.en;
 for (const [source, expected] of Object.entries({
   'アクセシビリティ': 'Accessibility',
   'コンテンツ': 'Content',
@@ -53,7 +53,6 @@ assert.ok(!translationModule.includes('legacyTranslations'));
 assert.ok(!translationModule.includes('fetch(`/assets/data/static-translations/${language}.json`'));
 assert.ok(translationModule.includes('まだ翻訳が用意されていない項目は'));
 assert.ok(!translationModule.includes('従来の機械翻訳辞書で補完します'));
-assert.ok(translationModule.includes('従来の機械翻訳辞書で補完します'));
 assert.ok(translationModule.includes('ChatGPT作成の翻訳がない項目は日本語のまま表示されます'));
 assert.ok(translationModule.includes('if (translatedValue !== normalized) translated += 1;'));
 assert.ok(translationBuilder.includes('def apply_english_overrides'));
