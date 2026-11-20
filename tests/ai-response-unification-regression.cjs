@@ -28,7 +28,7 @@ requireText(html, '<dt>入力</dt><dd>対象記事の本文', 'AI要約の情報
 requireText(html, '<dt>保存</dt><dd>生成した要約は保存され', 'AI要約の情報欄に保存仕様がありません。');
 
 assert.equal(
-  (html.match(/await consumeUnifiedAiStream\\(res,area\\)/g) || []).length,
+  (html.match(/await consumeUnifiedAiStream\(res,area\)/g) || []).length,
   2,
   '悩み相談・夢占いの両方が共通ストリーミング処理を利用していません。'
 );
