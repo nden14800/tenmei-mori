@@ -53,7 +53,7 @@ for (const htmlFile of htmlFiles) {
   const inlineScriptCount = [...htmlSource.matchAll(/<script\b([^>]*)>([\s\S]*?)<\/script\s*>/gi)]
     .filter((match) => !/\bsrc\s*=/.test(match[1])).length;
   if (inlineScriptCount > 0) {
-    expect(middleware.includes('crypto.subtle.digest("SHA-256"'), \`CSPに\${path.relative(repositoryRoot, htmlFile)}のinline script hash生成がありません。\`);
+    expect(middleware.includes('crypto.subtle.digest("SHA-256"'), 'CSPに' + path.relative(repositoryRoot, htmlFile) + 'のinline script hash生成がありません。');
   }
 }
 
