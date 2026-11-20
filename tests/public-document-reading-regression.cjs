@@ -19,12 +19,10 @@ const html = fs.readFileSync(path.resolve(__dirname, '..', 'index.html'), 'utf8'
 ].forEach((text) => assert(html.includes(text), `公開文書の読書設定契約がありません: ${text}`));
 
 const readingSettingControl = '<div class="theme-select-group opt-select-group howto-guide-option-group" data-setting="publicDocumentReading"';
-assert.equal((html.match(new RegExp(readingSettingControl.replace(/[.*+?^$\{\}()|[\]\\]/g, '\\assert.equal((html.match(/data-setting="publicDocumentReading"/g) || []).length, 4);
-assert.equal((html.match(/data-value="true" onclick="AppConfig.toggle\('publicDocumentReading', true\)"/g) || []).length, 2);
-assert.equal((html.match(/data-value="false" onclick="AppConfig.toggle\('publicDocumentReading', false\)"/g) || []).length, 2);'), 'g')) || []).length, 1,
+assert.equal(html.split(readingSettingControl).length - 1, 1,
   '公開文書の読書設定UIは正本の環境・表示設定に1つだけ配置してください。');
-assert.equal((html.match(/data-value="true" onclick="AppConfig.toggle\('publicDocumentReading', true\)"/g) || []).length, 1);
-assert.equal((html.match(/data-value="false" onclick="AppConfig.toggle\('publicDocumentReading', false\)"/g) || []).length, 1);
+assert.equal((html.match(/data-value="true" onclick="AppConfig.toggle\\('publicDocumentReading', true\\)"/g) || []).length, 1);
+assert.equal((html.match(/data-value="false" onclick="AppConfig.toggle\\('publicDocumentReading', false\\)"/g) || []).length, 1);
 const settingsStart = html.indexOf('<section id="view-settings"');
 const settingsEnd = html.indexOf('<section id="view-howto"', settingsStart);
 const howtoStart = settingsEnd;
