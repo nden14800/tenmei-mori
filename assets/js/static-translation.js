@@ -213,9 +213,10 @@ function applyTranslations(dictionary, nodes, attributeTargets) {
         if (!normalized) continue;
         total += 1;
         const value = dictionary[normalized];
-        if (typeof value === 'string' && normalizeText(value)) {
+        const translatedValue = normalizeText(value);
+        if (typeof value === 'string' && translatedValue) {
             node.nodeValue = restoreWhitespace(original, value);
-            translated += 1;
+            if (translatedValue !== normalized) translated += 1;
         }
     }
     for (const target of attributeTargets) {
@@ -223,9 +224,10 @@ function applyTranslations(dictionary, nodes, attributeTargets) {
         if (!normalized) continue;
         total += 1;
         const value = dictionary[normalized];
-        if (typeof value === 'string' && normalizeText(value)) {
+        const translatedValue = normalizeText(value);
+        if (typeof value === 'string' && translatedValue) {
             target.element.setAttribute(target.name, value);
-            translated += 1;
+            if (translatedValue !== normalized) translated += 1;
         }
     }
     return { total, translated };
@@ -256,7 +258,7 @@ async function selectLanguage(language, { force = false } = {}) {
         const attributeTargets = collectAttributeTargets();
         setStatus({
             title: `${option.japanese}の翻訳辞書を読み込んでいます`,
-            detail: 'ChatGPTが文脈に合わせて作成した翻訳を優先し、既存の静的辞書を補完として使用します。外部翻訳エンジンや翻訳モデルのダウンロードはありません。',
+            detail: 'ChatGPT作成の翻訳を優先し、未確認の項目は従来の機械翻訳辞書で補完します。AI・機械翻訳には誤訳や不自然な表現が含まれる場合があるため、重要な内容は日本語原文もご確認ください。辞書はこのサイトから読み込み、ページ本文を翻訳APIへ送信しません。',
             loading: true,
             progress: 25,
         });
@@ -267,7 +269,7 @@ async function selectLanguage(language, { force = false } = {}) {
         document.documentElement.lang = option.locale;
         setStatus({
             title: `${option.japanese}を表示中です`,
-            detail: `保存済みの翻訳辞書から ${result.translated}/${result.total} 件を適用しました。辞書データはこのサイトから読み込み、ページ本文を翻訳APIへ送信しません。`,
+            detail: `辞書から実際に翻訳文へ置き換えた項目は ${result.translated}/${result.total} 件です。AI・機械翻訳のため、重要な内容は日本語原文もご確認ください。ページ本文を翻訳APIへ送信しません。`,
             loading: false,
             progress: 100,
         });
