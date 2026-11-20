@@ -14,7 +14,7 @@ const translationModule = read('assets/js/static-translation.js');
 const translationBuilder = read('scripts/build-static-translation-data.py');
 const languages = ['en', 'ko', 'zh', 'zh_hant', 'fr', 'de', 'es', 'pt', 'vi', 'id', 'th'];
 
-assert.equal(manifest.generation.mode, 'static-dictionary-with-chatgpt-curated-overrides');
+assert.equal(manifest.generation.mode, 'chatgpt-authored-only');
 assert.equal(manifest.curatedFile, 'curated.json');
 assert.equal(manifest.curatedGenerationVersion, 28);
 assert.equal(manifest.curatedEntryCount, Object.keys(curated.languages.en).length);
@@ -29,8 +29,7 @@ for (const language of languages) {
   assert.equal(Object.keys(dictionary.translations).length, manifest.entryCount);
   assert.deepEqual(Object.keys(curated.languages[language]).sort(), curatedKeys);
   assert.ok(Object.values(curated.languages[language]).every((value) => typeof value === 'string' && value.trim()));
-  const effective = { ...dictionary.translations, ...curated.languages[language] };
-  assert.ok(Object.values(effective).every((value) => typeof value === 'string' && value.trim()), `${language} has an empty effective translation`);
+  assert.ok(Object.values(curated.languages[language]).every((value) => typeof value === 'string' && value.trim()), `${language} has an empty ChatGPT translation`);
   assert.equal(manifest.sizes[language], Buffer.byteLength(read(`assets/data/static-translations/${language}.json`), 'utf8'));
 }
 
@@ -49,9 +48,13 @@ for (const [source, expected] of Object.entries({
 assert.ok(!Object.values(english).includes('Contact Us'));
 assert.ok(!Object.values(english).includes('Click here for more information.'));
 assert.ok(translationModule.includes('curated.json'));
-assert.ok(translationModule.includes('Object.assign({}, legacyTranslations, curatedTranslations)'));
+assert.ok(translationModule.includes('loadCuratedDictionary().then((curated) =>'));
+assert.ok(!translationModule.includes('legacyTranslations'));
+assert.ok(!translationModule.includes('fetch(`/assets/data/static-translations/${language}.json`'));
+assert.ok(translationModule.includes('まだ翻訳が用意されていない項目は'));
+assert.ok(!translationModule.includes('従来の機械翻訳辞書で補完します'));
 assert.ok(translationModule.includes('従来の機械翻訳辞書で補完します'));
-assert.ok(translationModule.includes('重要な内容は日本語原文もご確認ください'));
+assert.ok(translationModule.includes('ChatGPT作成の翻訳がない項目は日本語のまま表示されます'));
 assert.ok(translationModule.includes('if (translatedValue !== normalized) translated += 1;'));
 assert.ok(translationBuilder.includes('def apply_english_overrides'));
 assert.ok(translationBuilder.includes('apply_english_overrides(translate_mapping('));
@@ -62,7 +65,8 @@ console.log(JSON.stringify({
   status: 'ok',
   languages: languages.length,
   totalKeysPerLanguage: manifest.entryCount,
-  chatgptCuratedKeys: manifest.curatedEntryCount,
-  curatedCoveragePercent: Number((manifest.curatedEntryCount / manifest.entryCount * 100).toFixed(1)),
+  chatgptOnlyKeys: manifest.curatedEntryCount,
+  chatgptOnlyCoveragePercent: Number((manifest.curatedEntryCount / manifest.entryCount * 100).toFixed(1)),
+  untranslatedKeysPerLanguage: manifest.entryCount - manifest.curatedEntryCount,
   englishGenericFallbacks: 0,
 }, null, 2));
