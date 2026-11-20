@@ -26,3 +26,7 @@ jobs:
         run: node --check workers/tenmei-mori-backend.js
       - name: Run security regression tests
         run: node tests/security-regression.cjs
+      - name: Check translation generator syntax
+        run: python -m py_compile scripts/build-static-translation-data.py
+      - name: Run recovered release and translation regression tests
+        run: node tests/recovered-release-regression.cjs
