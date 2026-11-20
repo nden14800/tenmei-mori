@@ -16,14 +16,14 @@ const languages = ['en', 'ko', 'zh', 'zh_hant', 'fr', 'de', 'es', 'pt', 'vi', 'i
 
 assert.equal(manifest.generation.mode, 'chatgpt-authored-only');
 assert.equal(manifest.curatedFile, 'curated.json');
-assert.equal(manifest.curatedGenerationVersion, 29);
+assert.equal(manifest.curatedGenerationVersion, 30);
 assert.equal(manifest.curatedEntryCount, Object.keys(curated.languages.en).length);
 assert.deepEqual(manifest.languages, languages);
 assert.equal(manifest.entryCount, 3378);
 assert.deepEqual(Object.keys(curated.languages).sort(), [...languages].sort());
 
 const curatedKeys = Object.keys(curated.languages.en).sort();
-assert.equal(curatedKeys.length, 1092);
+assert.equal(curatedKeys.length, 1099);
 for (const language of languages) {
   assert.deepEqual(Object.keys(curated.languages[language]).sort(), curatedKeys);
   assert.ok(Object.values(curated.languages[language]).every((value) => typeof value === 'string' && value.trim()), `${language} has an empty ChatGPT translation`);
