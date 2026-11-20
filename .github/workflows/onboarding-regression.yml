@@ -6,6 +6,8 @@ on:
       - main
     paths:
       - "index.html"
+      - "assets/js/column-editorial-images.js"
+      - "functions/_middleware.js"
       - "tests/**"
       - "workers/tenmei-mori-backend.js"
       - "assets/js/tenmei-ai-agent.js"
@@ -23,6 +25,8 @@ on:
   pull_request:
     paths:
       - "index.html"
+      - "assets/js/column-editorial-images.js"
+      - "functions/_middleware.js"
       - "tests/**"
       - "workers/tenmei-mori-backend.js"
       - "assets/js/tenmei-ai-agent.js"
@@ -63,6 +67,12 @@ jobs:
           node tests/auth-ui-regression.cjs
       - name: Test article archive date sorting and custom select styles
         run: node tests/archive-date-sort-regression.cjs
+      - name: Test column editorial image library and reader UI
+        run: |
+          node --check assets/js/column-editorial-images.js
+          node tests/column-image-regression.cjs
+          node tests/column-ui-regression.cjs
+          node tests/static-asset-paths-regression.cjs
       - name: Test shared responsive pagination and page input
         run: node tests/pagination-unified-regression.cjs
       - name: Test custom choice and date controls
