@@ -1,19 +1,16 @@
-const BERGAMOT_MODULE_URL = 'https://cdn.jsdelivr.net/npm/@browsermt/bergamot-translator@0.4.9/translator.js';
-const BERGAMOT_REGISTRY_URL = 'https://storage.googleapis.com/bergamot-models-sandbox/0.3.3/registry.json';
-const BERGAMOT_DOWNLOAD_TIMEOUT = 0;
-
 const LANGUAGE_OPTIONS = [
-    { code: 'ja', locale: 'ja', bergamot: 'ja', native: '日本語', japanese: '日本語', mark: '日' },
-    { code: 'en', locale: 'en', bergamot: 'en', native: 'English', japanese: '英語', mark: 'EN' },
-    { code: 'ko', locale: 'ko', bergamot: 'ko', native: '한국어', japanese: '韓国語', mark: '한' },
-    { code: 'zh', locale: 'zh-CN', bergamot: 'zh', native: '简体中文', japanese: '簡体中国語', mark: '简' },
-    { code: 'fr', locale: 'fr', bergamot: 'fr', native: 'Français', japanese: 'フランス語', mark: 'FR' },
-    { code: 'de', locale: 'de', bergamot: 'de', native: 'Deutsch', japanese: 'ドイツ語', mark: 'DE' },
-    { code: 'es', locale: 'es', bergamot: 'es', native: 'Español', japanese: 'スペイン語', mark: 'ES' },
-    { code: 'pt', locale: 'pt', bergamot: 'pt', native: 'Português', japanese: 'ポルトガル語', mark: 'PT' },
-    { code: 'vi', locale: 'vi', bergamot: 'vi', native: 'Tiếng Việt', japanese: 'ベトナム語', mark: 'VI' },
-    { code: 'id', locale: 'id', bergamot: 'id', native: 'Bahasa Indonesia', japanese: 'インドネシア語', mark: 'ID' },
-    { code: 'th', locale: 'th', bergamot: 'th', native: 'ไทย', japanese: 'タイ語', mark: 'TH' },
+    { code: 'ja', locale: 'ja', native: '日本語', japanese: '日本語', mark: '日' },
+    { code: 'en', locale: 'en', native: 'English', japanese: '英語', mark: 'EN' },
+    { code: 'ko', locale: 'ko', native: '한국어', japanese: '韓国語', mark: '한' },
+    { code: 'zh', locale: 'zh-CN', native: '简体中文', japanese: '簡体中国語', mark: '简' },
+    { code: 'zh_hant', locale: 'zh-TW', native: '繁體中文', japanese: '繁体中国語', mark: '繁' },
+    { code: 'fr', locale: 'fr', native: 'Français', japanese: 'フランス語', mark: 'FR' },
+    { code: 'de', locale: 'de', native: 'Deutsch', japanese: 'ドイツ語', mark: 'DE' },
+    { code: 'es', locale: 'es', native: 'Español', japanese: 'スペイン語', mark: 'ES' },
+    { code: 'pt', locale: 'pt-BR', native: 'Português', japanese: 'ポルトガル語', mark: 'PT' },
+    { code: 'vi', locale: 'vi', native: 'Tiếng Việt', japanese: 'ベトナム語', mark: 'VI' },
+    { code: 'id', locale: 'id', native: 'Bahasa Indonesia', japanese: 'インドネシア語', mark: 'ID' },
+    { code: 'th', locale: 'th', native: 'ไทย', japanese: 'タイ語', mark: 'TH' },
 ];
 
 const state = {
@@ -22,10 +19,9 @@ const state = {
     originalText: new WeakMap(),
     originalAttributeTargets: [],
     originalAttributes: new WeakMap(),
-    translatedTextCache: new Map(),
-    translator: null,
-    translatorLanguage: null,
-    translatorModulePromise: null,
+    dictionaries: new Map(),
+    dictionaryPromises: new Map(),
+    curatedPromise: null,
     translating: false,
     pendingLanguage: null,
     observed: false,
@@ -113,8 +109,6 @@ function isExcludedTextNode(node) {
 }
 
 function collectTextNodes() {
-    // 翻訳対象は表示中のパネルだけでなく、サイト本文全体。
-    // SPAで後から開く「当サイトについて」「プライバシーポリシー」「使い方」も対象にする。
     const root = document.body;
     if (!root) return [];
     const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT, {
@@ -169,106 +163,72 @@ function restoreJapanese() {
     document.documentElement.lang = 'ja';
 }
 
-async function loadBergamotModule() {
-    if (!state.translatorModulePromise) {
-        state.translatorModulePromise = import(BERGAMOT_MODULE_URL).catch((error) => {
-            state.translatorModulePromise = null;
+async function loadCuratedDictionary() {
+    if (!state.curatedPromise) {
+        state.curatedPromise = fetch('/assets/data/static-translations/curated.json', { credentials: 'same-origin' })
+            .then((response) => {
+                if (!response.ok) throw new Error('curated_dictionary_http_' + response.status);
+                return response.json();
+            })
+            .catch((error) => {
+                state.curatedPromise = null;
+                throw error;
+            });
+    }
+    return state.curatedPromise;
+}
+
+async function loadTranslationDictionary(language) {
+    if (state.dictionaries.has(language)) return state.dictionaries.get(language);
+    if (!state.dictionaryPromises.has(language)) {
+        const promise = Promise.all([
+            fetch(`/assets/data/static-translations/${language}.json`, { credentials: 'same-origin' }).then((response) => {
+                if (!response.ok) throw new Error('translation_dictionary_http_' + response.status);
+                return response.json();
+            }),
+            loadCuratedDictionary(),
+        ]).then(([legacy, curated]) => {
+            const legacyTranslations = legacy?.translations && typeof legacy.translations === 'object' ? legacy.translations : {};
+            const curatedTranslations = curated?.languages?.[language] && typeof curated.languages[language] === 'object'
+                ? curated.languages[language]
+                : {};
+            const dictionary = Object.assign({}, legacyTranslations, curatedTranslations);
+            state.dictionaries.set(language, dictionary);
+            return dictionary;
+        }).catch((error) => {
+            state.dictionaryPromises.delete(language);
             throw error;
         });
+        state.dictionaryPromises.set(language, promise);
     }
-    return state.translatorModulePromise;
+    return state.dictionaryPromises.get(language);
 }
 
-async function ensureTranslator(language) {
-    const option = getOption(language);
-    if (state.translator && state.translatorLanguage === option.code) return state.translator;
-
-    if (state.translator) {
-        try { state.translator.delete(); } catch (error) { console.warn('Bergamot translator cleanup failed:', error); }
-        state.translator = null;
-        state.translatorLanguage = null;
-    }
-
-    const module = await loadBergamotModule();
-    if (!module?.BatchTranslator) throw new Error('bergamot_batch_translator_unavailable');
-    state.translator = new module.BatchTranslator({
-        pivotLanguage: 'en',
-        registryUrl: BERGAMOT_REGISTRY_URL,
-        downloadTimeout: BERGAMOT_DOWNLOAD_TIMEOUT,
-        workers: 1,
-        batchSize: 8,
-        cacheSize: 2048,
-    });
-    state.translatorLanguage = option.code;
-    return state.translator;
-}
-
-async function translateUniqueTexts(language, texts, runId) {
-    const option = getOption(language);
-    const translator = await ensureTranslator(language);
-    const unique = [...new Set(texts.map(normalizeText).filter(Boolean))];
-    const missing = unique.filter((text) => !state.translatedTextCache.has(`${language}\u0000${text}`));
-
-    let completed = unique.length - missing.length;
-    const total = unique.length || 1;
-    const updateProgress = () => setStatus({
-        title: `${option.japanese}を表示しています`,
-        detail: `端末内のBergamot翻訳エンジンで本文を処理しています（${completed}/${unique.length}）。初回のみ翻訳モデルをダウンロードします。`,
-        loading: true,
-        progress: 45 + Math.round((completed / total) * 45),
-    });
-    updateProgress();
-
-    const batchSize = 32;
-    for (let start = 0; start < missing.length; start += batchSize) {
-        if (runId !== state.translationRun) return false;
-        const batch = missing.slice(start, start + batchSize);
-        const results = await Promise.all(batch.map(async (text) => {
-            const response = await translator.translate({
-                from: 'ja',
-                to: option.bergamot,
-                text,
-                html: false,
-                priority: 10,
-            });
-            return [text, response?.target?.text];
-        }));
-        results.forEach(([source, translated]) => {
-            if (typeof translated === 'string' && normalizeText(translated)) {
-                state.translatedTextCache.set(`${language}\u0000${source}`, translated);
-            }
-            completed += 1;
-        });
-        updateProgress();
-    }
-    return runId === state.translationRun;
-}
-
-function applyBergamotTranslations(language, nodes, attributeTargets) {
-    let translatedCount = 0;
+function applyTranslations(dictionary, nodes, attributeTargets) {
+    let translated = 0;
     let total = 0;
     for (const node of nodes) {
         const original = state.originalText.get(node);
         const normalized = normalizeText(original);
         if (!normalized) continue;
         total += 1;
-        const translated = state.translatedTextCache.get(`${language}\u0000${normalized}`);
-        if (typeof translated === 'string' && translated.trim()) {
-            node.nodeValue = restoreWhitespace(original, translated);
-            translatedCount += 1;
+        const value = dictionary[normalized];
+        if (typeof value === 'string' && normalizeText(value)) {
+            node.nodeValue = restoreWhitespace(original, value);
+            translated += 1;
         }
     }
     for (const target of attributeTargets) {
         const normalized = normalizeText(target.original);
         if (!normalized) continue;
         total += 1;
-        const translated = state.translatedTextCache.get(`${language}\u0000${normalized}`);
-        if (typeof translated === 'string' && translated.trim()) {
-            target.element.setAttribute(target.name, translated);
-            translatedCount += 1;
+        const value = dictionary[normalized];
+        if (typeof value === 'string' && normalizeText(value)) {
+            target.element.setAttribute(target.name, value);
+            translated += 1;
         }
     }
-    return { total, translated: translatedCount };
+    return { total, translated };
 }
 
 async function selectLanguage(language, { force = false } = {}) {
@@ -288,42 +248,36 @@ async function selectLanguage(language, { force = false } = {}) {
         restoreJapanese();
         if (option.code === 'ja') {
             state.currentLanguage = 'ja';
-            setStatus({ title: '日本語を表示中です', detail: '公開時の原文へ戻しました。', loading: false });
+            setStatus({ title: '日本語を表示中です', detail: '公開時の原文をそのまま表示しています。', loading: false });
             return;
         }
 
         const nodes = collectTextNodes();
         const attributeTargets = collectAttributeTargets();
-        const sourceTexts = [
-            ...nodes.map((node) => state.originalText.get(node)),
-            ...attributeTargets.map((target) => target.original),
-        ];
-        const uniqueCount = new Set(sourceTexts.map(normalizeText).filter(Boolean)).size;
         setStatus({
-            title: `${option.japanese}の翻訳モデルを準備しています`,
-            detail: `Bergamotの端末内翻訳でサイト全体の文章・ボタン・補助ラベルを処理しています（対象 ${uniqueCount} 種類）。初回のみ翻訳モデルをダウンロードします。`,
+            title: `${option.japanese}の翻訳辞書を読み込んでいます`,
+            detail: 'ChatGPTが文脈に合わせて作成した翻訳を優先し、既存の静的辞書を補完として使用します。外部翻訳エンジンや翻訳モデルのダウンロードはありません。',
             loading: true,
-            progress: 10,
+            progress: 25,
         });
-        await translateUniqueTexts(option.code, sourceTexts, runId);
+        const dictionary = await loadTranslationDictionary(option.code);
         if (runId !== state.translationRun) return;
-
-        const result = applyBergamotTranslations(option.code, nodes, attributeTargets);
+        const result = applyTranslations(dictionary, nodes, attributeTargets);
         state.currentLanguage = option.code;
         document.documentElement.lang = option.locale;
         setStatus({
             title: `${option.japanese}を表示中です`,
-            detail: `端末内のBergamot翻訳エンジンで ${result.translated}/${result.total} 件を翻訳しました。本文は翻訳APIへ送信していません。`,
+            detail: `保存済みの翻訳辞書から ${result.translated}/${result.total} 件を適用しました。辞書データはこのサイトから読み込み、ページ本文を翻訳APIへ送信しません。`,
             loading: false,
             progress: 100,
         });
     } catch (error) {
-        console.error('Bergamot translation failed:', error);
+        console.error('Static translation dictionary failed:', error);
         restoreJapanese();
         state.currentLanguage = 'ja';
         setStatus({
             title: '翻訳表示を開始できませんでした',
-            detail: 'ローカル翻訳エンジンまたは翻訳モデルの読み込みに失敗しました。通信状況を確認して、もう一度お試しください。',
+            detail: 'このサイトの翻訳辞書を読み込めませんでした。通信状況を確認して、もう一度お試しください。',
             loading: false,
         });
     } finally {
