@@ -47,16 +47,26 @@ export async function onRequest({ request, next }) {
 
   if (request.method === "GET" && (headers.get("Content-Type") || "").includes("text/html")) {
     const scriptHosts = "'self' https://www.googletagmanager.com https://www.clarity.ms https://challenges.cloudflare.com https://cdnjs.cloudflare.com https://unpkg.com https://cdn.jsdelivr.net";
-    const scriptElementSources = `${scriptHosts} ${SCRIPT_HASH_SOURCES.join(" ")}`;
+    // Hash the exact HTML being served so a changed inline script cannot silently
+    // disable page JavaScript, navigation, or primary actions through a stale CSP.
+    const html = await response.text();
+    const inlineScripts = [...html.matchAll(/<script\\b([^>]*)>([\\s\\S]*?)<\\/script\\s*>/gi)]
+      .filter((match) => !/\\bsrc\\s*=/.test(match[1]));
+    const scriptHashes = await Promise.all(inlineScripts.map(async (match) => {
+      const digest = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(match[2]));
+      const base64 = btoa(String.fromCharCode(...new Uint8Array(digest)));
+      return `'sha256-${base64}'`;
+    }));
+    const scriptElementSources = `${scriptHosts} ${scriptHashes.join(" ")}`;
     headers.set("Content-Security-Policy",
-      `default-src 'self'; base-uri 'self'; object-src 'none'; script-src 'self' 'wasm-unsafe-eval' https://www.googletagmanager.com https://www.clarity.ms https://challenges.cloudflare.com https://cdnjs.cloudflare.com https://unpkg.com https://cdn.jsdelivr.net; script-src-elem ${scriptElementSources}; script-src-attr 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://cdn.jsdelivr.net https://cdnjs.cloudflare.com https://unpkg.com; font-src 'self' data: https://fonts.gstatic.com https://cdn.jsdelivr.net; img-src 'self' data: blob: https://upload.wikimedia.org https://*.tile.openstreetmap.org https://www.gstatic.com https://*.cdninstagram.com; connect-src 'self' https://commons.wikimedia.org https://tenmei-discord-bot.nden14800.workers.dev https://*.google-analytics.com https://*.clarity.ms https://challenges.cloudflare.com https://cdn.jsdelivr.net https://storage.googleapis.com https://bergamot.s3.amazonaws.com; frame-src https://challenges.cloudflare.com; manifest-src 'self'; worker-src 'self' blob:; form-action 'self'; frame-ancestors 'none'; upgrade-insecure-requests`);
+      `default-src 'self'; base-uri 'self'; object-src 'none'; script-src 'self' 'wasm-unsafe-eval' https://www.googletagmanager.com https://www.clarity.ms https://challenges.cloudflare.com https://cdnjs.cloudflare.com https://unpkg.com https://cdn.jsdelivr.net; script-src-elem ${scriptElementSources}; script-src-attr 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://cdn.jsdelivr.net https://cdnjs.cloudflare.com https://unpkg.com; font-src 'self' data: https://fonts.gstatic.com https://cdn.jsdelivr.net; img-src 'self' data: blob: https://upload.wikimedia.org https://*.tile.openstreetmap.org https://www.gstatic.com https://*.cdninstagram.com; connect-src 'self' https://tenmei-discord-bot.nden14800.workers.dev https://*.google-analytics.com https://*.clarity.ms https://challenges.cloudflare.com https://cdn.jsdelivr.net https://storage.googleapis.com https://bergamot.s3.amazonaws.com; frame-src https://challenges.cloudflare.com; manifest-src 'self'; worker-src 'self' blob:; form-action 'self'; frame-ancestors 'none'; upgrade-insecure-requests`);
     return new HTMLRewriter()
       .on("body", {
         element(element) {
           element.append('<script src="/scripts/agent-discovery.js" defer></script>', { html: true });
         }
       })
-      .transform(new Response(response.body, {
+      .transform(new Response(html, {
         status: response.status, statusText: response.statusText, headers
       }));
   }
