@@ -48,7 +48,7 @@
         appendText(
             figure,
             'h2',
-            isComparison ? '四つの言葉の違いを整理' : 'この記事の見取り図',
+            isComparison ? '関係する言葉の違いを整理' : 'この記事の見取り図',
             'column-native-visual__title'
         ).id = 'column-native-visual-title-' + item.id;
         appendText(
