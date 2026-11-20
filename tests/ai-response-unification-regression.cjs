@@ -27,7 +27,11 @@ assert(/class=["'][^"']*tenmei-ai-info-panel[^"']*["'][^>]*data-ai-info-panel[^>
 requireText(html, '<dt>入力</dt><dd>対象記事の本文', 'AI要約の情報欄に入力内容がありません。');
 requireText(html, '<dt>保存</dt><dd>生成した要約は保存され', 'AI要約の情報欄に保存仕様がありません。');
 
-requireText(html, 'consumeUnifiedAiStream(res, responseArea)', '悩み相談・夢占いが共通ストリーミング処理を利用していません。');
+assert.equal(
+  (html.match(/await consumeUnifiedAiStream\\(res,area\\)/g) || []).length,
+  2,
+  '悩み相談・夢占いの両方が共通ストリーミング処理を利用していません。'
+);
 
 requireText(html, 'function renderUnifiedAiMarkdown(container, source)', 'AI共通Markdownレンダラーがありません。');
 requireText(html, 'function renderUnifiedAiInline(parent, source)', 'AI回答の安全なインラインMarkdown処理がありません。');
