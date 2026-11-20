@@ -26612,6 +26612,7 @@ let historyPageState = {
         }
         let html = '<nav class="modern-pagination ver4-pagination" aria-label="' + label + 'のページ送り">';
         html += '<div class="modern-pagination-main"><ul class="modern-pagination-controls" aria-label="ページ番号">';
+        html += '<li class="modern-pagination-edge"><button type="button" onclick="' + goto(1) + '" class="modern-pagination-btn modern-pagination-first" aria-label="最初のページへ" ' + (current === 1 ? 'disabled' : '') + '><i class="bi bi-chevron-double-left" aria-hidden="true"></i></button></li>';
         html += '<li class="modern-pagination-edge"><button type="button" onclick="' + goto(current - 1) + '" class="modern-pagination-btn modern-pagination-prev" aria-label="前のページへ" ' + (current === 1 ? 'disabled' : '') + '><i class="bi bi-chevron-left" aria-hidden="true"></i><span>前へ</span></button></li>';
         for (const item of items) {
             if (item.type === 'ellipsis') { html += '<li class="modern-pagination-ellipsis" aria-hidden="true">…</li>'; continue; }
@@ -26619,6 +26620,7 @@ let historyPageState = {
             html += '<li class="modern-pagination-page-item"><button type="button" onclick="' + goto(item.page) + '" class="modern-pagination-page ' + (active ? 'is-current' : '') + '" aria-label="' + item.page + 'ページ目へ移動" ' + (active ? 'aria-current="page"' : '') + '>' + item.page + '</button></li>';
         }
         html += '<li class="modern-pagination-edge"><button type="button" onclick="' + goto(current + 1) + '" class="modern-pagination-btn modern-pagination-next" aria-label="次のページへ" ' + (current === total ? 'disabled' : '') + '><span>次へ</span><i class="bi bi-chevron-right" aria-hidden="true"></i></button></li>';
+        html += '<li class="modern-pagination-edge"><button type="button" onclick="' + goto(total) + '" class="modern-pagination-btn modern-pagination-last" aria-label="最後のページへ" ' + (current === total ? 'disabled' : '') + '><i class="bi bi-chevron-double-right" aria-hidden="true"></i></button></li>';
         html += '</ul><p class="modern-pagination-position" aria-live="polite"><strong>' + current + '</strong><span>/</span>' + total + ' ページ</p></div>';
         html += '<div class="modern-pagination-jump"><label for="' + jumpId + '">ページ指定</label><input type="number" inputmode="numeric" id="' + jumpId + '" class="search-input pagination-page-input" min="1" max="' + total + '" step="1" value="' + current + '" aria-label="移動するページ番号" onkeydown="if(event.key===\'Enter\'){event.preventDefault();jumpToPaginationPage(\'' + idPrefix + '\',' + total + ')}"><span class="modern-pagination-jump-total">/ ' + total + '</span><button type="button" onclick="jumpToPaginationPage(\'' + idPrefix + '\',' + total + ')" class="modern-pagination-jump-btn">移動</button></div>';
         html += '</nav>';

@@ -101,7 +101,7 @@ requireCount(/showView\('/g, 15, '既存の内部画面遷移導線が不足し�
 [
   '<nav id="news-pagination" class="news-bulletin-pagination" aria-label="社務所だよりのページ送り"></nav>',
   '<nav id="column-pagination" class="column-library-pagination" aria-label="神籤草子のページ送り"></nav>',
-  'let html = `<div class="modern-pagination ver4-pagination"',
+  `let html = '<nav class="modern-pagination ver4-pagination" aria-label="' + label + 'のページ送り">';`,
   'aria-label="最初のページへ"',
   'aria-label="前のページへ"',
   'aria-label="次のページへ"',
