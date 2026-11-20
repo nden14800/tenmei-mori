@@ -39,7 +39,7 @@ requireSectionText('id="privacy-toc-list"', 'プライバシーポリシー画�
 const revisionOptionsMatch = privacySection.match(/data-control-id="privacy-revision-select"[^>]*data-options='([^']+)'/);
 assert(revisionOptionsMatch, 'プライバシー第9条の版選択肢が定義されていません。');
 const revisionEditions = JSON.parse(revisionOptionsMatch[1]).map((option) => Number(option.value));
-[34,33,32,31,30,29,28,27,26,25,24,23,22,21,20,19,18,17,16,15,14,13,12,11,10,9,8,7,6,5,4,3].forEach((edition) => assert(revisionEditions.includes(edition), `プライバシー第${edition}版の選択肢がありません。`));
+[35,34,33,32,31,30,29,28,27,26,25,24,23,22,21,20,19,18,17,16,15,14,13,12,11,10,9,8,7,6,5,4,3].forEach((edition) => assert(revisionEditions.includes(edition), `プライバシー第${edition}版の選択肢がありません。`));
 assert(revisionEditions.includes(15), 'プライバシー第15版の欠番・記録なし表示が選択肢にありません。');
 assert(privacySection.includes('第15版</span>') || privacySection.includes('第15版'), 'プライバシー第15版の明示がHTMLにありません。');
 assert(html.includes('.dark .document-revision-selector{'), 'REVISION HISTORYのダークモードCSSがありません。');
@@ -54,7 +54,7 @@ requireSectionText(
   'プライバシーポリシー画面のPDF保存ボタンの既存処理接続が失われています。'
 );
 assert.equal(
-  privacySection.includes('現行版（第32版）の本文です。'),
+  privacySection.includes('現行版（第34版）の本文です。'),
   false,
   '現行の第33版本文に古い第32版ラベルが残っています。'
 );
@@ -65,7 +65,7 @@ assert.equal(
 );
 
 [
-  '制定: 2026/01/02 ・ 改定: 2026/10/12 (第34版) ・ 運営: nden148',
+  '制定: 2026/01/02 ・ 改定: 2026/11/20 (第35版) ・ 運営: nden148',
   '第1条（定義）',
   '第2条（収集する個人情報および収集方法）',
   '第3条（個人情報の利用目的）',
@@ -83,8 +83,8 @@ assert.equal(
   'AI夢占いの夢の本文および生成解釈を含む夢の記録（dream_history）',
   'AI要約への評価・コメント記録（summary_feedback）',
   'サービス運営上必要な確認・対応を行うため（個別の問い合わせ対応・返信を保証するものではありません）',
-  '現行版：第34版（最終改定日：2026年10月12日）',
-  '現行版（第34版）の本文です。',
+  '現行版：第35版（最終改定日：2026年11月20日）',
+  '現行版（第35版）の本文です。',
   '4. 下の選択欄から版を選ぶと、その版について確認できた実際の改定内容を表示します。本文スナップショットを確認できない版については、推測で内容を補いません。',
   'アカウント削除後のデータ復旧は一切できません。',
 ].forEach((text) => {
@@ -97,13 +97,13 @@ assert.equal(
   'プライバシーポリシーの条見出しh3が11件ではありません。'
 );
 assert.equal(
-  (externalServicesSection.match(/<p class="font-bold text-sm">(?:1[0-2]|[1-9])\./g) || []).length,
-  12,
+  (externalServicesSection.match(/<p class="font-bold text-sm">(?:1[0-4]|[1-9])\./g) || []).length,
+  14,
   '外部サービス12件の開示カードが保持されていません。'
 );
 assert.equal(
-  (privacySection.match(/<p class="font-bold text-sm">(?:1[0-2]|[1-9])\./g) || []).length,
-  12,
+  (privacySection.match(/<p class="font-bold text-sm">(?:1[0-4]|[1-9])\./g) || []).length,
+  14,
   '外部サービス開示が規程書外へ重複して漏れています。'
 );
 assert.equal(
@@ -113,8 +113,8 @@ assert.equal(
 );
 assert.equal(
   (externalServicesSection.match(/target="_blank" rel="noopener noreferrer"/g) || []).length,
-  17,
-  '外部サービス開示の安全な新規タブリンク17件が保持されていません。'
+  19,
+  '外部サービス開示の安全な新規タブリンク19件が保持されていません。'
 );
 
 [
@@ -196,9 +196,9 @@ for (const documentKey of ['about', 'privacy']) {
   assert(currentVersion.availability === 'full', documentKey + 'の現行版がfullとして記録されていません。');
   assert(currentVersion.html && currentVersion.html.trim(), documentKey + 'の現行版本文スナップショットがありません。');
   if (documentKey === 'privacy') {
-    assert.equal(document.current.edition, 34, 'プライバシーポリシーの現行版メタデータが第34版ではありません。');
-    assert.equal(document.current.revisedLabel, '2026/10/12 (第34版)', 'プライバシーポリシーの現行改定日が一致しません。');
-    assert(currentVersion.html.includes('現行版（第34版）の本文です。'), 'プライバシーポリシー第34版の本文ラベルが現行版と一致しません。');
+    assert.equal(document.current.edition, 35, 'プライバシーポリシーの現行版メタデータが第34版ではありません。');
+    assert.equal(document.current.revisedLabel, '2026/11/20 (第35版)', 'プライバシーポリシーの現行改定日が一致しません。');
+    assert(currentVersion.html.includes('現行版（第35版）の本文です。'), 'プライバシーポリシー第34版の本文ラベルが現行版と一致しません。');
     assert(!currentVersion.html.includes('現行版（第32版）の本文です。'), 'プライバシーポリシー第34版のアーカイブに古い第32版ラベルが残っています。');
   }
   assert(currentVersion.changeDescription && currentVersion.changeDescription.trim(), documentKey + 'の現行版改定内容がありません。');
@@ -214,24 +214,29 @@ for (const documentKey of ['about', 'privacy']) {
 }
 assert.equal(archive.documents.about.versions.find((version) => version.edition === 24).html, '', '当サイトについて第24版の未記録本文をHTMLで擬似再現してはいけません。');
 assert.equal(archive.documents.privacy.versions.find((version) => version.edition === 15).availability, 'missing', 'プライバシー第15版は欠番・記録なしとして保持します。');
-assert.equal(archive.documents.privacy.versions[0].edition, 34, 'プライバシーポリシーの現行版がアーカイブ先頭にありません。');
+assert.equal(archive.documents.about.versions[0].edition, 27, '当サイトについての現行版がアーカイブ先頭にありません。');
+assert.equal(archive.documents.about.current.edition, 27, '当サイトについての現行版メタデータが第27版ではありません。');
+assert.equal(archive.documents.privacy.versions[0].edition, 35, 'プライバシーポリシーの現行版がアーカイブ先頭にありません。');
 assert.match(archive.documents.privacy.versions[0].changeDescription, /独自AI案内/);
-assert.ok(archive.documents.privacy.versions[0].html.includes('12. 天命乃杜独自のAI案内'), '第34版アーカイブにAI案内の開示がありません。');
-assert.ok(privacySection.includes('<input type="hidden" id="privacy-revision-select" value="34">'), '改定履歴の初期選択が現行版34になっていません。');
-assert.ok(privacySection.includes('<strong>第34版 ・ 2026/10/12 ・ 現行版</strong>'), '改定履歴の初期説明が現行版34になっていません。');
-assert.ok(privacySection.includes('第34版の本文スナップショットを読み込みます。'), '改定履歴の初期スナップショット表示が現行版34になっていません。');
+assert.ok(archive.documents.privacy.versions[0].html.includes('12. 天命乃杜独自のAI案内'), '第35版アーカイブにAI案内の開示がありません。');
+assert.ok(archive.documents.privacy.versions[0].html.includes('直近最大10件の会話メッセージ'), '第35版アーカイブにAI案内の画面情報・会話範囲がありません。');
+assert.ok(privacySection.includes('<input type="hidden" id="privacy-revision-select" value="35">'), '改定履歴の初期選択が現行版35になっていません。');
+assert.ok(privacySection.includes('<strong>第35版 ・ 2026/11/20 ・ 現行版</strong>'), '改定履歴の初期説明が現行版35になっていません。');
+assert.ok(privacySection.includes('第35版の本文スナップショットを読み込みます。'), '改定履歴の初期スナップショット表示が現行版35になっていません。');
+assert.ok(privacySection.includes('HttpOnly属性により、JavaScriptからCookie値を読み取ることはできません。'), 'HttpOnlyセッションCookieの説明がありません。');
+assert.ok(privacySection.includes('最大14日') && privacySection.includes('最大30日'), 'Mailerooの公表保持期間が最新情報に更新されていません。');
 assert(fs.readFileSync(path.resolve(__dirname, '..', 'index.html'), 'utf8').includes('本文スナップショット未記録'), '未記録版の正直なスナップショット表示がありません。');
 assert(html.includes('class="document-revision-snapshot__details"'), '本文スナップショットが開閉可能なdetailsになっていません。');
 assert(html.includes('class="document-revision-snapshot__summary"'), '本文スナップショットの開閉見出しがありません。');
 assert(html.includes('bi bi-chevron-down document-revision-snapshot__chevron'), '本文スナップショットの開閉アイコンがサイト共通のBootstrap Iconsになっていません。');
 assert(html.includes('.document-revision-snapshot__details[open] .document-revision-snapshot__chevron'), '本文スナップショットの開閉状態とアイコン表示が連動していません。');
 assert(!html.includes('<details class="document-revision-snapshot__details" open>'), '本文スナップショットは初期状態で開いてはいけません。');
-assert(html.includes('第26版の本文スナップショットを読み込みます。'), '当サイトについての初期スナップショット表示が現行第26版と一致しません。');
-assert(html.includes('第34版の本文スナップショットを読み込みます。'), 'プライバシーポリシーの初期スナップショット表示が現行第34版と一致しません。');
+assert(html.includes('第27版の本文スナップショットを読み込みます。'), '当サイトについての初期スナップショット表示が現行第26版と一致しません。');
+assert(html.includes('第35版の本文スナップショットを読み込みます。'), 'プライバシーポリシーの初期スナップショット表示が現行第34版と一致しません。');
 assert(!html.includes('第24版の本文スナップショットは保存されていません。'), '初期表示に別版のスナップショット状態が残っています。');
 assert(!html.includes('第32版の本文スナップショットを読み込みます。'), '初期表示に旧版のスナップショット読み込み表示が残っています。');
 // 改定履歴スナップショット内の旧カスタム選択欄が本体側コントロールを壊さないことを保証する。
-assert(html.includes("const CURRENT={about:{edition:'26',date:'2026/10/10'}"), '当サイトについてのフォールバック版番号が現行の第26版と一致しません。');
+assert(html.includes("const CURRENT={about:{edition:'27',date:'2026/11/20'}"), '当サイトについてのフォールバック版番号が現行の第26版と一致しません。');
 assert(html.includes('snapshot.querySelectorAll') && html.includes('[data-control-id], [data-control-kind="choice"], [data-control-kind="date"], .tenmei-choice'), '過去版スナップショット内の新旧カスタム選択欄を静的表示へ変換していません。');
 assert(html.includes('document-revision-static-control'), '過去版の選択欄を表示専用にするスタイルがありません。');
 assert(html.includes("if(/^on/i.test(attribute.name))element.removeAttribute(attribute.name);"), '過去版スナップショットのインライン操作を無効化していません。');
