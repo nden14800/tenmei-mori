@@ -12734,24 +12734,38 @@ body.sidebar-collapsed.sidebar-pinned #sidebar .nav-group-title {
         }
         .zodiac-input-grid {
             display: grid;
-            grid-template-columns: minmax(0, 5fr) minmax(0, 4fr) minmax(132px, 3fr);
+            grid-template-columns: repeat(2, minmax(0, 1fr)) minmax(132px, auto);
+            align-items: end;
             gap: var(--ver4-card-gap);
             margin: 0;
         }
         .zodiac-input-grid > div { min-width: 0; }
-        /* The zodiac form uses the shared Tenmei choice control, not the legacy custom-select-shell.
-           Give its inline control root the same full-width contract used by the other filter fields. */
-        #view-zodiac .zodiac-input-grid__sign .tenmei-choice,
-        #view-zodiac .zodiac-input-grid__blood .tenmei-choice {
-            display: block;
-            width: 100%;
+        /* Match the visible field-label and control stack used by the other Tenmei filters. */
+        .zodiac-input-field {
+            display: grid;
             min-width: 0;
+            gap: 0.42rem;
+            color: var(--text-sub);
+            font-family: 'Zen Kaku Gothic New', sans-serif;
+            font-size: 0.74rem;
+            font-weight: 700;
+            line-height: 1.5;
+            letter-spacing: 0.01em;
         }
-        #view-zodiac .custom-select-shell {
-            min-height: var(--ver4-control-height);
-            border-radius: var(--ver4-control-radius);
-            --select-accent: var(--zodiac-accent);
+        .zodiac-input-field > span:first-child {
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
         }
+        .zodiac-input-field > span:first-child i { color: var(--zodiac-accent); }
+        .zodiac-input-select-wrap {
+            position: relative;
+            display: flex;
+            min-height: 46px;
+            align-items: center;
+        }
+        .zodiac-input-select-wrap > .tenmei-choice { width: 100%; min-width: 0; }
+        .zodiac-input-grid__action { display: flex; min-width: 0; align-self: end; }
         .zodiac-rank-submit {
             width: 100%;
             min-height: var(--ver4-control-height);
@@ -16925,18 +16939,24 @@ html.dark #tenmei-event-dialog .events-dialog-heading{background:linear-gradient
                         </div>
                     </div>
                     <div class="zodiac-input-grid">
-                        <div class="zodiac-input-grid__sign">
-                            <div class="tenmei-choice" data-control-kind="choice" data-control-id="user-sign" data-control-label="星座を選ぶ" data-options='[{"value":"aries","label":"牡羊座","detail":"3/21–4/19","symbol":"♈"},{"value":"taurus","label":"牡牛座","detail":"4/20–5/20","symbol":"♉"},{"value":"gemini","label":"双子座","detail":"5/21–6/21","symbol":"♊"},{"value":"cancer","label":"蟹座","detail":"6/22–7/22","symbol":"♋"},{"value":"leo","label":"獅子座","detail":"7/23–8/22","symbol":"♌"},{"value":"virgo","label":"乙女座","detail":"8/23–9/22","symbol":"♍"},{"value":"libra","label":"天秤座","detail":"9/23–10/23","symbol":"♎"},{"value":"scorpio","label":"蠍座","detail":"10/24–11/22","symbol":"♏"},{"value":"sagittarius","label":"射手座","detail":"11/23–12/21","symbol":"♐"},{"value":"capricorn","label":"山羊座","detail":"12/22–1/19","symbol":"♑"},{"value":"aquarius","label":"水瓶座","detail":"1/20–2/18","symbol":"♒"},{"value":"pisces","label":"魚座","detail":"2/19–3/20","symbol":"♓"}]'>
-                                <input type="hidden" id="user-sign" value="aries">
-                                <button type="button" class="tenmei-choice__trigger" id="user-sign-trigger" aria-haspopup="listbox" aria-expanded="false" aria-controls="user-sign-options" aria-label="星座を選ぶ"><span class="tenmei-choice__icon" aria-hidden="true"><i class="bi bi-stars"></i></span><span class="tenmei-choice__value"></span><i class="bi bi-chevron-down tenmei-choice__chevron" aria-hidden="true"></i></button>
-                                <div class="tenmei-choice__popover" id="user-sign-popover" hidden><div class="tenmei-choice__options" id="user-sign-options" role="listbox" aria-label="星座を選ぶ"></div></div>
+                        <div class="zodiac-input-field zodiac-input-grid__sign">
+                            <span><i class="bi bi-stars" aria-hidden="true"></i> 星座</span>
+                            <div class="zodiac-input-select-wrap">
+                                <div class="tenmei-choice" data-control-kind="choice" data-control-id="user-sign" data-control-label="星座を選ぶ" data-value-display="label" data-options='[{"value":"aries","label":"牡羊座","detail":"3/21–4/19","symbol":"♈"},{"value":"taurus","label":"牡牛座","detail":"4/20–5/20","symbol":"♉"},{"value":"gemini","label":"双子座","detail":"5/21–6/21","symbol":"♊"},{"value":"cancer","label":"蟹座","detail":"6/22–7/22","symbol":"♋"},{"value":"leo","label":"獅子座","detail":"7/23–8/22","symbol":"♌"},{"value":"virgo","label":"乙女座","detail":"8/23–9/22","symbol":"♍"},{"value":"libra","label":"天秤座","detail":"9/23–10/23","symbol":"♎"},{"value":"scorpio","label":"蠍座","detail":"10/24–11/22","symbol":"♏"},{"value":"sagittarius","label":"射手座","detail":"11/23–12/21","symbol":"♐"},{"value":"capricorn","label":"山羊座","detail":"12/22–1/19","symbol":"♑"},{"value":"aquarius","label":"水瓶座","detail":"1/20–2/18","symbol":"♒"},{"value":"pisces","label":"魚座","detail":"2/19–3/20","symbol":"♓"}]'>
+                                    <input type="hidden" id="user-sign" value="aries">
+                                    <button type="button" class="tenmei-choice__trigger" id="user-sign-trigger" aria-haspopup="listbox" aria-expanded="false" aria-controls="user-sign-options" aria-label="星座を選ぶ"><span class="tenmei-choice__icon" aria-hidden="true"><i class="bi bi-stars"></i></span><span class="tenmei-choice__value"></span><i class="bi bi-chevron-down tenmei-choice__chevron" aria-hidden="true"></i></button>
+                                    <div class="tenmei-choice__popover" id="user-sign-popover" hidden><div class="tenmei-choice__options" id="user-sign-options" role="listbox" aria-label="星座を選ぶ"></div></div>
+                                </div>
                             </div>
                         </div>
-                        <div class="zodiac-input-grid__blood">
-                            <div class="tenmei-choice" data-control-kind="choice" data-control-id="user-blood" data-control-label="血液型を選ぶ" data-options='[{"value":"A","label":"A型"},{"value":"B","label":"B型"},{"value":"O","label":"O型"},{"value":"AB","label":"AB型"}]'>
-                                <input type="hidden" id="user-blood" value="A">
-                                <button type="button" class="tenmei-choice__trigger" id="user-blood-trigger" aria-haspopup="listbox" aria-expanded="false" aria-controls="user-blood-options" aria-label="血液型を選ぶ"><span class="tenmei-choice__icon" aria-hidden="true"><i class="bi bi-droplet-half"></i></span><span class="tenmei-choice__value"></span><i class="bi bi-chevron-down tenmei-choice__chevron" aria-hidden="true"></i></button>
-                                <div class="tenmei-choice__popover" id="user-blood-popover" hidden><div class="tenmei-choice__options" id="user-blood-options" role="listbox" aria-label="血液型を選ぶ"></div></div>
+                        <div class="zodiac-input-field zodiac-input-grid__blood">
+                            <span><i class="bi bi-droplet-half" aria-hidden="true"></i> 血液型</span>
+                            <div class="zodiac-input-select-wrap">
+                                <div class="tenmei-choice" data-control-kind="choice" data-control-id="user-blood" data-control-label="血液型を選ぶ" data-value-display="label" data-options='[{"value":"A","label":"A型"},{"value":"B","label":"B型"},{"value":"O","label":"O型"},{"value":"AB","label":"AB型"}]'>
+                                    <input type="hidden" id="user-blood" value="A">
+                                    <button type="button" class="tenmei-choice__trigger" id="user-blood-trigger" aria-haspopup="listbox" aria-expanded="false" aria-controls="user-blood-options" aria-label="血液型を選ぶ"><span class="tenmei-choice__icon" aria-hidden="true"><i class="bi bi-droplet-half"></i></span><span class="tenmei-choice__value"></span><i class="bi bi-chevron-down tenmei-choice__chevron" aria-hidden="true"></i></button>
+                                    <div class="tenmei-choice__popover" id="user-blood-popover" hidden><div class="tenmei-choice__options" id="user-blood-options" role="listbox" aria-label="血液型を選ぶ"></div></div>
+                                </div>
                             </div>
                         </div>
                         <div class="zodiac-input-grid__action">
@@ -30007,7 +30027,9 @@ function resetSearch() {
             const syncChoice = (state) => {
                 const selectedIndex = Math.max(0, state.options.findIndex((option) => option.value === state.input.value));
                 const selected = state.options[selectedIndex];
-                state.valueNode.textContent = selected.detail ? `${selected.symbol ? `${selected.symbol} ` : ''}${selected.label} (${selected.detail})` : `${selected.symbol ? `${selected.symbol} ` : ''}${selected.label}`;
+                state.valueNode.textContent = state.root.dataset.valueDisplay === 'label'
+                    ? selected.label
+                    : (selected.detail ? `${selected.symbol ? `${selected.symbol} ` : ''}${selected.label} (${selected.detail})` : `${selected.symbol ? `${selected.symbol} ` : ''}${selected.label}`);
                 state.optionNodes.forEach((optionNode, index) => {
                     const isSelected = index === selectedIndex;
                     optionNode.setAttribute('aria-selected', String(isSelected));
