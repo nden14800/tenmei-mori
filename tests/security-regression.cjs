@@ -125,11 +125,11 @@ expect(unsafeShareOpenCount === 0, 'SNS共有のwindow.open()にnoopener,norefer
 expect(safeShareOpenCount === 4, `SNS共有の安全なwindow.open()が4件ではありません（検出件数: ${safeShareOpenCount}）。`);
 
 expect(/^\/\*$/m.test(headers), '_headers に全パスへ適用するルールがありません。');
-expect(headers.includes("Content-Security-Policy: default-src 'self'"), 'CSPのdefault-src selfがありません。');
-expect(headers.includes("object-src 'none'"), 'CSPのobject-src noneがありません。');
-expect(headers.includes("base-uri 'self'"), 'CSPのbase-uri selfがありません。');
-expect(headers.includes("frame-ancestors 'none'"), 'CSPのframe-ancestors noneがありません。');
-expect(!headers.includes("'unsafe-eval'"), 'CSPにunsafe-evalを追加してはいけません。');
+expect(!/Content-Security-Policy/.test(headers), '_headersにCSPを置くと、ハッシュ付きのミドルウェアCSPと両方適用されインラインスクリプトがブロックされます。');
+expect(middleware.includes("default-src 'self'; base-uri 'self'; object-src 'none';"), 'ミドルウェアCSPのdefault-src selfがありません。');
+expect(middleware.includes("frame-ancestors 'none'"), 'ミドルウェアCSPのframe-ancestors noneがありません。');
+expect(!middleware.includes("'unsafe-eval'"), 'CSPにunsafe-evalを追加してはいけません。');
+expect(!/script-src(?!-)[^;]*'unsafe-inline'/.test(middleware), 'ミドルウェアCSPのscript-srcにunsafe-inlineが含まれています。');
 expect(headers.includes('X-Content-Type-Options: nosniff'), 'X-Content-Type-Options: nosniffがありません。');
 expect(headers.includes('X-Frame-Options: DENY'), 'X-Frame-Options: DENYがありません。');
 expect(headers.includes('Referrer-Policy: strict-origin-when-cross-origin'), 'Referrer-Policyがありません。');
