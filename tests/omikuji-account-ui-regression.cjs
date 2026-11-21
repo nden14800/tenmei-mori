@@ -148,9 +148,9 @@ assert(!profileSection.includes('profile-v4-hero'), 'アカウント設定のヒ
 assert(html.indexOf('const googleBrandMark') >= 0 && html.indexOf('const googleBrandMark') < html.indexOf('function renderSettingsDashboard()'), 'Googleロゴは複数画面から利用できる共通スコープで定義してください。');
 const accountRenderer = html.slice(html.indexOf('async function renderSettingsDashboard()'), html.indexOf('function renderProfilePage'));
 assert(accountRenderer.includes('account-settings-v2'), '新しいアカウント設定UIがありません。');
-assert(accountRenderer.includes('class="account-settings-v2-card account-settings-v2-intro"'), 'アカウント設定の最上部は他の設定カードと同じ共通カードを使用してください。');
+assert(accountRenderer.includes('class="account-settings-hero"'), 'アカウント設定の最上部は他ページと同じ共通の見出し帯を使用してください。');
 assert(!accountRenderer.includes('profile-v4-hero'), 'アカウント設定の最上部に巨大な共通ヒーローを戻してはいけません。');
-assert(accountRenderer.includes('account-settings-v2-intro-icon'), 'アカウント設定の見出しに統一されたアイコンがありません。');
+assert(accountRenderer.includes('account-settings-hero-mark'), 'アカウント設定の見出しに統一されたアイコンがありません。');
 assert(accountRenderer.includes('ユーザー名・パスワードの変更、Google連携、ログアウトやアカウント削除を管理できます。'), 'アカウント設定の説明を実際の機能と一致させてください。');
 assert(accountRenderer.includes("let authMethod = null;"), 'ログイン方式の取得失敗をメール方式と誤認しないでください。');
 assert(accountRenderer.includes('取得できませんでした。ページを再読み込みして確認してください。'), 'ログイン方式の取得失敗時に誤った状態を表示してはいけません。');
@@ -175,8 +175,8 @@ assert(accountSource.includes("onclick=\"showView('history')\""), '参拝履歴�
 assert(accountSource.includes('account-settings-v2-shortcuts'), '参拝履歴ショートカットのレイアウトがありません。');
 assert(!accountSource.includes('.account-settings-v2 .profile-v4-hero {'), 'アカウント設定だけのヒーロー寸法上書きを残してはいけません。');
 assert(!accountSource.includes('.account-settings-v2 .profile-v4-mark[data-ver4-hero-emblem]'), 'アカウント設定だけのヒーロー印章上書きを残してはいけません。');
-assert(accountSource.includes('class="account-settings-v2-card account-settings-v2-intro"'), '最上部カードは他画面と同じ共通カードを使用してください。');
-assert(!accountSource.includes('profile-v4-hero'), '最上部カードに巨大なヒーロー型を復活させてはいけません。');
+assert(accountSource.includes('class="account-settings-hero"'), '最上部は他画面と同じ共通の見出し帯を使用してください。');
+assert(!accountSource.includes('profile-v4-hero'), '最上部に旧来の巨大なヒーロー型を復活させてはいけません。');
 
 console.log('おみくじ導線・アカウント設定のVer.4.0回帰テストに合格しました。');
 console.log(JSON.stringify({
