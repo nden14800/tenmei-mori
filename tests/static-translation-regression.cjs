@@ -23,6 +23,7 @@ assert.ok(Number.isInteger(manifest.entryCount) && manifest.entryCount > 0);
 assert.deepEqual(Object.keys(curated.languages).sort(), [...languages].sort());
 
 const curatedKeys = Object.keys(curated.languages.en).sort();
+assert.equal(curated.entryCount, curatedKeys.length, 'Curated entryCount must match the actual dictionary size');
 assert.equal(curatedKeys.length, manifest.curatedEntryCount);
 assert.ok(curatedKeys.length <= manifest.entryCount, 'ChatGPT-authored entries cannot exceed the current source inventory');
 for (const language of languages) {
