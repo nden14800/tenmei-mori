@@ -23,8 +23,13 @@ assert(zodiacSection, '最強運勢ランキング画面のセクションを抽
   'id="current-date-display"',
   'class="zodiac-ranking-panel" aria-labelledby="zodiac-check-title"',
   '<h2 id="zodiac-check-title">あなたの順位をチェック</h2>',
+  'class="zodiac-input-field zodiac-input-grid__sign"',
+  'class="zodiac-input-field zodiac-input-grid__blood"',
+  '> 星座</span>',
+  '> 血液型</span>',
   'data-control-kind="choice" data-control-id="user-sign"',
   'data-control-kind="choice" data-control-id="user-blood"',
+  'data-value-display="label"',
   'id="user-sign-trigger" aria-haspopup="listbox"',
   'id="user-blood-trigger" aria-haspopup="listbox"',
   'id="user-sign-options" role="listbox"',
@@ -40,6 +45,12 @@ assert(zodiacSection, '最強運勢ランキング画面のセクションを抽
   'id="show-ranking-icon" class="bi bi-chevron-down" aria-hidden="true"',
   'id="full-ranking-list" class="hidden zodiac-ranking-stack"',
 ].forEach((text) => requireText(text, `最強運勢ランキングのVer.4.0構造または既存機能IDが不足しています: ${text}`));
+
+
+assert(!html.includes('#view-zodiac .tenmei-choice__trigger'), 'ランキング専用の選択欄トリガー上書きが残っています。');
+assert(html.includes("state.root.dataset.valueDisplay === 'label'"), '共通選択欄の選択中表示にラベルのみの統一モードがありません。');
+assert(html.includes('#main-content .tenmei-choice__trigger'), 'ランキングを含む全画面で使う共通トリガーのスタイルがありません。');
+assert(html.includes('#main-content .tenmei-choice__option'), '候補一覧の共通スタイルがありません。');
 
 assert.equal(zodiacSection.includes('max-w-5xl mx-auto'), false, '最強運勢ランキングに旧来の1125pxコンテナが残っています。');
 assert.equal(zodiacSection.includes('class="bento-card mb-6'), false, '最強運勢ランキングに旧来のBentoヒーローまたはフォームカードが残っています。');
@@ -68,11 +79,12 @@ assert.equal(zodiacSection.includes('id="zodiac-check-title"><i'), false, '最�
   'padding: var(--ver4-card-padding);',
   'border-radius: var(--ver4-card-radius);',
   '.zodiac-input-grid {',
-  'grid-template-columns: minmax(0, 5fr) minmax(0, 4fr) minmax(132px, 3fr);',
-  '#view-zodiac .zodiac-input-grid__sign .tenmei-choice,',
-  '#view-zodiac .zodiac-input-grid__blood .tenmei-choice',
-  'width: 100%;',
-  'min-width: 0;',
+  'grid-template-columns: repeat(2, minmax(0, 1fr)) minmax(132px, auto);',
+  '.zodiac-input-field {',
+  '.zodiac-input-field > span:first-child {',
+  '.zodiac-input-select-wrap {',
+  '.zodiac-input-select-wrap > .tenmei-choice { width: 100%; min-width: 0; }',
+  '.zodiac-input-grid__action { display: flex; min-width: 0; align-self: end; }',
   'min-height: var(--ver4-control-height);',
   'border-radius: var(--ver4-control-radius)',
   '#view-zodiac .zodiac-card-box::before {',
