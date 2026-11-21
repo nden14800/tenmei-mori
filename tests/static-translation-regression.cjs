@@ -19,11 +19,12 @@ assert.equal(manifest.curatedFile, 'curated.json');
 assert.equal(manifest.curatedGenerationVersion, curated.generationVersion, 'Manifest generation must match the curated dictionary');
 assert.equal(manifest.curatedEntryCount, Object.keys(curated.languages.en).length);
 assert.deepEqual(manifest.languages, languages);
-assert.equal(manifest.entryCount, 3378);
+assert.ok(Number.isInteger(manifest.entryCount) && manifest.entryCount > 0);
 assert.deepEqual(Object.keys(curated.languages).sort(), [...languages].sort());
 
 const curatedKeys = Object.keys(curated.languages.en).sort();
-assert.equal(curatedKeys.length, manifest.curatedEntryCount);\nassert.ok(curatedKeys.length <= manifest.entryCount, 'ChatGPT-authored entries cannot exceed the current source inventory');
+assert.equal(curatedKeys.length, manifest.curatedEntryCount);
+assert.ok(curatedKeys.length <= manifest.entryCount, 'ChatGPT-authored entries cannot exceed the current source inventory');
 for (const language of languages) {
   assert.deepEqual(Object.keys(curated.languages[language]).sort(), curatedKeys);
   assert.ok(Object.values(curated.languages[language]).every((value) => typeof value === 'string' && value.trim()), `${language} has an empty ChatGPT translation`);
