@@ -168,7 +168,7 @@ assert(!accountRenderer.includes('resetAllSettings()'), '環境設定の初期�
 const accountStart = html.indexOf('async function renderSettingsDashboard()');
 const accountEnd = html.indexOf('function renderProfilePage', accountStart);
 const accountSource = html.slice(accountStart, accountEnd);
-assert(accountSource.includes('account-settings-v2-heading-icon'), 'アカウント設定の各セクションに識別アイコンが必要です。');
+assert(accountSource.includes('account-settings-v2-kicker'), 'アカウント設定の各セクションに識別アイコン付きのキッカーが必要です。');
 assert(!accountSource.includes('loadUserProfile('), '廃止済みの公開プロフィール機能をアカウント設定から復活させてはいけません。');
 assert(!accountSource.includes('公開プロフィール'), '廃止済みの公開プロフィールへの導線を表示してはいけません。');
 assert(accountSource.includes("onclick=\"showView('history')\""), '参拝履歴へのショートカットがありません。');
