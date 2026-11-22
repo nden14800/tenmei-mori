@@ -60,6 +60,14 @@ assert.ok(!translationBuilder.includes('OpenCC'));
 assert.ok(!translationBuilder.includes('translate_mapping'));
 assert.ok(translationBuilder.includes('curated.json'));
 
+// 言語選択ダイアログの説明が、実際の翻訳方式（ChatGPT作成の辞書のみ・未収録は日本語のまま）と食い違わないことを保証する。
+const languageDialog = read('index.html').match(/<dialog id="translation-dialog"[\s\S]*?<\/dialog>/)?.[0] || '';
+assert.ok(languageDialog, '言語選択ダイアログを抽出できません。');
+assert.ok(!/Argos|OpenCC|ローカル翻訳ツール|自動生成し/.test(languageDialog), '言語選択ダイアログに廃止済みの翻訳方式の説明が残っています。');
+assert.ok(languageDialog.includes('ChatGPTを用いて作成した翻訳'), '言語選択ダイアログにChatGPT作成の翻訳辞書である旨がありません。');
+assert.ok((languageDialog.match(/辞書にない項目は日本語のまま表示/g) || []).length === 2, '言語選択ダイアログに、未収録項目は日本語のまま表示される旨が導入文と注記の両方にありません。');
+assert.ok(languageDialog.includes('本文は翻訳APIへ送信しません'), '言語選択ダイアログに本文を翻訳APIへ送信しない旨がありません。');
+
 console.log(JSON.stringify({
   status: 'ok',
   languages: languages.length,
