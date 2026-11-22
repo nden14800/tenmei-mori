@@ -52,8 +52,8 @@ requireColumnSectionText('id="view-column-list" class="column-library-list"', '�
 requireColumnSectionText('id="column-pagination" class="column-library-pagination"', '神籤草子一覧のページングIDが失われています。');
 
 const columnEntries = [...columnDataSource.matchAll(/\n\s*\{\s*\n\s*id:\s*(\d+),[\s\S]*?\n\s*desc:\s*"([^"]+)",/g)];
-assert.equal(columnEntries.length, 67, '神籤草子の全67記事に一覧専用説明が設定されていません。');
-assert(columnEntries.some(([, id]) => id === '67'), '新規記事ID 67 が神籤草子データにありません。');
+assert.equal(columnEntries.length, 68, '神籤草子の全68記事に一覧専用説明が設定されていません。');
+assert(columnEntries.some(([, id]) => id === '68'), '新規記事ID 68 が神籤草子データにありません。');
 const columnDescriptionLengths = [];
 for (const [, id, description] of columnEntries) {
   columnDescriptionLengths.push(description.length);
