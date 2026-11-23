@@ -101,7 +101,51 @@ export default {
         try {
           const result = await fetch(STATUS_URL, { headers: { "Accept": "application/json" } });
           if (!result.ok) throw new Error("Status endpoint returned HTTP " + result.status);
-          return rpcResult(id, toolResult(await result.json()));
+          const status = await result.json();
+          const sourceMonitors = status?.monitors && typeof status.monitors === "object" ? status.monitors : {};
+          const monitors = Object.fromEntries(Object.entries(sourceMonitors).map(([id, monitor]) => {
+            const item = monitor && typeof monitor === "object" ? monitor : {};
+            return [id, {
+              name: typeof item.name === "string" ? item.name : id,
+              status: typeof item.status === "string" ? item.status : (item.operational === true ? "operational" : "unknown"),
+              operational: item.operational === true,
+              degraded: item.degraded === true,
+              lastCheck: typeof item.lastCheck === "string" ? item.lastCheck : null,
+              responseTime: Number.isFinite(Number(item.responseTime)) ? Number(item.responseTime) : null,
+              uptime: Number.isFinite(Number(item.uptime)) ? Number(item.uptime) : null
+            }];
+          }));
+          const recentIncidents = (Array.isArray(status?.incidentHistory) ? status.incidentHistory : [])
+            .slice(0, 10)
+            .map((incident) => ({
+              id: incident.id,
+              monitorName: incident.monitorName,
+              startedAt: incident.startedAt,
+              resolvedAt: incident.resolvedAt || null,
+              durationSeconds: incident.durationSeconds ?? null,
+              httpStatus: incident.httpStatus ?? null,
+              failureReason: typeof incident.failureReason === "string" ? incident.failureReason.slice(0, 180) : null
+            }));
+          const longTermHistory = (Array.isArray(status?.longTermHistory) ? status.longTermHistory : [])
+            .slice(-12)
+            .map((entry) => ({
+              period: entry.period,
+              monitorName: entry.monitorName,
+              checks: entry.checks,
+              uptime: entry.uptime,
+              operational: entry.operational,
+              degraded: entry.degraded,
+              down: entry.down,
+              maintenance: entry.maintenance
+            }));
+          return rpcResult(id, toolResult({
+            monitors,
+            maintenances: Array.isArray(status?.maintenances) ? status.maintenances : [],
+            lastUpdate: typeof status?.lastUpdate === "string" ? status.lastUpdate : null,
+            checkIntervalMinutes: status?.checkIntervalMinutes ?? null,
+            recentIncidents,
+            longTermHistory
+          }));
         } catch (_) {
           return rpcResult(id, { content: [{ type: "text", text: "Public status is temporarily unavailable." }], isError: true });
         }
