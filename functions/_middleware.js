@@ -29,7 +29,7 @@ export async function onRequest({ request, next }) {
   const accept = request.headers.get("Accept") || "";
   const isDocumentPath = !/\.[^/]+$/.test(url.pathname)
     && !url.pathname.startsWith("/.well-known/")
-    && !url.pathname.startsWith("/status/api/");
+    && !url.pathname.startsWith("/status/");
 
   if (request.method === "GET" && isDocumentPath && accept.includes("text/markdown")) {
     const headers = new Headers({
