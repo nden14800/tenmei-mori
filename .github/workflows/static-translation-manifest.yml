@@ -1,0 +1,47 @@
+name: Refresh static translation manifest
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'index.html'
+      - 'assets/js/column-editorial-visuals.js'
+      - 'assets/js/static-translation.js'
+      - 'assets/js/tenmei-ad-easter-egg.js'
+      - 'assets/js/tenmei-ai-agent.js'
+      - 'assets/js/tenmei-mini-games.js'
+      - 'assets/data/static-translations/curated.json'
+      - 'scripts/build-static-translation-data.py'
+      - '.github/workflows/static-translation-manifest.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: static-translation-manifest
+  cancel-in-progress: false
+
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out main
+        uses: actions/checkout@v4
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Regenerate source inventory and manifest
+        run: python scripts/build-static-translation-data.py
+      - name: Commit manifest when it changes
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add assets/data/static-translations/manifest.json
+          if git diff --cached --quiet; then
+            echo "Static translation manifest is already current."
+            exit 0
+          fi
+          git commit -m "chore(i18n): refresh static translation manifest"
+          git push origin main
