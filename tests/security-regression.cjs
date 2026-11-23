@@ -21,6 +21,7 @@ const middlewarePath = path.join(repositoryRoot, 'functions', '_middleware.js');
 const middleware = fs.readFileSync(middlewarePath, 'utf8');
 expect(/url\.pathname\.startsWith\("\/api\/"\)/.test(middleware), '同一オリジンAPIプロキシがありません。');
 expect(middleware.includes('tenmei-mori-backend.nden14800.workers.dev'), 'APIプロキシ先Workerがありません。');
+expect(/!url\.pathname\.startsWith\("\\/status\\/"\)/.test(middleware), 'Markdown content negotiation must not replace the status page with the main-site overview.');
 expect(/fetch\(upstreamRequest, \{ redirect: "manual" \}\)/.test(middleware), 'Google OAuthの302リダイレクトをBFFが追跡しない設定がありません。');
 expect(/script-src-attr 'unsafe-inline'/.test(middleware), '既存イベントハンドラーの互換性ポリシーがありません。');
 expect(middleware.includes('script-src-elem ${scriptElementSources}') && /const SCRIPT_HASH_SOURCES = \[/.test(middleware), 'HTML CSPにハッシュベースのscript-src-elemがありません。');
