@@ -80,6 +80,7 @@ AI の指示文やサイト仕様を更新した場合は、`tests/ai-help-desk-
 
 - メインプロジェクトの独自素材は、リポジトリ直下の [LICENSE](./LICENSE) に記載した条件に従います。公開リポジトリであることは、メインプロジェクト全体の自由な再利用を許可するものではありません。
 - ステータス画面は [UptimeWorker](https://github.com/UptimeWorker/UptimeWorker) をベースに改変しており、コードには [Apache License 2.0](./status/LICENSE) が適用されます。原作者の表示・由来は [status/NOTICE](./status/NOTICE) に記載しています。
+- ステータス画面のビルド成果物には、`status/package-lock.json` に基づく本番依存パッケージのライセンス本文をまとめた `THIRD_PARTY_NOTICES.txt` と、UptimeWorker 由来の `UPTIMEWORKER_LICENSE.txt` / `UPTIMEWORKER_NOTICE.txt` が自動収録されます。開発用依存パッケージは対象外です。
 - 第三者のライブラリ、翻訳モデル、画像、フォント、API、ホスト型サービスは、それぞれの権利者・利用規約・ライセンスが優先されます。メインプロジェクトの独自ライセンスは、それらの権利を制限しません。
 - AI支援を用いて作成した素材についても、著作権が成立する範囲や第三者の権利は個別に判断されます。AIを使用したことだけを理由に、すべての生成物の権利が一律に運営者へ帰属すると主張するものではありません。
 
