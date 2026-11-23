@@ -28,13 +28,13 @@ const OAUTH_CONNECT_STATE_TTL_SECONDS = 10 * 60; // 10分
 
 // メンテナンスモード設定
 const MAINTENANCE_MODE = {
-    // 2026年8月29日 13:10〜13:30（JST）だけ、本番の実行要求を停止する。
-    enabled: true,
-    startsAt: Date.parse("2026-08-29T04:10:00Z"),
-    endsAt: Date.parse("2026-08-29T04:30:00Z"),
-    title: "只今、メンテナンス中です",
-    message: "より安定してお参りいただける環境を整えるため、ただいま一時的に整備を行っています。",
-    scheduleLabel: "2026年8月29日（土）13:10 ～ 13:30",
+    // 2026年8月29日の一時メンテナンスは終了済み。予定を再設定する場合は日時と表示文を更新する。
+    enabled: false,
+    startsAt: null,
+    endsAt: null,
+    title: "メンテナンス情報",
+    message: "現在、予定されているメンテナンスはありません。",
+    scheduleLabel: "予定されているメンテナンスはありません。",
     retryAfterSeconds: 60
 };
 
