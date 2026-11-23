@@ -36,48 +36,36 @@ const maintenances: MaintenanceRecord[] = maintenancesConfig as MaintenanceRecor
 // @ts-ignore - Cloudflare types available in production
 export const onRequest: PagesFunction<Env> = async (context) => {
   const request = context.request
-  const url = new URL(request.url)
-  const userAgent = request.headers.get('User-Agent') || ''
-  const origin = request.headers.get('Origin')
-  const referer = request.headers.get('Referer')
-  const secFetchSite = request.headers.get('Sec-Fetch-Site')
-  const secFetchMode = request.headers.get('Sec-Fetch-Mode')
-  const secFetchDest = request.headers.get('Sec-Fetch-Dest')
-  const accept = request.headers.get('Accept') || ''
 
-  const isSuspiciousUA = /curl|wget|python|httpie|postman|insomnia|axios|node-fetch|got\/|scrapy|selenium|phantomjs|headless/i.test(userAgent)
-  if (isSuspiciousUA) {
-    return new Response(null, { status: 404 })
+  // This endpoint is intentionally public and read-only. It is listed in the
+  // API catalog and consumed by the public MCP server, so do not require
+  // browser-only Fetch Metadata headers or a browser User-Agent.
+  const corsHeaders = {
+    'Access-Control-Allow-Origin': '*',
+    'Access-Control-Allow-Methods': 'GET, OPTIONS',
+    'Access-Control-Allow-Headers': 'Accept, Content-Type',
+    'X-Content-Type-Options': 'nosniff',
+    'X-Frame-Options': 'DENY',
+    'X-Robots-Tag': 'noindex, nofollow',
   }
 
-  const hasBrowserHeaders = secFetchSite !== null && secFetchMode !== null
-  if (!hasBrowserHeaders) {
-    return new Response(null, { status: 404 })
-  }
-
-  const isNavigating = secFetchMode === 'navigate'
-  const isDirectNavigation = secFetchDest === 'document' ||
-    (isNavigating && accept.includes('text/html')) ||
-    (isNavigating && (secFetchDest === 'empty' || !secFetchDest))
-
-  if (isDirectNavigation) {
-    return new Response(null, { status: 404 })
-  }
-
-  if (secFetchSite !== 'same-origin') {
-    return new Response(null, { status: 404 })
-  }
-
-  const allowedOrigin = url.origin
-  if (origin && origin !== allowedOrigin) {
-    return new Response(null, { status: 404 })
-  }
-  if (referer && !referer.startsWith(allowedOrigin)) {
-    return new Response(null, { status: 404 })
+  if (request.method === 'OPTIONS') {
+    return new Response(null, {
+      status: 204,
+      headers: { ...corsHeaders, 'Access-Control-Max-Age': '86400' },
+    })
   }
 
   if (request.method !== 'GET') {
-    return new Response(null, { status: 404 })
+    return new Response(JSON.stringify({ error: 'Method not allowed' }), {
+      status: 405,
+      headers: {
+        ...corsHeaders,
+        'Content-Type': 'application/json; charset=utf-8',
+        'Cache-Control': 'no-store',
+        Allow: 'GET, OPTIONS',
+      },
+    })
   }
 
   try {
@@ -104,11 +92,9 @@ export const onRequest: PagesFunction<Env> = async (context) => {
       }),
       {
         headers: {
-          'Content-Type': 'application/json',
-          'Cache-Control': 'no-store, max-age=0',
-          'X-Content-Type-Options': 'nosniff',
-          'X-Frame-Options': 'DENY',
-          'X-Robots-Tag': 'noindex, nofollow',
+          ...corsHeaders,
+          'Content-Type': 'application/json; charset=utf-8',
+          'Cache-Control': 'public, max-age=30, s-maxage=30, stale-while-revalidate=30',
         },
       }
     )
@@ -123,7 +109,11 @@ export const onRequest: PagesFunction<Env> = async (context) => {
       }),
       {
         status: 500,
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          ...corsHeaders,
+          'Content-Type': 'application/json; charset=utf-8',
+          'Cache-Control': 'no-store',
+        },
       }
     )
   }
