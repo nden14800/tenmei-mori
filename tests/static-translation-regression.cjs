@@ -60,6 +60,10 @@ assert.ok(!translationBuilder.includes('OpenCC'));
 assert.ok(!translationBuilder.includes('translate_mapping'));
 assert.ok(translationBuilder.includes('curated.json'));
 
+assert.ok(translationBuilder.includes('USER_FACING_JS'), 'Translation inventory must include user-facing external JavaScript sources.');
+assert.ok(translationBuilder.includes('source_fingerprint = fingerprint(sources)'), 'Translation source fingerprint must use the LF-based fingerprint helper.');
+
+
 // 言語選択ダイアログの説明が、実際の翻訳方式（ChatGPT作成の辞書のみ・未収録は日本語のまま）と食い違わないことを保証する。
 const languageDialog = read('index.html').match(/<dialog id="translation-dialog"[\s\S]*?<\/dialog>/)?.[0] || '';
 assert.ok(languageDialog, '言語選択ダイアログを抽出できません。');
