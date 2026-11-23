@@ -9,6 +9,7 @@ const root = path.resolve(__dirname, '..');
 const read = (relative) => fs.readFileSync(path.join(root, relative), 'utf8');
 const html = read('index.html');
 const headers = read('_headers');
+const middleware = read('functions/_middleware.js');
 const translationModule = read('assets/js/static-translation.js');
 
 for (const expected of [
@@ -22,9 +23,12 @@ for (const expected of [
 for (const prohibited of ["CHATLING_CHATBOT_ID","window.chtlConfig","chatling.ai","Chatling AI Agent","Chatlingの標準ウィジェット","chtl-script","chtl-chat-iframe"]) {
   assert.ok(!html.toLowerCase().includes(prohibited.toLowerCase()), '旧外部AI実装がHTMLに残っています: ' + prohibited);
   assert.ok(!headers.toLowerCase().includes(prohibited.toLowerCase()), '旧外部AIのCSP許可が残っています: ' + prohibited);
+  assert.ok(!middleware.toLowerCase().includes(prohibited.toLowerCase()), '旧外部AIのCSP許可がミドルウェアに残っています: ' + prohibited);
 }
 assert.ok(!headers.includes('https://chatling.ai') && !headers.includes('https://embed.chatling.ai'), '旧外部AIのCSP許可が残っています');
-assert.ok(headers.includes('https://*.cdninstagram.com'), '既存のInstagram画像許可が失われています');
+assert.ok(!middleware.includes('https://chatling.ai') && !middleware.includes('https://embed.chatling.ai'), '旧外部AIのCSP許可がミドルウェアに残っています');
+assert.ok(middleware.includes('https://*.cdninstagram.com'), '既存のInstagram画像許可がミドルウェアのCSPから失われています');
+assert.ok(!/Content-Security-Policy/.test(headers), 'CSPは functions/_middleware.js に一本化されています。_headers に置くと両方が適用されます。');
 
 for (const prohibited of [
   'https://*.channel.io',
@@ -39,6 +43,7 @@ for (const prohibited of [
   'browsermt',
 ]) {
   assert.ok(!headers.includes(prohibited), `CSPに不要な許可が残っています: ${prohibited}`);
+  assert.ok(!middleware.includes(prohibited), `ミドルウェアのCSPに不要な許可が残っています: ${prohibited}`);
   assert.ok(!html.includes(prohibited), `HTMLに不要な旧方式の参照が残っています: ${prohibited}`);
   assert.ok(!translationModule.includes(prohibited), `翻訳モジュールに不要な旧方式の参照が残っています: ${prohibited}`);
 }
@@ -46,15 +51,13 @@ for (const prohibited of [
 const directory = path.join(root, 'assets', 'data', 'static-translations');
 const manifest = JSON.parse(fs.readFileSync(path.join(directory, 'manifest.json'), 'utf8'));
 assert.equal(manifest.schemaVersion, 1, '静的翻訳マニフェストのスキーマが不正です');
-assert.equal(manifest.generationVersion, 2, '品質改善済み辞書の生成版が不正です');
+assert.ok(Number.isInteger(manifest.curatedGenerationVersion) && manifest.curatedGenerationVersion > 0, 'ChatGPT翻訳辞書の生成版がマニフェストにありません');
 assert.ok(Number.isInteger(manifest.entryCount) && manifest.entryCount > 3000, '翻訳元エントリ数が不正です');
 assert.deepEqual(manifest.languages, ['en', 'ko', 'zh', 'zh_hant', 'fr', 'de', 'es', 'pt', 'vi', 'id', 'th'], '対象言語が不足しています');
 
+// 旧機械翻訳の言語別辞書（en.json など）は削除済み。復活して旧方式へ巻き戻らないことを保証する。
 for (const language of manifest.languages) {
-  const dictionary = JSON.parse(fs.readFileSync(path.join(directory, `${language}.json`), 'utf8'));
-  assert.equal(dictionary.schemaVersion, 1, `${language}辞書のスキーマが不正です`);
-  assert.equal(dictionary.generationVersion, 2, `${language}辞書に品質改善版の印がありません`);
-  assert.equal(Object.keys(dictionary.translations).length, manifest.entryCount, `${language}辞書のエントリ数が不正です`);
+  assert.ok(!fs.existsSync(path.join(directory, `${language}.json`)), `${language}の旧機械翻訳辞書が復活しています`);
 }
 
 const curated = JSON.parse(read('assets/data/static-translations/curated.json'));
@@ -71,9 +74,10 @@ assert.equal(curated.languages.en['ログイン'], 'Log in');
 assert.equal(curated.languages.ko['ログイン'], '로그인');
 assert.equal(curated.languages.zh_hant['プライバシーポリシー'], '隱私權政策');
 assert.ok(translationModule.includes('curated.json'), 'ChatGPT翻訳辞書がランタイムで読み込まれていません');
-assert.ok(translationModule.includes('Object.assign({}, legacyTranslations, curatedTranslations)'), 'ChatGPT翻訳が旧辞書より優先されていません');
+assert.ok(!translationModule.includes('legacyTranslations'), 'ランタイムが旧機械翻訳辞書を参照しています');
+assert.equal(manifest.curatedGenerationVersion, curated.generationVersion, 'マニフェストの生成版がChatGPT翻訳辞書と一致しません');
 
-const english = JSON.parse(fs.readFileSync(path.join(directory, 'en.json'), 'utf8')).translations;
+const english = curated.languages.en;
 for (const [source, expected] of Object.entries({
   'アクセシビリティ': 'Accessibility',
   'コンテンツ': 'Content',
@@ -83,11 +87,11 @@ for (const [source, expected] of Object.entries({
   '難航する': 'Encounter difficulties',
   '養生せよ': 'Take care of your health',
 })) {
-  assert.equal(english[source], expected, `英語辞書の誤訳・汎用置換が残っています: ${source}`);
+  assert.equal(english[source], expected, `英語のChatGPT翻訳に誤訳・汎用置換が残っています: ${source}`);
 }
 assert.ok(!Object.values(english).includes('Contact Us'), '英語辞書に汎用的な誤訳 Contact Us が残っています');
 assert.ok(!Object.values(english).includes('Click here for more information.'), '英語辞書に文脈を失った汎用リンク文が残っています');
-assert.equal(manifest.generation.mode, 'static-dictionary-with-chatgpt-curated-overrides', '翻訳マニフェストが旧Argos方式へ巻き戻っています');
+assert.equal(manifest.generation.mode, 'chatgpt-authored-only', '翻訳マニフェストがChatGPT作成のみの方式ではありません（旧Argos方式などへ巻き戻っています）');
 assert.equal(manifest.curatedEntryCount, curatedKeys.length, '翻訳マニフェストのChatGPT翻訳件数が一致しません');
 for (const expectedLabel of ['Tenmei no Mori', 'Omikuji History', 'Pilgrimage Certificate', 'Shrine Office News', 'Omikuji Journal']) {
   assert.ok(Object.values(english).some((value) => value.includes(expectedLabel)), `英語辞書に用語表ラベルがありません: ${expectedLabel}`);
@@ -111,7 +115,7 @@ assert.ok(archivedAbout.some((version) => version.edition === 22 && version.html
 assert.ok(archivedPrivacy.some((version) => version.edition === 22), '公開文書旧版アーカイブに改定前のプライバシーポリシー第22版がありません');
 assert.ok(archivedPrivacy.some((version) => version.edition === 23 && version.html?.includes('view-privacy')), '公開文書旧版アーカイブに改定前のプライバシーポリシー第23版がありません');
 assert.ok(archivedPrivacy.some((version) => version.edition === 24 && version.html?.includes('view-privacy')), '公開文書旧版アーカイブに改定前のプライバシーポリシー第24版がありません');
-assert.ok(html.includes("container.querySelectorAll('.view-section').forEach((element) => element.setAttribute('data-document-history-source-view', ''));"), '旧版プレビューのview-sectionへ表示用属性を付与する必要があります');
+assert.ok(/container\.querySelectorAll\('\.view-section'\)\.forEach\(\(element\) => \{\s*element\.setAttribute\('data-document-history-source-view', ''\);/.test(html), '旧版プレビューのview-sectionへ表示用属性を付与する必要があります');
 assert.ok(html.includes('.document-history-preview [data-document-history-source-view] { display: block !important;'), '旧版プレビューの表示用属性に非表示解除CSSが必要です');
 
 for (const expected of [
@@ -157,5 +161,5 @@ console.log(JSON.stringify({
   status: 'ok',
   languages: manifest.languages.length,
   entryCount: manifest.entryCount,
-  translationBytes: manifest.languages.reduce((sum, language) => sum + fs.statSync(path.join(directory, `${language}.json`)).size, 0),
+  translationBytes: fs.statSync(path.join(directory, 'curated.json')).size,
 }, null, 2));
