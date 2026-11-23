@@ -11,6 +11,12 @@ const headers = fs.readFileSync(headersPath, 'utf8');
 const workerPath = path.join(repositoryRoot, 'workers', 'tenmei-mori-backend.js');
 const worker = fs.readFileSync(workerPath, 'utf8');
 const failures = [];
+const maintenanceConfig = between(worker, 'const MAINTENANCE_MODE = {', '};');
+expect(maintenanceConfig.length > 0, 'メンテナンス設定を検出できません。');
+expect(/enabled: false/.test(maintenanceConfig), '終了済みの一時メンテナンスが有効状態のままです。');
+expect(/startsAt: null/.test(maintenanceConfig) && /endsAt: null/.test(maintenanceConfig), '終了済みメンテナンスの古い日時が残っています。');
+expect(/scheduleLabel: "予定されているメンテナンスはありません。"/.test(maintenanceConfig), 'メンテナンスAPIに終了済みの日付が残っています。');
+
 const middlewarePath = path.join(repositoryRoot, 'functions', '_middleware.js');
 const middleware = fs.readFileSync(middlewarePath, 'utf8');
 expect(/url\.pathname\.startsWith\("\/api\/"\)/.test(middleware), '同一オリジンAPIプロキシがありません。');
