@@ -27,6 +27,13 @@ INDEX_PATH = ROOT / 'index.html'
 OUTPUT_DIR = ROOT / 'assets' / 'data' / 'static-translations'
 SOURCE_LANGUAGE = 'ja'
 LANGUAGES = ('en', 'ko', 'zh', 'zh_hant', 'fr', 'de', 'es', 'pt', 'vi', 'id', 'th')
+USER_FACING_JS = (
+    'assets/js/column-editorial-visuals.js',
+    'assets/js/static-translation.js',
+    'assets/js/tenmei-ad-easter-egg.js',
+    'assets/js/tenmei-ai-agent.js',
+    'assets/js/tenmei-mini-games.js',
+)
 GENERATION_VERSION = 2
 JAPANESE_RE = re.compile(r'[\u3040-\u30ff\u3400-\u9fff\uff66-\uff9f]')
 WHITESPACE_RE = re.compile(r'\s+')
@@ -93,6 +100,11 @@ def source_strings() -> list[str]:
     values = set(collector.values)
     for script in re.findall(r'<script\b[^>]*>(.*?)</script\s*>', source, re.IGNORECASE | re.DOTALL):
         values.update(extract_script_strings(script))
+    for relative_path in USER_FACING_JS:
+        script_path = ROOT / relative_path
+        if not script_path.is_file():
+            raise RuntimeError(f"Missing user-facing translation source: {relative_path}")
+        values.update(extract_script_strings(script_path.read_text(encoding='utf-8')))
     return sorted(value for value in values if len(value) <= 5000)
 
 
@@ -108,7 +120,7 @@ def main() -> None:
     sources = source_strings()
     if not sources:
         raise RuntimeError("No Japanese visible strings were extracted")
-    source_fingerprint = hashlib.sha256("\\n".join(sources).encode("utf-8")).hexdigest()
+    source_fingerprint = fingerprint(sources)
 
     curated = json.loads((OUTPUT_DIR / "curated.json").read_text(encoding="utf-8"))
     dictionaries = curated.get("languages", {})
