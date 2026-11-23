@@ -2,6 +2,7 @@ import path from 'path';
 import { defineConfig, loadEnv } from 'vite';
 import react from '@vitejs/plugin-react';
 import { existsSync, readFileSync } from 'fs';
+import { generateThirdPartyNotices } from './scripts/generate-third-party-notices.mjs';
 
 // Read the effective local API port from .dev-api-port (written by dev-server.js).
 function resolveApiPort(envApiPort?: string): number {
@@ -20,6 +21,28 @@ export default defineConfig(({ mode }) => {
   const isDev = mode === 'development';
   const apiPort = resolveApiPort(env.API_PORT);
   const mainSiteBuild = process.env.TENMEI_MAIN_SITE_BUILD === '1';
+  const thirdPartyNoticePlugin = {
+    name: 'third-party-license-notices',
+    apply: 'build' as const,
+    generateBundle(this: { emitFile: (asset: { type: 'asset'; fileName: string; source: string }) => void }) {
+      const projectRoot = process.cwd();
+      this.emitFile({
+        type: 'asset',
+        fileName: 'THIRD_PARTY_NOTICES.txt',
+        source: generateThirdPartyNotices(projectRoot),
+      });
+      this.emitFile({
+        type: 'asset',
+        fileName: 'UPTIMEWORKER_LICENSE.txt',
+        source: readFileSync(path.resolve(projectRoot, 'LICENSE'), 'utf8'),
+      });
+      this.emitFile({
+        type: 'asset',
+        fileName: 'UPTIMEWORKER_NOTICE.txt',
+        source: readFileSync(path.resolve(projectRoot, 'NOTICE'), 'utf8'),
+      });
+    },
+  };
 
   return {
     // The same app is published at / on its dedicated Pages project and at
@@ -41,6 +64,7 @@ export default defineConfig(({ mode }) => {
     },
     plugins: [
       react(),
+      thirdPartyNoticePlugin,
       !isDev ? {
         name: 'cloudflare-pages-exit-fix',
         closeBundle() {
