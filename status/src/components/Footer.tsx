@@ -10,6 +10,20 @@ interface FooterProps {
 
 const footerActionClass = 'inline-flex h-8 items-center gap-1.5 rounded-md border border-border bg-background px-2.5 text-xs text-foreground/70 transition-colors hover:bg-muted hover:text-foreground'
 
+const licenseLabels = {
+  en: { thirdParty: 'Third-party licenses', upstream: 'UptimeWorker license', notice: 'UptimeWorker notice' },
+  ja: { thirdParty: '第三者ライセンス', upstream: 'UptimeWorkerライセンス', notice: 'UptimeWorker NOTICE' },
+  fr: { thirdParty: 'Licences tierces', upstream: 'Licence UptimeWorker', notice: 'Avis UptimeWorker' },
+  ko: { thirdParty: '第三者 라이선스', upstream: 'UptimeWorker 라이선스', notice: 'UptimeWorker 고지' },
+  zh: { thirdParty: '第三方许可证', upstream: 'UptimeWorker 许可证', notice: 'UptimeWorker 声明' },
+  de: { thirdParty: 'Drittanbieter-Lizenzen', upstream: 'UptimeWorker-Lizenz', notice: 'UptimeWorker-Hinweis' },
+  es: { thirdParty: 'Licencias de terceros', upstream: 'Licencia de UptimeWorker', notice: 'Aviso de UptimeWorker' },
+  pt: { thirdParty: 'Licenças de terceiros', upstream: 'Licença do UptimeWorker', notice: 'Aviso do UptimeWorker' },
+  vi: { thirdParty: 'Giấy phép bên thứ ba', upstream: 'Giấy phép UptimeWorker', notice: 'Thông báo UptimeWorker' },
+  id: { thirdParty: 'Lisensi pihak ketiga', upstream: 'Lisensi UptimeWorker', notice: 'Pemberitahuan UptimeWorker' },
+  th: { thirdParty: 'ใบอนุญาตบุคคลที่สาม', upstream: 'ใบอนุญาต UptimeWorker', notice: 'ประกาศ UptimeWorker' },
+} as const
+
 export default function Footer({ language }: FooterProps) {
   const t = getTranslations(language)
   const currentYear = new Date().getFullYear()
@@ -55,6 +69,25 @@ export default function Footer({ language }: FooterProps) {
                   {t.privacy}
                 </Link>
               )}
+
+              <a
+                href={`${import.meta.env.BASE_URL}THIRD_PARTY_NOTICES.txt`}
+                className="hover:text-foreground/90 hover:underline"
+              >
+                {licenseLabels[language].thirdParty}
+              </a>
+              <a
+                href={`${import.meta.env.BASE_URL}UPTIMEWORKER_LICENSE.txt`}
+                className="hover:text-foreground/90 hover:underline"
+              >
+                {licenseLabels[language].upstream}
+              </a>
+              <a
+                href={`${import.meta.env.BASE_URL}UPTIMEWORKER_NOTICE.txt`}
+                className="hover:text-foreground/90 hover:underline"
+              >
+                {licenseLabels[language].notice}
+              </a>
             </div>
 
             <div className="flex flex-wrap justify-center items-center gap-2 pt-2">
