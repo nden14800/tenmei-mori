@@ -53,4 +53,9 @@ assert.doesNotMatch(statusApi, /isSuspiciousUA|secFetchSite|secFetchMode|Sec-Fet
 assert.match(mcpServer, /const STATUS_URL = SITE \+ "\/status\/api\/monitors\/status"/, 'MCP must use the documented public status endpoint.');
 assert.match(mcpServer, /name === "get_service_status"/, 'MCP must continue exposing the read-only service status tool.');
 
+assert.match(mcpServer, /const monitors = Object\.fromEntries\(/, 'MCP must project monitor state into a compact summary.');
+assert.match(mcpServer, /const recentIncidents =/, 'MCP must expose a bounded recent incident summary.');
+assert.doesNotMatch(mcpServer, /toolResult\(await result\.json\(\)\)/, 'MCP must not return the full UI history payload to agents.');
+
+
 console.log('Status source/security/build regression checks passed.');
