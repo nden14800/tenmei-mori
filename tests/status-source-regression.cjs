@@ -8,9 +8,9 @@ const cron = read('status/functions/api/cron/check.ts');
 const failsafe = read('.github/workflows/status-cron-failsafe.yml');
 const vite = read('status/vite.config.ts');
 const statusPage = read('status/src/pages/StatusPage.tsx');
-const packageJson = JSON.parse(read('status/package.json'))
+const packageJson = JSON.parse(read('status/package.json'));
 const statusApi = read('status/functions/api/monitors/status.ts');
-const mcpServer = read('workers/tenmei-mori-mcp.js');;
+const mcpServer = read('workers/tenmei-mori-mcp.js');
 const packageLock = JSON.parse(read('status/package-lock.json'));
 
 assert.doesNotMatch(cron, /tenmei-mori-github-failsafe-v1/, 'A public hard-coded failsafe token must never be accepted.');
@@ -46,7 +46,7 @@ for (const script of Object.values(packageJson.scripts)) {
 }
 
 assert.match(statusApi, /This endpoint is intentionally public and read-only/, 'The documented public status endpoint must explain its public read-only contract.');
-assert.match(statusApi, /'Access-Control-Allow-Origin': '\\*'/, 'The public status endpoint must permit cross-origin read-only requests.');
+assert.ok(statusApi.includes("'Access-Control-Allow-Origin': '*'"), 'The public status endpoint must permit cross-origin read-only requests.');
 assert.match(statusApi, /if \(request\.method === 'OPTIONS'\)/, 'The public status endpoint must answer CORS preflight requests.');
 assert.match(statusApi, /if \(request\.method !== 'GET'\)/, 'The public status endpoint must reject non-GET operations.');
 assert.doesNotMatch(statusApi, /isSuspiciousUA|secFetchSite|secFetchMode|Sec-Fetch/, 'The public status endpoint must not block server-side MCP/API clients using browser-only request metadata.');
