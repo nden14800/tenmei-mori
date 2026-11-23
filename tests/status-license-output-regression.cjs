@@ -25,8 +25,8 @@ for (const outputDirectory of ['status/dist', 'status/dist-main']) {
   assert.match(notices, /Permission is hereby granted, free of charge/i, 'The generated document must include actual license text, not only SPDX identifiers.');
   assert.doesNotMatch(notices, /Package: vite@/, 'Development dependencies must not be included.');
   assert.doesNotMatch(notices, /Package: typescript@/, 'Development dependencies must not be included.');
-  assert.match(upstreamLicense, /Apache License[\\s\\S]*Version 2\\.0/);
-  assert.match(upstreamNotice, /Copyright \\(c\\) 2025-2026 Slym B\\./);
+  assert.match(upstreamLicense, /Apache License[\s\S]*Version 2\.0/);
+  assert.match(upstreamNotice, /Copyright \(c\) 2025-2026 Slym B\./);
   assert.match(upstreamNotice, /modified derivative of UptimeWorker/);
 }
 
